@@ -216,59 +216,20 @@ public class ExpenseService {
             .findById(expenseId)
             .orElseThrow(() -> new ResourceNotFoundException("Expense", expenseId));
 
-    if (!expense.getProjectId().equals(projectId)) {
-      throw new ResourceNotFoundException("Expense", expenseId);
-    }
-
-    // Guard: must not be BILLED
-    if (expense.getInvoiceId() != null) {
-      throw new ResourceConflictException(
-          "Expense is billed", "Expense is part of an invoice. Void the invoice to unlock.");
-    }
-
-    // Permission: creator OR ADMIN+
-    requireEditPermission(expense, actor);
-
-    // Validate task if provided
-    if (taskId != null) {
-      var task =
-          taskRepository
-              .findById(taskId)
-              .orElseThrow(() -> new ResourceNotFoundException("Task", taskId));
-      if (!task.getProjectId().equals(projectId)) {
-        throw new ResourceNotFoundException("Task", taskId);
-      }
-    }
-
-    // Validate receipt document if provided
-    if (receiptDocumentId != null) {
-      documentRepository
-          .findById(receiptDocumentId)
-          .orElseThrow(() -> new ResourceNotFoundException("Document", receiptDocumentId));
-    }
-
-    // Validate amount
-    if (amount != null && amount.compareTo(BigDecimal.ZERO) <= 0) {
-      throw new InvalidStateException("Invalid amount", "Amount must be greater than 0");
-    }
-
-    // Validate markup
-    if (markupPercent != null && markupPercent.compareTo(BigDecimal.ZERO) < 0) {
-      throw new InvalidStateException("Invalid markup", "Markup percent must be non-negative");
-    }
-
-    // Call entity update method (null-coalesce optional fields to preserve existing values)
-    expense.update(
-        date != null ? date : expense.getDate(),
-        description != null ? description : expense.getDescription(),
-        amount != null ? amount : expense.getAmount(),
-        currency != null ? currency : expense.getCurrency(),
-        category != null ? category : expense.getCategory(),
-        taskId != null ? taskId : expense.getTaskId(),
-        receiptDocumentId != null ? receiptDocumentId : expense.getReceiptDocumentId(),
-        markupPercent != null ? markupPercent : expense.getMarkupPercent(),
-        billable != null ? billable : expense.isBillable(),
-        notes != null ? notes : expense.getNotes());
+    validateExpenseUpdate(expense, projectId, actor);
+    validateExpenseReferences(projectId, taskId, receiptDocumentId, amount, markupPercent);
+    applyExpenseChanges(
+        expense,
+        date,
+        description,
+        amount,
+        currency,
+        category,
+        taskId,
+        receiptDocumentId,
+        markupPercent,
+        billable,
+        notes);
 
     var saved = expenseRepository.save(expense);
     log.info("Updated expense {} by member {}", expenseId, actor.memberId());
@@ -423,6 +384,84 @@ public class ExpenseService {
         .findForCurrentTenant()
         .map(OrgSettings::getDefaultExpenseMarkupPercent)
         .orElse(null);
+  }
+
+  /** Validates that an expense can be updated: belongs to project, not billed, has permission. */
+  private void validateExpenseUpdate(Expense expense, UUID projectId, ActorContext actor) {
+    if (!expense.getProjectId().equals(projectId)) {
+      throw new ResourceNotFoundException("Expense", expense.getId());
+    }
+
+    // Guard: must not be BILLED
+    if (expense.getInvoiceId() != null) {
+      throw new ResourceConflictException(
+          "Expense is billed", "Expense is part of an invoice. Void the invoice to unlock.");
+    }
+
+    // Permission: creator OR ADMIN+
+    requireEditPermission(expense, actor);
+  }
+
+  /** Validates references (task, document) and value constraints (amount, markup). */
+  private void validateExpenseReferences(
+      UUID projectId,
+      UUID taskId,
+      UUID receiptDocumentId,
+      BigDecimal amount,
+      BigDecimal markupPercent) {
+    // Validate task if provided
+    if (taskId != null) {
+      var task =
+          taskRepository
+              .findById(taskId)
+              .orElseThrow(() -> new ResourceNotFoundException("Task", taskId));
+      if (!task.getProjectId().equals(projectId)) {
+        throw new ResourceNotFoundException("Task", taskId);
+      }
+    }
+
+    // Validate receipt document if provided
+    if (receiptDocumentId != null) {
+      documentRepository
+          .findById(receiptDocumentId)
+          .orElseThrow(() -> new ResourceNotFoundException("Document", receiptDocumentId));
+    }
+
+    // Validate amount
+    if (amount != null && amount.compareTo(BigDecimal.ZERO) <= 0) {
+      throw new InvalidStateException("Invalid amount", "Amount must be greater than 0");
+    }
+
+    // Validate markup
+    if (markupPercent != null && markupPercent.compareTo(BigDecimal.ZERO) < 0) {
+      throw new InvalidStateException("Invalid markup", "Markup percent must be non-negative");
+    }
+  }
+
+  /** Applies field updates to an expense, null-coalescing optional fields. */
+  private void applyExpenseChanges(
+      Expense expense,
+      LocalDate date,
+      String description,
+      BigDecimal amount,
+      String currency,
+      ExpenseCategory category,
+      UUID taskId,
+      UUID receiptDocumentId,
+      BigDecimal markupPercent,
+      Boolean billable,
+      String notes) {
+    expense.update(
+        date != null ? date : expense.getDate(),
+        description != null ? description : expense.getDescription(),
+        amount != null ? amount : expense.getAmount(),
+        currency != null ? currency : expense.getCurrency(),
+        category != null ? category : expense.getCategory(),
+        taskId != null ? taskId : expense.getTaskId(),
+        receiptDocumentId != null ? receiptDocumentId : expense.getReceiptDocumentId(),
+        markupPercent != null ? markupPercent : expense.getMarkupPercent(),
+        billable != null ? billable : expense.isBillable(),
+        notes != null ? notes : expense.getNotes());
   }
 
   private void requireEditPermission(Expense expense, ActorContext actor) {

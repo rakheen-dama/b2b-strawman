@@ -101,21 +101,7 @@ public class TimeEntryService {
             .orElseThrow(() -> new ResourceNotFoundException("Task", taskId));
 
     projectAccessService.requireViewAccess(task.getProjectId(), actor);
-
-    // Check project is not archived
-    projectLifecycleGuard.requireNotReadOnly(task.getProjectId());
-
-    // Check lifecycle guard if project is linked to a customer
-    customerProjectRepository
-        .findFirstCustomerByProjectId(task.getProjectId())
-        .ifPresent(
-            custId ->
-                customerRepository
-                    .findById(custId)
-                    .ifPresent(
-                        customer ->
-                            customerLifecycleGuard.requireActionPermitted(
-                                customer, LifecycleAction.CREATE_TIME_ENTRY)));
+    validateProjectAndCustomer(task.getProjectId());
 
     if (durationMinutes <= 0) {
       throw new InvalidStateException(
@@ -130,20 +116,8 @@ public class TimeEntryService {
         new TimeEntry(
             taskId, actor.memberId(), date, durationMinutes, billable, rateCents, description);
 
-    // Snapshot billing rate (ADR-040)
-    var billingRate = billingRateService.resolveRate(actor.memberId(), task.getProjectId(), date);
-    billingRate.ifPresent(r -> entry.snapshotBillingRate(r.hourlyRate(), r.currency()));
-
-    // Determine rate warning for billable entries without a billing rate
-    String rateWarning = null;
-    if (billable && billingRate.isEmpty()) {
-      rateWarning =
-          "No rate card found. This time entry will generate a zero-amount invoice line item.";
-    }
-
-    // Snapshot cost rate
-    var costRate = costRateService.resolveCostRate(actor.memberId(), date);
-    costRate.ifPresent(r -> entry.snapshotCostRate(r.hourlyCost(), r.currency()));
+    String rateWarning =
+        snapshotRates(entry, task.getProjectId(), actor.memberId(), date, billable);
 
     var saved = timeEntryRepository.save(entry);
     log.info(
@@ -577,6 +551,51 @@ public class TimeEntryService {
     if (a == null && b == null) return true;
     if (a == null || b == null) return false;
     return a.compareTo(b) == 0;
+  }
+
+  /**
+   * Validates that the project is not archived and that any linked customer permits time entry
+   * creation.
+   */
+  private void validateProjectAndCustomer(UUID projectId) {
+    // Check project is not archived
+    projectLifecycleGuard.requireNotReadOnly(projectId);
+
+    // Check lifecycle guard if project is linked to a customer
+    customerProjectRepository
+        .findFirstCustomerByProjectId(projectId)
+        .ifPresent(
+            custId ->
+                customerRepository
+                    .findById(custId)
+                    .ifPresent(
+                        customer ->
+                            customerLifecycleGuard.requireActionPermitted(
+                                customer, LifecycleAction.CREATE_TIME_ENTRY)));
+  }
+
+  /**
+   * Snapshots billing and cost rates onto the time entry. Returns a rate warning message if the
+   * entry is billable but no billing rate was found, or null otherwise.
+   */
+  private String snapshotRates(
+      TimeEntry entry, UUID projectId, UUID memberId, LocalDate date, boolean billable) {
+    // Snapshot billing rate (ADR-040)
+    var billingRate = billingRateService.resolveRate(memberId, projectId, date);
+    billingRate.ifPresent(r -> entry.snapshotBillingRate(r.hourlyRate(), r.currency()));
+
+    // Determine rate warning for billable entries without a billing rate
+    String rateWarning = null;
+    if (billable && billingRate.isEmpty()) {
+      rateWarning =
+          "No rate card found. This time entry will generate a zero-amount invoice line item.";
+    }
+
+    // Snapshot cost rate
+    var costRate = costRateService.resolveCostRate(memberId, date);
+    costRate.ifPresent(r -> entry.snapshotCostRate(r.hourlyCost(), r.currency()));
+
+    return rateWarning;
   }
 
   private void publishTimeEntryChangedEvent(UUID timeEntryId, UUID projectId, String action) {

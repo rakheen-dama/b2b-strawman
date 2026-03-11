@@ -262,80 +262,16 @@ public class BillingRunService {
     billingRunItemRepository.deleteByBillingRunId(billingRunId);
     entityManager.flush();
 
-    // Determine customer IDs — auto-discover or use provided list
-    List<CustomerDiscoveryRow> discoveredCustomers;
-    if (request == null || request.customerIds() == null || request.customerIds().isEmpty()) {
-      discoveredCustomers =
-          discoverCustomersWithUnbilledWork(
-              run.getPeriodFrom(), run.getPeriodTo(), run.getCurrency());
-    } else {
-      discoveredCustomers =
-          discoverSpecificCustomers(
-              request.customerIds(), run.getPeriodFrom(), run.getPeriodTo(), run.getCurrency());
-    }
+    List<CustomerDiscoveryRow> discoveredCustomers = discoverEligibleCustomers(run, request);
 
     List<BillingRunItemResponse> itemResponses = new ArrayList<>();
     BigDecimal totalUnbilledAmount = BigDecimal.ZERO;
 
     for (var row : discoveredCustomers) {
-      // Check prerequisites
-      var prereqCheck =
-          prerequisiteService.checkForContext(
-              PrerequisiteContext.INVOICE_GENERATION, EntityType.CUSTOMER, row.customerId());
-
-      var item = new BillingRunItem(billingRunId, row.customerId());
-      item.setUnbilledTimeAmount(row.unbilledTimeAmount());
-      item.setUnbilledExpenseAmount(row.unbilledExpenseAmount());
-      item.setUnbilledTimeCount(row.unbilledTimeCount());
-      item.setUnbilledExpenseCount(row.unbilledExpenseCount());
-
-      boolean hasIssues = !prereqCheck.passed();
-      String issueReason = null;
-      if (hasIssues) {
-        item.markExcluded();
-        issueReason =
-            prereqCheck.violations().stream()
-                .map(PrerequisiteViolation::message)
-                .collect(Collectors.joining("; "));
-        item.setFailureReason(issueReason);
-      }
-
-      item = billingRunItemRepository.save(item);
-
-      // Create entry selections for this item's unbilled entries
-      createEntrySelections(
-          item.getId(),
-          row.customerId(),
-          run.getPeriodFrom(),
-          run.getPeriodTo(),
-          run.getCurrency(),
-          run.isIncludeExpenses());
-
-      BigDecimal itemTotal =
-          (row.unbilledTimeAmount() != null ? row.unbilledTimeAmount() : BigDecimal.ZERO)
-              .add(
-                  row.unbilledExpenseAmount() != null
-                      ? row.unbilledExpenseAmount()
-                      : BigDecimal.ZERO);
-
-      itemResponses.add(
-          new BillingRunItemResponse(
-              item.getId(),
-              row.customerId(),
-              row.customerName(),
-              item.getStatus(),
-              row.unbilledTimeAmount() != null ? row.unbilledTimeAmount() : BigDecimal.ZERO,
-              row.unbilledExpenseAmount() != null ? row.unbilledExpenseAmount() : BigDecimal.ZERO,
-              row.unbilledTimeCount(),
-              row.unbilledExpenseCount(),
-              itemTotal,
-              hasIssues,
-              issueReason,
-              null,
-              item.getFailureReason()));
-
-      if (!hasIssues) {
-        totalUnbilledAmount = totalUnbilledAmount.add(itemTotal);
+      var previewItem = createPreviewItem(billingRunId, row, run);
+      itemResponses.add(previewItem.response());
+      if (!previewItem.hasIssues()) {
+        totalUnbilledAmount = totalUnbilledAmount.add(previewItem.itemTotal());
       }
     }
 
@@ -1128,6 +1064,82 @@ public class BillingRunService {
     item.setUnbilledTimeCount(includedTimeEntryIds.size());
     item.setUnbilledExpenseAmount(expenseAmount);
     item.setUnbilledExpenseCount(includedExpenseIds.size());
+  }
+
+  /** Discovers eligible customers: auto-discover vs. provided list. */
+  private List<CustomerDiscoveryRow> discoverEligibleCustomers(
+      BillingRun run, LoadPreviewRequest request) {
+    if (request == null || request.customerIds() == null || request.customerIds().isEmpty()) {
+      return discoverCustomersWithUnbilledWork(
+          run.getPeriodFrom(), run.getPeriodTo(), run.getCurrency());
+    } else {
+      return discoverSpecificCustomers(
+          request.customerIds(), run.getPeriodFrom(), run.getPeriodTo(), run.getCurrency());
+    }
+  }
+
+  private record PreviewItemResult(
+      BillingRunItemResponse response, boolean hasIssues, BigDecimal itemTotal) {}
+
+  /** Builds a preview item for a single customer: prerequisite checks + aggregation. */
+  private PreviewItemResult createPreviewItem(
+      UUID billingRunId, CustomerDiscoveryRow row, BillingRun run) {
+    var prereqCheck =
+        prerequisiteService.checkForContext(
+            PrerequisiteContext.INVOICE_GENERATION, EntityType.CUSTOMER, row.customerId());
+
+    var item = new BillingRunItem(billingRunId, row.customerId());
+    item.setUnbilledTimeAmount(row.unbilledTimeAmount());
+    item.setUnbilledExpenseAmount(row.unbilledExpenseAmount());
+    item.setUnbilledTimeCount(row.unbilledTimeCount());
+    item.setUnbilledExpenseCount(row.unbilledExpenseCount());
+
+    boolean hasIssues = !prereqCheck.passed();
+    String issueReason = null;
+    if (hasIssues) {
+      item.markExcluded();
+      issueReason =
+          prereqCheck.violations().stream()
+              .map(PrerequisiteViolation::message)
+              .collect(Collectors.joining("; "));
+      item.setFailureReason(issueReason);
+    }
+
+    item = billingRunItemRepository.save(item);
+
+    // Create entry selections for this item's unbilled entries
+    createEntrySelections(
+        item.getId(),
+        row.customerId(),
+        run.getPeriodFrom(),
+        run.getPeriodTo(),
+        run.getCurrency(),
+        run.isIncludeExpenses());
+
+    BigDecimal itemTotal =
+        (row.unbilledTimeAmount() != null ? row.unbilledTimeAmount() : BigDecimal.ZERO)
+            .add(
+                row.unbilledExpenseAmount() != null
+                    ? row.unbilledExpenseAmount()
+                    : BigDecimal.ZERO);
+
+    var response =
+        new BillingRunItemResponse(
+            item.getId(),
+            row.customerId(),
+            row.customerName(),
+            item.getStatus(),
+            row.unbilledTimeAmount() != null ? row.unbilledTimeAmount() : BigDecimal.ZERO,
+            row.unbilledExpenseAmount() != null ? row.unbilledExpenseAmount() : BigDecimal.ZERO,
+            row.unbilledTimeCount(),
+            row.unbilledExpenseCount(),
+            itemTotal,
+            hasIssues,
+            issueReason,
+            null,
+            item.getFailureReason());
+
+    return new PreviewItemResult(response, hasIssues, itemTotal);
   }
 
   private void validateItemBelongsToRun(UUID billingRunId, UUID billingRunItemId) {

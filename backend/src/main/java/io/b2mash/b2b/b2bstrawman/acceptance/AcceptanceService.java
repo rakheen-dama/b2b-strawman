@@ -6,25 +6,16 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalReadModelRepository;
 import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestAcceptedEvent;
-import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestExpiredEvent;
 import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestRevokedEvent;
 import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestSentEvent;
 import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestViewedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
-import io.b2mash.b2b.b2bstrawman.integration.IntegrationDomain;
-import io.b2mash.b2b.b2bstrawman.integration.IntegrationRegistry;
-import io.b2mash.b2b.b2bstrawman.integration.email.EmailDeliveryLogService;
-import io.b2mash.b2b.b2bstrawman.integration.email.EmailMessage;
-import io.b2mash.b2b.b2bstrawman.integration.email.EmailProvider;
-import io.b2mash.b2b.b2bstrawman.integration.email.EmailRateLimiter;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.notification.template.EmailContextBuilder;
-import io.b2mash.b2b.b2bstrawman.notification.template.EmailTemplateRenderer;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
@@ -55,10 +46,8 @@ public class AcceptanceService {
   private static final Logger log = LoggerFactory.getLogger(AcceptanceService.class);
   private static final int TOKEN_BYTES = 32;
   private static final int DEFAULT_EXPIRY_DAYS = 30;
-  private static final String REFERENCE_TYPE = "ACCEPTANCE_REQUEST";
   private static final String TEMPLATE_REQUEST = "acceptance-request";
   private static final String TEMPLATE_REMINDER = "acceptance-reminder";
-  private static final String TEMPLATE_CONFIRMATION = "acceptance-confirmation";
 
   private static final DateTimeFormatter EMAIL_DATE_FORMAT =
       DateTimeFormatter.ofPattern("d MMMM yyyy").withZone(ZoneOffset.UTC);
@@ -69,14 +58,10 @@ public class AcceptanceService {
   private final OrgSettingsRepository orgSettingsRepository;
   private final CustomerProjectRepository customerProjectRepository;
   private final InvoiceRepository invoiceRepository;
-  private final EmailTemplateRenderer emailTemplateRenderer;
-  private final EmailContextBuilder emailContextBuilder;
-  private final IntegrationRegistry integrationRegistry;
-  private final EmailDeliveryLogService deliveryLogService;
-  private final EmailRateLimiter emailRateLimiter;
   private final ApplicationEventPublisher eventPublisher;
   private final MemberNameResolver memberNameResolver;
   private final AcceptanceCertificateService certificateService;
+  private final AcceptanceNotificationService notificationService;
   private final AuditService auditService;
 
   private final StorageService storageService;
@@ -95,14 +80,10 @@ public class AcceptanceService {
       OrgSettingsRepository orgSettingsRepository,
       CustomerProjectRepository customerProjectRepository,
       InvoiceRepository invoiceRepository,
-      EmailTemplateRenderer emailTemplateRenderer,
-      EmailContextBuilder emailContextBuilder,
-      IntegrationRegistry integrationRegistry,
-      EmailDeliveryLogService deliveryLogService,
-      EmailRateLimiter emailRateLimiter,
       ApplicationEventPublisher eventPublisher,
       MemberNameResolver memberNameResolver,
       AcceptanceCertificateService certificateService,
+      AcceptanceNotificationService notificationService,
       AuditService auditService,
       StorageService storageService,
       OrgSchemaMappingRepository orgSchemaMappingRepository,
@@ -116,14 +97,10 @@ public class AcceptanceService {
     this.orgSettingsRepository = orgSettingsRepository;
     this.customerProjectRepository = customerProjectRepository;
     this.invoiceRepository = invoiceRepository;
-    this.emailTemplateRenderer = emailTemplateRenderer;
-    this.emailContextBuilder = emailContextBuilder;
-    this.integrationRegistry = integrationRegistry;
-    this.deliveryLogService = deliveryLogService;
-    this.emailRateLimiter = emailRateLimiter;
     this.eventPublisher = eventPublisher;
     this.memberNameResolver = memberNameResolver;
     this.certificateService = certificateService;
+    this.notificationService = notificationService;
     this.auditService = auditService;
     this.storageService = storageService;
     this.orgSchemaMappingRepository = orgSchemaMappingRepository;
@@ -248,7 +225,7 @@ public class AcceptanceService {
             .build());
 
     // 9. Send email
-    sendAcceptanceEmail(request, contact, doc, TEMPLATE_REQUEST);
+    notificationService.sendAcceptanceEmail(request, contact, doc, TEMPLATE_REQUEST, portalBaseUrl);
 
     // 10-11. Transition to SENT and save
     request.markSent();
@@ -318,7 +295,7 @@ public class AcceptanceService {
     if (request.isActive() && request.isExpired()) {
       request.markExpired();
       acceptanceRequestRepository.save(request);
-      publishExpiredEvent(request);
+      notificationService.publishExpiredEvent(request);
       throw new InvalidStateException(
           "Acceptance request has expired",
           "This acceptance request expired on " + EMAIL_DATE_FORMAT.format(request.getExpiresAt()));
@@ -386,7 +363,7 @@ public class AcceptanceService {
     if (request.isActive() && request.isExpired()) {
       request.markExpired();
       acceptanceRequestRepository.save(request);
-      publishExpiredEvent(request);
+      notificationService.publishExpiredEvent(request);
       throw new InvalidStateException(
           "Acceptance request has expired",
           "This acceptance request expired on " + EMAIL_DATE_FORMAT.format(request.getExpiresAt()));
@@ -456,7 +433,7 @@ public class AcceptanceService {
     PortalContact contact =
         portalContactRepository.findById(request.getPortalContactId()).orElse(null);
     if (doc != null && contact != null) {
-      sendConfirmationEmail(request, contact, doc);
+      notificationService.sendConfirmationEmail(request, contact, doc);
     } else {
       log.warn(
           "Skipping confirmation email for request={}: doc={}, contact={} (null indicates data integrity issue)",
@@ -558,7 +535,7 @@ public class AcceptanceService {
     if (request.isExpired()) {
       request.markExpired();
       acceptanceRequestRepository.save(request);
-      publishExpiredEvent(request);
+      notificationService.publishExpiredEvent(request);
       throw new InvalidStateException(
           "Acceptance request has expired",
           "This acceptance request expired on " + EMAIL_DATE_FORMAT.format(request.getExpiresAt()));
@@ -570,7 +547,8 @@ public class AcceptanceService {
     PortalContact contact =
         portalContactRepository.findById(request.getPortalContactId()).orElse(null);
     if (doc != null && contact != null) {
-      sendAcceptanceEmail(request, contact, doc, TEMPLATE_REMINDER);
+      notificationService.sendAcceptanceEmail(
+          request, contact, doc, TEMPLATE_REMINDER, portalBaseUrl);
     } else {
       log.warn(
           "Skipping reminder email for request={}: doc={}, contact={} (null indicates data integrity issue)",
@@ -943,7 +921,7 @@ public class AcceptanceService {
               for (var request : expired) {
                 request.markExpired();
                 acceptanceRequestRepository.save(request);
-                publishExpiredEvent(request);
+                notificationService.publishExpiredEvent(request);
               }
               return expired.size();
             });
@@ -959,33 +937,6 @@ public class AcceptanceService {
   }
 
   // --- Private helpers ---
-
-  private void publishExpiredEvent(AcceptanceRequest request) {
-    // Audit: acceptance.expired
-    auditService.log(
-        AuditEventBuilder.builder()
-            .eventType("acceptance.expired")
-            .entityType("acceptance_request")
-            .entityId(request.getId())
-            .actorType("SYSTEM")
-            .source("INTERNAL")
-            .details(Map.of("expired_at", request.getExpiresAt().toString()))
-            .build());
-
-    eventPublisher.publishEvent(
-        new AcceptanceRequestExpiredEvent(
-            "acceptance_request.expired",
-            "acceptance_request",
-            request.getId(),
-            null,
-            null,
-            "System",
-            RequestScopes.getTenantIdOrNull(),
-            RequestScopes.getOrgIdOrNull(),
-            Instant.now(),
-            Map.of(),
-            request.getId()));
-  }
 
   private String generateToken() {
     byte[] tokenBytes = new byte[TOKEN_BYTES];
@@ -1027,173 +978,5 @@ public class AcceptanceService {
     return acceptanceRequestRepository
         .findByRequestToken(requestToken)
         .orElseThrow(() -> new ResourceNotFoundException("AcceptanceRequest", "token"));
-  }
-
-  private void sendAcceptanceEmail(
-      AcceptanceRequest request,
-      PortalContact contact,
-      GeneratedDocument doc,
-      String templateName) {
-    String recipientEmail = contact.getEmail();
-    if (recipientEmail == null || recipientEmail.isBlank()) {
-      log.warn("Skipping acceptance email for contact {} -- no email address", contact.getId());
-      return;
-    }
-    if (!RequestScopes.TENANT_ID.isBound()) {
-      log.warn("Skipping acceptance email for contact {} -- no tenant context", contact.getId());
-      return;
-    }
-    try {
-      // 1. Resolve provider
-      EmailProvider provider =
-          integrationRegistry.resolve(IntegrationDomain.EMAIL, EmailProvider.class);
-
-      // 2. Build context
-      String acceptanceUrl = portalBaseUrl + "/accept/" + request.getRequestToken();
-      Map<String, Object> context =
-          emailContextBuilder.buildBaseContext(contact.getDisplayName(), null);
-      context.put("contactName", contact.getDisplayName());
-      context.put("documentFileName", doc.getFileName());
-      context.put("acceptanceUrl", acceptanceUrl);
-      context.put("expiresAtFormatted", EMAIL_DATE_FORMAT.format(request.getExpiresAt()));
-
-      String orgName = (String) context.get("orgName");
-
-      if (TEMPLATE_REMINDER.equals(templateName) && request.getSentAt() != null) {
-        context.put("sentAtFormatted", EMAIL_DATE_FORMAT.format(request.getSentAt()));
-        context.put("subject", "Reminder: " + orgName + " -- Document awaiting your acceptance");
-      } else {
-        context.put("subject", orgName + " -- Document for your acceptance: " + doc.getFileName());
-      }
-
-      // 3. Render template
-      var rendered = emailTemplateRenderer.render(templateName, context);
-
-      // 4. Rate limit check
-      String tenantSchema = RequestScopes.TENANT_ID.get();
-      if (!emailRateLimiter.tryAcquire(tenantSchema, provider.providerId())) {
-        log.warn("Rate limit exceeded for acceptance email, request={}", request.getId());
-        deliveryLogService.recordRateLimited(
-            REFERENCE_TYPE, request.getId(), templateName, recipientEmail, provider.providerId());
-        return;
-      }
-
-      // 5. Construct message
-      var message =
-          EmailMessage.withTracking(
-              recipientEmail,
-              rendered.subject(),
-              rendered.htmlBody(),
-              rendered.plainTextBody(),
-              null,
-              REFERENCE_TYPE,
-              request.getId().toString(),
-              tenantSchema);
-
-      // 6. Send
-      var result = provider.sendEmail(message);
-
-      // 7. Record delivery
-      deliveryLogService.record(
-          REFERENCE_TYPE,
-          request.getId(),
-          templateName,
-          recipientEmail,
-          provider.providerId(),
-          result);
-
-      if (result.success()) {
-        log.info(
-            "Acceptance email ({}) sent for request={} to={}",
-            templateName,
-            request.getId(),
-            recipientEmail);
-      } else {
-        log.warn(
-            "Acceptance email ({}) failed for request={}: {}",
-            templateName,
-            request.getId(),
-            result.errorMessage());
-      }
-    } catch (Exception e) {
-      log.error(
-          "Unexpected error sending acceptance email ({}) for request={}",
-          templateName,
-          request.getId(),
-          e);
-    }
-  }
-
-  private void sendConfirmationEmail(
-      AcceptanceRequest request, PortalContact contact, GeneratedDocument doc) {
-    String recipientEmail = contact.getEmail();
-    if (recipientEmail == null || recipientEmail.isBlank()) {
-      log.warn("Skipping confirmation email for contact {} -- no email address", contact.getId());
-      return;
-    }
-    if (!RequestScopes.TENANT_ID.isBound()) {
-      log.warn("Skipping confirmation email for contact {} -- no tenant context", contact.getId());
-      return;
-    }
-    try {
-      EmailProvider provider =
-          integrationRegistry.resolve(IntegrationDomain.EMAIL, EmailProvider.class);
-
-      Map<String, Object> context =
-          emailContextBuilder.buildBaseContext(contact.getDisplayName(), null);
-      context.put("contactName", contact.getDisplayName());
-      context.put("documentFileName", doc.getFileName());
-      context.put("acceptedAtFormatted", EMAIL_DATE_FORMAT.format(request.getAcceptedAt()));
-      context.put("subject", "Confirmed: You have accepted " + doc.getFileName());
-
-      var rendered = emailTemplateRenderer.render(TEMPLATE_CONFIRMATION, context);
-
-      String tenantSchema = RequestScopes.TENANT_ID.get();
-      if (!emailRateLimiter.tryAcquire(tenantSchema, provider.providerId())) {
-        log.warn("Rate limit exceeded for confirmation email, request={}", request.getId());
-        deliveryLogService.recordRateLimited(
-            REFERENCE_TYPE,
-            request.getId(),
-            TEMPLATE_CONFIRMATION,
-            recipientEmail,
-            provider.providerId());
-        return;
-      }
-
-      var message =
-          EmailMessage.withTracking(
-              recipientEmail,
-              rendered.subject(),
-              rendered.htmlBody(),
-              rendered.plainTextBody(),
-              null,
-              REFERENCE_TYPE,
-              request.getId().toString(),
-              tenantSchema);
-
-      var result = provider.sendEmail(message);
-
-      deliveryLogService.record(
-          REFERENCE_TYPE,
-          request.getId(),
-          TEMPLATE_CONFIRMATION,
-          recipientEmail,
-          provider.providerId(),
-          result);
-
-      if (result.success()) {
-        log.info(
-            "Acceptance confirmation email sent for request={} to={}",
-            request.getId(),
-            recipientEmail);
-      } else {
-        log.warn(
-            "Acceptance confirmation email failed for request={}: {}",
-            request.getId(),
-            result.errorMessage());
-      }
-    } catch (Exception e) {
-      log.error("Unexpected error sending confirmation email for request={}", request.getId(), e);
-    }
   }
 }

@@ -16,6 +16,7 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerService;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
@@ -200,7 +201,7 @@ class PortalIntegrationTest {
 
               // Link customer A to projectId
               customerProjectService.linkCustomerToProject(
-                  customerIdA, projectId, memberIdA, memberIdA, "owner");
+                  customerIdA, projectId, memberIdA, new ActorContext(memberIdA, "owner"));
 
               // Create documents: project-scoped SHARED doc
               var sharedDoc =

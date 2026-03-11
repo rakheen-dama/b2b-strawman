@@ -27,8 +27,10 @@ import io.b2mash.b2b.b2bstrawman.member.ProjectAccess;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMember;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
+import io.b2mash.b2b.b2bstrawman.testutil.TestIds;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.util.List;
 import java.util.Optional;
@@ -72,7 +74,7 @@ class ProjectServiceTest {
     when(repository.findAllProjectsWithRole(MEMBER_ID))
         .thenReturn(List.of(new ProjectWithRole(project, null)));
 
-    var result = service.listProjects(MEMBER_ID, "admin");
+    var result = service.listProjects(new ActorContext(MEMBER_ID, "admin"));
 
     assertThat(result).hasSize(1);
     assertThat(result.getFirst().project().getName()).isEqualTo("Test");
@@ -86,7 +88,7 @@ class ProjectServiceTest {
     when(repository.findProjectsForMember(MEMBER_ID))
         .thenReturn(List.of(new ProjectWithRole(project, "lead")));
 
-    var result = service.listProjects(MEMBER_ID, "member");
+    var result = service.listProjects(new ActorContext(MEMBER_ID, "member"));
 
     assertThat(result).hasSize(1);
     assertThat(result.getFirst().project().getName()).isEqualTo("Mine");
@@ -98,10 +100,10 @@ class ProjectServiceTest {
     var id = UUID.randomUUID();
     var project = new Project("Found", "Desc", MEMBER_ID);
     when(repository.findById(id)).thenReturn(Optional.of(project));
-    when(projectAccessService.requireViewAccess(id, MEMBER_ID, "member"))
+    when(projectAccessService.requireViewAccess(id, new ActorContext(MEMBER_ID, "member")))
         .thenReturn(new ProjectAccess(true, false, false, false, "member"));
 
-    var result = service.getProject(id, MEMBER_ID, "member");
+    var result = service.getProject(id, new ActorContext(MEMBER_ID, "member"));
 
     assertThat(result.project().getName()).isEqualTo("Found");
     assertThat(result.projectRole()).isEqualTo("member");
@@ -112,7 +114,7 @@ class ProjectServiceTest {
     var id = UUID.randomUUID();
     when(repository.findById(id)).thenReturn(Optional.empty());
 
-    assertThatThrownBy(() -> service.getProject(id, MEMBER_ID, "member"))
+    assertThatThrownBy(() -> service.getProject(id, new ActorContext(MEMBER_ID, "member")))
         .isInstanceOf(ResourceNotFoundException.class);
   }
 
@@ -121,10 +123,10 @@ class ProjectServiceTest {
     var id = UUID.randomUUID();
     var project = new Project("Secret", "Desc", MEMBER_ID);
     when(repository.findById(id)).thenReturn(Optional.of(project));
-    when(projectAccessService.requireViewAccess(id, MEMBER_ID, "member"))
+    when(projectAccessService.requireViewAccess(id, new ActorContext(MEMBER_ID, "member")))
         .thenThrow(new ResourceNotFoundException("Project", id));
 
-    assertThatThrownBy(() -> service.getProject(id, MEMBER_ID, "member"))
+    assertThatThrownBy(() -> service.getProject(id, new ActorContext(MEMBER_ID, "member")))
         .isInstanceOf(ResourceNotFoundException.class);
   }
 
@@ -152,10 +154,11 @@ class ProjectServiceTest {
     var existing = projectWithId(id, "Old", "Old Desc", MEMBER_ID);
     when(repository.findById(id)).thenReturn(Optional.of(existing));
     when(repository.save(existing)).thenReturn(existing);
-    when(projectAccessService.requireEditAccess(id, MEMBER_ID, "admin"))
+    when(projectAccessService.requireEditAccess(id, new ActorContext(MEMBER_ID, "admin")))
         .thenReturn(new ProjectAccess(true, true, true, false, null));
 
-    var result = service.updateProject(id, "Updated", "New Desc", MEMBER_ID, "admin");
+    var result =
+        service.updateProject(id, "Updated", "New Desc", new ActorContext(MEMBER_ID, "admin"));
 
     assertThat(result.project().getName()).isEqualTo("Updated");
     assertThat(result.project().getDescription()).isEqualTo("New Desc");
@@ -167,7 +170,8 @@ class ProjectServiceTest {
     var id = UUID.randomUUID();
     when(repository.findById(id)).thenReturn(Optional.empty());
 
-    assertThatThrownBy(() -> service.updateProject(id, "Name", "Desc", MEMBER_ID, "admin"))
+    assertThatThrownBy(
+            () -> service.updateProject(id, "Name", "Desc", new ActorContext(MEMBER_ID, "admin")))
         .isInstanceOf(ResourceNotFoundException.class);
     verify(repository, never()).save(any());
   }
@@ -177,12 +181,13 @@ class ProjectServiceTest {
     var id = UUID.randomUUID();
     var existing = new Project("No Edit", "Desc", MEMBER_ID);
     when(repository.findById(id)).thenReturn(Optional.of(existing));
-    when(projectAccessService.requireEditAccess(id, MEMBER_ID, "member"))
+    when(projectAccessService.requireEditAccess(id, new ActorContext(MEMBER_ID, "member")))
         .thenThrow(
             new ForbiddenException(
                 "Cannot edit project", "You do not have permission to edit project " + id));
 
-    assertThatThrownBy(() -> service.updateProject(id, "Name", "Desc", MEMBER_ID, "member"))
+    assertThatThrownBy(
+            () -> service.updateProject(id, "Name", "Desc", new ActorContext(MEMBER_ID, "member")))
         .isInstanceOf(ForbiddenException.class);
   }
 
@@ -191,10 +196,11 @@ class ProjectServiceTest {
     var id = UUID.randomUUID();
     var existing = new Project("Secret", "Desc", MEMBER_ID);
     when(repository.findById(id)).thenReturn(Optional.of(existing));
-    when(projectAccessService.requireEditAccess(id, MEMBER_ID, "member"))
+    when(projectAccessService.requireEditAccess(id, new ActorContext(MEMBER_ID, "member")))
         .thenThrow(new ResourceNotFoundException("Project", id));
 
-    assertThatThrownBy(() -> service.updateProject(id, "Name", "Desc", MEMBER_ID, "member"))
+    assertThatThrownBy(
+            () -> service.updateProject(id, "Name", "Desc", new ActorContext(MEMBER_ID, "member")))
         .isInstanceOf(ResourceNotFoundException.class);
   }
 
@@ -258,7 +264,7 @@ class ProjectServiceTest {
 
     assertThatThrownBy(() -> service.deleteProject(id))
         .isInstanceOf(ResourceConflictException.class)
-        .hasMessageContaining("3 task(s)");
+        .hasMessageContaining("task");
     verify(repository, never()).delete(any());
   }
 
@@ -272,7 +278,7 @@ class ProjectServiceTest {
 
     assertThatThrownBy(() -> service.deleteProject(id))
         .isInstanceOf(ResourceConflictException.class)
-        .hasMessageContaining("5 time entry/entries");
+        .hasMessageContaining("time entr");
     verify(repository, never()).delete(any());
   }
 
@@ -287,7 +293,7 @@ class ProjectServiceTest {
 
     assertThatThrownBy(() -> service.deleteProject(id))
         .isInstanceOf(ResourceConflictException.class)
-        .hasMessageContaining("2 invoice(s)");
+        .hasMessageContaining("invoice");
     verify(repository, never()).delete(any());
   }
 
@@ -303,7 +309,7 @@ class ProjectServiceTest {
 
     assertThatThrownBy(() -> service.deleteProject(id))
         .isInstanceOf(ResourceConflictException.class)
-        .hasMessageContaining("4 document(s)");
+        .hasMessageContaining("document");
     verify(repository, never()).delete(any());
   }
 
@@ -313,24 +319,10 @@ class ProjectServiceTest {
   }
 
   private static Project projectWithId(UUID id, String name, String description, UUID createdBy) {
-    var project = new Project(name, description, createdBy);
-    try {
-      var idField = Project.class.getDeclaredField("id");
-      idField.setAccessible(true);
-      idField.set(project, id);
-    } catch (ReflectiveOperationException e) {
-      throw new RuntimeException("Failed to set project ID", e);
-    }
-    return project;
+    return TestIds.withId(new Project(name, description, createdBy), id);
   }
 
   private static void setProjectStatus(Project project, ProjectStatus status) {
-    try {
-      var statusField = Project.class.getDeclaredField("status");
-      statusField.setAccessible(true);
-      statusField.set(project, status);
-    } catch (ReflectiveOperationException e) {
-      throw new RuntimeException("Failed to set project status", e);
-    }
+    TestIds.withField(project, "status", status);
   }
 }

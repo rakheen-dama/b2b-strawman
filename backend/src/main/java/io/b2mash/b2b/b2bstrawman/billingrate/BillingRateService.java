@@ -9,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import java.math.BigDecimal;
@@ -119,8 +120,7 @@ public class BillingRateService {
    * @param hourlyRate the hourly rate amount (must be positive)
    * @param effectiveFrom start date of rate effectiveness
    * @param effectiveTo optional end date (null for open-ended)
-   * @param actorMemberId the UUID of the member performing the action
-   * @param orgRole the org role of the actor
+   * @param actor the authenticated actor performing the action
    * @return the created BillingRate
    */
   @Transactional
@@ -132,13 +132,12 @@ public class BillingRateService {
       BigDecimal hourlyRate,
       LocalDate effectiveFrom,
       LocalDate effectiveTo,
-      UUID actorMemberId,
-      String orgRole) {
+      ActorContext actor) {
 
     validateScope(projectId, customerId);
     validateProjectExists(projectId);
     validateCustomerExists(customerId);
-    requirePermission(projectId, actorMemberId, orgRole);
+    requirePermission(projectId, actor);
 
     LocalDate overlapEnd = effectiveTo != null ? effectiveTo : FAR_FUTURE;
     var overlapping =
@@ -182,8 +181,7 @@ public class BillingRateService {
    * @param currency the new currency code
    * @param effectiveFrom the new start date
    * @param effectiveTo the new end date (nullable)
-   * @param actorMemberId the UUID of the member performing the action
-   * @param orgRole the org role of the actor
+   * @param actor the authenticated actor performing the action
    * @return the updated BillingRate
    */
   @Transactional
@@ -193,15 +191,14 @@ public class BillingRateService {
       String currency,
       LocalDate effectiveFrom,
       LocalDate effectiveTo,
-      UUID actorMemberId,
-      String orgRole) {
+      ActorContext actor) {
 
     var rate =
         billingRateRepository
             .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("BillingRate", id));
 
-    requirePermission(rate.getProjectId(), actorMemberId, orgRole);
+    requirePermission(rate.getProjectId(), actor);
 
     LocalDate overlapEnd = effectiveTo != null ? effectiveTo : FAR_FUTURE;
     var overlapping =
@@ -243,17 +240,16 @@ public class BillingRateService {
    * Deletes a billing rate by ID.
    *
    * @param id the billing rate ID to delete
-   * @param actorMemberId the UUID of the member performing the action
-   * @param orgRole the org role of the actor
+   * @param actor the authenticated actor performing the action
    */
   @Transactional
-  public void deleteRate(UUID id, UUID actorMemberId, String orgRole) {
+  public void deleteRate(UUID id, ActorContext actor) {
     var rate =
         billingRateRepository
             .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("BillingRate", id));
 
-    requirePermission(rate.getProjectId(), actorMemberId, orgRole);
+    requirePermission(rate.getProjectId(), actor);
 
     billingRateRepository.delete(rate);
 
@@ -306,14 +302,14 @@ public class BillingRateService {
    *   <li>Regular Member: cannot manage rates (403)
    * </ul>
    */
-  private void requirePermission(UUID projectId, UUID actorMemberId, String orgRole) {
-    if (Roles.ORG_ADMIN.equals(orgRole) || Roles.ORG_OWNER.equals(orgRole)) {
+  private void requirePermission(UUID projectId, ActorContext actor) {
+    if (Roles.ORG_ADMIN.equals(actor.orgRole()) || Roles.ORG_OWNER.equals(actor.orgRole())) {
       return;
     }
 
     // Project leads can manage project overrides for their projects
     if (projectId != null) {
-      var access = projectAccessService.checkAccess(projectId, actorMemberId, orgRole);
+      var access = projectAccessService.checkAccess(projectId, actor);
       if (access.canEdit()) {
         return;
       }

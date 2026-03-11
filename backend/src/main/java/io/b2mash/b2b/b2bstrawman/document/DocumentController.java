@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.MissingOrganizationContextException;
 import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.security.ClerkJwtUtils;
 import jakarta.validation.Valid;
@@ -51,18 +52,13 @@ public class DocumentController {
     if (orgId == null) {
       throw new MissingOrganizationContextException();
     }
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
 
     var result =
         documentService.initiateUpload(
-            projectId,
-            request.fileName(),
-            request.contentType(),
-            request.size(),
-            orgId,
-            memberId,
-            orgRole);
+            projectId, request.fileName(), request.contentType(), request.size(), orgId, actor);
     return ResponseEntity.status(201)
         .body(
             new UploadInitResponse(
@@ -142,9 +138,10 @@ public class DocumentController {
   @PostMapping("/api/documents/{documentId}/confirm")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<DocumentResponse> confirmUpload(@PathVariable UUID documentId) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
-    var document = documentService.confirmUpload(documentId, memberId, orgRole);
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
+    var document = documentService.confirmUpload(documentId, actor);
     var memberNames = resolveNames(List.of(document));
     return ResponseEntity.ok(DocumentResponse.from(document, memberNames));
   }
@@ -152,18 +149,20 @@ public class DocumentController {
   @DeleteMapping("/api/documents/{documentId}/cancel")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<Void> cancelUpload(@PathVariable UUID documentId) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
-    documentService.cancelUpload(documentId, memberId, orgRole);
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
+    documentService.cancelUpload(documentId, actor);
     return ResponseEntity.noContent().build();
   }
 
   @GetMapping("/api/projects/{projectId}/documents")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<DocumentResponse>> listDocuments(@PathVariable UUID projectId) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
-    var documents = documentService.listDocuments(projectId, memberId, orgRole);
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
+    var documents = documentService.listDocuments(projectId, actor);
     var memberNames = resolveNames(documents);
     var response = documents.stream().map(d -> DocumentResponse.from(d, memberNames)).toList();
     return ResponseEntity.ok(response);
@@ -172,9 +171,10 @@ public class DocumentController {
   @GetMapping("/api/documents/{documentId}/presign-download")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<PresignDownloadResponse> presignDownload(@PathVariable UUID documentId) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
-    var result = documentService.getPresignedDownloadUrl(documentId, memberId, orgRole);
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
+    var result = documentService.getPresignedDownloadUrl(documentId, actor);
     return ResponseEntity.ok(new PresignDownloadResponse(result.url(), result.expiresInSeconds()));
   }
 

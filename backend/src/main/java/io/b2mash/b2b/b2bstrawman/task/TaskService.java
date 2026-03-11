@@ -27,6 +27,7 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectLifecycleGuard;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
@@ -106,27 +107,24 @@ public class TaskService {
   @Transactional(readOnly = true)
   public List<Task> listTasks(
       UUID projectId,
-      UUID memberId,
-      String orgRole,
+      ActorContext actor,
       String status,
       UUID assigneeId,
       String priority,
       String assigneeFilter) {
-    return listTasks(
-        projectId, memberId, orgRole, status, assigneeId, priority, assigneeFilter, null);
+    return listTasks(projectId, actor, status, assigneeId, priority, assigneeFilter, null);
   }
 
   @Transactional(readOnly = true)
   public List<Task> listTasks(
       UUID projectId,
-      UUID memberId,
-      String orgRole,
+      ActorContext actor,
       String status,
       UUID assigneeId,
       String priority,
       String assigneeFilter,
       Boolean recurring) {
-    projectAccessService.requireViewAccess(projectId, memberId, orgRole);
+    projectAccessService.requireViewAccess(projectId, actor);
 
     List<TaskStatus> statuses = status != null ? parseStatuses(status) : DEFAULT_STATUSES;
     TaskPriority taskPriority = priority != null ? parsePriority(priority) : null;
@@ -147,12 +145,12 @@ public class TaskService {
   }
 
   @Transactional(readOnly = true)
-  public Task getTask(UUID taskId, UUID memberId, String orgRole) {
+  public Task getTask(UUID taskId, ActorContext actor) {
     var task =
         taskRepository
             .findById(taskId)
             .orElseThrow(() -> new ResourceNotFoundException("Task", taskId));
-    projectAccessService.requireViewAccess(task.getProjectId(), memberId, orgRole);
+    projectAccessService.requireViewAccess(task.getProjectId(), actor);
     return task;
   }
 
@@ -164,20 +162,9 @@ public class TaskService {
       String priority,
       String type,
       LocalDate dueDate,
-      UUID createdBy,
-      String orgRole) {
+      ActorContext actor) {
     return createTask(
-        projectId,
-        title,
-        description,
-        priority,
-        type,
-        dueDate,
-        createdBy,
-        orgRole,
-        null,
-        null,
-        null);
+        projectId, title, description, priority, type, dueDate, actor, null, null, null);
   }
 
   /**
@@ -198,8 +185,7 @@ public class TaskService {
       String priority,
       String type,
       LocalDate dueDate,
-      UUID createdBy,
-      String orgRole,
+      ActorContext actor,
       Map<String, Object> customFields,
       List<UUID> appliedFieldGroups,
       UUID assigneeId) {
@@ -210,8 +196,7 @@ public class TaskService {
         priority,
         type,
         dueDate,
-        createdBy,
-        orgRole,
+        actor,
         customFields,
         appliedFieldGroups,
         assigneeId,
@@ -227,15 +212,14 @@ public class TaskService {
       String priority,
       String type,
       LocalDate dueDate,
-      UUID createdBy,
-      String orgRole,
+      ActorContext actor,
       Map<String, Object> customFields,
       List<UUID> appliedFieldGroups,
       UUID assigneeId,
       String recurrenceRule,
       LocalDate recurrenceEndDate) {
     // Any project member can create tasks; view access is sufficient
-    projectAccessService.requireViewAccess(projectId, createdBy, orgRole);
+    projectAccessService.requireViewAccess(projectId, actor);
 
     // Check project is not archived
     projectLifecycleGuard.requireNotReadOnly(projectId);
@@ -257,7 +241,7 @@ public class TaskService {
             customFields != null ? customFields : new HashMap<>(),
             appliedFieldGroups);
 
-    var task = new Task(projectId, title, description, priority, type, dueDate, createdBy);
+    var task = new Task(projectId, title, description, priority, type, dueDate, actor.memberId());
     task.setCustomFields(validatedFields);
     if (appliedFieldGroups != null) {
       task.setAppliedFieldGroups(appliedFieldGroups);
@@ -285,7 +269,7 @@ public class TaskService {
     task = taskRepository.save(task);
 
     // Pre-assign at creation (admin/owner only; silently ignore for regular members)
-    boolean isAdminOrOwner = "admin".equals(orgRole) || "owner".equals(orgRole);
+    boolean isAdminOrOwner = "admin".equals(actor.orgRole()) || "owner".equals(actor.orgRole());
     if (assigneeId != null && isAdminOrOwner) {
       if (!projectMemberRepository.existsByProjectIdAndMemberId(projectId, assigneeId)) {
         throw new ResourceNotFoundException("ProjectMember", assigneeId);
@@ -329,8 +313,7 @@ public class TaskService {
       String type,
       LocalDate dueDate,
       UUID assigneeId,
-      UUID memberId,
-      String orgRole) {
+      ActorContext actor) {
     return updateTask(
         taskId,
         title,
@@ -340,8 +323,7 @@ public class TaskService {
         type,
         dueDate,
         assigneeId,
-        memberId,
-        orgRole,
+        actor,
         null,
         null,
         null,
@@ -358,8 +340,7 @@ public class TaskService {
       String type,
       LocalDate dueDate,
       UUID assigneeId,
-      UUID memberId,
-      String orgRole,
+      ActorContext actor,
       Map<String, Object> customFields,
       List<UUID> appliedFieldGroups) {
     return updateTask(
@@ -371,8 +352,7 @@ public class TaskService {
         type,
         dueDate,
         assigneeId,
-        memberId,
-        orgRole,
+        actor,
         customFields,
         appliedFieldGroups,
         null,
@@ -389,8 +369,7 @@ public class TaskService {
       String type,
       LocalDate dueDate,
       UUID assigneeId,
-      UUID memberId,
-      String orgRole,
+      ActorContext actor,
       Map<String, Object> customFields,
       List<UUID> appliedFieldGroups,
       String recurrenceRule,
@@ -400,10 +379,10 @@ public class TaskService {
             .findById(taskId)
             .orElseThrow(() -> new ResourceNotFoundException("Task", taskId));
 
-    var access = projectAccessService.requireViewAccess(task.getProjectId(), memberId, orgRole);
+    var access = projectAccessService.requireViewAccess(task.getProjectId(), actor);
 
     // Lead/admin/owner can update any task; contributors can only update their own assigned tasks
-    if (!access.canEdit() && !memberId.equals(task.getAssigneeId())) {
+    if (!access.canEdit() && !actor.memberId().equals(task.getAssigneeId())) {
       throw new ForbiddenException(
           "Cannot update task", "You do not have permission to update task " + taskId);
     }
@@ -468,7 +447,7 @@ public class TaskService {
         type,
         dueDate,
         assigneeId,
-        memberId,
+        actor.memberId(),
         effectiveRecurrenceRule,
         effectiveRecurrenceEndDate);
     task = taskRepository.save(task);
@@ -529,14 +508,14 @@ public class TaskService {
     String orgId = RequestScopes.requireOrgId();
 
     if (assigneeChanged && assigneeId != null) {
-      String actorName = resolveActorName(memberId);
+      String actorName = resolveActorName(actor.memberId());
       eventPublisher.publishEvent(
           new TaskAssignedEvent(
               "task.assigned",
               "task",
               task.getId(),
               task.getProjectId(),
-              memberId,
+              actor.memberId(),
               actorName,
               tenantId,
               orgId,
@@ -546,14 +525,14 @@ public class TaskService {
               task.getTitle()));
     }
     if (statusChanged) {
-      String actorName = resolveActorName(memberId);
+      String actorName = resolveActorName(actor.memberId());
       eventPublisher.publishEvent(
           new TaskStatusChangedEvent(
               "task.status_changed",
               "task",
               task.getId(),
               task.getProjectId(),
-              memberId,
+              actor.memberId(),
               actorName,
               tenantId,
               orgId,
@@ -582,14 +561,14 @@ public class TaskService {
 
   @Transactional
   public List<FieldDefinitionResponse> setFieldGroups(
-      UUID taskId, List<UUID> appliedFieldGroups, UUID memberId, String orgRole) {
+      UUID taskId, List<UUID> appliedFieldGroups, ActorContext actor) {
     var task =
         taskRepository
             .findById(taskId)
             .orElseThrow(() -> new ResourceNotFoundException("Task", taskId));
-    var access = projectAccessService.requireViewAccess(task.getProjectId(), memberId, orgRole);
+    var access = projectAccessService.requireViewAccess(task.getProjectId(), actor);
 
-    if (!access.canEdit() && !memberId.equals(task.getAssigneeId())) {
+    if (!access.canEdit() && !actor.memberId().equals(task.getAssigneeId())) {
       throw new ForbiddenException(
           "Cannot update task", "You do not have permission to update task " + taskId);
     }
@@ -631,13 +610,13 @@ public class TaskService {
   }
 
   @Transactional
-  public void deleteTask(UUID taskId, UUID memberId, String orgRole) {
+  public void deleteTask(UUID taskId, ActorContext actor) {
     var task =
         taskRepository
             .findById(taskId)
             .orElseThrow(() -> new ResourceNotFoundException("Task", taskId));
 
-    var access = projectAccessService.requireViewAccess(task.getProjectId(), memberId, orgRole);
+    var access = projectAccessService.requireViewAccess(task.getProjectId(), actor);
 
     // Only lead/admin/owner can delete tasks
     if (!access.canEdit()) {
@@ -675,16 +654,17 @@ public class TaskService {
   }
 
   @Transactional
-  public Task claimTask(UUID taskId, UUID memberId, String orgRole) {
+  public Task claimTask(UUID taskId, ActorContext actor) {
     var task =
         taskRepository
             .findById(taskId)
             .orElseThrow(() -> new ResourceNotFoundException("Task", taskId));
 
-    projectAccessService.requireViewAccess(task.getProjectId(), memberId, orgRole);
+    projectAccessService.requireViewAccess(task.getProjectId(), actor);
 
     // Verify claimant is a project member
-    if (!projectMemberRepository.existsByProjectIdAndMemberId(task.getProjectId(), memberId)) {
+    if (!projectMemberRepository.existsByProjectIdAndMemberId(
+        task.getProjectId(), actor.memberId())) {
       throw new ResourceNotFoundException("Task", taskId);
     }
 
@@ -693,9 +673,9 @@ public class TaskService {
           "Cannot claim task", "Task is already assigned to another member");
     }
 
-    task.claim(memberId);
+    task.claim(actor.memberId());
     task = taskRepository.save(task);
-    log.info("Task {} claimed by member {}", taskId, memberId);
+    log.info("Task {} claimed by member {}", taskId, actor.memberId());
 
     auditService.log(
         AuditEventBuilder.builder()
@@ -705,11 +685,11 @@ public class TaskService {
             .details(
                 Map.of(
                     "title", task.getTitle(),
-                    "assignee_id", memberId.toString(),
+                    "assignee_id", actor.memberId().toString(),
                     "project_id", task.getProjectId().toString()))
             .build());
 
-    String actorName = resolveActorName(memberId);
+    String actorName = resolveActorName(actor.memberId());
     String tenantId = RequestScopes.requireTenantId();
     String orgId = RequestScopes.requireOrgId();
     eventPublisher.publishEvent(
@@ -718,7 +698,7 @@ public class TaskService {
             "task",
             task.getId(),
             task.getProjectId(),
-            memberId,
+            actor.memberId(),
             actorName,
             tenantId,
             orgId,
@@ -734,7 +714,7 @@ public class TaskService {
   }
 
   @Transactional
-  public Task releaseTask(UUID taskId, UUID memberId, String orgRole) {
+  public Task releaseTask(UUID taskId, ActorContext actor) {
     var task =
         taskRepository
             .findById(taskId)
@@ -744,10 +724,10 @@ public class TaskService {
       throw new InvalidStateException("Cannot release task", "Task is not currently claimed");
     }
 
-    var access = projectAccessService.requireViewAccess(task.getProjectId(), memberId, orgRole);
+    var access = projectAccessService.requireViewAccess(task.getProjectId(), actor);
 
     // Current assignee or lead/admin/owner can release
-    boolean isAssignee = memberId.equals(task.getAssigneeId());
+    boolean isAssignee = actor.memberId().equals(task.getAssigneeId());
     if (!isAssignee && !access.canEdit()) {
       throw new ForbiddenException(
           "Cannot release task", "Only the current assignee or a lead/admin/owner can release");
@@ -758,7 +738,7 @@ public class TaskService {
 
     task.release();
     task = taskRepository.save(task);
-    log.info("Task {} released by member {}", taskId, memberId);
+    log.info("Task {} released by member {}", taskId, actor.memberId());
 
     auditService.log(
         AuditEventBuilder.builder()
@@ -782,25 +762,25 @@ public class TaskService {
   public record CompleteTaskResult(Task completedTask, Task nextInstance) {}
 
   @Transactional
-  public CompleteTaskResult completeTask(UUID taskId, UUID memberId, String orgRole) {
+  public CompleteTaskResult completeTask(UUID taskId, ActorContext actor) {
     var task =
         taskRepository
             .findById(taskId)
             .orElseThrow(() -> new ResourceNotFoundException("Task", taskId));
 
-    projectAccessService.requireViewAccess(task.getProjectId(), memberId, orgRole);
+    projectAccessService.requireViewAccess(task.getProjectId(), actor);
 
     // Only assignee or admin/owner can complete
-    boolean isAssignee = memberId.equals(task.getAssigneeId());
-    boolean isAdminOrOwner = "admin".equals(orgRole) || "owner".equals(orgRole);
+    boolean isAssignee = actor.memberId().equals(task.getAssigneeId());
+    boolean isAdminOrOwner = "admin".equals(actor.orgRole()) || "owner".equals(actor.orgRole());
     if (!isAssignee && !isAdminOrOwner) {
       throw new ForbiddenException(
           "Cannot complete task", "Only the assignee or an admin/owner can complete this task");
     }
 
-    task.complete(memberId);
+    task.complete(actor.memberId());
     task = taskRepository.save(task);
-    log.info("Task {} completed by member {}", taskId, memberId);
+    log.info("Task {} completed by member {}", taskId, actor.memberId());
 
     auditService.log(
         AuditEventBuilder.builder()
@@ -811,10 +791,10 @@ public class TaskService {
                 Map.of(
                     "title", task.getTitle(),
                     "project_id", task.getProjectId().toString(),
-                    "completed_by", memberId.toString()))
+                    "completed_by", actor.memberId().toString()))
             .build());
 
-    String actorName = resolveActorName(memberId);
+    String actorName = resolveActorName(actor.memberId());
     String tenantId = RequestScopes.requireTenantId();
     String orgId = RequestScopes.requireOrgId();
     eventPublisher.publishEvent(
@@ -823,13 +803,13 @@ public class TaskService {
             "task",
             task.getId(),
             task.getProjectId(),
-            memberId,
+            actor.memberId(),
             actorName,
             tenantId,
             orgId,
             Instant.now(),
             Map.of("title", task.getTitle()),
-            memberId,
+            actor.memberId(),
             task.getTitle()));
 
     publishPortalTaskEventIfLinked(task, PortalTaskUpdatedEvent::new);
@@ -837,7 +817,8 @@ public class TaskService {
     // --- Recurrence auto-creation ---
     Task nextInstance = null;
     if (task.isRecurring()) {
-      nextInstance = createRecurringNextInstance(task, memberId, actorName, tenantId, orgId);
+      nextInstance =
+          createRecurringNextInstance(task, actor.memberId(), actorName, tenantId, orgId);
     }
 
     return new CompleteTaskResult(task, nextInstance);
@@ -938,23 +919,23 @@ public class TaskService {
   }
 
   @Transactional
-  public Task cancelTask(UUID taskId, UUID memberId, String orgRole) {
+  public Task cancelTask(UUID taskId, ActorContext actor) {
     var task =
         taskRepository
             .findById(taskId)
             .orElseThrow(() -> new ResourceNotFoundException("Task", taskId));
 
-    projectAccessService.requireViewAccess(task.getProjectId(), memberId, orgRole);
+    projectAccessService.requireViewAccess(task.getProjectId(), actor);
 
     // Only admin/owner can cancel
-    boolean isAdminOrOwner = "admin".equals(orgRole) || "owner".equals(orgRole);
+    boolean isAdminOrOwner = "admin".equals(actor.orgRole()) || "owner".equals(actor.orgRole());
     if (!isAdminOrOwner) {
       throw new ForbiddenException("Cannot cancel task", "Only an admin or owner can cancel tasks");
     }
 
-    task.cancel(memberId);
+    task.cancel(actor.memberId());
     task = taskRepository.save(task);
-    log.info("Task {} cancelled by member {}", taskId, memberId);
+    log.info("Task {} cancelled by member {}", taskId, actor.memberId());
 
     auditService.log(
         AuditEventBuilder.builder()
@@ -965,10 +946,10 @@ public class TaskService {
                 Map.of(
                     "title", task.getTitle(),
                     "project_id", task.getProjectId().toString(),
-                    "cancelled_by", memberId.toString()))
+                    "cancelled_by", actor.memberId().toString()))
             .build());
 
-    String actorName = resolveActorName(memberId);
+    String actorName = resolveActorName(actor.memberId());
     String tenantId = RequestScopes.requireTenantId();
     String orgId = RequestScopes.requireOrgId();
     eventPublisher.publishEvent(
@@ -977,13 +958,13 @@ public class TaskService {
             "task",
             task.getId(),
             task.getProjectId(),
-            memberId,
+            actor.memberId(),
             actorName,
             tenantId,
             orgId,
             Instant.now(),
             Map.of("title", task.getTitle()),
-            memberId,
+            actor.memberId(),
             task.getAssigneeId(),
             task.getTitle()));
 
@@ -996,17 +977,17 @@ public class TaskService {
   }
 
   @Transactional
-  public Task reopenTask(UUID taskId, UUID memberId, String orgRole) {
+  public Task reopenTask(UUID taskId, ActorContext actor) {
     var task =
         taskRepository
             .findById(taskId)
             .orElseThrow(() -> new ResourceNotFoundException("Task", taskId));
 
-    projectAccessService.requireViewAccess(task.getProjectId(), memberId, orgRole);
+    projectAccessService.requireViewAccess(task.getProjectId(), actor);
 
     // Admin/owner or original assignee can reopen
-    boolean isAdminOrOwner = "admin".equals(orgRole) || "owner".equals(orgRole);
-    boolean isAssignee = memberId.equals(task.getAssigneeId());
+    boolean isAdminOrOwner = "admin".equals(actor.orgRole()) || "owner".equals(actor.orgRole());
+    boolean isAssignee = actor.memberId().equals(task.getAssigneeId());
     if (!isAdminOrOwner && !isAssignee) {
       throw new ForbiddenException(
           "Cannot reopen task", "Only an admin/owner or the assignee can reopen this task");
@@ -1016,7 +997,7 @@ public class TaskService {
 
     task.reopen();
     task = taskRepository.save(task);
-    log.info("Task {} reopened by member {}", taskId, memberId);
+    log.info("Task {} reopened by member {}", taskId, actor.memberId());
 
     auditService.log(
         AuditEventBuilder.builder()
@@ -1027,11 +1008,11 @@ public class TaskService {
                 Map.of(
                     "title", task.getTitle(),
                     "project_id", task.getProjectId().toString(),
-                    "reopened_by", memberId.toString(),
+                    "reopened_by", actor.memberId().toString(),
                     "previous_status", previousStatus))
             .build());
 
-    String actorName = resolveActorName(memberId);
+    String actorName = resolveActorName(actor.memberId());
     String tenantId = RequestScopes.requireTenantId();
     String orgId = RequestScopes.requireOrgId();
     eventPublisher.publishEvent(
@@ -1040,13 +1021,13 @@ public class TaskService {
             "task",
             task.getId(),
             task.getProjectId(),
-            memberId,
+            actor.memberId(),
             actorName,
             tenantId,
             orgId,
             Instant.now(),
             Map.of("title", task.getTitle()),
-            memberId,
+            actor.memberId(),
             task.getTitle(),
             previousStatus));
 

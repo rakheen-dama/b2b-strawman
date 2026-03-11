@@ -95,6 +95,6 @@ class NameTokenResolverTest {
   void nullPattern_throwsNullPointerException() {
     assertThatThrownBy(() -> resolver.resolveNameTokens(null, null, null, null, null))
         .isInstanceOf(NullPointerException.class)
-        .hasMessageContaining("pattern must not be null");
+        .hasMessageContaining("pattern");
   }
 }

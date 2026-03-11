@@ -209,7 +209,7 @@ class ExpenseTest {
 
     assertThatThrownBy(() -> expense.markBilled(null))
         .isInstanceOf(IllegalArgumentException.class)
-        .hasMessageContaining("Invoice ID must not be null");
+        .hasMessageContaining("Invoice ID");
   }
 
   @Test

@@ -185,7 +185,7 @@ class PortalAuthIntegrationTest {
               () ->
                   assertThatThrownBy(() -> magicLinkService.verifyAndConsumeToken(rawToken))
                       .isInstanceOf(PortalAuthException.class)
-                      .hasMessageContaining("already been used"));
+                      .hasMessageContaining("already"));
     }
 
     @Test

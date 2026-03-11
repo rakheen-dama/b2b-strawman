@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberService;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
@@ -119,8 +120,7 @@ class CalendarControllerTest {
             "HIGH",
             "GENERAL",
             LocalDate.now().plusDays(5),
-            adminMemberId,
-            "admin");
+            new ActorContext(adminMemberId, "admin"));
     taskService.updateTask(
         task1.getId(),
         "Task Alpha",
@@ -130,8 +130,7 @@ class CalendarControllerTest {
         "GENERAL",
         LocalDate.now().plusDays(5),
         member1Id,
-        adminMemberId,
-        "admin");
+        new ActorContext(adminMemberId, "admin"));
 
     // Task 2: in project 2, due in 15 days, assigned to member2
     var task2 =
@@ -142,8 +141,7 @@ class CalendarControllerTest {
             "MEDIUM",
             "GENERAL",
             LocalDate.now().plusDays(15),
-            adminMemberId,
-            "admin");
+            new ActorContext(adminMemberId, "admin"));
     taskService.updateTask(
         task2.getId(),
         "Task Beta",
@@ -153,8 +151,7 @@ class CalendarControllerTest {
         "GENERAL",
         LocalDate.now().plusDays(15),
         member2Id,
-        adminMemberId,
-        "admin");
+        new ActorContext(adminMemberId, "admin"));
 
     // Task 3: in project 1, overdue (5 days ago), assigned to member1
     var task3 =
@@ -165,8 +162,7 @@ class CalendarControllerTest {
             "URGENT",
             "GENERAL",
             LocalDate.now().minusDays(5),
-            adminMemberId,
-            "admin");
+            new ActorContext(adminMemberId, "admin"));
     taskService.updateTask(
         task3.getId(),
         "Overdue Task",
@@ -176,8 +172,7 @@ class CalendarControllerTest {
         "GENERAL",
         LocalDate.now().minusDays(5),
         member1Id,
-        adminMemberId,
-        "admin");
+        new ActorContext(adminMemberId, "admin"));
 
     // Task 4: in project 1, DONE (should be excluded)
     var task4 =
@@ -188,8 +183,7 @@ class CalendarControllerTest {
             "LOW",
             "GENERAL",
             LocalDate.now().plusDays(3),
-            adminMemberId,
-            "admin");
+            new ActorContext(adminMemberId, "admin"));
     taskService.updateTask(
         task4.getId(),
         "Done Task",
@@ -199,8 +193,7 @@ class CalendarControllerTest {
         "GENERAL",
         LocalDate.now().plusDays(3),
         member1Id,
-        adminMemberId,
-        "admin");
+        new ActorContext(adminMemberId, "admin"));
     taskService.updateTask(
         task4.getId(),
         "Done Task",
@@ -210,8 +203,7 @@ class CalendarControllerTest {
         "GENERAL",
         LocalDate.now().plusDays(3),
         member1Id,
-        adminMemberId,
-        "admin");
+        new ActorContext(adminMemberId, "admin"));
   }
 
   @Test

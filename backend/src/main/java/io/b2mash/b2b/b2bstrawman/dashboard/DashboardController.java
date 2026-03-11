@@ -10,6 +10,7 @@ import io.b2mash.b2b.b2bstrawman.dashboard.dto.TaskSummary;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.TeamWorkloadEntry;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import java.time.LocalDate;
 import java.util.List;
@@ -44,11 +45,12 @@ public class DashboardController {
   @GetMapping("/api/projects/{projectId}/health")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<ProjectHealthDetail> getProjectHealth(@PathVariable UUID projectId) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
     String tenantId = RequestScopes.TENANT_ID.get();
 
-    projectAccessService.requireViewAccess(projectId, memberId, orgRole);
+    projectAccessService.requireViewAccess(projectId, actor);
 
     var health = dashboardService.getProjectHealth(projectId, tenantId);
     return ResponseEntity.ok(health);
@@ -60,11 +62,12 @@ public class DashboardController {
   @GetMapping("/api/projects/{projectId}/task-summary")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<TaskSummary> getTaskSummary(@PathVariable UUID projectId) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
     String tenantId = RequestScopes.TENANT_ID.get();
 
-    projectAccessService.requireViewAccess(projectId, memberId, orgRole);
+    projectAccessService.requireViewAccess(projectId, actor);
 
     var summary = dashboardService.getTaskSummary(projectId, tenantId);
     return ResponseEntity.ok(summary);
@@ -85,11 +88,12 @@ public class DashboardController {
           "Invalid Date Range", "'from' date must not be after 'to' date");
     }
 
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
     String tenantId = RequestScopes.TENANT_ID.get();
 
-    projectAccessService.requireViewAccess(projectId, memberId, orgRole);
+    projectAccessService.requireViewAccess(projectId, actor);
 
     var hours = dashboardService.getProjectMemberHours(projectId, tenantId, from, to);
     return ResponseEntity.ok(hours);
@@ -126,10 +130,11 @@ public class DashboardController {
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<ProjectHealth>> getProjectHealthList() {
     String tenantId = RequestScopes.TENANT_ID.get();
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
 
-    var healthList = dashboardService.getProjectHealthList(tenantId, memberId, orgRole);
+    var healthList = dashboardService.getProjectHealthList(tenantId, actor);
     return ResponseEntity.ok(healthList);
   }
 
@@ -148,10 +153,11 @@ public class DashboardController {
     }
 
     String tenantId = RequestScopes.TENANT_ID.get();
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
 
-    var workload = dashboardService.getTeamWorkload(tenantId, memberId, orgRole, from, to);
+    var workload = dashboardService.getTeamWorkload(tenantId, actor, from, to);
     return ResponseEntity.ok(workload);
   }
 
@@ -166,10 +172,11 @@ public class DashboardController {
     limit = Math.max(1, Math.min(50, limit));
 
     String tenantId = RequestScopes.TENANT_ID.get();
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
 
-    var activity = dashboardService.getCrossProjectActivity(tenantId, memberId, orgRole, limit);
+    var activity = dashboardService.getCrossProjectActivity(tenantId, actor, limit);
     return ResponseEntity.ok(activity);
   }
 

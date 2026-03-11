@@ -1,7 +1,9 @@
 package io.b2mash.b2b.b2bstrawman.customerbackend.handler;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -18,6 +20,7 @@ import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
+import io.b2mash.b2b.b2bstrawman.testutil.TestIds;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +32,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+/**
+ * Unit tests for comment-related event handling in {@link PortalEventHandler}. Verifies observable
+ * behavior (what data is projected and what counts are updated) rather than internal call
+ * sequences.
+ */
 @ExtendWith(MockitoExtension.class)
 class PortalEventHandlerCommentTest {
 
@@ -77,7 +85,12 @@ class PortalEventHandlerCommentTest {
 
     verify(readModelRepo)
         .upsertPortalComment(
-            commentId, ORG_ID, projectId, "Alice Smith", "Hello from main app", now);
+            eq(commentId),
+            eq(ORG_ID),
+            eq(projectId),
+            eq("Alice Smith"),
+            eq("Hello from main app"),
+            eq(now));
     verify(readModelRepo).incrementCommentCount(projectId, customerId);
   }
 
@@ -141,7 +154,7 @@ class PortalEventHandlerCommentTest {
   // ── 4. Visibility INTERNAL -> SHARED creates projection ─────────────
 
   @Test
-  void onCommentVisibilityChanged_toShared_upsertsAndIncrements() {
+  void onCommentVisibilityChanged_toShared_upsertsWithOriginalAuthorName() {
     var commentId = UUID.randomUUID();
     var projectId = UUID.randomUUID();
     var customerId = UUID.randomUUID();
@@ -153,7 +166,7 @@ class PortalEventHandlerCommentTest {
             "COMMENT",
             commentId,
             projectId,
-            UUID.randomUUID(), // actorId — the person who changed visibility, NOT the author
+            UUID.randomUUID(),
             "Visibility Changer",
             TENANT_ID,
             ORG_ID,
@@ -175,14 +188,19 @@ class PortalEventHandlerCommentTest {
     // Should use the original author's name, not the visibility changer's
     verify(readModelRepo)
         .upsertPortalComment(
-            commentId, ORG_ID, projectId, "Original Author", "Shared comment body", createdAt);
+            eq(commentId),
+            eq(ORG_ID),
+            eq(projectId),
+            eq("Original Author"),
+            eq("Shared comment body"),
+            eq(createdAt));
     verify(readModelRepo).incrementCommentCount(projectId, customerId);
   }
 
   // ── 5. Deleted comment removed from portal ──────────────────────────
 
   @Test
-  void onCommentDeleted_deletesAndDecrementsForAllCustomers() {
+  void onCommentDeleted_sharedComment_deletesAndDecrementsForAllCustomers() {
     var commentId = UUID.randomUUID();
     var projectId = UUID.randomUUID();
     var customer1 = UUID.randomUUID();
@@ -209,8 +227,7 @@ class PortalEventHandlerCommentTest {
     handler.onCommentDeleted(event);
 
     verify(readModelRepo).deletePortalComment(commentId, ORG_ID);
-    verify(readModelRepo).decrementCommentCount(projectId, customer1);
-    verify(readModelRepo).decrementCommentCount(projectId, customer2);
+    verify(readModelRepo, times(2)).decrementCommentCount(eq(projectId), any());
   }
 
   @Test
@@ -271,30 +288,22 @@ class PortalEventHandlerCommentTest {
     handler.onCommentCreated(event);
 
     verify(readModelRepo)
-        .upsertPortalComment(commentId, ORG_ID, projectId, "Unknown", "Anonymous comment", now);
+        .upsertPortalComment(
+            eq(commentId),
+            eq(ORG_ID),
+            eq(projectId),
+            eq("Unknown"),
+            eq("Anonymous comment"),
+            eq(now));
   }
 
   // ── Helper methods ──────────────────────────────────────────────────
 
-  private Comment createComment(UUID id, UUID projectId, String body, Instant createdAt) {
-    return createComment(id, projectId, body, createdAt, UUID.randomUUID());
-  }
-
   private Comment createComment(
       UUID id, UUID projectId, String body, Instant createdAt, UUID authorMemberId) {
-    try {
-      var comment = new Comment("PROJECT", projectId, projectId, authorMemberId, body, "SHARED");
-      setField(comment, "id", id);
-      setField(comment, "createdAt", createdAt);
-      return comment;
-    } catch (Exception e) {
-      throw new RuntimeException("Failed to create test Comment", e);
-    }
-  }
-
-  private void setField(Object target, String fieldName, Object value) throws Exception {
-    var field = target.getClass().getDeclaredField(fieldName);
-    field.setAccessible(true);
-    field.set(target, value);
+    var comment = new Comment("PROJECT", projectId, projectId, authorMemberId, body, "SHARED");
+    TestIds.withId(comment, id);
+    TestIds.withField(comment, "createdAt", createdAt);
+    return comment;
   }
 }

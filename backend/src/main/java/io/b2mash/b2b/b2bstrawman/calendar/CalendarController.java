@@ -1,7 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.calendar;
 
 import io.b2mash.b2b.b2bstrawman.calendar.CalendarService.CalendarResponse;
-import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import java.time.LocalDate;
 import java.util.UUID;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -31,11 +31,9 @@ public class CalendarController {
       @RequestParam(required = false) String type,
       @RequestParam(required = false) UUID assigneeId,
       @RequestParam(required = false, defaultValue = "false") boolean overdue) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
     var response =
-        calendarService.getCalendarItems(
-            memberId, orgRole, from, to, projectId, type, assigneeId, overdue);
+        calendarService.getCalendarItems(actor, from, to, projectId, type, assigneeId, overdue);
     return ResponseEntity.ok(response);
   }
 }

@@ -5,6 +5,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
 import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import java.time.Instant;
 import java.util.Locale;
 import java.util.Map;
@@ -52,21 +53,15 @@ public class ActivityService {
    *     DB)
    * @param since optional timestamp filter -- only events after this instant
    * @param pageable pagination parameters
-   * @param memberId the calling member's ID for access control
-   * @param orgRole the calling member's org role for access control
+   * @param actor the authenticated actor for access control
    * @return a page of formatted activity items ordered by occurredAt DESC
    */
   @Transactional(readOnly = true)
   public Page<ActivityItem> getProjectActivity(
-      UUID projectId,
-      String entityType,
-      Instant since,
-      Pageable pageable,
-      UUID memberId,
-      String orgRole) {
+      UUID projectId, String entityType, Instant since, Pageable pageable, ActorContext actor) {
 
     // 1. Verify project access
-    projectAccessService.requireViewAccess(projectId, memberId, orgRole);
+    projectAccessService.requireViewAccess(projectId, actor);
 
     // 2. Convert entityType to lowercase for DB query (API accepts uppercase, DB stores lowercase)
     String normalizedEntityType = entityType != null ? entityType.toLowerCase(Locale.ROOT) : null;

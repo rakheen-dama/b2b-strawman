@@ -10,6 +10,7 @@ import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.billingrate.BillingRateService;
 import io.b2mash.b2b.b2bstrawman.costrate.CostRateService;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
@@ -115,8 +116,7 @@ class ProjectProfitabilityTest {
                       "MEDIUM",
                       "TASK",
                       null,
-                      memberIdOwner,
-                      "owner");
+                      new ActorContext(memberIdOwner, "owner"));
               taskId = task.getId();
 
               // Create billing rate: $100/hr USD (member default)
@@ -128,8 +128,7 @@ class ProjectProfitabilityTest {
                   new BigDecimal("100.00"),
                   LocalDate.of(2024, 1, 1),
                   null,
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
 
               // Create cost rate: $50/hr USD for owner
               costRateService.createCostRate(
@@ -138,8 +137,7 @@ class ProjectProfitabilityTest {
                   new BigDecimal("50.00"),
                   LocalDate.of(2024, 1, 1),
                   null,
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
 
               // Entry 1: 120 min (2 hours), billable, 2025-01-15
               timeEntryService.createTimeEntry(
@@ -149,8 +147,7 @@ class ProjectProfitabilityTest {
                   true,
                   null,
                   "Billable work",
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
 
               // Entry 2: 60 min (1 hour), non-billable, 2025-01-16
               timeEntryService.createTimeEntry(
@@ -160,8 +157,7 @@ class ProjectProfitabilityTest {
                   false,
                   null,
                   "Non-billable work",
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
 
               // Entry 3: 30 min (0.5 hours), billable, 2025-02-10
               timeEntryService.createTimeEntry(
@@ -171,8 +167,7 @@ class ProjectProfitabilityTest {
                   true,
                   null,
                   "More billable work",
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
             });
     // Billable hours: 2.5 (120 + 30 = 150 min / 60)
     // Non-billable hours: 1.0 (60 min / 60)

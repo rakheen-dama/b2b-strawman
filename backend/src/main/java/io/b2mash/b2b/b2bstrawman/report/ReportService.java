@@ -9,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.report.ReportController.CurrencyBreakdown;
@@ -87,10 +88,9 @@ public class ReportService {
       UUID projectId,
       LocalDate from,
       LocalDate to,
-      UUID memberId,
-      String orgRole,
+      ActorContext actor,
       boolean includeProjections) {
-    projectAccessService.requireViewAccess(projectId, memberId, orgRole);
+    projectAccessService.requireViewAccess(projectId, actor);
 
     var project =
         projectRepository
@@ -122,10 +122,9 @@ public class ReportService {
       UUID customerId,
       LocalDate from,
       LocalDate to,
-      UUID memberId,
-      String orgRole,
+      ActorContext actor,
       boolean includeProjections) {
-    requireAdminOrOwner(orgRole);
+    requireAdminOrOwner(actor.orgRole());
 
     var customer =
         customerRepository
@@ -237,10 +236,10 @@ public class ReportService {
       LocalDate from,
       LocalDate to,
       UUID customerId,
-      UUID memberId,
-      String orgRole,
+      ActorContext actor,
       boolean includeProjections) {
-    requireAdminOrOwner(orgRole, "Org profitability is only accessible to admins and owners");
+    requireAdminOrOwner(
+        actor.orgRole(), "Org profitability is only accessible to admins and owners");
 
     var revenueList = reportRepository.getOrgProjectRevenue(from, to, customerId);
     var costList = reportRepository.getOrgProjectCost(from, to, customerId);

@@ -16,6 +16,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectLifecycleGuard;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
@@ -93,14 +94,13 @@ public class TimeEntryService {
       boolean billable,
       Integer rateCents,
       String description,
-      UUID memberId,
-      String orgRole) {
+      ActorContext actor) {
     var task =
         taskRepository
             .findById(taskId)
             .orElseThrow(() -> new ResourceNotFoundException("Task", taskId));
 
-    projectAccessService.requireViewAccess(task.getProjectId(), memberId, orgRole);
+    projectAccessService.requireViewAccess(task.getProjectId(), actor);
 
     // Check project is not archived
     projectLifecycleGuard.requireNotReadOnly(task.getProjectId());
@@ -127,10 +127,11 @@ public class TimeEntryService {
     }
 
     var entry =
-        new TimeEntry(taskId, memberId, date, durationMinutes, billable, rateCents, description);
+        new TimeEntry(
+            taskId, actor.memberId(), date, durationMinutes, billable, rateCents, description);
 
     // Snapshot billing rate (ADR-040)
-    var billingRate = billingRateService.resolveRate(memberId, task.getProjectId(), date);
+    var billingRate = billingRateService.resolveRate(actor.memberId(), task.getProjectId(), date);
     billingRate.ifPresent(r -> entry.snapshotBillingRate(r.hourlyRate(), r.currency()));
 
     // Determine rate warning for billable entries without a billing rate
@@ -141,11 +142,12 @@ public class TimeEntryService {
     }
 
     // Snapshot cost rate
-    var costRate = costRateService.resolveCostRate(memberId, date);
+    var costRate = costRateService.resolveCostRate(actor.memberId(), date);
     costRate.ifPresent(r -> entry.snapshotCostRate(r.hourlyCost(), r.currency()));
 
     var saved = timeEntryRepository.save(entry);
-    log.info("Created time entry {} for task {} by member {}", saved.getId(), taskId, memberId);
+    log.info(
+        "Created time entry {} for task {} by member {}", saved.getId(), taskId, actor.memberId());
 
     var auditDetails = new LinkedHashMap<String, Object>();
     auditDetails.put("task_id", taskId.toString());
@@ -170,10 +172,11 @@ public class TimeEntryService {
             .build());
 
     // Check budget thresholds after time entry creation
-    var actorName = memberNameResolver.resolveName(memberId);
+    var actorName = memberNameResolver.resolveName(actor.memberId());
     var tenantId = RequestScopes.getTenantIdOrNull();
     var orgId = RequestScopes.getOrgIdOrNull();
-    budgetCheckService.checkAndAlert(task.getProjectId(), memberId, actorName, tenantId, orgId);
+    budgetCheckService.checkAndAlert(
+        task.getProjectId(), actor.memberId(), actorName, tenantId, orgId);
 
     publishTimeEntryChangedEvent(saved.getId(), task.getProjectId(), "CREATED");
 
@@ -182,13 +185,13 @@ public class TimeEntryService {
 
   @Transactional(readOnly = true)
   public List<TimeEntry> listTimeEntriesByTask(
-      UUID taskId, UUID memberId, String orgRole, Boolean billable, BillingStatus billingStatus) {
+      UUID taskId, ActorContext actor, Boolean billable, BillingStatus billingStatus) {
     var task =
         taskRepository
             .findById(taskId)
             .orElseThrow(() -> new ResourceNotFoundException("Task", taskId));
 
-    projectAccessService.requireViewAccess(task.getProjectId(), memberId, orgRole);
+    projectAccessService.requireViewAccess(task.getProjectId(), actor);
 
     if (billingStatus != null) {
       return timeEntryRepository.findByTaskIdAndBillingStatus(taskId, billingStatus.name());
@@ -201,7 +204,7 @@ public class TimeEntryService {
 
   @Transactional
   public TimeEntry toggleBillable(
-      UUID projectId, UUID timeEntryId, boolean billable, UUID memberId, String orgRole) {
+      UUID projectId, UUID timeEntryId, boolean billable, ActorContext actor) {
     var entry =
         timeEntryRepository
             .findById(timeEntryId)
@@ -222,7 +225,7 @@ public class TimeEntryService {
           "Time entry is billed", "Time entry is part of an invoice. Void the invoice to unlock.");
     }
 
-    requireEditPermission(entry, memberId, orgRole);
+    requireEditPermission(entry, actor);
 
     boolean oldBillable = entry.isBillable();
     entry.setBillable(billable);
@@ -230,7 +233,10 @@ public class TimeEntryService {
 
     var saved = timeEntryRepository.save(entry);
     log.info(
-        "Toggled billable to {} on time entry {} by member {}", billable, timeEntryId, memberId);
+        "Toggled billable to {} on time entry {} by member {}",
+        billable,
+        timeEntryId,
+        actor.memberId());
 
     auditService.log(
         AuditEventBuilder.builder()
@@ -241,10 +247,11 @@ public class TimeEntryService {
             .build());
 
     // Check budget thresholds after billable toggle (affects budget consumption)
-    var actorName = memberNameResolver.resolveName(memberId);
+    var actorName = memberNameResolver.resolveName(actor.memberId());
     var tenantId = RequestScopes.getTenantIdOrNull();
     var orgId = RequestScopes.getOrgIdOrNull();
-    budgetCheckService.checkAndAlert(task.getProjectId(), memberId, actorName, tenantId, orgId);
+    budgetCheckService.checkAndAlert(
+        task.getProjectId(), actor.memberId(), actorName, tenantId, orgId);
 
     publishTimeEntryChangedEvent(saved.getId(), task.getProjectId(), "UPDATED");
 
@@ -259,8 +266,7 @@ public class TimeEntryService {
       Boolean billable,
       Integer rateCents,
       String description,
-      UUID memberId,
-      String orgRole) {
+      ActorContext actor) {
     var entry =
         timeEntryRepository
             .findById(timeEntryId)
@@ -272,7 +278,7 @@ public class TimeEntryService {
           "Time entry is billed", "Time entry is part of an invoice. Void the invoice to unlock.");
     }
 
-    requireEditPermission(entry, memberId, orgRole);
+    requireEditPermission(entry, actor);
 
     UUID entryTaskId = entry.getTaskId();
     var task =
@@ -341,7 +347,7 @@ public class TimeEntryService {
     entry.setUpdatedAt(Instant.now());
 
     entry = timeEntryRepository.save(entry);
-    log.info("Updated time entry {} by member {}", timeEntryId, memberId);
+    log.info("Updated time entry {} by member {}", timeEntryId, actor.memberId());
 
     // Build delta map -- only include fields that were provided AND actually changed
     var details = new LinkedHashMap<String, Object>();
@@ -414,17 +420,18 @@ public class TimeEntryService {
     boolean durationChanged = durationMinutes != null && oldDurationMinutes != durationMinutes;
     boolean billableChanged = billable != null && !billable.equals(oldBillable);
     if (dateChanged || durationChanged || billableChanged) {
-      var actorName = memberNameResolver.resolveName(memberId);
+      var actorName = memberNameResolver.resolveName(actor.memberId());
       var tenantId = RequestScopes.getTenantIdOrNull();
       var orgId = RequestScopes.getOrgIdOrNull();
-      budgetCheckService.checkAndAlert(task.getProjectId(), memberId, actorName, tenantId, orgId);
+      budgetCheckService.checkAndAlert(
+          task.getProjectId(), actor.memberId(), actorName, tenantId, orgId);
     }
 
     return entry;
   }
 
   @Transactional
-  public void deleteTimeEntry(UUID timeEntryId, UUID memberId, String orgRole) {
+  public void deleteTimeEntry(UUID timeEntryId, ActorContext actor) {
     var entry =
         timeEntryRepository
             .findById(timeEntryId)
@@ -436,7 +443,7 @@ public class TimeEntryService {
           "Time entry is billed", "Time entry is part of an invoice. Void the invoice to unlock.");
     }
 
-    requireEditPermission(entry, memberId, orgRole);
+    requireEditPermission(entry, actor);
 
     var task =
         taskRepository
@@ -444,7 +451,7 @@ public class TimeEntryService {
             .orElseThrow(() -> new ResourceNotFoundException("Task", entry.getTaskId()));
 
     timeEntryRepository.delete(entry);
-    log.info("Deleted time entry {} by member {}", timeEntryId, memberId);
+    log.info("Deleted time entry {} by member {}", timeEntryId, actor.memberId());
 
     auditService.log(
         AuditEventBuilder.builder()
@@ -464,15 +471,15 @@ public class TimeEntryService {
 
   @Transactional(readOnly = true)
   public ProjectTimeSummaryProjection getProjectTimeSummary(
-      UUID projectId, UUID memberId, String orgRole, LocalDate from, LocalDate to) {
-    projectAccessService.requireViewAccess(projectId, memberId, orgRole);
+      UUID projectId, ActorContext actor, LocalDate from, LocalDate to) {
+    projectAccessService.requireViewAccess(projectId, actor);
     return timeEntryRepository.projectTimeSummary(projectId, from, to);
   }
 
   @Transactional(readOnly = true)
   public List<MemberTimeSummaryProjection> getProjectTimeSummaryByMember(
-      UUID projectId, UUID memberId, String orgRole, LocalDate from, LocalDate to) {
-    var access = projectAccessService.requireViewAccess(projectId, memberId, orgRole);
+      UUID projectId, ActorContext actor, LocalDate from, LocalDate to) {
+    var access = projectAccessService.requireViewAccess(projectId, actor);
     if (!access.canEdit()) {
       throw new ForbiddenException(
           "Cannot view member breakdown",
@@ -483,8 +490,8 @@ public class TimeEntryService {
 
   @Transactional(readOnly = true)
   public List<TaskTimeSummaryProjection> getProjectTimeSummaryByTask(
-      UUID projectId, UUID memberId, String orgRole, LocalDate from, LocalDate to) {
-    projectAccessService.requireViewAccess(projectId, memberId, orgRole);
+      UUID projectId, ActorContext actor, LocalDate from, LocalDate to) {
+    projectAccessService.requireViewAccess(projectId, actor);
     return timeEntryRepository.projectTimeSummaryByTask(projectId, from, to);
   }
 
@@ -596,8 +603,8 @@ public class TimeEntryService {
    * always modify their own entries. Otherwise, the caller must have canEdit() access on the
    * entry's project (project lead, org admin, or org owner).
    */
-  private void requireEditPermission(TimeEntry entry, UUID memberId, String orgRole) {
-    if (entry.getMemberId().equals(memberId)) {
+  private void requireEditPermission(TimeEntry entry, ActorContext actor) {
+    if (entry.getMemberId().equals(actor.memberId())) {
       return; // creator can always modify own entries
     }
 
@@ -606,7 +613,7 @@ public class TimeEntryService {
             .findById(entry.getTaskId())
             .orElseThrow(() -> new ResourceNotFoundException("Task", entry.getTaskId()));
 
-    var access = projectAccessService.checkAccess(task.getProjectId(), memberId, orgRole);
+    var access = projectAccessService.checkAccess(task.getProjectId(), actor);
     if (!access.canEdit()) {
       throw new ForbiddenException(
           "Cannot modify time entry",

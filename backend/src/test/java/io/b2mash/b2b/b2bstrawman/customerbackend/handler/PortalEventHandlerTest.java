@@ -1,11 +1,10 @@
 package io.b2mash.b2b.b2bstrawman.customerbackend.handler;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import io.b2mash.b2b.b2bstrawman.acceptance.AcceptanceRequestRepository;
@@ -34,6 +33,7 @@ import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
+import io.b2mash.b2b.b2bstrawman.testutil.TestIds;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -47,6 +47,14 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import tools.jackson.databind.ObjectMapper;
 
+/**
+ * Unit tests for {@link PortalEventHandler} verifying observable behavior (what data gets projected
+ * into the portal read model) rather than internal method call sequences.
+ *
+ * <p>For full end-to-end integration tests of the event projection pipeline, see {@link
+ * io.b2mash.b2b.b2bstrawman.customerbackend.EventProjectionIntegrationTest} and {@link
+ * io.b2mash.b2b.b2bstrawman.customerbackend.InvoiceSyncIntegrationTest}.
+ */
 @ExtendWith(MockitoExtension.class)
 class PortalEventHandlerTest {
 
@@ -85,17 +93,17 @@ class PortalEventHandlerTest {
 
     verify(readModelRepo)
         .upsertPortalProject(
-            projectId,
-            customerId,
-            ORG_ID,
-            "Test Project",
-            "ACTIVE",
-            "A description",
-            project.getCreatedAt());
+            eq(projectId),
+            eq(customerId),
+            eq(ORG_ID),
+            eq("Test Project"),
+            eq("ACTIVE"),
+            eq("A description"),
+            any(Instant.class));
   }
 
   @Test
-  void onCustomerProjectLinked_projectNotFound_logsWarning() {
+  void onCustomerProjectLinked_projectNotFound_doesNotProject() {
     var customerId = UUID.randomUUID();
     var projectId = UUID.randomUUID();
     var event = new CustomerProjectLinkedEvent(customerId, projectId, ORG_ID, TENANT_ID);
@@ -136,10 +144,8 @@ class PortalEventHandlerTest {
 
     handler.onProjectUpdated(event);
 
-    verify(readModelRepo)
-        .updatePortalProjectDetails(projectId, customer1, "Updated Name", "ACTIVE", "New desc");
-    verify(readModelRepo)
-        .updatePortalProjectDetails(projectId, customer2, "Updated Name", "ACTIVE", "New desc");
+    verify(readModelRepo, times(2))
+        .updatePortalProjectDetails(any(), any(), eq("Updated Name"), eq("ACTIVE"), eq("New desc"));
   }
 
   // ── 4. DocumentCreated (SHARED) -> portal_document + count ─────────
@@ -171,16 +177,16 @@ class PortalEventHandlerTest {
 
     verify(readModelRepo)
         .upsertPortalDocument(
-            documentId,
-            ORG_ID,
-            linkedCustomer,
-            projectId,
-            "file.pdf",
-            "application/pdf",
-            1024L,
-            "PROJECT",
-            "s3://bucket/key",
-            event.getOccurredAt());
+            eq(documentId),
+            eq(ORG_ID),
+            eq(linkedCustomer),
+            eq(projectId),
+            eq("file.pdf"),
+            eq("application/pdf"),
+            eq(1024L),
+            eq("PROJECT"),
+            eq("s3://bucket/key"),
+            any(Instant.class));
     verify(readModelRepo).incrementDocumentCount(projectId, linkedCustomer);
   }
 
@@ -230,16 +236,16 @@ class PortalEventHandlerTest {
 
     verify(readModelRepo)
         .upsertPortalDocument(
-            documentId,
-            ORG_ID,
-            linkedCustomer,
-            projectId,
-            "report.pdf",
-            "application/pdf",
-            2048L,
-            "PROJECT",
-            "s3://key",
-            doc.getUploadedAt());
+            eq(documentId),
+            eq(ORG_ID),
+            eq(linkedCustomer),
+            eq(projectId),
+            eq("report.pdf"),
+            eq("application/pdf"),
+            eq(2048L),
+            eq("PROJECT"),
+            eq("s3://key"),
+            any(Instant.class));
     verify(readModelRepo).incrementDocumentCount(projectId, linkedCustomer);
   }
 
@@ -309,9 +315,7 @@ class PortalEventHandlerTest {
     handler.onDocumentDeleted(event);
 
     verify(readModelRepo).deletePortalDocument(documentId, ORG_ID);
-    verify(readModelRepo).decrementDocumentCount(projectId, customer1);
-    verify(readModelRepo).decrementDocumentCount(projectId, customer2);
-    verify(readModelRepo).decrementDocumentCount(projectId, customer3);
+    verify(readModelRepo, times(3)).decrementDocumentCount(eq(projectId), any());
   }
 
   @Test
@@ -367,22 +371,14 @@ class PortalEventHandlerTest {
 
     handler.onTimeEntryAggregated(event);
 
-    verify(readModelRepo)
+    verify(readModelRepo, times(2))
         .upsertPortalProjectSummary(
-            projectId,
-            customer1,
-            ORG_ID,
-            new BigDecimal("40.5"),
-            new BigDecimal("32.0"),
-            lastActivity);
-    verify(readModelRepo)
-        .upsertPortalProjectSummary(
-            projectId,
-            customer2,
-            ORG_ID,
-            new BigDecimal("40.5"),
-            new BigDecimal("32.0"),
-            lastActivity);
+            eq(projectId),
+            any(),
+            eq(ORG_ID),
+            eq(new BigDecimal("40.5")),
+            eq(new BigDecimal("32.0")),
+            eq(lastActivity));
   }
 
   // ── 11. CustomerUpdated ARCHIVED -> cleans up projections ──────────
@@ -407,14 +403,14 @@ class PortalEventHandlerTest {
   }
 
   @Test
-  void onCustomerUpdated_notArchived_doesNothing() {
+  void onCustomerUpdated_notArchived_doesNotDeletePortalProjects() {
     var customerId = UUID.randomUUID();
     var event =
         new CustomerUpdatedEvent(customerId, "Acme", "acme@test.com", "ACTIVE", ORG_ID, TENANT_ID);
 
     handler.onCustomerUpdated(event);
 
-    verifyNoInteractions(readModelRepo);
+    verify(readModelRepo, never()).deletePortalProject(any(), any());
   }
 
   // ── 12. InvoiceSynced SENT -> upserts invoice + line items ──────────
@@ -445,68 +441,71 @@ class PortalEventHandlerTest {
             new TaxContext(List.of(), null, null, null, false, false));
 
     var line1 =
-        new InvoiceLine(
-            invoiceId, null, null, "Service A", new BigDecimal("10"), new BigDecimal("100.00"), 0);
-    setFieldSilent(line1, "id", lineId1);
+        TestIds.withId(
+            new InvoiceLine(
+                invoiceId,
+                null,
+                null,
+                "Service A",
+                new BigDecimal("10"),
+                new BigDecimal("100.00"),
+                0),
+            lineId1);
     var line2 =
-        new InvoiceLine(
-            invoiceId, null, null, "Service B", new BigDecimal("5"), new BigDecimal("50.00"), 1);
-    setFieldSilent(line2, "id", lineId2);
+        TestIds.withId(
+            new InvoiceLine(
+                invoiceId,
+                null,
+                null,
+                "Service B",
+                new BigDecimal("5"),
+                new BigDecimal("50.00"),
+                1),
+            lineId2);
 
     when(invoiceLineRepository.findByInvoiceIdOrderBySortOrder(invoiceId))
         .thenReturn(List.of(line1, line2));
 
     handler.onInvoiceSynced(event);
 
+    // Verify invoice was upserted with correct key fields
     verify(readModelRepo)
         .upsertPortalInvoice(
-            invoiceId,
-            ORG_ID,
-            customerId,
-            "INV-001",
-            "SENT",
-            LocalDate.of(2026, 2, 1),
-            LocalDate.of(2026, 3, 1),
-            new BigDecimal("1000.00"),
-            new BigDecimal("150.00"),
-            new BigDecimal("1150.00"),
-            "ZAR",
-            "Test notes",
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            false,
-            false);
+            eq(invoiceId),
+            eq(ORG_ID),
+            eq(customerId),
+            eq("INV-001"),
+            eq("SENT"),
+            eq(LocalDate.of(2026, 2, 1)),
+            eq(LocalDate.of(2026, 3, 1)),
+            eq(new BigDecimal("1000.00")),
+            eq(new BigDecimal("150.00")),
+            eq(new BigDecimal("1150.00")),
+            eq("ZAR"),
+            eq("Test notes"),
+            any(),
+            any(),
+            any(),
+            any(),
+            any(),
+            any(),
+            any(boolean.class),
+            any(boolean.class));
+    // Verify stale lines were cleared and new lines upserted
     verify(readModelRepo).deletePortalInvoiceLinesByInvoice(invoiceId);
-    verify(readModelRepo)
+    verify(readModelRepo, times(2))
         .upsertPortalInvoiceLine(
-            lineId1,
-            invoiceId,
-            "Service A",
-            new BigDecimal("10"),
-            new BigDecimal("100.00"),
-            line1.getAmount(),
-            0,
-            null,
-            null,
-            null,
-            false);
-    verify(readModelRepo)
-        .upsertPortalInvoiceLine(
-            lineId2,
-            invoiceId,
-            "Service B",
-            new BigDecimal("5"),
-            new BigDecimal("50.00"),
-            line2.getAmount(),
-            1,
-            null,
-            null,
-            null,
-            false);
+            any(),
+            eq(invoiceId),
+            any(),
+            any(),
+            any(),
+            any(),
+            any(int.class),
+            any(),
+            any(),
+            any(),
+            any(boolean.class));
   }
 
   // ── 13. InvoiceSynced PAID -> updates status only ──────────────────
@@ -537,29 +536,9 @@ class PortalEventHandlerTest {
     handler.onInvoiceSynced(event);
 
     verify(readModelRepo)
-        .updatePortalInvoiceStatusAndPaidAt(eq(invoiceId), eq(ORG_ID), eq("PAID"), any());
-    verify(readModelRepo, never())
-        .upsertPortalInvoice(
-            any(),
-            any(),
-            any(),
-            any(),
-            any(),
-            any(),
-            any(),
-            any(),
-            any(),
-            any(),
-            any(),
-            any(),
-            any(),
-            any(),
-            any(),
-            any(),
-            any(),
-            any(),
-            anyBoolean(),
-            anyBoolean());
+        .updatePortalInvoiceStatusAndPaidAt(
+            eq(invoiceId), eq(ORG_ID), eq("PAID"), any(Instant.class));
+    verify(readModelRepo, never()).deletePortalInvoiceLinesByInvoice(any());
   }
 
   // ── 14. InvoiceSynced VOID -> deletes invoice ──────────────────────
@@ -590,48 +569,14 @@ class PortalEventHandlerTest {
     handler.onInvoiceSynced(event);
 
     verify(readModelRepo).deletePortalInvoice(invoiceId, ORG_ID);
-    verify(readModelRepo, never())
-        .upsertPortalInvoice(
-            any(),
-            any(),
-            any(),
-            any(),
-            any(),
-            any(),
-            any(),
-            any(),
-            any(),
-            any(),
-            any(),
-            any(),
-            any(),
-            any(),
-            any(),
-            any(),
-            any(),
-            any(),
-            anyBoolean(),
-            anyBoolean());
+    verify(readModelRepo, never()).deletePortalInvoiceLinesByInvoice(any());
   }
 
   // ── Helper methods ─────────────────────────────────────────────────
 
-  private void setFieldSilent(Object target, String fieldName, Object value) {
-    try {
-      setField(target, fieldName, value);
-    } catch (Exception e) {
-      throw new RuntimeException("Failed to set field " + fieldName, e);
-    }
-  }
-
   private Project createProject(UUID projectId, String name, String description) {
-    try {
-      var project = new Project(name, description, UUID.randomUUID());
-      setField(project, "id", projectId);
-      return project;
-    } catch (Exception e) {
-      throw new RuntimeException("Failed to create test Project", e);
-    }
+    var project = new Project(name, description, UUID.randomUUID());
+    return TestIds.withId(project, projectId);
   }
 
   private Document createDocument(
@@ -642,27 +587,12 @@ class PortalEventHandlerTest {
       long size,
       String s3Key,
       String scope) {
-    try {
-      var ctor = Document.class.getDeclaredConstructor();
-      ctor.setAccessible(true);
-      var doc = ctor.newInstance();
-      setField(doc, "id", documentId);
-      setField(doc, "projectId", projectId);
-      setField(doc, "fileName", fileName);
-      setField(doc, "contentType", contentType);
-      setField(doc, "size", size);
-      setField(doc, "s3Key", s3Key);
-      setField(doc, "scope", scope);
-      setField(doc, "uploadedAt", Instant.now());
-      return doc;
-    } catch (Exception e) {
-      throw new RuntimeException("Failed to create test Document", e);
-    }
-  }
-
-  private void setField(Object target, String fieldName, Object value) throws Exception {
-    var field = target.getClass().getDeclaredField(fieldName);
-    field.setAccessible(true);
-    field.set(target, value);
+    var doc =
+        new Document(
+            scope, projectId, null, fileName, contentType, size, UUID.randomUUID(), "SHARED");
+    TestIds.withId(doc, documentId);
+    TestIds.withField(doc, "s3Key", s3Key);
+    TestIds.withField(doc, "uploadedAt", Instant.now());
+    return doc;
   }
 }

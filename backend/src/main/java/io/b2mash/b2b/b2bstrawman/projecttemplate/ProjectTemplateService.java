@@ -23,6 +23,7 @@ import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMember;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
@@ -383,14 +384,14 @@ public class ProjectTemplateService {
 
   @Transactional
   public ProjectTemplateResponse saveFromProject(
-      UUID projectId, SaveFromProjectRequest request, UUID memberId, String orgRole) {
+      UUID projectId, SaveFromProjectRequest request, ActorContext actor) {
     // 1. Load project
     projectRepository
         .findById(projectId)
         .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
 
     // 2. Permission check: admin/owner always allowed; member must be project lead
-    requireAdminOwnerOrProjectLead(orgRole, projectId, memberId);
+    requireAdminOwnerOrProjectLead(actor.orgRole(), projectId, actor.memberId());
 
     // 3. Create template
     var template =
@@ -401,7 +402,7 @@ public class ProjectTemplateService {
             true,
             "FROM_PROJECT",
             projectId,
-            memberId);
+            actor.memberId());
     template = templateRepository.save(template);
 
     // 4. Copy selected tasks in taskIds list order
@@ -470,7 +471,7 @@ public class ProjectTemplateService {
                     String.valueOf(sortOrder)))
             .build());
 
-    publishCreatedEvent(template, memberId);
+    publishCreatedEvent(template, actor.memberId());
     return buildResponse(template);
   }
 

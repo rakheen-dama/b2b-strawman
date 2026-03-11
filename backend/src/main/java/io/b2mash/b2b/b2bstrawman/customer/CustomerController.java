@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.invoice.InvoiceService;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UnbilledTimeResponse;
 import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import io.b2mash.b2b.b2bstrawman.project.Project;
@@ -249,11 +250,10 @@ public class CustomerController {
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<CustomerProjectResponse> linkProject(
       @PathVariable UUID id, @PathVariable UUID projectId) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    UUID memberId = actor.memberId();
 
-    var link =
-        customerProjectService.linkCustomerToProject(id, projectId, memberId, memberId, orgRole);
+    var link = customerProjectService.linkCustomerToProject(id, projectId, memberId, actor);
     return ResponseEntity.created(URI.create("/api/customers/" + id + "/projects/" + projectId))
         .body(CustomerProjectResponse.from(link));
   }
@@ -261,10 +261,10 @@ public class CustomerController {
   @DeleteMapping("/{id}/projects/{projectId}")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<Void> unlinkProject(@PathVariable UUID id, @PathVariable UUID projectId) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    UUID memberId = actor.memberId();
 
-    customerProjectService.unlinkCustomerFromProject(id, projectId, memberId, orgRole);
+    customerProjectService.unlinkCustomerFromProject(id, projectId, actor);
     return ResponseEntity.noContent().build();
   }
 
@@ -272,9 +272,9 @@ public class CustomerController {
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<LinkedProjectResponse>> listProjectsForCustomer(
       @PathVariable UUID id) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
-    var projects = customerProjectService.listProjectsForCustomer(id, memberId, orgRole);
+    var actor = ActorContext.fromRequestScopes();
+    UUID memberId = actor.memberId();
+    var projects = customerProjectService.listProjectsForCustomer(id, actor);
     return ResponseEntity.ok(projects.stream().map(LinkedProjectResponse::from).toList());
   }
 

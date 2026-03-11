@@ -5,6 +5,7 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.SetFieldGroupsRequest;
 import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
@@ -80,8 +81,9 @@ public class ProjectController {
       @RequestParam(required = false) UUID customerId,
       @RequestParam(required = false) Map<String, String> allParams) {
 
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
 
     // --- View-based filtering (server-side SQL) ---
     if (view != null) {
@@ -90,7 +92,7 @@ public class ProjectController {
       Set<UUID> accessibleIds = null;
       if (!isAdminOrOwner) {
         accessibleIds =
-            projectService.listProjects(memberId, orgRole).stream()
+            projectService.listProjects(actor).stream()
                 .map(pwr -> pwr.project().getId())
                 .collect(Collectors.toSet());
       }
@@ -123,7 +125,7 @@ public class ProjectController {
     }
 
     // --- Fallback: existing in-memory filtering ---
-    var projectsWithRoles = projectService.listProjects(memberId, orgRole);
+    var projectsWithRoles = projectService.listProjects(actor);
 
     // Apply status filter (default: ACTIVE only)
     List<ProjectStatus> statusFilter = parseProjectStatuses(status);
@@ -198,9 +200,10 @@ public class ProjectController {
   @GetMapping("/{id}")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<ProjectResponse> getProject(@PathVariable UUID id) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
-    var pwr = projectService.getProject(id, memberId, orgRole);
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
+    var pwr = projectService.getProject(id, actor);
     var tags = entityTagService.getEntityTags("PROJECT", id);
     var memberNames = resolveNames(List.of(pwr.project()));
     return ResponseEntity.ok(
@@ -230,15 +233,15 @@ public class ProjectController {
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<ProjectResponse> updateProject(
       @PathVariable UUID id, @Valid @RequestBody UpdateProjectRequest request) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
     var pwr =
         projectService.updateProject(
             id,
             request.name(),
             request.description(),
-            memberId,
-            orgRole,
+            actor,
             request.customFields(),
             request.appliedFieldGroups(),
             request.customerId(),
@@ -260,10 +263,11 @@ public class ProjectController {
   @RequiresCapability("PROJECT_MANAGEMENT")
   public ResponseEntity<ProjectResponse> completeProject(
       @PathVariable UUID id, @RequestBody(required = false) CompleteProjectRequest request) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
     boolean ack = request != null && Boolean.TRUE.equals(request.acknowledgeUnbilledTime());
-    var project = projectService.completeProject(id, ack, memberId, orgRole);
+    var project = projectService.completeProject(id, ack, actor);
     var memberNames = resolveNames(List.of(project));
     var tags = entityTagService.getEntityTags("PROJECT", id);
     return ResponseEntity.ok(ProjectResponse.from(project, null, tags, memberNames));
@@ -272,9 +276,10 @@ public class ProjectController {
   @PatchMapping("/{id}/archive")
   @RequiresCapability("PROJECT_MANAGEMENT")
   public ResponseEntity<ProjectResponse> archiveProject(@PathVariable UUID id) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
-    var project = projectService.archiveProject(id, memberId, orgRole);
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
+    var project = projectService.archiveProject(id, actor);
     var memberNames = resolveNames(List.of(project));
     var tags = entityTagService.getEntityTags("PROJECT", id);
     return ResponseEntity.ok(ProjectResponse.from(project, null, tags, memberNames));
@@ -283,9 +288,10 @@ public class ProjectController {
   @PatchMapping("/{id}/reopen")
   @RequiresCapability("PROJECT_MANAGEMENT")
   public ResponseEntity<ProjectResponse> reopenProject(@PathVariable UUID id) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
-    var project = projectService.reopenProject(id, memberId, orgRole);
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
+    var project = projectService.reopenProject(id, actor);
     var memberNames = resolveNames(List.of(project));
     var tags = entityTagService.getEntityTags("PROJECT", id);
     return ResponseEntity.ok(ProjectResponse.from(project, null, tags, memberNames));
@@ -295,10 +301,10 @@ public class ProjectController {
   @RequiresCapability("PROJECT_MANAGEMENT")
   public ResponseEntity<List<FieldDefinitionResponse>> setFieldGroups(
       @PathVariable UUID id, @Valid @RequestBody SetFieldGroupsRequest request) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
-    var fieldDefs =
-        projectService.setFieldGroups(id, request.appliedFieldGroups(), memberId, orgRole);
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
+    var fieldDefs = projectService.setFieldGroups(id, request.appliedFieldGroups(), actor);
     return ResponseEntity.ok(fieldDefs);
   }
 
@@ -306,10 +312,11 @@ public class ProjectController {
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<TagResponse>> setProjectTags(
       @PathVariable UUID id, @Valid @RequestBody SetEntityTagsRequest request) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
     // Verify project access
-    projectService.getProject(id, memberId, orgRole);
+    projectService.getProject(id, actor);
     var tags = entityTagService.setEntityTags("PROJECT", id, request.tagIds());
     return ResponseEntity.ok(tags);
   }
@@ -317,10 +324,11 @@ public class ProjectController {
   @GetMapping("/{id}/tags")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<TagResponse>> getProjectTags(@PathVariable UUID id) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
     // Verify project access
-    projectService.getProject(id, memberId, orgRole);
+    projectService.getProject(id, actor);
     var tags = entityTagService.getEntityTags("PROJECT", id);
     return ResponseEntity.ok(tags);
   }

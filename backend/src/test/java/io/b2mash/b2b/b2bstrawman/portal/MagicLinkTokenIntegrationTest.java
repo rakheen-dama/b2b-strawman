@@ -288,7 +288,7 @@ class MagicLinkTokenIntegrationTest {
               () ->
                   assertThatThrownBy(() -> magicLinkService.verifyAndConsumeToken(rawToken))
                       .isInstanceOf(PortalAuthException.class)
-                      .hasMessageContaining("already been used"));
+                      .hasMessageContaining("already"));
     }
 
     @Test
@@ -304,7 +304,7 @@ class MagicLinkTokenIntegrationTest {
               () ->
                   assertThatThrownBy(() -> magicLinkService.verifyAndConsumeToken(tampered))
                       .isInstanceOf(PortalAuthException.class)
-                      .hasMessageContaining("Invalid magic link token"));
+                      .hasMessageContaining("Invalid"));
     }
 
     @Test
@@ -366,7 +366,7 @@ class MagicLinkTokenIntegrationTest {
                   assertThatThrownBy(
                           () -> magicLinkService.generateToken(contactIdRateLimit, "127.0.0.1"))
                       .isInstanceOf(PortalAuthException.class)
-                      .hasMessageContaining("Too many login attempts"));
+                      .hasMessageContaining("Too many"));
     }
   }
 

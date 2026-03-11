@@ -14,6 +14,7 @@ import io.b2mash.b2b.b2bstrawman.capacity.dto.AllocationDtos.UpdateAllocationReq
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
@@ -109,7 +110,8 @@ class ResourceAllocationServiceTest {
           Project archived =
               projectService.createProject("Archived Project", "desc", memberIdOwner);
           archivedProjectId = archived.getId();
-          projectService.archiveProject(archivedProjectId, memberIdOwner, "owner");
+          projectService.archiveProject(
+              archivedProjectId, new ActorContext(memberIdOwner, "owner"));
 
           var withCapRole =
               orgRoleService.createRole(

@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.projecttemplate;
 
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService;
@@ -88,9 +89,9 @@ public class ProjectTemplateController {
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<ProjectTemplateResponse> saveFromProject(
       @PathVariable UUID projectId, @Valid @RequestBody SaveFromProjectRequest request) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
-    var response = projectTemplateService.saveFromProject(projectId, request, memberId, orgRole);
+    var actor = ActorContext.fromRequestScopes();
+    UUID memberId = actor.memberId();
+    var response = projectTemplateService.saveFromProject(projectId, request, actor);
     return ResponseEntity.created(URI.create("/api/project-templates/" + response.id()))
         .body(response);
   }

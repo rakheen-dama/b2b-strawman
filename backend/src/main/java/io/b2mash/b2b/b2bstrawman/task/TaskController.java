@@ -5,7 +5,7 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.SetFieldGroupsRequest;
 import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
-import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.tag.EntityTagService;
 import io.b2mash.b2b.b2bstrawman.tag.TagFilterUtil;
 import io.b2mash.b2b.b2bstrawman.tag.dto.SetEntityTagsRequest;
@@ -59,8 +59,7 @@ public class TaskController {
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<TaskResponse> createTask(
       @PathVariable UUID projectId, @Valid @RequestBody CreateTaskRequest request) {
-    UUID createdBy = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
 
     var task =
         taskService.createTask(
@@ -70,8 +69,7 @@ public class TaskController {
             request.priority(),
             request.type(),
             request.dueDate(),
-            createdBy,
-            orgRole,
+            actor,
             request.customFields(),
             request.appliedFieldGroups(),
             request.assigneeId(),
@@ -94,8 +92,9 @@ public class TaskController {
       @RequestParam(required = false) String assigneeFilter,
       @RequestParam(required = false) Boolean recurring,
       @RequestParam(required = false) Map<String, String> allParams) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
 
     // --- View-based filtering (server-side SQL) ---
     if (view != null) {
@@ -125,7 +124,7 @@ public class TaskController {
     // --- Fallback: existing in-memory filtering ---
     var taskEntities =
         taskService.listTasks(
-            projectId, memberId, orgRole, status, assigneeId, priority, assigneeFilter, recurring);
+            projectId, actor, status, assigneeId, priority, assigneeFilter, recurring);
     var names = resolveNames(taskEntities);
 
     // Batch-load tags for all tasks (2 queries instead of 2N)
@@ -164,10 +163,11 @@ public class TaskController {
   @GetMapping("/api/tasks/{id}")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<TaskResponse> getTask(@PathVariable UUID id) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
 
-    var task = taskService.getTask(id, memberId, orgRole);
+    var task = taskService.getTask(id, actor);
     var names = resolveNames(List.of(task));
     var tags = entityTagService.getEntityTags("TASK", id);
     return ResponseEntity.ok(TaskResponse.from(task, names, tags));
@@ -177,8 +177,7 @@ public class TaskController {
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<TaskResponse> updateTask(
       @PathVariable UUID id, @Valid @RequestBody UpdateTaskRequest request) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
 
     var task =
         taskService.updateTask(
@@ -190,8 +189,7 @@ public class TaskController {
             request.type(),
             request.dueDate(),
             request.assigneeId(),
-            memberId,
-            orgRole,
+            actor,
             request.customFields(),
             request.appliedFieldGroups(),
             request.recurrenceRule(),
@@ -205,20 +203,22 @@ public class TaskController {
   @DeleteMapping("/api/tasks/{id}")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<Void> deleteTask(@PathVariable UUID id) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
 
-    taskService.deleteTask(id, memberId, orgRole);
+    taskService.deleteTask(id, actor);
     return ResponseEntity.noContent().build();
   }
 
   @PostMapping("/api/tasks/{id}/claim")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<TaskResponse> claimTask(@PathVariable UUID id) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
 
-    var task = taskService.claimTask(id, memberId, orgRole);
+    var task = taskService.claimTask(id, actor);
     var names = resolveNames(List.of(task));
     var tags = entityTagService.getEntityTags("TASK", id);
     return ResponseEntity.ok(TaskResponse.from(task, names, tags));
@@ -227,10 +227,11 @@ public class TaskController {
   @PostMapping("/api/tasks/{id}/release")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<TaskResponse> releaseTask(@PathVariable UUID id) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
 
-    var task = taskService.releaseTask(id, memberId, orgRole);
+    var task = taskService.releaseTask(id, actor);
     var names = resolveNames(List.of(task));
     var tags = entityTagService.getEntityTags("TASK", id);
     return ResponseEntity.ok(TaskResponse.from(task, names, tags));
@@ -239,20 +240,22 @@ public class TaskController {
   @PatchMapping("/api/tasks/{id}/complete")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<CompleteTaskResponse> completeTask(@PathVariable UUID id) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
 
-    var result = taskService.completeTask(id, memberId, orgRole);
+    var result = taskService.completeTask(id, actor);
     return ResponseEntity.ok(buildCompleteTaskResponse(result, id));
   }
 
   @PatchMapping("/api/tasks/{id}/cancel")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<TaskResponse> cancelTask(@PathVariable UUID id) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
 
-    var task = taskService.cancelTask(id, memberId, orgRole);
+    var task = taskService.cancelTask(id, actor);
     var names = resolveNames(List.of(task));
     var tags = entityTagService.getEntityTags("TASK", id);
     return ResponseEntity.ok(TaskResponse.from(task, names, tags));
@@ -261,10 +264,11 @@ public class TaskController {
   @PatchMapping("/api/tasks/{id}/reopen")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<TaskResponse> reopenTask(@PathVariable UUID id) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
 
-    var task = taskService.reopenTask(id, memberId, orgRole);
+    var task = taskService.reopenTask(id, actor);
     var names = resolveNames(List.of(task));
     var tags = entityTagService.getEntityTags("TASK", id);
     return ResponseEntity.ok(TaskResponse.from(task, names, tags));
@@ -274,9 +278,10 @@ public class TaskController {
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<FieldDefinitionResponse>> setFieldGroups(
       @PathVariable UUID id, @Valid @RequestBody SetFieldGroupsRequest request) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
-    var fieldDefs = taskService.setFieldGroups(id, request.appliedFieldGroups(), memberId, orgRole);
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
+    var fieldDefs = taskService.setFieldGroups(id, request.appliedFieldGroups(), actor);
     return ResponseEntity.ok(fieldDefs);
   }
 
@@ -284,10 +289,11 @@ public class TaskController {
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<TagResponse>> setTaskTags(
       @PathVariable UUID id, @Valid @RequestBody SetEntityTagsRequest request) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
     // Verify task access
-    taskService.getTask(id, memberId, orgRole);
+    taskService.getTask(id, actor);
     var tags = entityTagService.setEntityTags("TASK", id, request.tagIds());
     return ResponseEntity.ok(tags);
   }
@@ -295,10 +301,11 @@ public class TaskController {
   @GetMapping("/api/tasks/{id}/tags")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<TagResponse>> getTaskTags(@PathVariable UUID id) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
     // Verify task access
-    taskService.getTask(id, memberId, orgRole);
+    taskService.getTask(id, actor);
     var tags = entityTagService.getEntityTags("TASK", id);
     return ResponseEntity.ok(tags);
   }

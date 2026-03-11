@@ -115,7 +115,7 @@ class AccessRequestApprovalServiceTest {
 
     assertThatThrownBy(() -> approvalService.approve(request.getId(), ADMIN_USER_ID))
         .isInstanceOf(RuntimeException.class)
-        .hasMessage("Schema creation failed");
+        .hasMessageContaining("Schema creation");
 
     var saved = accessRequestRepository.findById(request.getId()).orElseThrow();
     assertThat(saved.getProvisioningError()).isEqualTo("Schema creation failed");

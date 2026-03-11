@@ -14,6 +14,7 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerService;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
@@ -137,9 +138,9 @@ class OrgProfitabilityTest {
               customerRepository.save(customer);
 
               customerProjectService.linkCustomerToProject(
-                  customerId, projectId1, memberIdOwner, memberIdOwner, "owner");
+                  customerId, projectId1, memberIdOwner, new ActorContext(memberIdOwner, "owner"));
               customerProjectService.linkCustomerToProject(
-                  customerId, projectId2, memberIdOwner, memberIdOwner, "owner");
+                  customerId, projectId2, memberIdOwner, new ActorContext(memberIdOwner, "owner"));
 
               // Billing rate: $150/hr for owner
               billingRateService.createRate(
@@ -150,8 +151,7 @@ class OrgProfitabilityTest {
                   new BigDecimal("150.00"),
                   LocalDate.of(2024, 1, 1),
                   null,
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
 
               // Cost rate: $60/hr for owner
               costRateService.createCostRate(
@@ -160,8 +160,7 @@ class OrgProfitabilityTest {
                   new BigDecimal("60.00"),
                   LocalDate.of(2024, 1, 1),
                   null,
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
 
               // Project 1 tasks and time entries
               var task1 =
@@ -172,8 +171,7 @@ class OrgProfitabilityTest {
                       "MEDIUM",
                       "TASK",
                       null,
-                      memberIdOwner,
-                      "owner");
+                      new ActorContext(memberIdOwner, "owner"));
 
               // 120 min (2 hours), billable => billable value = 2 * 150 = 300
               timeEntryService.createTimeEntry(
@@ -183,8 +181,7 @@ class OrgProfitabilityTest {
                   true,
                   null,
                   "Project 1 billable",
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
 
               // Project 2 tasks and time entries
               var task2 =
@@ -195,8 +192,7 @@ class OrgProfitabilityTest {
                       "MEDIUM",
                       "TASK",
                       null,
-                      memberIdOwner,
-                      "owner");
+                      new ActorContext(memberIdOwner, "owner"));
 
               // 60 min (1 hour), billable => billable value = 1 * 150 = 150
               timeEntryService.createTimeEntry(
@@ -206,8 +202,7 @@ class OrgProfitabilityTest {
                   true,
                   null,
                   "Project 2 billable",
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
 
               // Project 3 tasks and time entries (no customer, no cost rate specific override)
               var task3 =
@@ -218,8 +213,7 @@ class OrgProfitabilityTest {
                       "MEDIUM",
                       "TASK",
                       null,
-                      memberIdOwner,
-                      "owner");
+                      new ActorContext(memberIdOwner, "owner"));
 
               // 90 min (1.5 hours), billable => billable value = 1.5 * 150 = 225
               timeEntryService.createTimeEntry(
@@ -229,8 +223,7 @@ class OrgProfitabilityTest {
                   true,
                   null,
                   "Project 3 billable",
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
             });
 
     // Project 1: revenue=300, cost=2*60=120, margin=180, margin%=60.00%

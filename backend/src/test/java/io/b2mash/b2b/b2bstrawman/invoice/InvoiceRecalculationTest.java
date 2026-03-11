@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.invoice;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.b2mash.b2b.b2bstrawman.testutil.TestIds;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
@@ -135,7 +136,7 @@ class InvoiceRecalculationTest {
   }
 
   /**
-   * Helper to set tax fields on an InvoiceLine via reflection, since the fields are private and
+   * Helper to set tax fields on an InvoiceLine via TestIds, since the fields are private and
    * applyTaxRate() requires a TaxRate entity which is cumbersome in a pure unit test.
    */
   private void setLineTaxFields(
@@ -145,28 +146,10 @@ class InvoiceRecalculationTest {
       BigDecimal taxRatePercent,
       BigDecimal taxAmount,
       boolean taxExempt) {
-    try {
-      var taxRateIdField = InvoiceLine.class.getDeclaredField("taxRateId");
-      taxRateIdField.setAccessible(true);
-      taxRateIdField.set(line, taxRateId);
-
-      var taxRateNameField = InvoiceLine.class.getDeclaredField("taxRateName");
-      taxRateNameField.setAccessible(true);
-      taxRateNameField.set(line, taxRateName);
-
-      var taxRatePercentField = InvoiceLine.class.getDeclaredField("taxRatePercent");
-      taxRatePercentField.setAccessible(true);
-      taxRatePercentField.set(line, taxRatePercent);
-
-      var taxAmountField = InvoiceLine.class.getDeclaredField("taxAmount");
-      taxAmountField.setAccessible(true);
-      taxAmountField.set(line, taxAmount);
-
-      var taxExemptField = InvoiceLine.class.getDeclaredField("taxExempt");
-      taxExemptField.setAccessible(true);
-      taxExemptField.set(line, taxExempt);
-    } catch (ReflectiveOperationException e) {
-      throw new RuntimeException("Failed to set tax fields on InvoiceLine", e);
-    }
+    TestIds.withField(line, "taxRateId", taxRateId);
+    TestIds.withField(line, "taxRateName", taxRateName);
+    TestIds.withField(line, "taxRatePercent", taxRatePercent);
+    TestIds.withField(line, "taxAmount", taxAmount);
+    TestIds.withField(line, "taxExempt", taxExempt);
   }
 }

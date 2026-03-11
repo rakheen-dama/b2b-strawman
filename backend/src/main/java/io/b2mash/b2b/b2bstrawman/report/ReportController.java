@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.report;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import java.math.BigDecimal;
@@ -31,12 +32,12 @@ public class ReportController {
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
       @RequestParam(required = false, defaultValue = "false") boolean includeProjections) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
 
     var response =
-        reportService.getProjectProfitability(
-            projectId, from, to, memberId, orgRole, includeProjections);
+        reportService.getProjectProfitability(projectId, from, to, actor, includeProjections);
     return ResponseEntity.ok(response);
   }
 
@@ -47,12 +48,12 @@ public class ReportController {
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
       @RequestParam(required = false, defaultValue = "false") boolean includeProjections) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
 
     var response =
-        reportService.getCustomerProfitability(
-            customerId, from, to, memberId, orgRole, includeProjections);
+        reportService.getCustomerProfitability(customerId, from, to, actor, includeProjections);
     return ResponseEntity.ok(response);
   }
 
@@ -76,12 +77,12 @@ public class ReportController {
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
       @RequestParam(required = false) UUID customerId,
       @RequestParam(required = false, defaultValue = "false") boolean includeProjections) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
 
     var response =
-        reportService.getOrgProfitability(
-            from, to, customerId, memberId, orgRole, includeProjections);
+        reportService.getOrgProfitability(from, to, customerId, actor, includeProjections);
     return ResponseEntity.ok(response);
   }
 

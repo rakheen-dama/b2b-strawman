@@ -11,6 +11,7 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.billingrate.BillingRateService;
 import io.b2mash.b2b.b2bstrawman.capacity.dto.AllocationDtos.CreateAllocationRequest;
 import io.b2mash.b2b.b2bstrawman.costrate.CostRateService;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
@@ -126,8 +127,7 @@ class ProfitabilityProjectionTest {
                       "MEDIUM",
                       "TASK",
                       null,
-                      memberIdOwner,
-                      "owner");
+                      new ActorContext(memberIdOwner, "owner"));
               taskId = task.getId();
 
               // Create billing rate: $150/hr USD (member default, effective from 2024)
@@ -139,8 +139,7 @@ class ProfitabilityProjectionTest {
                   new BigDecimal("150.00"),
                   LocalDate.of(2024, 1, 1),
                   null,
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
 
               // Create cost rate: $75/hr USD for owner
               costRateService.createCostRate(
@@ -149,8 +148,7 @@ class ProfitabilityProjectionTest {
                   new BigDecimal("75.00"),
                   LocalDate.of(2024, 1, 1),
                   null,
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
 
               // Past time entry: 120 min (2 hours), billable, 2025-01-15
               timeEntryService.createTimeEntry(
@@ -160,8 +158,7 @@ class ProfitabilityProjectionTest {
                   true,
                   null,
                   "Past billable work",
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
 
               // Future allocation: 20 hours for owner on project, future Monday
               allocationService.createAllocation(
@@ -350,8 +347,7 @@ class ProfitabilityProjectionTest {
                   new BigDecimal("200.00"),
                   LocalDate.of(2024, 1, 1),
                   null,
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
 
               allocationService.createAllocation(
                   new CreateAllocationRequest(

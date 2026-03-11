@@ -1,6 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.activity;
 
-import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import java.time.Instant;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -44,13 +44,11 @@ public class ActivityController {
       @RequestParam(required = false) String entityType,
       @RequestParam(required = false) Instant since) {
 
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
 
     var pageable = PageRequest.of(page, Math.min(size, 50));
     var activity =
-        activityService.getProjectActivity(
-            projectId, entityType, since, pageable, memberId, orgRole);
+        activityService.getProjectActivity(projectId, entityType, since, pageable, actor);
 
     return ResponseEntity.ok(activity);
   }

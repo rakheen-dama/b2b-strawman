@@ -19,6 +19,7 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.tax.dto.UpdateTaxRateRequest;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestIds;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
@@ -418,13 +419,7 @@ class TaxRateBatchRecalcIntegrationTest {
                   } else {
                     settings = new OrgSettings(currency);
                   }
-                  try {
-                    var field = OrgSettings.class.getDeclaredField("taxInclusive");
-                    field.setAccessible(true);
-                    field.set(settings, taxInclusive);
-                  } catch (ReflectiveOperationException e) {
-                    throw new RuntimeException(e);
-                  }
+                  TestIds.withField(settings, "taxInclusive", taxInclusive);
                   orgSettingsRepository.save(settings);
                 }));
   }

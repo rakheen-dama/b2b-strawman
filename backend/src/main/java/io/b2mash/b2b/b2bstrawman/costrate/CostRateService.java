@@ -5,6 +5,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import java.math.BigDecimal;
@@ -65,8 +66,7 @@ public class CostRateService {
    * @param hourlyCost the hourly cost amount (must be positive)
    * @param effectiveFrom start date of rate effectiveness
    * @param effectiveTo optional end date (null for open-ended)
-   * @param actorMemberId the UUID of the member performing the action
-   * @param orgRole the org role of the actor
+   * @param actor the authenticated actor performing the action
    * @return the created CostRate
    */
   @Transactional
@@ -76,10 +76,9 @@ public class CostRateService {
       BigDecimal hourlyCost,
       LocalDate effectiveFrom,
       LocalDate effectiveTo,
-      UUID actorMemberId,
-      String orgRole) {
+      ActorContext actor) {
 
-    requireAdminOrOwner(orgRole);
+    requireAdminOrOwner(actor.orgRole());
 
     LocalDate overlapEnd = effectiveTo != null ? effectiveTo : FAR_FUTURE;
     var overlapping =
@@ -117,8 +116,7 @@ public class CostRateService {
    * @param currency the new currency code
    * @param effectiveFrom the new start date
    * @param effectiveTo the new end date (nullable)
-   * @param actorMemberId the UUID of the member performing the action
-   * @param orgRole the org role of the actor
+   * @param actor the authenticated actor performing the action
    * @return the updated CostRate
    */
   @Transactional
@@ -128,10 +126,9 @@ public class CostRateService {
       String currency,
       LocalDate effectiveFrom,
       LocalDate effectiveTo,
-      UUID actorMemberId,
-      String orgRole) {
+      ActorContext actor) {
 
-    requireAdminOrOwner(orgRole);
+    requireAdminOrOwner(actor.orgRole());
 
     var rate =
         costRateRepository
@@ -171,12 +168,11 @@ public class CostRateService {
    * Deletes a cost rate by ID. Admin/owner only.
    *
    * @param id the cost rate ID to delete
-   * @param actorMemberId the UUID of the member performing the action
-   * @param orgRole the org role of the actor
+   * @param actor the authenticated actor performing the action
    */
   @Transactional
-  public void deleteCostRate(UUID id, UUID actorMemberId, String orgRole) {
-    requireAdminOrOwner(orgRole);
+  public void deleteCostRate(UUID id, ActorContext actor) {
+    requireAdminOrOwner(actor.orgRole());
 
     var rate =
         costRateRepository
@@ -200,13 +196,13 @@ public class CostRateService {
    * Lists cost rates, optionally filtered by member.
    *
    * @param memberId optional member filter; if null, returns all cost rates
-   * @param orgRole the org role of the actor (defense-in-depth check when listing all)
+   * @param actor the authenticated actor (role used for defense-in-depth check)
    * @return list of cost rates ordered by effectiveFrom DESC
    */
   @Transactional(readOnly = true)
-  public List<CostRate> listCostRates(UUID memberId, String orgRole) {
+  public List<CostRate> listCostRates(UUID memberId, ActorContext actor) {
     if (memberId == null) {
-      requireAdminOrOwner(orgRole);
+      requireAdminOrOwner(actor.orgRole());
       return costRateRepository.findAllOrderByEffectiveFromDesc();
     }
     return costRateRepository.findByMemberId(memberId);

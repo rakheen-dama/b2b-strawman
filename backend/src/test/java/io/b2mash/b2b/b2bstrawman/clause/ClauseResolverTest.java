@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateController.ClauseSelection;
+import io.b2mash.b2b.b2bstrawman.testutil.TestIds;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -139,14 +140,6 @@ class ClauseResolverTest {
   // --- Helper ---
 
   private static Clause createClauseWithId(UUID id, String title, String slug) {
-    var clause = new Clause(title, slug, BODY, "General");
-    try {
-      var idField = Clause.class.getDeclaredField("id");
-      idField.setAccessible(true);
-      idField.set(clause, id);
-    } catch (Exception e) {
-      throw new RuntimeException("Failed to set clause ID", e);
-    }
-    return clause;
+    return TestIds.withId(new Clause(title, slug, BODY, "General"), id);
   }
 }

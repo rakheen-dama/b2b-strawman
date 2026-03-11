@@ -9,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
@@ -159,7 +160,11 @@ class ActivityServiceIntegrationTest {
             () -> {
               var page =
                   activityService.getProjectActivity(
-                      projectId, null, null, PageRequest.of(0, 20), memberId, "owner");
+                      projectId,
+                      null,
+                      null,
+                      PageRequest.of(0, 20),
+                      new ActorContext(memberId, "owner"));
 
               assertThat(page.getTotalElements()).isEqualTo(4);
               assertThat(page.getContent()).hasSize(4);
@@ -182,7 +187,11 @@ class ActivityServiceIntegrationTest {
             () -> {
               var page =
                   activityService.getProjectActivity(
-                      projectId, "task", null, PageRequest.of(0, 20), memberId, "owner");
+                      projectId,
+                      "task",
+                      null,
+                      PageRequest.of(0, 20),
+                      new ActorContext(memberId, "owner"));
 
               // Should have 3 task events (created, claimed, updated by unknown actor)
               assertThat(page.getTotalElements()).isEqualTo(3);
@@ -207,7 +216,11 @@ class ActivityServiceIntegrationTest {
             () -> {
               var page =
                   activityService.getProjectActivity(
-                      projectId, null, null, PageRequest.of(0, 20), memberId, "owner");
+                      projectId,
+                      null,
+                      null,
+                      PageRequest.of(0, 20),
+                      new ActorContext(memberId, "owner"));
 
               // Find the event with the unknown actor — now resolved to "System" via
               // enrichActorName()
@@ -232,13 +245,21 @@ class ActivityServiceIntegrationTest {
               // Query project 1 should return 4 events
               var project1Page =
                   activityService.getProjectActivity(
-                      projectId, null, null, PageRequest.of(0, 20), memberId, "owner");
+                      projectId,
+                      null,
+                      null,
+                      PageRequest.of(0, 20),
+                      new ActorContext(memberId, "owner"));
               assertThat(project1Page.getTotalElements()).isEqualTo(4);
 
               // Query project 2 should return 1 event
               var project2Page =
                   activityService.getProjectActivity(
-                      otherProjectId, null, null, PageRequest.of(0, 20), memberId, "owner");
+                      otherProjectId,
+                      null,
+                      null,
+                      PageRequest.of(0, 20),
+                      new ActorContext(memberId, "owner"));
               assertThat(project2Page.getTotalElements()).isEqualTo(1);
               assertThat(project2Page.getContent().getFirst().message())
                   .contains("Other Project Task");
@@ -252,8 +273,7 @@ class ActivityServiceIntegrationTest {
                               null,
                               null,
                               PageRequest.of(0, 20),
-                              memberId,
-                              "owner"))
+                              new ActorContext(memberId, "owner")))
                   .isInstanceOf(ResourceNotFoundException.class);
             });
   }

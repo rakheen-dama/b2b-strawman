@@ -9,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationRepository;
@@ -222,8 +223,7 @@ class RetainerNotificationTest {
                         true,
                         null,
                         "Threshold work",
-                        memberId,
-                        "owner")));
+                        new ActorContext(memberId, "owner"))));
 
     runInTenant(
         () -> {
@@ -258,8 +258,7 @@ class RetainerNotificationTest {
                         true,
                         null,
                         "Overrun work",
-                        memberId,
-                        "owner")));
+                        new ActorContext(memberId, "owner"))));
 
     runInTenant(
         () -> {

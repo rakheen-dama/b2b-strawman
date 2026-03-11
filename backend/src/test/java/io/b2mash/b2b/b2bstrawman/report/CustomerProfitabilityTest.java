@@ -15,6 +15,7 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerService;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
@@ -131,9 +132,9 @@ class CustomerProfitabilityTest {
               customerId = customer.getId();
 
               customerProjectService.linkCustomerToProject(
-                  customerId, projectId1, memberIdOwner, memberIdOwner, "owner");
+                  customerId, projectId1, memberIdOwner, new ActorContext(memberIdOwner, "owner"));
               customerProjectService.linkCustomerToProject(
-                  customerId, projectId2, memberIdOwner, memberIdOwner, "owner");
+                  customerId, projectId2, memberIdOwner, new ActorContext(memberIdOwner, "owner"));
 
               // Create customer with no projects
               var noProjectsCustomer =
@@ -155,8 +156,7 @@ class CustomerProfitabilityTest {
                   new BigDecimal("100.00"),
                   LocalDate.of(2024, 1, 1),
                   null,
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
 
               // Create cost rate: $50/hr USD
               costRateService.createCostRate(
@@ -165,8 +165,7 @@ class CustomerProfitabilityTest {
                   new BigDecimal("50.00"),
                   LocalDate.of(2024, 1, 1),
                   null,
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
 
               // Tasks for each project
               var task1 =
@@ -177,8 +176,7 @@ class CustomerProfitabilityTest {
                       "MEDIUM",
                       "TASK",
                       null,
-                      memberIdOwner,
-                      "owner");
+                      new ActorContext(memberIdOwner, "owner"));
               var task2 =
                   taskService.createTask(
                       projectId2,
@@ -187,8 +185,7 @@ class CustomerProfitabilityTest {
                       "MEDIUM",
                       "TASK",
                       null,
-                      memberIdOwner,
-                      "owner");
+                      new ActorContext(memberIdOwner, "owner"));
 
               // Time entries on project 1: 120 min billable (2h)
               timeEntryService.createTimeEntry(
@@ -198,8 +195,7 @@ class CustomerProfitabilityTest {
                   true,
                   null,
                   "Project 1 work",
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
 
               // Time entries on project 2: 60 min billable (1h), 30 min non-billable
               timeEntryService.createTimeEntry(
@@ -209,8 +205,7 @@ class CustomerProfitabilityTest {
                   true,
                   null,
                   "Project 2 billable",
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
 
               timeEntryService.createTimeEntry(
                   task2.getId(),
@@ -219,8 +214,7 @@ class CustomerProfitabilityTest {
                   false,
                   null,
                   "Project 2 non-billable",
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
             });
     // Customer totals across both projects:
     // Billable hours: 2 + 1 = 3h

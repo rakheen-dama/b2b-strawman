@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.expense;
 
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import jakarta.validation.Valid;
@@ -45,12 +46,11 @@ public class ExpenseController {
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<ExpenseResponse> createExpense(
       @PathVariable UUID projectId, @Valid @RequestBody CreateExpenseRequest request) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
     var expense =
         expenseService.createExpense(
             projectId,
-            memberId,
+            actor,
             request.date(),
             request.description(),
             request.amount(),
@@ -60,8 +60,7 @@ public class ExpenseController {
             request.receiptDocumentId(),
             request.markupPercent(),
             request.billable(),
-            request.notes(),
-            orgRole);
+            request.notes());
     var names = resolveNames(List.of(expense));
     return ResponseEntity.created(
             URI.create("/api/projects/" + projectId + "/expenses/" + expense.getId()))
@@ -77,11 +76,9 @@ public class ExpenseController {
       @RequestParam(required = false) LocalDate to,
       @RequestParam(required = false) UUID memberId,
       Pageable pageable) {
-    UUID currentMemberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
     var page =
-        expenseService.listExpenses(
-            projectId, category, from, to, memberId, pageable, currentMemberId, orgRole);
+        expenseService.listExpenses(projectId, category, from, to, memberId, pageable, actor);
     var names = resolveNames(page.getContent());
     return ResponseEntity.ok(page.map(e -> ExpenseResponse.from(e, names)));
   }
@@ -90,9 +87,8 @@ public class ExpenseController {
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<ExpenseResponse> getExpense(
       @PathVariable UUID projectId, @PathVariable UUID id) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
-    var expense = expenseService.getExpense(projectId, id, memberId, orgRole);
+    var actor = ActorContext.fromRequestScopes();
+    var expense = expenseService.getExpense(projectId, id, actor);
     var names = resolveNames(List.of(expense));
     return ResponseEntity.ok(ExpenseResponse.from(expense, names));
   }
@@ -103,14 +99,12 @@ public class ExpenseController {
       @PathVariable UUID projectId,
       @PathVariable UUID id,
       @Valid @RequestBody UpdateExpenseRequest request) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
     var expense =
         expenseService.updateExpense(
             projectId,
             id,
-            memberId,
-            orgRole,
+            actor,
             request.date(),
             request.description(),
             request.amount(),
@@ -128,9 +122,10 @@ public class ExpenseController {
   @DeleteMapping("/api/projects/{projectId}/expenses/{id}")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<Void> deleteExpense(@PathVariable UUID projectId, @PathVariable UUID id) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
-    expenseService.deleteExpense(projectId, id, memberId, orgRole);
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
+    expenseService.deleteExpense(projectId, id, actor);
     return ResponseEntity.noContent().build();
   }
 
@@ -138,9 +133,10 @@ public class ExpenseController {
   @RequiresCapability("FINANCIAL_VISIBILITY")
   public ResponseEntity<ExpenseResponse> writeOffExpense(
       @PathVariable UUID projectId, @PathVariable UUID id) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
-    var expense = expenseService.writeOffExpense(projectId, id, memberId, orgRole);
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
+    var expense = expenseService.writeOffExpense(projectId, id, actor);
     var names = resolveNames(List.of(expense));
     return ResponseEntity.ok(ExpenseResponse.from(expense, names));
   }
@@ -149,9 +145,10 @@ public class ExpenseController {
   @RequiresCapability("FINANCIAL_VISIBILITY")
   public ResponseEntity<ExpenseResponse> restoreExpense(
       @PathVariable UUID projectId, @PathVariable UUID id) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
-    var expense = expenseService.restoreExpense(projectId, id, memberId, orgRole);
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
+    var expense = expenseService.restoreExpense(projectId, id, actor);
     var names = resolveNames(List.of(expense));
     return ResponseEntity.ok(ExpenseResponse.from(expense, names));
   }

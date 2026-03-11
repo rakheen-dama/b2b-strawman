@@ -120,8 +120,7 @@ public class BillingRateService {
    * @param hourlyRate the hourly rate amount (must be positive)
    * @param effectiveFrom start date of rate effectiveness
    * @param effectiveTo optional end date (null for open-ended)
-   * @param actorMemberId the UUID of the member performing the action
-   * @param orgRole the org role of the actor
+   * @param actor the authenticated actor performing the action
    * @return the created BillingRate
    */
   @Transactional
@@ -182,8 +181,7 @@ public class BillingRateService {
    * @param currency the new currency code
    * @param effectiveFrom the new start date
    * @param effectiveTo the new end date (nullable)
-   * @param actorMemberId the UUID of the member performing the action
-   * @param orgRole the org role of the actor
+   * @param actor the authenticated actor performing the action
    * @return the updated BillingRate
    */
   @Transactional
@@ -242,8 +240,7 @@ public class BillingRateService {
    * Deletes a billing rate by ID.
    *
    * @param id the billing rate ID to delete
-   * @param actorMemberId the UUID of the member performing the action
-   * @param orgRole the org role of the actor
+   * @param actor the authenticated actor performing the action
    */
   @Transactional
   public void deleteRate(UUID id, ActorContext actor) {

@@ -53,8 +53,7 @@ public class ActivityService {
    *     DB)
    * @param since optional timestamp filter -- only events after this instant
    * @param pageable pagination parameters
-   * @param memberId the calling member's ID for access control
-   * @param orgRole the calling member's org role for access control
+   * @param actor the authenticated actor for access control
    * @return a page of formatted activity items ordered by occurredAt DESC
    */
   @Transactional(readOnly = true)

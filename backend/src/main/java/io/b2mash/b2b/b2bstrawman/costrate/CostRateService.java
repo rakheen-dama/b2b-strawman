@@ -66,8 +66,7 @@ public class CostRateService {
    * @param hourlyCost the hourly cost amount (must be positive)
    * @param effectiveFrom start date of rate effectiveness
    * @param effectiveTo optional end date (null for open-ended)
-   * @param actorMemberId the UUID of the member performing the action
-   * @param orgRole the org role of the actor
+   * @param actor the authenticated actor performing the action
    * @return the created CostRate
    */
   @Transactional
@@ -117,8 +116,7 @@ public class CostRateService {
    * @param currency the new currency code
    * @param effectiveFrom the new start date
    * @param effectiveTo the new end date (nullable)
-   * @param actorMemberId the UUID of the member performing the action
-   * @param orgRole the org role of the actor
+   * @param actor the authenticated actor performing the action
    * @return the updated CostRate
    */
   @Transactional
@@ -170,8 +168,7 @@ public class CostRateService {
    * Deletes a cost rate by ID. Admin/owner only.
    *
    * @param id the cost rate ID to delete
-   * @param actorMemberId the UUID of the member performing the action
-   * @param orgRole the org role of the actor
+   * @param actor the authenticated actor performing the action
    */
   @Transactional
   public void deleteCostRate(UUID id, ActorContext actor) {
@@ -199,7 +196,7 @@ public class CostRateService {
    * Lists cost rates, optionally filtered by member.
    *
    * @param memberId optional member filter; if null, returns all cost rates
-   * @param orgRole the org role of the actor (defense-in-depth check when listing all)
+   * @param actor the authenticated actor (role used for defense-in-depth check)
    * @return list of cost rates ordered by effectiveFrom DESC
    */
   @Transactional(readOnly = true)

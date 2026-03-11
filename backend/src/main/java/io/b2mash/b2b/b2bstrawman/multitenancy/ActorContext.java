@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.multitenancy;
 
+import io.b2mash.b2b.b2bstrawman.security.Roles;
 import java.util.UUID;
 
 /**
@@ -19,6 +20,6 @@ public record ActorContext(UUID memberId, String orgRole) {
 
   /** Returns true if the actor has owner or admin privileges. */
   public boolean isOwnerOrAdmin() {
-    return "ORG_OWNER".equals(orgRole) || "ORG_ADMIN".equals(orgRole);
+    return Roles.ORG_OWNER.equals(orgRole) || Roles.ORG_ADMIN.equals(orgRole);
   }
 }

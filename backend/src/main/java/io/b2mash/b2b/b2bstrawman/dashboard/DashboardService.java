@@ -184,8 +184,7 @@ public class DashboardService {
    * then by completion percent ascending (least complete first).
    *
    * @param tenantId the tenant schema for cache key isolation
-   * @param memberId the requesting member's ID for project access filtering
-   * @param orgRole the caller's org role for visibility (admin/owner sees all projects)
+   * @param actor the authenticated actor for access filtering and visibility
    * @return sorted list of project health summaries
    */
   @SuppressWarnings("unchecked")
@@ -210,8 +209,7 @@ public class DashboardService {
    * the org cache.
    *
    * @param tenantId the tenant schema for cache key isolation
-   * @param memberId the requesting member's ID for self-filtering
-   * @param orgRole the caller's org role for visibility
+   * @param actor the authenticated actor for access filtering and visibility
    * @param from start date of the workload period
    * @param to end date of the workload period
    * @return list of team workload entries with per-project breakdowns
@@ -240,8 +238,7 @@ public class DashboardService {
    * only events from projects they belong to. Results are cached in the org cache.
    *
    * @param tenantId the tenant schema for cache key isolation
-   * @param memberId the requesting member's ID for project access filtering
-   * @param orgRole the caller's org role for visibility
+   * @param actor the authenticated actor for access filtering and visibility
    * @param limit maximum number of events to return
    * @return list of activity items with actor and project names
    */

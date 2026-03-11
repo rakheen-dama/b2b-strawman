@@ -1,10 +1,8 @@
 package io.b2mash.b2b.b2bstrawman.datarequest;
 
-import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
-import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import jakarta.validation.Valid;
@@ -16,10 +14,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,22 +32,16 @@ public class DataRequestController {
   private final DataSubjectRequestService dataSubjectRequestService;
   private final DataExportService dataExportService;
   private final DataAnonymizationService dataAnonymizationService;
-  private final CustomerRepository customerRepository;
-  private final MemberNameResolver memberNameResolver;
   private final StorageService storageService;
 
   public DataRequestController(
       DataSubjectRequestService dataSubjectRequestService,
       DataExportService dataExportService,
       DataAnonymizationService dataAnonymizationService,
-      CustomerRepository customerRepository,
-      MemberNameResolver memberNameResolver,
       StorageService storageService) {
     this.dataSubjectRequestService = dataSubjectRequestService;
     this.dataExportService = dataExportService;
     this.dataAnonymizationService = dataAnonymizationService;
-    this.customerRepository = customerRepository;
-    this.memberNameResolver = memberNameResolver;
     this.storageService = storageService;
   }
 
@@ -64,29 +53,14 @@ public class DataRequestController {
         status != null && !status.isBlank()
             ? dataSubjectRequestService.listByStatus(status)
             : dataSubjectRequestService.listAll();
-    var memberNames = resolveMemberNames(requests);
-    var customerNames = resolveCustomerNames(requests);
-    var responses =
-        requests.stream()
-            .map(
-                req ->
-                    DataRequestResponse.from(
-                        req,
-                        customerNames.getOrDefault(req.getCustomerId(), "Unknown"),
-                        memberNames))
-            .toList();
-    return ResponseEntity.ok(responses);
+    return ResponseEntity.ok(dataSubjectRequestService.toResponses(requests));
   }
 
   @GetMapping("/{id}")
   @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<DataRequestResponse> getRequest(@PathVariable UUID id) {
     var request = dataSubjectRequestService.getById(id);
-    var memberNames = resolveMemberNames(List.of(request));
-    var customerNames = resolveCustomerNames(List.of(request));
-    return ResponseEntity.ok(
-        DataRequestResponse.from(
-            request, customerNames.getOrDefault(request.getCustomerId(), "Unknown"), memberNames));
+    return ResponseEntity.ok(dataSubjectRequestService.toResponse(request));
   }
 
   @PostMapping
@@ -97,11 +71,7 @@ public class DataRequestController {
     var request =
         dataSubjectRequestService.createRequest(
             body.customerId(), body.requestType(), body.description(), actorId);
-    var memberNames = resolveMemberNames(List.of(request));
-    var customerNames = resolveCustomerNames(List.of(request));
-    var response =
-        DataRequestResponse.from(
-            request, customerNames.getOrDefault(request.getCustomerId(), "Unknown"), memberNames);
+    var response = dataSubjectRequestService.toResponse(request);
     return ResponseEntity.created(URI.create("/api/data-requests/" + request.getId()))
         .body(response);
   }
@@ -120,11 +90,7 @@ public class DataRequestController {
               throw new InvalidStateException(
                   "Unknown action", "Action must be START_PROCESSING, COMPLETE, or REJECT");
         };
-    var memberNames = resolveMemberNames(List.of(request));
-    var customerNames = resolveCustomerNames(List.of(request));
-    return ResponseEntity.ok(
-        DataRequestResponse.from(
-            request, customerNames.getOrDefault(request.getCustomerId(), "Unknown"), memberNames));
+    return ResponseEntity.ok(dataSubjectRequestService.toResponse(request));
   }
 
   @PostMapping("/{id}/export")
@@ -172,30 +138,6 @@ public class DataRequestController {
   public ResponseEntity<Map<String, Object>> checkDeadlines() {
     int flagged = dataSubjectRequestService.checkDeadlines();
     return ResponseEntity.ok(Map.of("flagged", flagged));
-  }
-
-  private Map<UUID, String> resolveCustomerNames(List<DataSubjectRequest> requests) {
-    var ids =
-        requests.stream()
-            .map(DataSubjectRequest::getCustomerId)
-            .filter(Objects::nonNull)
-            .distinct()
-            .toList();
-    if (ids.isEmpty()) return Map.of();
-    return customerRepository.findAllById(ids).stream()
-        .collect(
-            Collectors.toMap(
-                c -> c.getId(), c -> c.getName() != null ? c.getName() : "Unknown", (a, b) -> a));
-  }
-
-  private Map<UUID, String> resolveMemberNames(List<DataSubjectRequest> requests) {
-    var ids =
-        requests.stream()
-            .flatMap(r -> Stream.of(r.getRequestedBy(), r.getCompletedBy()))
-            .filter(Objects::nonNull)
-            .distinct()
-            .toList();
-    return memberNameResolver.resolveNames(ids);
   }
 
   // DTOs

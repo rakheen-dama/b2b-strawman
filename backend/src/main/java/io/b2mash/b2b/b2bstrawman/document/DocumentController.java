@@ -2,8 +2,7 @@ package io.b2mash.b2b.b2bstrawman.document;
 
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.MissingOrganizationContextException;
-import io.b2mash.b2b.b2bstrawman.member.Member;
-import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
+import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.security.ClerkJwtUtils;
@@ -16,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
@@ -33,11 +31,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class DocumentController {
 
   private final DocumentService documentService;
-  private final MemberRepository memberRepository;
+  private final MemberNameResolver memberNameResolver;
 
-  public DocumentController(DocumentService documentService, MemberRepository memberRepository) {
+  public DocumentController(
+      DocumentService documentService, MemberNameResolver memberNameResolver) {
     this.documentService = documentService;
-    this.memberRepository = memberRepository;
+    this.memberNameResolver = memberNameResolver;
   }
 
   // --- PROJECT-scoped upload-init (existing) ---
@@ -196,11 +195,7 @@ public class DocumentController {
             .filter(Objects::nonNull)
             .distinct()
             .toList();
-    if (ids.isEmpty()) return Map.of();
-    return memberRepository.findAllById(ids).stream()
-        .collect(
-            Collectors.toMap(
-                Member::getId, m -> m.getName() != null ? m.getName() : "", (a, b) -> a));
+    return memberNameResolver.resolveNames(ids);
   }
 
   // --- DTOs ---

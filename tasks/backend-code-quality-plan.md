@@ -421,12 +421,12 @@ Extract:
 - `RateSnapshotService` — billing + cost rate snapshotting
 
 ### Tasks
-- [ ] 6A: Extract `ProjectFieldService` from `ProjectService`
-- [ ] 6A: Extract `ProjectDeletionGuard` from `ProjectService`
-- [ ] 6B: Extract `TimeEntryValidationService` from `TimeEntryService`
-- [ ] 6B: Extract `RateSnapshotService` from `TimeEntryService`
-- [ ] Verify constructor parameter counts reduced to targets
-- [ ] Verify: all integration tests pass
+- [x] 6A: Extract `ProjectFieldService` from `ProjectService` — **Done** (PR #667)
+- [x] 6A: Extract `ProjectDeletionGuard` from `ProjectService` — **Done** (PR #667)
+- [x] 6B: Extract `TimeEntryValidationService` from `TimeEntryService` — **Done** (PR #667)
+- [x] 6B: Extract `RateSnapshotService` from `TimeEntryService` — **Done** (PR #667)
+- [x] Verify constructor parameter counts reduced to targets — **Done** (17→10, 14→9)
+- [x] Verify: all integration tests pass — **Done** (3504 tests, 0 failures)
 
 ---
 

@@ -268,7 +268,7 @@ public class BillingRunService {
     BigDecimal totalUnbilledAmount = BigDecimal.ZERO;
 
     for (var row : discoveredCustomers) {
-      var previewItem = buildPreviewItem(billingRunId, row, run);
+      var previewItem = createPreviewItem(billingRunId, row, run);
       itemResponses.add(previewItem.response());
       if (!previewItem.hasIssues()) {
         totalUnbilledAmount = totalUnbilledAmount.add(previewItem.itemTotal());
@@ -1082,7 +1082,7 @@ public class BillingRunService {
       BillingRunItemResponse response, boolean hasIssues, BigDecimal itemTotal) {}
 
   /** Builds a preview item for a single customer: prerequisite checks + aggregation. */
-  private PreviewItemResult buildPreviewItem(
+  private PreviewItemResult createPreviewItem(
       UUID billingRunId, CustomerDiscoveryRow row, BillingRun run) {
     var prereqCheck =
         prerequisiteService.checkForContext(

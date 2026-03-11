@@ -2,13 +2,7 @@ package io.b2mash.b2b.b2bstrawman.timeentry;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
-import io.b2mash.b2b.b2bstrawman.billingrate.BillingRateService;
 import io.b2mash.b2b.b2bstrawman.budget.BudgetCheckService;
-import io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleGuard;
-import io.b2mash.b2b.b2bstrawman.compliance.LifecycleAction;
-import io.b2mash.b2b.b2bstrawman.costrate.CostRateService;
-import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
-import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.event.TimeEntryChangedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
@@ -18,8 +12,6 @@ import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.project.ProjectLifecycleGuard;
-import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -44,46 +36,31 @@ public class TimeEntryService {
   private final TaskRepository taskRepository;
   private final ProjectAccessService projectAccessService;
   private final AuditService auditService;
-  private final BillingRateService billingRateService;
-  private final CostRateService costRateService;
   private final BudgetCheckService budgetCheckService;
   private final MemberNameResolver memberNameResolver;
-  private final CustomerLifecycleGuard customerLifecycleGuard;
-  private final CustomerProjectRepository customerProjectRepository;
-  private final CustomerRepository customerRepository;
-  private final ProjectRepository projectRepository;
   private final ApplicationEventPublisher applicationEventPublisher;
-  private final ProjectLifecycleGuard projectLifecycleGuard;
+  private final TimeEntryValidationService timeEntryValidationService;
+  private final RateSnapshotService rateSnapshotService;
 
   public TimeEntryService(
       TimeEntryRepository timeEntryRepository,
       TaskRepository taskRepository,
       ProjectAccessService projectAccessService,
       AuditService auditService,
-      BillingRateService billingRateService,
-      CostRateService costRateService,
       BudgetCheckService budgetCheckService,
       MemberNameResolver memberNameResolver,
-      CustomerLifecycleGuard customerLifecycleGuard,
-      CustomerProjectRepository customerProjectRepository,
-      CustomerRepository customerRepository,
-      ProjectRepository projectRepository,
       ApplicationEventPublisher applicationEventPublisher,
-      ProjectLifecycleGuard projectLifecycleGuard) {
+      TimeEntryValidationService timeEntryValidationService,
+      RateSnapshotService rateSnapshotService) {
     this.timeEntryRepository = timeEntryRepository;
     this.taskRepository = taskRepository;
     this.projectAccessService = projectAccessService;
     this.auditService = auditService;
-    this.billingRateService = billingRateService;
-    this.costRateService = costRateService;
     this.budgetCheckService = budgetCheckService;
     this.memberNameResolver = memberNameResolver;
-    this.customerLifecycleGuard = customerLifecycleGuard;
-    this.customerProjectRepository = customerProjectRepository;
-    this.customerRepository = customerRepository;
-    this.projectRepository = projectRepository;
     this.applicationEventPublisher = applicationEventPublisher;
-    this.projectLifecycleGuard = projectLifecycleGuard;
+    this.timeEntryValidationService = timeEntryValidationService;
+    this.rateSnapshotService = rateSnapshotService;
   }
 
   @Transactional
@@ -101,7 +78,7 @@ public class TimeEntryService {
             .orElseThrow(() -> new ResourceNotFoundException("Task", taskId));
 
     projectAccessService.requireViewAccess(task.getProjectId(), actor);
-    validateProjectAndCustomer(task.getProjectId());
+    timeEntryValidationService.validateProjectAndCustomer(task.getProjectId());
 
     if (durationMinutes <= 0) {
       throw new InvalidStateException(
@@ -117,7 +94,8 @@ public class TimeEntryService {
             taskId, actor.memberId(), date, durationMinutes, billable, rateCents, description);
 
     String rateWarning =
-        snapshotRates(entry, task.getProjectId(), actor.memberId(), date, billable);
+        rateSnapshotService.snapshotRates(
+            entry, task.getProjectId(), actor.memberId(), date, billable);
 
     var saved = timeEntryRepository.save(entry);
     log.info(
@@ -301,21 +279,7 @@ public class TimeEntryService {
     // (or last date change) remains valid regardless of billable status.
     boolean dateChanged = date != null && !Objects.equals(oldDate, date);
     if (dateChanged) {
-      LocalDate effectiveDate = entry.getDate();
-      var billingRate =
-          billingRateService.resolveRate(entry.getMemberId(), task.getProjectId(), effectiveDate);
-      if (billingRate.isPresent()) {
-        entry.snapshotBillingRate(billingRate.get().hourlyRate(), billingRate.get().currency());
-      } else {
-        entry.snapshotBillingRate(null, null);
-      }
-
-      var costRate = costRateService.resolveCostRate(entry.getMemberId(), effectiveDate);
-      if (costRate.isPresent()) {
-        entry.snapshotCostRate(costRate.get().hourlyCost(), costRate.get().currency());
-      } else {
-        entry.snapshotCostRate(null, null);
-      }
+      rateSnapshotService.reSnapshotOnDateChange(entry, task.getProjectId(), entry.getDate());
     }
 
     entry.setUpdatedAt(Instant.now());
@@ -492,25 +456,20 @@ public class TimeEntryService {
         continue;
       }
 
-      var billingRate =
-          billingRateService.resolveRate(entry.getMemberId(), task.getProjectId(), entry.getDate());
-      var costRate = costRateService.resolveCostRate(entry.getMemberId(), entry.getDate());
-
-      BigDecimal newBillingRate = billingRate.map(r -> r.hourlyRate()).orElse(null);
-      String newBillingCurrency = billingRate.map(r -> r.currency()).orElse(null);
-      BigDecimal newCostRate = costRate.map(r -> r.hourlyCost()).orElse(null);
-      String newCostCurrency = costRate.map(r -> r.currency()).orElse(null);
+      var rates =
+          rateSnapshotService.resolveRates(
+              entry.getMemberId(), task.getProjectId(), entry.getDate());
 
       boolean billingChanged =
-          !bigDecimalEquals(entry.getBillingRateSnapshot(), newBillingRate)
-              || !Objects.equals(entry.getBillingRateCurrency(), newBillingCurrency);
+          !bigDecimalEquals(entry.getBillingRateSnapshot(), rates.billingRate())
+              || !Objects.equals(entry.getBillingRateCurrency(), rates.billingCurrency());
       boolean costChanged =
-          !bigDecimalEquals(entry.getCostRateSnapshot(), newCostRate)
-              || !Objects.equals(entry.getCostRateCurrency(), newCostCurrency);
+          !bigDecimalEquals(entry.getCostRateSnapshot(), rates.costRate())
+              || !Objects.equals(entry.getCostRateCurrency(), rates.costCurrency());
 
       if (billingChanged || costChanged) {
-        entry.snapshotBillingRate(newBillingRate, newBillingCurrency);
-        entry.snapshotCostRate(newCostRate, newCostCurrency);
+        entry.snapshotBillingRate(rates.billingRate(), rates.billingCurrency());
+        entry.snapshotCostRate(rates.costRate(), rates.costCurrency());
         entry.setUpdatedAt(Instant.now());
         timeEntryRepository.save(entry);
         updated++;
@@ -551,51 +510,6 @@ public class TimeEntryService {
     if (a == null && b == null) return true;
     if (a == null || b == null) return false;
     return a.compareTo(b) == 0;
-  }
-
-  /**
-   * Validates that the project is not archived and that any linked customer permits time entry
-   * creation.
-   */
-  private void validateProjectAndCustomer(UUID projectId) {
-    // Check project is not archived
-    projectLifecycleGuard.requireNotReadOnly(projectId);
-
-    // Check lifecycle guard if project is linked to a customer
-    customerProjectRepository
-        .findFirstCustomerByProjectId(projectId)
-        .ifPresent(
-            custId ->
-                customerRepository
-                    .findById(custId)
-                    .ifPresent(
-                        customer ->
-                            customerLifecycleGuard.requireActionPermitted(
-                                customer, LifecycleAction.CREATE_TIME_ENTRY)));
-  }
-
-  /**
-   * Snapshots billing and cost rates onto the time entry. Returns a rate warning message if the
-   * entry is billable but no billing rate was found, or null otherwise.
-   */
-  private String snapshotRates(
-      TimeEntry entry, UUID projectId, UUID memberId, LocalDate date, boolean billable) {
-    // Snapshot billing rate (ADR-040)
-    var billingRate = billingRateService.resolveRate(memberId, projectId, date);
-    billingRate.ifPresent(r -> entry.snapshotBillingRate(r.hourlyRate(), r.currency()));
-
-    // Determine rate warning for billable entries without a billing rate
-    String rateWarning = null;
-    if (billable && billingRate.isEmpty()) {
-      rateWarning =
-          "No rate card found. This time entry will generate a zero-amount invoice line item.";
-    }
-
-    // Snapshot cost rate
-    var costRate = costRateService.resolveCostRate(memberId, date);
-    costRate.ifPresent(r -> entry.snapshotCostRate(r.hourlyCost(), r.currency()));
-
-    return rateWarning;
   }
 
   private void publishTimeEntryChangedEvent(UUID timeEntryId, UUID projectId, String action) {

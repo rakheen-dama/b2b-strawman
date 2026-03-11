@@ -3,36 +3,29 @@ package io.b2mash.b2b.b2bstrawman.project;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
-import io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleGuard;
-import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
-import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
-import io.b2mash.b2b.b2bstrawman.fielddefinition.CustomFieldValidator;
-import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
-import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupMemberRepository;
-import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupRepository;
-import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupService;
-import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccess;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMember;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
-import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestIds;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -52,20 +45,11 @@ class ProjectServiceTest {
   @Mock private ProjectAccessService projectAccessService;
   @Mock private AuditService auditService;
   @Mock private ApplicationEventPublisher eventPublisher;
-  @Mock private CustomFieldValidator customFieldValidator;
-  @Mock private FieldGroupRepository fieldGroupRepository;
-  @Mock private FieldGroupMemberRepository fieldGroupMemberRepository;
-  @Mock private FieldDefinitionRepository fieldDefinitionRepository;
-  @Mock private FieldGroupService fieldGroupService;
+  @Mock private MemberNameResolver memberNameResolver;
   @Mock private TaskRepository taskRepository;
   @Mock private TimeEntryRepository timeEntryRepository;
-  @Mock private MemberNameResolver memberNameResolver;
-  @Mock private CustomerRepository customerRepository;
-  @Mock private CustomerLifecycleGuard customerLifecycleGuard;
-  @Mock private DocumentRepository documentRepository;
-  @Mock private InvoiceRepository invoiceRepository;
-  @Mock private OrgSettingsRepository orgSettingsRepository;
-  @Mock private ProjectNameResolver projectNameResolver;
+  @Mock private ProjectFieldService projectFieldService;
+  @Mock private ProjectDeletionGuard projectDeletionGuard;
   @InjectMocks private ProjectService service;
 
   @Test
@@ -136,8 +120,8 @@ class ProjectServiceTest {
     when(repository.save(any(Project.class))).thenReturn(project);
     when(projectMemberRepository.save(any(ProjectMember.class)))
         .thenAnswer(invocation -> invocation.getArgument(0));
-    when(customFieldValidator.validate(any(), anyMap(), any()))
-        .thenReturn(java.util.HashMap.newHashMap(0));
+    when(projectFieldService.prepareForCreate(eq("New"), isNull(), isNull(), isNull()))
+        .thenReturn(new ProjectFieldService.CreateFieldResult(Map.of(), "New", List.of()));
 
     var result = service.createProject("New", "Description", MEMBER_ID);
 
@@ -209,13 +193,11 @@ class ProjectServiceTest {
     var id = UUID.randomUUID();
     var project = projectWithId(id, "ToDelete", null, MEMBER_ID);
     when(repository.findById(id)).thenReturn(Optional.of(project));
-    when(taskRepository.countByProjectId(id)).thenReturn(0L);
-    when(timeEntryRepository.countByProjectId(id)).thenReturn(0L);
-    when(invoiceRepository.countByProjectId(id)).thenReturn(0L);
-    when(documentRepository.countByProjectId(id)).thenReturn(0L);
+    // ProjectDeletionGuard.checkAndExecute() is void — default Mockito behavior is do-nothing
 
     service.deleteProject(id);
 
+    verify(projectDeletionGuard).checkAndExecute(id);
     verify(repository).delete(project);
   }
 
@@ -256,60 +238,21 @@ class ProjectServiceTest {
   }
 
   @Test
-  void deleteProject_rejectsWhenTasksExist() {
+  void deleteProject_rejectsWhenGuardFails() {
     var id = UUID.randomUUID();
     var project = projectWithId(id, "HasTasks", null, MEMBER_ID);
     when(repository.findById(id)).thenReturn(Optional.of(project));
-    when(taskRepository.countByProjectId(id)).thenReturn(3L);
+    doThrow(
+            new ResourceConflictException(
+                "Cannot delete project",
+                "Cannot delete project with 3 task(s). Delete or cancel all tasks before deleting"
+                    + " the project."))
+        .when(projectDeletionGuard)
+        .checkAndExecute(id);
 
     assertThatThrownBy(() -> service.deleteProject(id))
         .isInstanceOf(ResourceConflictException.class)
         .hasMessageContaining("task");
-    verify(repository, never()).delete(any());
-  }
-
-  @Test
-  void deleteProject_rejectsWhenTimeEntriesExist() {
-    var id = UUID.randomUUID();
-    var project = projectWithId(id, "HasTime", null, MEMBER_ID);
-    when(repository.findById(id)).thenReturn(Optional.of(project));
-    when(taskRepository.countByProjectId(id)).thenReturn(0L);
-    when(timeEntryRepository.countByProjectId(id)).thenReturn(5L);
-
-    assertThatThrownBy(() -> service.deleteProject(id))
-        .isInstanceOf(ResourceConflictException.class)
-        .hasMessageContaining("time entr");
-    verify(repository, never()).delete(any());
-  }
-
-  @Test
-  void deleteProject_rejectsWhenInvoicesExist() {
-    var id = UUID.randomUUID();
-    var project = projectWithId(id, "HasInvoices", null, MEMBER_ID);
-    when(repository.findById(id)).thenReturn(Optional.of(project));
-    when(taskRepository.countByProjectId(id)).thenReturn(0L);
-    when(timeEntryRepository.countByProjectId(id)).thenReturn(0L);
-    when(invoiceRepository.countByProjectId(id)).thenReturn(2L);
-
-    assertThatThrownBy(() -> service.deleteProject(id))
-        .isInstanceOf(ResourceConflictException.class)
-        .hasMessageContaining("invoice");
-    verify(repository, never()).delete(any());
-  }
-
-  @Test
-  void deleteProject_rejectsWhenDocumentsExist() {
-    var id = UUID.randomUUID();
-    var project = projectWithId(id, "HasDocs", null, MEMBER_ID);
-    when(repository.findById(id)).thenReturn(Optional.of(project));
-    when(taskRepository.countByProjectId(id)).thenReturn(0L);
-    when(timeEntryRepository.countByProjectId(id)).thenReturn(0L);
-    when(invoiceRepository.countByProjectId(id)).thenReturn(0L);
-    when(documentRepository.countByProjectId(id)).thenReturn(4L);
-
-    assertThatThrownBy(() -> service.deleteProject(id))
-        .isInstanceOf(ResourceConflictException.class)
-        .hasMessageContaining("document");
     verify(repository, never()).delete(any());
   }
 

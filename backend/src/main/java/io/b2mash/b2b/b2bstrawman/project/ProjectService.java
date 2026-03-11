@@ -3,25 +3,15 @@ package io.b2mash.b2b.b2bstrawman.project;
 import io.b2mash.b2b.b2bstrawman.audit.AuditDeltaBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
-import io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleGuard;
-import io.b2mash.b2b.b2bstrawman.compliance.LifecycleAction;
-import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.ProjectCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.ProjectUpdatedEvent;
-import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.event.ProjectArchivedEvent;
 import io.b2mash.b2b.b2bstrawman.event.ProjectCompletedEvent;
 import io.b2mash.b2b.b2bstrawman.event.ProjectReopenedEvent;
-import io.b2mash.b2b.b2bstrawman.exception.DeleteGuard;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
-import io.b2mash.b2b.b2bstrawman.fielddefinition.CustomFieldValidator;
-import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
-import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupResolver;
-import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupService;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
-import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMember;
@@ -29,15 +19,11 @@ import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
-import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
-import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.task.TaskStatus;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,18 +44,11 @@ public class ProjectService {
   private final ProjectAccessService projectAccessService;
   private final AuditService auditService;
   private final ApplicationEventPublisher eventPublisher;
-  private final CustomFieldValidator customFieldValidator;
-  private final FieldGroupResolver fieldGroupResolver;
-  private final FieldGroupService fieldGroupService;
+  private final MemberNameResolver memberNameResolver;
   private final TaskRepository taskRepository;
   private final TimeEntryRepository timeEntryRepository;
-  private final MemberNameResolver memberNameResolver;
-  private final CustomerRepository customerRepository;
-  private final CustomerLifecycleGuard customerLifecycleGuard;
-  private final DocumentRepository documentRepository;
-  private final InvoiceRepository invoiceRepository;
-  private final OrgSettingsRepository orgSettingsRepository;
-  private final ProjectNameResolver projectNameResolver;
+  private final ProjectFieldService projectFieldService;
+  private final ProjectDeletionGuard projectDeletionGuard;
 
   public ProjectService(
       ProjectRepository repository,
@@ -77,35 +56,21 @@ public class ProjectService {
       ProjectAccessService projectAccessService,
       AuditService auditService,
       ApplicationEventPublisher eventPublisher,
-      CustomFieldValidator customFieldValidator,
-      FieldGroupResolver fieldGroupResolver,
-      FieldGroupService fieldGroupService,
+      MemberNameResolver memberNameResolver,
       TaskRepository taskRepository,
       TimeEntryRepository timeEntryRepository,
-      MemberNameResolver memberNameResolver,
-      CustomerRepository customerRepository,
-      CustomerLifecycleGuard customerLifecycleGuard,
-      DocumentRepository documentRepository,
-      InvoiceRepository invoiceRepository,
-      OrgSettingsRepository orgSettingsRepository,
-      ProjectNameResolver projectNameResolver) {
+      ProjectFieldService projectFieldService,
+      ProjectDeletionGuard projectDeletionGuard) {
     this.repository = repository;
     this.projectMemberRepository = projectMemberRepository;
     this.projectAccessService = projectAccessService;
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
-    this.customFieldValidator = customFieldValidator;
-    this.fieldGroupResolver = fieldGroupResolver;
-    this.fieldGroupService = fieldGroupService;
+    this.memberNameResolver = memberNameResolver;
     this.taskRepository = taskRepository;
     this.timeEntryRepository = timeEntryRepository;
-    this.memberNameResolver = memberNameResolver;
-    this.customerRepository = customerRepository;
-    this.customerLifecycleGuard = customerLifecycleGuard;
-    this.documentRepository = documentRepository;
-    this.invoiceRepository = invoiceRepository;
-    this.orgSettingsRepository = orgSettingsRepository;
-    this.projectNameResolver = projectNameResolver;
+    this.projectFieldService = projectFieldService;
+    this.projectDeletionGuard = projectDeletionGuard;
   }
 
   @Transactional(readOnly = true)
@@ -152,37 +117,17 @@ public class ProjectService {
     // Validate customer link and resolve customer name for naming pattern
     String customerName = null;
     if (customerId != null) {
-      var customer =
-          customerRepository
-              .findById(customerId)
-              .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
-      customerLifecycleGuard.requireActionPermitted(customer, LifecycleAction.CREATE_PROJECT);
-      customerName = customer.getName();
+      customerName = projectFieldService.resolveCustomerName(customerId);
     }
 
-    // Validate custom fields
-    Map<String, Object> validatedFields =
-        customFieldValidator.validate(
-            EntityType.PROJECT,
-            customFields != null ? customFields : new HashMap<>(),
-            appliedFieldGroups);
+    // Validate fields, apply naming pattern, resolve auto-apply groups
+    var fieldResult =
+        projectFieldService.prepareForCreate(name, customFields, appliedFieldGroups, customerName);
 
-    // Apply naming pattern if configured
-    String resolvedName = name;
-    var namingPattern =
-        orgSettingsRepository
-            .findForCurrentTenant()
-            .map(OrgSettings::getProjectNamingPattern)
-            .orElse(null);
-    if (namingPattern != null && !namingPattern.isBlank()) {
-      resolvedName =
-          projectNameResolver.resolve(namingPattern, name, validatedFields, customerName);
-    }
-
-    var project = new Project(resolvedName, description, createdBy);
-    project.setCustomFields(validatedFields);
-    if (appliedFieldGroups != null) {
-      project.setAppliedFieldGroups(appliedFieldGroups);
+    var project = new Project(fieldResult.resolvedName(), description, createdBy);
+    project.setCustomFields(fieldResult.validatedFields());
+    if (!fieldResult.mergedFieldGroups().isEmpty()) {
+      project.setAppliedFieldGroups(fieldResult.mergedFieldGroups());
     }
     if (customerId != null) {
       project.setCustomerId(customerId);
@@ -191,21 +136,6 @@ public class ProjectService {
       project.setDueDate(dueDate);
     }
 
-    // Auto-apply field groups before save so audit events capture final state
-    var autoApplyIds = fieldGroupService.resolveAutoApplyGroupIds(EntityType.PROJECT);
-    if (!autoApplyIds.isEmpty()) {
-      var merged =
-          new ArrayList<>(
-              project.getAppliedFieldGroups() != null
-                  ? project.getAppliedFieldGroups()
-                  : List.of());
-      for (UUID id : autoApplyIds) {
-        if (!merged.contains(id)) {
-          merged.add(id);
-        }
-      }
-      project.setAppliedFieldGroups(merged);
-    }
     project = repository.save(project);
 
     var lead = new ProjectMember(project.getId(), createdBy, Roles.PROJECT_LEAD, null);
@@ -272,11 +202,7 @@ public class ProjectService {
 
     // Validate customer link if provided
     if (customerId != null) {
-      var customer =
-          customerRepository
-              .findById(customerId)
-              .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
-      customerLifecycleGuard.requireActionPermitted(customer, LifecycleAction.CREATE_PROJECT);
+      projectFieldService.validateCustomerLink(customerId);
     }
 
     // Capture old values before mutation
@@ -288,8 +214,7 @@ public class ProjectService {
     // Validate and set custom fields
     if (customFields != null) {
       Map<String, Object> validatedFields =
-          customFieldValidator.validate(
-              EntityType.PROJECT,
+          projectFieldService.validateFields(
               customFields,
               appliedFieldGroups != null ? appliedFieldGroups : project.getAppliedFieldGroups());
       project.setCustomFields(validatedFields);
@@ -337,13 +262,10 @@ public class ProjectService {
         repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Project", id));
     projectAccessService.requireEditAccess(id, actor);
 
-    appliedFieldGroups =
-        fieldGroupResolver.resolveAndValidate(appliedFieldGroups, EntityType.PROJECT);
-
-    project.setAppliedFieldGroups(appliedFieldGroups);
+    var result = projectFieldService.setFieldGroups(project, appliedFieldGroups);
     repository.save(project);
 
-    return fieldGroupResolver.collectFieldDefinitions(appliedFieldGroups);
+    return result;
   }
 
   @Transactional
@@ -359,24 +281,7 @@ public class ProjectService {
               .formatted(project.getStatus().name().toLowerCase()));
     }
 
-    DeleteGuard.forEntity("project", id)
-        .checkCountZero(
-            "task(s)",
-            taskRepository.countByProjectId(id),
-            "Delete or cancel all tasks before deleting the project.")
-        .checkCountZero(
-            "time entry/entries",
-            timeEntryRepository.countByProjectId(id),
-            "Remove all time entries before deleting the project.")
-        .checkCountZero(
-            "invoice(s)",
-            invoiceRepository.countByProjectId(id),
-            "Void or delete all invoices before deleting the project.")
-        .checkCountZero(
-            "document(s)",
-            documentRepository.countByProjectId(id),
-            "Delete all documents before deleting the project.")
-        .execute();
+    projectDeletionGuard.checkAndExecute(id);
 
     repository.delete(project);
 

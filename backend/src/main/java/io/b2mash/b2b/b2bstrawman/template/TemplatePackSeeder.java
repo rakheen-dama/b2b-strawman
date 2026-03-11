@@ -1,15 +1,12 @@
 package io.b2mash.b2b.b2bstrawman.template;
 
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
+import io.b2mash.b2b.b2bstrawman.seeder.AbstractPackSeeder;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.stereotype.Service;
@@ -21,16 +18,11 @@ import tools.jackson.databind.ObjectMapper;
  * OrgSettings.templatePackStatus.
  */
 @Service
-public class TemplatePackSeeder {
+public class TemplatePackSeeder extends AbstractPackSeeder<TemplatePackDefinition> {
 
-  private static final Logger log = LoggerFactory.getLogger(TemplatePackSeeder.class);
   private static final String PACK_LOCATION = "classpath:template-packs/*/pack.json";
 
-  private final ResourcePatternResolver resourceResolver;
-  private final ObjectMapper objectMapper;
   private final DocumentTemplateRepository documentTemplateRepository;
-  private final OrgSettingsRepository orgSettingsRepository;
-  private final TenantTransactionHelper tenantTransactionHelper;
 
   public TemplatePackSeeder(
       ResourcePatternResolver resourceResolver,
@@ -38,80 +30,37 @@ public class TemplatePackSeeder {
       DocumentTemplateRepository documentTemplateRepository,
       OrgSettingsRepository orgSettingsRepository,
       TenantTransactionHelper tenantTransactionHelper) {
-    this.resourceResolver = resourceResolver;
-    this.objectMapper = objectMapper;
+    super(resourceResolver, objectMapper, orgSettingsRepository, tenantTransactionHelper);
     this.documentTemplateRepository = documentTemplateRepository;
-    this.orgSettingsRepository = orgSettingsRepository;
-    this.tenantTransactionHelper = tenantTransactionHelper;
   }
 
-  /**
-   * Seeds all available template packs for the given tenant. Must be called during or after tenant
-   * provisioning when the schema and tables already exist.
-   *
-   * @param tenantId schema name (e.g., "tenant_abc123")
-   * @param orgId Clerk organization ID
-   */
-  public void seedPacksForTenant(String tenantId, String orgId) {
-    tenantTransactionHelper.executeInTenantTransaction(tenantId, orgId, t -> doSeedPacks(t));
+  @Override
+  protected String getPackResourcePattern() {
+    return PACK_LOCATION;
   }
 
-  private void doSeedPacks(String tenantId) {
-    List<PackWithResource> packs = loadPacks();
-    if (packs.isEmpty()) {
-      log.info("No template packs found on classpath for tenant {}", tenantId);
-      return;
-    }
-
-    var settings =
-        orgSettingsRepository
-            .findForCurrentTenant()
-            .orElseGet(
-                () -> {
-                  var newSettings = new OrgSettings("USD");
-                  return orgSettingsRepository.save(newSettings);
-                });
-
-    for (PackWithResource packEntry : packs) {
-      TemplatePackDefinition pack = packEntry.definition();
-      if (isPackAlreadyApplied(settings, pack.packId())) {
-        log.info("Pack {} already applied for tenant {}, skipping", pack.packId(), tenantId);
-        continue;
-      }
-
-      applyPack(pack, packEntry.packResource());
-      settings.recordTemplatePackApplication(pack.packId(), pack.version());
-      log.info(
-          "Applied template pack {} v{} for tenant {}", pack.packId(), pack.version(), tenantId);
-    }
-
-    orgSettingsRepository.save(settings);
+  @Override
+  protected Class<TemplatePackDefinition> getPackDefinitionType() {
+    return TemplatePackDefinition.class;
   }
 
-  private List<PackWithResource> loadPacks() {
-    try {
-      Resource[] resources = resourceResolver.getResources(PACK_LOCATION);
-      return Arrays.stream(resources)
-          .map(
-              resource -> {
-                try {
-                  var definition =
-                      objectMapper.readValue(
-                          resource.getInputStream(), TemplatePackDefinition.class);
-                  return new PackWithResource(definition, resource);
-                } catch (Exception e) {
-                  throw new IllegalStateException(
-                      "Failed to parse template pack: " + resource.getFilename(), e);
-                }
-              })
-          .toList();
-    } catch (IOException e) {
-      log.warn("Failed to scan for template packs at {}", PACK_LOCATION, e);
-      return List.of();
-    }
+  @Override
+  protected String getPackTypeName() {
+    return "template";
   }
 
-  private boolean isPackAlreadyApplied(OrgSettings settings, String packId) {
+  @Override
+  protected String getPackId(TemplatePackDefinition pack) {
+    return pack.packId();
+  }
+
+  @Override
+  protected String getPackVersion(TemplatePackDefinition pack) {
+    return String.valueOf(pack.version());
+  }
+
+  @Override
+  protected boolean isPackAlreadyApplied(OrgSettings settings, String packId) {
     if (settings.getTemplatePackStatus() == null) {
       return false;
     }
@@ -119,14 +68,20 @@ public class TemplatePackSeeder {
         .anyMatch(entry -> packId.equals(entry.get("packId")));
   }
 
-  private void applyPack(TemplatePackDefinition pack, Resource packJsonResource) {
+  @Override
+  protected void recordPackApplication(OrgSettings settings, TemplatePackDefinition pack) {
+    settings.recordTemplatePackApplication(pack.packId(), pack.version());
+  }
+
+  @Override
+  protected void applyPack(TemplatePackDefinition pack, Resource packResource, String tenantId) {
     for (TemplatePackTemplate templateDef : pack.templates()) {
       TemplateCategory category = TemplateCategory.valueOf(templateDef.category());
       TemplateEntityType entityType = TemplateEntityType.valueOf(templateDef.primaryEntityType());
 
       String css =
           templateDef.cssFile() != null
-              ? loadTemplateContentAsString(packJsonResource, templateDef.cssFile())
+              ? loadTemplateContentAsString(packResource, templateDef.cssFile())
               : null;
 
       String slug = DocumentTemplate.generateSlug(templateDef.name());
@@ -134,7 +89,7 @@ public class TemplatePackSeeder {
       // Load content as JSONB Map for the primary content field
       Map<String, Object> contentJson = null;
       if (templateDef.contentFile() != null && templateDef.contentFile().endsWith(".json")) {
-        contentJson = loadTemplateContentAsJson(packJsonResource, templateDef.contentFile());
+        contentJson = loadTemplateContentAsJson(packResource, templateDef.contentFile());
       }
       if (contentJson == null) {
         throw new IllegalStateException(
@@ -167,11 +122,9 @@ public class TemplatePackSeeder {
       Resource packJsonResource, String filename) {
     try {
       Resource contentResource = packJsonResource.createRelative(filename);
-      return objectMapper.readValue(contentResource.getInputStream(), Map.class);
+      return objectMapper().readValue(contentResource.getInputStream(), Map.class);
     } catch (IOException e) {
       throw new IllegalStateException("Failed to parse template content JSON file: " + filename, e);
     }
   }
-
-  private record PackWithResource(TemplatePackDefinition definition, Resource packResource) {}
 }

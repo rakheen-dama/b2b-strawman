@@ -1,13 +1,10 @@
 package io.b2mash.b2b.b2bstrawman.fielddefinition;
 
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
+import io.b2mash.b2b.b2bstrawman.seeder.AbstractPackSeeder;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.stereotype.Service;
@@ -19,18 +16,13 @@ import tools.jackson.databind.ObjectMapper;
  * OrgSettings.fieldPackStatus.
  */
 @Service
-public class FieldPackSeeder {
+public class FieldPackSeeder extends AbstractPackSeeder<FieldPackDefinition> {
 
-  private static final Logger log = LoggerFactory.getLogger(FieldPackSeeder.class);
   private static final String PACK_LOCATION = "classpath:field-packs/*.json";
 
-  private final ResourcePatternResolver resourceResolver;
-  private final ObjectMapper objectMapper;
   private final FieldDefinitionRepository fieldDefinitionRepository;
   private final FieldGroupRepository fieldGroupRepository;
   private final FieldGroupMemberRepository fieldGroupMemberRepository;
-  private final OrgSettingsRepository orgSettingsRepository;
-  private final TenantTransactionHelper tenantTransactionHelper;
 
   public FieldPackSeeder(
       ResourcePatternResolver resourceResolver,
@@ -40,78 +32,39 @@ public class FieldPackSeeder {
       FieldGroupMemberRepository fieldGroupMemberRepository,
       OrgSettingsRepository orgSettingsRepository,
       TenantTransactionHelper tenantTransactionHelper) {
-    this.resourceResolver = resourceResolver;
-    this.objectMapper = objectMapper;
+    super(resourceResolver, objectMapper, orgSettingsRepository, tenantTransactionHelper);
     this.fieldDefinitionRepository = fieldDefinitionRepository;
     this.fieldGroupRepository = fieldGroupRepository;
     this.fieldGroupMemberRepository = fieldGroupMemberRepository;
-    this.orgSettingsRepository = orgSettingsRepository;
-    this.tenantTransactionHelper = tenantTransactionHelper;
   }
 
-  /**
-   * Seeds all available field packs for the given tenant. Must be called during or after tenant
-   * provisioning when the schema and tables already exist.
-   *
-   * @param tenantId schema name (e.g., "tenant_abc123")
-   * @param orgId Clerk organization ID
-   */
-  public void seedPacksForTenant(String tenantId, String orgId) {
-    tenantTransactionHelper.executeInTenantTransaction(tenantId, orgId, t -> doSeedPacks(t));
+  @Override
+  protected String getPackResourcePattern() {
+    return PACK_LOCATION;
   }
 
-  private void doSeedPacks(String tenantId) {
-    List<FieldPackDefinition> packs = loadPacks();
-    if (packs.isEmpty()) {
-      log.info("No field packs found on classpath for tenant {}", tenantId);
-      return;
-    }
-
-    var settings =
-        orgSettingsRepository
-            .findForCurrentTenant()
-            .orElseGet(
-                () -> {
-                  var newSettings = new OrgSettings("USD");
-                  return orgSettingsRepository.save(newSettings);
-                });
-
-    for (FieldPackDefinition pack : packs) {
-      if (isPackAlreadyApplied(settings, pack.packId())) {
-        log.info("Pack {} already applied for tenant {}, skipping", pack.packId(), tenantId);
-        continue;
-      }
-
-      applyPack(pack);
-      settings.recordPackApplication(pack.packId(), pack.version());
-      log.info("Applied field pack {} v{} for tenant {}", pack.packId(), pack.version(), tenantId);
-    }
-
-    orgSettingsRepository.save(settings);
+  @Override
+  protected Class<FieldPackDefinition> getPackDefinitionType() {
+    return FieldPackDefinition.class;
   }
 
-  private List<FieldPackDefinition> loadPacks() {
-    try {
-      Resource[] resources = resourceResolver.getResources(PACK_LOCATION);
-      return java.util.Arrays.stream(resources)
-          .map(
-              resource -> {
-                try {
-                  return objectMapper.readValue(
-                      resource.getInputStream(), FieldPackDefinition.class);
-                } catch (Exception e) {
-                  throw new IllegalStateException(
-                      "Failed to parse field pack: " + resource.getFilename(), e);
-                }
-              })
-          .toList();
-    } catch (IOException e) {
-      log.warn("Failed to scan for field packs at {}", PACK_LOCATION, e);
-      return List.of();
-    }
+  @Override
+  protected String getPackTypeName() {
+    return "field";
   }
 
-  private boolean isPackAlreadyApplied(OrgSettings settings, String packId) {
+  @Override
+  protected String getPackId(FieldPackDefinition pack) {
+    return pack.packId();
+  }
+
+  @Override
+  protected String getPackVersion(FieldPackDefinition pack) {
+    return String.valueOf(pack.version());
+  }
+
+  @Override
+  protected boolean isPackAlreadyApplied(OrgSettings settings, String packId) {
     if (settings.getFieldPackStatus() == null) {
       return false;
     }
@@ -119,7 +72,13 @@ public class FieldPackSeeder {
         .anyMatch(entry -> packId.equals(entry.get("packId")));
   }
 
-  private void applyPack(FieldPackDefinition pack) {
+  @Override
+  protected void recordPackApplication(OrgSettings settings, FieldPackDefinition pack) {
+    settings.recordPackApplication(pack.packId(), pack.version());
+  }
+
+  @Override
+  protected void applyPack(FieldPackDefinition pack, Resource packResource, String tenantId) {
     EntityType entityType = EntityType.valueOf(pack.entityType());
 
     // Create the field group

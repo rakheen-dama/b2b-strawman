@@ -10,6 +10,7 @@ import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.billingrate.BillingRateService;
 import io.b2mash.b2b.b2bstrawman.costrate.CostRateService;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
@@ -99,8 +100,7 @@ class UtilizationReportTest {
                       "MEDIUM",
                       "TASK",
                       null,
-                      memberIdOwner,
-                      "owner");
+                      new ActorContext(memberIdOwner, "owner"));
               taskId = task.getId();
 
               // Billing rate: $100/hr USD for owner (member default)
@@ -112,8 +112,7 @@ class UtilizationReportTest {
                   new BigDecimal("100.00"),
                   LocalDate.of(2024, 1, 1),
                   null,
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
 
               // Cost rate: $50/hr USD for owner
               costRateService.createCostRate(
@@ -122,8 +121,7 @@ class UtilizationReportTest {
                   new BigDecimal("50.00"),
                   LocalDate.of(2024, 1, 1),
                   null,
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
 
               // Owner entries:
               // Entry 1: 120 min (2 hours), billable, 2025-01-15
@@ -134,8 +132,7 @@ class UtilizationReportTest {
                   true,
                   null,
                   "Billable work",
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
 
               // Entry 2: 60 min (1 hour), non-billable, 2025-01-16
               timeEntryService.createTimeEntry(
@@ -145,8 +142,7 @@ class UtilizationReportTest {
                   false,
                   null,
                   "Non-billable work",
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
 
               // Entry 3: 30 min (0.5 hours), billable, 2025-02-10
               timeEntryService.createTimeEntry(
@@ -156,8 +152,7 @@ class UtilizationReportTest {
                   true,
                   null,
                   "More billable work",
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
 
               // Billing rate: $80/hr USD for member (created by owner)
               billingRateService.createRate(
@@ -168,8 +163,7 @@ class UtilizationReportTest {
                   new BigDecimal("80.00"),
                   LocalDate.of(2024, 1, 1),
                   null,
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
 
               // Cost rate: $40/hr USD for member (created by owner)
               costRateService.createCostRate(
@@ -178,8 +172,7 @@ class UtilizationReportTest {
                   new BigDecimal("40.00"),
                   LocalDate.of(2024, 1, 1),
                   null,
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
 
               // Member entry: 90 min (1.5 hours), billable, 2025-01-20
               // Uses memberIdMember as entry owner, owner role for access check
@@ -190,8 +183,7 @@ class UtilizationReportTest {
                   true,
                   null,
                   "Member billable work",
-                  memberIdMember,
-                  "owner");
+                  new ActorContext(memberIdMember, "owner"));
             });
 
     // Owner: billable 2.5h, non-billable 1h, total 3.5h, utilization = 2.5/3.5*100 = 71.43%

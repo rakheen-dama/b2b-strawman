@@ -10,6 +10,7 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.billingrate.BillingRateService;
 import io.b2mash.b2b.b2bstrawman.costrate.CostRateService;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
@@ -211,16 +212,14 @@ class AdminReSnapshotTest {
                   new BigDecimal("200.00"),
                   LocalDate.of(2024, 1, 1),
                   null,
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
               costRateService.createCostRate(
                   memberIdOwner,
                   "USD",
                   new BigDecimal("100.00"),
                   LocalDate.of(2024, 1, 1),
                   null,
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
 
               var withCapRole =
                   orgRoleService.createRole(

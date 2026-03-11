@@ -11,6 +11,7 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
@@ -102,7 +103,7 @@ class BillingRateResolutionTest {
               projectId = project.getId();
 
               customerProjectService.linkCustomerToProject(
-                  customerId, projectId, memberIdOwner, memberIdOwner, "owner");
+                  customerId, projectId, memberIdOwner, new ActorContext(memberIdOwner, "owner"));
             });
   }
 
@@ -130,8 +131,7 @@ class BillingRateResolutionTest {
               new BigDecimal("100.00"),
               LocalDate.of(2024, 1, 1),
               null,
-              memberIdOwner,
-              "owner");
+              new ActorContext(memberIdOwner, "owner"));
 
           var result =
               billingRateService.resolveRate(memberIdOwner, projectId, LocalDate.of(2024, 6, 15));
@@ -158,8 +158,7 @@ class BillingRateResolutionTest {
               new BigDecimal("150.00"),
               LocalDate.of(2024, 1, 1),
               null,
-              memberIdOwner,
-              "owner");
+              new ActorContext(memberIdOwner, "owner"));
 
           var result =
               billingRateService.resolveRate(memberIdOwner, projectId, LocalDate.of(2024, 6, 15));
@@ -186,8 +185,7 @@ class BillingRateResolutionTest {
               new BigDecimal("200.00"),
               LocalDate.of(2024, 1, 1),
               null,
-              memberIdOwner,
-              "owner");
+              new ActorContext(memberIdOwner, "owner"));
 
           var result =
               billingRateService.resolveRate(memberIdOwner, projectId, LocalDate.of(2024, 6, 15));
@@ -231,8 +229,7 @@ class BillingRateResolutionTest {
               new BigDecimal("300.00"),
               LocalDate.of(2030, 1, 1),
               null,
-              memberIdOwner,
-              "owner");
+              new ActorContext(memberIdOwner, "owner"));
 
           var result =
               billingRateService.resolveRate(memberIdMember, projectId, LocalDate.of(2024, 6, 15));
@@ -256,8 +253,7 @@ class BillingRateResolutionTest {
               new BigDecimal("50.00"),
               LocalDate.of(2024, 1, 1),
               LocalDate.of(2024, 6, 30),
-              memberIdOwner,
-              "owner");
+              new ActorContext(memberIdOwner, "owner"));
 
           billingRateService.createRate(
               memberIdMember,
@@ -267,8 +263,7 @@ class BillingRateResolutionTest {
               new BigDecimal("75.00"),
               LocalDate.of(2024, 7, 1),
               LocalDate.of(2024, 12, 31),
-              memberIdOwner,
-              "owner");
+              new ActorContext(memberIdOwner, "owner"));
 
           // Query date in first range
           var result1 =

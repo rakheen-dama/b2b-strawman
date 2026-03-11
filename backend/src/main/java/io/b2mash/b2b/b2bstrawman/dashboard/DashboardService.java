@@ -23,6 +23,7 @@ import io.b2mash.b2b.b2bstrawman.dashboard.dto.TeamWorkloadEntry;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.TrendPoint;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.UpcomingDeadline;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.UtilizationSummary;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.project.ProjectStatus;
 import io.b2mash.b2b.b2bstrawman.project.ProjectWithRole;
@@ -189,14 +190,14 @@ public class DashboardService {
    */
   @SuppressWarnings("unchecked")
   @Transactional(readOnly = true)
-  public List<ProjectHealth> getProjectHealthList(String tenantId, UUID memberId, String orgRole) {
-    String key = tenantId + ":project-health:" + orgRole;
+  public List<ProjectHealth> getProjectHealthList(String tenantId, ActorContext actor) {
+    String key = tenantId + ":project-health:" + actor.orgRole();
     List<ProjectHealth> cached = (List<ProjectHealth>) orgCache.getIfPresent(key);
     if (cached != null) {
       return cached;
     }
 
-    List<ProjectHealth> result = computeProjectHealthList(memberId, orgRole);
+    List<ProjectHealth> result = computeProjectHealthList(actor);
     orgCache.put(key, result);
     return result;
   }
@@ -218,18 +219,18 @@ public class DashboardService {
   @SuppressWarnings("unchecked")
   @Transactional(readOnly = true)
   public List<TeamWorkloadEntry> getTeamWorkload(
-      String tenantId, UUID memberId, String orgRole, LocalDate from, LocalDate to) {
+      String tenantId, ActorContext actor, LocalDate from, LocalDate to) {
     String cacheKey =
-        isAdminOrOwner(orgRole)
+        isAdminOrOwner(actor.orgRole())
             ? tenantId + ":team-workload:all:" + from + "_" + to
-            : tenantId + ":team-workload:member:" + memberId + ":" + from + "_" + to;
+            : tenantId + ":team-workload:member:" + actor.memberId() + ":" + from + "_" + to;
 
     List<TeamWorkloadEntry> cached = (List<TeamWorkloadEntry>) orgCache.getIfPresent(cacheKey);
     if (cached != null) {
       return cached;
     }
 
-    List<TeamWorkloadEntry> result = computeTeamWorkload(memberId, orgRole, from, to);
+    List<TeamWorkloadEntry> result = computeTeamWorkload(actor, from, to);
     orgCache.put(cacheKey, result);
     return result;
   }
@@ -247,8 +248,9 @@ public class DashboardService {
   @SuppressWarnings("unchecked")
   @Transactional(readOnly = true)
   public List<CrossProjectActivityItem> getCrossProjectActivity(
-      String tenantId, UUID memberId, String orgRole, int limit) {
-    String cacheKey = tenantId + ":activity:" + memberId + ":" + orgRole + ":" + limit;
+      String tenantId, ActorContext actor, int limit) {
+    String cacheKey =
+        tenantId + ":activity:" + actor.memberId() + ":" + actor.orgRole() + ":" + limit;
 
     List<CrossProjectActivityItem> cached =
         (List<CrossProjectActivityItem>) orgCache.getIfPresent(cacheKey);
@@ -256,7 +258,7 @@ public class DashboardService {
       return cached;
     }
 
-    List<CrossProjectActivityItem> result = computeCrossProjectActivity(memberId, orgRole, limit);
+    List<CrossProjectActivityItem> result = computeCrossProjectActivity(actor, limit);
     orgCache.put(cacheKey, result);
     return result;
   }
@@ -575,13 +577,13 @@ public class DashboardService {
     return computeKpiValues(prevFrom, prevTo);
   }
 
-  private List<ProjectHealth> computeProjectHealthList(UUID memberId, String orgRole) {
+  private List<ProjectHealth> computeProjectHealthList(ActorContext actor) {
     // Get accessible projects based on role
     List<ProjectWithRole> projectsWithRoles;
-    if (isAdminOrOwner(orgRole)) {
-      projectsWithRoles = projectRepository.findAllProjectsWithRole(memberId);
+    if (isAdminOrOwner(actor.orgRole())) {
+      projectsWithRoles = projectRepository.findAllProjectsWithRole(actor.memberId());
     } else {
-      projectsWithRoles = projectRepository.findProjectsForMember(memberId);
+      projectsWithRoles = projectRepository.findProjectsForMember(actor.memberId());
     }
 
     LocalDate today = LocalDate.now();
@@ -658,7 +660,7 @@ public class DashboardService {
   }
 
   private List<TeamWorkloadEntry> computeTeamWorkload(
-      UUID memberId, String orgRole, LocalDate from, LocalDate to) {
+      ActorContext actor, LocalDate from, LocalDate to) {
     List<TeamWorkloadProjection> rows = timeEntryRepository.findTeamWorkload(from, to);
 
     // Group flat rows by member
@@ -673,7 +675,7 @@ public class DashboardService {
       List<TeamWorkloadProjection> memberRows = entry.getValue();
 
       // For regular members, skip entries that are not their own
-      if (!isAdminOrOwner(orgRole) && !entryMemberId.equals(memberId)) {
+      if (!isAdminOrOwner(actor.orgRole()) && !entryMemberId.equals(actor.memberId())) {
         continue;
       }
 
@@ -715,12 +717,12 @@ public class DashboardService {
   }
 
   private List<CrossProjectActivityItem> computeCrossProjectActivity(
-      UUID memberId, String orgRole, int limit) {
+      ActorContext actor, int limit) {
     List<CrossProjectActivityProjection> rows;
-    if (isAdminOrOwner(orgRole)) {
+    if (isAdminOrOwner(actor.orgRole())) {
       rows = auditEventRepository.findCrossProjectActivity(limit);
     } else {
-      rows = auditEventRepository.findCrossProjectActivityForMember(memberId, limit);
+      rows = auditEventRepository.findCrossProjectActivityForMember(actor.memberId(), limit);
     }
 
     return rows.stream()

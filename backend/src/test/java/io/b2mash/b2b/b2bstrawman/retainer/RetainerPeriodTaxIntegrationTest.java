@@ -22,6 +22,7 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.tax.TaxRate;
 import io.b2mash.b2b.b2bstrawman.tax.TaxRateRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestIds;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -603,14 +604,7 @@ class RetainerPeriodTaxIntegrationTest {
                   } else {
                     settings = new OrgSettings(currency);
                   }
-                  // Use reflection to set taxInclusive (no setter available)
-                  try {
-                    var field = OrgSettings.class.getDeclaredField("taxInclusive");
-                    field.setAccessible(true);
-                    field.set(settings, taxInclusive);
-                  } catch (ReflectiveOperationException e) {
-                    throw new RuntimeException(e);
-                  }
+                  TestIds.withField(settings, "taxInclusive", taxInclusive);
                   orgSettingsRepository.save(settings);
                 }));
   }

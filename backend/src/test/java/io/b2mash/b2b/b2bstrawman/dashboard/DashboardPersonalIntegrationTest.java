@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberService;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
@@ -122,7 +123,13 @@ class DashboardPersonalIntegrationTest {
     // Task A1: assigned to member1, no due date
     var taskA1 =
         taskService.createTask(
-            projectAId, "Task A1", null, "MEDIUM", "TASK", null, adminMemberId, "admin");
+            projectAId,
+            "Task A1",
+            null,
+            "MEDIUM",
+            "TASK",
+            null,
+            new ActorContext(adminMemberId, "admin"));
     taskA1Id = taskA1.getId();
     taskService.updateTask(
         taskA1Id,
@@ -133,8 +140,7 @@ class DashboardPersonalIntegrationTest {
         "TASK",
         null,
         member1Id,
-        adminMemberId,
-        "admin");
+        new ActorContext(adminMemberId, "admin"));
 
     // Task A2: assigned to member1, overdue (due date in the past)
     var taskA2 =
@@ -145,8 +151,7 @@ class DashboardPersonalIntegrationTest {
             "HIGH",
             "TASK",
             today.minusDays(5),
-            adminMemberId,
-            "admin");
+            new ActorContext(adminMemberId, "admin"));
     taskA2Id = taskA2.getId();
     taskService.updateTask(
         taskA2Id,
@@ -157,8 +162,7 @@ class DashboardPersonalIntegrationTest {
         "TASK",
         today.minusDays(5),
         member1Id,
-        adminMemberId,
-        "admin");
+        new ActorContext(adminMemberId, "admin"));
 
     // Task A3: assigned to member1, upcoming deadline
     var taskA3 =
@@ -169,8 +173,7 @@ class DashboardPersonalIntegrationTest {
             "MEDIUM",
             "TASK",
             today.plusDays(3),
-            adminMemberId,
-            "admin");
+            new ActorContext(adminMemberId, "admin"));
     taskA3Id = taskA3.getId();
     taskService.updateTask(
         taskA3Id,
@@ -181,13 +184,18 @@ class DashboardPersonalIntegrationTest {
         "TASK",
         today.plusDays(3),
         member1Id,
-        adminMemberId,
-        "admin");
+        new ActorContext(adminMemberId, "admin"));
 
     // --- Create task in project B ---
     var taskB1 =
         taskService.createTask(
-            projectBId, "Task B1", null, "LOW", "TASK", today.plusDays(7), adminMemberId, "admin");
+            projectBId,
+            "Task B1",
+            null,
+            "LOW",
+            "TASK",
+            today.plusDays(7),
+            new ActorContext(adminMemberId, "admin"));
     taskB1Id = taskB1.getId();
     taskService.updateTask(
         taskB1Id,
@@ -198,8 +206,7 @@ class DashboardPersonalIntegrationTest {
         "TASK",
         today.plusDays(7),
         member1Id,
-        adminMemberId,
-        "admin");
+        new ActorContext(adminMemberId, "admin"));
 
     // --- Log time for member1 ---
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -216,8 +223,7 @@ class DashboardPersonalIntegrationTest {
                   true,
                   null,
                   "Member1 billable on A",
-                  member1Id,
-                  "member");
+                  new ActorContext(member1Id, "member"));
 
               // Project A: 60 min non-billable
               timeEntryService.createTimeEntry(
@@ -227,8 +233,7 @@ class DashboardPersonalIntegrationTest {
                   false,
                   null,
                   "Member1 non-billable on A",
-                  member1Id,
-                  "member");
+                  new ActorContext(member1Id, "member"));
 
               // Project B: 90 min billable
               timeEntryService.createTimeEntry(
@@ -238,13 +243,18 @@ class DashboardPersonalIntegrationTest {
                   true,
                   null,
                   "Member1 billable on B",
-                  member1Id,
-                  "member");
+                  new ActorContext(member1Id, "member"));
             });
 
     // --- Log time for admin on project A ---
     timeEntryService.createTimeEntry(
-        taskA1Id, today.minusDays(4), 45, true, null, "Admin work on A", adminMemberId, "admin");
+        taskA1Id,
+        today.minusDays(4),
+        45,
+        true,
+        null,
+        "Admin work on A",
+        new ActorContext(adminMemberId, "admin"));
   }
 
   // --- Personal Dashboard Tests ---

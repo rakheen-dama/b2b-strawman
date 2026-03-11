@@ -3,7 +3,7 @@ package io.b2mash.b2b.b2bstrawman.timeentry;
 import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
-import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -48,8 +48,9 @@ public class TimeEntryController {
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<TimeEntryResponse> createTimeEntry(
       @PathVariable UUID taskId, @Valid @RequestBody CreateTimeEntryRequest request) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
 
     var result =
         timeEntryService.createTimeEntry(
@@ -59,8 +60,7 @@ public class TimeEntryController {
             request.billable() != null ? request.billable() : true,
             request.rateCents(),
             request.description(),
-            memberId,
-            orgRole);
+            actor);
 
     var names = resolveNames(List.of(result.entry()));
     var invoiceNumbers = resolveInvoiceNumbers(List.of(result.entry()));
@@ -74,11 +74,11 @@ public class TimeEntryController {
       @PathVariable UUID taskId,
       @RequestParam(required = false) Boolean billable,
       @RequestParam(required = false) BillingStatus billingStatus) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
 
-    var entries =
-        timeEntryService.listTimeEntriesByTask(taskId, memberId, orgRole, billable, billingStatus);
+    var entries = timeEntryService.listTimeEntriesByTask(taskId, actor, billable, billingStatus);
     var names = resolveNames(entries);
     var invoiceNumbers = resolveInvoiceNumbers(entries);
     var response =
@@ -92,11 +92,11 @@ public class TimeEntryController {
       @PathVariable UUID projectId,
       @PathVariable UUID id,
       @Valid @RequestBody ToggleBillableRequest request) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
 
-    var entry =
-        timeEntryService.toggleBillable(projectId, id, request.billable(), memberId, orgRole);
+    var entry = timeEntryService.toggleBillable(projectId, id, request.billable(), actor);
     var names = resolveNames(List.of(entry));
     var invoiceNumbers = resolveInvoiceNumbers(List.of(entry));
     return ResponseEntity.ok(TimeEntryResponse.from(entry, names, invoiceNumbers));
@@ -106,8 +106,9 @@ public class TimeEntryController {
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<TimeEntryResponse> updateTimeEntry(
       @PathVariable UUID id, @Valid @RequestBody UpdateTimeEntryRequest request) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
 
     var entry =
         timeEntryService.updateTimeEntry(
@@ -117,8 +118,7 @@ public class TimeEntryController {
             request.billable(),
             request.rateCents(),
             request.description(),
-            memberId,
-            orgRole);
+            actor);
 
     var names = resolveNames(List.of(entry));
     var invoiceNumbers = resolveInvoiceNumbers(List.of(entry));
@@ -128,10 +128,11 @@ public class TimeEntryController {
   @DeleteMapping("/api/time-entries/{id}")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<Void> deleteTimeEntry(@PathVariable UUID id) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
 
-    timeEntryService.deleteTimeEntry(id, memberId, orgRole);
+    timeEntryService.deleteTimeEntry(id, actor);
     return ResponseEntity.noContent().build();
   }
 

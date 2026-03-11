@@ -26,6 +26,7 @@ import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMember;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
@@ -115,18 +116,18 @@ public class ProjectService {
   }
 
   @Transactional(readOnly = true)
-  public List<ProjectWithRole> listProjects(UUID memberId, String orgRole) {
-    if (Roles.ORG_OWNER.equals(orgRole) || Roles.ORG_ADMIN.equals(orgRole)) {
-      return repository.findAllProjectsWithRole(memberId);
+  public List<ProjectWithRole> listProjects(ActorContext actor) {
+    if (Roles.ORG_OWNER.equals(actor.orgRole()) || Roles.ORG_ADMIN.equals(actor.orgRole())) {
+      return repository.findAllProjectsWithRole(actor.memberId());
     }
-    return repository.findProjectsForMember(memberId);
+    return repository.findProjectsForMember(actor.memberId());
   }
 
   @Transactional(readOnly = true)
-  public ProjectWithRole getProject(UUID id, UUID memberId, String orgRole) {
+  public ProjectWithRole getProject(UUID id, ActorContext actor) {
     var project =
         repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Project", id));
-    var access = projectAccessService.requireViewAccess(id, memberId, orgRole);
+    var access = projectAccessService.requireViewAccess(id, actor);
     return new ProjectWithRole(project, access.projectRole());
   }
 
@@ -246,8 +247,8 @@ public class ProjectService {
 
   @Transactional
   public ProjectWithRole updateProject(
-      UUID id, String name, String description, UUID memberId, String orgRole) {
-    return updateProject(id, name, description, memberId, orgRole, null, null, null, null);
+      UUID id, String name, String description, ActorContext actor) {
+    return updateProject(id, name, description, actor, null, null, null, null);
   }
 
   @Transactional
@@ -255,12 +256,11 @@ public class ProjectService {
       UUID id,
       String name,
       String description,
-      UUID memberId,
-      String orgRole,
+      ActorContext actor,
       Map<String, Object> customFields,
       List<UUID> appliedFieldGroups) {
     return updateProject(
-        id, name, description, memberId, orgRole, customFields, appliedFieldGroups, null, null);
+        id, name, description, actor, customFields, appliedFieldGroups, null, null);
   }
 
   @Transactional
@@ -268,15 +268,14 @@ public class ProjectService {
       UUID id,
       String name,
       String description,
-      UUID memberId,
-      String orgRole,
+      ActorContext actor,
       Map<String, Object> customFields,
       List<UUID> appliedFieldGroups,
       UUID customerId,
       LocalDate dueDate) {
     var project =
         repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Project", id));
-    var access = projectAccessService.requireEditAccess(id, memberId, orgRole);
+    var access = projectAccessService.requireEditAccess(id, actor);
 
     // Validate customer link if provided
     if (customerId != null) {
@@ -358,10 +357,10 @@ public class ProjectService {
 
   @Transactional
   public List<FieldDefinitionResponse> setFieldGroups(
-      UUID id, List<UUID> appliedFieldGroups, UUID memberId, String orgRole) {
+      UUID id, List<UUID> appliedFieldGroups, ActorContext actor) {
     var project =
         repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Project", id));
-    projectAccessService.requireEditAccess(id, memberId, orgRole);
+    projectAccessService.requireEditAccess(id, actor);
 
     // Validate all field groups exist and match entity type
     for (UUID groupId : appliedFieldGroups) {
@@ -464,13 +463,13 @@ public class ProjectService {
 
   @Transactional
   public Project completeProject(
-      UUID projectId, boolean acknowledgeUnbilledTime, UUID memberId, String orgRole) {
+      UUID projectId, boolean acknowledgeUnbilledTime, ActorContext actor) {
     var project =
         repository
             .findById(projectId)
             .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
 
-    projectAccessService.requireEditAccess(projectId, memberId, orgRole);
+    projectAccessService.requireEditAccess(projectId, actor);
 
     // Guardrail 1: open tasks
     long openTaskCount =
@@ -494,13 +493,13 @@ public class ProjectService {
               .formatted(unbilledCount, unbilledHours));
     }
 
-    project.complete(memberId);
+    project.complete(actor.memberId());
     project = repository.save(project);
-    log.info("Project {} completed by member {}", projectId, memberId);
+    log.info("Project {} completed by member {}", projectId, actor.memberId());
 
     var auditDetails = new LinkedHashMap<String, Object>();
     auditDetails.put("name", project.getName());
-    auditDetails.put("completed_by", memberId.toString());
+    auditDetails.put("completed_by", actor.memberId().toString());
     if (unbilledCount > 0 && acknowledgeUnbilledTime) {
       auditDetails.put("unbilled_time_waived", true);
       auditDetails.put("unbilled_entry_count", unbilledCount);
@@ -515,7 +514,7 @@ public class ProjectService {
             .details(auditDetails)
             .build());
 
-    String actorName = memberNameResolver.resolveName(memberId);
+    String actorName = memberNameResolver.resolveName(actor.memberId());
     String tenantId = RequestScopes.requireTenantId();
     String orgId = RequestScopes.requireOrgId();
     eventPublisher.publishEvent(
@@ -524,13 +523,13 @@ public class ProjectService {
             "project",
             project.getId(),
             project.getId(),
-            memberId,
+            actor.memberId(),
             actorName,
             tenantId,
             orgId,
             Instant.now(),
             Map.of("name", project.getName()),
-            memberId,
+            actor.memberId(),
             project.getName(),
             unbilledCount > 0 && acknowledgeUnbilledTime,
             RequestScopes.AUTOMATION_EXECUTION_ID.isBound()
@@ -541,17 +540,17 @@ public class ProjectService {
   }
 
   @Transactional
-  public Project archiveProject(UUID projectId, UUID memberId, String orgRole) {
+  public Project archiveProject(UUID projectId, ActorContext actor) {
     var project =
         repository
             .findById(projectId)
             .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
 
-    projectAccessService.requireEditAccess(projectId, memberId, orgRole);
+    projectAccessService.requireEditAccess(projectId, actor);
 
-    project.archive(memberId);
+    project.archive(actor.memberId());
     project = repository.save(project);
-    log.info("Project {} archived by member {}", projectId, memberId);
+    log.info("Project {} archived by member {}", projectId, actor.memberId());
 
     auditService.log(
         AuditEventBuilder.builder()
@@ -561,10 +560,10 @@ public class ProjectService {
             .details(
                 Map.of(
                     "name", project.getName(),
-                    "archived_by", memberId.toString()))
+                    "archived_by", actor.memberId().toString()))
             .build());
 
-    String actorName = memberNameResolver.resolveName(memberId);
+    String actorName = memberNameResolver.resolveName(actor.memberId());
     String tenantId = RequestScopes.requireTenantId();
     String orgId = RequestScopes.requireOrgId();
     eventPublisher.publishEvent(
@@ -573,32 +572,32 @@ public class ProjectService {
             "project",
             project.getId(),
             project.getId(),
-            memberId,
+            actor.memberId(),
             actorName,
             tenantId,
             orgId,
             Instant.now(),
             Map.of("name", project.getName()),
-            memberId,
+            actor.memberId(),
             project.getName()));
 
     return project;
   }
 
   @Transactional
-  public Project reopenProject(UUID projectId, UUID memberId, String orgRole) {
+  public Project reopenProject(UUID projectId, ActorContext actor) {
     var project =
         repository
             .findById(projectId)
             .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
 
-    projectAccessService.requireEditAccess(projectId, memberId, orgRole);
+    projectAccessService.requireEditAccess(projectId, actor);
 
     String previousStatus = project.getStatus().name();
 
     project.reopen();
     project = repository.save(project);
-    log.info("Project {} reopened by member {}", projectId, memberId);
+    log.info("Project {} reopened by member {}", projectId, actor.memberId());
 
     auditService.log(
         AuditEventBuilder.builder()
@@ -608,11 +607,11 @@ public class ProjectService {
             .details(
                 Map.of(
                     "name", project.getName(),
-                    "reopened_by", memberId.toString(),
+                    "reopened_by", actor.memberId().toString(),
                     "previous_status", previousStatus))
             .build());
 
-    String actorName = memberNameResolver.resolveName(memberId);
+    String actorName = memberNameResolver.resolveName(actor.memberId());
     String tenantId = RequestScopes.requireTenantId();
     String orgId = RequestScopes.requireOrgId();
     eventPublisher.publishEvent(
@@ -621,13 +620,13 @@ public class ProjectService {
             "project",
             project.getId(),
             project.getId(),
-            memberId,
+            actor.memberId(),
             actorName,
             tenantId,
             orgId,
             Instant.now(),
             Map.of("name", project.getName()),
-            memberId,
+            actor.memberId(),
             project.getName(),
             previousStatus));
 

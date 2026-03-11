@@ -9,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationRepository;
@@ -169,8 +170,7 @@ class RetainerConsumptionListenerTest {
                       true,
                       null,
                       "Work done",
-                      memberId,
-                      "owner");
+                      new ActorContext(memberId, "owner"));
                 }));
 
     runInTenant(
@@ -196,8 +196,7 @@ class RetainerConsumptionListenerTest {
                       false,
                       null,
                       "Non-billable work",
-                      memberId,
-                      "owner");
+                      new ActorContext(memberId, "owner"));
                 }));
 
     runInTenant(
@@ -226,8 +225,7 @@ class RetainerConsumptionListenerTest {
                           true,
                           null,
                           "Initial work",
-                          memberId,
-                          "owner");
+                          new ActorContext(memberId, "owner"));
                   entryRef.set(entry.entry().getId());
                 }));
 
@@ -237,7 +235,13 @@ class RetainerConsumptionListenerTest {
             transactionTemplate.executeWithoutResult(
                 tx -> {
                   timeEntryService.updateTimeEntry(
-                      entryRef.get(), null, 180, null, null, null, memberId, "owner");
+                      entryRef.get(),
+                      null,
+                      180,
+                      null,
+                      null,
+                      null,
+                      new ActorContext(memberId, "owner"));
                 }));
 
     runInTenant(
@@ -265,8 +269,7 @@ class RetainerConsumptionListenerTest {
                           true,
                           null,
                           "Entry to delete",
-                          memberId,
-                          "owner");
+                          new ActorContext(memberId, "owner"));
                   entryRef.set(entry.entry().getId());
                 }));
 
@@ -282,7 +285,8 @@ class RetainerConsumptionListenerTest {
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  timeEntryService.deleteTimeEntry(entryRef.get(), memberId, "owner");
+                  timeEntryService.deleteTimeEntry(
+                      entryRef.get(), new ActorContext(memberId, "owner"));
                 }));
 
     // Verify consumption back to 0
@@ -323,8 +327,7 @@ class RetainerConsumptionListenerTest {
                       true,
                       null,
                       "Unlinked work",
-                      memberId,
-                      "owner");
+                      new ActorContext(memberId, "owner"));
                 }));
 
     // The original retainer's period should not be affected
@@ -373,8 +376,7 @@ class RetainerConsumptionListenerTest {
                       true,
                       null,
                       "Work",
-                      memberId,
-                      "owner");
+                      new ActorContext(memberId, "owner"));
                 }));
   }
 
@@ -404,8 +406,7 @@ class RetainerConsumptionListenerTest {
                       true,
                       null,
                       "Work",
-                      memberId,
-                      "owner");
+                      new ActorContext(memberId, "owner"));
                 }));
   }
 
@@ -426,8 +427,7 @@ class RetainerConsumptionListenerTest {
                       true,
                       null,
                       "Lot of work",
-                      memberId,
-                      "owner");
+                      new ActorContext(memberId, "owner"));
                 }));
 
     runInTenant(
@@ -459,8 +459,7 @@ class RetainerConsumptionListenerTest {
                       true,
                       null,
                       "Overrun work",
-                      memberId,
-                      "owner");
+                      new ActorContext(memberId, "owner"));
                 }));
 
     runInTenant(
@@ -531,8 +530,7 @@ class RetainerConsumptionListenerTest {
                       true,
                       null,
                       "FF Work",
-                      memberId,
-                      "owner");
+                      new ActorContext(memberId, "owner"));
                 }));
 
     runInTenant(
@@ -569,8 +567,7 @@ class RetainerConsumptionListenerTest {
                       true,
                       null,
                       "Out-of-period work",
-                      memberId,
-                      "owner");
+                      new ActorContext(memberId, "owner"));
                 }));
 
     runInTenant(

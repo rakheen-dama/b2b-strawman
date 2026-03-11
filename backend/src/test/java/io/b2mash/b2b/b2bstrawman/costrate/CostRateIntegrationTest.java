@@ -10,6 +10,7 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
@@ -83,8 +84,7 @@ class CostRateIntegrationTest {
                     new BigDecimal("85.00"),
                     LocalDate.of(2024, 1, 1),
                     null,
-                    memberIdAdmin,
-                    "admin"));
+                    new ActorContext(memberIdAdmin, "admin")));
 
     assertThat(rate).isNotNull();
     assertThat(rate.getId()).isNotNull();
@@ -137,8 +137,7 @@ class CostRateIntegrationTest {
                 new BigDecimal("50.00"),
                 LocalDate.of(2024, 1, 1),
                 LocalDate.of(2024, 6, 30),
-                memberIdAdmin,
-                "admin"));
+                new ActorContext(memberIdAdmin, "admin")));
 
     runInTenantAs(
         memberIdAdmin,
@@ -150,8 +149,7 @@ class CostRateIntegrationTest {
                 new BigDecimal("60.00"),
                 LocalDate.of(2024, 7, 1),
                 LocalDate.of(2024, 12, 31),
-                memberIdAdmin,
-                "admin"));
+                new ActorContext(memberIdAdmin, "admin")));
 
     // Date in first range
     var result1 =
@@ -197,8 +195,7 @@ class CostRateIntegrationTest {
                             new BigDecimal("90.00"),
                             LocalDate.of(2024, 6, 1),
                             LocalDate.of(2024, 12, 31),
-                            memberIdAdmin,
-                            "admin")))
+                            new ActorContext(memberIdAdmin, "admin"))))
         .isInstanceOf(ResourceConflictException.class);
   }
 
@@ -216,8 +213,7 @@ class CostRateIntegrationTest {
                     "CAD",
                     LocalDate.of(2024, 1, 1),
                     LocalDate.of(2025, 12, 31),
-                    memberIdAdmin,
-                    "admin"));
+                    new ActorContext(memberIdAdmin, "admin")));
 
     assertThat(updated.getHourlyCost()).isEqualByComparingTo("95.00");
     assertThat(updated.getCurrency()).isEqualTo("CAD");
@@ -239,8 +235,7 @@ class CostRateIntegrationTest {
                     new BigDecimal("70.00"),
                     LocalDate.of(2030, 1, 1),
                     LocalDate.of(2030, 6, 30),
-                    memberIdAdmin,
-                    "admin"));
+                    new ActorContext(memberIdAdmin, "admin")));
 
     UUID rateId = rate.getId();
 
@@ -249,7 +244,7 @@ class CostRateIntegrationTest {
         memberIdAdmin,
         "admin",
         () -> {
-          costRateService.deleteCostRate(rateId, memberIdAdmin, "admin");
+          costRateService.deleteCostRate(rateId, new ActorContext(memberIdAdmin, "admin"));
           return null;
         });
 
@@ -266,8 +261,7 @@ class CostRateIntegrationTest {
                             "GBP",
                             LocalDate.of(2030, 1, 1),
                             null,
-                            memberIdAdmin,
-                            "admin")))
+                            new ActorContext(memberIdAdmin, "admin"))))
         .isInstanceOf(ResourceNotFoundException.class);
   }
 
@@ -286,8 +280,7 @@ class CostRateIntegrationTest {
                             new BigDecimal("100.00"),
                             LocalDate.of(2026, 1, 1),
                             null,
-                            memberIdMember,
-                            "member")))
+                            new ActorContext(memberIdMember, "member"))))
         .isInstanceOf(ForbiddenException.class);
   }
 

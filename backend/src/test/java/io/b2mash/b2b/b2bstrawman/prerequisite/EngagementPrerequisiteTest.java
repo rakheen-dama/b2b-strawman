@@ -30,6 +30,7 @@ import io.b2mash.b2b.b2bstrawman.projecttemplate.TemplateTaskItemRepository;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.TemplateTaskRepository;
 import io.b2mash.b2b.b2bstrawman.setupstatus.DocumentGenerationReadinessService;
 import io.b2mash.b2b.b2bstrawman.tag.TagRepository;
+import io.b2mash.b2b.b2bstrawman.testutil.TestIds;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import java.util.List;
@@ -238,43 +239,19 @@ class EngagementPrerequisiteTest {
 
   private FieldDefinition createCustomerFieldDefinitionWithId(
       UUID id, String name, String slug, FieldType fieldType) {
-    var fd = new FieldDefinition(EntityType.CUSTOMER, name, slug, fieldType);
-    // Use reflection to set the ID since it's @GeneratedValue
-    try {
-      var idField = FieldDefinition.class.getDeclaredField("id");
-      idField.setAccessible(true);
-      idField.set(fd, id);
-    } catch (Exception e) {
-      throw new RuntimeException("Failed to set field definition ID", e);
-    }
-    return fd;
+    return TestIds.withId(new FieldDefinition(EntityType.CUSTOMER, name, slug, fieldType), id);
   }
 
   private FieldDefinition createFieldDefinitionWithType(
       UUID id, String name, String slug, FieldType fieldType, EntityType entityType) {
-    var fd = new FieldDefinition(entityType, name, slug, fieldType);
-    try {
-      var idField = FieldDefinition.class.getDeclaredField("id");
-      idField.setAccessible(true);
-      idField.set(fd, id);
-    } catch (Exception e) {
-      throw new RuntimeException("Failed to set field definition ID", e);
-    }
-    return fd;
+    return TestIds.withId(new FieldDefinition(entityType, name, slug, fieldType), id);
   }
 
   private ProjectTemplate createTemplate() {
-    var template =
+    return TestIds.withId(
         new ProjectTemplate(
-            "Test Template", "{customer} - Audit", "Description", true, "MANUAL", null, MEMBER_ID);
-    try {
-      var idField = ProjectTemplate.class.getDeclaredField("id");
-      idField.setAccessible(true);
-      idField.set(template, TEMPLATE_ID);
-    } catch (Exception e) {
-      throw new RuntimeException("Failed to set template ID", e);
-    }
-    return template;
+            "Test Template", "{customer} - Audit", "Description", true, "MANUAL", null, MEMBER_ID),
+        TEMPLATE_ID);
   }
 
   private void mockCustomer(Map<String, Object> customFields) {

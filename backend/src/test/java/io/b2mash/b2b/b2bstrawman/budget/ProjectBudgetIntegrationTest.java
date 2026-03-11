@@ -15,6 +15,7 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.billingrate.BillingRateService;
 import io.b2mash.b2b.b2bstrawman.budget.BudgetStatus.BudgetStatusEnum;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
@@ -113,8 +114,7 @@ class ProjectBudgetIntegrationTest {
                       "MEDIUM",
                       "TASK",
                       null,
-                      memberIdOwner,
-                      "owner");
+                      new ActorContext(memberIdOwner, "owner"));
               taskId = task.getId();
 
               // Create billing rate for owner: $100/hour USD
@@ -126,8 +126,7 @@ class ProjectBudgetIntegrationTest {
                   new BigDecimal("100.00"),
                   LocalDate.of(2024, 1, 1),
                   null,
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
 
               // Create time entries:
               // Entry 1: 120 min (2 hours), billable
@@ -138,8 +137,7 @@ class ProjectBudgetIntegrationTest {
                   true,
                   null,
                   "Billable work",
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
 
               // Entry 2: 60 min (1 hour), non-billable
               timeEntryService.createTimeEntry(
@@ -149,8 +147,7 @@ class ProjectBudgetIntegrationTest {
                   false,
                   null,
                   "Non-billable work",
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
 
               // Entry 3: 30 min (0.5 hours), billable
               timeEntryService.createTimeEntry(
@@ -160,8 +157,7 @@ class ProjectBudgetIntegrationTest {
                   true,
                   null,
                   "More billable work",
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
             });
     // Total hours: 3.5 (120 + 60 + 30 = 210 min / 60 = 3.5)
     // Billable hours: 2.5 (120 + 30 = 150 min / 60 = 2.5)
@@ -213,8 +209,7 @@ class ProjectBudgetIntegrationTest {
                     null,
                     80,
                     "Hours only budget",
-                    memberIdOwner,
-                    "owner"));
+                    new ActorContext(memberIdOwner, "owner")));
 
     assertThat(status.projectId()).isEqualTo(projectId);
     assertThat(status.budgetHours()).isEqualByComparingTo(new BigDecimal("100.00"));
@@ -240,8 +235,7 @@ class ProjectBudgetIntegrationTest {
                     "USD",
                     80,
                     "Both hours and amount",
-                    memberIdOwner,
-                    "owner"));
+                    new ActorContext(memberIdOwner, "owner")));
 
     assertThat(status.budgetHours()).isEqualByComparingTo(new BigDecimal("100.00"));
     assertThat(status.budgetAmount()).isEqualByComparingTo(new BigDecimal("10000.00"));
@@ -260,7 +254,9 @@ class ProjectBudgetIntegrationTest {
         runInTenantAs(
             memberIdOwner,
             "owner",
-            () -> budgetService.getBudgetWithStatus(projectId, memberIdOwner, "owner"));
+            () ->
+                budgetService.getBudgetWithStatus(
+                    projectId, new ActorContext(memberIdOwner, "owner")));
 
     // 3.5 / 100 * 100 = 3.50%
     assertThat(status.hoursConsumedPct()).isEqualByComparingTo(new BigDecimal("3.50"));
@@ -287,8 +283,7 @@ class ProjectBudgetIntegrationTest {
                     "EUR",
                     80,
                     "EUR budget",
-                    memberIdOwner,
-                    "owner"));
+                    new ActorContext(memberIdOwner, "owner")));
 
     assertThat(status.amountConsumed()).isEqualByComparingTo(BigDecimal.ZERO);
     assertThat(status.amountConsumedPct()).isEqualByComparingTo(BigDecimal.ZERO);
@@ -313,8 +308,7 @@ class ProjectBudgetIntegrationTest {
                     null,
                     80,
                     null,
-                    memberIdOwner,
-                    "owner"));
+                    new ActorContext(memberIdOwner, "owner")));
 
     assertThat(status.hoursStatus()).isEqualTo(BudgetStatusEnum.ON_TRACK);
     assertThat(status.overallStatus()).isEqualTo(BudgetStatusEnum.ON_TRACK);
@@ -336,8 +330,7 @@ class ProjectBudgetIntegrationTest {
                     null,
                     80,
                     null,
-                    memberIdOwner,
-                    "owner"));
+                    new ActorContext(memberIdOwner, "owner")));
 
     assertThat(status.hoursConsumedPct()).isEqualByComparingTo(new BigDecimal("87.50"));
     assertThat(status.hoursStatus()).isEqualTo(BudgetStatusEnum.AT_RISK);
@@ -360,8 +353,7 @@ class ProjectBudgetIntegrationTest {
                     null,
                     80,
                     null,
-                    memberIdOwner,
-                    "owner"));
+                    new ActorContext(memberIdOwner, "owner")));
 
     assertThat(status.hoursConsumedPct()).isGreaterThan(new BigDecimal("100"));
     assertThat(status.hoursStatus()).isEqualTo(BudgetStatusEnum.OVER_BUDGET);
@@ -385,8 +377,7 @@ class ProjectBudgetIntegrationTest {
                     "USD",
                     80,
                     "Amount only",
-                    memberIdOwner,
-                    "owner"));
+                    new ActorContext(memberIdOwner, "owner")));
 
     assertThat(status.budgetHours()).isNull();
     assertThat(status.budgetAmount()).isEqualByComparingTo(new BigDecimal("500.00"));
@@ -414,8 +405,7 @@ class ProjectBudgetIntegrationTest {
                     "USD",
                     80,
                     null,
-                    memberIdOwner,
-                    "owner"));
+                    new ActorContext(memberIdOwner, "owner")));
 
     assertThat(status.hoursStatus()).isEqualTo(BudgetStatusEnum.OVER_BUDGET);
     assertThat(status.amountStatus()).isEqualTo(BudgetStatusEnum.ON_TRACK);
@@ -429,7 +419,7 @@ class ProjectBudgetIntegrationTest {
         memberIdOwner,
         "owner",
         () -> {
-          budgetService.deleteBudget(projectId, memberIdOwner, "owner");
+          budgetService.deleteBudget(projectId, new ActorContext(memberIdOwner, "owner"));
           return null;
         });
 
@@ -438,7 +428,9 @@ class ProjectBudgetIntegrationTest {
                 runInTenantAs(
                     memberIdOwner,
                     "owner",
-                    () -> budgetService.getBudgetWithStatus(projectId, memberIdOwner, "owner")))
+                    () ->
+                        budgetService.getBudgetWithStatus(
+                            projectId, new ActorContext(memberIdOwner, "owner"))))
         .isInstanceOf(ResourceNotFoundException.class);
   }
 

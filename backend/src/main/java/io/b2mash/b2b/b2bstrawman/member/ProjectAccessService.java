@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.member;
 
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import java.util.UUID;
@@ -21,26 +22,26 @@ public class ProjectAccessService {
   }
 
   @Transactional(readOnly = true)
-  public ProjectAccess checkAccess(UUID projectId, UUID memberId, String orgRole) {
-    if (Roles.ORG_OWNER.equals(orgRole)) {
+  public ProjectAccess checkAccess(UUID projectId, ActorContext actor) {
+    if (Roles.ORG_OWNER.equals(actor.orgRole())) {
       if (!projectExistsInTenant(projectId)) {
         return ProjectAccess.DENIED;
       }
-      var projectRole = lookupProjectRole(projectId, memberId);
+      var projectRole = lookupProjectRole(projectId, actor.memberId());
       return new ProjectAccess(true, true, true, true, projectRole);
     }
 
-    if (Roles.ORG_ADMIN.equals(orgRole)) {
+    if (Roles.ORG_ADMIN.equals(actor.orgRole())) {
       if (!projectExistsInTenant(projectId)) {
         return ProjectAccess.DENIED;
       }
-      var projectRole = lookupProjectRole(projectId, memberId);
+      var projectRole = lookupProjectRole(projectId, actor.memberId());
       return new ProjectAccess(true, true, true, false, projectRole);
     }
 
     // org:member — access depends on project membership
     return projectMemberRepository
-        .findByProjectIdAndMemberId(projectId, memberId)
+        .findByProjectIdAndMemberId(projectId, actor.memberId())
         .map(
             pm -> {
               boolean isLead = Roles.PROJECT_LEAD.equals(pm.getProjectRole());
@@ -54,8 +55,8 @@ public class ProjectAccessService {
    * provides security-by-obscurity: unauthorized users see "not found" rather than "forbidden".
    */
   @Transactional(readOnly = true)
-  public ProjectAccess requireViewAccess(UUID projectId, UUID memberId, String orgRole) {
-    var access = checkAccess(projectId, memberId, orgRole);
+  public ProjectAccess requireViewAccess(UUID projectId, ActorContext actor) {
+    var access = checkAccess(projectId, actor);
     if (!access.canView()) {
       throw new ResourceNotFoundException("Project", projectId);
     }
@@ -67,8 +68,8 @@ public class ProjectAccessService {
    * get 404 (not 403) via requireViewAccess.
    */
   @Transactional(readOnly = true)
-  public ProjectAccess requireEditAccess(UUID projectId, UUID memberId, String orgRole) {
-    var access = requireViewAccess(projectId, memberId, orgRole);
+  public ProjectAccess requireEditAccess(UUID projectId, ActorContext actor) {
+    var access = requireViewAccess(projectId, actor);
     if (!access.canEdit()) {
       throw new ForbiddenException(
           "Cannot edit project", "You do not have permission to edit project " + projectId);

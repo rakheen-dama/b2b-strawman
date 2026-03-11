@@ -12,6 +12,7 @@ import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
@@ -63,9 +64,8 @@ public class CommentService {
       UUID entityId,
       String body,
       String visibility,
-      UUID memberId,
-      String orgRole) {
-    var access = projectAccessService.requireViewAccess(projectId, memberId, orgRole);
+      ActorContext actor) {
+    var access = projectAccessService.requireViewAccess(projectId, actor);
 
     // Validate entity type
     if ("PROJECT".equals(entityType)) {
@@ -98,7 +98,8 @@ public class CommentService {
           "Only leads, admins, and owners can create SHARED comments");
     }
 
-    var comment = new Comment(entityType, entityId, projectId, memberId, body, resolvedVisibility);
+    var comment =
+        new Comment(entityType, entityId, projectId, actor.memberId(), body, resolvedVisibility);
     comment = commentRepository.save(comment);
     log.info(
         "Created comment {} on {} {} in project {}",
@@ -121,7 +122,7 @@ public class CommentService {
                     "visibility", resolvedVisibility))
             .build());
 
-    String actorName = resolveActorName(memberId);
+    String actorName = resolveActorName(actor.memberId());
     String tenantId = RequestScopes.getTenantIdOrNull();
     String orgId = RequestScopes.getOrgIdOrNull();
     eventPublisher.publishEvent(
@@ -130,7 +131,7 @@ public class CommentService {
             "comment",
             comment.getId(),
             projectId,
-            memberId,
+            actor.memberId(),
             actorName,
             tenantId,
             orgId,
@@ -145,12 +146,7 @@ public class CommentService {
 
   @Transactional
   public Comment updateComment(
-      UUID projectId,
-      UUID commentId,
-      String body,
-      String visibility,
-      UUID memberId,
-      String orgRole) {
+      UUID projectId, UUID commentId, String body, String visibility, ActorContext actor) {
     var comment =
         commentRepository
             .findById(commentId)
@@ -160,9 +156,10 @@ public class CommentService {
       throw new ResourceNotFoundException("Comment", commentId);
     }
 
-    var access = projectAccessService.requireViewAccess(projectId, memberId, orgRole);
-    boolean isAuthor = comment.getAuthorMemberId().equals(memberId);
-    boolean isOrgAdminOrOwner = Roles.ORG_ADMIN.equals(orgRole) || Roles.ORG_OWNER.equals(orgRole);
+    var access = projectAccessService.requireViewAccess(projectId, actor);
+    boolean isAuthor = comment.getAuthorMemberId().equals(actor.memberId());
+    boolean isOrgAdminOrOwner =
+        Roles.ORG_ADMIN.equals(actor.orgRole()) || Roles.ORG_OWNER.equals(actor.orgRole());
 
     // Authorization: editing others' comments requires admin/owner
     if (!isAuthor && !isOrgAdminOrOwner) {
@@ -211,7 +208,7 @@ public class CommentService {
                     projectId.toString()))
             .build());
 
-    String actorName = resolveActorName(memberId);
+    String actorName = resolveActorName(actor.memberId());
     String tenantId = RequestScopes.getTenantIdOrNull();
     String orgId = RequestScopes.getOrgIdOrNull();
     eventPublisher.publishEvent(
@@ -220,7 +217,7 @@ public class CommentService {
             "comment",
             comment.getId(),
             projectId,
-            memberId,
+            actor.memberId(),
             actorName,
             tenantId,
             orgId,
@@ -246,7 +243,7 @@ public class CommentService {
               "comment",
               comment.getId(),
               projectId,
-              memberId,
+              actor.memberId(),
               actorName,
               tenantId,
               orgId,
@@ -260,8 +257,8 @@ public class CommentService {
   }
 
   @Transactional
-  public void deleteComment(UUID projectId, UUID commentId, UUID memberId, String orgRole) {
-    projectAccessService.requireViewAccess(projectId, memberId, orgRole);
+  public void deleteComment(UUID projectId, UUID commentId, ActorContext actor) {
+    projectAccessService.requireViewAccess(projectId, actor);
 
     var comment =
         commentRepository
@@ -272,8 +269,9 @@ public class CommentService {
       throw new ResourceNotFoundException("Comment", commentId);
     }
 
-    boolean isAuthor = comment.getAuthorMemberId().equals(memberId);
-    boolean isOrgAdminOrOwner = Roles.ORG_ADMIN.equals(orgRole) || Roles.ORG_OWNER.equals(orgRole);
+    boolean isAuthor = comment.getAuthorMemberId().equals(actor.memberId());
+    boolean isOrgAdminOrOwner =
+        Roles.ORG_ADMIN.equals(actor.orgRole()) || Roles.ORG_OWNER.equals(actor.orgRole());
 
     if (!isAuthor && !isOrgAdminOrOwner) {
       throw new ForbiddenException(
@@ -304,7 +302,7 @@ public class CommentService {
                     entityId.toString()))
             .build());
 
-    String actorName = resolveActorName(memberId);
+    String actorName = resolveActorName(actor.memberId());
     String tenantId = RequestScopes.getTenantIdOrNull();
     String orgId = RequestScopes.getOrgIdOrNull();
     eventPublisher.publishEvent(
@@ -313,7 +311,7 @@ public class CommentService {
             "comment",
             commentId,
             projectId,
-            memberId,
+            actor.memberId(),
             actorName,
             tenantId,
             orgId,
@@ -325,13 +323,8 @@ public class CommentService {
 
   @Transactional(readOnly = true)
   public Page<Comment> listComments(
-      UUID projectId,
-      String entityType,
-      UUID entityId,
-      Pageable pageable,
-      UUID memberId,
-      String orgRole) {
-    projectAccessService.requireViewAccess(projectId, memberId, orgRole);
+      UUID projectId, String entityType, UUID entityId, Pageable pageable, ActorContext actor) {
+    projectAccessService.requireViewAccess(projectId, actor);
 
     if ("PROJECT".equals(entityType)) {
       return commentRepository.findProjectLevelComments(projectId, pageable);

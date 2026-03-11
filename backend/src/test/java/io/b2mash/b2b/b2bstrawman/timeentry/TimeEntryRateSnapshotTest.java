@@ -10,6 +10,7 @@ import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.billingrate.BillingRateService;
 import io.b2mash.b2b.b2bstrawman.costrate.CostRateService;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
@@ -135,8 +136,7 @@ class TimeEntryRateSnapshotTest {
                   new BigDecimal("200.00"),
                   LocalDate.of(2024, 1, 1),
                   LocalDate.of(2025, 6, 30),
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
 
               // Cost rate: $120/hr USD, effective 2024-01-01, open-ended
               costRateService.createCostRate(
@@ -145,8 +145,7 @@ class TimeEntryRateSnapshotTest {
                   new BigDecimal("120.00"),
                   LocalDate.of(2024, 1, 1),
                   null,
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
 
               // Second billing rate: $250/hr EUR, effective 2025-07-01 to 2025-12-31
               // (for re-snapshot test)
@@ -158,8 +157,7 @@ class TimeEntryRateSnapshotTest {
                   new BigDecimal("250.00"),
                   LocalDate.of(2025, 7, 1),
                   LocalDate.of(2025, 12, 31),
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
             });
   }
 

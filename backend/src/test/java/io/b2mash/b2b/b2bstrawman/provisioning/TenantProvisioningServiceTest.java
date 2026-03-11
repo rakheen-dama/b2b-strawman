@@ -7,7 +7,6 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -26,12 +25,18 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Optional;
 import javax.sql.DataSource;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+/**
+ * Unit test for TenantProvisioningService. Uses @Spy + @InjectMocks so that Mockito handles
+ * constructor injection automatically — survives constructor signature changes. The spy allows
+ * stubbing runTenantMigrations (Flyway static API).
+ */
 @ExtendWith(MockitoExtension.class)
 class TenantProvisioningServiceTest {
 
@@ -47,26 +52,7 @@ class TenantProvisioningServiceTest {
   @Mock private RequestPackSeeder requestPackSeeder;
   @Mock private AutomationTemplateSeeder automationTemplateSeeder;
 
-  private TenantProvisioningService service;
-
-  @BeforeEach
-  void setUp() {
-    // Spy so we can stub runTenantMigrations (which calls Flyway static API)
-    service =
-        spy(
-            new TenantProvisioningService(
-                organizationRepository,
-                mappingRepository,
-                migrationDataSource,
-                subscriptionService,
-                fieldPackSeeder,
-                templatePackSeeder,
-                clausePackSeeder,
-                compliancePackSeeder,
-                standardReportPackSeeder,
-                requestPackSeeder,
-                automationTemplateSeeder));
-  }
+  @Spy @InjectMocks private TenantProvisioningService service;
 
   @Test
   void provisionTenant_returnsAlreadyProvisionedWhenMappingExists() {

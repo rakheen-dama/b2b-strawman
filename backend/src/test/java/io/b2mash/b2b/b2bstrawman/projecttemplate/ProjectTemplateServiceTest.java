@@ -12,6 +12,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMember;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
@@ -321,7 +322,8 @@ class ProjectTemplateServiceTest {
                           null);
 
                   var response =
-                      templateService.saveFromProject(project.getId(), request, memberId, "owner");
+                      templateService.saveFromProject(
+                          project.getId(), request, new ActorContext(memberId, "owner"));
 
                   assertThat(response.source()).isEqualTo("FROM_PROJECT");
                   assertThat(response.sourceProjectId()).isEqualTo(project.getId());
@@ -374,7 +376,8 @@ class ProjectTemplateServiceTest {
                           roleMap);
 
                   var response =
-                      templateService.saveFromProject(project.getId(), request, memberId, "admin");
+                      templateService.saveFromProject(
+                          project.getId(), request, new ActorContext(memberId, "admin"));
 
                   assertThat(response.tasks().get(0).assigneeRole()).isEqualTo("PROJECT_LEAD");
                   assertThat(response.tasks().get(1).assigneeRole()).isEqualTo("UNASSIGNED");
@@ -406,7 +409,8 @@ class ProjectTemplateServiceTest {
                           null);
 
                   var response =
-                      templateService.saveFromProject(project.getId(), request, memberId, "owner");
+                      templateService.saveFromProject(
+                          project.getId(), request, new ActorContext(memberId, "owner"));
 
                   // Only the valid task should be included
                   assertThat(response.tasks()).hasSize(1);
@@ -507,7 +511,7 @@ class ProjectTemplateServiceTest {
                   // Call as member (not admin/owner) who is project lead
                   var response =
                       templateService.saveFromProject(
-                          project.getId(), request, secondMemberId, "member");
+                          project.getId(), request, new ActorContext(secondMemberId, "member"));
 
                   assertThat(response.name()).isEqualTo("Lead Template");
                   assertThat(response.tasks()).hasSize(1);

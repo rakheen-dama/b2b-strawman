@@ -17,6 +17,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceStatus;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
@@ -330,7 +331,13 @@ class RetainerPeriodServiceTest {
             transactionTemplate.executeWithoutResult(
                 tx -> {
                   timeEntryService.createTimeEntry(
-                      taskRef.get(), entryDate, 180, true, null, "Overage work", memberId, "owner");
+                      taskRef.get(),
+                      entryDate,
+                      180,
+                      true,
+                      null,
+                      "Overage work",
+                      new ActorContext(memberId, "owner"));
                 }));
 
     runInTenant(
@@ -714,8 +721,7 @@ class RetainerPeriodServiceTest {
                       true,
                       null,
                       "Work without rate",
-                      memberId,
-                      "owner");
+                      new ActorContext(memberId, "owner"));
                 }));
 
     // DO NOT set up billing rate — overage exists but no rate => should throw

@@ -1,6 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.timeentry;
 
-import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -27,10 +27,10 @@ public class ProjectTimeSummaryController {
       @PathVariable UUID id,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    UUID memberId = actor.memberId();
 
-    var summary = timeEntryService.getProjectTimeSummary(id, memberId, orgRole, from, to);
+    var summary = timeEntryService.getProjectTimeSummary(id, actor, from, to);
     return ResponseEntity.ok(ProjectTimeSummaryResponse.from(id, summary));
   }
 
@@ -40,10 +40,10 @@ public class ProjectTimeSummaryController {
       @PathVariable UUID id,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    UUID memberId = actor.memberId();
 
-    var summaries = timeEntryService.getProjectTimeSummaryByMember(id, memberId, orgRole, from, to);
+    var summaries = timeEntryService.getProjectTimeSummaryByMember(id, actor, from, to);
     var response = summaries.stream().map(MemberTimeSummaryResponse::from).toList();
     return ResponseEntity.ok(response);
   }
@@ -54,10 +54,10 @@ public class ProjectTimeSummaryController {
       @PathVariable UUID id,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    UUID memberId = actor.memberId();
 
-    var summaries = timeEntryService.getProjectTimeSummaryByTask(id, memberId, orgRole, from, to);
+    var summaries = timeEntryService.getProjectTimeSummaryByTask(id, actor, from, to);
     var response = summaries.stream().map(TaskTimeSummaryResponse::from).toList();
     return ResponseEntity.ok(response);
   }

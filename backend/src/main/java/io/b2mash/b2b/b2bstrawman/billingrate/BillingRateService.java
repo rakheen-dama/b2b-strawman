@@ -9,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import java.math.BigDecimal;
@@ -132,13 +133,12 @@ public class BillingRateService {
       BigDecimal hourlyRate,
       LocalDate effectiveFrom,
       LocalDate effectiveTo,
-      UUID actorMemberId,
-      String orgRole) {
+      ActorContext actor) {
 
     validateScope(projectId, customerId);
     validateProjectExists(projectId);
     validateCustomerExists(customerId);
-    requirePermission(projectId, actorMemberId, orgRole);
+    requirePermission(projectId, actor);
 
     LocalDate overlapEnd = effectiveTo != null ? effectiveTo : FAR_FUTURE;
     var overlapping =
@@ -193,15 +193,14 @@ public class BillingRateService {
       String currency,
       LocalDate effectiveFrom,
       LocalDate effectiveTo,
-      UUID actorMemberId,
-      String orgRole) {
+      ActorContext actor) {
 
     var rate =
         billingRateRepository
             .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("BillingRate", id));
 
-    requirePermission(rate.getProjectId(), actorMemberId, orgRole);
+    requirePermission(rate.getProjectId(), actor);
 
     LocalDate overlapEnd = effectiveTo != null ? effectiveTo : FAR_FUTURE;
     var overlapping =
@@ -247,13 +246,13 @@ public class BillingRateService {
    * @param orgRole the org role of the actor
    */
   @Transactional
-  public void deleteRate(UUID id, UUID actorMemberId, String orgRole) {
+  public void deleteRate(UUID id, ActorContext actor) {
     var rate =
         billingRateRepository
             .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("BillingRate", id));
 
-    requirePermission(rate.getProjectId(), actorMemberId, orgRole);
+    requirePermission(rate.getProjectId(), actor);
 
     billingRateRepository.delete(rate);
 
@@ -306,14 +305,14 @@ public class BillingRateService {
    *   <li>Regular Member: cannot manage rates (403)
    * </ul>
    */
-  private void requirePermission(UUID projectId, UUID actorMemberId, String orgRole) {
-    if (Roles.ORG_ADMIN.equals(orgRole) || Roles.ORG_OWNER.equals(orgRole)) {
+  private void requirePermission(UUID projectId, ActorContext actor) {
+    if (Roles.ORG_ADMIN.equals(actor.orgRole()) || Roles.ORG_OWNER.equals(actor.orgRole())) {
       return;
     }
 
     // Project leads can manage project overrides for their projects
     if (projectId != null) {
-      var access = projectAccessService.checkAccess(projectId, actorMemberId, orgRole);
+      var access = projectAccessService.checkAccess(projectId, actor);
       if (access.canEdit()) {
         return;
       }

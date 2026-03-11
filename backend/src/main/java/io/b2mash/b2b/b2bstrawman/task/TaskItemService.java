@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,22 +38,22 @@ public class TaskItemService {
   }
 
   @Transactional(readOnly = true)
-  public List<TaskItem> listItems(UUID taskId, UUID memberId, String orgRole) {
+  public List<TaskItem> listItems(UUID taskId, ActorContext actor) {
     var task =
         taskRepository
             .findById(taskId)
             .orElseThrow(() -> new ResourceNotFoundException("Task", taskId));
-    projectAccessService.requireViewAccess(task.getProjectId(), memberId, orgRole);
+    projectAccessService.requireViewAccess(task.getProjectId(), actor);
     return taskItemRepository.findByTaskIdOrderBySortOrder(taskId);
   }
 
   @Transactional
-  public TaskItem addItem(UUID taskId, String title, int sortOrder, UUID memberId, String orgRole) {
+  public TaskItem addItem(UUID taskId, String title, int sortOrder, ActorContext actor) {
     var task =
         taskRepository
             .findById(taskId)
             .orElseThrow(() -> new ResourceNotFoundException("Task", taskId));
-    projectAccessService.requireViewAccess(task.getProjectId(), memberId, orgRole);
+    projectAccessService.requireViewAccess(task.getProjectId(), actor);
 
     var item = new TaskItem(taskId, title, sortOrder);
     item = taskItemRepository.save(item);
@@ -71,8 +72,7 @@ public class TaskItemService {
   }
 
   @Transactional
-  public TaskItem updateItem(
-      UUID itemId, String title, int sortOrder, UUID memberId, String orgRole) {
+  public TaskItem updateItem(UUID itemId, String title, int sortOrder, ActorContext actor) {
     var foundItem =
         taskItemRepository
             .findById(itemId)
@@ -83,7 +83,7 @@ public class TaskItemService {
             .findById(parentTaskId)
             .orElseThrow(() -> new ResourceNotFoundException("Task", parentTaskId));
 
-    var access = projectAccessService.requireViewAccess(task.getProjectId(), memberId, orgRole);
+    var access = projectAccessService.requireViewAccess(task.getProjectId(), actor);
     if (!access.canEdit()) {
       throw new ForbiddenException(
           "Cannot update task item", "You do not have permission to update task item " + itemId);
@@ -117,7 +117,7 @@ public class TaskItemService {
   }
 
   @Transactional
-  public TaskItem toggleItem(UUID itemId, UUID memberId, String orgRole) {
+  public TaskItem toggleItem(UUID itemId, ActorContext actor) {
     var foundItem =
         taskItemRepository
             .findById(itemId)
@@ -129,7 +129,7 @@ public class TaskItemService {
             .orElseThrow(() -> new ResourceNotFoundException("Task", parentTaskId));
 
     // Any project member can toggle
-    projectAccessService.requireViewAccess(task.getProjectId(), memberId, orgRole);
+    projectAccessService.requireViewAccess(task.getProjectId(), actor);
 
     boolean wasBefore = foundItem.isCompleted();
     foundItem.toggle();
@@ -152,7 +152,7 @@ public class TaskItemService {
   }
 
   @Transactional
-  public void deleteItem(UUID itemId, UUID memberId, String orgRole) {
+  public void deleteItem(UUID itemId, ActorContext actor) {
     var item =
         taskItemRepository
             .findById(itemId)
@@ -162,7 +162,7 @@ public class TaskItemService {
             .findById(item.getTaskId())
             .orElseThrow(() -> new ResourceNotFoundException("Task", item.getTaskId()));
 
-    var access = projectAccessService.requireViewAccess(task.getProjectId(), memberId, orgRole);
+    var access = projectAccessService.requireViewAccess(task.getProjectId(), actor);
     if (!access.canEdit()) {
       throw new ForbiddenException(
           "Cannot delete task item", "You do not have permission to delete task item " + itemId);
@@ -184,14 +184,13 @@ public class TaskItemService {
   }
 
   @Transactional
-  public List<TaskItem> reorderItems(
-      UUID taskId, List<UUID> orderedIds, UUID memberId, String orgRole) {
+  public List<TaskItem> reorderItems(UUID taskId, List<UUID> orderedIds, ActorContext actor) {
     var task =
         taskRepository
             .findById(taskId)
             .orElseThrow(() -> new ResourceNotFoundException("Task", taskId));
 
-    var access = projectAccessService.requireViewAccess(task.getProjectId(), memberId, orgRole);
+    var access = projectAccessService.requireViewAccess(task.getProjectId(), actor);
     if (!access.canEdit()) {
       throw new ForbiddenException(
           "Cannot reorder task items",

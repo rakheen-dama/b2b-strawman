@@ -9,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.customerbackend.event.CustomerProjectUnlinkedEv
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
@@ -54,7 +55,7 @@ public class CustomerProjectService {
 
   @Transactional
   public CustomerProject linkCustomerToProject(
-      UUID customerId, UUID projectId, UUID linkedBy, UUID memberId, String orgRole) {
+      UUID customerId, UUID projectId, UUID linkedBy, ActorContext actor) {
     // Validate customer exists in tenant (uses filter-aware JPQL query)
     var customer =
         customerRepository
@@ -70,7 +71,7 @@ public class CustomerProjectService {
         .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
 
     // Check permission: Owner/Admin or Project Lead
-    requireLinkPermission(projectId, memberId, orgRole);
+    requireLinkPermission(projectId, actor);
 
     // Check not already linked
     if (customerProjectRepository.existsByCustomerIdAndProjectId(customerId, projectId)) {
@@ -99,8 +100,7 @@ public class CustomerProjectService {
   }
 
   @Transactional
-  public void unlinkCustomerFromProject(
-      UUID customerId, UUID projectId, UUID memberId, String orgRole) {
+  public void unlinkCustomerFromProject(UUID customerId, UUID projectId, ActorContext actor) {
     // Validate customer exists in tenant
     customerRepository
         .findById(customerId)
@@ -112,7 +112,7 @@ public class CustomerProjectService {
         .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
 
     // Check permission: Owner/Admin or Project Lead
-    requireLinkPermission(projectId, memberId, orgRole);
+    requireLinkPermission(projectId, actor);
 
     // Check link exists
     if (!customerProjectRepository.existsByCustomerIdAndProjectId(customerId, projectId)) {
@@ -120,7 +120,11 @@ public class CustomerProjectService {
     }
 
     customerProjectRepository.deleteByCustomerIdAndProjectId(customerId, projectId);
-    log.info("Unlinked customer {} from project {} by member {}", customerId, projectId, memberId);
+    log.info(
+        "Unlinked customer {} from project {} by member {}",
+        customerId,
+        projectId,
+        actor.memberId());
 
     auditService.log(
         AuditEventBuilder.builder()
@@ -137,7 +141,7 @@ public class CustomerProjectService {
   }
 
   @Transactional(readOnly = true)
-  public List<Project> listProjectsForCustomer(UUID customerId, UUID memberId, String orgRole) {
+  public List<Project> listProjectsForCustomer(UUID customerId, ActorContext actor) {
     // Validate customer exists in tenant
     customerRepository
         .findById(customerId)
@@ -151,20 +155,18 @@ public class CustomerProjectService {
 
     // Owner/Admin can see all linked projects; regular members only see projects they have access
     // to
-    if (Roles.ORG_OWNER.equals(orgRole) || Roles.ORG_ADMIN.equals(orgRole)) {
+    if (Roles.ORG_OWNER.equals(actor.orgRole()) || Roles.ORG_ADMIN.equals(actor.orgRole())) {
       return projects.toList();
     }
     return projects
-        .filter(
-            project ->
-                projectAccessService.checkAccess(project.getId(), memberId, orgRole).canView())
+        .filter(project -> projectAccessService.checkAccess(project.getId(), actor).canView())
         .toList();
   }
 
   @Transactional(readOnly = true)
-  public List<Customer> listCustomersForProject(UUID projectId, UUID memberId, String orgRole) {
+  public List<Customer> listCustomersForProject(UUID projectId, ActorContext actor) {
     // Check project access via ProjectAccessService
-    projectAccessService.requireViewAccess(projectId, memberId, orgRole);
+    projectAccessService.requireViewAccess(projectId, actor);
 
     var links = customerProjectRepository.findByProjectId(projectId);
     return links.stream()
@@ -177,11 +179,11 @@ public class CustomerProjectService {
    * Checks that the caller has permission to link/unlink customers to a project. Owner and Admin
    * org roles can always link. Org members need to be a project lead.
    */
-  private void requireLinkPermission(UUID projectId, UUID memberId, String orgRole) {
-    if (Roles.ORG_OWNER.equals(orgRole) || Roles.ORG_ADMIN.equals(orgRole)) {
+  private void requireLinkPermission(UUID projectId, ActorContext actor) {
+    if (Roles.ORG_OWNER.equals(actor.orgRole()) || Roles.ORG_ADMIN.equals(actor.orgRole())) {
       return;
     }
     // For org members, require project lead access (canEdit = true for leads)
-    projectAccessService.requireEditAccess(projectId, memberId, orgRole);
+    projectAccessService.requireEditAccess(projectId, actor);
   }
 }

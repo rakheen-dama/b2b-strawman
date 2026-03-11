@@ -7,6 +7,11 @@ import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
+/**
+ * Unit test with real handler instances — no mocks needed. Constructor uses concrete handler
+ * classes (not interfaces), so @InjectMocks/@Mock cannot help. Adding a new handler parameter
+ * intentionally requires updating this test (new filter = new tests).
+ */
 class ViewFilterServiceTest {
 
   private final ViewFilterService service =

@@ -9,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.automation.config.ActionSuccess;
 import io.b2mash.b2b.b2bstrawman.automation.config.AssignTo;
 import io.b2mash.b2b.b2bstrawman.automation.config.CreateTaskActionConfig;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskService;
 import java.util.Map;
@@ -68,6 +69,7 @@ public class CreateTaskActionExecutor implements ActionExecutor {
       // Automation-created tasks run with elevated "owner" privileges. This is intentional:
       // the automation rule itself was configured by an admin/owner, so the resulting actions
       // should not be blocked by the permission model.
+      var actorCtx = new ActorContext(createdBy, "owner");
       Task task =
           taskService.createTask(
               projectId,
@@ -76,8 +78,7 @@ public class CreateTaskActionExecutor implements ActionExecutor {
               "MEDIUM",
               null,
               null,
-              createdBy,
-              "owner",
+              actorCtx,
               null,
               null,
               assigneeId);

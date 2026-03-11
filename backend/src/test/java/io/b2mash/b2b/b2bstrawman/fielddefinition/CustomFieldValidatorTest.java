@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.when;
 
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.testutil.TestIds;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -204,17 +205,8 @@ class CustomFieldValidatorTest {
 
   private FieldDefinition createFieldDef(String slug, FieldType fieldType, boolean required) {
     var fd = new FieldDefinition(EntityType.PROJECT, slug, slug, fieldType);
-    // Use reflection to set the id since it's normally auto-generated
-    try {
-      var idField = FieldDefinition.class.getDeclaredField("id");
-      idField.setAccessible(true);
-      idField.set(fd, UUID.randomUUID());
-      var reqField = FieldDefinition.class.getDeclaredField("required");
-      reqField.setAccessible(true);
-      reqField.set(fd, required);
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+    TestIds.withId(fd, UUID.randomUUID());
+    TestIds.withField(fd, "required", required);
     return fd;
   }
 }

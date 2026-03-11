@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberService;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
@@ -122,7 +123,13 @@ class DashboardCompanyIntegrationTest {
     // Project A: 2 open tasks (1 overdue), 1 done
     var taskA1 =
         taskService.createTask(
-            projectAId, "Task A1", null, "MEDIUM", "TASK", null, adminMemberId, "admin");
+            projectAId,
+            "Task A1",
+            null,
+            "MEDIUM",
+            "TASK",
+            null,
+            new ActorContext(adminMemberId, "admin"));
     taskA1Id = taskA1.getId();
 
     taskService.createTask(
@@ -132,12 +139,17 @@ class DashboardCompanyIntegrationTest {
         "HIGH",
         "TASK",
         today.minusDays(5),
-        adminMemberId,
-        "admin");
+        new ActorContext(adminMemberId, "admin"));
 
     var taskA3 =
         taskService.createTask(
-            projectAId, "Task A3 Done", null, "LOW", "TASK", null, adminMemberId, "admin");
+            projectAId,
+            "Task A3 Done",
+            null,
+            "LOW",
+            "TASK",
+            null,
+            new ActorContext(adminMemberId, "admin"));
     taskService.updateTask(
         taskA3.getId(),
         "Task A3 Done",
@@ -147,8 +159,7 @@ class DashboardCompanyIntegrationTest {
         "TASK",
         null,
         null,
-        adminMemberId,
-        "admin");
+        new ActorContext(adminMemberId, "admin"));
     taskService.updateTask(
         taskA3.getId(),
         "Task A3 Done",
@@ -158,13 +169,18 @@ class DashboardCompanyIntegrationTest {
         "TASK",
         null,
         null,
-        adminMemberId,
-        "admin");
+        new ActorContext(adminMemberId, "admin"));
 
     // Project B: 1 open task
     var taskB1 =
         taskService.createTask(
-            projectBId, "Task B1", null, "MEDIUM", "TASK", null, adminMemberId, "admin");
+            projectBId,
+            "Task B1",
+            null,
+            "MEDIUM",
+            "TASK",
+            null,
+            new ActorContext(adminMemberId, "admin"));
     taskB1Id = taskB1.getId();
 
     // Project C: 1 open task (overdue)
@@ -176,16 +192,27 @@ class DashboardCompanyIntegrationTest {
             "HIGH",
             "TASK",
             today.minusDays(3),
-            adminMemberId,
-            "admin");
+            new ActorContext(adminMemberId, "admin"));
     taskC1Id = taskC1.getId();
 
     // --- Create time entries ---
     // Admin logs time on project A and C
     timeEntryService.createTimeEntry(
-        taskA1Id, today.minusDays(5), 120, true, null, "Admin work on A", adminMemberId, "admin");
+        taskA1Id,
+        today.minusDays(5),
+        120,
+        true,
+        null,
+        "Admin work on A",
+        new ActorContext(adminMemberId, "admin"));
     timeEntryService.createTimeEntry(
-        taskC1Id, today.minusDays(2), 60, false, null, "Admin work on C", adminMemberId, "admin");
+        taskC1Id,
+        today.minusDays(2),
+        60,
+        false,
+        null,
+        "Admin work on C",
+        new ActorContext(adminMemberId, "admin"));
 
     // Member1 logs time on project A
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -201,8 +228,7 @@ class DashboardCompanyIntegrationTest {
                   true,
                   null,
                   "Member1 work on A",
-                  member1Id,
-                  "member");
+                  new ActorContext(member1Id, "member"));
             });
 
     // Member2 logs time on project B
@@ -219,8 +245,7 @@ class DashboardCompanyIntegrationTest {
                   true,
                   null,
                   "Member2 work on B",
-                  member2Id,
-                  "member");
+                  new ActorContext(member2Id, "member"));
             });
   }
 

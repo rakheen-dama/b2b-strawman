@@ -15,6 +15,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectLifecycleGuard;
 import io.b2mash.b2b.b2bstrawman.s3.S3PresignedUrlService;
@@ -70,8 +71,8 @@ public class DocumentService {
    * ORG-scoped or CUSTOMER-scoped documents are not returned through project document listing.
    */
   @Transactional(readOnly = true)
-  public List<Document> listDocuments(UUID projectId, UUID memberId, String orgRole) {
-    projectAccessService.requireViewAccess(projectId, memberId, orgRole);
+  public List<Document> listDocuments(UUID projectId, ActorContext actor) {
+    projectAccessService.requireViewAccess(projectId, actor);
     return documentRepository.findProjectScopedByProjectId(projectId);
   }
 
@@ -94,13 +95,13 @@ public class DocumentService {
       String contentType,
       long size,
       String orgId,
-      UUID memberId,
-      String orgRole) {
-    projectAccessService.requireViewAccess(projectId, memberId, orgRole);
+      ActorContext actor) {
+    projectAccessService.requireViewAccess(projectId, actor);
     projectLifecycleGuard.requireNotReadOnly(projectId);
 
     var document =
-        documentRepository.save(new Document(projectId, fileName, contentType, size, memberId));
+        documentRepository.save(
+            new Document(projectId, fileName, contentType, size, actor.memberId()));
 
     String s3Key =
         S3PresignedUrlService.buildKey(orgId, projectId.toString(), document.getId().toString());
@@ -252,12 +253,12 @@ public class DocumentService {
    * CUSTOMER scoped documents, tenant isolation is provided by the dedicated schema (search_path).
    */
   @Transactional
-  public Document confirmUpload(UUID documentId, UUID memberId, String orgRole) {
+  public Document confirmUpload(UUID documentId, ActorContext actor) {
     var document =
         documentRepository
             .findById(documentId)
             .orElseThrow(() -> new ResourceNotFoundException("Document", documentId));
-    requireDocumentAccess(document, memberId, orgRole);
+    requireDocumentAccess(document, actor);
     if (document.getStatus() != Document.Status.UPLOADED) {
       document.confirmUpload();
       document = documentRepository.save(document);
@@ -280,14 +281,14 @@ public class DocumentService {
       String tenantId = RequestScopes.getTenantIdOrNull();
       String orgId = RequestScopes.getOrgIdOrNull();
       if (document.isProjectScoped() && document.getProjectId() != null) {
-        String actorName = resolveActorName(memberId);
+        String actorName = resolveActorName(actor.memberId());
         eventPublisher.publishEvent(
             new DocumentUploadedEvent(
                 "document.uploaded",
                 "document",
                 document.getId(),
                 document.getProjectId(),
-                memberId,
+                actor.memberId(),
                 actorName,
                 tenantId,
                 orgId,
@@ -321,12 +322,12 @@ public class DocumentService {
    * CUSTOMER scoped documents, tenant isolation is provided by the dedicated schema (search_path).
    */
   @Transactional
-  public void cancelUpload(UUID documentId, UUID memberId, String orgRole) {
+  public void cancelUpload(UUID documentId, ActorContext actor) {
     var document =
         documentRepository
             .findById(documentId)
             .orElseThrow(() -> new ResourceNotFoundException("Document", documentId));
-    requireDocumentAccess(document, memberId, orgRole);
+    requireDocumentAccess(document, actor);
     if (document.getStatus() != Document.Status.PENDING) {
       throw new ResourceConflictException(
           "Document not pending", "Only pending documents can be cancelled");
@@ -352,13 +353,12 @@ public class DocumentService {
   }
 
   @Transactional
-  public PresignDownloadResult getPresignedDownloadUrl(
-      UUID documentId, UUID memberId, String orgRole) {
+  public PresignDownloadResult getPresignedDownloadUrl(UUID documentId, ActorContext actor) {
     var document =
         documentRepository
             .findById(documentId)
             .orElseThrow(() -> new ResourceNotFoundException("Document", documentId));
-    requireDocumentAccess(document, memberId, orgRole);
+    requireDocumentAccess(document, actor);
     if (document.getStatus() != Document.Status.UPLOADED) {
       throw new InvalidStateException(
           "Document not uploaded", "Document has not been uploaded yet");
@@ -402,10 +402,10 @@ public class DocumentService {
    * Scope-aware access check. PROJECT-scoped documents check project membership. ORG and CUSTOMER
    * scoped documents rely on dedicated schema isolation (search_path restricts to current tenant).
    */
-  private void requireDocumentAccess(Document document, UUID memberId, String orgRole) {
+  private void requireDocumentAccess(Document document, ActorContext actor) {
     if (document.isProjectScoped()) {
       Objects.requireNonNull(document.getProjectId(), "PROJECT-scoped document missing projectId");
-      projectAccessService.requireViewAccess(document.getProjectId(), memberId, orgRole);
+      projectAccessService.requireViewAccess(document.getProjectId(), actor);
     }
     // ORG and CUSTOMER scoped: tenant isolation is sufficient — any org member can access
   }

@@ -3,7 +3,7 @@ package io.b2mash.b2b.b2bstrawman.billingrate;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
-import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -71,8 +71,7 @@ public class BillingRateController {
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<BillingRateResponse> createRate(
       @Valid @RequestBody CreateBillingRateRequest request) {
-    UUID actorMemberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
 
     var rate =
         billingRateService.createRate(
@@ -83,8 +82,7 @@ public class BillingRateController {
             request.hourlyRate(),
             request.effectiveFrom(),
             request.effectiveTo(),
-            actorMemberId,
-            orgRole);
+            actor);
 
     var names = resolveNames(List.of(rate));
     return ResponseEntity.created(URI.create("/api/billing-rates/" + rate.getId()))
@@ -97,8 +95,7 @@ public class BillingRateController {
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<BillingRateResponse> updateRate(
       @PathVariable UUID id, @Valid @RequestBody UpdateBillingRateRequest request) {
-    UUID actorMemberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
 
     var rate =
         billingRateService.updateRate(
@@ -107,8 +104,7 @@ public class BillingRateController {
             request.currency(),
             request.effectiveFrom(),
             request.effectiveTo(),
-            actorMemberId,
-            orgRole);
+            actor);
 
     var names = resolveNames(List.of(rate));
     return ResponseEntity.ok(BillingRateResponse.from(rate, names));
@@ -119,10 +115,9 @@ public class BillingRateController {
   @DeleteMapping("/{id}")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<Void> deleteRate(@PathVariable UUID id) {
-    UUID actorMemberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
 
-    billingRateService.deleteRate(id, actorMemberId, orgRole);
+    billingRateService.deleteRate(id, actor);
     return ResponseEntity.noContent().build();
   }
 

@@ -11,6 +11,7 @@ import io.b2mash.b2b.b2bstrawman.capacity.dto.LeaveDtos.CreateLeaveRequest;
 import io.b2mash.b2b.b2bstrawman.capacity.dto.UtilizationDtos.MemberUtilizationSummary;
 import io.b2mash.b2b.b2bstrawman.capacity.dto.UtilizationDtos.TeamUtilizationResponse;
 import io.b2mash.b2b.b2bstrawman.capacity.dto.UtilizationDtos.WeekUtilization;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
@@ -88,7 +89,13 @@ class UtilizationServiceTest {
           projectId2 = project2.getId();
           Task task =
               taskService.createTask(
-                  projectId, "Test Task", "desc", "MEDIUM", "TASK", null, memberIdOwner, "owner");
+                  projectId,
+                  "Test Task",
+                  "desc",
+                  "MEDIUM",
+                  "TASK",
+                  null,
+                  new ActorContext(memberIdOwner, "owner"));
           taskId = task.getId();
           return null;
         });

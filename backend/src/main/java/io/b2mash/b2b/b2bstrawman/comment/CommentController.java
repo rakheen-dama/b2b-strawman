@@ -2,7 +2,7 @@ package io.b2mash.b2b.b2bstrawman.comment;
 
 import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
-import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -43,8 +43,9 @@ public class CommentController {
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<CommentResponse> createComment(
       @PathVariable UUID projectId, @Valid @RequestBody CreateCommentRequest request) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
 
     var comment =
         commentService.createComment(
@@ -53,8 +54,7 @@ public class CommentController {
             request.entityId(),
             request.body(),
             request.visibility(),
-            memberId,
-            orgRole);
+            actor);
 
     var authors = resolveAuthors(List.of(comment));
     return ResponseEntity.created(
@@ -70,12 +70,13 @@ public class CommentController {
       @RequestParam(required = false) UUID entityId,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "50") int size) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
 
     var commentPage =
         commentService.listComments(
-            projectId, entityType, entityId, PageRequest.of(page, size), memberId, orgRole);
+            projectId, entityType, entityId, PageRequest.of(page, size), actor);
 
     var comments = commentPage.getContent();
     var authors = resolveAuthors(comments);
@@ -90,12 +91,13 @@ public class CommentController {
       @PathVariable UUID projectId,
       @PathVariable UUID commentId,
       @Valid @RequestBody UpdateCommentRequest request) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
 
     var comment =
         commentService.updateComment(
-            projectId, commentId, request.body(), request.visibility(), memberId, orgRole);
+            projectId, commentId, request.body(), request.visibility(), actor);
 
     var authors = resolveAuthors(List.of(comment));
     return ResponseEntity.ok(CommentResponse.from(comment, authors));
@@ -105,10 +107,11 @@ public class CommentController {
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<Void> deleteComment(
       @PathVariable UUID projectId, @PathVariable UUID commentId) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
 
-    commentService.deleteComment(projectId, commentId, memberId, orgRole);
+    commentService.deleteComment(projectId, commentId, actor);
     return ResponseEntity.noContent().build();
   }
 

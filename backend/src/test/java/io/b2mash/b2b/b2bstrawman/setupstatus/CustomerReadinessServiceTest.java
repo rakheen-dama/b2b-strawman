@@ -24,9 +24,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -41,17 +41,7 @@ class CustomerReadinessServiceTest {
   @Mock private FieldDefinitionRepository fieldDefinitionRepository;
   @Mock private EntityManager entityManager;
 
-  private CustomerReadinessService service;
-
-  @BeforeEach
-  void setUp() {
-    service =
-        new CustomerReadinessService(
-            customerRepository,
-            customerProjectRepository,
-            fieldDefinitionRepository,
-            entityManager);
-  }
+  @InjectMocks private CustomerReadinessService service;
 
   @Test
   void getReadiness_throwsWhenCustomerNotFound() {

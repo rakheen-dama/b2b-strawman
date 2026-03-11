@@ -10,6 +10,7 @@ import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectLifecycleGuard;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
@@ -66,7 +67,7 @@ public class ExpenseService {
   @Transactional
   public Expense createExpense(
       UUID projectId,
-      UUID memberId,
+      ActorContext actor,
       LocalDate date,
       String description,
       BigDecimal amount,
@@ -76,14 +77,13 @@ public class ExpenseService {
       UUID receiptDocumentId,
       BigDecimal markupPercent,
       Boolean billable,
-      String notes,
-      String orgRole) {
+      String notes) {
 
     // Validate project is ACTIVE
     projectLifecycleGuard.requireActive(projectId);
 
     // Project access check
-    projectAccessService.requireViewAccess(projectId, memberId, orgRole);
+    projectAccessService.requireViewAccess(projectId, actor);
 
     // Task belongs to project (if provided)
     if (taskId != null) {
@@ -122,7 +122,8 @@ public class ExpenseService {
 
     // Create expense
     var expense =
-        new Expense(projectId, memberId, date, description, amount, effectiveCurrency, category);
+        new Expense(
+            projectId, actor.memberId(), date, description, amount, effectiveCurrency, category);
     if (taskId != null) expense.setTaskId(taskId);
     if (receiptDocumentId != null) expense.setReceiptDocumentId(receiptDocumentId);
     if (markupPercent != null) expense.setMarkupPercent(markupPercent);
@@ -132,7 +133,11 @@ public class ExpenseService {
     }
 
     var saved = expenseRepository.save(expense);
-    log.info("Created expense {} for project {} by member {}", saved.getId(), projectId, memberId);
+    log.info(
+        "Created expense {} for project {} by member {}",
+        saved.getId(),
+        projectId,
+        actor.memberId());
 
     // Audit
     var auditDetails = new LinkedHashMap<String, Object>();
@@ -157,8 +162,8 @@ public class ExpenseService {
   }
 
   @Transactional(readOnly = true)
-  public Expense getExpense(UUID projectId, UUID expenseId, UUID memberId, String orgRole) {
-    projectAccessService.requireViewAccess(projectId, memberId, orgRole);
+  public Expense getExpense(UUID projectId, UUID expenseId, ActorContext actor) {
+    projectAccessService.requireViewAccess(projectId, actor);
 
     var expense =
         expenseRepository
@@ -180,10 +185,9 @@ public class ExpenseService {
       LocalDate to,
       UUID filterMemberId,
       Pageable pageable,
-      UUID memberId,
-      String orgRole) {
+      ActorContext actor) {
 
-    projectAccessService.requireViewAccess(projectId, memberId, orgRole);
+    projectAccessService.requireViewAccess(projectId, actor);
 
     return expenseRepository.findFiltered(projectId, category, from, to, filterMemberId, pageable);
   }
@@ -192,8 +196,7 @@ public class ExpenseService {
   public Expense updateExpense(
       UUID projectId,
       UUID expenseId,
-      UUID memberId,
-      String orgRole,
+      ActorContext actor,
       LocalDate date,
       String description,
       BigDecimal amount,
@@ -224,7 +227,7 @@ public class ExpenseService {
     }
 
     // Permission: creator OR ADMIN+
-    requireEditPermission(expense, memberId, orgRole);
+    requireEditPermission(expense, actor);
 
     // Validate task if provided
     if (taskId != null) {
@@ -268,7 +271,7 @@ public class ExpenseService {
         notes != null ? notes : expense.getNotes());
 
     var saved = expenseRepository.save(expense);
-    log.info("Updated expense {} by member {}", expenseId, memberId);
+    log.info("Updated expense {} by member {}", expenseId, actor.memberId());
 
     // Audit
     auditService.log(
@@ -283,7 +286,7 @@ public class ExpenseService {
   }
 
   @Transactional
-  public void deleteExpense(UUID projectId, UUID expenseId, UUID memberId, String orgRole) {
+  public void deleteExpense(UUID projectId, UUID expenseId, ActorContext actor) {
     // Validate project is ACTIVE
     projectLifecycleGuard.requireActive(projectId);
 
@@ -303,10 +306,10 @@ public class ExpenseService {
     }
 
     // Permission: creator OR ADMIN+
-    requireEditPermission(expense, memberId, orgRole);
+    requireEditPermission(expense, actor);
 
     expenseRepository.delete(expense);
-    log.info("Deleted expense {} by member {}", expenseId, memberId);
+    log.info("Deleted expense {} by member {}", expenseId, actor.memberId());
 
     // Audit
     auditService.log(
@@ -326,7 +329,7 @@ public class ExpenseService {
   }
 
   @Transactional
-  public Expense writeOffExpense(UUID projectId, UUID expenseId, UUID memberId, String orgRole) {
+  public Expense writeOffExpense(UUID projectId, UUID expenseId, ActorContext actor) {
     // Validate project is ACTIVE
     projectLifecycleGuard.requireActive(projectId);
 
@@ -340,7 +343,7 @@ public class ExpenseService {
     }
 
     // ADMIN+ only
-    requireAdminPermission(orgRole);
+    requireAdminPermission(actor.orgRole());
 
     // Guard: not BILLED (entity.writeOff() checks this too, but give better error)
     if (expense.getInvoiceId() != null) {
@@ -355,7 +358,7 @@ public class ExpenseService {
     }
 
     var saved = expenseRepository.save(expense);
-    log.info("Wrote off expense {} by member {}", expenseId, memberId);
+    log.info("Wrote off expense {} by member {}", expenseId, actor.memberId());
 
     auditService.log(
         AuditEventBuilder.builder()
@@ -369,7 +372,7 @@ public class ExpenseService {
   }
 
   @Transactional
-  public Expense restoreExpense(UUID projectId, UUID expenseId, UUID memberId, String orgRole) {
+  public Expense restoreExpense(UUID projectId, UUID expenseId, ActorContext actor) {
     // Validate project is ACTIVE
     projectLifecycleGuard.requireActive(projectId);
 
@@ -383,7 +386,7 @@ public class ExpenseService {
     }
 
     // ADMIN+ only
-    requireAdminPermission(orgRole);
+    requireAdminPermission(actor.orgRole());
 
     try {
       expense.restore();
@@ -392,7 +395,7 @@ public class ExpenseService {
     }
 
     var saved = expenseRepository.save(expense);
-    log.info("Restored expense {} by member {}", expenseId, memberId);
+    log.info("Restored expense {} by member {}", expenseId, actor.memberId());
 
     auditService.log(
         AuditEventBuilder.builder()
@@ -422,11 +425,11 @@ public class ExpenseService {
         .orElse(null);
   }
 
-  private void requireEditPermission(Expense expense, UUID memberId, String orgRole) {
-    if (expense.getMemberId().equals(memberId)) {
+  private void requireEditPermission(Expense expense, ActorContext actor) {
+    if (expense.getMemberId().equals(actor.memberId())) {
       return; // creator can always modify own expenses
     }
-    var access = projectAccessService.checkAccess(expense.getProjectId(), memberId, orgRole);
+    var access = projectAccessService.checkAccess(expense.getProjectId(), actor);
     if (!access.canEdit()) {
       throw new ForbiddenException(
           "Cannot modify expense",

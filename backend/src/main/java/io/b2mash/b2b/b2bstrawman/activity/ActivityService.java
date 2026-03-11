@@ -5,6 +5,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
 import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import java.time.Instant;
 import java.util.Locale;
 import java.util.Map;
@@ -58,15 +59,10 @@ public class ActivityService {
    */
   @Transactional(readOnly = true)
   public Page<ActivityItem> getProjectActivity(
-      UUID projectId,
-      String entityType,
-      Instant since,
-      Pageable pageable,
-      UUID memberId,
-      String orgRole) {
+      UUID projectId, String entityType, Instant since, Pageable pageable, ActorContext actor) {
 
     // 1. Verify project access
-    projectAccessService.requireViewAccess(projectId, memberId, orgRole);
+    projectAccessService.requireViewAccess(projectId, actor);
 
     // 2. Convert entityType to lowercase for DB query (API accepts uppercase, DB stores lowercase)
     String normalizedEntityType = entityType != null ? entityType.toLowerCase(Locale.ROOT) : null;

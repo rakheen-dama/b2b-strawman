@@ -5,6 +5,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import java.math.BigDecimal;
@@ -76,10 +77,9 @@ public class CostRateService {
       BigDecimal hourlyCost,
       LocalDate effectiveFrom,
       LocalDate effectiveTo,
-      UUID actorMemberId,
-      String orgRole) {
+      ActorContext actor) {
 
-    requireAdminOrOwner(orgRole);
+    requireAdminOrOwner(actor.orgRole());
 
     LocalDate overlapEnd = effectiveTo != null ? effectiveTo : FAR_FUTURE;
     var overlapping =
@@ -128,10 +128,9 @@ public class CostRateService {
       String currency,
       LocalDate effectiveFrom,
       LocalDate effectiveTo,
-      UUID actorMemberId,
-      String orgRole) {
+      ActorContext actor) {
 
-    requireAdminOrOwner(orgRole);
+    requireAdminOrOwner(actor.orgRole());
 
     var rate =
         costRateRepository
@@ -175,8 +174,8 @@ public class CostRateService {
    * @param orgRole the org role of the actor
    */
   @Transactional
-  public void deleteCostRate(UUID id, UUID actorMemberId, String orgRole) {
-    requireAdminOrOwner(orgRole);
+  public void deleteCostRate(UUID id, ActorContext actor) {
+    requireAdminOrOwner(actor.orgRole());
 
     var rate =
         costRateRepository
@@ -204,9 +203,9 @@ public class CostRateService {
    * @return list of cost rates ordered by effectiveFrom DESC
    */
   @Transactional(readOnly = true)
-  public List<CostRate> listCostRates(UUID memberId, String orgRole) {
+  public List<CostRate> listCostRates(UUID memberId, ActorContext actor) {
     if (memberId == null) {
-      requireAdminOrOwner(orgRole);
+      requireAdminOrOwner(actor.orgRole());
       return costRateRepository.findAllOrderByEffectiveFromDesc();
     }
     return costRateRepository.findByMemberId(memberId);

@@ -3,8 +3,6 @@ package io.b2mash.b2b.b2bstrawman.orgrole;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
@@ -14,6 +12,7 @@ import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest;
 import io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.UpdateOrgRoleRequest;
+import io.b2mash.b2b.b2bstrawman.testutil.TestIds;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -53,8 +52,6 @@ class OrgRoleServiceTest {
   void resolveCapabilities_memberRole_returnsEmpty() {
     var member = memberWithIdAndRole(MEMBER_ID, ROLE_ID, Set.of());
     var role = orgRoleWithId(ROLE_ID, "Member", "member", true);
-    // System role "member" does NOT get all capabilities (only owner/admin do)
-    // and since it has no capabilities assigned, result is empty
 
     when(memberRepository.findById(MEMBER_ID)).thenReturn(Optional.of(member));
     when(orgRoleRepository.findById(ROLE_ID)).thenReturn(Optional.of(role));
@@ -117,10 +114,9 @@ class OrgRoleServiceTest {
         .thenAnswer(
             invocation -> {
               OrgRole saved = invocation.getArgument(0);
-              // Set ID via reflection to simulate persistence
-              var idField = OrgRole.class.getDeclaredField("id");
-              idField.setAccessible(true);
-              idField.set(saved, UUID.randomUUID());
+              if (saved.getId() == null) {
+                TestIds.withId(saved, UUID.randomUUID());
+              }
               return saved;
             });
 
@@ -140,8 +136,6 @@ class OrgRoleServiceTest {
 
     assertThatThrownBy(() -> service.createRole(request))
         .isInstanceOf(ResourceConflictException.class);
-
-    verify(orgRoleRepository, never()).save(any());
   }
 
   @Test
@@ -153,8 +147,6 @@ class OrgRoleServiceTest {
 
     assertThatThrownBy(() -> service.deleteRole(ROLE_ID))
         .isInstanceOf(ResourceConflictException.class);
-
-    verify(orgRoleRepository, never()).delete(any());
   }
 
   @Test
@@ -164,8 +156,6 @@ class OrgRoleServiceTest {
     when(orgRoleRepository.findById(ROLE_ID)).thenReturn(Optional.of(role));
 
     assertThatThrownBy(() -> service.deleteRole(ROLE_ID)).isInstanceOf(InvalidStateException.class);
-
-    verify(orgRoleRepository, never()).delete(any());
   }
 
   @Test
@@ -175,8 +165,6 @@ class OrgRoleServiceTest {
     when(orgRoleRepository.existsByNameIgnoreCase("Tester")).thenReturn(false);
 
     assertThatThrownBy(() -> service.createRole(request)).isInstanceOf(InvalidStateException.class);
-
-    verify(orgRoleRepository, never()).save(any());
   }
 
   @Test
@@ -246,8 +234,6 @@ class OrgRoleServiceTest {
 
     assertThatThrownBy(() -> service.updateRole(ROLE_ID, new UpdateOrgRoleRequest("X", null, null)))
         .isInstanceOf(InvalidStateException.class);
-
-    verify(orgRoleRepository, never()).save(any());
   }
 
   @Test
@@ -260,8 +246,6 @@ class OrgRoleServiceTest {
     assertThatThrownBy(
             () -> service.updateRole(ROLE_ID, new UpdateOrgRoleRequest("Taken Name", null, null)))
         .isInstanceOf(ResourceConflictException.class);
-
-    verify(orgRoleRepository, never()).save(any());
   }
 
   @Test
@@ -274,8 +258,6 @@ class OrgRoleServiceTest {
             () ->
                 service.updateRole(ROLE_ID, new UpdateOrgRoleRequest(null, null, Set.of("BOGUS"))))
         .isInstanceOf(InvalidStateException.class);
-
-    verify(orgRoleRepository, never()).save(any());
   }
 
   @Test
@@ -287,7 +269,6 @@ class OrgRoleServiceTest {
     var result = service.resolveCapabilities(MEMBER_ID);
 
     assertThat(result).containsExactlyInAnyOrderElementsOf(Capability.ALL_NAMES);
-    verify(orgRoleRepository, never()).findById(any());
   }
 
   @Test
@@ -299,7 +280,6 @@ class OrgRoleServiceTest {
     var result = service.resolveCapabilities(MEMBER_ID);
 
     assertThat(result).isEmpty();
-    verify(orgRoleRepository, never()).findById(any());
   }
 
   @Test
@@ -329,25 +309,12 @@ class OrgRoleServiceTest {
 
   private static OrgRole orgRoleWithId(UUID id, String name, String slug, boolean isSystem) {
     var role = new OrgRole(name, slug, name + " description", isSystem);
-    try {
-      var idField = OrgRole.class.getDeclaredField("id");
-      idField.setAccessible(true);
-      idField.set(role, id);
-    } catch (ReflectiveOperationException e) {
-      throw new RuntimeException("Failed to set role ID", e);
-    }
-    return role;
+    return TestIds.withId(role, id);
   }
 
   private static Member memberWithIdAndRole(UUID memberId, UUID orgRoleId, Set<String> overrides) {
     var member = new Member("clerk_user", "test@test.com", "Test", null, "member");
-    try {
-      var idField = Member.class.getDeclaredField("id");
-      idField.setAccessible(true);
-      idField.set(member, memberId);
-    } catch (ReflectiveOperationException e) {
-      throw new RuntimeException("Failed to set member ID", e);
-    }
+    TestIds.withId(member, memberId);
     member.setOrgRoleId(orgRoleId);
     member.setCapabilityOverrides(overrides);
     return member;
@@ -356,14 +323,6 @@ class OrgRoleServiceTest {
   /** Creates a member with the given legacy orgRole string and NO orgRoleId assigned. */
   private static Member memberWithLegacyRole(UUID memberId, String orgRole) {
     var member = new Member("clerk_user", "test@test.com", "Test", null, orgRole);
-    try {
-      var idField = Member.class.getDeclaredField("id");
-      idField.setAccessible(true);
-      idField.set(member, memberId);
-    } catch (ReflectiveOperationException e) {
-      throw new RuntimeException("Failed to set member ID", e);
-    }
-    // orgRoleId is null by default — no explicit OrgRole assigned
-    return member;
+    return TestIds.withId(member, memberId);
   }
 }

@@ -5,6 +5,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.math.BigDecimal;
 import java.util.LinkedHashMap;
@@ -43,8 +44,8 @@ public class ProjectBudgetService {
    * @throws ResourceNotFoundException if no budget is set for the project or project not accessible
    */
   @Transactional(readOnly = true)
-  public BudgetStatus getBudgetWithStatus(UUID projectId, UUID memberId, String orgRole) {
-    projectAccessService.requireViewAccess(projectId, memberId, orgRole);
+  public BudgetStatus getBudgetWithStatus(UUID projectId, ActorContext actor) {
+    projectAccessService.requireViewAccess(projectId, actor);
 
     var budget =
         projectBudgetRepository
@@ -61,9 +62,9 @@ public class ProjectBudgetService {
    * @throws ResourceNotFoundException if no budget is set for the project or project not accessible
    */
   @Transactional(readOnly = true)
-  public BudgetStatus getBudgetStatusOnly(UUID projectId, UUID memberId, String orgRole) {
+  public BudgetStatus getBudgetStatusOnly(UUID projectId, ActorContext actor) {
     // Same computation — the controller will map to a lighter response shape
-    return getBudgetWithStatus(projectId, memberId, orgRole);
+    return getBudgetWithStatus(projectId, actor);
   }
 
   /**
@@ -78,9 +79,8 @@ public class ProjectBudgetService {
       String budgetCurrency,
       Integer alertThresholdPct,
       String notes,
-      UUID memberId,
-      String orgRole) {
-    projectAccessService.requireEditAccess(projectId, memberId, orgRole);
+      ActorContext actor) {
+    projectAccessService.requireEditAccess(projectId, actor);
 
     // Validation
     if (budgetHours == null && budgetAmount == null) {
@@ -143,8 +143,8 @@ public class ProjectBudgetService {
    * @throws ResourceNotFoundException if no budget is set for the project
    */
   @Transactional
-  public void deleteBudget(UUID projectId, UUID memberId, String orgRole) {
-    projectAccessService.requireEditAccess(projectId, memberId, orgRole);
+  public void deleteBudget(UUID projectId, ActorContext actor) {
+    projectAccessService.requireEditAccess(projectId, actor);
 
     var budget =
         projectBudgetRepository

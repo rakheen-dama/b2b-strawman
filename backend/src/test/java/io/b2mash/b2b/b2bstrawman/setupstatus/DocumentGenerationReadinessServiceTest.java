@@ -24,6 +24,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+/**
+ * Unit test — manual construction is intentional. @InjectMocks cannot handle the
+ * List&lt;TemplateContextBuilder&gt; (individually configured mocks) or the real
+ * TemplateValidationService instance. One test also creates a second service with an empty builder
+ * list. Constructor has only 3 params so breakage risk is low.
+ */
 @ExtendWith(MockitoExtension.class)
 class DocumentGenerationReadinessServiceTest {
 

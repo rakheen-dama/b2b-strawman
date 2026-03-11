@@ -1,6 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.task;
 
-import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -30,10 +30,9 @@ public class TaskItemController {
   @GetMapping("/api/tasks/{taskId}/items")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<TaskItemResponse>> listItems(@PathVariable UUID taskId) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
 
-    var items = taskItemService.listItems(taskId, memberId, orgRole);
+    var items = taskItemService.listItems(taskId, actor);
     var response = items.stream().map(TaskItemResponse::from).toList();
     return ResponseEntity.ok(response);
   }
@@ -42,11 +41,10 @@ public class TaskItemController {
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<TaskItemResponse> addItem(
       @PathVariable UUID taskId, @Valid @RequestBody CreateTaskItemRequest request) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
 
     int sortOrder = request.sortOrder() != null ? request.sortOrder() : 0;
-    var item = taskItemService.addItem(taskId, request.title(), sortOrder, memberId, orgRole);
+    var item = taskItemService.addItem(taskId, request.title(), sortOrder, actor);
     return ResponseEntity.created(URI.create("/api/tasks/" + taskId + "/items/" + item.getId()))
         .body(TaskItemResponse.from(item));
   }
@@ -57,11 +55,9 @@ public class TaskItemController {
       @PathVariable UUID taskId,
       @PathVariable UUID itemId,
       @Valid @RequestBody UpdateTaskItemRequest request) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
 
-    var item =
-        taskItemService.updateItem(itemId, request.title(), request.sortOrder(), memberId, orgRole);
+    var item = taskItemService.updateItem(itemId, request.title(), request.sortOrder(), actor);
     return ResponseEntity.ok(TaskItemResponse.from(item));
   }
 
@@ -69,20 +65,18 @@ public class TaskItemController {
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<TaskItemResponse> toggleItem(
       @PathVariable UUID taskId, @PathVariable UUID itemId) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
 
-    var item = taskItemService.toggleItem(itemId, memberId, orgRole);
+    var item = taskItemService.toggleItem(itemId, actor);
     return ResponseEntity.ok(TaskItemResponse.from(item));
   }
 
   @DeleteMapping("/api/tasks/{taskId}/items/{itemId}")
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<Void> deleteItem(@PathVariable UUID taskId, @PathVariable UUID itemId) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
 
-    taskItemService.deleteItem(itemId, memberId, orgRole);
+    taskItemService.deleteItem(itemId, actor);
     return ResponseEntity.noContent().build();
   }
 
@@ -90,10 +84,9 @@ public class TaskItemController {
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<TaskItemResponse>> reorderItems(
       @PathVariable UUID taskId, @Valid @RequestBody ReorderRequest request) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
 
-    var items = taskItemService.reorderItems(taskId, request.orderedIds(), memberId, orgRole);
+    var items = taskItemService.reorderItems(taskId, request.orderedIds(), actor);
     var response = items.stream().map(TaskItemResponse::from).toList();
     return ResponseEntity.ok(response);
   }

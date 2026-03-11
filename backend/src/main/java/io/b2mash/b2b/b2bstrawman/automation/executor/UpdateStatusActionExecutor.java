@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.automation.config.ActionResult;
 import io.b2mash.b2b.b2bstrawman.automation.config.ActionSuccess;
 import io.b2mash.b2b.b2bstrawman.automation.config.UpdateStatusActionConfig;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceService;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
@@ -121,6 +122,7 @@ public class UpdateStatusActionExecutor implements ActionExecutor {
     }
 
     // TODO: Add TaskService.updateTaskStatus() to avoid direct repo access
+    var actorCtx = new ActorContext(actorId, SYSTEM_ACTOR_ROLE);
     taskService.updateTask(
         taskId,
         existingTask.getTitle(),
@@ -130,8 +132,7 @@ public class UpdateStatusActionExecutor implements ActionExecutor {
         existingTask.getType(),
         existingTask.getDueDate(),
         existingTask.getAssigneeId(),
-        actorId,
-        SYSTEM_ACTOR_ROLE);
+        actorCtx);
 
     log.info("Automation updated task {} status to {}", taskId, newStatus);
     return new ActionSuccess(Map.of("updatedEntityId", taskId.toString()));
@@ -149,19 +150,20 @@ public class UpdateStatusActionExecutor implements ActionExecutor {
       return new ActionFailure("No actor ID available in automation context", null);
     }
 
+    var actorCtx = new ActorContext(actorId, SYSTEM_ACTOR_ROLE);
     return switch (newStatus) {
       case "COMPLETED" -> {
-        projectService.completeProject(projectId, true, actorId, SYSTEM_ACTOR_ROLE);
+        projectService.completeProject(projectId, true, actorCtx);
         log.info("Automation completed project {}", projectId);
         yield new ActionSuccess(Map.of("updatedEntityId", projectId.toString()));
       }
       case "ARCHIVED" -> {
-        projectService.archiveProject(projectId, actorId, SYSTEM_ACTOR_ROLE);
+        projectService.archiveProject(projectId, actorCtx);
         log.info("Automation archived project {}", projectId);
         yield new ActionSuccess(Map.of("updatedEntityId", projectId.toString()));
       }
       case "ACTIVE" -> {
-        projectService.reopenProject(projectId, actorId, SYSTEM_ACTOR_ROLE);
+        projectService.reopenProject(projectId, actorCtx);
         log.info("Automation reopened project {}", projectId);
         yield new ActionSuccess(Map.of("updatedEntityId", projectId.toString()));
       }

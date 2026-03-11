@@ -1,6 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.customer;
 
-import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import java.net.URI;
 import java.time.Instant;
 import java.util.List;
@@ -28,10 +28,10 @@ public class ProjectCustomerController {
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<LinkedCustomerResponse>> listCustomersForProject(
       @PathVariable UUID projectId) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    UUID memberId = actor.memberId();
 
-    var customers = customerProjectService.listCustomersForProject(projectId, memberId, orgRole);
+    var customers = customerProjectService.listCustomersForProject(projectId, actor);
     return ResponseEntity.ok(customers.stream().map(LinkedCustomerResponse::from).toList());
   }
 
@@ -39,12 +39,10 @@ public class ProjectCustomerController {
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<CustomerController.CustomerProjectResponse> linkCustomerToProject(
       @PathVariable UUID projectId, @PathVariable UUID customerId) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    UUID memberId = actor.memberId();
 
-    var link =
-        customerProjectService.linkCustomerToProject(
-            customerId, projectId, memberId, memberId, orgRole);
+    var link = customerProjectService.linkCustomerToProject(customerId, projectId, memberId, actor);
     return ResponseEntity.created(
             URI.create("/api/projects/" + projectId + "/customers/" + customerId))
         .body(CustomerController.CustomerProjectResponse.from(link));
@@ -54,10 +52,10 @@ public class ProjectCustomerController {
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<Void> unlinkCustomerFromProject(
       @PathVariable UUID projectId, @PathVariable UUID customerId) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    UUID memberId = actor.memberId();
 
-    customerProjectService.unlinkCustomerFromProject(customerId, projectId, memberId, orgRole);
+    customerProjectService.unlinkCustomerFromProject(customerId, projectId, actor);
     return ResponseEntity.noContent().build();
   }
 

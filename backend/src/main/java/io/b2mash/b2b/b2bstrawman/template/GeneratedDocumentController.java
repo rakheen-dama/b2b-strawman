@@ -2,7 +2,7 @@ package io.b2mash.b2b.b2bstrawman.template;
 
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
-import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.template.GeneratedDocumentService.GeneratedDocumentListResponse;
 import java.time.Duration;
 import java.util.List;
@@ -41,9 +41,8 @@ public class GeneratedDocumentController {
   public ResponseEntity<List<GeneratedDocumentListResponse>> listGeneratedDocuments(
       @RequestParam TemplateEntityType entityType, @RequestParam UUID entityId) {
     if (entityType == TemplateEntityType.PROJECT) {
-      UUID memberId = RequestScopes.requireMemberId();
-      String orgRole = RequestScopes.getOrgRole();
-      projectAccessService.requireViewAccess(entityId, memberId, orgRole);
+      var actor = ActorContext.fromRequestScopes();
+      projectAccessService.requireViewAccess(entityId, actor);
     }
     var documents = generatedDocumentService.listByEntity(entityType, entityId);
     return ResponseEntity.ok(documents);
@@ -54,9 +53,8 @@ public class GeneratedDocumentController {
   public ResponseEntity<Void> downloadGeneratedDocument(@PathVariable UUID id) {
     var generatedDoc = generatedDocumentService.getById(id);
     if (generatedDoc.getPrimaryEntityType() == TemplateEntityType.PROJECT) {
-      UUID memberId = RequestScopes.requireMemberId();
-      String orgRole = RequestScopes.getOrgRole();
-      projectAccessService.requireViewAccess(generatedDoc.getPrimaryEntityId(), memberId, orgRole);
+      var actor = ActorContext.fromRequestScopes();
+      projectAccessService.requireViewAccess(generatedDoc.getPrimaryEntityId(), actor);
     }
     var presigned = storageService.generateDownloadUrl(generatedDoc.getS3Key(), URL_EXPIRY);
     return ResponseEntity.status(302).header(HttpHeaders.LOCATION, presigned.url()).build();

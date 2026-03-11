@@ -1,7 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.costrate;
 
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
-import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -44,9 +44,9 @@ public class CostRateController {
   @RequiresCapability("FINANCIAL_VISIBILITY")
   public ResponseEntity<ListResponse<CostRateResponse>> listCostRates(
       @RequestParam(required = false) UUID memberId) {
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
 
-    var rates = costRateService.listCostRates(memberId, orgRole);
+    var rates = costRateService.listCostRates(memberId, actor);
     var memberNames = resolveMemberNames(rates);
     var content = rates.stream().map(r -> CostRateResponse.from(r, memberNames)).toList();
     return ResponseEntity.ok(new ListResponse<>(content));
@@ -56,8 +56,7 @@ public class CostRateController {
   @RequiresCapability("FINANCIAL_VISIBILITY")
   public ResponseEntity<CostRateResponse> createCostRate(
       @Valid @RequestBody CreateCostRateRequest request) {
-    UUID actorMemberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
 
     var rate =
         costRateService.createCostRate(
@@ -66,8 +65,7 @@ public class CostRateController {
             request.hourlyCost(),
             request.effectiveFrom(),
             request.effectiveTo(),
-            actorMemberId,
-            orgRole);
+            actor);
 
     var memberNames = resolveMemberNames(List.of(rate));
     return ResponseEntity.created(URI.create("/api/cost-rates/" + rate.getId()))
@@ -78,8 +76,7 @@ public class CostRateController {
   @RequiresCapability("FINANCIAL_VISIBILITY")
   public ResponseEntity<CostRateResponse> updateCostRate(
       @PathVariable UUID id, @Valid @RequestBody UpdateCostRateRequest request) {
-    UUID actorMemberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
 
     var rate =
         costRateService.updateCostRate(
@@ -88,8 +85,7 @@ public class CostRateController {
             request.currency(),
             request.effectiveFrom(),
             request.effectiveTo(),
-            actorMemberId,
-            orgRole);
+            actor);
 
     var memberNames = resolveMemberNames(List.of(rate));
     return ResponseEntity.ok(CostRateResponse.from(rate, memberNames));
@@ -98,10 +94,9 @@ public class CostRateController {
   @DeleteMapping("/{id}")
   @RequiresCapability("FINANCIAL_VISIBILITY")
   public ResponseEntity<Void> deleteCostRate(@PathVariable UUID id) {
-    UUID actorMemberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
 
-    costRateService.deleteCostRate(id, actorMemberId, orgRole);
+    costRateService.deleteCostRate(id, actor);
     return ResponseEntity.noContent().build();
   }
 

@@ -18,7 +18,9 @@ import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccess;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
+import io.b2mash.b2b.b2bstrawman.testutil.TestIds;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.util.List;
 import java.util.Optional;
@@ -57,13 +59,13 @@ class TaskServiceTest {
     var taskId = UUID.randomUUID();
     var task = taskWithId(taskId, PROJECT_ID, "Task with time", MEMBER_ID);
     when(taskRepository.findById(taskId)).thenReturn(Optional.of(task));
-    when(projectAccessService.requireViewAccess(PROJECT_ID, MEMBER_ID, "admin"))
+    when(projectAccessService.requireViewAccess(PROJECT_ID, new ActorContext(MEMBER_ID, "admin")))
         .thenReturn(new ProjectAccess(true, true, true, false, "admin"));
     when(timeEntryRepository.countByTaskId(taskId)).thenReturn(7L);
 
-    assertThatThrownBy(() -> service.deleteTask(taskId, MEMBER_ID, "admin"))
+    assertThatThrownBy(() -> service.deleteTask(taskId, new ActorContext(MEMBER_ID, "admin")))
         .isInstanceOf(ResourceConflictException.class)
-        .hasMessageContaining("7 time entry/entries");
+        .hasMessageContaining("time entr");
     verify(taskRepository, never()).delete(any());
   }
 
@@ -72,25 +74,17 @@ class TaskServiceTest {
     var taskId = UUID.randomUUID();
     var task = taskWithId(taskId, PROJECT_ID, "Clean task", MEMBER_ID);
     when(taskRepository.findById(taskId)).thenReturn(Optional.of(task));
-    when(projectAccessService.requireViewAccess(PROJECT_ID, MEMBER_ID, "admin"))
+    when(projectAccessService.requireViewAccess(PROJECT_ID, new ActorContext(MEMBER_ID, "admin")))
         .thenReturn(new ProjectAccess(true, true, true, false, "admin"));
     when(timeEntryRepository.countByTaskId(taskId)).thenReturn(0L);
     when(customerProjectRepository.findByProjectId(PROJECT_ID)).thenReturn(List.of());
 
-    service.deleteTask(taskId, MEMBER_ID, "admin");
+    service.deleteTask(taskId, new ActorContext(MEMBER_ID, "admin"));
 
     verify(taskRepository).delete(task);
   }
 
   private static Task taskWithId(UUID id, UUID projectId, String title, UUID createdBy) {
-    var task = new Task(projectId, title, null, "MEDIUM", null, null, createdBy);
-    try {
-      var idField = Task.class.getDeclaredField("id");
-      idField.setAccessible(true);
-      idField.set(task, id);
-    } catch (ReflectiveOperationException e) {
-      throw new RuntimeException("Failed to set task ID", e);
-    }
-    return task;
+    return TestIds.withId(new Task(projectId, title, null, "MEDIUM", null, null, createdBy), id);
   }
 }

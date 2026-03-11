@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLine;
 import io.b2mash.b2b.b2bstrawman.tax.dto.TaxBreakdownEntry;
+import io.b2mash.b2b.b2bstrawman.testutil.TestIds;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
@@ -220,24 +221,10 @@ class TaxCalculationServiceTest {
       BigDecimal taxRatePercent,
       BigDecimal taxAmount,
       boolean taxExempt) {
-    try {
-      var f1 = InvoiceLine.class.getDeclaredField("taxRateId");
-      f1.setAccessible(true);
-      f1.set(line, taxRateId);
-      var f2 = InvoiceLine.class.getDeclaredField("taxRateName");
-      f2.setAccessible(true);
-      f2.set(line, taxRateName);
-      var f3 = InvoiceLine.class.getDeclaredField("taxRatePercent");
-      f3.setAccessible(true);
-      f3.set(line, taxRatePercent);
-      var f4 = InvoiceLine.class.getDeclaredField("taxAmount");
-      f4.setAccessible(true);
-      f4.set(line, taxAmount);
-      var f5 = InvoiceLine.class.getDeclaredField("taxExempt");
-      f5.setAccessible(true);
-      f5.set(line, taxExempt);
-    } catch (ReflectiveOperationException e) {
-      throw new RuntimeException(e);
-    }
+    TestIds.withField(line, "taxRateId", taxRateId);
+    TestIds.withField(line, "taxRateName", taxRateName);
+    TestIds.withField(line, "taxRatePercent", taxRatePercent);
+    TestIds.withField(line, "taxAmount", taxAmount);
+    TestIds.withField(line, "taxExempt", taxExempt);
   }
 }

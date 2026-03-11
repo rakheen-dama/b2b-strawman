@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsController.SettingsResponse;
@@ -12,7 +13,6 @@ import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalTime;
 import java.util.Map;
-import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -98,9 +98,8 @@ public class OrgSettingsService {
       Boolean aiEnabled,
       Boolean documentSigningEnabled,
       String projectNamingPattern,
-      UUID memberId,
-      String orgRole) {
-    requireAdminOrOwner(orgRole);
+      ActorContext actor) {
+    requireAdminOrOwner(actor.orgRole());
 
     var existing = orgSettingsRepository.findForCurrentTenant();
 
@@ -153,8 +152,8 @@ public class OrgSettingsService {
 
   /** Uploads a logo to storage and updates the org settings. */
   @Transactional
-  public SettingsResponse uploadLogo(MultipartFile file, UUID memberId, String orgRole) {
-    requireAdminOrOwner(orgRole);
+  public SettingsResponse uploadLogo(MultipartFile file, ActorContext actor) {
+    requireAdminOrOwner(actor.orgRole());
 
     String tenantId = RequestScopes.TENANT_ID.get();
     String ext = extensionFromContentType(file.getContentType());
@@ -201,8 +200,8 @@ public class OrgSettingsService {
 
   /** Deletes the logo from storage and clears the logoS3Key in org settings. */
   @Transactional
-  public SettingsResponse deleteLogo(UUID memberId, String orgRole) {
-    requireAdminOrOwner(orgRole);
+  public SettingsResponse deleteLogo(ActorContext actor) {
+    requireAdminOrOwner(actor.orgRole());
 
     var settings =
         orgSettingsRepository
@@ -297,11 +296,8 @@ public class OrgSettingsService {
   /** Updates compliance-related settings (dormancy threshold, data request deadline). */
   @Transactional
   public SettingsResponse updateComplianceSettings(
-      Integer dormancyThresholdDays,
-      Integer dataRequestDeadlineDays,
-      UUID memberId,
-      String orgRole) {
-    requireAdminOrOwner(orgRole);
+      Integer dormancyThresholdDays, Integer dataRequestDeadlineDays, ActorContext actor) {
+    requireAdminOrOwner(actor.orgRole());
 
     if (dormancyThresholdDays == null && dataRequestDeadlineDays == null) {
       return getSettingsWithBranding();
@@ -352,9 +348,8 @@ public class OrgSettingsService {
       String taxRegistrationLabel,
       String taxLabel,
       boolean taxInclusive,
-      UUID memberId,
-      String orgRole) {
-    requireAdminOrOwner(orgRole);
+      ActorContext actor) {
+    requireAdminOrOwner(actor.orgRole());
 
     var settings =
         orgSettingsRepository
@@ -393,8 +388,8 @@ public class OrgSettingsService {
   /** Updates acceptance-related settings (expiry days). */
   @Transactional
   public SettingsResponse updateAcceptanceSettings(
-      Integer acceptanceExpiryDays, UUID memberId, String orgRole) {
-    requireAdminOrOwner(orgRole);
+      Integer acceptanceExpiryDays, ActorContext actor) {
+    requireAdminOrOwner(actor.orgRole());
 
     if (acceptanceExpiryDays == null) {
       return getSettingsWithBranding();
@@ -432,9 +427,8 @@ public class OrgSettingsService {
       String timeReminderDays,
       String timeReminderTimeStr,
       Integer timeReminderMinMinutes,
-      UUID memberId,
-      String orgRole) {
-    requireAdminOrOwner(orgRole);
+      ActorContext actor) {
+    requireAdminOrOwner(actor.orgRole());
 
     var settings =
         orgSettingsRepository
@@ -496,9 +490,8 @@ public class OrgSettingsService {
 
   /** Updates the default weekly capacity hours. Requires admin or owner role. */
   @Transactional
-  public SettingsResponse updateDefaultWeeklyCapacityHours(
-      BigDecimal hours, UUID memberId, String orgRole) {
-    requireAdminOrOwner(orgRole);
+  public SettingsResponse updateDefaultWeeklyCapacityHours(BigDecimal hours, ActorContext actor) {
+    requireAdminOrOwner(actor.orgRole());
 
     var settings =
         orgSettingsRepository
@@ -531,9 +524,8 @@ public class OrgSettingsService {
       Integer billingBatchAsyncThreshold,
       Integer billingEmailRateLimit,
       String defaultBillingRunCurrency,
-      UUID memberId,
-      String orgRole) {
-    requireAdminOrOwner(orgRole);
+      ActorContext actor) {
+    requireAdminOrOwner(actor.orgRole());
 
     var settings =
         orgSettingsRepository

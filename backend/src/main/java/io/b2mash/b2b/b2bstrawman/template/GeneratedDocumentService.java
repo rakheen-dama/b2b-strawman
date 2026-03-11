@@ -15,6 +15,7 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteContext;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService;
@@ -467,9 +468,8 @@ public class GeneratedDocumentService {
   public String getDocxDownloadUrl(UUID id) {
     var generatedDoc = getById(id);
     if (generatedDoc.getPrimaryEntityType() == TemplateEntityType.PROJECT) {
-      UUID memberId = RequestScopes.requireMemberId();
-      String orgRole = RequestScopes.getOrgRole();
-      projectAccessService.requireViewAccess(generatedDoc.getPrimaryEntityId(), memberId, orgRole);
+      var actor = ActorContext.fromRequestScopes();
+      projectAccessService.requireViewAccess(generatedDoc.getPrimaryEntityId(), actor);
     }
     String docxKey = generatedDoc.getDocxS3Key();
     if (docxKey == null) {

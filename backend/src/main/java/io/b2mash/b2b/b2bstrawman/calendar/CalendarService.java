@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.calendar;
 
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import io.b2mash.b2b.b2bstrawman.task.Task;
@@ -45,8 +46,7 @@ public class CalendarService {
 
   @Transactional(readOnly = true)
   public CalendarResponse getCalendarItems(
-      UUID memberId,
-      String orgRole,
+      ActorContext actor,
       LocalDate from,
       LocalDate to,
       UUID filterProjectId,
@@ -57,19 +57,20 @@ public class CalendarService {
     validateDateRange(from, to);
     validateType(filterType);
 
-    boolean isAdminOrOwner = Roles.ORG_OWNER.equals(orgRole) || Roles.ORG_ADMIN.equals(orgRole);
+    boolean isAdminOrOwner =
+        Roles.ORG_OWNER.equals(actor.orgRole()) || Roles.ORG_ADMIN.equals(actor.orgRole());
 
     List<CalendarItemDto> items = new ArrayList<>();
 
     // Query tasks in date range
     if (filterType == null || "TASK".equals(filterType)) {
-      List<Task> tasks = queryTasks(from, to, memberId, isAdminOrOwner);
+      List<Task> tasks = queryTasks(from, to, actor.memberId(), isAdminOrOwner);
       items.addAll(toTaskDtos(tasks));
     }
 
     // Query projects in date range
     if (filterType == null || "PROJECT".equals(filterType)) {
-      List<Project> projects = queryProjects(from, to, memberId, isAdminOrOwner);
+      List<Project> projects = queryProjects(from, to, actor.memberId(), isAdminOrOwner);
       items.addAll(toProjectDtos(projects));
     }
 
@@ -77,12 +78,13 @@ public class CalendarService {
     List<CalendarItemDto> overdueItems = new ArrayList<>();
     if (includeOverdue) {
       if (filterType == null || "TASK".equals(filterType)) {
-        List<Task> overdueTasks = queryOverdueTasks(from, memberId, isAdminOrOwner);
+        List<Task> overdueTasks = queryOverdueTasks(from, actor.memberId(), isAdminOrOwner);
         overdueItems.addAll(toTaskDtos(overdueTasks));
       }
 
       if (filterType == null || "PROJECT".equals(filterType)) {
-        List<Project> overdueProjects = queryOverdueProjects(from, memberId, isAdminOrOwner);
+        List<Project> overdueProjects =
+            queryOverdueProjects(from, actor.memberId(), isAdminOrOwner);
         overdueItems.addAll(toProjectDtos(overdueProjects));
       }
 

@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberService;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
@@ -113,8 +114,7 @@ class DashboardProjectIntegrationTest {
                   "MEDIUM",
                   "TASK",
                   null,
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
               taskService.createTask(
                   projectWithTasks,
                   "Open Task 2",
@@ -122,8 +122,7 @@ class DashboardProjectIntegrationTest {
                   "MEDIUM",
                   "TASK",
                   null,
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
 
               var ipTask =
                   taskService.createTask(
@@ -133,8 +132,7 @@ class DashboardProjectIntegrationTest {
                       "HIGH",
                       "TASK",
                       null,
-                      memberIdOwner,
-                      "owner");
+                      new ActorContext(memberIdOwner, "owner"));
               taskService.updateTask(
                   ipTask.getId(),
                   "In Progress Task",
@@ -144,8 +142,7 @@ class DashboardProjectIntegrationTest {
                   "TASK",
                   null,
                   null,
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
 
               var ipTask2 =
                   taskService.createTask(
@@ -155,8 +152,7 @@ class DashboardProjectIntegrationTest {
                       "MEDIUM",
                       "TASK",
                       null,
-                      memberIdOwner,
-                      "owner");
+                      new ActorContext(memberIdOwner, "owner"));
               taskService.updateTask(
                   ipTask2.getId(),
                   "In Progress Task 2",
@@ -166,8 +162,7 @@ class DashboardProjectIntegrationTest {
                   "TASK",
                   null,
                   null,
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
 
               var doneTask =
                   taskService.createTask(
@@ -177,8 +172,7 @@ class DashboardProjectIntegrationTest {
                       "LOW",
                       "TASK",
                       null,
-                      memberIdOwner,
-                      "owner");
+                      new ActorContext(memberIdOwner, "owner"));
               taskService.updateTask(
                   doneTask.getId(),
                   "Done Task",
@@ -188,8 +182,7 @@ class DashboardProjectIntegrationTest {
                   "TASK",
                   null,
                   null,
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
               taskService.updateTask(
                   doneTask.getId(),
                   "Done Task",
@@ -199,8 +192,7 @@ class DashboardProjectIntegrationTest {
                   "TASK",
                   null,
                   null,
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
 
               // Overdue task: OPEN with due date in the past
               var overdueTask =
@@ -211,8 +203,7 @@ class DashboardProjectIntegrationTest {
                       "HIGH",
                       "TASK",
                       LocalDate.now().minusDays(5),
-                      memberIdOwner,
-                      "owner");
+                      new ActorContext(memberIdOwner, "owner"));
 
               // --- Project with all tasks done (healthy) ---
               var p2 = projectService.createProject("All Done Project", "Test", memberIdOwner);
@@ -226,8 +217,7 @@ class DashboardProjectIntegrationTest {
                       "MEDIUM",
                       "TASK",
                       null,
-                      memberIdOwner,
-                      "owner");
+                      new ActorContext(memberIdOwner, "owner"));
               taskService.updateTask(
                   done1.getId(),
                   "Done 1",
@@ -237,8 +227,7 @@ class DashboardProjectIntegrationTest {
                   "TASK",
                   null,
                   null,
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
               taskService.updateTask(
                   done1.getId(),
                   "Done 1",
@@ -248,8 +237,7 @@ class DashboardProjectIntegrationTest {
                   "TASK",
                   null,
                   null,
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
 
               var done2 =
                   taskService.createTask(
@@ -259,8 +247,7 @@ class DashboardProjectIntegrationTest {
                       "MEDIUM",
                       "TASK",
                       null,
-                      memberIdOwner,
-                      "owner");
+                      new ActorContext(memberIdOwner, "owner"));
               taskService.updateTask(
                   done2.getId(),
                   "Done 2",
@@ -270,8 +257,7 @@ class DashboardProjectIntegrationTest {
                   "TASK",
                   null,
                   null,
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
               taskService.updateTask(
                   done2.getId(),
                   "Done 2",
@@ -281,8 +267,7 @@ class DashboardProjectIntegrationTest {
                   "TASK",
                   null,
                   null,
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
 
               // --- Project with no tasks (unknown) ---
               var p3 = projectService.createProject("No Tasks Project", "Test", memberIdOwner);
@@ -300,8 +285,7 @@ class DashboardProjectIntegrationTest {
                   "HIGH",
                   "TASK",
                   LocalDate.now().minusDays(10),
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
               taskService.createTask(
                   projectOverdue,
                   "Overdue 2",
@@ -309,8 +293,7 @@ class DashboardProjectIntegrationTest {
                   "HIGH",
                   "TASK",
                   LocalDate.now().minusDays(7),
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
               taskService.createTask(
                   projectOverdue,
                   "Overdue 3",
@@ -318,8 +301,7 @@ class DashboardProjectIntegrationTest {
                   "HIGH",
                   "TASK",
                   LocalDate.now().minusDays(3),
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
               var notOverdue =
                   taskService.createTask(
                       projectOverdue,
@@ -328,8 +310,7 @@ class DashboardProjectIntegrationTest {
                       "LOW",
                       "TASK",
                       LocalDate.now().plusDays(30),
-                      memberIdOwner,
-                      "owner");
+                      new ActorContext(memberIdOwner, "owner"));
               taskService.updateTask(
                   notOverdue.getId(),
                   "Not Overdue",
@@ -339,8 +320,7 @@ class DashboardProjectIntegrationTest {
                   "TASK",
                   null,
                   null,
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
               taskService.updateTask(
                   notOverdue.getId(),
                   "Not Overdue",
@@ -350,8 +330,7 @@ class DashboardProjectIntegrationTest {
                   "TASK",
                   null,
                   null,
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
             });
   }
 

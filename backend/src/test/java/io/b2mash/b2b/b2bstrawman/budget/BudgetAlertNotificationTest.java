@@ -8,6 +8,7 @@ import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.billingrate.BillingRateService;
 import io.b2mash.b2b.b2bstrawman.event.BudgetThresholdEvent;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationPreference;
@@ -113,8 +114,7 @@ class BudgetAlertNotificationTest {
                       "MEDIUM",
                       "TASK",
                       null,
-                      memberIdOwner,
-                      "owner");
+                      new ActorContext(memberIdOwner, "owner"));
               taskId = task.getId();
 
               // Add member to project so they can create time entries
@@ -129,8 +129,7 @@ class BudgetAlertNotificationTest {
                   new BigDecimal("100.00"),
                   LocalDate.of(2024, 1, 1),
                   null,
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
             });
   }
 
@@ -149,8 +148,7 @@ class BudgetAlertNotificationTest {
               null,
               80,
               "Test budget",
-              memberIdOwner,
-              "owner");
+              new ActorContext(memberIdOwner, "owner"));
         });
 
     events.clear();
@@ -168,8 +166,7 @@ class BudgetAlertNotificationTest {
               true,
               null,
               "Work block 1",
-              memberIdMember,
-              "member");
+              new ActorContext(memberIdMember, "member"));
 
           // 4 hours — total now 9 hours = 90%, crosses 80% threshold
           timeEntryService.createTimeEntry(
@@ -179,8 +176,7 @@ class BudgetAlertNotificationTest {
               true,
               null,
               "Work block 2",
-              memberIdMember,
-              "member");
+              new ActorContext(memberIdMember, "member"));
         });
 
     // Verify BudgetThresholdEvent was published
@@ -241,8 +237,7 @@ class BudgetAlertNotificationTest {
               true,
               null,
               "Extra work after threshold",
-              memberIdMember,
-              "member");
+              new ActorContext(memberIdMember, "member"));
         });
 
     // No new BudgetThresholdEvent should be published
@@ -265,8 +260,7 @@ class BudgetAlertNotificationTest {
               null,
               80,
               "Updated budget notes",
-              memberIdOwner,
-              "owner");
+              new ActorContext(memberIdOwner, "owner"));
         });
 
     // Verify thresholdNotified is still true because budget values didn't change
@@ -283,8 +277,7 @@ class BudgetAlertNotificationTest {
               null,
               80,
               "Increased budget",
-              memberIdOwner,
-              "owner");
+              new ActorContext(memberIdOwner, "owner"));
         });
 
     // Verify the budget's thresholdNotified was reset
@@ -292,7 +285,9 @@ class BudgetAlertNotificationTest {
         .where(RequestScopes.ORG_ID, ORG_ID)
         .run(
             () -> {
-              var budget = budgetService.getBudgetWithStatus(projectId, memberIdOwner, "owner");
+              var budget =
+                  budgetService.getBudgetWithStatus(
+                      projectId, new ActorContext(memberIdOwner, "owner"));
               assertThat(budget).isNotNull();
               // With 12 hours budget and 10 hours consumed, that's ~83% — above 80%
               // but thresholdNotified was reset, so it should be false until re-triggered
@@ -317,8 +312,7 @@ class BudgetAlertNotificationTest {
               true,
               null,
               "Trigger after reset",
-              memberIdMember,
-              "member");
+              new ActorContext(memberIdMember, "member"));
         });
 
     // Verify new BudgetThresholdEvent was published
@@ -342,8 +336,7 @@ class BudgetAlertNotificationTest {
               null,
               80,
               "Reset for preference test",
-              memberIdOwner,
-              "owner");
+              new ActorContext(memberIdOwner, "owner"));
         });
 
     // Disable BUDGET_ALERT preference for admin
@@ -385,8 +378,7 @@ class BudgetAlertNotificationTest {
               true,
               null,
               "Preference test entry",
-              memberIdMember,
-              "member");
+              new ActorContext(memberIdMember, "member"));
         });
 
     // Verify event published (budget check still runs)
@@ -442,8 +434,7 @@ class BudgetAlertNotificationTest {
                   "LOW",
                   "TASK",
                   null,
-                  memberIdOwner,
-                  "owner");
+                  new ActorContext(memberIdOwner, "owner"));
           noBudgetTaskId[0] = task.getId();
         });
 
@@ -461,8 +452,7 @@ class BudgetAlertNotificationTest {
               true,
               null,
               "No budget work",
-              memberIdOwner,
-              "owner");
+              new ActorContext(memberIdOwner, "owner"));
         });
 
     // No BudgetThresholdEvent should be published

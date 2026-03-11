@@ -1,7 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.settings;
 
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
-import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -52,8 +52,9 @@ public class OrgSettingsController {
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<SettingsResponse> updateSettings(
       @Valid @RequestBody UpdateSettingsRequest request) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
 
     return ResponseEntity.ok(
         orgSettingsService.updateSettingsWithBranding(
@@ -64,8 +65,7 @@ public class OrgSettingsController {
             request.aiEnabled(),
             request.documentSigningEnabled(),
             request.projectNamingPattern(),
-            memberId,
-            orgRole));
+            actor));
   }
 
   @PostMapping(value = "/logo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -82,100 +82,104 @@ public class OrgSettingsController {
       throw new InvalidStateException("Invalid file type", "Logo must be PNG, JPG, or SVG");
     }
 
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
 
-    return ResponseEntity.ok(orgSettingsService.uploadLogo(file, memberId, orgRole));
+    return ResponseEntity.ok(orgSettingsService.uploadLogo(file, actor));
   }
 
   @DeleteMapping("/logo")
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<SettingsResponse> deleteLogo() {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
 
-    return ResponseEntity.ok(orgSettingsService.deleteLogo(memberId, orgRole));
+    return ResponseEntity.ok(orgSettingsService.deleteLogo(actor));
   }
 
   @PatchMapping("/compliance")
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<SettingsResponse> updateComplianceSettings(
       @Valid @RequestBody UpdateComplianceSettingsRequest request) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
 
     return ResponseEntity.ok(
         orgSettingsService.updateComplianceSettings(
-            request.dormancyThresholdDays(), request.dataRequestDeadlineDays(), memberId, orgRole));
+            request.dormancyThresholdDays(), request.dataRequestDeadlineDays(), actor));
   }
 
   @PatchMapping("/tax")
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<SettingsResponse> updateTaxSettings(
       @Valid @RequestBody UpdateTaxSettingsRequest request) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
     return ResponseEntity.ok(
         orgSettingsService.updateTaxSettings(
             request.taxRegistrationNumber(),
             request.taxRegistrationLabel(),
             request.taxLabel(),
             request.taxInclusive(),
-            memberId,
-            orgRole));
+            actor));
   }
 
   @PatchMapping("/acceptance")
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<SettingsResponse> updateAcceptanceSettings(
       @Valid @RequestBody UpdateAcceptanceSettingsRequest request) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
     return ResponseEntity.ok(
-        orgSettingsService.updateAcceptanceSettings(
-            request.acceptanceExpiryDays(), memberId, orgRole));
+        orgSettingsService.updateAcceptanceSettings(request.acceptanceExpiryDays(), actor));
   }
 
   @PatchMapping("/time-reminders")
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<SettingsResponse> updateTimeReminderSettings(
       @Valid @RequestBody UpdateTimeReminderSettingsRequest request) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
     return ResponseEntity.ok(
         orgSettingsService.updateTimeReminderSettings(
             request.timeReminderEnabled(),
             request.timeReminderDays(),
             request.timeReminderTime(),
             request.timeReminderMinMinutes(),
-            memberId,
-            orgRole));
+            actor));
   }
 
   @PatchMapping("/capacity")
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<SettingsResponse> updateCapacitySettings(
       @Valid @RequestBody UpdateCapacitySettingsRequest request) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
     return ResponseEntity.ok(
         orgSettingsService.updateDefaultWeeklyCapacityHours(
-            request.defaultWeeklyCapacityHours(), memberId, orgRole));
+            request.defaultWeeklyCapacityHours(), actor));
   }
 
   @PatchMapping("/batch-billing")
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<SettingsResponse> updateBatchBillingSettings(
       @Valid @RequestBody UpdateBatchBillingSettingsRequest request) {
-    UUID memberId = RequestScopes.requireMemberId();
-    String orgRole = RequestScopes.getOrgRole();
+    var actor = ActorContext.fromRequestScopes();
+    String orgRole = actor.orgRole();
+    UUID memberId = actor.memberId();
     return ResponseEntity.ok(
         orgSettingsService.updateBatchBillingSettings(
             request.billingBatchAsyncThreshold(),
             request.billingEmailRateLimit(),
             request.defaultBillingRunCurrency(),
-            memberId,
-            orgRole));
+            actor));
   }
 
   // --- DTOs ---

@@ -19,16 +19,13 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldType;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
 import io.b2mash.b2b.b2bstrawman.retention.RetentionPolicy;
 import io.b2mash.b2b.b2bstrawman.retention.RetentionPolicyRepository;
+import io.b2mash.b2b.b2bstrawman.seeder.AbstractPackSeeder;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.stereotype.Service;
@@ -41,21 +38,16 @@ import tools.jackson.databind.ObjectMapper;
  * OrgSettings.compliancePackStatus.
  */
 @Service
-public class CompliancePackSeeder {
+public class CompliancePackSeeder extends AbstractPackSeeder<CompliancePackDefinition> {
 
-  private static final Logger log = LoggerFactory.getLogger(CompliancePackSeeder.class);
   private static final String PACK_LOCATION = "classpath:compliance-packs/*/pack.json";
 
-  private final ResourcePatternResolver resourceResolver;
-  private final ObjectMapper objectMapper;
   private final ChecklistTemplateRepository checklistTemplateRepository;
   private final ChecklistTemplateItemRepository checklistTemplateItemRepository;
   private final FieldDefinitionRepository fieldDefinitionRepository;
   private final FieldGroupRepository fieldGroupRepository;
   private final FieldGroupMemberRepository fieldGroupMemberRepository;
   private final RetentionPolicyRepository retentionPolicyRepository;
-  private final OrgSettingsRepository orgSettingsRepository;
-  private final TenantTransactionHelper tenantTransactionHelper;
 
   public CompliancePackSeeder(
       ResourcePatternResolver resourceResolver,
@@ -68,76 +60,42 @@ public class CompliancePackSeeder {
       RetentionPolicyRepository retentionPolicyRepository,
       OrgSettingsRepository orgSettingsRepository,
       TenantTransactionHelper tenantTransactionHelper) {
-    this.resourceResolver = resourceResolver;
-    this.objectMapper = objectMapper;
+    super(resourceResolver, objectMapper, orgSettingsRepository, tenantTransactionHelper);
     this.checklistTemplateRepository = checklistTemplateRepository;
     this.checklistTemplateItemRepository = checklistTemplateItemRepository;
     this.fieldDefinitionRepository = fieldDefinitionRepository;
     this.fieldGroupRepository = fieldGroupRepository;
     this.fieldGroupMemberRepository = fieldGroupMemberRepository;
     this.retentionPolicyRepository = retentionPolicyRepository;
-    this.orgSettingsRepository = orgSettingsRepository;
-    this.tenantTransactionHelper = tenantTransactionHelper;
   }
 
-  public void seedPacksForTenant(String tenantId, String orgId) {
-    tenantTransactionHelper.executeInTenantTransaction(tenantId, orgId, t -> doSeedPacks(t));
+  @Override
+  protected String getPackResourcePattern() {
+    return PACK_LOCATION;
   }
 
-  private void doSeedPacks(String tenantId) {
-    List<CompliancePackDefinition> packs = loadPacks();
-    if (packs.isEmpty()) {
-      log.info("No compliance packs found on classpath for tenant {}", tenantId);
-      return;
-    }
-
-    var settings =
-        orgSettingsRepository
-            .findForCurrentTenant()
-            .orElseGet(
-                () -> {
-                  var newSettings = new OrgSettings("USD");
-                  return orgSettingsRepository.save(newSettings);
-                });
-
-    for (CompliancePackDefinition pack : packs) {
-      if (isPackAlreadyApplied(settings, pack.packId())) {
-        log.info(
-            "Compliance pack {} already applied for tenant {}, skipping", pack.packId(), tenantId);
-        continue;
-      }
-
-      applyPack(pack);
-      settings.recordCompliancePackApplication(pack.packId(), pack.version());
-      log.info(
-          "Applied compliance pack {} v{} for tenant {}", pack.packId(), pack.version(), tenantId);
-    }
-
-    orgSettingsRepository.save(settings);
+  @Override
+  protected Class<CompliancePackDefinition> getPackDefinitionType() {
+    return CompliancePackDefinition.class;
   }
 
-  private List<CompliancePackDefinition> loadPacks() {
-    try {
-      Resource[] resources = resourceResolver.getResources(PACK_LOCATION);
-      return Arrays.stream(resources)
-          .map(
-              resource -> {
-                try {
-                  return objectMapper.readValue(
-                      resource.getInputStream(), CompliancePackDefinition.class);
-                } catch (Exception e) {
-                  throw new IllegalStateException(
-                      "Failed to parse compliance pack: " + resource.getFilename(), e);
-                }
-              })
-          .toList();
-    } catch (IOException e) {
-      log.warn("Failed to scan for compliance packs at {}", PACK_LOCATION, e);
-      return List.of();
-    }
+  @Override
+  protected String getPackTypeName() {
+    return "compliance";
   }
 
-  private boolean isPackAlreadyApplied(OrgSettings settings, String packId) {
+  @Override
+  protected String getPackId(CompliancePackDefinition pack) {
+    return pack.packId();
+  }
+
+  @Override
+  protected String getPackVersion(CompliancePackDefinition pack) {
+    return pack.version();
+  }
+
+  @Override
+  protected boolean isPackAlreadyApplied(OrgSettings settings, String packId) {
     if (settings.getCompliancePackStatus() == null) {
       return false;
     }
@@ -145,7 +103,13 @@ public class CompliancePackSeeder {
         .anyMatch(entry -> packId.equals(entry.get("packId")));
   }
 
-  private void applyPack(CompliancePackDefinition pack) {
+  @Override
+  protected void recordPackApplication(OrgSettings settings, CompliancePackDefinition pack) {
+    settings.recordCompliancePackApplication(pack.packId(), pack.version());
+  }
+
+  @Override
+  protected void applyPack(CompliancePackDefinition pack, Resource packResource, String tenantId) {
     // 1. Create checklist template
     CompliancePackChecklistTemplate tpl = pack.checklistTemplate();
     var template =

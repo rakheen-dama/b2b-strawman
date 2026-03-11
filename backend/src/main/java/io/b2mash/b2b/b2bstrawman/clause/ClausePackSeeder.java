@@ -1,17 +1,13 @@
 package io.b2mash.b2b.b2bstrawman.clause;
 
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
+import io.b2mash.b2b.b2bstrawman.seeder.AbstractPackSeeder;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateRepository;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.stereotype.Service;
@@ -19,18 +15,13 @@ import tools.jackson.databind.ObjectMapper;
 
 /** Seeds clause packs for newly provisioned tenants. */
 @Service
-public class ClausePackSeeder {
+public class ClausePackSeeder extends AbstractPackSeeder<ClausePackDefinition> {
 
-  private static final Logger log = LoggerFactory.getLogger(ClausePackSeeder.class);
   private static final String PACK_LOCATION = "classpath:clause-packs/*/pack.json";
 
-  private final ResourcePatternResolver resourceResolver;
-  private final ObjectMapper objectMapper;
   private final ClauseRepository clauseRepository;
   private final TemplateClauseRepository templateClauseRepository;
   private final DocumentTemplateRepository documentTemplateRepository;
-  private final OrgSettingsRepository orgSettingsRepository;
-  private final TenantTransactionHelper tenantTransactionHelper;
 
   public ClausePackSeeder(
       ResourcePatternResolver resourceResolver,
@@ -40,74 +31,39 @@ public class ClausePackSeeder {
       DocumentTemplateRepository documentTemplateRepository,
       OrgSettingsRepository orgSettingsRepository,
       TenantTransactionHelper tenantTransactionHelper) {
-    this.resourceResolver = resourceResolver;
-    this.objectMapper = objectMapper;
+    super(resourceResolver, objectMapper, orgSettingsRepository, tenantTransactionHelper);
     this.clauseRepository = clauseRepository;
     this.templateClauseRepository = templateClauseRepository;
     this.documentTemplateRepository = documentTemplateRepository;
-    this.orgSettingsRepository = orgSettingsRepository;
-    this.tenantTransactionHelper = tenantTransactionHelper;
   }
 
-  /** Seeds all discovered clause packs for the given tenant. */
-  public void seedPacksForTenant(String tenantId, String orgId) {
-    tenantTransactionHelper.executeInTenantTransaction(tenantId, orgId, t -> doSeedPacks(t));
+  @Override
+  protected String getPackResourcePattern() {
+    return PACK_LOCATION;
   }
 
-  private void doSeedPacks(String tenantId) {
-    List<PackWithResource> packs = loadPacks();
-    if (packs.isEmpty()) {
-      log.info("No clause packs found on classpath for tenant {}", tenantId);
-      return;
-    }
-
-    var settings =
-        orgSettingsRepository
-            .findForCurrentTenant()
-            .orElseGet(
-                () -> {
-                  var newSettings = new OrgSettings("USD");
-                  return orgSettingsRepository.save(newSettings);
-                });
-
-    for (PackWithResource packEntry : packs) {
-      ClausePackDefinition pack = packEntry.definition();
-      if (isPackAlreadyApplied(settings, pack.packId())) {
-        log.info("Clause pack {} already applied for tenant {}, skipping", pack.packId(), tenantId);
-        continue;
-      }
-
-      applyPack(pack, tenantId);
-      settings.recordClausePackApplication(pack.packId(), pack.version());
-      log.info("Applied clause pack {} v{} for tenant {}", pack.packId(), pack.version(), tenantId);
-    }
-
-    orgSettingsRepository.save(settings);
+  @Override
+  protected Class<ClausePackDefinition> getPackDefinitionType() {
+    return ClausePackDefinition.class;
   }
 
-  private List<PackWithResource> loadPacks() {
-    try {
-      Resource[] resources = resourceResolver.getResources(PACK_LOCATION);
-      return Arrays.stream(resources)
-          .map(
-              resource -> {
-                try {
-                  var definition =
-                      objectMapper.readValue(resource.getInputStream(), ClausePackDefinition.class);
-                  return new PackWithResource(definition, resource);
-                } catch (Exception e) {
-                  throw new IllegalStateException(
-                      "Failed to parse clause pack: " + resource.getFilename(), e);
-                }
-              })
-          .toList();
-    } catch (IOException e) {
-      log.warn("Failed to scan for clause packs at {}", PACK_LOCATION, e);
-      return List.of();
-    }
+  @Override
+  protected String getPackTypeName() {
+    return "clause";
   }
 
-  private boolean isPackAlreadyApplied(OrgSettings settings, String packId) {
+  @Override
+  protected String getPackId(ClausePackDefinition pack) {
+    return pack.packId();
+  }
+
+  @Override
+  protected String getPackVersion(ClausePackDefinition pack) {
+    return String.valueOf(pack.version());
+  }
+
+  @Override
+  protected boolean isPackAlreadyApplied(OrgSettings settings, String packId) {
     if (settings.getClausePackStatus() == null) {
       return false;
     }
@@ -115,7 +71,13 @@ public class ClausePackSeeder {
         .anyMatch(entry -> packId.equals(entry.get("packId")));
   }
 
-  private void applyPack(ClausePackDefinition pack, String tenantId) {
+  @Override
+  protected void recordPackApplication(OrgSettings settings, ClausePackDefinition pack) {
+    settings.recordClausePackApplication(pack.packId(), pack.version());
+  }
+
+  @Override
+  protected void applyPack(ClausePackDefinition pack, Resource packResource, String tenantId) {
     // Seed clauses
     for (ClausePackDefinition.ClauseDefinition clauseDef : pack.clauses()) {
       var existing = clauseRepository.findBySlug(clauseDef.slug());
@@ -197,6 +159,4 @@ public class ClausePackSeeder {
       }
     }
   }
-
-  private record PackWithResource(ClausePackDefinition definition, Resource packResource) {}
 }

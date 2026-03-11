@@ -26,8 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.stereotype.Service;
@@ -42,7 +40,6 @@ import tools.jackson.databind.ObjectMapper;
 @Service
 public class CompliancePackSeeder extends AbstractPackSeeder<CompliancePackDefinition> {
 
-  private static final Logger log = LoggerFactory.getLogger(CompliancePackSeeder.class);
   private static final String PACK_LOCATION = "classpath:compliance-packs/*/pack.json";
 
   private final ChecklistTemplateRepository checklistTemplateRepository;

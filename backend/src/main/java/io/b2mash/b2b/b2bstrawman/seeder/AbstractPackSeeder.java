@@ -30,7 +30,7 @@ import tools.jackson.databind.ObjectMapper;
  */
 public abstract class AbstractPackSeeder<D> {
 
-  private final Logger log = LoggerFactory.getLogger(getClass());
+  protected final Logger log = LoggerFactory.getLogger(getClass());
 
   private final ResourcePatternResolver resourceResolver;
   private final ObjectMapper objectMapper;

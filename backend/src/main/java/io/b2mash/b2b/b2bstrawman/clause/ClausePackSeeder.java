@@ -8,8 +8,6 @@ import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateRepository;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.stereotype.Service;
@@ -19,7 +17,6 @@ import tools.jackson.databind.ObjectMapper;
 @Service
 public class ClausePackSeeder extends AbstractPackSeeder<ClausePackDefinition> {
 
-  private static final Logger log = LoggerFactory.getLogger(ClausePackSeeder.class);
   private static final String PACK_LOCATION = "classpath:clause-packs/*/pack.json";
 
   private final ClauseRepository clauseRepository;

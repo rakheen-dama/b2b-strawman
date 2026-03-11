@@ -2,8 +2,6 @@ package io.b2mash.b2b.b2bstrawman.document;
 
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.MissingOrganizationContextException;
-import io.b2mash.b2b.b2bstrawman.member.Member;
-import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.security.ClerkJwtUtils;
@@ -14,9 +12,7 @@ import jakarta.validation.constraints.Size;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
@@ -33,11 +29,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class DocumentController {
 
   private final DocumentService documentService;
-  private final MemberRepository memberRepository;
 
-  public DocumentController(DocumentService documentService, MemberRepository memberRepository) {
+  public DocumentController(DocumentService documentService) {
     this.documentService = documentService;
-    this.memberRepository = memberRepository;
   }
 
   // --- PROJECT-scoped upload-init (existing) ---
@@ -128,7 +122,7 @@ public class DocumentController {
           default ->
               throw new InvalidStateException("Invalid scope", "scope must be 'ORG' or 'CUSTOMER'");
         };
-    var memberNames = resolveNames(documents);
+    var memberNames = documentService.resolveUploaderNames(documents);
     var response = documents.stream().map(d -> DocumentResponse.from(d, memberNames)).toList();
     return ResponseEntity.ok(response);
   }
@@ -142,7 +136,7 @@ public class DocumentController {
     String orgRole = actor.orgRole();
     UUID memberId = actor.memberId();
     var document = documentService.confirmUpload(documentId, actor);
-    var memberNames = resolveNames(List.of(document));
+    var memberNames = documentService.resolveUploaderNames(List.of(document));
     return ResponseEntity.ok(DocumentResponse.from(document, memberNames));
   }
 
@@ -163,7 +157,7 @@ public class DocumentController {
     String orgRole = actor.orgRole();
     UUID memberId = actor.memberId();
     var documents = documentService.listDocuments(projectId, actor);
-    var memberNames = resolveNames(documents);
+    var memberNames = documentService.resolveUploaderNames(documents);
     var response = documents.stream().map(d -> DocumentResponse.from(d, memberNames)).toList();
     return ResponseEntity.ok(response);
   }
@@ -185,22 +179,8 @@ public class DocumentController {
   public ResponseEntity<DocumentResponse> toggleVisibility(
       @PathVariable UUID documentId, @Valid @RequestBody VisibilityRequest request) {
     var document = documentService.toggleVisibility(documentId, request.visibility());
-    var memberNames = resolveNames(List.of(document));
+    var memberNames = documentService.resolveUploaderNames(List.of(document));
     return ResponseEntity.ok(DocumentResponse.from(document, memberNames));
-  }
-
-  private Map<UUID, String> resolveNames(List<Document> documents) {
-    var ids =
-        documents.stream()
-            .map(Document::getUploadedBy)
-            .filter(Objects::nonNull)
-            .distinct()
-            .toList();
-    if (ids.isEmpty()) return Map.of();
-    return memberRepository.findAllById(ids).stream()
-        .collect(
-            Collectors.toMap(
-                Member::getId, m -> m.getName() != null ? m.getName() : "", (a, b) -> a));
   }
 
   // --- DTOs ---

@@ -5,12 +5,17 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -28,16 +33,19 @@ public class DataSubjectRequestService {
   private final CustomerRepository customerRepository;
   private final OrgSettingsRepository orgSettingsRepository;
   private final AuditService auditService;
+  private final MemberNameResolver memberNameResolver;
 
   public DataSubjectRequestService(
       DataSubjectRequestRepository requestRepository,
       CustomerRepository customerRepository,
       OrgSettingsRepository orgSettingsRepository,
-      AuditService auditService) {
+      AuditService auditService,
+      MemberNameResolver memberNameResolver) {
     this.requestRepository = requestRepository;
     this.customerRepository = customerRepository;
     this.orgSettingsRepository = orgSettingsRepository;
     this.auditService = auditService;
+    this.memberNameResolver = memberNameResolver;
   }
 
   @Transactional
@@ -205,5 +213,98 @@ public class DataSubjectRequestService {
 
     log.info("Deadline check complete — {} requests flagged", flagged);
     return flagged;
+  }
+
+  /** Resolve customer names for a list of data subject requests. */
+  private Map<UUID, String> resolveCustomerNames(List<DataSubjectRequest> requests) {
+    var ids =
+        requests.stream()
+            .map(DataSubjectRequest::getCustomerId)
+            .filter(Objects::nonNull)
+            .distinct()
+            .toList();
+    if (ids.isEmpty()) return Map.of();
+    return customerRepository.findAllById(ids).stream()
+        .collect(
+            Collectors.toMap(
+                c -> c.getId(), c -> c.getName() != null ? c.getName() : "Unknown", (a, b) -> a));
+  }
+
+  /** Resolve member names for a list of data subject requests. */
+  private Map<UUID, String> resolveMemberNames(List<DataSubjectRequest> requests) {
+    var ids =
+        requests.stream()
+            .flatMap(r -> Stream.of(r.getRequestedBy(), r.getCompletedBy()))
+            .filter(Objects::nonNull)
+            .distinct()
+            .toList();
+    return memberNameResolver.resolveNames(ids);
+  }
+
+  /** Build a response DTO from a data subject request, resolving customer and member names. */
+  public DataRequestResponse toResponse(DataSubjectRequest request) {
+    var memberNames = resolveMemberNames(List.of(request));
+    var customerNames = resolveCustomerNames(List.of(request));
+    return DataRequestResponse.from(
+        request, customerNames.getOrDefault(request.getCustomerId(), "Unknown"), memberNames);
+  }
+
+  /**
+   * Build response DTOs from a list of data subject requests, resolving customer and member names
+   * in batch.
+   */
+  public List<DataRequestResponse> toResponses(List<DataSubjectRequest> requests) {
+    var memberNames = resolveMemberNames(requests);
+    var customerNames = resolveCustomerNames(requests);
+    return requests.stream()
+        .map(
+            req ->
+                DataRequestResponse.from(
+                    req, customerNames.getOrDefault(req.getCustomerId(), "Unknown"), memberNames))
+        .toList();
+  }
+
+  // --- Response DTO (owned by service, used by controller) ---
+
+  public record DataRequestResponse(
+      UUID id,
+      UUID customerId,
+      String customerName,
+      String requestType,
+      String status,
+      String description,
+      String rejectionReason,
+      LocalDate deadline,
+      Instant requestedAt,
+      UUID requestedBy,
+      String requestedByName,
+      Instant completedAt,
+      UUID completedBy,
+      String completedByName,
+      boolean hasExport,
+      String notes,
+      Instant createdAt) {
+
+    public static DataRequestResponse from(
+        DataSubjectRequest req, String customerName, Map<UUID, String> memberNames) {
+      return new DataRequestResponse(
+          req.getId(),
+          req.getCustomerId(),
+          customerName,
+          req.getRequestType(),
+          req.getStatus(),
+          req.getDescription(),
+          req.getRejectionReason(),
+          req.getDeadline(),
+          req.getRequestedAt(),
+          req.getRequestedBy(),
+          req.getRequestedBy() != null ? memberNames.get(req.getRequestedBy()) : null,
+          req.getCompletedAt(),
+          req.getCompletedBy(),
+          req.getCompletedBy() != null ? memberNames.get(req.getCompletedBy()) : null,
+          req.getExportFileKey() != null,
+          req.getNotes(),
+          req.getCreatedAt());
+    }
   }
 }

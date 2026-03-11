@@ -126,9 +126,7 @@ public class ProjectService {
 
     var project = new Project(fieldResult.resolvedName(), description, createdBy);
     project.setCustomFields(fieldResult.validatedFields());
-    if (!fieldResult.mergedFieldGroups().isEmpty()) {
-      project.setAppliedFieldGroups(fieldResult.mergedFieldGroups());
-    }
+    project.setAppliedFieldGroups(fieldResult.mergedFieldGroups());
     if (customerId != null) {
       project.setCustomerId(customerId);
     }

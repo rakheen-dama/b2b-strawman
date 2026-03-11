@@ -182,26 +182,7 @@ public class InvoiceService {
 
   @Transactional
   public InvoiceResponse createDraft(CreateInvoiceRequest request, UUID createdBy) {
-    var customer =
-        customerRepository
-            .findById(request.customerId())
-            .orElseThrow(() -> new ResourceNotFoundException("Customer", request.customerId()));
-
-    if (!"ACTIVE".equals(customer.getStatus())) {
-      throw new InvalidStateException(
-          "Customer not active", "Customer must be in ACTIVE status to create an invoice");
-    }
-
-    // Check lifecycle guard (complementary to soft-delete status check above)
-    customerLifecycleGuard.requireActionPermitted(customer, LifecycleAction.CREATE_INVOICE);
-
-    // Check action-point prerequisites (e.g., portal contact, required fields)
-    var prerequisiteCheck =
-        prerequisiteService.checkForContext(
-            PrerequisiteContext.INVOICE_GENERATION, EntityType.CUSTOMER, request.customerId());
-    if (!prerequisiteCheck.passed()) {
-      throw new PrerequisiteNotMetException(prerequisiteCheck);
-    }
+    var customer = validateInvoicePrerequisites(request.customerId());
 
     // Look up organization for orgName snapshot
     String orgId = RequestScopes.requireOrgId();
@@ -228,151 +209,13 @@ public class InvoiceService {
 
     invoice = invoiceRepository.save(invoice);
 
-    // Create line items from time entries
+    // Create line items from time entries and expenses
     var timeEntryIds = request.timeEntryIds();
-    var linkedTimeEntries = new ArrayList<io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry>();
-    if (timeEntryIds != null && !timeEntryIds.isEmpty()) {
-      int sortOrder = 0;
-      for (UUID timeEntryId : timeEntryIds) {
-        var timeEntry =
-            timeEntryRepository
-                .findById(timeEntryId)
-                .orElseThrow(() -> new ResourceNotFoundException("TimeEntry", timeEntryId));
+    createTimeEntryLines(invoice, timeEntryIds, request.customerId(), request.currency());
 
-        if (!timeEntry.isBillable()) {
-          throw new InvalidStateException(
-              "Time entry not billable",
-              "Time entry " + timeEntryId + " is not marked as billable");
-        }
-
-        if (timeEntry.getInvoiceId() != null) {
-          throw new ResourceConflictException(
-              "Time entry already invoiced",
-              "Time entry " + timeEntryId + " is already linked to an invoice");
-        }
-
-        if (timeEntry.getBillingRateCurrency() != null
-            && !timeEntry.getBillingRateCurrency().equals(request.currency())) {
-          throw new InvalidStateException(
-              "Currency mismatch",
-              "Time entry "
-                  + timeEntryId
-                  + " has currency "
-                  + timeEntry.getBillingRateCurrency()
-                  + " but invoice currency is "
-                  + request.currency());
-        }
-
-        // Reject time entries without a task — cannot validate customer-project linkage
-        if (timeEntry.getTaskId() == null) {
-          throw new InvalidStateException(
-              "Time entry has no task",
-              "Time entry "
-                  + timeEntryId
-                  + " is not linked to a task and cannot be invoiced for a customer");
-        }
-
-        // Look up task to get projectId (used for both validation and line item creation)
-        UUID projectId = null;
-        var task = taskRepository.findById(timeEntry.getTaskId());
-        if (task.isPresent()) {
-          projectId = task.get().getProjectId();
-          // Validate time entry belongs to customer's projects
-          if (!customerProjectRepository.existsByCustomerIdAndProjectId(
-              request.customerId(), projectId)) {
-            throw new InvalidStateException(
-                "Time entry not linked to customer",
-                "Time entry "
-                    + timeEntryId
-                    + " belongs to a project not linked to customer "
-                    + request.customerId());
-          }
-        }
-
-        // Build description: "{task title} -- {date} -- {member name}"
-        String description = buildTimeEntryDescription(timeEntry);
-
-        BigDecimal quantity =
-            BigDecimal.valueOf(timeEntry.getDurationMinutes())
-                .divide(BigDecimal.valueOf(60), 4, RoundingMode.HALF_UP);
-        BigDecimal unitPrice =
-            timeEntry.getBillingRateSnapshot() != null
-                ? timeEntry.getBillingRateSnapshot()
-                : BigDecimal.ZERO;
-
-        var line =
-            new InvoiceLine(
-                invoice.getId(),
-                projectId,
-                timeEntryId,
-                description,
-                quantity,
-                unitPrice,
-                sortOrder++);
-        line.setLineType(InvoiceLineType.TIME);
-        lineRepository.save(line);
-        linkedTimeEntries.add(timeEntry);
-      }
-
-      // Link time entries to invoice to prevent double-billing
-      for (var timeEntry : linkedTimeEntries) {
-        timeEntry.setInvoiceId(invoice.getId());
-      }
-      timeEntryRepository.saveAll(linkedTimeEntries);
-    }
-
-    // Create line items from expenses
     var expenseIds = request.expenseIds();
-    if (expenseIds != null && !expenseIds.isEmpty()) {
-      var orgSettings = orgSettingsRepository.findForCurrentTenant().orElse(null);
-      BigDecimal orgMarkup =
-          orgSettings != null ? orgSettings.getDefaultExpenseMarkupPercent() : null;
-      int expSortOrder = timeEntryIds != null && !timeEntryIds.isEmpty() ? timeEntryIds.size() : 0;
-
-      for (UUID expenseId : expenseIds) {
-        var expense =
-            expenseRepository
-                .findById(expenseId)
-                .orElseThrow(() -> new ResourceNotFoundException("Expense", expenseId));
-
-        if (!expense.isBillable()) {
-          throw new InvalidStateException(
-              "Expense not billable", "Expense " + expenseId + " is not marked as billable");
-        }
-        if (expense.getInvoiceId() != null) {
-          throw new ResourceConflictException(
-              "Expense already invoiced",
-              "Expense " + expenseId + " is already linked to an invoice");
-        }
-        if (!customerProjectRepository.existsByCustomerIdAndProjectId(
-            request.customerId(), expense.getProjectId())) {
-          throw new InvalidStateException(
-              "Expense not linked to customer",
-              "Expense "
-                  + expenseId
-                  + " belongs to a project not linked to customer "
-                  + request.customerId());
-        }
-
-        BigDecimal billableAmount = expense.computeBillableAmount(orgMarkup);
-        var line =
-            new InvoiceLine(
-                invoice.getId(),
-                expense.getProjectId(),
-                null,
-                expense.getDescription() + " [" + expense.getCategory() + "]",
-                BigDecimal.ONE,
-                billableAmount,
-                expSortOrder++);
-        line.setExpenseId(expense.getId());
-        line.setLineType(InvoiceLineType.EXPENSE);
-        lineRepository.save(line);
-
-        // Link expense to invoice to prevent double-billing (mirrors time entry pattern)
-        expense.markBilled(invoice.getId());
-        expenseRepository.save(expense);
-      }
-    }
+    int expSortOffset = timeEntryIds != null && !timeEntryIds.isEmpty() ? timeEntryIds.size() : 0;
+    createExpenseLines(invoice, expenseIds, request.customerId(), expSortOffset);
 
     // Apply default tax rate to all lines (time + expense) — called once after all lines created
     boolean hasLines =
@@ -382,21 +225,7 @@ public class InvoiceService {
       applyDefaultTaxToLines(invoice.getId());
     }
 
-    // Auto-apply field groups before save so audit events capture final state
-    var autoApplyIds = fieldGroupService.resolveAutoApplyGroupIds(EntityType.INVOICE);
-    if (!autoApplyIds.isEmpty()) {
-      var merged =
-          new ArrayList<>(
-              invoice.getAppliedFieldGroups() != null
-                  ? invoice.getAppliedFieldGroups()
-                  : List.of());
-      for (UUID autoId : autoApplyIds) {
-        if (!merged.contains(autoId)) {
-          merged.add(autoId);
-        }
-      }
-      invoice.setAppliedFieldGroups(merged);
-    }
+    applyFieldGroups(invoice);
 
     // Recompute totals
     recalculateInvoiceTotals(invoice);
@@ -1734,6 +1563,212 @@ public class InvoiceService {
     ctx.setVariable("taxInclusive", taxInclusive);
 
     return templateEngine.process("invoice-preview", ctx);
+  }
+
+  // --- Private helpers (createDraft decomposition) ---
+
+  /**
+   * Validates customer status, lifecycle guard, and action-point prerequisites for invoice
+   * creation. Returns the validated customer entity.
+   */
+  private io.b2mash.b2b.b2bstrawman.customer.Customer validateInvoicePrerequisites(
+      UUID customerId) {
+    var customer =
+        customerRepository
+            .findById(customerId)
+            .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+
+    if (!"ACTIVE".equals(customer.getStatus())) {
+      throw new InvalidStateException(
+          "Customer not active", "Customer must be in ACTIVE status to create an invoice");
+    }
+
+    // Check lifecycle guard (complementary to soft-delete status check above)
+    customerLifecycleGuard.requireActionPermitted(customer, LifecycleAction.CREATE_INVOICE);
+
+    // Check action-point prerequisites (e.g., portal contact, required fields)
+    var prerequisiteCheck =
+        prerequisiteService.checkForContext(
+            PrerequisiteContext.INVOICE_GENERATION, EntityType.CUSTOMER, customerId);
+    if (!prerequisiteCheck.passed()) {
+      throw new PrerequisiteNotMetException(prerequisiteCheck);
+    }
+
+    return customer;
+  }
+
+  /**
+   * Creates invoice line items from time entries: validates each entry, creates lines, and links
+   * entries to the invoice to prevent double-billing.
+   */
+  private void createTimeEntryLines(
+      Invoice invoice, List<UUID> timeEntryIds, UUID customerId, String currency) {
+    if (timeEntryIds == null || timeEntryIds.isEmpty()) {
+      return;
+    }
+
+    var linkedTimeEntries = new ArrayList<io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry>();
+    int sortOrder = 0;
+
+    for (UUID timeEntryId : timeEntryIds) {
+      var timeEntry =
+          timeEntryRepository
+              .findById(timeEntryId)
+              .orElseThrow(() -> new ResourceNotFoundException("TimeEntry", timeEntryId));
+
+      if (!timeEntry.isBillable()) {
+        throw new InvalidStateException(
+            "Time entry not billable", "Time entry " + timeEntryId + " is not marked as billable");
+      }
+
+      if (timeEntry.getInvoiceId() != null) {
+        throw new ResourceConflictException(
+            "Time entry already invoiced",
+            "Time entry " + timeEntryId + " is already linked to an invoice");
+      }
+
+      if (timeEntry.getBillingRateCurrency() != null
+          && !timeEntry.getBillingRateCurrency().equals(currency)) {
+        throw new InvalidStateException(
+            "Currency mismatch",
+            "Time entry "
+                + timeEntryId
+                + " has currency "
+                + timeEntry.getBillingRateCurrency()
+                + " but invoice currency is "
+                + currency);
+      }
+
+      // Reject time entries without a task — cannot validate customer-project linkage
+      if (timeEntry.getTaskId() == null) {
+        throw new InvalidStateException(
+            "Time entry has no task",
+            "Time entry "
+                + timeEntryId
+                + " is not linked to a task and cannot be invoiced for a customer");
+      }
+
+      // Look up task to get projectId (used for both validation and line item creation)
+      UUID projectId = null;
+      var task = taskRepository.findById(timeEntry.getTaskId());
+      if (task.isPresent()) {
+        projectId = task.get().getProjectId();
+        // Validate time entry belongs to customer's projects
+        if (!customerProjectRepository.existsByCustomerIdAndProjectId(customerId, projectId)) {
+          throw new InvalidStateException(
+              "Time entry not linked to customer",
+              "Time entry "
+                  + timeEntryId
+                  + " belongs to a project not linked to customer "
+                  + customerId);
+        }
+      }
+
+      // Build description: "{task title} -- {date} -- {member name}"
+      String description = buildTimeEntryDescription(timeEntry);
+
+      BigDecimal quantity =
+          BigDecimal.valueOf(timeEntry.getDurationMinutes())
+              .divide(BigDecimal.valueOf(60), 4, RoundingMode.HALF_UP);
+      BigDecimal unitPrice =
+          timeEntry.getBillingRateSnapshot() != null
+              ? timeEntry.getBillingRateSnapshot()
+              : BigDecimal.ZERO;
+
+      var line =
+          new InvoiceLine(
+              invoice.getId(),
+              projectId,
+              timeEntryId,
+              description,
+              quantity,
+              unitPrice,
+              sortOrder++);
+      line.setLineType(InvoiceLineType.TIME);
+      lineRepository.save(line);
+      linkedTimeEntries.add(timeEntry);
+    }
+
+    // Link time entries to invoice to prevent double-billing
+    for (var timeEntry : linkedTimeEntries) {
+      timeEntry.setInvoiceId(invoice.getId());
+    }
+    timeEntryRepository.saveAll(linkedTimeEntries);
+  }
+
+  /**
+   * Creates invoice line items from expenses: validates each expense, computes billable amount with
+   * markup, creates lines, and links expenses to the invoice.
+   */
+  private void createExpenseLines(
+      Invoice invoice, List<UUID> expenseIds, UUID customerId, int sortOrderOffset) {
+    if (expenseIds == null || expenseIds.isEmpty()) {
+      return;
+    }
+
+    var orgSettings = orgSettingsRepository.findForCurrentTenant().orElse(null);
+    BigDecimal orgMarkup =
+        orgSettings != null ? orgSettings.getDefaultExpenseMarkupPercent() : null;
+    int expSortOrder = sortOrderOffset;
+
+    for (UUID expenseId : expenseIds) {
+      var expense =
+          expenseRepository
+              .findById(expenseId)
+              .orElseThrow(() -> new ResourceNotFoundException("Expense", expenseId));
+
+      if (!expense.isBillable()) {
+        throw new InvalidStateException(
+            "Expense not billable", "Expense " + expenseId + " is not marked as billable");
+      }
+      if (expense.getInvoiceId() != null) {
+        throw new ResourceConflictException(
+            "Expense already invoiced",
+            "Expense " + expenseId + " is already linked to an invoice");
+      }
+      if (!customerProjectRepository.existsByCustomerIdAndProjectId(
+          customerId, expense.getProjectId())) {
+        throw new InvalidStateException(
+            "Expense not linked to customer",
+            "Expense " + expenseId + " belongs to a project not linked to customer " + customerId);
+      }
+
+      BigDecimal billableAmount = expense.computeBillableAmount(orgMarkup);
+      var line =
+          new InvoiceLine(
+              invoice.getId(),
+              expense.getProjectId(),
+              null,
+              expense.getDescription() + " [" + expense.getCategory() + "]",
+              BigDecimal.ONE,
+              billableAmount,
+              expSortOrder++);
+      line.setExpenseId(expense.getId());
+      line.setLineType(InvoiceLineType.EXPENSE);
+      lineRepository.save(line);
+
+      // Link expense to invoice to prevent double-billing (mirrors time entry pattern)
+      expense.markBilled(invoice.getId());
+      expenseRepository.save(expense);
+    }
+  }
+
+  /** Auto-applies field groups to the invoice before final save. */
+  private void applyFieldGroups(Invoice invoice) {
+    var autoApplyIds = fieldGroupService.resolveAutoApplyGroupIds(EntityType.INVOICE);
+    if (!autoApplyIds.isEmpty()) {
+      var merged =
+          new ArrayList<>(
+              invoice.getAppliedFieldGroups() != null
+                  ? invoice.getAppliedFieldGroups()
+                  : List.of());
+      for (UUID autoId : autoApplyIds) {
+        if (!merged.contains(autoId)) {
+          merged.add(autoId);
+        }
+      }
+      invoice.setAppliedFieldGroups(merged);
+    }
   }
 
   // --- Private helpers ---

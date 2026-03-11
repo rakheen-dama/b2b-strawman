@@ -5,8 +5,10 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,7 +43,7 @@ public class ReportExportService {
 
   /** List all report definitions grouped by category. */
   @Transactional(readOnly = true)
-  public ReportingController.CategorizedReportsResponse listCategorized() {
+  public CategorizedReportsResponse listCategorized() {
     var definitions = reportDefinitionRepository.findAllByOrderByCategoryAscSortOrderAsc();
 
     var categories =
@@ -55,29 +57,29 @@ public class ReportExportService {
             .stream()
             .map(
                 entry ->
-                    new ReportingController.CategoryGroup(
+                    new CategoryGroup(
                         entry.getKey(),
                         CATEGORY_LABELS.getOrDefault(entry.getKey(), entry.getKey()),
                         entry.getValue().stream()
                             .map(
                                 def ->
-                                    new ReportingController.ReportSummary(
+                                    new ReportSummary(
                                         def.getSlug(), def.getName(), def.getDescription()))
                             .toList()))
             .toList();
 
-    return new ReportingController.CategorizedReportsResponse(categories);
+    return new CategorizedReportsResponse(categories);
   }
 
   /** Get a single report definition by slug. */
   @Transactional(readOnly = true)
-  public ReportingController.ReportDetailResponse getBySlug(String slug) {
+  public ReportDetailResponse getBySlug(String slug) {
     var definition =
         reportDefinitionRepository
             .findBySlug(slug)
             .orElseThrow(() -> new ResourceNotFoundException("ReportDefinition", slug));
 
-    return new ReportingController.ReportDetailResponse(
+    return new ReportDetailResponse(
         definition.getSlug(),
         definition.getName(),
         definition.getDescription(),
@@ -85,6 +87,19 @@ public class ReportExportService {
         definition.getParameterSchema(),
         definition.getColumnDefinitions(),
         definition.isSystem());
+  }
+
+  /** Execute a report query with pagination. */
+  @Transactional(readOnly = true)
+  public ReportExecutionResponse execute(
+      String slug, Map<String, Object> parameters, Pageable pageable) {
+    return reportExecutionService.execute(slug, parameters, pageable);
+  }
+
+  /** Render an HTML preview for a report. */
+  @Transactional(readOnly = true)
+  public String renderPreviewHtml(String slug, Map<String, Object> parameters) {
+    return reportRenderingService.renderPreviewHtml(slug, parameters);
   }
 
   /** Export report as PDF: fetch definition, execute query, render PDF, log audit event. */
@@ -173,4 +188,21 @@ public class ReportExportService {
       ReportResult result,
       Map<String, Object> parameters,
       String filename) {}
+
+  // --- Response DTOs (owned by service, used by controller) ---
+
+  public record CategorizedReportsResponse(List<CategoryGroup> categories) {}
+
+  public record CategoryGroup(String category, String label, List<ReportSummary> reports) {}
+
+  public record ReportSummary(String slug, String name, String description) {}
+
+  public record ReportDetailResponse(
+      String slug,
+      String name,
+      String description,
+      String category,
+      Map<String, Object> parameterSchema,
+      Map<String, Object> columnDefinitions,
+      boolean isSystem) {}
 }

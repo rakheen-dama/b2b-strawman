@@ -5,7 +5,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
@@ -24,27 +23,21 @@ import org.springframework.web.bind.annotation.RestController;
 public class ReportingController {
 
   private final ReportExportService reportExportService;
-  private final ReportExecutionService reportExecutionService;
-  private final ReportRenderingService reportRenderingService;
 
-  public ReportingController(
-      ReportExportService reportExportService,
-      ReportExecutionService reportExecutionService,
-      ReportRenderingService reportRenderingService) {
+  public ReportingController(ReportExportService reportExportService) {
     this.reportExportService = reportExportService;
-    this.reportExecutionService = reportExecutionService;
-    this.reportRenderingService = reportRenderingService;
   }
 
   @GetMapping
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
-  public ResponseEntity<CategorizedReportsResponse> listReportDefinitions() {
+  public ResponseEntity<ReportExportService.CategorizedReportsResponse> listReportDefinitions() {
     return ResponseEntity.ok(reportExportService.listCategorized());
   }
 
   @GetMapping("/{slug}")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
-  public ResponseEntity<ReportDetailResponse> getReportDefinition(@PathVariable String slug) {
+  public ResponseEntity<ReportExportService.ReportDetailResponse> getReportDefinition(
+      @PathVariable String slug) {
     return ResponseEntity.ok(reportExportService.getBySlug(slug));
   }
 
@@ -53,16 +46,16 @@ public class ReportingController {
   public ResponseEntity<ReportExecutionResponse> executeReport(
       @PathVariable String slug, @Valid @RequestBody ExecuteReportRequest request) {
     var pageable = PageRequest.of(request.page(), request.size());
-    var response = reportExecutionService.execute(slug, request.parameters(), pageable);
-    return ResponseEntity.ok(response);
+    return ResponseEntity.ok(reportExportService.execute(slug, request.parameters(), pageable));
   }
 
   @GetMapping("/{slug}/preview")
   @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<String> previewReport(
       @PathVariable String slug, @RequestParam Map<String, Object> parameters) {
-    String html = reportRenderingService.renderPreviewHtml(slug, parameters);
-    return ResponseEntity.ok().contentType(MediaType.TEXT_HTML).body(html);
+    return ResponseEntity.ok()
+        .contentType(MediaType.TEXT_HTML)
+        .body(reportExportService.renderPreviewHtml(slug, parameters));
   }
 
   @GetMapping("/{slug}/export/pdf")
@@ -90,25 +83,8 @@ public class ReportingController {
     reportExportService.writeCsvAndAudit(csvResult, response.getOutputStream());
   }
 
-  // --- Request/Response DTOs ---
+  // --- Request DTOs ---
 
   public record ExecuteReportRequest(
       Map<String, Object> parameters, @Min(0) int page, @Min(1) @Max(500) int size) {}
-
-  // --- Response DTOs ---
-
-  public record CategorizedReportsResponse(List<CategoryGroup> categories) {}
-
-  public record CategoryGroup(String category, String label, List<ReportSummary> reports) {}
-
-  public record ReportSummary(String slug, String name, String description) {}
-
-  public record ReportDetailResponse(
-      String slug,
-      String name,
-      String description,
-      String category,
-      Map<String, Object> parameterSchema,
-      Map<String, Object> columnDefinitions,
-      boolean isSystem) {}
 }

@@ -7,6 +7,7 @@ import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -215,7 +216,7 @@ public class DataSubjectRequestService {
   }
 
   /** Resolve customer names for a list of data subject requests. */
-  public Map<UUID, String> resolveCustomerNames(List<DataSubjectRequest> requests) {
+  private Map<UUID, String> resolveCustomerNames(List<DataSubjectRequest> requests) {
     var ids =
         requests.stream()
             .map(DataSubjectRequest::getCustomerId)
@@ -230,7 +231,7 @@ public class DataSubjectRequestService {
   }
 
   /** Resolve member names for a list of data subject requests. */
-  public Map<UUID, String> resolveMemberNames(List<DataSubjectRequest> requests) {
+  private Map<UUID, String> resolveMemberNames(List<DataSubjectRequest> requests) {
     var ids =
         requests.stream()
             .flatMap(r -> Stream.of(r.getRequestedBy(), r.getCompletedBy()))
@@ -241,10 +242,10 @@ public class DataSubjectRequestService {
   }
 
   /** Build a response DTO from a data subject request, resolving customer and member names. */
-  public DataRequestController.DataRequestResponse toResponse(DataSubjectRequest request) {
+  public DataRequestResponse toResponse(DataSubjectRequest request) {
     var memberNames = resolveMemberNames(List.of(request));
     var customerNames = resolveCustomerNames(List.of(request));
-    return DataRequestController.DataRequestResponse.from(
+    return DataRequestResponse.from(
         request, customerNames.getOrDefault(request.getCustomerId(), "Unknown"), memberNames);
   }
 
@@ -252,15 +253,58 @@ public class DataSubjectRequestService {
    * Build response DTOs from a list of data subject requests, resolving customer and member names
    * in batch.
    */
-  public List<DataRequestController.DataRequestResponse> toResponses(
-      List<DataSubjectRequest> requests) {
+  public List<DataRequestResponse> toResponses(List<DataSubjectRequest> requests) {
     var memberNames = resolveMemberNames(requests);
     var customerNames = resolveCustomerNames(requests);
     return requests.stream()
         .map(
             req ->
-                DataRequestController.DataRequestResponse.from(
+                DataRequestResponse.from(
                     req, customerNames.getOrDefault(req.getCustomerId(), "Unknown"), memberNames))
         .toList();
+  }
+
+  // --- Response DTO (owned by service, used by controller) ---
+
+  public record DataRequestResponse(
+      UUID id,
+      UUID customerId,
+      String customerName,
+      String requestType,
+      String status,
+      String description,
+      String rejectionReason,
+      LocalDate deadline,
+      Instant requestedAt,
+      UUID requestedBy,
+      String requestedByName,
+      Instant completedAt,
+      UUID completedBy,
+      String completedByName,
+      boolean hasExport,
+      String notes,
+      Instant createdAt) {
+
+    public static DataRequestResponse from(
+        DataSubjectRequest req, String customerName, Map<UUID, String> memberNames) {
+      return new DataRequestResponse(
+          req.getId(),
+          req.getCustomerId(),
+          customerName,
+          req.getRequestType(),
+          req.getStatus(),
+          req.getDescription(),
+          req.getRejectionReason(),
+          req.getDeadline(),
+          req.getRequestedAt(),
+          req.getRequestedBy(),
+          req.getRequestedBy() != null ? memberNames.get(req.getRequestedBy()) : null,
+          req.getCompletedAt(),
+          req.getCompletedBy(),
+          req.getCompletedBy() != null ? memberNames.get(req.getCompletedBy()) : null,
+          req.getExportFileKey() != null,
+          req.getNotes(),
+          req.getCreatedAt());
+    }
   }
 }

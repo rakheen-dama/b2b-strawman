@@ -410,6 +410,17 @@ public class DocumentService {
     // ORG and CUSTOMER scoped: tenant isolation is sufficient — any org member can access
   }
 
+  /** Resolve uploader names for a list of documents. */
+  public Map<UUID, String> resolveUploaderNames(List<Document> documents) {
+    var ids =
+        documents.stream()
+            .map(Document::getUploadedBy)
+            .filter(Objects::nonNull)
+            .distinct()
+            .toList();
+    return memberNameResolver.resolveNames(ids);
+  }
+
   private String resolveActorName(UUID memberId) {
     return memberNameResolver.resolveName(memberId);
   }

@@ -10,8 +10,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
 import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -47,7 +45,7 @@ public class DataRequestController {
 
   @GetMapping
   @RequiresCapability("CUSTOMER_MANAGEMENT")
-  public ResponseEntity<List<DataRequestResponse>> listRequests(
+  public ResponseEntity<List<DataSubjectRequestService.DataRequestResponse>> listRequests(
       @RequestParam(required = false) String status) {
     var requests =
         status != null && !status.isBlank()
@@ -58,14 +56,15 @@ public class DataRequestController {
 
   @GetMapping("/{id}")
   @RequiresCapability("CUSTOMER_MANAGEMENT")
-  public ResponseEntity<DataRequestResponse> getRequest(@PathVariable UUID id) {
+  public ResponseEntity<DataSubjectRequestService.DataRequestResponse> getRequest(
+      @PathVariable UUID id) {
     var request = dataSubjectRequestService.getById(id);
     return ResponseEntity.ok(dataSubjectRequestService.toResponse(request));
   }
 
   @PostMapping
   @RequiresCapability("CUSTOMER_MANAGEMENT")
-  public ResponseEntity<DataRequestResponse> createRequest(
+  public ResponseEntity<DataSubjectRequestService.DataRequestResponse> createRequest(
       @Valid @RequestBody CreateDataRequestBody body) {
     var actorId = RequestScopes.requireMemberId();
     var request =
@@ -78,7 +77,7 @@ public class DataRequestController {
 
   @PutMapping("/{id}/status")
   @RequiresCapability("CUSTOMER_MANAGEMENT")
-  public ResponseEntity<DataRequestResponse> updateStatus(
+  public ResponseEntity<DataSubjectRequestService.DataRequestResponse> updateStatus(
       @PathVariable UUID id, @Valid @RequestBody StatusTransitionBody body) {
     var actorId = RequestScopes.requireMemberId();
     DataSubjectRequest request =
@@ -147,48 +146,6 @@ public class DataRequestController {
   public record StatusTransitionBody(@NotBlank String action, String reason) {}
 
   public record ExecuteDeletionBody(@NotBlank String confirmCustomerName) {}
-
-  public record DataRequestResponse(
-      UUID id,
-      UUID customerId,
-      String customerName,
-      String requestType,
-      String status,
-      String description,
-      String rejectionReason,
-      LocalDate deadline,
-      Instant requestedAt,
-      UUID requestedBy,
-      String requestedByName,
-      Instant completedAt,
-      UUID completedBy,
-      String completedByName,
-      boolean hasExport,
-      String notes,
-      Instant createdAt) {
-
-    public static DataRequestResponse from(
-        DataSubjectRequest req, String customerName, Map<UUID, String> memberNames) {
-      return new DataRequestResponse(
-          req.getId(),
-          req.getCustomerId(),
-          customerName,
-          req.getRequestType(),
-          req.getStatus(),
-          req.getDescription(),
-          req.getRejectionReason(),
-          req.getDeadline(),
-          req.getRequestedAt(),
-          req.getRequestedBy(),
-          req.getRequestedBy() != null ? memberNames.get(req.getRequestedBy()) : null,
-          req.getCompletedAt(),
-          req.getCompletedBy(),
-          req.getCompletedBy() != null ? memberNames.get(req.getCompletedBy()) : null,
-          req.getExportFileKey() != null,
-          req.getNotes(),
-          req.getCreatedAt());
-    }
-  }
 
   public record ExportResponse(String exportFileKey) {}
 

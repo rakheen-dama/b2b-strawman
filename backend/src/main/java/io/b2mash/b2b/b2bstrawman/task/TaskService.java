@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.task;
 
+import io.b2mash.b2b.b2bstrawman.audit.AuditDeltaBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
@@ -19,9 +20,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.CustomFieldValidator;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
-import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
-import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupMemberRepository;
-import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupRepository;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupResolver;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupService;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
@@ -59,9 +58,7 @@ public class TaskService {
   private final ApplicationEventPublisher eventPublisher;
   private final MemberNameResolver memberNameResolver;
   private final CustomFieldValidator customFieldValidator;
-  private final FieldGroupRepository fieldGroupRepository;
-  private final FieldGroupMemberRepository fieldGroupMemberRepository;
-  private final FieldDefinitionRepository fieldDefinitionRepository;
+  private final FieldGroupResolver fieldGroupResolver;
   private final CustomerProjectRepository customerProjectRepository;
   private final FieldGroupService fieldGroupService;
   private final ProjectRepository projectRepository;
@@ -76,9 +73,7 @@ public class TaskService {
       ApplicationEventPublisher eventPublisher,
       MemberNameResolver memberNameResolver,
       CustomFieldValidator customFieldValidator,
-      FieldGroupRepository fieldGroupRepository,
-      FieldGroupMemberRepository fieldGroupMemberRepository,
-      FieldDefinitionRepository fieldDefinitionRepository,
+      FieldGroupResolver fieldGroupResolver,
       CustomerProjectRepository customerProjectRepository,
       FieldGroupService fieldGroupService,
       ProjectRepository projectRepository,
@@ -91,9 +86,7 @@ public class TaskService {
     this.eventPublisher = eventPublisher;
     this.memberNameResolver = memberNameResolver;
     this.customFieldValidator = customFieldValidator;
-    this.fieldGroupRepository = fieldGroupRepository;
-    this.fieldGroupMemberRepository = fieldGroupMemberRepository;
-    this.fieldDefinitionRepository = fieldDefinitionRepository;
+    this.fieldGroupResolver = fieldGroupResolver;
     this.customerProjectRepository = customerProjectRepository;
     this.fieldGroupService = fieldGroupService;
     this.projectRepository = projectRepository;
@@ -453,43 +446,16 @@ public class TaskService {
     task = taskRepository.save(task);
 
     // Build delta map -- only include changed fields
-    var details = new LinkedHashMap<String, Object>();
-    if (!Objects.equals(oldTitle, title)) {
-      details.put(
-          "title",
-          Map.of("from", oldTitle != null ? oldTitle : "", "to", title != null ? title : ""));
-    }
-    if (!Objects.equals(oldDescription, description)) {
-      details.put(
-          "description",
-          Map.of(
-              "from", oldDescription != null ? oldDescription : "",
-              "to", description != null ? description : ""));
-    }
-    if (oldStatus != taskStatus) {
-      details.put("status", Map.of("from", oldStatus.name(), "to", taskStatus.name()));
-    }
-    if (oldPriority != taskPriority) {
-      details.put("priority", Map.of("from", oldPriority.name(), "to", taskPriority.name()));
-    }
-    if (!Objects.equals(oldAssigneeId, assigneeId)) {
-      details.put(
-          "assignee_id",
-          Map.of(
-              "from", oldAssigneeId != null ? oldAssigneeId.toString() : "",
-              "to", assigneeId != null ? assigneeId.toString() : ""));
-    }
-    if (!Objects.equals(oldDueDate, dueDate)) {
-      details.put(
-          "due_date",
-          Map.of(
-              "from", oldDueDate != null ? oldDueDate.toString() : "",
-              "to", dueDate != null ? dueDate.toString() : ""));
-    }
-    if (!Objects.equals(oldType, type)) {
-      details.put(
-          "type", Map.of("from", oldType != null ? oldType : "", "to", type != null ? type : ""));
-    }
+    var details =
+        new AuditDeltaBuilder()
+            .track("title", oldTitle, title)
+            .track("description", oldDescription, description)
+            .track("status", oldStatus, taskStatus)
+            .track("priority", oldPriority, taskPriority)
+            .trackAsString("assignee_id", oldAssigneeId, assigneeId)
+            .trackAsString("due_date", oldDueDate, dueDate)
+            .track("type", oldType, type)
+            .buildMutable();
 
     details.put("project_id", task.getProjectId().toString());
 
@@ -573,40 +539,12 @@ public class TaskService {
           "Cannot update task", "You do not have permission to update task " + taskId);
     }
 
-    // Validate all field groups exist and match entity type
-    for (UUID groupId : appliedFieldGroups) {
-      var group =
-          fieldGroupRepository
-              .findById(groupId)
-              .orElseThrow(() -> new ResourceNotFoundException("FieldGroup", groupId));
-      if (group.getEntityType() != EntityType.TASK) {
-        throw new InvalidStateException(
-            "Invalid field group", "Field group " + groupId + " is not for entity type TASK");
-      }
-    }
-
-    // Resolve one-level dependencies
-    appliedFieldGroups = fieldGroupService.resolveDependencies(appliedFieldGroups);
+    appliedFieldGroups = fieldGroupResolver.resolveAndValidate(appliedFieldGroups, EntityType.TASK);
 
     task.setAppliedFieldGroups(appliedFieldGroups);
     taskRepository.save(task);
 
-    // Collect field definition IDs from applied groups
-    var fieldDefIds = new ArrayList<UUID>();
-    for (UUID groupId : appliedFieldGroups) {
-      var members = fieldGroupMemberRepository.findByFieldGroupIdOrderBySortOrder(groupId);
-      for (var member : members) {
-        fieldDefIds.add(member.getFieldDefinitionId());
-      }
-    }
-
-    return fieldDefIds.stream()
-        .distinct()
-        .map(fdId -> fieldDefinitionRepository.findById(fdId))
-        .filter(java.util.Optional::isPresent)
-        .map(java.util.Optional::get)
-        .map(FieldDefinitionResponse::from)
-        .toList();
+    return fieldGroupResolver.collectFieldDefinitions(appliedFieldGroups);
   }
 
   @Transactional

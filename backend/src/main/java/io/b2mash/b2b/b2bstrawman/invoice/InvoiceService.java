@@ -21,9 +21,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.expense.ExpenseRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.CustomFieldValidator;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
-import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
-import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupMemberRepository;
-import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupRepository;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupResolver;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupService;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.integration.IntegrationDomain;
@@ -101,9 +99,7 @@ public class InvoiceService {
   private final CustomerLifecycleGuard customerLifecycleGuard;
   private final CustomFieldValidator customFieldValidator;
   private final FieldGroupService fieldGroupService;
-  private final FieldGroupRepository fieldGroupRepository;
-  private final FieldGroupMemberRepository fieldGroupMemberRepository;
-  private final FieldDefinitionRepository fieldDefinitionRepository;
+  private final FieldGroupResolver fieldGroupResolver;
   private final InvoiceValidationService invoiceValidationService;
   private final PaymentEventRepository paymentEventRepository;
   private final PaymentLinkService paymentLinkService;
@@ -132,9 +128,7 @@ public class InvoiceService {
       CustomerLifecycleGuard customerLifecycleGuard,
       CustomFieldValidator customFieldValidator,
       FieldGroupService fieldGroupService,
-      FieldGroupRepository fieldGroupRepository,
-      FieldGroupMemberRepository fieldGroupMemberRepository,
-      FieldDefinitionRepository fieldDefinitionRepository,
+      FieldGroupResolver fieldGroupResolver,
       InvoiceValidationService invoiceValidationService,
       PaymentEventRepository paymentEventRepository,
       PaymentLinkService paymentLinkService,
@@ -161,9 +155,7 @@ public class InvoiceService {
     this.customerLifecycleGuard = customerLifecycleGuard;
     this.customFieldValidator = customFieldValidator;
     this.fieldGroupService = fieldGroupService;
-    this.fieldGroupRepository = fieldGroupRepository;
-    this.fieldGroupMemberRepository = fieldGroupMemberRepository;
-    this.fieldDefinitionRepository = fieldDefinitionRepository;
+    this.fieldGroupResolver = fieldGroupResolver;
     this.invoiceValidationService = invoiceValidationService;
     this.paymentEventRepository = paymentEventRepository;
     this.paymentLinkService = paymentLinkService;
@@ -1442,20 +1434,8 @@ public class InvoiceService {
           "Invoice not editable", "Field groups can only be updated on draft invoices");
     }
 
-    // Validate all field groups exist and match entity type
-    for (UUID groupId : appliedFieldGroups) {
-      var group =
-          fieldGroupRepository
-              .findById(groupId)
-              .orElseThrow(() -> new ResourceNotFoundException("FieldGroup", groupId));
-      if (group.getEntityType() != EntityType.INVOICE) {
-        throw new InvalidStateException(
-            "Invalid field group", "Field group " + groupId + " is not for entity type INVOICE");
-      }
-    }
-
-    // Resolve one-level dependencies
-    appliedFieldGroups = fieldGroupService.resolveDependencies(appliedFieldGroups);
+    appliedFieldGroups =
+        fieldGroupResolver.resolveAndValidate(appliedFieldGroups, EntityType.INVOICE);
 
     invoice.setAppliedFieldGroups(appliedFieldGroups);
     invoiceRepository.save(invoice);
@@ -1473,22 +1453,7 @@ public class InvoiceService {
                     invoice.getInvoiceNumber() != null ? invoice.getInvoiceNumber() : ""))
             .build());
 
-    // Collect field definition IDs from applied groups
-    var fieldDefIds = new ArrayList<UUID>();
-    for (UUID groupId : appliedFieldGroups) {
-      var members = fieldGroupMemberRepository.findByFieldGroupIdOrderBySortOrder(groupId);
-      for (var member : members) {
-        fieldDefIds.add(member.getFieldDefinitionId());
-      }
-    }
-
-    return fieldDefIds.stream()
-        .distinct()
-        .map(fdId -> fieldDefinitionRepository.findById(fdId))
-        .filter(java.util.Optional::isPresent)
-        .map(java.util.Optional::get)
-        .map(FieldDefinitionResponse::from)
-        .toList();
+    return fieldGroupResolver.collectFieldDefinitions(appliedFieldGroups);
   }
 
   // --- Preview ---

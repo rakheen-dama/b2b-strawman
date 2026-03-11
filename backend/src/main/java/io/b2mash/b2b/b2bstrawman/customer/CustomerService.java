@@ -1,9 +1,11 @@
 package io.b2mash.b2b.b2bstrawman.customer;
 
+import io.b2mash.b2b.b2bstrawman.audit.AuditDeltaBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.CustomerCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.CustomerUpdatedEvent;
+import io.b2mash.b2b.b2bstrawman.exception.DeleteGuard;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
@@ -11,8 +13,7 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.CustomFieldValidator;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
-import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupMemberRepository;
-import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupRepository;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupResolver;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupService;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
@@ -25,7 +26,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -43,9 +43,8 @@ public class CustomerService {
   private final AuditService auditService;
   private final ApplicationEventPublisher eventPublisher;
   private final CustomFieldValidator customFieldValidator;
-  private final FieldGroupRepository fieldGroupRepository;
-  private final FieldGroupMemberRepository fieldGroupMemberRepository;
   private final FieldDefinitionRepository fieldDefinitionRepository;
+  private final FieldGroupResolver fieldGroupResolver;
   private final FieldGroupService fieldGroupService;
   private final ProjectRepository projectRepository;
   private final CustomerProjectRepository customerProjectRepository;
@@ -57,9 +56,8 @@ public class CustomerService {
       AuditService auditService,
       ApplicationEventPublisher eventPublisher,
       CustomFieldValidator customFieldValidator,
-      FieldGroupRepository fieldGroupRepository,
-      FieldGroupMemberRepository fieldGroupMemberRepository,
       FieldDefinitionRepository fieldDefinitionRepository,
+      FieldGroupResolver fieldGroupResolver,
       FieldGroupService fieldGroupService,
       ProjectRepository projectRepository,
       CustomerProjectRepository customerProjectRepository,
@@ -69,9 +67,8 @@ public class CustomerService {
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
     this.customFieldValidator = customFieldValidator;
-    this.fieldGroupRepository = fieldGroupRepository;
-    this.fieldGroupMemberRepository = fieldGroupMemberRepository;
     this.fieldDefinitionRepository = fieldDefinitionRepository;
+    this.fieldGroupResolver = fieldGroupResolver;
     this.fieldGroupService = fieldGroupService;
     this.projectRepository = projectRepository;
     this.customerProjectRepository = customerProjectRepository;
@@ -243,31 +240,21 @@ public class CustomerService {
     customer.update(name, email, phone, idNumber, notes);
     var saved = repository.save(customer);
 
-    // Build delta map -- only include changed fields
-    var details = new LinkedHashMap<String, Object>();
-    if (!Objects.equals(oldName, name)) {
-      details.put("name", Map.of("from", oldName, "to", name));
-    }
-    if (!Objects.equals(oldEmail, email)) {
-      details.put("email", Map.of("from", oldEmail, "to", email));
-    }
-    if (!Objects.equals(oldPhone, phone)) {
-      details.put("phone", Map.of("from", String.valueOf(oldPhone), "to", String.valueOf(phone)));
-    }
-    if (!Objects.equals(oldIdNumber, idNumber)) {
-      details.put(
-          "id_number", Map.of("from", String.valueOf(oldIdNumber), "to", String.valueOf(idNumber)));
-    }
-    if (!Objects.equals(oldNotes, notes)) {
-      details.put("notes", Map.of("from", String.valueOf(oldNotes), "to", String.valueOf(notes)));
-    }
+    var details =
+        new AuditDeltaBuilder()
+            .track("name", oldName, name)
+            .track("email", oldEmail, email)
+            .trackAsString("phone", oldPhone, phone)
+            .trackAsString("id_number", oldIdNumber, idNumber)
+            .trackAsString("notes", oldNotes, notes)
+            .build();
 
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("customer.updated")
             .entityType("customer")
             .entityId(saved.getId())
-            .details(details.isEmpty() ? null : details)
+            .details(details)
             .build());
 
     String tenantId = RequestScopes.getTenantIdOrNull();
@@ -284,40 +271,13 @@ public class CustomerService {
     var customer =
         repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Customer", id));
 
-    // Validate all field groups exist and match entity type
-    for (UUID groupId : appliedFieldGroups) {
-      var group =
-          fieldGroupRepository
-              .findById(groupId)
-              .orElseThrow(() -> new ResourceNotFoundException("FieldGroup", groupId));
-      if (group.getEntityType() != EntityType.CUSTOMER) {
-        throw new InvalidStateException(
-            "Invalid field group", "Field group " + groupId + " is not for entity type CUSTOMER");
-      }
-    }
-
-    // Resolve one-level dependencies
-    appliedFieldGroups = fieldGroupService.resolveDependencies(appliedFieldGroups);
+    appliedFieldGroups =
+        fieldGroupResolver.resolveAndValidate(appliedFieldGroups, EntityType.CUSTOMER);
 
     customer.setAppliedFieldGroups(appliedFieldGroups);
     repository.save(customer);
 
-    // Collect field definition IDs from applied groups
-    var fieldDefIds = new ArrayList<UUID>();
-    for (UUID groupId : appliedFieldGroups) {
-      var members = fieldGroupMemberRepository.findByFieldGroupIdOrderBySortOrder(groupId);
-      for (var member : members) {
-        fieldDefIds.add(member.getFieldDefinitionId());
-      }
-    }
-
-    return fieldDefIds.stream()
-        .distinct()
-        .map(fdId -> fieldDefinitionRepository.findById(fdId))
-        .filter(java.util.Optional::isPresent)
-        .map(java.util.Optional::get)
-        .map(FieldDefinitionResponse::from)
-        .toList();
+    return fieldGroupResolver.collectFieldDefinitions(appliedFieldGroups);
   }
 
   @Transactional(readOnly = true)
@@ -335,32 +295,22 @@ public class CustomerService {
     var customer =
         repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Customer", id));
 
-    // Delete protection: block if customer has linked projects (direct FK or join table)
-    long directLinks = projectRepository.countByCustomerId(id);
-    boolean junctionLinks = customerProjectRepository.existsByCustomerId(id);
-    if (directLinks > 0 || junctionLinks) {
-      throw new ResourceConflictException(
-          "Cannot archive customer",
-          "Cannot archive customer with linked projects. Unlink all projects first.");
-    }
-
-    // Delete protection: block if customer has invoices
-    long invoiceCount = invoiceRepository.countByCustomerId(id);
-    if (invoiceCount > 0) {
-      throw new ResourceConflictException(
-          "Cannot archive customer",
-          "Cannot archive customer with %d invoice(s). Void or delete all invoices first."
-              .formatted(invoiceCount));
-    }
-
-    // Delete protection: block if customer has retainer agreements
-    long retainerCount = retainerAgreementRepository.countByCustomerId(id);
-    if (retainerCount > 0) {
-      throw new ResourceConflictException(
-          "Cannot archive customer",
-          "Cannot archive customer with %d retainer agreement(s). Cancel or delete all retainers first."
-              .formatted(retainerCount));
-    }
+    DeleteGuard.forEntity("customer", id, "archive")
+        .checkNotExists(
+            "linked projects",
+            () ->
+                projectRepository.countByCustomerId(id) > 0
+                    || customerProjectRepository.existsByCustomerId(id),
+            "Unlink all projects first.")
+        .checkCountZero(
+            "invoice(s)",
+            invoiceRepository.countByCustomerId(id),
+            "Void or delete all invoices first.")
+        .checkCountZero(
+            "retainer agreement(s)",
+            retainerAgreementRepository.countByCustomerId(id),
+            "Cancel or delete all retainers first.")
+        .execute();
 
     customer.archive();
 

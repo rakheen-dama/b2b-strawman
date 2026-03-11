@@ -295,7 +295,7 @@ public class CustomerService {
     var customer =
         repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Customer", id));
 
-    DeleteGuard.forEntity("customer", id)
+    DeleteGuard.forEntity("customer", id, "archive")
         .checkNotExists(
             "linked projects",
             () ->

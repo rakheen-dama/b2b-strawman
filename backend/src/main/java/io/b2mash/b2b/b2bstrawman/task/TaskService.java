@@ -450,11 +450,11 @@ public class TaskService {
         new AuditDeltaBuilder()
             .track("title", oldTitle, title)
             .track("description", oldDescription, description)
-            .track("status", oldStatus, taskStatus)
-            .track("priority", oldPriority, taskPriority)
+            .trackAsString("status", oldStatus, taskStatus)
+            .trackAsString("priority", oldPriority, taskPriority)
             .trackAsString("assignee_id", oldAssigneeId, assigneeId)
             .trackAsString("due_date", oldDueDate, dueDate)
-            .track("type", oldType, type)
+            .trackAsString("type", oldType, type)
             .buildMutable();
 
     details.put("project_id", task.getProjectId().toString());

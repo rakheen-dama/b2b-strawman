@@ -23,15 +23,22 @@ public class DeleteGuard {
 
   private final String entityName;
   private final UUID entityId;
+  private final String verb;
   private final List<String> violations = new ArrayList<>();
 
-  private DeleteGuard(String entityName, UUID entityId) {
+  private DeleteGuard(String entityName, UUID entityId, String verb) {
     this.entityName = entityName;
     this.entityId = entityId;
+    this.verb = verb;
   }
 
   public static DeleteGuard forEntity(String entityName, UUID entityId) {
-    return new DeleteGuard(entityName, entityId);
+    return new DeleteGuard(entityName, entityId, "delete");
+  }
+
+  /** Creates a guard with a custom verb (e.g., "archive" instead of "delete"). */
+  public static DeleteGuard forEntity(String entityName, UUID entityId, String verb) {
+    return new DeleteGuard(entityName, entityId, verb);
   }
 
   /**
@@ -39,7 +46,7 @@ public class DeleteGuard {
    */
   public DeleteGuard checkNotExists(String resource, Supplier<Boolean> exists, String remedy) {
     if (exists.get()) {
-      violations.add("Cannot delete %s with %s. %s".formatted(entityName, resource, remedy));
+      violations.add("Cannot %s %s with %s. %s".formatted(verb, entityName, resource, remedy));
     }
     return this;
   }
@@ -48,7 +55,7 @@ public class DeleteGuard {
   public DeleteGuard checkCountZero(String resource, long count, String remedy) {
     if (count > 0) {
       violations.add(
-          "Cannot delete %s with %d %s. %s".formatted(entityName, count, resource, remedy));
+          "Cannot %s %s with %d %s. %s".formatted(verb, entityName, count, resource, remedy));
     }
     return this;
   }
@@ -60,7 +67,7 @@ public class DeleteGuard {
   public void execute() {
     if (!violations.isEmpty()) {
       throw new ResourceConflictException(
-          "Cannot delete " + entityName, String.join(" ", violations));
+          "Cannot %s %s".formatted(verb, entityName), String.join(" ", violations));
     }
   }
 }

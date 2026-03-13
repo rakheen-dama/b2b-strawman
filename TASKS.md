@@ -381,6 +381,14 @@
 | 335 | Command Palette (⌘K) | Frontend | 332 | M | 335A, 335B | **Done** (PRs #657, #658) |
 | 336 | Settings Layout Shell & Sidebar | Frontend | -- | M | 336A, 336B | **Done** (PRs #659, #660) |
 | 337 | Settings Hub Redirect & Breadcrumb Update | Frontend | 336 | S | 337A | **Done** (PR #661) |
+| **Phase 45 — In-App AI Assistant (BYOAK)** | | | | | | See [tasks/phase45-in-app-ai-assistant.md](tasks/phase45-in-app-ai-assistant.md) |
+| 338 | AI Key Management & Settings API | Backend | -- | M | 338A, 338B | |
+| 339 | LLM Provider Abstraction & Claude Adapter | Backend | -- | M | 339A, 339B | |
+| 340 | Tool Framework & Read Tools | Backend | -- | L | 340A, 340B, 340C | |
+| 341 | Assistant Service & Chat API | Backend | 338, 339, 340 | M | 341A, 341B | |
+| 342 | Write Tools & Confirmation Flow | Backend | 341 | M | 342A, 342B | |
+| 343 | Chat UI — Panel & Message Rendering | Frontend | 341 | M | 343A, 343B | |
+| 344 | Chat UI — SSE Hook, Confirmation & Settings Page | Frontend | 342, 343 | M | 344A, 344B | |
 
 ---
 

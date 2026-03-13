@@ -44,7 +44,7 @@ export function ProjectCommentsSection({
 
   if (isLoading) {
     return (
-      <p className="text-sm text-muted-foreground">Loading comments...</p>
+      <p className="text-sm text-muted-foreground" aria-live="polite">Loading comments...</p>
     );
   }
 

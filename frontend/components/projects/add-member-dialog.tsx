@@ -112,7 +112,7 @@ export function AddMemberDialog({
           <CommandInput placeholder="Search members..." disabled={isLoading || isAdding} />
           <CommandList>
             {isLoading ? (
-              <div className="text-muted-foreground py-6 text-center text-sm">
+              <div className="text-muted-foreground py-6 text-center text-sm" aria-live="polite">
                 Loading members...
               </div>
             ) : fetchError ? (

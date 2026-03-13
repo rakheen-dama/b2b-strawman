@@ -22,106 +22,6 @@ const ROLE_BADGES: Record<
   "org:member": { label: "Member", variant: "member" },
 };
 
-<<<<<<< HEAD
-function ClerkPendingInvitations({ isAdmin }: { isAdmin: boolean }) {
-  const { invitations, memberships, isLoaded } = useOrganization({
-    invitations: {
-      pageSize: 10,
-      keepPreviousData: true,
-    },
-    memberships: {
-      pageSize: 5,
-      keepPreviousData: true,
-    },
-  });
-  const [revokingId, setRevokingId] = useState<string | null>(null);
-
-  if (!isLoaded) {
-    return (
-      <div className="py-8 text-center text-sm text-slate-600 dark:text-slate-400" aria-live="polite">
-        Loading invitations...
-      </div>
-    );
-  }
-
-  if (!invitations?.data?.length) {
-    return (
-      <EmptyState
-        icon={Mail}
-        title="No pending invitations"
-        description="Invited members will appear here"
-      />
-    );
-  }
-
-  const handleRevoke = async (invitationId: string) => {
-    const invitation = invitations.data?.find(
-      (inv) => inv.id === invitationId,
-    );
-    if (!invitation) return;
-
-    setRevokingId(invitationId);
-    try {
-      await invitation.revoke();
-      await Promise.all([
-        invitations.revalidate?.(),
-        memberships?.revalidate?.(),
-      ]);
-    } catch (err) {
-      console.error("Failed to revoke invitation:", err);
-    } finally {
-      setRevokingId(null);
-    }
-  };
-
-  return (
-    <div className="space-y-4">
-      <InvitationTable isAdmin={isAdmin}>
-        {invitations.data.map((inv) => {
-          const roleInfo = ROLE_BADGES[inv.role] ?? {
-            label: inv.role,
-            variant: "member" as const,
-          };
-          return (
-            <InvitationRow
-              key={inv.id}
-              email={inv.emailAddress}
-              role={roleInfo}
-              createdAt={inv.createdAt ? formatDate(inv.createdAt) : "\u2014"}
-              isAdmin={isAdmin}
-              isRevoking={revokingId === inv.id}
-              onRevoke={() => handleRevoke(inv.id)}
-            />
-          );
-        })}
-      </InvitationTable>
-
-      {(invitations.hasPreviousPage || invitations.hasNextPage) && (
-        <div className="flex justify-center gap-4">
-          <button
-            disabled={
-              !invitations.hasPreviousPage || invitations.isFetching
-            }
-            onClick={() => invitations.fetchPrevious?.()}
-            className="text-sm font-medium text-slate-600 hover:text-slate-900 disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-600 dark:text-slate-400 dark:hover:text-slate-200"
-          >
-            Previous
-          </button>
-          <button
-            disabled={!invitations.hasNextPage || invitations.isFetching}
-            onClick={() => invitations.fetchNext?.()}
-            className="text-sm font-medium text-slate-600 hover:text-slate-900 disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-600 dark:text-slate-400 dark:hover:text-slate-200"
-          >
-            Next
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
-
-=======
->>>>>>> worktree-agent-ab42dd18
 function KeycloakBffPendingInvitations({ isAdmin }: { isAdmin: boolean }) {
   const [invitations, setInvitations] = useState<MappedInvitation[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -135,7 +35,7 @@ function KeycloakBffPendingInvitations({ isAdmin }: { isAdmin: boolean }) {
 
   if (!isLoaded) {
     return (
-      <div className="py-8 text-center text-sm text-slate-600 dark:text-slate-400">
+      <div className="py-8 text-center text-sm text-slate-600 dark:text-slate-400" aria-live="polite">
         Loading invitations...
       </div>
     );

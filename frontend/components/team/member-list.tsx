@@ -43,78 +43,6 @@ interface MemberRowData {
   capabilityOverridesCount?: number;
 }
 
-<<<<<<< HEAD
-function ClerkMemberList({
-  isAdmin,
-  onRowClick,
-}: InnerMemberListProps) {
-  const { memberships, isLoaded } = useOrganization({
-    memberships: {
-      infinite: true,
-      keepPreviousData: true,
-    },
-  });
-
-  if (!isLoaded) {
-    return (
-      <div className="py-8 text-center text-sm text-slate-600 dark:text-slate-400" aria-live="polite">
-        Loading members...
-      </div>
-    );
-  }
-
-  if (!memberships?.data?.length) {
-    return (
-      <EmptyState
-        icon={Users}
-        title="No members found"
-        description="Organization members will appear here"
-      />
-    );
-  }
-
-  return (
-    <div className="space-y-4">
-      <MemberTable>
-        {memberships.data.map((member) => {
-          const fullName =
-            `${member.publicUserData?.firstName ?? ""} ${member.publicUserData?.lastName ?? ""}`.trim() ||
-            "Unknown";
-          const row: MemberRowData = {
-            id: member.id,
-            name: fullName,
-            email: member.publicUserData?.identifier ?? "\u2014",
-            role: member.role,
-            joinedAt: member.createdAt ? formatDate(member.createdAt) : "\u2014",
-          };
-          return (
-            <MemberRow
-              key={member.id}
-              member={row}
-              isAdmin={isAdmin}
-              onRowClick={onRowClick}
-            />
-          );
-        })}
-      </MemberTable>
-
-      {memberships.hasNextPage && (
-        <div className="flex justify-center">
-          <button
-            onClick={() => memberships.fetchNext?.()}
-            disabled={memberships.isFetching}
-            className="text-sm font-medium text-slate-600 hover:text-slate-900 disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-600 dark:text-slate-400 dark:hover:text-slate-200"
-          >
-            {memberships.isFetching ? "Loading..." : "Load more"}
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
-
-=======
->>>>>>> worktree-agent-ab42dd18
 function MockMemberList({
   isAdmin,
   onRowClick,
@@ -123,7 +51,7 @@ function MockMemberList({
 
   if (!isLoaded) {
     return (
-      <div className="py-8 text-center text-sm text-slate-600 dark:text-slate-400">
+      <div className="py-8 text-center text-sm text-slate-600 dark:text-slate-400" aria-live="polite">
         Loading members...
       </div>
     );
@@ -179,7 +107,7 @@ function KeycloakBffMemberList({
 
   if (!isLoaded) {
     return (
-      <div className="py-8 text-center text-sm text-slate-600 dark:text-slate-400">
+      <div className="py-8 text-center text-sm text-slate-600 dark:text-slate-400" aria-live="polite">
         Loading members...
       </div>
     );

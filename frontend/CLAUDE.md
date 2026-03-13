@@ -1,6 +1,6 @@
 # Frontend CLAUDE.md
 
-Next.js 16 (App Router) / React 19 / TypeScript 5 frontend for a multi-tenant B2B SaaS platform. Auth via Clerk, UI via Shadcn (new-york style) + Tailwind CSS v4. Custom "Signal Deck" design system — precise, high-contrast, information-forward aesthetic with cool slate palette and teal accents.
+Next.js 16 (App Router) / React 19 / TypeScript 5 frontend for a multi-tenant B2B SaaS platform. Auth via Keycloak (production) or mock provider (E2E), UI via Shadcn (new-york style) + Tailwind CSS v4. Custom "Signal Deck" design system — precise, high-contrast, information-forward aesthetic with cool slate palette and teal accents.
 
 ## Build & Run
 
@@ -18,10 +18,6 @@ pnpm test            # Vitest unit tests
 frontend/
 ├── app/
 │   ├── page.tsx                      # Landing page (public)
-│   ├── (auth)/                       # Clerk auth pages
-│   │   ├── layout.tsx                # Split-screen auth layout
-│   │   ├── sign-in/[[...sign-in]]/page.tsx
-│   │   └── sign-up/[[...sign-up]]/page.tsx
 │   ├── (app)/                        # Authenticated app shell
 │   │   ├── layout.tsx
 │   │   ├── dashboard/page.tsx        # Pre-org dashboard (no org selected)
@@ -44,11 +40,10 @@ frontend/
 │   │           └── billing/
 │   │               ├── page.tsx      # Billing + plan management
 │   │               └── actions.ts
-│   ├── api/
-│   │   └── webhooks/
-│   │       └── clerk/route.ts        # Clerk webhook handler
+│   ├── (mock-auth)/                  # Mock auth pages (E2E only)
+│   ├── api/                          # API routes
 │   ├── globals.css                   # Tailwind v4 + slate color tokens
-│   └── layout.tsx                    # Root layout with ClerkProvider
+│   └── layout.tsx                    # Root layout with AuthProvider
 ├── components/
 │   ├── ui/                           # Shadcn UI components (customized — see below)
 │   ├── projects/                     # Project-specific components
@@ -60,13 +55,25 @@ frontend/
 │   ├── mobile-sidebar.tsx            # Sheet-based mobile sidebar
 │   └── breadcrumbs.tsx               # Pathname-based breadcrumb nav
 ├── lib/
+│   ├── auth/                         # Auth abstraction layer (Keycloak + mock providers)
+│   │   ├── index.ts                  # Public API re-exports
+│   │   ├── types.ts                  # AuthContext type definition
+│   │   ├── server.ts                 # Server-side getAuthContext()
+│   │   ├── middleware.ts             # Auth middleware factory
+│   │   ├── providers/               # Provider implementations
+│   │   │   ├── keycloak-bff.ts      # Keycloak BFF provider (production)
+│   │   │   └── mock/server.ts       # Mock provider (E2E)
+│   │   └── client/                  # Client-side auth hooks + context
+│   │       ├── auth-provider.tsx    # React context provider
+│   │       ├── hooks.ts             # useAuth() hook
+│   │       └── cookie-util.ts       # Session cookie helpers
 │   ├── api.ts                        # Spring Boot API client (attaches Bearer JWT)
 │   ├── internal-api.ts               # Types for internal/billing API
 │   ├── nav-items.ts                  # Sidebar navigation item definitions
 │   └── utils.ts                      # cn() helper from Shadcn
 ├── hooks/                            # Custom React hooks
 ├── __tests__/                        # Test files
-├── proxy.ts                         # Clerk auth proxy with org sync
+├── proxy.ts                         # Auth middleware entry point (delegates to lib/auth/middleware)
 ├── components.json                   # Shadcn UI config
 ├── vitest.config.ts                  # Vitest config with @/* alias
 ├── next.config.ts
@@ -116,8 +123,8 @@ Semantic token mappings (light mode):
 
 ### Route Groups
 
-- `(auth)/` — Sign-in/sign-up pages using Clerk components
-- `(app)/` — Authenticated routes, wrapped with Clerk protection
+- `(app)/` — Authenticated routes, protected by auth middleware
+- `(mock-auth)/` — Mock login page for E2E testing only
 - Landing page is at `app/page.tsx` (root level, no route group)
 
 All authenticated routes are org-scoped under `(app)/org/[slug]/`.
@@ -190,9 +197,9 @@ The `components/ui/` directory started from Shadcn scaffolding but **base compon
 
 - Never use `@radix-ui/react-*` packages — use the unified `radix-ui` package instead
 - Never put `"use client"` on a component unless it uses hooks, event handlers, or browser APIs
-- Never call `auth()` in client components — it's server-only
+- Never call `getAuthContext()` in client components — it's server-only; use `useAuth()` hook instead
 - Never access `params` without `await` — Next.js 16 params are Promises
-- Never skip `cssLayerName: "clerk"` on ClerkProvider — breaks Tailwind v4
+- Never import from `@clerk/nextjs` — Clerk has been fully removed; use `lib/auth/` abstraction
 - Never use `npm` — this project uses `pnpm`
 - Never use olive/neutral/zinc/gray color classes — use the **slate** scale instead
 - Never use indigo for accents — use **teal** instead
@@ -225,14 +232,6 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
 }
 ```
 
-### Clerk + Tailwind v4 Compatibility
-
-ClerkProvider requires cssLayerName to prevent CSS conflicts:
-
-```tsx
-<ClerkProvider appearance={{ cssLayerName: "clerk" }}>
-```
-
 ### Radix UI Imports
 
 Shadcn components use the bundled `radix-ui` package (not `@radix-ui/react-*`):
@@ -241,42 +240,27 @@ Shadcn components use the bundled `radix-ui` package (not `@radix-ui/react-*`):
 import { Slot } from "radix-ui";
 ```
 
-## Authentication (Clerk)
+## Authentication
 
-### Proxy (`proxy.ts`)
+Auth is provider-agnostic via the `lib/auth/` abstraction layer. The active provider is selected by `NEXT_PUBLIC_AUTH_MODE`:
 
-- `clerkMiddleware()` protects `(app)/**` routes
-- `organizationSyncOptions` auto-activates org from URL slug pattern
-- Patterns: `/org/:slug`, `/org/:slug/(.*)`
-- Webhook route (`/api/webhooks/clerk`) excluded from auth (public route)
+| Mode | Provider | Usage |
+|------|----------|-------|
+| `keycloak` | Keycloak BFF via API Gateway | Production, local dev |
+| `mock` | Mock IDP (cookie-based) | E2E testing, agent navigation |
 
-### ClerkProvider
+### Auth Architecture
 
-- Wraps entire app in root `layout.tsx`
-- Provides session context, org switching, user management
-
-### JWT for Backend Calls
-
-- Server components call `auth().getToken()` to get a Clerk JWT with org claims
-- JWT passed as `Authorization: Bearer <token>` to Spring Boot API
-- Claims: `sub` (user ID), `o.id` (org ID), `o.rol` (org role), `o.slg` (org slug) — Clerk JWT v2 nests under `"o"` map
+- **`proxy.ts`** — Entry point for Next.js middleware, delegates to `lib/auth/middleware.ts`
+- **`lib/auth/server.ts`** — `getAuthContext()` returns an `AuthContext` (userId, orgId, orgRole, orgSlug, token) regardless of provider
+- **`lib/auth/client/`** — `AuthProvider` React context + `useAuth()` hook for client components
+- **`lib/auth/providers/`** — Provider implementations (keycloak-bff, mock)
 
 ### API Client (`lib/api.ts`)
 
-- Centralized fetch wrapper that attaches Bearer JWT
-- Points to `BACKEND_URL` (internal ALB in production)
+- Centralized fetch wrapper that attaches Bearer JWT from auth context
+- In Keycloak mode, routes through the API Gateway (`GATEWAY_URL`)
 - Handles error responses and token refresh
-
-## Webhook Handler
-
-Route: `app/api/webhooks/clerk/route.ts`
-
-- Receives Clerk webhook events (POST)
-- Verifies Svix signature via `verifyWebhook()` from `@clerk/nextjs/webhooks`
-- On `organization.created`: forwards to Spring Boot `POST /internal/orgs/provision` with `X-API-KEY`
-- On `organization.updated`/`deleted`: upsert/mark org metadata
-- Membership events: sync to backend via `POST /internal/orgs/{id}/members/sync`
-- Subscription events removed (Epic 28) — billing is self-managed
 
 ## Data Fetching
 
@@ -337,15 +321,17 @@ interface PaginatedResponse<T> {
 
 ## Environment Variables
 
-| Variable                            | Side   | Description                     |
-| ----------------------------------- | ------ | ------------------------------- |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Client | Clerk public key                |
-| `CLERK_SECRET_KEY`                  | Server | Clerk backend key               |
-| `CLERK_WEBHOOK_SIGNING_SECRET`      | Server | Svix webhook verification       |
-| `BACKEND_URL`                       | Server | Spring Boot internal ALB URL    |
-| `INTERNAL_API_KEY`                  | Server | API key for `/internal/*` calls |
+| Variable                    | Side   | Description                                          |
+| --------------------------- | ------ | ---------------------------------------------------- |
+| `NEXT_PUBLIC_AUTH_MODE`     | Client | Auth provider: `keycloak` (production) or `mock` (E2E) |
+| `NEXT_PUBLIC_GATEWAY_URL`  | Client | API Gateway URL (Keycloak mode)                      |
+| `GATEWAY_URL`              | Server | API Gateway URL for server-side BFF calls            |
+| `BACKEND_URL`              | Server | Spring Boot internal ALB URL                         |
+| `INTERNAL_API_KEY`         | Server | API key for `/internal/*` calls                      |
 
 Variables prefixed `NEXT_PUBLIC_` are exposed to the browser. All others are server-only.
+
+**Auth mode:** Always `keycloak` in production. Set to `mock` only in the E2E Docker stack. See `.env.keycloak` for a complete local dev example.
 
 ## Form Patterns (Zod + React Hook Form)
 

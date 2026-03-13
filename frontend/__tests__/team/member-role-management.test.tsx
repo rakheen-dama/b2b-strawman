@@ -36,7 +36,7 @@ const mockAssignMemberRole = vi.fn();
 const mockFetchMemberCapabilities = vi.fn();
 const mockListMembers = vi.fn().mockResolvedValue([]);
 
-vi.mock("@/app/(app)/org/[slug]/team/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/team/member-actions", () => ({
   assignMemberRole: (...args: unknown[]) => mockAssignMemberRole(...args),
   fetchMemberCapabilities: (...args: unknown[]) =>
     mockFetchMemberCapabilities(...args),

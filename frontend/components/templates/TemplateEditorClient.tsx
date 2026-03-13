@@ -56,12 +56,14 @@ import {
 import { cn } from "@/lib/utils";
 import {
   updateTemplateAction,
+} from "@/app/(app)/org/[slug]/settings/templates/template-crud-actions";
+import {
   fetchRequiredFieldPacksAction,
   replaceDocxFileAction,
   downloadDocxTemplateAction,
   fetchVariableMetadataAction,
-} from "@/app/(app)/org/[slug]/settings/templates/actions";
-import type { FieldPackStatus } from "@/app/(app)/org/[slug]/settings/templates/actions";
+} from "@/app/(app)/org/[slug]/settings/templates/template-support-actions";
+import type { FieldPackStatus } from "@/app/(app)/org/[slug]/settings/templates/template-support-actions";
 import type { VariableMetadataResponse } from "@/components/editor/actions";
 import { getClause } from "@/lib/actions/clause-actions";
 import { FieldDiscoveryResults } from "@/app/(app)/org/[slug]/settings/templates/FieldDiscoveryResults";

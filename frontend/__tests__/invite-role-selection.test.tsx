@@ -22,7 +22,7 @@ vi.mock("motion/react", () => ({
 // Mock server actions
 const mockInviteMember = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/team/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/team/invitation-actions", () => ({
   inviteMember: (...args: unknown[]) => mockInviteMember(...args),
   listInvitations: vi.fn().mockResolvedValue([]),
 }));

@@ -8,7 +8,7 @@ vi.mock("server-only", () => ({}));
 
 const mockGenerateDocxAction = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/settings/templates/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/templates/template-generation-actions", () => ({
   generateDocxAction: (...args: unknown[]) => mockGenerateDocxAction(...args),
 }));
 

@@ -27,15 +27,17 @@ import type {
 import {
   updateInvoice,
   deleteInvoice,
+  addLineItem,
+  updateLineItem,
+  deleteLineItem,
+} from "@/app/(app)/org/[slug]/invoices/invoice-crud-actions";
+import {
   approveInvoice,
   sendInvoice,
   recordPayment,
   voidInvoice,
-  addLineItem,
-  updateLineItem,
-  deleteLineItem,
   refreshPaymentLink,
-} from "@/app/(app)/org/[slug]/invoices/actions";
+} from "@/app/(app)/org/[slug]/invoices/invoice-payment-actions";
 import { PaymentEventHistory } from "@/components/invoices/PaymentEventHistory";
 import { RequiresCapability } from "@/lib/capabilities";
 

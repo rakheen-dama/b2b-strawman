@@ -13,7 +13,7 @@ vi.mock("@clerk/nextjs", () => ({
 
 const mockListInvitations = vi.fn();
 const mockRevokeInvitation = vi.fn();
-vi.mock("@/app/(app)/org/[slug]/team/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/team/invitation-actions", () => ({
   listInvitations: () => mockListInvitations(),
   revokeInvitation: (id: string) => mockRevokeInvitation(id),
 }));

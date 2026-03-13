@@ -8,11 +8,14 @@ const mockCloneTemplate = vi.fn();
 const mockDeactivateTemplate = vi.fn();
 const mockResetTemplate = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/settings/templates/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/templates/template-crud-actions", () => ({
   cloneTemplateAction: (...args: unknown[]) => mockCloneTemplate(...args),
   deactivateTemplateAction: (...args: unknown[]) =>
     mockDeactivateTemplate(...args),
   resetTemplateAction: (...args: unknown[]) => mockResetTemplate(...args),
+}));
+
+vi.mock("@/app/(app)/org/[slug]/settings/templates/template-support-actions", () => ({
   uploadLogoAction: vi.fn(),
   deleteLogoAction: vi.fn(),
   saveBrandingAction: vi.fn(),

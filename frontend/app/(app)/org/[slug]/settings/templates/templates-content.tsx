@@ -30,7 +30,7 @@ import {
   uploadLogoAction,
   deleteLogoAction,
   saveBrandingAction,
-} from "./actions";
+} from "./template-support-actions";
 import { formatFileSize } from "@/lib/format";
 import type {
   TemplateListResponse,

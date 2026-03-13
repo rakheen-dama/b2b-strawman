@@ -1,0 +1,121 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { getAuthContext, AUTH_MODE } from "@/lib/auth";
+import { api, ApiError } from "@/lib/api";
+
+interface ActionResult {
+  success: boolean;
+  error?: string;
+}
+
+/** Shape returned by the gateway's /bff/admin/members endpoint. */
+export interface BffMember {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  orgRoleId?: string;
+  orgRoleName?: string;
+  capabilityOverridesCount?: number;
+}
+
+/**
+ * Normalize a gateway role (e.g. "owner", "admin", "member") to the
+ * UI format ("org:owner", "org:admin", "org:member").
+ */
+function normalizeRole(role: string | undefined | null): string {
+  if (!role) return "org:member";
+  if (role.startsWith("org:")) return role;
+  return `org:${role}`;
+}
+
+async function listMembersBff(): Promise<BffMember[]> {
+  try {
+    const raw = await api.get<BffMember[]>("/bff/admin/members");
+    return (raw ?? []).map((m) => ({ ...m, role: normalizeRole(m.role) }));
+  } catch (err: unknown) {
+    console.error("Failed to list BFF members:", err);
+    return [];
+  }
+}
+
+export async function listMembers(): Promise<BffMember[]> {
+  if (AUTH_MODE === "keycloak") {
+    return listMembersBff();
+  }
+
+  // Clerk/mock modes handle member listing client-side
+  return [];
+}
+
+// --- Member role assignment ---
+
+export interface MemberCapabilities {
+  memberId: string;
+  roleName: string;
+  roleCapabilities: string[];
+  overrides: string[];
+  effectiveCapabilities: string[];
+}
+
+export async function fetchMemberCapabilities(
+  memberId: string,
+): Promise<MemberCapabilities | null> {
+  const { orgRole } = await getAuthContext();
+
+  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+    return null;
+  }
+
+  try {
+    return await api.get<MemberCapabilities>(
+      `/api/members/${encodeURIComponent(memberId)}/capabilities`,
+    );
+  } catch {
+    return null;
+  }
+}
+
+export async function assignMemberRole(
+  slug: string,
+  memberId: string,
+  orgRoleId: string,
+  capabilityOverrides: string[],
+): Promise<ActionResult> {
+  const { orgRole } = await getAuthContext();
+
+  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+    return {
+      success: false,
+      error: "You must be an admin to change member roles.",
+    };
+  }
+
+  try {
+    await api.put<unknown>(
+      `/api/members/${encodeURIComponent(memberId)}/role`,
+      {
+        orgRoleId,
+        capabilityOverrides,
+      },
+    );
+  } catch (err: unknown) {
+    if (err instanceof ApiError) {
+      if (err.status === 403) {
+        return {
+          success: false,
+          error: "You do not have permission to change this member's role.",
+        };
+      }
+      if (err.status === 422) {
+        return { success: false, error: "Invalid role assignment." };
+      }
+      return { success: false, error: err.message };
+    }
+    return { success: false, error: "An unexpected error occurred." };
+  }
+
+  revalidatePath(`/org/${slug}/team`);
+  return { success: true };
+}

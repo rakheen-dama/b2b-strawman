@@ -15,7 +15,7 @@ import { Label } from "@/components/ui/label";
 import {
   createLeaveAction,
   updateLeaveAction,
-} from "@/app/(app)/org/[slug]/resources/actions";
+} from "@/app/(app)/org/[slug]/resources/resource-actions";
 
 interface LeaveBlock {
   id: string;

@@ -21,7 +21,7 @@ vi.mock("next/link", () => ({
 
 const mockInviteMember = vi.fn();
 const mockListInvitations = vi.fn();
-vi.mock("@/app/(app)/org/[slug]/team/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/team/invitation-actions", () => ({
   inviteMember: (...args: unknown[]) => mockInviteMember(...args),
   listInvitations: () => mockListInvitations(),
 }));

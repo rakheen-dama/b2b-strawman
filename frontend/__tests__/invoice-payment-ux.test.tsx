@@ -30,16 +30,19 @@ vi.mock("@/lib/capabilities", () => ({
 
 // Mock server actions
 const mockRefreshPaymentLink = vi.fn();
-vi.mock("@/app/(app)/org/[slug]/invoices/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/invoices/invoice-crud-actions", () => ({
   updateInvoice: vi.fn(),
   deleteInvoice: vi.fn(),
+  addLineItem: vi.fn(),
+  updateLineItem: vi.fn(),
+  deleteLineItem: vi.fn(),
+}));
+
+vi.mock("@/app/(app)/org/[slug]/invoices/invoice-payment-actions", () => ({
   approveInvoice: vi.fn(),
   sendInvoice: vi.fn(),
   recordPayment: vi.fn(),
   voidInvoice: vi.fn(),
-  addLineItem: vi.fn(),
-  updateLineItem: vi.fn(),
-  deleteLineItem: vi.fn(),
   refreshPaymentLink: (...args: unknown[]) => mockRefreshPaymentLink(...args),
 }));
 

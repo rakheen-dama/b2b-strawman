@@ -36,16 +36,19 @@ const mockDeleteLineItem = vi.fn().mockResolvedValue({ success: true });
 
 const mockRefreshPaymentLink = vi.fn().mockResolvedValue({ success: true, invoice: null });
 
-vi.mock("@/app/(app)/org/[slug]/invoices/actions", () => ({
-  approveInvoice: (...args: unknown[]) => mockApproveInvoice(...args),
-  deleteInvoice: (...args: unknown[]) => mockDeleteInvoice(...args),
-  sendInvoice: (...args: unknown[]) => mockSendInvoice(...args),
-  recordPayment: (...args: unknown[]) => mockRecordPayment(...args),
-  voidInvoice: (...args: unknown[]) => mockVoidInvoice(...args),
+vi.mock("@/app/(app)/org/[slug]/invoices/invoice-crud-actions", () => ({
   updateInvoice: (...args: unknown[]) => mockUpdateInvoice(...args),
+  deleteInvoice: (...args: unknown[]) => mockDeleteInvoice(...args),
   addLineItem: (...args: unknown[]) => mockAddLineItem(...args),
   updateLineItem: (...args: unknown[]) => mockUpdateLineItem(...args),
   deleteLineItem: (...args: unknown[]) => mockDeleteLineItem(...args),
+}));
+
+vi.mock("@/app/(app)/org/[slug]/invoices/invoice-payment-actions", () => ({
+  approveInvoice: (...args: unknown[]) => mockApproveInvoice(...args),
+  sendInvoice: (...args: unknown[]) => mockSendInvoice(...args),
+  recordPayment: (...args: unknown[]) => mockRecordPayment(...args),
+  voidInvoice: (...args: unknown[]) => mockVoidInvoice(...args),
   refreshPaymentLink: (...args: unknown[]) => mockRefreshPaymentLink(...args),
 }));
 

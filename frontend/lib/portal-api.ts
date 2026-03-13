@@ -1,6 +1,6 @@
 /**
  * Client-side API client for the customer portal.
- * Uses portal JWT (from magic link exchange), NOT Clerk auth.
+ * Uses portal JWT (from magic link exchange), NOT org auth.
  * This module is safe to import in client components.
  */
 

@@ -42,11 +42,11 @@ describe("PortalHeader", () => {
     expect(screen.getByText("Acme Corp")).toBeInTheDocument();
   });
 
-  it("renders without Clerk components", () => {
+  it("renders without external auth components", () => {
     mockGetPortalCustomerName.mockReturnValue(null);
     render(<PortalHeader />);
 
-    // Should not have any Clerk-related elements
+    // Should not have any external auth elements
     expect(screen.queryByText("Sign in")).not.toBeInTheDocument();
     expect(screen.getByText("DocTeams Portal")).toBeInTheDocument();
   });

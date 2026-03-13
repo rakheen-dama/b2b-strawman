@@ -5,7 +5,7 @@ import userEvent from "@testing-library/user-event";
 // Must mock server-only before importing components that use it
 vi.mock("server-only", () => ({}));
 
-// Set auth mode to mock so InviteMemberForm renders MockInviteMemberForm (avoids Clerk hooks)
+// Set auth mode to mock so InviteMemberForm renders MockInviteMemberForm (avoids auth provider hooks)
 vi.stubEnv("NEXT_PUBLIC_AUTH_MODE", "mock");
 
 // Mock motion/react (Collapsible may use motion internally)

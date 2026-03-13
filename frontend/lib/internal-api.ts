@@ -14,38 +14,6 @@ export class InternalApiError extends Error {
   }
 }
 
-export interface ProvisionOrgRequest {
-  clerkOrgId: string;
-  orgName: string;
-}
-
-export interface ProvisionOrgResponse {
-  clerkOrgId: string;
-  schemaName: string;
-  status: string;
-}
-
-export interface UpdateOrgRequest {
-  clerkOrgId: string;
-  orgName: string;
-  updatedAt: number;
-}
-
-export interface SyncMemberRequest {
-  clerkOrgId: string;
-  clerkUserId: string;
-  email: string;
-  name?: string;
-  avatarUrl?: string;
-  orgRole: string;
-}
-
-export interface SyncMemberResponse {
-  memberId: string;
-  clerkUserId: string;
-  action: string;
-}
-
 // ---- Billing (from BillingController.java / AdminBillingController.java) ----
 
 export interface BillingLimits {
@@ -58,11 +26,6 @@ export interface BillingResponse {
   tier: string;
   status: string;
   limits: BillingLimits;
-}
-
-export interface SetPlanRequest {
-  clerkOrgId: string;
-  planSlug: string;
 }
 
 export interface UpgradeRequest {

@@ -45,7 +45,7 @@ export async function listMembers(): Promise<BffMember[]> {
     return listMembersBff();
   }
 
-  // Clerk/mock modes handle member listing client-side
+  // Mock mode handles member listing client-side
   return [];
 }
 

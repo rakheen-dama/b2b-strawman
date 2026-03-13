@@ -25,7 +25,7 @@ vi.mock("@/components/recent-items-provider", () => ({
   useRecentItems: vi.fn(() => ({ items: [], addItem: vi.fn() })),
 }));
 
-// Mock SidebarUserFooter — uses Clerk hooks
+// Mock SidebarUserFooter — uses auth hooks
 vi.mock("@/components/sidebar-user-footer", () => ({
   SidebarUserFooter: () => <div data-testid="sidebar-user-footer" />,
 }));

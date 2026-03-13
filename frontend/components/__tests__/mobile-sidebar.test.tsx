@@ -19,7 +19,7 @@ vi.mock("motion/react", () => ({
   ),
 }));
 
-// Mock SidebarUserFooter — uses Clerk hooks
+// Mock SidebarUserFooter — uses auth hooks
 vi.mock("@/components/sidebar-user-footer", () => ({
   SidebarUserFooter: () => <div data-testid="sidebar-user-footer" />,
 }));

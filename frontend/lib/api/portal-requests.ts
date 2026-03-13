@@ -1,6 +1,6 @@
 /**
  * Client-side API client for portal information requests.
- * Uses portal JWT (from magic link exchange), NOT Clerk auth.
+ * Uses portal JWT (from magic link exchange), NOT org auth.
  */
 
 import { portalApi } from "@/lib/portal-api";

@@ -22,7 +22,7 @@ vi.mock("motion/react", () => ({
 // Mock server-only
 vi.mock("server-only", () => ({}));
 
-// Mock SidebarUserFooter (depends on Clerk)
+// Mock SidebarUserFooter (depends on auth provider)
 vi.mock("@/components/sidebar-user-footer", () => ({
   SidebarUserFooter: () => <div data-testid="sidebar-user-footer" />,
 }));

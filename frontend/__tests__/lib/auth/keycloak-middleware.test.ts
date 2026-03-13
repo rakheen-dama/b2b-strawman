@@ -61,7 +61,7 @@ describe("Keycloak BFF middleware", () => {
   it("passes through on public routes without SESSION cookie", async () => {
     const middleware = await loadMiddleware();
 
-    const publicPaths = ["/", "/sign-in", "/api/webhooks/clerk"];
+    const publicPaths = ["/", "/sign-in", "/api/webhooks"];
     for (const path of publicPaths) {
       const request = createRequest(path);
       const response = (await middleware(

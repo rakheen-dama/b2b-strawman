@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -27,6 +29,10 @@ import {
   listInvitations,
 } from "@/app/(app)/org/[slug]/team/invitation-actions";
 import type { OrgRole } from "@/lib/api/org-roles";
+import {
+  inviteMemberSchema,
+  type InviteMemberFormData,
+} from "@/lib/schemas/invite-member";
 
 const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "keycloak";
 
@@ -114,7 +120,13 @@ function InviteFormUI({
   onInviteSent: () => void;
   ready: boolean;
 }) {
-  const [emailAddress, setEmailAddress] = useState("");
+  const form = useForm<InviteMemberFormData>({
+    resolver: zodResolver(inviteMemberSchema),
+    defaultValues: {
+      emailAddress: "",
+    },
+  });
+
   const [role, setRole] = useState<"org:member" | "org:admin">("org:member");
   const [selectedRoleId, setSelectedRoleId] = useState<string | undefined>(
     undefined,
@@ -202,21 +214,14 @@ function InviteFormUI({
     return SYSTEM_MEMBER_VALUE;
   }
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleSubmit = async (values: InviteMemberFormData) => {
     setError(null);
     setSuccess(null);
-
-    const trimmedEmail = emailAddress.trim();
-    if (!trimmedEmail) {
-      setError("Email address is required.");
-      return;
-    }
-
     setIsSubmitting(true);
+
     try {
       const result = await inviteMember(
-        trimmedEmail,
+        values.emailAddress.trim(),
         role,
         selectedRoleId,
         overrides.length > 0 ? overrides : undefined,
@@ -226,8 +231,8 @@ function InviteFormUI({
         return;
       }
       onInviteSent();
-      setEmailAddress("");
-      setSuccess(`Invitation sent to ${trimmedEmail}.`);
+      form.reset();
+      setSuccess(`Invitation sent to ${values.emailAddress.trim()}.`);
     } catch (err: unknown) {
       const message =
         err instanceof Error ? err.message : "Failed to send invitation.";
@@ -242,7 +247,7 @@ function InviteFormUI({
       {/* Form row */}
       {!isAtLimit && (
         <form
-          onSubmit={handleSubmit}
+          onSubmit={form.handleSubmit(handleSubmit)}
           className="flex flex-col gap-3 sm:flex-row sm:items-end"
         >
           <div className="flex-1 space-y-1.5">
@@ -253,14 +258,19 @@ function InviteFormUI({
               id="invite-email"
               type="email"
               placeholder="colleague@company.com"
-              value={emailAddress}
+              {...form.register("emailAddress")}
               onChange={(e) => {
-                setEmailAddress(e.target.value);
+                form.setValue("emailAddress", e.target.value);
+                form.clearErrors("emailAddress");
                 setError(null);
                 setSuccess(null);
               }}
-              required
             />
+            {form.formState.errors.emailAddress && (
+              <p className="text-destructive text-sm" role="alert">
+                {form.formState.errors.emailAddress.message}
+              </p>
+            )}
           </div>
           <div className="space-y-1.5">
             <label htmlFor="invite-role" className="text-sm font-medium">

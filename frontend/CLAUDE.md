@@ -312,3 +312,54 @@ interface PaginatedResponse<T> {
 | `INTERNAL_API_KEY`                  | Server | API key for `/internal/*` calls |
 
 Variables prefixed `NEXT_PUBLIC_` are exposed to the browser. All others are server-only.
+
+## Form Patterns (Zod + React Hook Form)
+
+Forms use **Zod** schemas for validation and **react-hook-form** with `@hookform/resolvers/zod` for state management. Shadcn `Form` components (`components/ui/form.tsx`) provide accessible field wrappers.
+
+### Schema location
+
+- `lib/schemas/` — one file per domain (e.g., `customer.ts`, `project.ts`, `invite-member.ts`)
+- `lib/schemas/index.ts` — barrel re-exports
+
+### Pattern
+
+```tsx
+// 1. Define schema in lib/schemas/<domain>.ts
+import { z } from "zod";
+export const createFooSchema = z.object({
+  name: z.string().min(1, "Name is required").max(255),
+  email: z.string().email("Invalid email").optional().or(z.literal("")),
+});
+export type CreateFooFormData = z.infer<typeof createFooSchema>;
+
+// 2. Use in component
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+
+const form = useForm<CreateFooFormData>({
+  resolver: zodResolver(createFooSchema),
+  defaultValues: { name: "", email: "" },
+});
+
+// 3. Wrap form in <Form {...form}> and use FormField/FormItem/FormControl/FormMessage
+<Form {...form}>
+  <form onSubmit={form.handleSubmit(onSubmit)}>
+    <FormField control={form.control} name="name" render={({ field }) => (
+      <FormItem>
+        <FormLabel>Name</FormLabel>
+        <FormControl><Input {...field} /></FormControl>
+        <FormMessage />
+      </FormItem>
+    )} />
+  </form>
+</Form>
+```
+
+### Key rules
+
+- Validation errors display inline via `<FormMessage />` — no manual `if (!name.trim())` checks
+- When server actions expect `FormData`, build it from validated values (not from DOM)
+- For multi-step wizards, use `form.trigger(["field1", "field2"])` to validate specific fields before advancing
+- Keep schemas in `lib/schemas/` — never inline Zod schemas in components

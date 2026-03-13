@@ -2,7 +2,7 @@ import "server-only";
 
 import { getAuthToken } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { api, ApiError } from "@/lib/api";
+import { api, ApiError } from "./client";
 
 // ---- Response Interfaces ----
 

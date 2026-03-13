@@ -1,6 +1,6 @@
 import "server-only";
 
-import { api } from "@/lib/api";
+import { api } from "./client";
 
 // Shared types/constants re-exported from schedule-constants (no server-only)
 export type { ScheduleStatus, RecurrenceFrequency } from "@/lib/schedule-constants";

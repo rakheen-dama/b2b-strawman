@@ -57,7 +57,7 @@ export function CommentSectionClient({
 
   if (isLoading) {
     return (
-      <p className="text-sm text-slate-500 dark:text-slate-400">
+      <p className="text-sm text-slate-500 dark:text-slate-400" aria-live="polite">
         Loading comments...
       </p>
     );

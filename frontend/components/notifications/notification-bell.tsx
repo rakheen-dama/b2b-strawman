@@ -62,8 +62,12 @@ export function NotificationBell({ orgSlug }: NotificationBellProps) {
         className="relative"
       >
         <Bell className="size-4" />
+        <span aria-live="polite" className="sr-only">
+          {unreadCount > 0 ? `${displayCount} unread notifications` : ""}
+        </span>
         {unreadCount > 0 && (
           <span
+            aria-hidden="true"
             className={cn(
               "absolute -top-0.5 -right-0.5 flex items-center justify-center rounded-full bg-teal-600 text-[10px] font-medium text-white",
               unreadCount > 99

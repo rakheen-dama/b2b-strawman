@@ -58,7 +58,7 @@ function ClerkMemberList({
 
   if (!isLoaded) {
     return (
-      <div className="py-8 text-center text-sm text-slate-600 dark:text-slate-400">
+      <div className="py-8 text-center text-sm text-slate-600 dark:text-slate-400" aria-live="polite">
         Loading members...
       </div>
     );

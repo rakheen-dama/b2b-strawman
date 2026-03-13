@@ -71,7 +71,7 @@ export default async function OrgLayout({
                 <NotificationBell orgSlug={slug} />
               </div>
             </header>
-            <main className="flex-1 bg-background dark:bg-slate-950">
+            <main id="main-content" className="flex-1 bg-background dark:bg-slate-950">
               <div className="mx-auto max-w-7xl px-6 py-6 lg:px-10">
                 <ErrorBoundary>
                   <PageTransition>{children}</PageTransition>

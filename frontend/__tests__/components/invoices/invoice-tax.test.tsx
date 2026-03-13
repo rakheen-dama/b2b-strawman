@@ -29,16 +29,19 @@ vi.mock("@/lib/capabilities", () => ({
 }));
 
 // Mock server actions
-vi.mock("@/app/(app)/org/[slug]/invoices/actions", () => ({
-  approveInvoice: vi.fn().mockResolvedValue({ success: true, invoice: null }),
-  deleteInvoice: vi.fn().mockResolvedValue({ success: true }),
-  sendInvoice: vi.fn().mockResolvedValue({ success: true, invoice: null }),
-  recordPayment: vi.fn().mockResolvedValue({ success: true, invoice: null }),
-  voidInvoice: vi.fn().mockResolvedValue({ success: true, invoice: null }),
+vi.mock("@/app/(app)/org/[slug]/invoices/invoice-crud-actions", () => ({
   updateInvoice: vi.fn().mockResolvedValue({ success: true, invoice: null }),
+  deleteInvoice: vi.fn().mockResolvedValue({ success: true }),
   addLineItem: vi.fn().mockResolvedValue({ success: true, invoice: null }),
   updateLineItem: vi.fn().mockResolvedValue({ success: true, invoice: null }),
   deleteLineItem: vi.fn().mockResolvedValue({ success: true }),
+}));
+
+vi.mock("@/app/(app)/org/[slug]/invoices/invoice-payment-actions", () => ({
+  approveInvoice: vi.fn().mockResolvedValue({ success: true, invoice: null }),
+  sendInvoice: vi.fn().mockResolvedValue({ success: true, invoice: null }),
+  recordPayment: vi.fn().mockResolvedValue({ success: true, invoice: null }),
+  voidInvoice: vi.fn().mockResolvedValue({ success: true, invoice: null }),
   refreshPaymentLink: vi
     .fn()
     .mockResolvedValue({ success: true, invoice: null }),

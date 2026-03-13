@@ -15,11 +15,23 @@ vi.mock("next/navigation", () => ({
   usePathname: () => "/org/test-org/resources",
 }));
 
-vi.mock("@/app/(app)/org/[slug]/resources/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/resources/allocation-actions", () => ({
   createAllocationAction: vi.fn(),
   updateAllocationAction: vi.fn(),
   deleteAllocationAction: vi.fn(),
   bulkUpsertAction: vi.fn(),
+  listAllocationsAction: vi.fn(),
+}));
+
+vi.mock("@/app/(app)/org/[slug]/resources/resource-actions", () => ({
+  createLeaveAction: vi.fn(),
+  updateLeaveAction: vi.fn(),
+  deleteLeaveAction: vi.fn(),
+  listLeaveAction: vi.fn(),
+  createCapacityRecordAction: vi.fn(),
+  updateCapacityRecordAction: vi.fn(),
+  deleteCapacityRecordAction: vi.fn(),
+  listCapacityRecordsAction: vi.fn(),
 }));
 
 function makeWeekCell(overrides: Partial<WeekCell> = {}): WeekCell {

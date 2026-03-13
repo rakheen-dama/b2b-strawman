@@ -25,7 +25,7 @@ import { CAPABILITY_META } from "@/lib/capabilities";
 import {
   inviteMember,
   listInvitations,
-} from "@/app/(app)/org/[slug]/team/actions";
+} from "@/app/(app)/org/[slug]/team/invitation-actions";
 import type { OrgRole } from "@/lib/api/org-roles";
 
 const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "keycloak";

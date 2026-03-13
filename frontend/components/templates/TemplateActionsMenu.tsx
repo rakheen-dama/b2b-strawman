@@ -14,7 +14,7 @@ import { ResetTemplateDialog } from "@/components/templates/ResetTemplateDialog"
 import {
   cloneTemplateAction,
   deactivateTemplateAction,
-} from "@/app/(app)/org/[slug]/settings/templates/actions";
+} from "@/app/(app)/org/[slug]/settings/templates/template-crud-actions";
 import type { TemplateListResponse } from "@/lib/types";
 
 interface TemplateActionsMenuProps {

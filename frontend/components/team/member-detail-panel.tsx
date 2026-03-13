@@ -25,7 +25,7 @@ import { CAPABILITY_META } from "@/lib/capabilities";
 import {
   assignMemberRole,
   fetchMemberCapabilities,
-} from "@/app/(app)/org/[slug]/team/actions";
+} from "@/app/(app)/org/[slug]/team/member-actions";
 import type { OrgRole } from "@/lib/api/org-roles";
 
 interface MemberInfo {

@@ -32,16 +32,19 @@ vi.mock("next/navigation", () => ({
 
 // Mock sendInvoice action
 const mockSendInvoice = vi.fn();
-vi.mock("@/app/(app)/org/[slug]/invoices/actions", () => ({
-  sendInvoice: (...args: unknown[]) => mockSendInvoice(...args),
+vi.mock("@/app/(app)/org/[slug]/invoices/invoice-crud-actions", () => ({
   updateInvoice: vi.fn().mockResolvedValue({ success: true }),
   deleteInvoice: vi.fn().mockResolvedValue({ success: true }),
-  approveInvoice: vi.fn().mockResolvedValue({ success: true }),
-  recordPayment: vi.fn().mockResolvedValue({ success: true }),
-  voidInvoice: vi.fn().mockResolvedValue({ success: true }),
   addLineItem: vi.fn().mockResolvedValue({ success: true }),
   updateLineItem: vi.fn().mockResolvedValue({ success: true }),
   deleteLineItem: vi.fn().mockResolvedValue({ success: true }),
+}));
+
+vi.mock("@/app/(app)/org/[slug]/invoices/invoice-payment-actions", () => ({
+  sendInvoice: (...args: unknown[]) => mockSendInvoice(...args),
+  approveInvoice: vi.fn().mockResolvedValue({ success: true }),
+  recordPayment: vi.fn().mockResolvedValue({ success: true }),
+  voidInvoice: vi.fn().mockResolvedValue({ success: true }),
   refreshPaymentLink: vi.fn().mockResolvedValue({ success: true }),
 }));
 

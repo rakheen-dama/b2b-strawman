@@ -41,12 +41,14 @@ import {
 } from "@/components/ui/dialog";
 import {
   updateTemplateAction,
+} from "@/app/(app)/org/[slug]/settings/templates/template-crud-actions";
+import {
   fetchRequiredFieldPacksAction,
   replaceDocxFileAction,
   downloadDocxTemplateAction,
   fetchVariableMetadataAction,
-} from "@/app/(app)/org/[slug]/settings/templates/actions";
-import type { FieldPackStatus } from "@/app/(app)/org/[slug]/settings/templates/actions";
+} from "@/app/(app)/org/[slug]/settings/templates/template-support-actions";
+import type { FieldPackStatus } from "@/app/(app)/org/[slug]/settings/templates/template-support-actions";
 import type { VariableMetadataResponse } from "@/components/editor/actions";
 import { getClause } from "@/lib/actions/clause-actions";
 import { TemplateEditorSettings } from "@/components/templates/template-editor-settings";

@@ -10,7 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { generateDocxAction } from "@/app/(app)/org/[slug]/settings/templates/actions";
+import { generateDocxAction } from "@/app/(app)/org/[slug]/settings/templates/template-generation-actions";
 import type { GenerateDocxResult, OutputFormat } from "@/lib/types";
 
 interface GenerateDocxDialogProps {

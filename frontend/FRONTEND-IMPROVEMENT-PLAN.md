@@ -300,33 +300,31 @@ One instance of unsafe HTML rendering in `components/templates/generation-clause
 
 ### F12. Org Provisioning After Clerk Removal
 
-**Severity: Strategic**
+**Severity: None (already solved)**
 
-The current `create-org/page.tsx` uses Clerk's `<CreateOrganization>` component. With Clerk removed, org creation needs to:
-1. Hit a backend endpoint that creates the Keycloak realm/org
-2. Create the tenant schema via the existing provisioning pipeline
-3. Redirect to the new org dashboard
+Phase 36 already rewired org creation to use the gateway `POST /bff/orgs` endpoint. The Clerk `<CreateOrganization>` component is dead code in Keycloak mode. JIT tenant provisioning handles schema creation on first request.
 
-The Clerk webhook handler currently triggers backend org provisioning on `organization.created`. This entire flow needs to be replaced with:
-- A frontend form calling a backend API that handles Keycloak org + schema provisioning
-- Or: Keycloak event listener triggering a backend webhook (server-to-server)
+**Action needed**: Delete the Clerk code path only.
 
 ---
 
 ### F13. Team Management After Clerk Removal
 
-**Severity: Strategic**
+**Severity: Low (already solved)**
 
-Team features currently depend heavily on Clerk:
-- **Invite members**: `@clerk/nextjs` invitation API
-- **Pending invitations**: Clerk invitation list
-- **Member list**: Clerk org member data + metadata
-- **Role management**: Clerk org roles
+Team features currently depend on Clerk APIs, but Phase 36 already built all Keycloak equivalents in the gateway's `AdminProxyController`:
 
-These need Keycloak equivalents:
-- Backend endpoints wrapping Keycloak Admin API for user/role management
-- Frontend forms replacing Clerk components
-- Email invitation flow (Keycloak email actions or custom backend)
+| Clerk Feature | Existing Gateway Replacement |
+|---|---|
+| Invite member | `POST /bff/admin/invite` (email + role) |
+| List pending invitations | `GET /bff/admin/invitations` |
+| Revoke invitation | `DELETE /bff/admin/invitations/{id}` |
+| List members | `GET /bff/admin/members` |
+| Change member role | `PATCH /bff/admin/members/{id}/role` |
+
+All endpoints are gated by `@PreAuthorize("@bffSecurity.isAdmin(#user)")` and use `KeycloakAdminClient` under the hood.
+
+**Action needed**: Delete the Clerk code branches only. The Keycloak paths are already active and working.
 
 ---
 
@@ -335,56 +333,45 @@ These need Keycloak equivalents:
 ### Phase A: Clerk Removal & Keycloak Consolidation
 
 **Priority: HIGH — Strategic**
-**Estimated scope: 6 epics**
+**Estimated scope: 3 epics (pure deletion — all Keycloak flows already work end-to-end from Phase 36)**
 
-#### Epic A1: Backend Keycloak Management APIs
-> *Backend work — prerequisite for frontend changes*
+> **Note**: Phase 36 already rewired the entire frontend for Keycloak — org creation
+> (`POST /bff/orgs`), team management (`/bff/admin/*`), auth pages (gateway OAuth2 redirect),
+> and user menu (`user-menu-bff.tsx`) all work today. The Clerk code paths are dead code
+> when `NEXT_PUBLIC_AUTH_MODE=keycloak`. This phase removes them entirely and collapses
+> the auth mode switch to keycloak + mock only.
 
-- `POST /api/orgs` — Create org (provisions Keycloak realm/org + tenant schema)
-- `POST /api/orgs/{slug}/invitations` — Invite member (Keycloak email action)
-- `GET /api/orgs/{slug}/invitations` — List pending invitations
-- `DELETE /api/orgs/{slug}/invitations/{id}` — Revoke invitation
-- `PUT /api/orgs/{slug}/members/{id}/role` — Change member role
-- `DELETE /api/orgs/{slug}/members/{id}` — Remove member
-- `GET /api/orgs/{slug}/members` — List members (replaces Clerk member list)
-
-#### Epic A2: Remove Clerk Auth Provider
+#### Epic A1: Remove Clerk Auth Provider & Auth Pages
 - Delete `lib/auth/providers/clerk.ts`
+- Delete `app/(auth)/` route group (Clerk sign-in/sign-up pages)
 - Simplify `lib/auth/server.ts` — remove Clerk branch, keep keycloak + mock
 - Simplify `lib/auth/middleware.ts` — remove Clerk middleware
-- Simplify `lib/auth/client/auth-provider.tsx` — remove ClerkProvider
+- Simplify `lib/auth/client/auth-provider.tsx` — remove ClerkProvider branch
+- Replace `proxy.ts` with simplified middleware (keycloak + mock only)
 - Remove `@clerk/nextjs`, `svix` from `package.json`
-- Remove Clerk env vars from `.env*` files
+- Remove Clerk env vars from `.env*` files (`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, `CLERK_WEBHOOK_SIGNING_SECRET`)
 - Remove `cssLayerName: "clerk"` references
-- Update `CLAUDE.md` and `frontend/CLAUDE.md`
 
-#### Epic A3: Replace Clerk Auth Pages
-- Delete `app/(auth)/` route group entirely
-- Keycloak handles sign-in/sign-up via gateway OAuth2 redirect (already working in BFF mode)
-- Update marketing page CTAs to point to `/dashboard` (middleware redirects to Keycloak login)
-- Replace `proxy.ts` with simplified middleware that only handles keycloak + mock
-
-#### Epic A4: Replace Clerk Org Creation
-- Delete `app/(app)/create-org/page.tsx` (Clerk `<CreateOrganization>` component)
-- Create new `create-org` page with a plain form (org name, industry)
-- Form calls new backend `POST /api/orgs` endpoint
-- Backend provisions Keycloak org + tenant schema
-- Redirect to `/org/{slug}/dashboard` on success
-
-#### Epic A5: Replace Clerk Team Management
-- Rewrite `components/team/invite-member-form.tsx` — call backend invitation API
-- Rewrite `components/team/pending-invitations.tsx` — fetch from backend
-- Rewrite `components/team/member-list.tsx` — fetch from backend members endpoint
-- Rewrite `app/(app)/org/[slug]/team/actions.ts` — server actions call backend APIs
-- Replace `components/sidebar-user-footer.tsx` Clerk `UserButton` with custom user menu (the `user-menu-bff.tsx` component already exists for Keycloak mode)
-- Replace `components/auth-header-controls.tsx` Clerk references
-
-#### Epic A6: Delete Clerk Webhook Infrastructure
+#### Epic A2: Delete Clerk Webhook Infrastructure & Dead Code
 - Delete `app/api/webhooks/clerk/route.ts` + `route.test.ts`
 - Delete `lib/webhook-handlers.ts` + `.test.ts`
 - Delete `lib/internal-api.ts` (Clerk-specific types)
-- Backend org provisioning now triggered by direct API call (not webhook)
+- Remove Clerk references from components that already have Keycloak code paths:
+  - `components/team/invite-member-form.tsx` — delete Clerk branch
+  - `components/team/pending-invitations.tsx` — delete Clerk branch
+  - `components/team/member-list.tsx` — delete Clerk branch
+  - `app/(app)/org/[slug]/team/actions.ts` — delete Clerk branch
+  - `components/sidebar-user-footer.tsx` — delete Clerk `UserButton` branch
+  - `components/auth-header-controls.tsx` — delete Clerk branch
+  - `components/marketing/hero-section.tsx` — update sign-in links
+  - `components/marketing/pricing-preview.tsx` — update sign-up links
 - Update tests that mock Clerk APIs
+
+#### Epic A3: Documentation & Config Cleanup
+- Update `CLAUDE.md` and `frontend/CLAUDE.md` — remove all Clerk references, anti-patterns, env vars
+- Remove `NEXT_PUBLIC_AUTH_MODE` branching from docs (keycloak is now the only production mode)
+- Update `.env.example` / `.env.local` files
+- Verify build + all tests pass with Clerk dependency fully removed
 
 ---
 
@@ -470,19 +457,14 @@ These need Keycloak equivalents:
 ### Dependency Graph
 
 ```
-Phase A (Clerk Removal)
- A1: Backend Keycloak APIs
+Phase A (Clerk Removal — pure deletion, all Keycloak flows already work)
+ A1: Remove Clerk Provider & Auth Pages
    |
    v
- A2: Remove Clerk Provider  +  A3: Replace Auth Pages   (parallel, both need A1 done)
-   |                              |
-   v                              v
- A4: Replace Org Creation   +  A5: Replace Team Mgmt    (parallel, both need A1)
-   |                              |
-   +--------- both done ---------+
-                  |
-                  v
-            A6: Delete Webhook Infra
+ A2: Delete Webhook Infra & Dead Code
+   |
+   v
+ A3: Documentation & Config Cleanup
 
 Phase B (Code Organisation)         — independent of Phase A
  B1: Split types.ts  +  B2: Split api.ts   (parallel)
@@ -500,7 +482,7 @@ Phase D (Polish)                    — independent, anytime
 ```
 
 **Recommended execution order**:
-1. **A1** then **A2 + A3** (parallel) then **A4 + A5** (parallel) then **A6**
+1. **A1** then **A2** then **A3** (sequential — each builds on prior deletion)
 2. **B1 + B2** (parallel) then **B3**
 3. **C1 + C2 + C3** (parallel)
 4. **D1 + D2** (parallel, anytime)

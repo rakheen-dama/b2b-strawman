@@ -21,7 +21,7 @@ import {
   getItemsAction,
   getBillingRunAction,
   batchSendAction,
-} from "@/app/(app)/org/[slug]/invoices/billing-runs/new/actions";
+} from "@/app/(app)/org/[slug]/invoices/billing-runs/new/billing-step-actions";
 import type {
   BillingRunItem,
   BatchOperationResult,

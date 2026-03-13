@@ -28,8 +28,8 @@ import {
   generateAction,
   getItemsAction,
   batchApproveAction,
-} from "@/app/(app)/org/[slug]/invoices/billing-runs/new/actions";
-import { updateInvoice } from "@/app/(app)/org/[slug]/invoices/actions";
+} from "@/app/(app)/org/[slug]/invoices/billing-runs/new/billing-step-actions";
+import { updateInvoice } from "@/app/(app)/org/[slug]/invoices/invoice-crud-actions";
 import type { BillingRunItem } from "@/lib/api/billing-runs";
 
 const PAYMENT_TERMS_OPTIONS = [

@@ -24,11 +24,11 @@ import type {
 import {
   listCapacityRecordsAction,
   listLeaveAction,
-  listAllocationsAction,
   createCapacityRecordAction,
   deleteCapacityRecordAction,
   deleteLeaveAction,
-} from "@/app/(app)/org/[slug]/resources/actions";
+} from "@/app/(app)/org/[slug]/resources/resource-actions";
+import { listAllocationsAction } from "@/app/(app)/org/[slug]/resources/allocation-actions";
 
 interface ProjectOption {
   id: string;

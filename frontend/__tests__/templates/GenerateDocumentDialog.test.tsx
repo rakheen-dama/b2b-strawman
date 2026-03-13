@@ -10,8 +10,11 @@ const mockPreviewTemplate = vi.fn();
 const mockGenerateDocument = vi.fn();
 const mockGetTemplateClauses = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/settings/templates/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/templates/template-crud-actions", () => ({
   previewTemplateAction: (...args: unknown[]) => mockPreviewTemplate(...args),
+}));
+
+vi.mock("@/app/(app)/org/[slug]/settings/templates/template-generation-actions", () => ({
   generateDocumentAction: (...args: unknown[]) => mockGenerateDocument(...args),
 }));
 

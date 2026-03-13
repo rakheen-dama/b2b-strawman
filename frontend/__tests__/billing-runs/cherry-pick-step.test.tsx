@@ -14,7 +14,7 @@ const mockIncludeCustomer = vi.fn();
 const mockGetRetainerPreview = vi.fn();
 
 vi.mock(
-  "@/app/(app)/org/[slug]/invoices/billing-runs/new/actions",
+  "@/app/(app)/org/[slug]/invoices/billing-runs/new/billing-run-actions",
   () => ({
     createBillingRunAction: vi.fn(),
     loadPreviewAction: vi.fn(),

@@ -8,8 +8,8 @@ import { formatDate } from "@/lib/format";
 import {
   listInvitations,
   revokeInvitation,
-} from "@/app/(app)/org/[slug]/team/actions";
-import type { MappedInvitation } from "@/app/(app)/org/[slug]/team/actions";
+} from "@/app/(app)/org/[slug]/team/invitation-actions";
+import type { MappedInvitation } from "@/app/(app)/org/[slug]/team/invitation-actions";
 
 const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "keycloak";
 

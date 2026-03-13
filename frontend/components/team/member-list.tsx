@@ -6,8 +6,8 @@ import { AvatarCircle } from "@/components/ui/avatar-circle";
 import { EmptyState } from "@/components/empty-state";
 import { useOrgMembers } from "@/lib/auth/client";
 import { useState, useEffect } from "react";
-import { listMembers } from "@/app/(app)/org/[slug]/team/actions";
-import type { BffMember } from "@/app/(app)/org/[slug]/team/actions";
+import { listMembers } from "@/app/(app)/org/[slug]/team/member-actions";
+import type { BffMember } from "@/app/(app)/org/[slug]/team/member-actions";
 import { MemberDetailPanel } from "@/components/team/member-detail-panel";
 import type { OrgRole } from "@/lib/api/org-roles";
 

@@ -23,8 +23,11 @@ vi.mock("@/lib/actions/clause-actions", () => ({
   getClauses: (...args: unknown[]) => mockGetClauses(...args),
 }));
 
-vi.mock("@/app/(app)/org/[slug]/settings/templates/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/settings/templates/template-crud-actions", () => ({
   previewTemplateAction: (...args: unknown[]) => mockPreviewTemplate(...args),
+}));
+
+vi.mock("@/app/(app)/org/[slug]/settings/templates/template-generation-actions", () => ({
   generateDocumentAction: (...args: unknown[]) => mockGenerateDocument(...args),
 }));
 

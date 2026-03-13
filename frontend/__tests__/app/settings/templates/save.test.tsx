@@ -21,10 +21,16 @@ vi.mock("@/lib/api", () => ({
 }));
 
 vi.mock(
-  "@/app/(app)/org/[slug]/settings/templates/actions",
+  "@/app/(app)/org/[slug]/settings/templates/template-crud-actions",
   () => ({
     updateTemplateAction: (...args: unknown[]) => mockUpdateTemplateAction(...args),
     createTemplateAction: (...args: unknown[]) => mockCreateTemplateAction(...args),
+  }),
+);
+
+vi.mock(
+  "@/app/(app)/org/[slug]/settings/templates/template-support-actions",
+  () => ({
     fetchVariableMetadataAction: vi.fn(),
     fetchRequiredFieldPacksAction: vi.fn().mockResolvedValue({ success: true, data: [] }),
   }),

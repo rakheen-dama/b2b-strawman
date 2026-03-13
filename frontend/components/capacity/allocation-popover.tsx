@@ -23,7 +23,7 @@ import {
   createAllocationAction,
   updateAllocationAction,
   deleteAllocationAction,
-} from "@/app/(app)/org/[slug]/resources/actions";
+} from "@/app/(app)/org/[slug]/resources/allocation-actions";
 
 interface ProjectOption {
   id: string;

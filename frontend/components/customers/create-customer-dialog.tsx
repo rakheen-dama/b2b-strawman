@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,8 +14,15 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Loader2, Plus } from "lucide-react";
 import { createCustomer } from "@/app/(app)/org/[slug]/customers/actions";
 import { createMessages } from "@/lib/messages";
@@ -26,21 +35,16 @@ import {
 import type { FieldValue } from "@/components/prerequisite/inline-field-editor";
 import type { IntakeFieldGroup } from "@/components/prerequisite/types";
 import type { CustomerType } from "@/lib/types";
+import {
+  createCustomerSchema,
+  type CreateCustomerFormData,
+} from "@/lib/schemas/customer";
 
 const CUSTOMER_TYPES: { value: CustomerType; label: string }[] = [
   { value: "INDIVIDUAL", label: "Individual" },
   { value: "COMPANY", label: "Company" },
   { value: "TRUST", label: "Trust" },
 ];
-
-interface BaseFields {
-  name: string;
-  email: string;
-  phone: string;
-  idNumber: string;
-  notes: string;
-  customerType: CustomerType;
-}
 
 interface CreateCustomerDialogProps {
   slug: string;
@@ -52,14 +56,16 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Step 1 base field state
-  const [baseFields, setBaseFields] = useState<BaseFields>({
-    name: "",
-    email: "",
-    phone: "",
-    idNumber: "",
-    notes: "",
-    customerType: "INDIVIDUAL",
+  const form = useForm<CreateCustomerFormData>({
+    resolver: zodResolver(createCustomerSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      phone: "",
+      idNumber: "",
+      notes: "",
+      customerType: "INDIVIDUAL",
+    },
   });
 
   // Step 2 intake fields state
@@ -72,14 +78,7 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
     setStep(1);
     setError(null);
     setFetchError(null);
-    setBaseFields({
-      name: "",
-      email: "",
-      phone: "",
-      idNumber: "",
-      notes: "",
-      customerType: "INDIVIDUAL",
-    });
+    form.reset();
     setIntakeGroups([]);
     setFieldValues({});
     setIsLoadingFields(false);
@@ -106,16 +105,11 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
   }
 
   async function handleNext() {
-    const { t } = createMessages("errors");
     setError(null);
 
-    if (!baseFields.name.trim()) {
-      setError(t("validation.required"));
-      scrollToFirstError();
-      return;
-    }
-    if (!baseFields.email.trim()) {
-      setError(t("validation.email"));
+    // Validate only step 1 fields
+    const isValid = await form.trigger(["name", "email"]);
+    if (!isValid) {
       scrollToFirstError();
       return;
     }
@@ -140,6 +134,7 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
     setIsSubmitting(true);
 
     try {
+      const values = form.getValues();
       const customFields: Record<string, unknown> = {};
       for (const [fieldSlug, value] of Object.entries(fieldValues)) {
         if (value !== null && value !== undefined && value !== "") {
@@ -148,12 +143,12 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
       }
 
       const result = await createCustomer(slug, {
-        name: baseFields.name.trim(),
-        email: baseFields.email.trim(),
-        phone: baseFields.phone.trim() || undefined,
-        idNumber: baseFields.idNumber.trim() || undefined,
-        notes: baseFields.notes.trim() || undefined,
-        customerType: baseFields.customerType || undefined,
+        name: values.name.trim(),
+        email: values.email.trim(),
+        phone: values.phone?.trim() || undefined,
+        idNumber: values.idNumber?.trim() || undefined,
+        notes: values.notes?.trim() || undefined,
+        customerType: values.customerType || undefined,
         customFields,
       });
 
@@ -206,103 +201,131 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
         <div className="space-y-4 py-2">
           {/* Step 1: Base fields */}
           {step === 1 && (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="customer-name">Name</Label>
-                <Input
-                  id="customer-name"
-                  placeholder="Customer name"
-                  required
-                  maxLength={255}
-                  autoFocus
-                  value={baseFields.name}
-                  onChange={(e) =>
-                    setBaseFields((prev) => ({ ...prev, name: e.target.value }))
-                  }
+            <Form {...form}>
+              <div className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Name</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Customer name"
+                          maxLength={255}
+                          autoFocus
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="customerType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Type</FormLabel>
+                      <FormControl>
+                        <select
+                          value={field.value}
+                          onChange={field.onChange}
+                          className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 dark:border-slate-800"
+                        >
+                          {CUSTOMER_TYPES.map((ct) => (
+                            <option key={ct.value} value={ct.value}>
+                              {ct.label}
+                            </option>
+                          ))}
+                        </select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="email"
+                          placeholder="customer@example.com"
+                          maxLength={255}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Phone{" "}
+                        <span className="font-normal text-muted-foreground">(optional)</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="tel"
+                          placeholder="+1 (555) 000-0000"
+                          maxLength={50}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="idNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        ID Number{" "}
+                        <span className="font-normal text-muted-foreground">(optional)</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="e.g. CUS-001"
+                          maxLength={100}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="notes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Notes{" "}
+                        <span className="font-normal text-muted-foreground">(optional)</span>
+                      </FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Any additional notes about this customer..."
+                          maxLength={2000}
+                          rows={3}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="customer-type">Type</Label>
-                <select
-                  id="customer-type"
-                  value={baseFields.customerType}
-                  onChange={(e) =>
-                    setBaseFields((prev) => ({
-                      ...prev,
-                      customerType: e.target.value as CustomerType,
-                    }))
-                  }
-                  className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 dark:border-slate-800"
-                >
-                  {CUSTOMER_TYPES.map((ct) => (
-                    <option key={ct.value} value={ct.value}>
-                      {ct.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="customer-email">Email</Label>
-                <Input
-                  id="customer-email"
-                  type="email"
-                  placeholder="customer@example.com"
-                  required
-                  maxLength={255}
-                  value={baseFields.email}
-                  onChange={(e) =>
-                    setBaseFields((prev) => ({ ...prev, email: e.target.value }))
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="customer-phone">
-                  Phone{" "}
-                  <span className="font-normal text-muted-foreground">(optional)</span>
-                </Label>
-                <Input
-                  id="customer-phone"
-                  type="tel"
-                  placeholder="+1 (555) 000-0000"
-                  maxLength={50}
-                  value={baseFields.phone}
-                  onChange={(e) =>
-                    setBaseFields((prev) => ({ ...prev, phone: e.target.value }))
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="customer-id-number">
-                  ID Number{" "}
-                  <span className="font-normal text-muted-foreground">(optional)</span>
-                </Label>
-                <Input
-                  id="customer-id-number"
-                  placeholder="e.g. CUS-001"
-                  maxLength={100}
-                  value={baseFields.idNumber}
-                  onChange={(e) =>
-                    setBaseFields((prev) => ({ ...prev, idNumber: e.target.value }))
-                  }
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="customer-notes">
-                  Notes{" "}
-                  <span className="font-normal text-muted-foreground">(optional)</span>
-                </Label>
-                <Textarea
-                  id="customer-notes"
-                  placeholder="Any additional notes about this customer..."
-                  maxLength={2000}
-                  rows={3}
-                  value={baseFields.notes}
-                  onChange={(e) =>
-                    setBaseFields((prev) => ({ ...prev, notes: e.target.value }))
-                  }
-                />
-              </div>
-            </div>
+            </Form>
           )}
 
           {/* Step 2: Intake fields */}

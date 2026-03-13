@@ -7,10 +7,16 @@ vi.mock("server-only", () => ({}));
 const mockGet = vi.fn();
 const mockPost = vi.fn();
 
-vi.mock("@/lib/api", () => ({
+vi.mock("@/lib/api/client", () => ({
   api: {
     get: (...args: unknown[]) => mockGet(...args),
     post: (...args: unknown[]) => mockPost(...args),
+  },
+  ApiError: class ApiError extends Error {
+    constructor(public status: number, message: string) {
+      super(message);
+      this.name = "ApiError";
+    }
   },
 }));
 

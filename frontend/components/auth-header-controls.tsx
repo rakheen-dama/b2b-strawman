@@ -2,13 +2,12 @@
 
 import { useState, useRef, useEffect } from "react";
 import { LogOut } from "lucide-react";
-import { UserButton, OrganizationSwitcher } from "@clerk/nextjs";
 import { useMockAuthContext } from "@/lib/auth/client/mock-context";
 import { useSignOut } from "@/lib/auth/client";
 import { UserMenuBff } from "@/components/auth/user-menu-bff";
 import type { AuthUser } from "@/lib/auth";
 
-const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "clerk";
+const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "keycloak";
 
 function getInitials(user: AuthUser | null): string {
   if (!user) return "?";
@@ -75,21 +74,8 @@ function MockUserButton() {
   );
 }
 
-function ClerkHeaderControls() {
-  return (
-    <>
-      <OrganizationSwitcher
-        afterSelectOrganizationUrl="/org/:slug/dashboard"
-        afterCreateOrganizationUrl="/org/:slug/dashboard"
-        hidePersonal
-      />
-      <UserButton />
-    </>
-  );
-}
-
 /**
- * Auth-aware header controls — renders Clerk UI, mock equivalents,
+ * Auth-aware header controls — renders mock equivalents
  * or Keycloak BFF user menu based on build-time AUTH_MODE selection.
  */
 export function AuthHeaderControls() {
@@ -101,9 +87,6 @@ export function AuthHeaderControls() {
       </>
     );
   }
-  if (AUTH_MODE === "keycloak") {
-    // Single org in Keycloak mode — no OrgSwitcher needed
-    return <UserMenuBff />;
-  }
-  return <ClerkHeaderControls />;
+  // Keycloak BFF mode — single org, no OrgSwitcher needed
+  return <UserMenuBff />;
 }

@@ -6,7 +6,7 @@ import { useMockAuthContext } from "./mock-context";
 import type { AuthUser, OrgMemberInfo } from "@/lib/auth/types";
 
 // This URL is used for direct browser-to-backend calls in mock/E2E mode only.
-// In production, Clerk-authenticated requests go through Next.js route handlers.
+// In production, Keycloak-authenticated requests go through the BFF gateway.
 // Since this module is only loaded when NEXT_PUBLIC_AUTH_PROVIDER=mock,
 // there is no security concern with the browser calling the backend directly.
 const BACKEND_URL =

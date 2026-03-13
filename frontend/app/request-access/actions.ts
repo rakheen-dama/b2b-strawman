@@ -2,7 +2,7 @@
 
 import { BLOCKED_EMAIL_DOMAINS } from "@/lib/access-request-data";
 
-const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "clerk";
+const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "keycloak";
 const GATEWAY_URL = process.env.GATEWAY_URL || "http://localhost:8443";
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
 const API_BASE = AUTH_MODE === "keycloak" ? GATEWAY_URL : BACKEND_URL;

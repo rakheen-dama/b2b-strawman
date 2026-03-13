@@ -39,7 +39,7 @@ const API_BASE = AUTH_MODE === "keycloak" ? GATEWAY_URL : BACKEND_URL;
 /**
  * Get auth headers and fetch options for the current auth mode.
  * In BFF mode: forwards SESSION cookie, adds CSRF token for mutations.
- * In Clerk/mock mode: adds Bearer token.
+ * In mock mode: adds Bearer token.
  */
 async function getAuthFetchOptions(method: string = "GET"): Promise<{
   headers: Record<string, string>;
@@ -64,7 +64,7 @@ async function getAuthFetchOptions(method: string = "GET"): Promise<{
     return { headers, credentials: "include" as RequestCredentials };
   }
 
-  // Clerk/mock mode: Bearer token
+  // Mock mode: Bearer token
   const token = await getAuthToken();
   return {
     headers: { Authorization: `Bearer ${token}` },
@@ -92,7 +92,7 @@ interface ApiRequestOptions {
 
 /**
  * Server-side API client for Spring Boot backend (or gateway in BFF mode).
- * In Clerk/mock mode: attaches JWT as Bearer token.
+ * In Mock mode: attaches JWT as Bearer token.
  * In keycloak (BFF) mode: forwards SESSION cookie, adds CSRF for mutations.
  * Use only in Server Components, Server Actions, or Route Handlers.
  */

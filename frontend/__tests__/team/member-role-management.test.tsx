@@ -18,14 +18,6 @@ vi.mock("motion/react", () => ({
   },
 }));
 
-// Mock Clerk
-vi.mock("@clerk/nextjs", () => ({
-  useOrganization: vi.fn().mockReturnValue({
-    memberships: { data: [], isLoaded: true },
-    isLoaded: true,
-  }),
-}));
-
 // Mock auth/client
 vi.mock("@/lib/auth/client", () => ({
   useOrgMembers: vi.fn().mockReturnValue({ members: [], isLoaded: true }),
@@ -118,9 +110,8 @@ describe("MemberList", () => {
     vi.clearAllMocks();
   });
 
-  it("renders empty state when no members are loaded (clerk mode)", async () => {
-    // MemberList reads AUTH_MODE at module level, defaulting to "clerk" in tests.
-    // The Clerk mock returns empty memberships, so we expect the empty state.
+  it("renders empty state when no members are loaded", async () => {
+    // MemberList reads AUTH_MODE at module level, defaulting to "keycloak" in tests.
     render(<MemberList isAdmin={true} roles={allRoles} slug="test-org" />);
 
     await waitFor(() => {
@@ -174,9 +165,8 @@ describe("MemberList", () => {
       },
     ]);
 
-    // Since AUTH_MODE is read at module load time and defaults to "clerk",
-    // we can't easily switch modes. Instead, we test the panel which
-    // shows override indicators.
+    // AUTH_MODE defaults to "keycloak" at module load time.
+    // We test the panel which shows override indicators.
 
     mockFetchMemberCapabilities.mockResolvedValue({
       memberId: "m4",

@@ -4,14 +4,6 @@ import { cleanup, render, screen } from "@testing-library/react";
 // Must mock server-only before importing components that use it
 vi.mock("server-only", () => ({}));
 
-// Mock Clerk auth
-vi.mock("@clerk/nextjs/server", () => ({
-  auth: vi.fn().mockResolvedValue({
-    getToken: vi.fn().mockResolvedValue("mock-token"),
-    orgRole: "org:admin",
-  }),
-}));
-
 // Mock capabilities API
 vi.mock("@/lib/api/capabilities", () => ({
   fetchMyCapabilities: vi.fn().mockResolvedValue({

@@ -14,7 +14,6 @@
     "test:e2e": "playwright test --config e2e/playwright.config.ts"
   },
   "dependencies": {
-    "@clerk/nextjs": "^6.37.2",
     "@tiptap/core": "^3.20.0",
     "@tiptap/extension-link": "^3.20.0",
     "@tiptap/extension-placeholder": "^3.20.0",

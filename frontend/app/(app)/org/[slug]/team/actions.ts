@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 import { getAuthContext, AUTH_MODE } from "@/lib/auth";
 import { api, ApiError } from "@/lib/api";
-import { headers } from "next/headers";
 import { classifyError } from "@/lib/error-handler";
 import { createMessages } from "@/lib/messages";
 
@@ -64,38 +63,6 @@ function mapBffInvitation(inv: BffInvitation): MappedInvitation {
     status: inv.status,
     createdAt: inv.createdAt,
   };
-}
-
-// --- Clerk actions (existing) ---
-
-async function inviteMemberClerk(
-  emailAddress: string,
-  role: "org:member" | "org:admin",
-): Promise<ActionResult> {
-  const { orgId, userId } = await getAuthContext();
-
-  const headersList = await headers();
-  const host = headersList.get("host") ?? "localhost:3000";
-  const protocol = headersList.get("x-forwarded-proto") ?? "http";
-  const redirectUrl = `${protocol}://${host}/sign-up`;
-
-  try {
-    const { clerkClient } = await import("@clerk/nextjs/server");
-    const client = await clerkClient();
-    await client.organizations.createOrganizationInvitation({
-      organizationId: orgId,
-      inviterUserId: userId,
-      emailAddress,
-      role,
-      redirectUrl,
-    });
-  } catch (err: unknown) {
-    const message =
-      err instanceof Error ? err.message : "Failed to send invitation.";
-    return { success: false, error: message };
-  }
-
-  return { success: true };
 }
 
 // --- BFF actions ---
@@ -184,12 +151,7 @@ export async function inviteMember(
     return { success: true };
   }
 
-  if (AUTH_MODE === "keycloak") {
-    return inviteMemberBff(emailAddress, role, orgRoleId, capabilityOverrides);
-  }
-
-  // Clerk path ignores orgRoleId and capabilityOverrides — Clerk manages roles separately
-  return inviteMemberClerk(emailAddress, role);
+  return inviteMemberBff(emailAddress, role, orgRoleId, capabilityOverrides);
 }
 
 export async function listInvitations(): Promise<MappedInvitation[]> {
@@ -197,12 +159,7 @@ export async function listInvitations(): Promise<MappedInvitation[]> {
     return [];
   }
 
-  if (AUTH_MODE === "keycloak") {
-    return listInvitationsBff();
-  }
-
-  // Clerk mode: invitations are fetched client-side via useOrganization()
-  return [];
+  return listInvitationsBff();
 }
 
 export async function revokeInvitation(id: string): Promise<ActionResult> {
@@ -219,21 +176,15 @@ export async function revokeInvitation(id: string): Promise<ActionResult> {
     return { success: true };
   }
 
-  if (AUTH_MODE === "keycloak") {
-    return revokeInvitationBff(id);
-  }
-
-  // Clerk mode: revoke is handled client-side via invitation.revoke()
-  return { success: false, error: "Use Clerk SDK for revoking invitations." };
+  return revokeInvitationBff(id);
 }
 
 export async function listMembers(): Promise<BffMember[]> {
-  if (AUTH_MODE === "keycloak") {
-    return listMembersBff();
+  if (AUTH_MODE === "mock") {
+    return [];
   }
 
-  // Clerk/mock modes handle member listing client-side
-  return [];
+  return listMembersBff();
 }
 
 // --- Member role assignment ---

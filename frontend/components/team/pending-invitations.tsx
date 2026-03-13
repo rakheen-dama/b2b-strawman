@@ -1,6 +1,5 @@
 "use client";
 
-import { useOrganization } from "@clerk/nextjs";
 import { Mail } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/empty-state";
@@ -12,7 +11,7 @@ import {
 } from "@/app/(app)/org/[slug]/team/actions";
 import type { MappedInvitation } from "@/app/(app)/org/[slug]/team/actions";
 
-const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "clerk";
+const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "keycloak";
 
 const ROLE_BADGES: Record<
   string,
@@ -22,103 +21,6 @@ const ROLE_BADGES: Record<
   "org:admin": { label: "Admin", variant: "admin" },
   "org:member": { label: "Member", variant: "member" },
 };
-
-function ClerkPendingInvitations({ isAdmin }: { isAdmin: boolean }) {
-  const { invitations, memberships, isLoaded } = useOrganization({
-    invitations: {
-      pageSize: 10,
-      keepPreviousData: true,
-    },
-    memberships: {
-      pageSize: 5,
-      keepPreviousData: true,
-    },
-  });
-  const [revokingId, setRevokingId] = useState<string | null>(null);
-
-  if (!isLoaded) {
-    return (
-      <div className="py-8 text-center text-sm text-slate-600 dark:text-slate-400">
-        Loading invitations...
-      </div>
-    );
-  }
-
-  if (!invitations?.data?.length) {
-    return (
-      <EmptyState
-        icon={Mail}
-        title="No pending invitations"
-        description="Invited members will appear here"
-      />
-    );
-  }
-
-  const handleRevoke = async (invitationId: string) => {
-    const invitation = invitations.data?.find(
-      (inv) => inv.id === invitationId,
-    );
-    if (!invitation) return;
-
-    setRevokingId(invitationId);
-    try {
-      await invitation.revoke();
-      await Promise.all([
-        invitations.revalidate?.(),
-        memberships?.revalidate?.(),
-      ]);
-    } catch (err) {
-      console.error("Failed to revoke invitation:", err);
-    } finally {
-      setRevokingId(null);
-    }
-  };
-
-  return (
-    <div className="space-y-4">
-      <InvitationTable isAdmin={isAdmin}>
-        {invitations.data.map((inv) => {
-          const roleInfo = ROLE_BADGES[inv.role] ?? {
-            label: inv.role,
-            variant: "member" as const,
-          };
-          return (
-            <InvitationRow
-              key={inv.id}
-              email={inv.emailAddress}
-              role={roleInfo}
-              createdAt={inv.createdAt ? formatDate(inv.createdAt) : "\u2014"}
-              isAdmin={isAdmin}
-              isRevoking={revokingId === inv.id}
-              onRevoke={() => handleRevoke(inv.id)}
-            />
-          );
-        })}
-      </InvitationTable>
-
-      {(invitations.hasPreviousPage || invitations.hasNextPage) && (
-        <div className="flex justify-center gap-4">
-          <button
-            disabled={
-              !invitations.hasPreviousPage || invitations.isFetching
-            }
-            onClick={() => invitations.fetchPrevious?.()}
-            className="text-sm font-medium text-slate-600 hover:text-slate-900 disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-600 dark:text-slate-400 dark:hover:text-slate-200"
-          >
-            Previous
-          </button>
-          <button
-            disabled={!invitations.hasNextPage || invitations.isFetching}
-            onClick={() => invitations.fetchNext?.()}
-            className="text-sm font-medium text-slate-600 hover:text-slate-900 disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-600 dark:text-slate-400 dark:hover:text-slate-200"
-          >
-            Next
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
 
 function KeycloakBffPendingInvitations({ isAdmin }: { isAdmin: boolean }) {
   const [invitations, setInvitations] = useState<MappedInvitation[]>([]);
@@ -279,7 +181,5 @@ function InvitationRow({
 
 export function PendingInvitations({ isAdmin }: { isAdmin: boolean }) {
   if (AUTH_MODE === "mock") return <MockPendingInvitations />;
-  if (AUTH_MODE === "keycloak")
-    return <KeycloakBffPendingInvitations isAdmin={isAdmin} />;
-  return <ClerkPendingInvitations isAdmin={isAdmin} />;
+  return <KeycloakBffPendingInvitations isAdmin={isAdmin} />;
 }

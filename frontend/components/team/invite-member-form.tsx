@@ -1,6 +1,5 @@
 "use client";
 
-import { useOrganization } from "@clerk/nextjs";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
@@ -29,7 +28,7 @@ import {
 } from "@/app/(app)/org/[slug]/team/actions";
 import type { OrgRole } from "@/lib/api/org-roles";
 
-const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "clerk";
+const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "keycloak";
 
 interface InviteMemberFormProps {
   maxMembers: number;
@@ -37,36 +36,6 @@ interface InviteMemberFormProps {
   planTier: string;
   orgSlug: string;
   roles: OrgRole[];
-}
-
-function ClerkInviteMemberForm({
-  maxMembers,
-  currentMembers,
-  planTier,
-  orgSlug,
-  roles,
-}: InviteMemberFormProps) {
-  const { organization, invitations } = useOrganization({
-    invitations: {
-      pageSize: 5,
-      keepPreviousData: true,
-    },
-  });
-
-  const pendingInvitations = organization?.pendingInvitationsCount ?? 0;
-
-  return (
-    <InviteFormUI
-      maxMembers={maxMembers}
-      currentMembers={currentMembers}
-      pendingInvitations={pendingInvitations}
-      planTier={planTier}
-      orgSlug={orgSlug}
-      roles={roles}
-      onInviteSent={() => invitations?.revalidate?.()}
-      ready={!!organization}
-    />
-  );
 }
 
 function MockInviteMemberForm({
@@ -433,7 +402,5 @@ function InviteFormUI({
 
 export function InviteMemberForm(props: InviteMemberFormProps) {
   if (AUTH_MODE === "mock") return <MockInviteMemberForm {...props} />;
-  if (AUTH_MODE === "keycloak")
-    return <KeycloakBffInviteMemberForm {...props} />;
-  return <ClerkInviteMemberForm {...props} />;
+  return <KeycloakBffInviteMemberForm {...props} />;
 }

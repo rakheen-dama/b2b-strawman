@@ -1,10 +1,9 @@
 "use client";
 
-import { useUser } from "@clerk/nextjs";
 import { useAuthUser } from "@/lib/auth/client";
 import { useBffUser, getInitials as getBffInitials } from "@/components/auth/user-menu-bff";
 
-const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "clerk";
+const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "keycloak";
 
 function getInitials(
   firstName: string | null,
@@ -16,23 +15,6 @@ function getInitials(
   const combined = (fi + li).toUpperCase();
   if (combined) return combined;
   return email?.charAt(0).toUpperCase() ?? "?";
-}
-
-function ClerkUserFooter() {
-  const { user } = useUser();
-  const initials = getInitials(
-    user?.firstName ?? null,
-    user?.lastName ?? null,
-    user?.primaryEmailAddress?.emailAddress ?? null,
-  );
-
-  return (
-    <UserFooterUI
-      initials={initials}
-      name={user?.fullName ?? "User"}
-      email={user?.primaryEmailAddress?.emailAddress ?? ""}
-    />
-  );
 }
 
 function MockUserFooter() {
@@ -86,11 +68,10 @@ function KeycloakUserFooter() {
 }
 
 /**
- * Auth-aware sidebar user footer — dispatches between Clerk, mock,
+ * Auth-aware sidebar user footer — dispatches between mock
  * and Keycloak based on build-time AUTH_MODE selection.
  */
 export function SidebarUserFooter() {
   if (AUTH_MODE === "mock") return <MockUserFooter />;
-  if (AUTH_MODE === "keycloak") return <KeycloakUserFooter />;
-  return <ClerkUserFooter />;
+  return <KeycloakUserFooter />;
 }

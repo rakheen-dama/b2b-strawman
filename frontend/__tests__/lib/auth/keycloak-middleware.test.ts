@@ -1,24 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextRequest, NextResponse } from "next/server";
 
-// Mock @clerk/nextjs/server before any imports that use it
-const mockClerkMiddleware = vi.fn(() => vi.fn());
-const mockCreateRouteMatcher = vi.fn((routes: string[]) => {
-  // Simple public route matcher for testing
-  return (request: NextRequest) => {
-    const pathname = request.nextUrl.pathname;
-    return routes.some((route) => {
-      const pattern = route.replace("(.*)", ".*");
-      return new RegExp(`^${pattern}$`).test(pathname);
-    });
-  };
-});
-
-vi.mock("@clerk/nextjs/server", () => ({
-  clerkMiddleware: mockClerkMiddleware,
-  createRouteMatcher: mockCreateRouteMatcher,
-}));
-
 function createRequest(
   pathname: string,
   sessionCookie?: string,

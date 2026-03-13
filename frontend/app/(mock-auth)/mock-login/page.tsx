@@ -4,7 +4,7 @@ import { MockLoginForm } from "@/components/auth/mock-login-form";
 const MOCK_IDP_URL = process.env.MOCK_IDP_URL || "http://localhost:8090";
 
 export default function MockLoginPage() {
-  const authMode = process.env.NEXT_PUBLIC_AUTH_MODE || "clerk";
+  const authMode = process.env.NEXT_PUBLIC_AUTH_MODE || "keycloak";
   if (authMode !== "mock") {
     redirect("/sign-in");
   }

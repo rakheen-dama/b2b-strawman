@@ -2,8 +2,8 @@ import Link from "next/link";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "clerk";
-const signUpHref = AUTH_MODE === "keycloak" ? "/request-access" : "/sign-up";
+const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "keycloak";
+const signUpHref = AUTH_MODE === "mock" ? "/sign-up" : "/request-access";
 
 const plans = [
   {

@@ -1,13 +1,10 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import type { NextMiddleware, NextRequest } from "next/server";
 
-const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "clerk";
+const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "keycloak";
 const GATEWAY_URL = process.env.NEXT_PUBLIC_GATEWAY_URL || "http://localhost:8443";
 
-// createRouteMatcher is a pure regex-like function with no Clerk runtime dependency.
-// Both Clerk and mock paths need the same route matching, so this coupling is acceptable.
-const isPublicRoute = createRouteMatcher([
+const PUBLIC_ROUTES = [
   "/",
   "/sign-in(.*)",
   "/sign-up(.*)",
@@ -15,47 +12,25 @@ const isPublicRoute = createRouteMatcher([
   "/portal(.*)",
   "/mock-login(.*)",
   "/request-access(.*)",
-]);
+];
+
+function isPublicRoute(request: NextRequest): boolean {
+  const pathname = request.nextUrl.pathname;
+  return PUBLIC_ROUTES.some((route) => {
+    const pattern = route.replace("(.*)", ".*");
+    return new RegExp(`^${pattern}$`).test(pathname);
+  });
+}
 
 /**
  * Auth middleware factory.
- * Returns Clerk middleware for production, mock middleware for E2E tests,
- * or Keycloak BFF middleware for gateway-based auth.
+ * Returns Keycloak BFF middleware for production or mock middleware for E2E tests.
  */
 export function createAuthMiddleware(): NextMiddleware {
   if (AUTH_MODE === "mock") {
     return createMockMiddleware();
   }
-  if (AUTH_MODE === "keycloak") {
-    return createKeycloakMiddleware();
-  }
-  return createClerkMiddleware();
-}
-
-function createClerkMiddleware(): NextMiddleware {
-  return clerkMiddleware(
-    async (auth, request) => {
-      if (!isPublicRoute(request)) {
-        await auth.protect();
-      }
-
-      // Redirect /dashboard to org-scoped dashboard
-      if (request.nextUrl.pathname === "/dashboard") {
-        const { orgSlug } = await auth();
-        if (orgSlug) {
-          return NextResponse.redirect(
-            new URL(`/org/${orgSlug}/dashboard`, request.url),
-          );
-        }
-        return NextResponse.redirect(new URL("/create-org", request.url));
-      }
-    },
-    {
-      organizationSyncOptions: {
-        organizationPatterns: ["/org/:slug", "/org/:slug/(.*)"],
-      },
-    },
-  );
+  return createKeycloakMiddleware();
 }
 
 function decodeMockJwtPayload(token: string): Record<string, unknown> | null {
@@ -110,7 +85,7 @@ function createMockMiddleware(): NextMiddleware {
       return NextResponse.redirect(loginUrl);
     }
 
-    // Redirect /dashboard to org-scoped dashboard (mirrors Clerk middleware)
+    // Redirect /dashboard to org-scoped dashboard
     if (pathname === "/dashboard") {
       const payload = decodeMockJwtPayload(token);
       const org = payload?.o as { slg?: string } | undefined;

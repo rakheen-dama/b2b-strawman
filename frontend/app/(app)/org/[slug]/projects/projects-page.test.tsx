@@ -6,11 +6,28 @@ import type { Project } from "@/lib/types";
 // Mock server-only before any imports that pull it in
 vi.mock("server-only", () => ({}));
 
-// Mock Clerk auth
-const mockAuth = vi.fn();
-vi.mock("@clerk/nextjs/server", () => ({
-  auth: () => mockAuth(),
+// Mock auth — getAuthContext() returns context, hasPlan() returns boolean
+const mockGetAuthContext = vi.fn();
+const mockHasPlan = vi.fn();
+vi.mock("@/lib/auth", () => ({
+  getAuthContext: () => mockGetAuthContext(),
+  hasPlan: (plan: string) => mockHasPlan(plan),
+  AUTH_MODE: "mock",
 }));
+
+// Compatibility shim: old tests used `mockAuth` with `has` prop
+const mockAuth = {
+  mockResolvedValue: (val: { orgId: string; orgSlug: string; userId: string; orgRole: string; has: (v?: boolean) => boolean }) => {
+    mockGetAuthContext.mockResolvedValue({
+      orgId: val.orgId,
+      orgSlug: val.orgSlug,
+      userId: val.userId,
+      orgRole: val.orgRole,
+      groups: [],
+    });
+    mockHasPlan.mockResolvedValue(val.has?.() ?? false);
+  },
+};
 
 // Mock API client
 const mockApiGet = vi.fn();

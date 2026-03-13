@@ -2,10 +2,10 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "clerk";
+const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "keycloak";
 const GATEWAY_URL = process.env.NEXT_PUBLIC_GATEWAY_URL || "http://localhost:8443";
-const signUpHref = AUTH_MODE === "keycloak" ? "/request-access" : "/sign-up";
-const signInHref = AUTH_MODE === "keycloak" ? `${GATEWAY_URL}/oauth2/authorization/keycloak` : "/sign-in";
+const signUpHref = AUTH_MODE === "mock" ? "/sign-up" : "/request-access";
+const signInHref = AUTH_MODE === "mock" ? "/sign-in" : `${GATEWAY_URL}/oauth2/authorization/keycloak`;
 
 function AnnouncementBadge() {
   return (

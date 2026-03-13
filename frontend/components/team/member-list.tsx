@@ -1,19 +1,17 @@
 "use client";
 
-import { useOrganization } from "@clerk/nextjs";
 import { Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { AvatarCircle } from "@/components/ui/avatar-circle";
 import { EmptyState } from "@/components/empty-state";
 import { useOrgMembers } from "@/lib/auth/client";
-import { formatDate } from "@/lib/format";
 import { useState, useEffect } from "react";
 import { listMembers } from "@/app/(app)/org/[slug]/team/actions";
 import type { BffMember } from "@/app/(app)/org/[slug]/team/actions";
 import { MemberDetailPanel } from "@/components/team/member-detail-panel";
 import type { OrgRole } from "@/lib/api/org-roles";
 
-const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "clerk";
+const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "keycloak";
 
 const ROLE_BADGES: Record<
   string,
@@ -45,6 +43,7 @@ interface MemberRowData {
   capabilityOverridesCount?: number;
 }
 
+<<<<<<< HEAD
 function ClerkMemberList({
   isAdmin,
   onRowClick,
@@ -114,6 +113,8 @@ function ClerkMemberList({
   );
 }
 
+=======
+>>>>>>> worktree-agent-ab42dd18
 function MockMemberList({
   isAdmin,
   onRowClick,
@@ -324,10 +325,8 @@ export function MemberList({ isAdmin, roles, slug }: MemberListProps) {
     <>
       {AUTH_MODE === "mock" ? (
         <MockMemberList {...innerProps} />
-      ) : AUTH_MODE === "keycloak" ? (
-        <KeycloakBffMemberList {...innerProps} />
       ) : (
-        <ClerkMemberList {...innerProps} />
+        <KeycloakBffMemberList {...innerProps} />
       )}
 
       {isAdmin && (

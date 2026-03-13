@@ -27,14 +27,6 @@ vi.mock("@/app/(app)/org/[slug]/team/actions", () => ({
   listInvitations: vi.fn().mockResolvedValue([]),
 }));
 
-// Mock @clerk/nextjs since the module is imported even if mock path is used
-vi.mock("@clerk/nextjs", () => ({
-  useOrganization: vi.fn().mockReturnValue({
-    organization: { pendingInvitationsCount: 0 },
-    invitations: { revalidate: vi.fn() },
-  }),
-}));
-
 // Mock next/link
 vi.mock("next/link", () => ({
   default: ({

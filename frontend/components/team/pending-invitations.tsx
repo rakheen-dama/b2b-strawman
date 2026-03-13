@@ -1,6 +1,5 @@
 "use client";
 
-import { useOrganization } from "@clerk/nextjs";
 import { Mail } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/empty-state";
@@ -12,7 +11,7 @@ import {
 } from "@/app/(app)/org/[slug]/team/actions";
 import type { MappedInvitation } from "@/app/(app)/org/[slug]/team/actions";
 
-const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "clerk";
+const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "keycloak";
 
 const ROLE_BADGES: Record<
   string,
@@ -23,6 +22,7 @@ const ROLE_BADGES: Record<
   "org:member": { label: "Member", variant: "member" },
 };
 
+<<<<<<< HEAD
 function ClerkPendingInvitations({ isAdmin }: { isAdmin: boolean }) {
   const { invitations, memberships, isLoaded } = useOrganization({
     invitations: {
@@ -120,6 +120,8 @@ function ClerkPendingInvitations({ isAdmin }: { isAdmin: boolean }) {
   );
 }
 
+=======
+>>>>>>> worktree-agent-ab42dd18
 function KeycloakBffPendingInvitations({ isAdmin }: { isAdmin: boolean }) {
   const [invitations, setInvitations] = useState<MappedInvitation[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -279,7 +281,5 @@ function InvitationRow({
 
 export function PendingInvitations({ isAdmin }: { isAdmin: boolean }) {
   if (AUTH_MODE === "mock") return <MockPendingInvitations />;
-  if (AUTH_MODE === "keycloak")
-    return <KeycloakBffPendingInvitations isAdmin={isAdmin} />;
-  return <ClerkPendingInvitations isAdmin={isAdmin} />;
+  return <KeycloakBffPendingInvitations isAdmin={isAdmin} />;
 }

@@ -46,7 +46,7 @@ describe("TimeBreakdown", () => {
     cleanup();
   });
 
-  it("renders bars and labels for project breakdown", () => {
+  it("renders bars and labels for project breakdown", async () => {
     render(<TimeBreakdown data={mockBreakdown} />);
 
     expect(screen.getByText("Time Breakdown")).toBeInTheDocument();
@@ -56,7 +56,8 @@ describe("TimeBreakdown", () => {
     expect(screen.getByText("20.0h (52%)")).toBeInTheDocument();
     expect(screen.getByText("12.5h (33%)")).toBeInTheDocument();
     expect(screen.getByText("6.0h (16%)")).toBeInTheDocument();
-    expect(screen.getByTestId("responsive-container")).toBeInTheDocument();
+    // HorizontalBarChart is dynamically imported — wait for it to load
+    expect(await screen.findByTestId("responsive-container")).toBeInTheDocument();
   });
 
   it("renders empty state when data is empty", () => {

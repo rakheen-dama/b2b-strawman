@@ -1,7 +1,16 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
-import { HorizontalBarChart } from "@/components/dashboard/horizontal-bar-chart";
+import dynamic from "next/dynamic";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const HorizontalBarChart = dynamic(
+  () =>
+    import("@/components/dashboard/horizontal-bar-chart").then(
+      (mod) => mod.HorizontalBarChart,
+    ),
+  { loading: () => <Skeleton className="h-48 w-full" />, ssr: false },
+);
 import type { PersonalProjectBreakdown } from "@/lib/dashboard-types";
 
 const PROJECT_COLORS = [

@@ -1,7 +1,15 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect } from "react";
-import { CommandPaletteDialog } from "@/components/command-palette-dialog";
+import dynamic from "next/dynamic";
+
+const CommandPaletteDialog = dynamic(
+  () =>
+    import("@/components/command-palette-dialog").then(
+      (mod) => mod.CommandPaletteDialog,
+    ),
+  { ssr: false },
+);
 
 interface CommandPaletteContextValue {
   open: boolean;

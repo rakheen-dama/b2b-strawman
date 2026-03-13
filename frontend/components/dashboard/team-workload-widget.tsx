@@ -8,7 +8,16 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { EmptyState } from "@/components/empty-state";
-import { HorizontalBarChart } from "@/components/dashboard/horizontal-bar-chart";
+import dynamic from "next/dynamic";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const HorizontalBarChart = dynamic(
+  () =>
+    import("@/components/dashboard/horizontal-bar-chart").then(
+      (mod) => mod.HorizontalBarChart,
+    ),
+  { loading: () => <Skeleton className="h-48 w-full" />, ssr: false },
+);
 import type { TeamWorkloadEntry } from "@/lib/dashboard-types";
 
 interface TeamWorkloadWidgetProps {

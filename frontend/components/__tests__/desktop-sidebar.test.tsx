@@ -117,7 +117,7 @@ describe("DesktopSidebar", () => {
     mockUsePathname.mockReturnValue("/org/test-org/other");
     renderSidebar();
     await user.click(screen.getByText("Search..."));
-    // CommandPaletteDialog renders the dialog — verify it opened by checking for search input
-    expect(screen.getByPlaceholderText("Search pages, settings...")).toBeInTheDocument();
+    // CommandPaletteDialog is dynamically imported — wait for it to load
+    expect(await screen.findByPlaceholderText("Search pages, settings...")).toBeInTheDocument();
   });
 });

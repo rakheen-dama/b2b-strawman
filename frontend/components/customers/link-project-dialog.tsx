@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import useSWR from "swr";
 import {
   Dialog,
   DialogContent,
@@ -37,25 +38,20 @@ export function LinkProjectDialog({
   children,
 }: LinkProjectDialogProps) {
   const [open, setOpen] = useState(false);
-  const [allProjects, setAllProjects] = useState<Project[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [isLinking, setIsLinking] = useState(false);
-  const [fetchError, setFetchError] = useState<string | null>(null);
   const [linkError, setLinkError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!open) return;
-
-    setIsLoading(true);
-    setFetchError(null);
-
-    fetchProjects()
-      .then(setAllProjects)
-      .catch(() => setFetchError("Failed to load projects."))
-      .finally(() => setIsLoading(false));
-  }, [open]);
+  const {
+    data: allProjects,
+    error: fetchError,
+    isLoading,
+  } = useSWR<Project[]>(
+    open ? "link-project-list" : null,
+    () => fetchProjects()
+  );
 
   const availableProjects = useMemo(() => {
+    if (!allProjects) return [];
     const linkedIds = new Set(existingProjects.map((p) => p.id));
     return allProjects.filter((p) => !linkedIds.has(p.id));
   }, [allProjects, existingProjects]);
@@ -81,9 +77,7 @@ export function LinkProjectDialog({
   function handleOpenChange(newOpen: boolean) {
     if (isLinking) return;
     if (newOpen) {
-      setFetchError(null);
       setLinkError(null);
-      setAllProjects([]);
     }
     setOpen(newOpen);
   }
@@ -107,10 +101,10 @@ export function LinkProjectDialog({
                 Loading projects...
               </div>
             ) : fetchError ? (
-              <div className="py-6 text-center text-sm text-destructive">{fetchError}</div>
+              <div className="py-6 text-center text-sm text-destructive">Failed to load projects.</div>
             ) : availableProjects.length === 0 ? (
               <CommandEmpty>
-                {allProjects.length === 0
+                {!allProjects || allProjects.length === 0
                   ? "No projects found."
                   : "All projects are already linked to this customer."}
               </CommandEmpty>

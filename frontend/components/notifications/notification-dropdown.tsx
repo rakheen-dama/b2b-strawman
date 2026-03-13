@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
+import useSWR from "swr";
 import Link from "next/link";
 import { CheckCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -23,35 +24,31 @@ export function NotificationDropdown({
   onClose,
   onCountChange,
 }: NotificationDropdownProps) {
-  const [notifications, setNotifications] = useState<Notification[] | null>(
-    null
-  );
-  const [error, setError] = useState<string | null>(null);
-  const [isMarkingAll, setIsMarkingAll] = useState(false);
-
-  const loadNotifications = useCallback(async () => {
-    try {
+  const {
+    data: notifications,
+    error,
+    isLoading,
+    mutate,
+  } = useSWR<Notification[]>(
+    "notification-dropdown-list",
+    async () => {
       const data = await fetchNotifications(false, 0);
-      setNotifications(data.content);
-      setError(null);
-    } catch {
-      setNotifications([]);
-      setError("Failed to load notifications.");
-    }
-  }, []);
+      return data.content;
+    },
+    { dedupingInterval: 2000 }
+  );
 
-  useEffect(() => {
-    loadNotifications();
-  }, [loadNotifications]);
+  const [isMarkingAll, setIsMarkingAll] = useState(false);
 
   async function handleMarkAllRead() {
     setIsMarkingAll(true);
     try {
       const result = await markAllNotificationsRead();
       if (result.success) {
-        // Update local state to mark all as read
-        setNotifications(
-          (prev) => prev?.map((n) => ({ ...n, isRead: true })) ?? null
+        // Optimistically update local cache to mark all as read
+        mutate(
+          (prev) => prev?.map((n) => ({ ...n, isRead: true })),
+          { revalidate: false }
         );
         onCountChange();
       }
@@ -62,10 +59,9 @@ export function NotificationDropdown({
 
   function handleItemRead() {
     onCountChange();
-    loadNotifications();
+    mutate();
   }
 
-  const isLoading = notifications === null;
   const hasUnread = notifications?.some((n) => !n.isRead) ?? false;
 
   return (
@@ -99,10 +95,10 @@ export function NotificationDropdown({
         )}
 
         {error && (
-          <p className="px-3 py-4 text-center text-sm text-red-600">{error}</p>
+          <p className="px-3 py-4 text-center text-sm text-red-600">Failed to load notifications.</p>
         )}
 
-        {!isLoading && !error && notifications.length === 0 && (
+        {!isLoading && !error && notifications && notifications.length === 0 && (
           <p className="px-3 py-8 text-center text-sm text-slate-500 dark:text-slate-400">
             No notifications
           </p>
@@ -110,7 +106,7 @@ export function NotificationDropdown({
 
         {!isLoading &&
           !error &&
-          notifications.map((notification) => (
+          notifications?.map((notification) => (
             <NotificationItem
               key={notification.id}
               notification={notification}

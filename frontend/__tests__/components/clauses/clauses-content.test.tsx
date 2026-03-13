@@ -168,8 +168,8 @@ describe("ClausesContent", () => {
     const expandButton = screen.getByLabelText("Expand clause");
     await user.click(expandButton);
 
-    // Editor content should now be visible
-    expect(screen.getByTestId("editor-content")).toBeInTheDocument();
+    // DocumentEditor is dynamically imported — wait for it to load
+    expect(await screen.findByTestId("editor-content")).toBeInTheDocument();
   });
 
   it("shows source badges correctly", () => {

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import useSWR from "swr";
 import {
   Dialog,
   DialogContent,
@@ -46,25 +47,20 @@ export function AddMemberDialog({
   children,
 }: AddMemberDialogProps) {
   const [open, setOpen] = useState(false);
-  const [orgMembers, setOrgMembers] = useState<OrgMember[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
-  const [fetchError, setFetchError] = useState<string | null>(null);
   const [addError, setAddError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!open) return;
-
-    setIsLoading(true);
-    setFetchError(null);
-
-    fetchOrgMembers()
-      .then(setOrgMembers)
-      .catch(() => setFetchError("Failed to load organization members."))
-      .finally(() => setIsLoading(false));
-  }, [open]);
+  const {
+    data: orgMembers,
+    error: fetchError,
+    isLoading,
+  } = useSWR<OrgMember[]>(
+    open ? "add-member-org-members" : null,
+    () => fetchOrgMembers()
+  );
 
   const availableMembers = useMemo(() => {
+    if (!orgMembers) return [];
     const existingIds = new Set(existingMembers.map((m) => m.memberId));
     return orgMembers.filter((m) => !existingIds.has(m.id));
   }, [orgMembers, existingMembers]);
@@ -90,9 +86,7 @@ export function AddMemberDialog({
   function handleOpenChange(newOpen: boolean) {
     if (isAdding) return;
     if (newOpen) {
-      setFetchError(null);
       setAddError(null);
-      setOrgMembers([]);
     }
     setOpen(newOpen);
   }
@@ -116,10 +110,10 @@ export function AddMemberDialog({
                 Loading members...
               </div>
             ) : fetchError ? (
-              <div className="text-destructive py-6 text-center text-sm">{fetchError}</div>
+              <div className="text-destructive py-6 text-center text-sm">Failed to load organization members.</div>
             ) : availableMembers.length === 0 ? (
               <CommandEmpty>
-                {orgMembers.length === 0
+                {!orgMembers || orgMembers.length === 0
                   ? "No organization members found."
                   : "All organization members are already on this project."}
               </CommandEmpty>

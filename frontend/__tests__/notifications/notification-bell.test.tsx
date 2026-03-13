@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { NotificationBell } from "@/components/notifications/notification-bell";
+import { SWRTestProvider } from "@/lib/swr/test-utils";
 
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
@@ -43,7 +44,7 @@ describe("NotificationBell", () => {
   it("renders bell icon without badge when unread count is 0", async () => {
     mockFetchUnreadCount.mockResolvedValue({ count: 0 });
 
-    render(<NotificationBell orgSlug="acme" />);
+    render(<SWRTestProvider><NotificationBell orgSlug="acme" /></SWRTestProvider>);
 
     const button = screen.getByRole("button", { name: /notifications/i });
     expect(button).toBeInTheDocument();
@@ -60,7 +61,7 @@ describe("NotificationBell", () => {
   it("renders badge with count when unread count is greater than 0", async () => {
     mockFetchUnreadCount.mockResolvedValue({ count: 5 });
 
-    render(<NotificationBell orgSlug="acme" />);
+    render(<SWRTestProvider><NotificationBell orgSlug="acme" /></SWRTestProvider>);
 
     await waitFor(() => {
       expect(screen.getByText("5")).toBeInTheDocument();
@@ -70,7 +71,7 @@ describe("NotificationBell", () => {
   it("renders 99+ when unread count exceeds 99", async () => {
     mockFetchUnreadCount.mockResolvedValue({ count: 150 });
 
-    render(<NotificationBell orgSlug="acme" />);
+    render(<SWRTestProvider><NotificationBell orgSlug="acme" /></SWRTestProvider>);
 
     await waitFor(() => {
       expect(screen.getByText("99+")).toBeInTheDocument();
@@ -80,7 +81,7 @@ describe("NotificationBell", () => {
   it("opens dropdown when bell is clicked", async () => {
     mockFetchUnreadCount.mockResolvedValue({ count: 3 });
 
-    render(<NotificationBell orgSlug="acme" />);
+    render(<SWRTestProvider><NotificationBell orgSlug="acme" /></SWRTestProvider>);
 
     await waitFor(() => {
       expect(screen.getByText("3")).toBeInTheDocument();

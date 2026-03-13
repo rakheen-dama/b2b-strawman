@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { SWRTestProvider } from "@/lib/swr/test-utils";
 import { LinkCustomerDialog } from "@/components/projects/link-customer-dialog";
 import type { Customer } from "@/lib/types";
 
@@ -69,13 +70,15 @@ describe("LinkCustomerDialog", () => {
     const user = userEvent.setup();
 
     render(
-      <LinkCustomerDialog
-        slug="acme"
-        projectId="p1"
-        existingCustomers={existingCustomers}
-      >
-        <button>Open Link Customer Dialog</button>
-      </LinkCustomerDialog>,
+      <SWRTestProvider>
+        <LinkCustomerDialog
+          slug="acme"
+          projectId="p1"
+          existingCustomers={existingCustomers}
+        >
+          <button>Open Link Customer Dialog</button>
+        </LinkCustomerDialog>
+      </SWRTestProvider>,
     );
 
     await user.click(screen.getByText("Open Link Customer Dialog"));
@@ -98,13 +101,15 @@ describe("LinkCustomerDialog", () => {
     const user = userEvent.setup();
 
     render(
-      <LinkCustomerDialog
-        slug="acme"
-        projectId="p1"
-        existingCustomers={existingCustomers}
-      >
-        <button>Open Link Customer Dialog</button>
-      </LinkCustomerDialog>,
+      <SWRTestProvider>
+        <LinkCustomerDialog
+          slug="acme"
+          projectId="p1"
+          existingCustomers={existingCustomers}
+        >
+          <button>Open Link Customer Dialog</button>
+        </LinkCustomerDialog>
+      </SWRTestProvider>,
     );
 
     await user.click(screen.getByText("Open Link Customer Dialog"));
@@ -121,13 +126,15 @@ describe("LinkCustomerDialog", () => {
     const user = userEvent.setup();
 
     render(
-      <LinkCustomerDialog
-        slug="acme"
-        projectId="p1"
-        existingCustomers={existingCustomers}
-      >
-        <button>Open Link Customer Dialog</button>
-      </LinkCustomerDialog>,
+      <SWRTestProvider>
+        <LinkCustomerDialog
+          slug="acme"
+          projectId="p1"
+          existingCustomers={existingCustomers}
+        >
+          <button>Open Link Customer Dialog</button>
+        </LinkCustomerDialog>
+      </SWRTestProvider>,
     );
 
     await user.click(screen.getByText("Open Link Customer Dialog"));

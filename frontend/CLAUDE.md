@@ -286,6 +286,40 @@ Route: `app/api/webhooks/clerk/route.ts`
 - Billing data: `GET /api/billing/subscription` returns plan, limits, member count
 - S3 uploads: browser uploads directly via presigned URL from backend
 
+### Client Data Fetching (SWR)
+
+For client components that need to fetch data (dialogs, sheets, polling), use [SWR](https://swr.vercel.app/) instead of manual `useEffect` + `useState` patterns. SWR provides caching, deduplication, revalidation on focus, and error retry out of the box.
+
+**When to use SWR vs Server Components:**
+- **Server Components** (default): Page-level data, initial renders, SEO-critical content. Data fetched on the server via `lib/api.ts`.
+- **SWR**: Client-side data needs — dialogs that fetch on open, polling (notifications), data that refreshes without page navigation, sheets/panels that load data lazily.
+
+**Pattern — wrapping server actions with SWR:**
+```tsx
+import useSWR from "swr";
+import { fetchSomeData } from "@/lib/actions/some-action";
+
+// Conditional fetch (dialog): pass null key when closed to pause fetching
+const { data, error, isLoading, mutate } = useSWR(
+  open ? "unique-cache-key" : null,
+  () => fetchSomeData()
+);
+
+// Polling: use refreshInterval
+const { data } = useSWR("unread-count", () => fetchUnreadCount(), {
+  refreshInterval: 30_000,
+});
+
+// After a mutation, call mutate() to revalidate cached data
+await mutate();
+```
+
+**Key conventions:**
+- SWR fetcher functions call server actions (not direct API/fetch calls) — this preserves the server-side auth boundary
+- Use `null` key to pause fetching (e.g., when a dialog is closed)
+- Use unique, descriptive cache keys (e.g., `"comments-TASK-{id}"`, `"notification-unread-count"`)
+- Utilities in `lib/swr/fetcher.ts`: `defaultSWROptions`, `conditionalKey()`
+
 ### Paginated Responses (Spring Data VIA_DTO)
 
 Backend paginated endpoints return this shape (not flat):

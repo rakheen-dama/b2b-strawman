@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import useSWR from "swr";
 import { MessageSquare } from "lucide-react";
 import { fetchComments } from "@/lib/actions/comments";
 import type { Comment } from "@/lib/actions/comments";
@@ -27,33 +27,19 @@ export function CommentSectionClient({
   canManageVisibility,
 }: CommentSectionClientProps) {
   const { t } = createMessages("empty-states");
-  const [comments, setComments] = useState<Comment[] | null>(null);
-  const [refreshKey, setRefreshKey] = useState(0);
-  const [error, setError] = useState<string | null>(null);
 
-  const refresh = useCallback(() => setRefreshKey((k) => k + 1), []);
+  const {
+    data: comments,
+    error,
+    isLoading,
+    mutate,
+  } = useSWR<Comment[]>(
+    `comments-${entityType}-${entityId}`,
+    () => fetchComments(projectId, entityType, entityId),
+    { dedupingInterval: 2000 }
+  );
 
-  useEffect(() => {
-    let cancelled = false;
-    fetchComments(projectId, entityType, entityId)
-      .then((data) => {
-        if (!cancelled) {
-          setComments(data);
-          setError(null);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setComments([]);
-          setError("Failed to load comments.");
-        }
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [projectId, entityType, entityId, refreshKey]);
-
-  const isLoading = comments === null;
+  const refresh = () => mutate();
 
   if (isLoading) {
     return (
@@ -63,15 +49,17 @@ export function CommentSectionClient({
     );
   }
 
+  const commentList = comments ?? [];
+
   return (
     <div className="space-y-4">
       <h4 className="text-sm font-medium text-slate-900 dark:text-slate-100">
         Comments
       </h4>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-red-600">Failed to load comments.</p>}
 
-      {comments.length === 0 && !error ? (
+      {commentList.length === 0 && !error ? (
         <EmptyState
           icon={MessageSquare}
           title={t("comments.section.heading")}
@@ -79,7 +67,7 @@ export function CommentSectionClient({
         />
       ) : (
         <div className="space-y-3">
-          {comments.map((comment) => (
+          {commentList.map((comment) => (
             <CommentItem
               key={comment.id}
               comment={comment}

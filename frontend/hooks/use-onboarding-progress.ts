@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback } from "react";
+import useSWR from "swr";
 import {
   fetchOnboardingProgress,
   dismissOnboarding,
@@ -18,40 +19,22 @@ export interface OnboardingProgress {
 }
 
 export function useOnboardingProgress() {
-  const [data, setData] = useState<OnboardingProgressResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const mountedRef = useRef(true);
-
-  const refetch = useCallback(async () => {
-    try {
-      const result = await fetchOnboardingProgress();
-      if (mountedRef.current) {
-        setData(result);
-      }
-    } catch {
-      // Silently ignore — card stays hidden if fetch fails
-    } finally {
-      if (mountedRef.current) {
-        setLoading(false);
-      }
+  const { data, isLoading, mutate } = useSWR<OnboardingProgressResponse>(
+    "onboarding-progress",
+    () => fetchOnboardingProgress(),
+    {
+      dedupingInterval: 5000,
+      errorRetryCount: 1,
     }
-  }, []);
-
-  useEffect(() => {
-    mountedRef.current = true;
-    refetch();
-    return () => {
-      mountedRef.current = false;
-    };
-  }, [refetch]);
+  );
 
   const dismiss = useCallback(async () => {
     const result = await dismissOnboarding();
     if (result.success) {
-      await refetch();
+      await mutate();
     }
     return result;
-  }, [refetch]);
+  }, [mutate]);
 
   const percentComplete =
     data && data.totalCount > 0
@@ -66,7 +49,7 @@ export function useOnboardingProgress() {
     percentComplete,
     allComplete,
     dismissed: data?.dismissed ?? false,
-    loading,
+    loading: isLoading,
     dismiss,
   };
 }

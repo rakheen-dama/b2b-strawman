@@ -27,7 +27,7 @@ public class MemberSyncService {
   private final MemberRepository memberRepository;
   private final OrgSchemaMappingRepository mappingRepository;
   private final OrganizationRepository organizationRepository;
-  private final MemberFilter memberFilter;
+  private final MemberCacheService memberCacheService;
   private final TransactionTemplate txTemplate;
   private final AuditService auditService;
   private final OrgRoleRepository orgRoleRepository;
@@ -36,14 +36,14 @@ public class MemberSyncService {
       MemberRepository memberRepository,
       OrgSchemaMappingRepository mappingRepository,
       OrganizationRepository organizationRepository,
-      MemberFilter memberFilter,
+      MemberCacheService memberCacheService,
       PlatformTransactionManager txManager,
       AuditService auditService,
       OrgRoleRepository orgRoleRepository) {
     this.memberRepository = memberRepository;
     this.mappingRepository = mappingRepository;
     this.organizationRepository = organizationRepository;
-    this.memberFilter = memberFilter;
+    this.memberCacheService = memberCacheService;
     this.txTemplate = new TransactionTemplate(txManager);
     this.txTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     this.auditService = auditService;
@@ -133,7 +133,7 @@ public class MemberSyncService {
 
                           return new SyncResult(member.getId(), true);
                         }));
-    memberFilter.evictFromCache(schemaName, clerkUserId);
+    memberCacheService.evict(schemaName, clerkUserId);
     return result;
   }
 
@@ -167,7 +167,7 @@ public class MemberSyncService {
                             .details(Map.of("clerk_user_id", clerkUserId))
                             .build());
                   });
-              memberFilter.evictFromCache(schemaName, clerkUserId);
+              memberCacheService.evict(schemaName, clerkUserId);
               return null;
             });
   }

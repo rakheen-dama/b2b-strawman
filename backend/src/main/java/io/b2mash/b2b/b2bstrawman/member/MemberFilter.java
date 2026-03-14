@@ -1,7 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.member;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ScopedFilterChain;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
@@ -12,10 +10,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.time.Duration;
 import java.util.Collections;
 import java.util.Set;
-import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -33,12 +29,15 @@ public class MemberFilter extends OncePerRequestFilter {
 
   private final MemberRepository memberRepository;
   private final OrgRoleService orgRoleService;
-  private final Cache<String, MemberInfo> memberCache =
-      Caffeine.newBuilder().maximumSize(50_000).expireAfterWrite(Duration.ofHours(1)).build();
+  private final MemberCacheService memberCacheService;
 
-  public MemberFilter(MemberRepository memberRepository, OrgRoleService orgRoleService) {
+  public MemberFilter(
+      MemberRepository memberRepository,
+      OrgRoleService orgRoleService,
+      MemberCacheService memberCacheService) {
     this.memberRepository = memberRepository;
     this.orgRoleService = orgRoleService;
+    this.memberCacheService = memberCacheService;
   }
 
   @Override
@@ -49,7 +48,7 @@ public class MemberFilter extends OncePerRequestFilter {
     String tenantId = RequestScopes.getTenantIdOrNull();
 
     if (tenantId != null) {
-      MemberInfo info = resolveMember(tenantId);
+      MemberCacheService.MemberInfo info = resolveMember(tenantId);
       if (info != null) {
         var carrier = ScopedValue.where(RequestScopes.MEMBER_ID, info.memberId());
         if (info.orgRole() != null) {
@@ -84,12 +83,10 @@ public class MemberFilter extends OncePerRequestFilter {
   }
 
   public void evictFromCache(String tenantId, String clerkUserId) {
-    memberCache.invalidate(tenantId + ":" + clerkUserId);
+    memberCacheService.evict(tenantId, clerkUserId);
   }
 
-  private record MemberInfo(UUID memberId, String orgRole) {}
-
-  private MemberInfo resolveMember(String tenantId) {
+  private MemberCacheService.MemberInfo resolveMember(String tenantId) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     if (!(authentication instanceof JwtAuthenticationToken jwtAuth)) {
       return null;
@@ -103,10 +100,15 @@ public class MemberFilter extends OncePerRequestFilter {
       return null;
     }
 
-    String cacheKey = tenantId + ":" + clerkUserId;
-    MemberInfo info;
+    MemberCacheService.MemberInfo info;
     try {
-      info = memberCache.get(cacheKey, k -> resolveOrCreateMember(clerkUserId, jwtOrgRole, jwt));
+      info = memberCacheService.get(tenantId, clerkUserId);
+      if (info == null) {
+        info = resolveOrCreateMember(clerkUserId, jwtOrgRole, jwt);
+        if (info != null) {
+          memberCacheService.put(tenantId, clerkUserId, info);
+        }
+      }
     } catch (Exception e) {
       log.warn(
           "Failed to resolve/create member for user {} in tenant {}: {}",
@@ -116,22 +118,28 @@ public class MemberFilter extends OncePerRequestFilter {
       return null;
     }
 
+    if (info == null) {
+      return null;
+    }
+
     // If JWT has an explicit role (rich format, Clerk, or org_role claim), prefer it.
     // Otherwise (flat list default), trust the DB role — it was set correctly during onboarding.
     boolean jwtHasExplicitRole =
         !ClerkJwtUtils.isKeycloakFlatListFormat(jwt) || jwt.getClaimAsString("org_role") != null;
     String effectiveRole = jwtHasExplicitRole ? jwtOrgRole : info.orgRole();
-    return new MemberInfo(info.memberId(), effectiveRole);
+    return new MemberCacheService.MemberInfo(info.memberId(), effectiveRole);
   }
 
-  private MemberInfo resolveOrCreateMember(String clerkUserId, String orgRole, Jwt jwt) {
+  private MemberCacheService.MemberInfo resolveOrCreateMember(
+      String clerkUserId, String orgRole, Jwt jwt) {
     return memberRepository
         .findByClerkUserId(clerkUserId)
-        .map(m -> new MemberInfo(m.getId(), m.getOrgRole()))
+        .map(m -> new MemberCacheService.MemberInfo(m.getId(), m.getOrgRole()))
         .orElseGet(() -> lazyCreateMember(clerkUserId, orgRole, jwt));
   }
 
-  private MemberInfo lazyCreateMember(String clerkUserId, String orgRole, Jwt jwt) {
+  private MemberCacheService.MemberInfo lazyCreateMember(
+      String clerkUserId, String orgRole, Jwt jwt) {
     // Always extract real email/name from JWT when available.
     // Keycloak JWTs include email/name directly; Clerk JWTs may not (updated via webhook).
     String jwtEmail = jwt.getClaimAsString("email");
@@ -164,12 +172,12 @@ public class MemberFilter extends OncePerRequestFilter {
           member.getId(),
           clerkUserId,
           RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : "unknown");
-      return new MemberInfo(member.getId(), effectiveRole);
+      return new MemberCacheService.MemberInfo(member.getId(), effectiveRole);
     } catch (DataIntegrityViolationException e) {
       // Race condition: another instance already created this member
       return memberRepository
           .findByClerkUserId(clerkUserId)
-          .map(m -> new MemberInfo(m.getId(), m.getOrgRole()))
+          .map(m -> new MemberCacheService.MemberInfo(m.getId(), m.getOrgRole()))
           .orElseThrow(
               () ->
                   new IllegalStateException(

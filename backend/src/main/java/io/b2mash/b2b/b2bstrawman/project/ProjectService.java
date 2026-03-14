@@ -268,6 +268,7 @@ public class ProjectService {
 
   @Transactional
   public void deleteProject(UUID id) {
+    RequestScopes.requireOwner();
     var project =
         repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Project", id));
 

@@ -21,6 +21,7 @@ import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMember;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestIds;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
@@ -195,7 +196,7 @@ class ProjectServiceTest {
     when(repository.findById(id)).thenReturn(Optional.of(project));
     // ProjectDeletionGuard.checkAndExecute() is void — default Mockito behavior is do-nothing
 
-    service.deleteProject(id);
+    ScopedValue.where(RequestScopes.ORG_ROLE, "owner").run(() -> service.deleteProject(id));
 
     verify(projectDeletionGuard).checkAndExecute(id);
     verify(repository).delete(project);
@@ -206,7 +207,10 @@ class ProjectServiceTest {
     var id = UUID.randomUUID();
     when(repository.findById(id)).thenReturn(Optional.empty());
 
-    assertThatThrownBy(() -> service.deleteProject(id))
+    assertThatThrownBy(
+            () ->
+                ScopedValue.where(RequestScopes.ORG_ROLE, "owner")
+                    .run(() -> service.deleteProject(id)))
         .isInstanceOf(ResourceNotFoundException.class);
     verify(repository, never()).delete(any());
   }
@@ -218,7 +222,10 @@ class ProjectServiceTest {
     setProjectStatus(project, ProjectStatus.COMPLETED);
     when(repository.findById(id)).thenReturn(Optional.of(project));
 
-    assertThatThrownBy(() -> service.deleteProject(id))
+    assertThatThrownBy(
+            () ->
+                ScopedValue.where(RequestScopes.ORG_ROLE, "owner")
+                    .run(() -> service.deleteProject(id)))
         .isInstanceOf(ResourceConflictException.class)
         .hasMessageContaining("completed");
     verify(repository, never()).delete(any());
@@ -231,7 +238,10 @@ class ProjectServiceTest {
     setProjectStatus(project, ProjectStatus.ARCHIVED);
     when(repository.findById(id)).thenReturn(Optional.of(project));
 
-    assertThatThrownBy(() -> service.deleteProject(id))
+    assertThatThrownBy(
+            () ->
+                ScopedValue.where(RequestScopes.ORG_ROLE, "owner")
+                    .run(() -> service.deleteProject(id)))
         .isInstanceOf(ResourceConflictException.class)
         .hasMessageContaining("archived");
     verify(repository, never()).delete(any());
@@ -250,9 +260,25 @@ class ProjectServiceTest {
         .when(projectDeletionGuard)
         .checkAndExecute(id);
 
-    assertThatThrownBy(() -> service.deleteProject(id))
+    assertThatThrownBy(
+            () ->
+                ScopedValue.where(RequestScopes.ORG_ROLE, "owner")
+                    .run(() -> service.deleteProject(id)))
         .isInstanceOf(ResourceConflictException.class)
         .hasMessageContaining("task");
+    verify(repository, never()).delete(any());
+  }
+
+  @Test
+  void deleteProject_rejectsNonOwner() {
+    var id = UUID.randomUUID();
+
+    assertThatThrownBy(
+            () ->
+                ScopedValue.where(RequestScopes.ORG_ROLE, "admin")
+                    .run(() -> service.deleteProject(id)))
+        .isInstanceOf(ForbiddenException.class)
+        .hasMessageContaining("Owner required");
     verify(repository, never()).delete(any());
   }
 

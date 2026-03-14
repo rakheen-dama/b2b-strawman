@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.task;
 
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
+import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -9,7 +10,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,7 +28,6 @@ public class TaskItemController {
   }
 
   @GetMapping("/api/tasks/{taskId}/items")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<TaskItemResponse>> listItems(@PathVariable UUID taskId) {
     var actor = ActorContext.fromRequestScopes();
 
@@ -38,7 +37,6 @@ public class TaskItemController {
   }
 
   @PostMapping("/api/tasks/{taskId}/items")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<TaskItemResponse> addItem(
       @PathVariable UUID taskId, @Valid @RequestBody CreateTaskItemRequest request) {
     var actor = ActorContext.fromRequestScopes();
@@ -50,7 +48,7 @@ public class TaskItemController {
   }
 
   @PutMapping("/api/tasks/{taskId}/items/{itemId}")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("PROJECT_MANAGEMENT")
   public ResponseEntity<TaskItemResponse> updateItem(
       @PathVariable UUID taskId,
       @PathVariable UUID itemId,
@@ -62,7 +60,6 @@ public class TaskItemController {
   }
 
   @PutMapping("/api/tasks/{taskId}/items/{itemId}/toggle")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<TaskItemResponse> toggleItem(
       @PathVariable UUID taskId, @PathVariable UUID itemId) {
     var actor = ActorContext.fromRequestScopes();
@@ -72,7 +69,7 @@ public class TaskItemController {
   }
 
   @DeleteMapping("/api/tasks/{taskId}/items/{itemId}")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("PROJECT_MANAGEMENT")
   public ResponseEntity<Void> deleteItem(@PathVariable UUID taskId, @PathVariable UUID itemId) {
     var actor = ActorContext.fromRequestScopes();
 
@@ -81,7 +78,7 @@ public class TaskItemController {
   }
 
   @PutMapping("/api/tasks/{taskId}/items/reorder")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("PROJECT_MANAGEMENT")
   public ResponseEntity<List<TaskItemResponse>> reorderItems(
       @PathVariable UUID taskId, @Valid @RequestBody ReorderRequest request) {
     var actor = ActorContext.fromRequestScopes();

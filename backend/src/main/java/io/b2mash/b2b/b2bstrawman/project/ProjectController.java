@@ -34,7 +34,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -73,7 +72,6 @@ public class ProjectController {
   }
 
   @GetMapping
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<ProjectResponse>> listProjects(
       @RequestParam(required = false) UUID view,
       @RequestParam(required = false) String status,
@@ -198,11 +196,8 @@ public class ProjectController {
   }
 
   @GetMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<ProjectResponse> getProject(@PathVariable UUID id) {
     var actor = ActorContext.fromRequestScopes();
-    String orgRole = actor.orgRole();
-    UUID memberId = actor.memberId();
     var pwr = projectService.getProject(id, actor);
     var tags = entityTagService.getEntityTags("PROJECT", id);
     var memberNames = resolveNames(List.of(pwr.project()));
@@ -211,7 +206,7 @@ public class ProjectController {
   }
 
   @PostMapping
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("PROJECT_MANAGEMENT")
   public ResponseEntity<ProjectResponse> createProject(
       @Valid @RequestBody CreateProjectRequest request) {
     UUID createdBy = RequestScopes.requireMemberId();
@@ -230,12 +225,9 @@ public class ProjectController {
   }
 
   @PutMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<ProjectResponse> updateProject(
       @PathVariable UUID id, @Valid @RequestBody UpdateProjectRequest request) {
     var actor = ActorContext.fromRequestScopes();
-    String orgRole = actor.orgRole();
-    UUID memberId = actor.memberId();
     var pwr =
         projectService.updateProject(
             id,
@@ -253,7 +245,6 @@ public class ProjectController {
   }
 
   @DeleteMapping("/{id}")
-  @PreAuthorize("hasRole('ORG_OWNER')")
   public ResponseEntity<Void> deleteProject(@PathVariable UUID id) {
     projectService.deleteProject(id);
     return ResponseEntity.noContent().build();
@@ -264,8 +255,6 @@ public class ProjectController {
   public ResponseEntity<ProjectResponse> completeProject(
       @PathVariable UUID id, @RequestBody(required = false) CompleteProjectRequest request) {
     var actor = ActorContext.fromRequestScopes();
-    String orgRole = actor.orgRole();
-    UUID memberId = actor.memberId();
     boolean ack = request != null && Boolean.TRUE.equals(request.acknowledgeUnbilledTime());
     var project = projectService.completeProject(id, ack, actor);
     var memberNames = resolveNames(List.of(project));
@@ -277,8 +266,6 @@ public class ProjectController {
   @RequiresCapability("PROJECT_MANAGEMENT")
   public ResponseEntity<ProjectResponse> archiveProject(@PathVariable UUID id) {
     var actor = ActorContext.fromRequestScopes();
-    String orgRole = actor.orgRole();
-    UUID memberId = actor.memberId();
     var project = projectService.archiveProject(id, actor);
     var memberNames = resolveNames(List.of(project));
     var tags = entityTagService.getEntityTags("PROJECT", id);
@@ -289,8 +276,6 @@ public class ProjectController {
   @RequiresCapability("PROJECT_MANAGEMENT")
   public ResponseEntity<ProjectResponse> reopenProject(@PathVariable UUID id) {
     var actor = ActorContext.fromRequestScopes();
-    String orgRole = actor.orgRole();
-    UUID memberId = actor.memberId();
     var project = projectService.reopenProject(id, actor);
     var memberNames = resolveNames(List.of(project));
     var tags = entityTagService.getEntityTags("PROJECT", id);
@@ -302,19 +287,14 @@ public class ProjectController {
   public ResponseEntity<List<FieldDefinitionResponse>> setFieldGroups(
       @PathVariable UUID id, @Valid @RequestBody SetFieldGroupsRequest request) {
     var actor = ActorContext.fromRequestScopes();
-    String orgRole = actor.orgRole();
-    UUID memberId = actor.memberId();
     var fieldDefs = projectService.setFieldGroups(id, request.appliedFieldGroups(), actor);
     return ResponseEntity.ok(fieldDefs);
   }
 
   @PostMapping("/{id}/tags")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<TagResponse>> setProjectTags(
       @PathVariable UUID id, @Valid @RequestBody SetEntityTagsRequest request) {
     var actor = ActorContext.fromRequestScopes();
-    String orgRole = actor.orgRole();
-    UUID memberId = actor.memberId();
     // Verify project access
     projectService.getProject(id, actor);
     var tags = entityTagService.setEntityTags("PROJECT", id, request.tagIds());
@@ -322,11 +302,8 @@ public class ProjectController {
   }
 
   @GetMapping("/{id}/tags")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<TagResponse>> getProjectTags(@PathVariable UUID id) {
     var actor = ActorContext.fromRequestScopes();
-    String orgRole = actor.orgRole();
-    UUID memberId = actor.memberId();
     // Verify project access
     projectService.getProject(id, actor);
     var tags = entityTagService.getEntityTags("PROJECT", id);
@@ -334,7 +311,6 @@ public class ProjectController {
   }
 
   @GetMapping("/{id}/setup-status")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER', 'ORG_MEMBER')")
   public ResponseEntity<ProjectSetupStatus> getSetupStatus(@PathVariable UUID id) {
     return ResponseEntity.ok(projectSetupStatusService.getSetupStatus(id));
   }

@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.budget;
 
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
+import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -9,7 +10,6 @@ import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,32 +29,24 @@ public class ProjectBudgetController {
   }
 
   @GetMapping
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<BudgetStatusResponse> getBudget(@PathVariable UUID projectId) {
     var actor = ActorContext.fromRequestScopes();
-    String orgRole = actor.orgRole();
-    UUID memberId = actor.memberId();
     var status = projectBudgetService.getBudgetWithStatus(projectId, actor);
     return ResponseEntity.ok(BudgetStatusResponse.from(status));
   }
 
   @GetMapping("/status")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<LightweightStatusResponse> getBudgetStatus(@PathVariable UUID projectId) {
     var actor = ActorContext.fromRequestScopes();
-    String orgRole = actor.orgRole();
-    UUID memberId = actor.memberId();
     var status = projectBudgetService.getBudgetStatusOnly(projectId, actor);
     return ResponseEntity.ok(LightweightStatusResponse.from(status));
   }
 
   @PutMapping
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("FINANCIAL_VISIBILITY")
   public ResponseEntity<BudgetStatusResponse> upsertBudget(
       @PathVariable UUID projectId, @Valid @RequestBody UpsertBudgetRequest request) {
     var actor = ActorContext.fromRequestScopes();
-    String orgRole = actor.orgRole();
-    UUID memberId = actor.memberId();
     var status =
         projectBudgetService.upsertBudget(
             projectId,
@@ -68,11 +60,9 @@ public class ProjectBudgetController {
   }
 
   @DeleteMapping
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("FINANCIAL_VISIBILITY")
   public ResponseEntity<Void> deleteBudget(@PathVariable UUID projectId) {
     var actor = ActorContext.fromRequestScopes();
-    String orgRole = actor.orgRole();
-    UUID memberId = actor.memberId();
     projectBudgetService.deleteBudget(projectId, actor);
     return ResponseEntity.noContent().build();
   }

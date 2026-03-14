@@ -5,7 +5,6 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ScopedFilterChain;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
-import io.b2mash.b2b.b2bstrawman.security.ClerkJwtUtils;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -52,8 +51,8 @@ public class MemberFilter extends OncePerRequestFilter {
       MemberInfo info = resolveMember(tenantId);
       if (info != null) {
         var carrier = ScopedValue.where(RequestScopes.MEMBER_ID, info.memberId());
-        if (info.orgRole() != null) {
-          carrier = carrier.where(RequestScopes.ORG_ROLE, info.orgRole());
+        if (info.orgRoleSlug() != null) {
+          carrier = carrier.where(RequestScopes.ORG_ROLE, info.orgRoleSlug());
         }
 
         Set<String> capabilities;
@@ -87,7 +86,7 @@ public class MemberFilter extends OncePerRequestFilter {
     memberCache.invalidate(tenantId + ":" + clerkUserId);
   }
 
-  private record MemberInfo(UUID memberId, String orgRole) {}
+  private record MemberInfo(UUID memberId, String orgRoleSlug) {}
 
   private MemberInfo resolveMember(String tenantId) {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -97,16 +96,14 @@ public class MemberFilter extends OncePerRequestFilter {
 
     Jwt jwt = jwtAuth.getToken();
     String clerkUserId = jwt.getSubject();
-    String jwtOrgRole = ClerkJwtUtils.extractOrgRole(jwt);
 
     if (clerkUserId == null) {
       return null;
     }
 
     String cacheKey = tenantId + ":" + clerkUserId;
-    MemberInfo info;
     try {
-      info = memberCache.get(cacheKey, k -> resolveOrCreateMember(clerkUserId, jwtOrgRole, jwt));
+      return memberCache.get(cacheKey, k -> resolveOrCreateMember(clerkUserId, jwt));
     } catch (Exception e) {
       log.warn(
           "Failed to resolve/create member for user {} in tenant {}: {}",
@@ -115,23 +112,16 @@ public class MemberFilter extends OncePerRequestFilter {
           e.getMessage());
       return null;
     }
-
-    // If JWT has an explicit role (rich format, Clerk, or org_role claim), prefer it.
-    // Otherwise (flat list default), trust the DB role — it was set correctly during onboarding.
-    boolean jwtHasExplicitRole =
-        !ClerkJwtUtils.isKeycloakFlatListFormat(jwt) || jwt.getClaimAsString("org_role") != null;
-    String effectiveRole = jwtHasExplicitRole ? jwtOrgRole : info.orgRole();
-    return new MemberInfo(info.memberId(), effectiveRole);
   }
 
-  private MemberInfo resolveOrCreateMember(String clerkUserId, String orgRole, Jwt jwt) {
+  private MemberInfo resolveOrCreateMember(String clerkUserId, Jwt jwt) {
     return memberRepository
         .findByClerkUserId(clerkUserId)
         .map(m -> new MemberInfo(m.getId(), m.getOrgRole()))
-        .orElseGet(() -> lazyCreateMember(clerkUserId, orgRole, jwt));
+        .orElseGet(() -> lazyCreateMember(clerkUserId, jwt));
   }
 
-  private MemberInfo lazyCreateMember(String clerkUserId, String orgRole, Jwt jwt) {
+  private MemberInfo lazyCreateMember(String clerkUserId, Jwt jwt) {
     // Always extract real email/name from JWT when available.
     // Keycloak JWTs include email/name directly; Clerk JWTs may not (updated via webhook).
     String jwtEmail = jwt.getClaimAsString("email");
@@ -142,9 +132,11 @@ public class MemberFilter extends OncePerRequestFilter {
             : clerkUserId + "@placeholder.internal";
     String name = jwtName;
 
+    // Default role is "member" — role is DB-authoritative, not derived from JWT.
+    String effectiveRole = Roles.ORG_MEMBER;
+
     // First member in a newly-provisioned tenant becomes owner (founding user).
-    String effectiveRole = orgRole != null ? orgRole : Roles.ORG_MEMBER;
-    if (Roles.ORG_MEMBER.equals(effectiveRole) && memberRepository.count() == 0) {
+    if (memberRepository.count() == 0) {
       effectiveRole = Roles.ORG_OWNER;
       log.info("Promoting first member {} to owner (founding user)", clerkUserId);
     }

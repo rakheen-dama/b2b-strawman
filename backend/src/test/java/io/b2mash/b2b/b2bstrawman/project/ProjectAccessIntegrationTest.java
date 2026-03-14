@@ -9,10 +9,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -39,6 +44,9 @@ class ProjectAccessIntegrationTest {
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private PlanSyncService planSyncService;
+  @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
+  @Autowired private OrgRoleRepository orgRoleRepository;
+  @Autowired private MemberRepository memberRepository;
 
   private String ownerMemberId;
   private String adminMemberId;
@@ -61,6 +69,36 @@ class ProjectAccessIntegrationTest {
     nonMemberMemberId =
         syncMember(
             ORG_ID, "user_access_nonmember", "access_nonmember@test.com", "NonMember", "member");
+
+    // Assign system roles to owner and admin members for capability-based auth
+    var tenantSchema =
+        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, UUID.fromString(ownerMemberId))
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () -> {
+              var ownerRole =
+                  orgRoleRepository.findAll().stream()
+                      .filter(r -> r.isSystem() && "owner".equals(r.getSlug()))
+                      .findFirst()
+                      .orElseThrow();
+              var ownerMember =
+                  memberRepository.findById(UUID.fromString(ownerMemberId)).orElseThrow();
+              ownerMember.setOrgRoleId(ownerRole.getId());
+              memberRepository.save(ownerMember);
+
+              var adminRole =
+                  orgRoleRepository.findAll().stream()
+                      .filter(r -> r.isSystem() && "admin".equals(r.getSlug()))
+                      .findFirst()
+                      .orElseThrow();
+              var adminMember =
+                  memberRepository.findById(UUID.fromString(adminMemberId)).orElseThrow();
+              adminMember.setOrgRoleId(adminRole.getId());
+              memberRepository.save(adminMember);
+            });
   }
 
   // --- Filtered listing ---
@@ -68,7 +106,7 @@ class ProjectAccessIntegrationTest {
   @Test
   void ownerSeesAllProjects() throws Exception {
     // Lead creates a project (only lead is on it)
-    createProjectAs(leadJwt(), "Owner Sees All");
+    createProjectAs(ownerJwt(), "Owner Sees All");
 
     mockMvc
         .perform(get("/api/projects").with(ownerJwt()))
@@ -78,7 +116,7 @@ class ProjectAccessIntegrationTest {
 
   @Test
   void adminSeesAllProjects() throws Exception {
-    createProjectAs(leadJwt(), "Admin Sees All");
+    createProjectAs(ownerJwt(), "Admin Sees All");
 
     mockMvc
         .perform(get("/api/projects").with(adminJwt()))
@@ -89,7 +127,7 @@ class ProjectAccessIntegrationTest {
   @Test
   void memberSeesOnlyTheirProjects() throws Exception {
     // Lead creates a project — nonMember is NOT added
-    createProjectAs(leadJwt(), "Not For NonMember");
+    createProjectAs(ownerJwt(), "Not For NonMember");
 
     mockMvc
         .perform(get("/api/projects").with(nonMemberJwt()))
@@ -99,13 +137,13 @@ class ProjectAccessIntegrationTest {
 
   @Test
   void memberSeesProjectsTheyAreOn() throws Exception {
-    var projectId = createProjectAs(leadJwt(), "Member Is On This");
+    var projectId = createProjectAs(ownerJwt(), "Member Is On This");
 
     // Add regular member to this project
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/members")
-                .with(leadJwt())
+                .with(ownerJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"memberId\": \"%s\"}".formatted(regularMemberId)))
         .andExpect(status().isCreated());
@@ -118,19 +156,19 @@ class ProjectAccessIntegrationTest {
 
   @Test
   void listingIncludesProjectRole() throws Exception {
-    var projectId = createProjectAs(leadJwt(), "Role In Listing");
+    var projectId = createProjectAs(ownerJwt(), "Role In Listing");
 
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/members")
-                .with(leadJwt())
+                .with(ownerJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"memberId\": \"%s\"}".formatted(regularMemberId)))
         .andExpect(status().isCreated());
 
-    // Lead sees their role
+    // Creator (owner) sees their lead role
     mockMvc
-        .perform(get("/api/projects").with(leadJwt()))
+        .perform(get("/api/projects").with(ownerJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[?(@.name == 'Role In Listing')].projectRole").value("lead"));
 
@@ -145,7 +183,7 @@ class ProjectAccessIntegrationTest {
 
   @Test
   void nonMemberGets404OnGetProject() throws Exception {
-    var projectId = createProjectAs(leadJwt(), "No Access For NonMember");
+    var projectId = createProjectAs(ownerJwt(), "No Access For NonMember");
 
     mockMvc
         .perform(get("/api/projects/" + projectId).with(nonMemberJwt()))
@@ -154,7 +192,7 @@ class ProjectAccessIntegrationTest {
 
   @Test
   void ownerCanGetAnyProject() throws Exception {
-    var projectId = createProjectAs(leadJwt(), "Owner Can Get");
+    var projectId = createProjectAs(ownerJwt(), "Owner Can Get");
 
     mockMvc
         .perform(get("/api/projects/" + projectId).with(ownerJwt()))
@@ -164,7 +202,7 @@ class ProjectAccessIntegrationTest {
 
   @Test
   void adminCanGetAnyProject() throws Exception {
-    var projectId = createProjectAs(leadJwt(), "Admin Can Get");
+    var projectId = createProjectAs(ownerJwt(), "Admin Can Get");
 
     mockMvc
         .perform(get("/api/projects/" + projectId).with(adminJwt()))
@@ -174,12 +212,12 @@ class ProjectAccessIntegrationTest {
 
   @Test
   void projectMemberCanGetProject() throws Exception {
-    var projectId = createProjectAs(leadJwt(), "Regular Can Get");
+    var projectId = createProjectAs(ownerJwt(), "Regular Can Get");
 
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/members")
-                .with(leadJwt())
+                .with(ownerJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"memberId\": \"%s\"}".formatted(regularMemberId)))
         .andExpect(status().isCreated());
@@ -204,7 +242,7 @@ class ProjectAccessIntegrationTest {
 
   @Test
   void adminNotOnProjectSeesNullRole() throws Exception {
-    var projectId = createProjectAs(leadJwt(), "Admin Not Member");
+    var projectId = createProjectAs(ownerJwt(), "Admin Not Member");
 
     mockMvc
         .perform(get("/api/projects/" + projectId).with(adminJwt()))
@@ -215,7 +253,7 @@ class ProjectAccessIntegrationTest {
 
   @Test
   void ownerNotOnProjectSeesNullRole() throws Exception {
-    var projectId = createProjectAs(leadJwt(), "Owner Not Member");
+    var projectId = createProjectAs(adminJwt(), "Owner Not Member");
 
     mockMvc
         .perform(get("/api/projects/" + projectId).with(ownerJwt()))
@@ -224,10 +262,10 @@ class ProjectAccessIntegrationTest {
         .andExpect(jsonPath("$.projectRole").isEmpty());
   }
 
-  // --- Create project (all members can) ---
+  // --- Create project (requires PROJECT_MANAGEMENT capability) ---
 
   @Test
-  void memberCanCreateProject() throws Exception {
+  void memberWithoutCapabilityCannotCreateProject() throws Exception {
     mockMvc
         .perform(
             post("/api/projects")
@@ -237,17 +275,15 @@ class ProjectAccessIntegrationTest {
                     """
                     {"name": "Member Created", "description": null}
                     """))
-        .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.name").value("Member Created"))
-        .andExpect(jsonPath("$.projectRole").value("lead"));
+        .andExpect(status().isForbidden());
   }
 
   @Test
   void creatorBecomesLeadAndCanGetTheirProject() throws Exception {
-    var projectId = createProjectAs(regularJwt(), "Creator Is Lead");
+    var projectId = createProjectAs(ownerJwt(), "Creator Is Lead");
 
     mockMvc
-        .perform(get("/api/projects/" + projectId).with(regularJwt()))
+        .perform(get("/api/projects/" + projectId).with(ownerJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.projectRole").value("lead"));
   }
@@ -256,12 +292,12 @@ class ProjectAccessIntegrationTest {
 
   @Test
   void leadCanUpdateProject() throws Exception {
-    var projectId = createProjectAs(leadJwt(), "Lead Can Update");
+    var projectId = createProjectAs(ownerJwt(), "Lead Can Update");
 
     mockMvc
         .perform(
             put("/api/projects/" + projectId)
-                .with(leadJwt())
+                .with(ownerJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -273,7 +309,7 @@ class ProjectAccessIntegrationTest {
 
   @Test
   void adminCanUpdateAnyProject() throws Exception {
-    var projectId = createProjectAs(leadJwt(), "Admin Can Update");
+    var projectId = createProjectAs(ownerJwt(), "Admin Can Update");
 
     mockMvc
         .perform(
@@ -290,12 +326,12 @@ class ProjectAccessIntegrationTest {
 
   @Test
   void regularMemberCannotUpdateProject() throws Exception {
-    var projectId = createProjectAs(leadJwt(), "Regular Cannot Update");
+    var projectId = createProjectAs(ownerJwt(), "Regular Cannot Update");
 
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/members")
-                .with(leadJwt())
+                .with(ownerJwt())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"memberId\": \"%s\"}".formatted(regularMemberId)))
         .andExpect(status().isCreated());
@@ -314,7 +350,7 @@ class ProjectAccessIntegrationTest {
 
   @Test
   void nonMemberGets404OnUpdateProject() throws Exception {
-    var projectId = createProjectAs(leadJwt(), "NonMember Cannot Update");
+    var projectId = createProjectAs(ownerJwt(), "NonMember Cannot Update");
 
     mockMvc
         .perform(

@@ -333,7 +333,7 @@ class ProjectIntegrationTest {
   // --- RBAC ---
 
   @Test
-  void memberCanCreateProject() throws Exception {
+  void memberWithoutCapabilityCannotCreateProject() throws Exception {
     mockMvc
         .perform(
             post("/api/projects")
@@ -343,8 +343,7 @@ class ProjectIntegrationTest {
                     """
                     {"name": "Member Created", "description": null}
                     """))
-        .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.projectRole").value("lead"));
+        .andExpect(status().isForbidden());
   }
 
   @Test

@@ -2,7 +2,6 @@ package io.b2mash.b2b.b2bstrawman.audit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -99,10 +98,18 @@ class SecurityAuditTest {
   }
 
   @Test
-  void accessDenied_preAuthorize_producesAuditEvent() throws Exception {
-    // Member tries to DELETE a project (requires ROLE_ORG_OWNER) -- triggers AccessDeniedException
+  void accessDenied_requiresCapability_producesAuditEvent() throws Exception {
+    // Member tries to CREATE a project (requires PROJECT_MANAGEMENT capability) -- triggers
+    // AccessDeniedException
     mockMvc
-        .perform(delete("/api/projects/" + projectId).with(memberJwt()))
+        .perform(
+            post("/api/projects")
+                .with(memberJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"name": "Should Fail", "description": "no capability"}
+                    """))
         .andExpect(status().isForbidden());
 
     ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
@@ -121,8 +128,8 @@ class SecurityAuditTest {
                           e -> {
                             var details = e.getDetails();
                             return details != null
-                                && ("/api/projects/" + projectId).equals(details.get("path"))
-                                && "DELETE".equals(details.get("method"));
+                                && "/api/projects".equals(details.get("path"))
+                                && "POST".equals(details.get("method"));
                           })
                       .toList();
 

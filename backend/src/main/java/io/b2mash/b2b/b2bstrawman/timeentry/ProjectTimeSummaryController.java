@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,26 +21,22 @@ public class ProjectTimeSummaryController {
   }
 
   @GetMapping("/api/projects/{id}/time-summary")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<ProjectTimeSummaryResponse> getProjectTimeSummary(
       @PathVariable UUID id,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
     var actor = ActorContext.fromRequestScopes();
-    UUID memberId = actor.memberId();
 
     var summary = timeEntryService.getProjectTimeSummary(id, actor, from, to);
     return ResponseEntity.ok(ProjectTimeSummaryResponse.from(id, summary));
   }
 
   @GetMapping("/api/projects/{id}/time-summary/by-member")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<MemberTimeSummaryResponse>> getProjectTimeSummaryByMember(
       @PathVariable UUID id,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
     var actor = ActorContext.fromRequestScopes();
-    UUID memberId = actor.memberId();
 
     var summaries = timeEntryService.getProjectTimeSummaryByMember(id, actor, from, to);
     var response = summaries.stream().map(MemberTimeSummaryResponse::from).toList();
@@ -49,13 +44,11 @@ public class ProjectTimeSummaryController {
   }
 
   @GetMapping("/api/projects/{id}/time-summary/by-task")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<TaskTimeSummaryResponse>> getProjectTimeSummaryByTask(
       @PathVariable UUID id,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
     var actor = ActorContext.fromRequestScopes();
-    UUID memberId = actor.memberId();
 
     var summaries = timeEntryService.getProjectTimeSummaryByTask(id, actor, from, to);
     var response = summaries.stream().map(TaskTimeSummaryResponse::from).toList();

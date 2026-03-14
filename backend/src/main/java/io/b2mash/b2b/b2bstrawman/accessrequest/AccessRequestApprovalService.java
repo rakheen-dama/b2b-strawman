@@ -3,6 +3,8 @@ package io.b2mash.b2b.b2bstrawman.accessrequest;
 import io.b2mash.b2b.b2bstrawman.accessrequest.dto.AccessRequestDtos.AccessRequestResponse;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.invitation.PendingInvitation;
+import io.b2mash.b2b.b2bstrawman.invitation.PendingInvitationRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.time.Instant;
 import java.util.List;
@@ -27,16 +29,19 @@ public class AccessRequestApprovalService {
   private final AccessRequestRepository accessRequestRepository;
   private final KeycloakProvisioningClient keycloakProvisioningClient;
   private final TenantProvisioningService tenantProvisioningService;
+  private final PendingInvitationRepository pendingInvitationRepository;
   private final TransactionTemplate txTemplate;
 
   public AccessRequestApprovalService(
       AccessRequestRepository accessRequestRepository,
       @Nullable KeycloakProvisioningClient keycloakProvisioningClient,
       TenantProvisioningService tenantProvisioningService,
+      PendingInvitationRepository pendingInvitationRepository,
       TransactionTemplate txTemplate) {
     this.accessRequestRepository = accessRequestRepository;
     this.keycloakProvisioningClient = keycloakProvisioningClient;
     this.tenantProvisioningService = tenantProvisioningService;
+    this.pendingInvitationRepository = pendingInvitationRepository;
     this.txTemplate = txTemplate;
   }
 
@@ -97,6 +102,12 @@ public class AccessRequestApprovalService {
       keycloakProvisioningClient.inviteUser(kcOrgId, request.getEmail());
       log.info("Sent invitation to {} for org {}", request.getEmail(), kcOrgId);
       keycloakProvisioningClient.setOrgCreator(kcOrgId, request.getEmail());
+
+      // Save pending owner invitation so MemberFilter assigns the correct role on first login
+      txTemplate.executeWithoutResult(
+          tx ->
+              pendingInvitationRepository.save(
+                  new PendingInvitation(slug, request.getEmail(), "owner")));
 
       // Step 5: Mark as approved (short transaction)
       return txTemplate.execute(

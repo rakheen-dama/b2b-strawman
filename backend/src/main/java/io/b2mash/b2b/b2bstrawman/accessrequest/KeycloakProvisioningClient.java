@@ -5,12 +5,14 @@ import java.net.http.HttpClient;
 import java.net.http.HttpClient.Version;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
@@ -147,24 +149,84 @@ public class KeycloakProvisioningClient {
   }
 
   /**
-   * Sets the creatorUserId attribute on the organization. The gateway uses this to determine which
-   * member is the org owner (Keycloak org memberships don't carry roles by default).
+   * Sets the creatorUserId attribute on the organization. Fetches the full org representation first
+   * to avoid partial PUT issues (Keycloak 26.x returns 409 on partial PUTs).
    */
+  @SuppressWarnings("unchecked")
   public void setOrgCreator(String orgId, String email) {
     String userId = findUserIdByEmail(email);
     if (userId == null) {
       log.warn("Could not find Keycloak user for email {} to set as org creator", email);
       return;
     }
+    Map<String, Object> org = getOrganization(orgId);
+    if (org == null) {
+      log.warn("Could not fetch org {} to set creator", orgId);
+      return;
+    }
+    var orgCopy = new HashMap<>(org);
+    var attributes =
+        org.get("attributes") instanceof Map<?, ?> existing
+            ? new HashMap<>((Map<String, Object>) existing)
+            : new HashMap<String, Object>();
+    attributes.put("creatorUserId", List.of(userId));
+    orgCopy.put("attributes", attributes);
+
     restClient
         .put()
         .uri("/organizations/{orgId}", orgId)
         .header("Authorization", "Bearer " + getAdminToken())
         .contentType(MediaType.APPLICATION_JSON)
-        .body(Map.of("attributes", Map.of("creatorUserId", List.of(userId))))
+        .body(orgCopy)
         .retrieve()
         .toBodilessEntity();
     log.info("Set creatorUserId={} on org {}", userId, orgId);
+  }
+
+  /**
+   * Sets the org_role user attribute in Keycloak. Fetches the full user representation first,
+   * merges the attribute, and PUTs the entire object back to avoid blanking other fields.
+   */
+  @SuppressWarnings("unchecked")
+  public void setUserOrgRole(String userId, String role) {
+    Map<String, Object> user =
+        restClient
+            .get()
+            .uri("/users/{userId}", userId)
+            .header("Authorization", "Bearer " + getAdminToken())
+            .retrieve()
+            .body(new ParameterizedTypeReference<>() {});
+    if (user == null) {
+      log.warn("Cannot set org_role — user {} not found", userId);
+      return;
+    }
+
+    var userCopy = new HashMap<>(user);
+    var attributes =
+        user.get("attributes") instanceof Map<?, ?> existing
+            ? new HashMap<>((Map<String, Object>) existing)
+            : new HashMap<String, Object>();
+    attributes.put("org_role", List.of(role));
+    userCopy.put("attributes", attributes);
+
+    restClient
+        .put()
+        .uri("/users/{userId}", userId)
+        .header("Authorization", "Bearer " + getAdminToken())
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(userCopy)
+        .retrieve()
+        .toBodilessEntity();
+    log.info("Set org_role={} for user {}", role, userId);
+  }
+
+  private Map<String, Object> getOrganization(String orgId) {
+    return restClient
+        .get()
+        .uri("/organizations/{orgId}", orgId)
+        .header("Authorization", "Bearer " + getAdminToken())
+        .retrieve()
+        .body(new ParameterizedTypeReference<>() {});
   }
 
   @SuppressWarnings("unchecked")

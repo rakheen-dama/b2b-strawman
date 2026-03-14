@@ -45,11 +45,14 @@ import org.springframework.test.web.servlet.MockMvc;
 @TestPropertySource(
     properties = {
       "spring.session.store-type=none",
+      "spring.datasource.url=jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=PostgreSQL",
+      "spring.datasource.driver-class-name=org.h2.Driver",
       "spring.cloud.gateway.server.webmvc.routes[0].id=test-route",
       "spring.cloud.gateway.server.webmvc.routes[0].uri=http://localhost:8080",
       "spring.cloud.gateway.server.webmvc.routes[0].predicates[0]=Path=/test/**",
       "spring.autoconfigure.exclude="
-          + "org.springframework.boot.security.oauth2.client.autoconfigure.OAuth2ClientAutoConfiguration"
+          + "org.springframework.boot.security.oauth2.client.autoconfigure.OAuth2ClientAutoConfiguration",
+      "spring.sql.init.mode=always"
     })
 @Import(AdminProxyControllerTest.MockOAuth2Config.class)
 class AdminProxyControllerTest {
@@ -174,7 +177,7 @@ class AdminProxyControllerTest {
 
   @Test
   void listMembers_asAdmin_returnsList() throws Exception {
-    // Stub org fetch (for creatorUserId attribute lookup)
+    // Stub org fetch (for creatorUserId fallback)
     wireMock.stubFor(
         WireMock.get(urlPathEqualTo("/admin/realms/" + REALM + "/organizations/" + ORG_ID))
             .willReturn(
@@ -187,6 +190,7 @@ class AdminProxyControllerTest {
                         """
                             .formatted(ORG_ID))));
 
+    // Members include org_role attributes (set by KC user attribute mapper)
     wireMock.stubFor(
         WireMock.get(
                 urlPathEqualTo("/admin/realms/" + REALM + "/organizations/" + ORG_ID + "/members"))
@@ -196,8 +200,8 @@ class AdminProxyControllerTest {
                     .withHeader("Content-Type", "application/json")
                     .withBody(
                         """
-                        [{"id":"user-1","username":"alice","email":"alice@test.com"},
-                         {"id":"user-2","username":"bob","email":"bob@test.com"}]
+                        [{"id":"user-1","username":"alice","email":"alice@test.com","attributes":{"org_role":["owner"]}},
+                         {"id":"user-2","username":"bob","email":"bob@test.com","attributes":{"org_role":["admin"]}}]
                         """)));
 
     mockMvc
@@ -206,7 +210,7 @@ class AdminProxyControllerTest {
         .andExpect(jsonPath("$[0].email").value("alice@test.com"))
         .andExpect(jsonPath("$[0].role").value("owner"))
         .andExpect(jsonPath("$[1].email").value("bob@test.com"))
-        .andExpect(jsonPath("$[1].role").value("member"));
+        .andExpect(jsonPath("$[1].role").value("admin"));
   }
 
   @Test

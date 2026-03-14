@@ -2,6 +2,8 @@ package io.b2mash.b2b.b2bstrawman.member;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import io.b2mash.b2b.b2bstrawman.accessrequest.KeycloakProvisioningClient;
+import io.b2mash.b2b.b2bstrawman.invitation.PendingInvitationRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ScopedFilterChain;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
@@ -19,6 +21,7 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.lang.Nullable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -33,12 +36,20 @@ public class MemberFilter extends OncePerRequestFilter {
 
   private final MemberRepository memberRepository;
   private final OrgRoleService orgRoleService;
+  private final PendingInvitationRepository pendingInvitationRepository;
+  private final KeycloakProvisioningClient keycloakProvisioningClient;
   private final Cache<String, MemberInfo> memberCache =
       Caffeine.newBuilder().maximumSize(50_000).expireAfterWrite(Duration.ofHours(1)).build();
 
-  public MemberFilter(MemberRepository memberRepository, OrgRoleService orgRoleService) {
+  public MemberFilter(
+      MemberRepository memberRepository,
+      OrgRoleService orgRoleService,
+      PendingInvitationRepository pendingInvitationRepository,
+      @Nullable KeycloakProvisioningClient keycloakProvisioningClient) {
     this.memberRepository = memberRepository;
     this.orgRoleService = orgRoleService;
+    this.pendingInvitationRepository = pendingInvitationRepository;
+    this.keycloakProvisioningClient = keycloakProvisioningClient;
   }
 
   @Override
@@ -142,8 +153,16 @@ public class MemberFilter extends OncePerRequestFilter {
             : clerkUserId + "@placeholder.internal";
     String name = jwtName;
 
+    // Check pending invitations for the intended role (set at invite time by the gateway)
+    String pendingRole = resolvePendingRole(jwt, email);
+
+    // Determine effective role: pending invitation > JWT claim > default
+    String effectiveRole = pendingRole != null ? pendingRole : orgRole;
+    if (effectiveRole == null) {
+      effectiveRole = Roles.ORG_MEMBER;
+    }
+
     // First member in a newly-provisioned tenant becomes owner (founding user).
-    String effectiveRole = orgRole != null ? orgRole : Roles.ORG_MEMBER;
     if (Roles.ORG_MEMBER.equals(effectiveRole) && memberRepository.count() == 0) {
       effectiveRole = Roles.ORG_OWNER;
       log.info("Promoting first member {} to owner (founding user)", clerkUserId);
@@ -160,10 +179,21 @@ public class MemberFilter extends OncePerRequestFilter {
       memberRepository.save(member);
 
       log.info(
-          "Lazy-created member {} for user {} in tenant {}",
+          "Lazy-created member {} for user {} with role {} in tenant {}",
           member.getId(),
           clerkUserId,
+          effectiveRole,
           RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : "unknown");
+
+      // Set Keycloak user attribute so the role appears in future JWTs and admin member list
+      if (keycloakProvisioningClient != null) {
+        try {
+          keycloakProvisioningClient.setUserOrgRole(clerkUserId, effectiveRole);
+        } catch (Exception e) {
+          log.warn("Failed to set KC org_role for user {}: {}", clerkUserId, e.getMessage());
+        }
+      }
+
       return new MemberInfo(member.getId(), effectiveRole);
     } catch (DataIntegrityViolationException e) {
       // Race condition: another instance already created this member
@@ -175,5 +205,28 @@ public class MemberFilter extends OncePerRequestFilter {
                   new IllegalStateException(
                       "Member not found after constraint violation for: " + clerkUserId));
     }
+  }
+
+  /**
+   * Looks up the pending invitation role for this user's email and org. Deletes the record after
+   * reading (consumed on first login). Returns null if no pending invitation exists.
+   */
+  private String resolvePendingRole(Jwt jwt, String email) {
+    String orgSlug = ClerkJwtUtils.extractOrgSlug(jwt);
+    if (orgSlug == null || email.contains("@placeholder.internal")) {
+      return null;
+    }
+    try {
+      var pending = pendingInvitationRepository.findByOrgSlugAndEmailIgnoreCase(orgSlug, email);
+      if (pending.isPresent()) {
+        String role = pending.get().getRole();
+        pendingInvitationRepository.deleteByOrgSlugAndEmailIgnoreCase(orgSlug, email);
+        log.info("Consumed pending invitation for {} in org {} with role {}", email, orgSlug, role);
+        return role;
+      }
+    } catch (Exception e) {
+      log.warn("Error checking pending invitations for {}: {}", email, e.getMessage());
+    }
+    return null;
   }
 }

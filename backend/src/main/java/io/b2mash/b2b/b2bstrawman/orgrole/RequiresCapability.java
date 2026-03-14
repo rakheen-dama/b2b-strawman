@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
  * (or the special "ALL" capability granted to owner/admin system roles).
  *
  * <p>Processed by {@link CapabilityAuthorizationManager} via a Spring Security method interceptor.
- * Can coexist with {@code @PreAuthorize} on the same method.
+ * Replaces {@code @PreAuthorize} for role-based access control.
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)

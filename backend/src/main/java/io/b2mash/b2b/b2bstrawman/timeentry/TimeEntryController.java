@@ -17,7 +17,6 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -45,7 +44,6 @@ public class TimeEntryController {
   }
 
   @PostMapping("/api/tasks/{taskId}/time-entries")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<TimeEntryResponse> createTimeEntry(
       @PathVariable UUID taskId, @Valid @RequestBody CreateTimeEntryRequest request) {
     var actor = ActorContext.fromRequestScopes();
@@ -69,7 +67,6 @@ public class TimeEntryController {
   }
 
   @GetMapping("/api/tasks/{taskId}/time-entries")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<TimeEntryResponse>> listTimeEntries(
       @PathVariable UUID taskId,
       @RequestParam(required = false) Boolean billable,
@@ -87,7 +84,6 @@ public class TimeEntryController {
   }
 
   @PatchMapping("/api/projects/{projectId}/time-entries/{id}/billable")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<TimeEntryResponse> toggleBillable(
       @PathVariable UUID projectId,
       @PathVariable UUID id,
@@ -103,7 +99,6 @@ public class TimeEntryController {
   }
 
   @PutMapping("/api/time-entries/{id}")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<TimeEntryResponse> updateTimeEntry(
       @PathVariable UUID id, @Valid @RequestBody UpdateTimeEntryRequest request) {
     var actor = ActorContext.fromRequestScopes();
@@ -126,7 +121,6 @@ public class TimeEntryController {
   }
 
   @DeleteMapping("/api/time-entries/{id}")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<Void> deleteTimeEntry(@PathVariable UUID id) {
     var actor = ActorContext.fromRequestScopes();
     String orgRole = actor.orgRole();

@@ -259,7 +259,7 @@ class TaskItemIntegrationTest {
     var freshTaskId = createTask("Member Delete Forbidden Task");
     var itemId = addItem(freshTaskId, "Cannot Delete", 0);
 
-    // Member gets 403 on delete (ADMIN+ required by @PreAuthorize)
+    // Member gets 403 on delete (requires PROJECT_MANAGEMENT capability)
     mockMvc
         .perform(delete("/api/tasks/" + freshTaskId + "/items/" + itemId).with(memberJwt()))
         .andExpect(status().isForbidden());

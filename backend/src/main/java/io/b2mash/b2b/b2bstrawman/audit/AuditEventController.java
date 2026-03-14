@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.audit;
 
+import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
@@ -7,7 +8,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,7 +23,7 @@ public class AuditEventController {
   }
 
   @GetMapping("/api/audit-events")
-  @PreAuthorize("hasAnyRole('ORG_OWNER', 'ORG_ADMIN')")
+  @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<Page<AuditEventResponse>> listAuditEvents(
       @RequestParam(required = false) String entityType,
       @RequestParam(required = false) UUID entityId,
@@ -43,7 +43,7 @@ public class AuditEventController {
   }
 
   @GetMapping("/api/audit-events/{entityType}/{entityId}")
-  @PreAuthorize("hasAnyRole('ORG_OWNER', 'ORG_ADMIN')")
+  @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<Page<AuditEventResponse>> listAuditEventsByEntity(
       @PathVariable String entityType,
       @PathVariable UUID entityId,

@@ -16,7 +16,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -40,7 +39,6 @@ public class CommentController {
   }
 
   @PostMapping
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<CommentResponse> createComment(
       @PathVariable UUID projectId, @Valid @RequestBody CreateCommentRequest request) {
     var actor = ActorContext.fromRequestScopes();
@@ -63,7 +61,6 @@ public class CommentController {
   }
 
   @GetMapping
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<CommentResponse>> listComments(
       @PathVariable UUID projectId,
       @RequestParam String entityType,
@@ -86,7 +83,6 @@ public class CommentController {
   }
 
   @PutMapping("/{commentId}")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<CommentResponse> updateComment(
       @PathVariable UUID projectId,
       @PathVariable UUID commentId,
@@ -104,7 +100,6 @@ public class CommentController {
   }
 
   @DeleteMapping("/{commentId}")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<Void> deleteComment(
       @PathVariable UUID projectId, @PathVariable UUID commentId) {
     var actor = ActorContext.fromRequestScopes();

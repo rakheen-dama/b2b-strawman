@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.settings;
 
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
+import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -16,7 +17,6 @@ import java.util.Map;
 import java.util.UUID;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -43,13 +43,13 @@ public class OrgSettingsController {
   }
 
   @GetMapping
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<SettingsResponse> getSettings() {
     return ResponseEntity.ok(orgSettingsService.getSettingsWithBranding());
   }
 
   @PutMapping
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<SettingsResponse> updateSettings(
       @Valid @RequestBody UpdateSettingsRequest request) {
     var actor = ActorContext.fromRequestScopes();
@@ -69,7 +69,7 @@ public class OrgSettingsController {
   }
 
   @PostMapping(value = "/logo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<SettingsResponse> uploadLogo(@RequestParam("file") MultipartFile file) {
     if (file.isEmpty()) {
       throw new InvalidStateException("Invalid file", "File is empty");
@@ -90,7 +90,7 @@ public class OrgSettingsController {
   }
 
   @DeleteMapping("/logo")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<SettingsResponse> deleteLogo() {
     var actor = ActorContext.fromRequestScopes();
     String orgRole = actor.orgRole();
@@ -100,7 +100,7 @@ public class OrgSettingsController {
   }
 
   @PatchMapping("/compliance")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<SettingsResponse> updateComplianceSettings(
       @Valid @RequestBody UpdateComplianceSettingsRequest request) {
     var actor = ActorContext.fromRequestScopes();
@@ -113,7 +113,7 @@ public class OrgSettingsController {
   }
 
   @PatchMapping("/tax")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<SettingsResponse> updateTaxSettings(
       @Valid @RequestBody UpdateTaxSettingsRequest request) {
     var actor = ActorContext.fromRequestScopes();
@@ -129,7 +129,7 @@ public class OrgSettingsController {
   }
 
   @PatchMapping("/acceptance")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<SettingsResponse> updateAcceptanceSettings(
       @Valid @RequestBody UpdateAcceptanceSettingsRequest request) {
     var actor = ActorContext.fromRequestScopes();
@@ -140,7 +140,7 @@ public class OrgSettingsController {
   }
 
   @PatchMapping("/time-reminders")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<SettingsResponse> updateTimeReminderSettings(
       @Valid @RequestBody UpdateTimeReminderSettingsRequest request) {
     var actor = ActorContext.fromRequestScopes();
@@ -156,7 +156,7 @@ public class OrgSettingsController {
   }
 
   @PatchMapping("/capacity")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<SettingsResponse> updateCapacitySettings(
       @Valid @RequestBody UpdateCapacitySettingsRequest request) {
     var actor = ActorContext.fromRequestScopes();
@@ -168,7 +168,7 @@ public class OrgSettingsController {
   }
 
   @PatchMapping("/batch-billing")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<SettingsResponse> updateBatchBillingSettings(
       @Valid @RequestBody UpdateBatchBillingSettingsRequest request) {
     var actor = ActorContext.fromRequestScopes();

@@ -21,7 +21,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -53,7 +52,6 @@ public class BillingRateController {
   }
 
   @GetMapping
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<ListResponse<BillingRateResponse>> listRates(
       @RequestParam(required = false) UUID memberId,
       @RequestParam(required = false) UUID projectId,
@@ -68,7 +66,6 @@ public class BillingRateController {
   // ORG_MEMBER included: project leads (who are ORG_MEMBERs) need write access for
   // project-scoped rate overrides. Fine-grained permission is enforced in the service layer.
   @PostMapping
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<BillingRateResponse> createRate(
       @Valid @RequestBody CreateBillingRateRequest request) {
     var actor = ActorContext.fromRequestScopes();
@@ -92,7 +89,6 @@ public class BillingRateController {
   // ORG_MEMBER included: project leads (who are ORG_MEMBERs) need write access for
   // project-scoped rate overrides. Fine-grained permission is enforced in the service layer.
   @PutMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<BillingRateResponse> updateRate(
       @PathVariable UUID id, @Valid @RequestBody UpdateBillingRateRequest request) {
     var actor = ActorContext.fromRequestScopes();
@@ -113,7 +109,6 @@ public class BillingRateController {
   // ORG_MEMBER included: project leads (who are ORG_MEMBERs) need write access for
   // project-scoped rate overrides. Fine-grained permission is enforced in the service layer.
   @DeleteMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<Void> deleteRate(@PathVariable UUID id) {
     var actor = ActorContext.fromRequestScopes();
 
@@ -122,7 +117,6 @@ public class BillingRateController {
   }
 
   @GetMapping("/resolve")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<ResolvedRateResponse> resolveRate(
       @RequestParam UUID memberId,
       @RequestParam UUID projectId,

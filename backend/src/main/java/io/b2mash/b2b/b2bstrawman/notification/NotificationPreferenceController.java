@@ -4,7 +4,6 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,7 +21,6 @@ public class NotificationPreferenceController {
   }
 
   @GetMapping
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<PreferencesListResponse> listPreferences() {
     UUID memberId = RequestScopes.requireMemberId();
     var preferences = notificationService.getPreferences(memberId);
@@ -31,7 +29,6 @@ public class NotificationPreferenceController {
   }
 
   @PutMapping
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<PreferencesListResponse> updatePreferences(
       @RequestBody UpdatePreferencesRequest request) {
     UUID memberId = RequestScopes.requireMemberId();

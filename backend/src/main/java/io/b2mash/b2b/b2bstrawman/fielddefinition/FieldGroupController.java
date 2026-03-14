@@ -5,13 +5,13 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.CreateFieldGroupRequest;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldGroupResponse;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.ReorderFieldsRequest;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.UpdateFieldGroupRequest;
+import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -44,7 +44,7 @@ public class FieldGroupController {
   }
 
   @PostMapping
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<FieldGroupResponse> create(
       @Valid @RequestBody CreateFieldGroupRequest request) {
     var response = fieldGroupService.create(request);
@@ -52,21 +52,21 @@ public class FieldGroupController {
   }
 
   @PutMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<FieldGroupResponse> update(
       @PathVariable UUID id, @Valid @RequestBody UpdateFieldGroupRequest request) {
     return ResponseEntity.ok(fieldGroupService.update(id, request));
   }
 
   @DeleteMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<Void> delete(@PathVariable UUID id) {
     fieldGroupService.deactivate(id);
     return ResponseEntity.noContent().build();
   }
 
   @PatchMapping("/{id}/auto-apply")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<FieldGroupResponse> toggleAutoApply(
       @PathVariable UUID id, @Valid @RequestBody ToggleAutoApplyRequest request) {
     return ResponseEntity.ok(fieldGroupService.toggleAutoApply(id, request.autoApply()));
@@ -78,7 +78,7 @@ public class FieldGroupController {
   // --- Membership endpoints ---
 
   @PostMapping("/{id}/fields")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<Void> addField(
       @PathVariable UUID id, @Valid @RequestBody AddFieldToGroupRequest request) {
     fieldGroupService.addFieldToGroup(id, request.fieldDefinitionId(), request.sortOrder());
@@ -88,14 +88,14 @@ public class FieldGroupController {
   }
 
   @DeleteMapping("/{id}/fields/{fieldId}")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<Void> removeField(@PathVariable UUID id, @PathVariable UUID fieldId) {
     fieldGroupService.removeFieldFromGroup(id, fieldId);
     return ResponseEntity.noContent().build();
   }
 
   @PutMapping("/{id}/fields/reorder")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<Void> reorderFields(
       @PathVariable UUID id, @Valid @RequestBody ReorderFieldsRequest request) {
     fieldGroupService.reorderFields(id, request.fieldIds());

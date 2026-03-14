@@ -8,7 +8,6 @@ import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -29,14 +28,12 @@ public class OrgMemberController {
   }
 
   @GetMapping
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<OrgMemberResponse>> listOrgMembers() {
     var members = memberRepository.findAll().stream().map(OrgMemberResponse::from).toList();
     return ResponseEntity.ok(members);
   }
 
   @GetMapping("/{id}/capabilities")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<MemberCapabilitiesResponse> getMemberCapabilities(@PathVariable UUID id) {
     return ResponseEntity.ok(orgRoleService.getMemberCapabilities(id));
   }

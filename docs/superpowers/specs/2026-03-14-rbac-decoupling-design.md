@@ -95,13 +95,42 @@ Keycloak Organization Roles are problematic for end-to-end RBAC:
 
 ### 1.2 @PreAuthorize → @RequiresCapability migration
 
-All 71 controllers with `@PreAuthorize("hasRole('ORG_...')")` are migrated:
+**Scope:** ~253 `@PreAuthorize` annotations across ~63 source files (controllers + services). 29 of these files already have `@RequiresCapability` annotations — those need de-duplication (remove `@PreAuthorize`, keep `@RequiresCapability`).
+
+**General mapping rules:**
 
 | Current pattern | New pattern | Notes |
 |---|---|---|
 | `hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')` | Remove annotation | `MemberFilter` ensures only members reach `/api/**` controllers |
-| `hasAnyRole('ORG_ADMIN', 'ORG_OWNER')` | `@RequiresCapability("TEAM_OVERSIGHT")` | Admin actions map to team oversight capability |
+| `hasAnyRole('ORG_ADMIN', 'ORG_OWNER')` | `@RequiresCapability(...)` — see domain mapping below | Map to domain-specific capability |
 | `hasRole('ORG_OWNER')` | `RequestScopes.requireOwner()` | ~5 truly owner-only endpoints (delete org role, transfer ownership) |
+
+**Domain-specific capability mapping:**
+
+| Controller / Service domain | Capability | Examples |
+|---|---|---|
+| Invoice, InvoiceLine, InvoiceCounter | `INVOICING` | createInvoice, updateInvoice, sendInvoice |
+| Customer, CustomerChecklist, DataRequest | `CUSTOMER_MANAGEMENT` | createCustomer, updateChecklist |
+| Project, ProjectMember, Task, RecurringSchedule | `PROJECT_MANAGEMENT` | createProject, assignMember, createTask |
+| OrgMember, OrgRole, MemberCapabilities | `TEAM_OVERSIGHT` | inviteMember, assignRole, updateCapabilities |
+| BillingRate, CostRate, Budget, Report, Profitability | `FINANCIAL_VISIBILITY` | viewRates, updateBudget, viewProfitability |
+| Automation, AutomationRule | `AUTOMATIONS` | createRule, updateRule, deleteRule |
+| ResourcePlanning, LeaveBlock, Capacity | `RESOURCE_PLANNING` | createLeaveBlock, viewCapacity |
+| Comment (own comments) | Remove annotation | Members can manage own comments |
+| TimeEntry (own entries) | Remove annotation | Members can manage own time entries |
+| Notification, NotificationPreference (own) | Remove annotation | Members manage own notifications |
+| OrgSettings, Branding, Template | `TEAM_OVERSIGHT` | Org-wide settings are admin operations |
+| Document, GeneratedDocument | Inherit from parent resource | Document on a project → `PROJECT_MANAGEMENT` |
+| AuditEvent (read) | `TEAM_OVERSIGHT` | Only admins view audit logs |
+| Expense | `FINANCIAL_VISIBILITY` | Financial data |
+
+**Non-controller `@PreAuthorize` usage (do NOT migrate):**
+
+| File | Keep/Migrate | Reason |
+|---|---|---|
+| `SecurityConfig.java` `authorizeHttpRequests()` | Keep as-is | HTTP-level path security, not role-based |
+| `PlatformAdminFilter.java` | Keep as-is | Uses JWT `groups` claim, not org roles |
+| `Roles.java` | N/A | Constants only, no annotations |
 
 **`RequestScopes.requireOwner()`** — new convenience method:
 ```java
@@ -112,7 +141,7 @@ public static void requireOwner() {
 }
 ```
 
-Used for owner-only operations where capability-based access would be inappropriate (organizational control, not feature access).
+Used for owner-only operations where capability-based access would be inappropriate. `requireOwner()` is intentionally slug-based (structural identity) — "owner" is a unique system role representing organizational control. There is exactly one owner per org. Custom roles with equivalent permissions would still not pass this check, which is by design.
 
 ### 1.3 Drop `members.org_role` VARCHAR column
 
@@ -145,16 +174,47 @@ ALTER TABLE members DROP COLUMN org_role;
 
 ### 1.5 Cache eviction on role changes
 
-Ensure cache eviction covers all mutation paths:
+**Eviction mechanism:** Extract the Caffeine cache from `MemberFilter` into a standalone `MemberCacheService` bean. Both `MemberFilter` and `OrgRoleService` inject `MemberCacheService`. This avoids a circular dependency between `MemberFilter` ↔ `OrgRoleService`.
+
+```java
+@Service
+public class MemberCacheService {
+    private final Cache<String, MemberInfo> cache = Caffeine.newBuilder()
+        .expireAfterWrite(Duration.ofHours(1))
+        .build();
+
+    public MemberInfo get(String tenantId, String userId) { ... }
+    public void put(String tenantId, String userId, MemberInfo info) { ... }
+    public void evict(String tenantId, String userId) { ... }
+    public void evictAllForRole(UUID orgRoleId, MemberRepository memberRepo) {
+        memberRepo.findAllByOrgRoleId(orgRoleId)
+            .forEach(m -> evict(RequestScopes.requireTenantId(), m.getClerkUserId()));
+    }
+}
+```
+
+**Eviction coverage:**
 
 | Mutation | Eviction |
 |---|---|
-| `OrgRoleService.assignRole(memberId, orgRoleId, overrides)` | Evict that member from `MemberFilter` cache |
-| `OrgRoleService.updateRole(roleId, capabilities)` | Evict ALL members assigned to that role |
+| `OrgRoleService.assignRole(memberId, orgRoleId, overrides)` | `memberCacheService.evict(tenantId, userId)` |
+| `OrgRoleService.updateRole(roleId, capabilities)` | `memberCacheService.evictAllForRole(roleId, memberRepo)` |
 | `OrgRoleService.deleteRole(roleId)` | Blocked if any members assigned (existing behavior) |
-| `MemberSyncService.syncMember()` | Evict that member (existing behavior) |
+| `MemberSyncService.syncMember()` | `memberCacheService.evict(tenantId, userId)` (existing behavior, rewired) |
 
-`OrgRoleService.updateRole()` needs a new query: `memberRepository.findAllByOrgRoleId(roleId)` → evict each from cache.
+### 1.6 Migrate OrgRoleService internal usage
+
+**Must happen before dropping the VARCHAR column (1.3).**
+
+`OrgRoleService` and other services currently read `member.getOrgRole()` (the VARCHAR string). These must be updated to `member.getOrgRoleEntity().getSlug()` before the column is dropped:
+
+| File | Current usage | Migration |
+|---|---|---|
+| `OrgRoleService.assignRole()` | `"owner".equals(member.getOrgRole())` | `"owner".equals(member.getRoleSlug())` |
+| `OrgRoleService.resolveCapabilities()` | Fallback when `orgRoleId == null` reads `orgRole` string | Remove fallback — `orgRoleId` will be NOT NULL |
+| `OrgRoleService.displayName()` | Reads `orgRole` string | Read from `orgRoleEntity.getName()` |
+| `ProjectAccessService` | `Roles.ORG_OWNER.equals(actor.orgRole())` | Unchanged — `ActorContext.orgRole()` reads from `RequestScopes.ORG_ROLE` |
+| `ActorContext.fromRequestScopes()` | Reads `RequestScopes.ORG_ROLE` | Unchanged — `ORG_ROLE` ScopedValue is bound from DB slug |
 
 ---
 
@@ -173,10 +233,12 @@ CREATE TABLE pending_invitations (
     status          VARCHAR(20) NOT NULL DEFAULT 'PENDING',
     expires_at      TIMESTAMP WITH TIME ZONE NOT NULL,
     created_at      TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-    accepted_at     TIMESTAMP WITH TIME ZONE,
-    CONSTRAINT uq_pending_invitation_email_status
-        UNIQUE(email) WHERE (status = 'PENDING')
+    accepted_at     TIMESTAMP WITH TIME ZONE
 );
+
+-- Partial unique index: one active invitation per email per tenant
+CREATE UNIQUE INDEX uq_pending_invitation_email_pending
+    ON pending_invitations(email) WHERE (status = 'PENDING');
 ```
 
 **Status values:** `PENDING`, `ACCEPTED`, `EXPIRED`, `REVOKED`
@@ -403,6 +465,7 @@ const payload = {
 
 ### 5.5 Files impacted
 
+**Auth core (~5 files):**
 | File | Change |
 |---|---|
 | `lib/auth/types.ts` | Remove `orgRole` from `AuthContext` |
@@ -410,13 +473,31 @@ const payload = {
 | `lib/auth/providers/keycloak-bff.ts` | Remove `orgRole` extraction, delete `requireRole()` |
 | `lib/auth/providers/mock/server.ts` | Parse Keycloak format, remove role |
 | `lib/auth/middleware.ts` | No change (checks cookies, not roles) |
+
+**Pages and layouts (~12 files):**
+| File | Change |
+|---|---|
 | `app/.../settings/layout.tsx` | `getAuthContext()` → `fetchMyCapabilities()` |
 | `app/.../customers/[id]/page.tsx` | Same |
-| ~20 server actions (`*/actions.ts`) | `orgRole` check → `caps.isAdmin` |
+| All pages deriving `isAdmin` from `orgRole` | Same pattern |
+
+**Server actions (~38 files):**
+All `app/(app)/org/[slug]/*/actions.ts` files that check `orgRole` switch to `caps.isAdmin`.
+
+**Components (~5 files):**
+| File | Change |
+|---|---|
 | `components/auth/mock-login-form.tsx` | Remove role from token request |
 | `components/settings/settings-sidebar.tsx` | `isAdmin` prop sourced from capabilities |
+
+**Note on client components:** `fetchMyCapabilities()` is marked `"server-only"`. Client components (dialogs, sidebars) cannot call it directly. The existing pattern — Server Components fetch capabilities and pass `isAdmin`/`isOwner` as props or via `CapabilityProvider` context — continues to work. No new client-side fetching is needed.
+
+**E2E and mock (~3 files):**
+| File | Change |
+|---|---|
 | `e2e/fixtures/auth.ts` | Drop `orgRole` param |
 | `compose/mock-idp/src/index.ts` | Keycloak token format |
+| `components/auth/mock-login-form.tsx` | Already counted above |
 
 ---
 
@@ -428,11 +509,11 @@ Layer-by-layer, bottom-up. Each epic is independently deployable.
 
 | Slice | Scope | Files |
 |---|---|---|
-| **1A** | PendingInvitation entity, repository, service, controller, migration | ~8 new files, 1 migration |
-| **1B** | MemberFilter reads role from DB only. Grant `ROLE_ORG_*` from DB role (backward compat). Remove JWT `org_role` preference. | ~3 files |
-| **1C** | Migrate `@PreAuthorize` → `@RequiresCapability` across all controllers. Add `RequestScopes.requireOwner()`. | ~71 files (mechanical) |
-| **1D** | Drop `members.org_role` VARCHAR column, make `org_role_id` NOT NULL. Update `Member.java` entity. | ~5 files, 1 migration |
-| **1E** | Rename `ClerkJwtUtils` → `JwtUtils`, strip Clerk v2 format + `extractOrgRole()`. | ~8 files (rename + update imports) |
+| **1A** | PendingInvitation entity, repository, service, controller, migration. Extract `MemberCacheService` from `MemberFilter`. | ~10 new files, 1 migration |
+| **1B** | MemberFilter reads role from DB only. Grant `ROLE_ORG_*` from DB role (backward compat). Remove JWT `org_role` preference. Migrate `OrgRoleService` internal usage from `member.getOrgRole()` string to `member.getRoleSlug()`. | ~6 files |
+| **1C** | Migrate `@PreAuthorize` → `@RequiresCapability` across all controllers and services (~253 annotations, ~63 files). De-duplicate 29 files that already have `@RequiresCapability`. Add `RequestScopes.requireOwner()`. Leave `SecurityConfig` path-level and `PlatformAdminFilter` group-based checks untouched. | ~63 files (mechanical) |
+| **1D** | Drop `members.org_role` VARCHAR column, make `org_role_id` NOT NULL. Update `Member.java` entity — remove `orgRole` string field, add `getRoleSlug()` convenience. | ~5 files, 1 migration |
+| **1E** | Rename `ClerkJwtUtils` → `JwtUtils`, strip Clerk v2 format + `extractOrgRole()`. Update all imports. | ~8 files (rename + update imports) |
 
 ### Epic 2: Backend — Move KeycloakAdminClient
 
@@ -445,24 +526,25 @@ Layer-by-layer, bottom-up. Each epic is independently deployable.
 
 | Slice | Scope | Files |
 |---|---|---|
-| **3A** | `/bff/me` returns identity only. Remove `orgRole` from `BffUserInfo`. | ~3 files |
-| **3B** | Remove `/bff/admin/invite`, `/bff/orgs` endpoints. Delete `BffSecurity`. | ~4 files |
-| **3C** | Delete `KeycloakAdminClient` from gateway module. Clean up unused config. | ~3 files |
+| **3A** | `/bff/me` returns identity only. Remove `orgRole` from `BffUserInfo` and `BffUserInfoExtractor`. | ~3 files |
+| **3B** | Remove `/bff/admin/invite`, `/bff/orgs` endpoints. Delete `AdminProxyController`, `BffSecurity`. | ~5 files |
+| **3C** | Delete `KeycloakAdminClient` from gateway module. Clean up unused config and Keycloak admin dependencies. | ~4 files |
 
 ### Epic 4: Frontend — Capabilities-Only Authorization
 
 | Slice | Scope | Files |
 |---|---|---|
 | **4A** | Remove `orgRole` from `AuthContext` type + both providers. Delete `requireRole()`. | ~5 files |
-| **4B** | Migrate all `orgRole` checks to `fetchMyCapabilities()` in layouts, pages, server actions. | ~25 files (mechanical) |
+| **4B** | Migrate all `orgRole` checks to `fetchMyCapabilities()` in layouts, pages, server actions. Note: `fetchMyCapabilities()` is `"server-only"` — client components receive `isAdmin`/`isOwner` as props from Server Components (existing pattern via `CapabilityProvider`). | ~50 files (mechanical, includes ~38 action files + ~12 page/layout files) |
 | **4C** | Update mock IDP token format + E2E fixtures. Update mock provider parser. | ~4 files |
 
 ### Epic 5: Cleanup
 
 | Slice | Scope | Files |
 |---|---|---|
-| **5A** | Remove `ROLE_ORG_*` authority grants from `MemberFilter` / converter. Remove `Roles.AUTHORITY_*` constants. | ~4 files |
+| **5A** | Remove `ROLE_ORG_*` authority grants from `MemberFilter` / converter. Remove `Roles.AUTHORITY_*` constants. Update backend integration test JWT mocks that grant `ROLE_ORG_*` authorities — replace with capability-based test setup. | ~15 files (4 source + ~11 test files) |
 | **5B** | Remove `MemberSyncService` webhook role sync path (roles no longer come from IDP). Clean up unused role sync audit events. | ~3 files |
+| **5C** | Update `backend/CLAUDE.md` and `frontend/CLAUDE.md` to reflect new conventions: `@RequiresCapability` replaces `@PreAuthorize`, `JwtUtils` replaces `ClerkJwtUtils`, capabilities-only frontend auth pattern. Remove references to Clerk JWT v2 format and `o.rol` claim structure. | ~2 files |
 
 ### Dependencies
 
@@ -475,8 +557,10 @@ Epic 3 (3A → 3B → 3C, depends on Epic 2)
   ↓
 Epic 4 (4A → 4B → 4C, depends on Epic 3A)
   ↓
-Epic 5 (5A + 5B parallel, depends on Epic 4)
+Epic 5 (5A → 5B → 5C, depends on Epic 4)
 ```
+
+**Note on E2E test continuity:** The mock IDP token format changes in Epic 4C. Between Epics 3A (gateway drops `orgRole` from `/bff/me`) and 4C (mock IDP updated), E2E tests that depend on `orgRole` from `/bff/me` will fail. This is acceptable because: (a) Epic 4A removes `orgRole` from `AuthContext` in the same PR window, and (b) Epics 3-4 are deployed together in practice.
 
 ### Safety invariants
 
@@ -512,12 +596,14 @@ Each epic is independently deployable. If Epic 3 causes issues:
 
 ### Cache eviction (critical)
 
+Implemented via `MemberCacheService` (extracted from `MemberFilter` to avoid circular dependencies). See Section 1.5.
+
 | Mutation | Eviction scope |
 |---|---|
 | `assignRole(memberId, orgRoleId)` | Evict that member |
 | `updateRole(roleId, capabilities)` | Evict ALL members with that role |
 | `deleteRole(roleId)` | Blocked if members assigned |
-| Webhook member sync | Evict that member (existing) |
+| Webhook member sync | Evict that member (existing, rewired to `MemberCacheService`) |
 
 ### Risks mitigated
 
@@ -527,3 +613,19 @@ Each epic is independently deployable. If Epic 3 causes issues:
 | Invitation race (user arrives before record committed) | Invitation is synchronous admin action; user arrives via email link seconds-to-hours later. If invitation deleted/expired, user gets default "member" role. |
 | Cache staleness after role change | Explicit eviction on all mutation paths. 1-hour TTL as safety net. |
 | `MemberFilter` bypassed | Applied to all `/api/**` routes by `SecurityConfig`. Portal routes use separate `CustomerAuthFilter`. Internal routes use `ApiKeyAuthFilter`. No unprotected paths. |
+
+---
+
+## Open Questions (Resolved)
+
+**Q1: Keycloak invitation emails — does Keycloak have an API for sending emails independent of org role assignment?**
+
+Yes. Keycloak 26+ has `POST /admin/realms/{realm}/organizations/{orgId}/members/invite-user` which sends an invitation email with a redirect URL. The role assignment is a separate step (`/organization-roles/grant`). The backend's `InvitationService` calls only the invite-user endpoint (identity onboarding) and stores the role in the product DB. If Keycloak's invitation email proves inadequate, the backend can send its own email using the existing email infrastructure (Mailpit in dev).
+
+**Q2: POST /api/orgs — does the backend need Keycloak Admin SDK dependency?**
+
+Yes. The backend will add a dependency on `keycloak-admin-client` (the official Keycloak Java Admin Client library). This is the same library the gateway currently uses. Configuration properties (`keycloak.admin.*`) move to the backend's `application.yml`. This adds ~1 new Maven dependency and a configuration block.
+
+**Q3: Cache TTL — is 1-hour stale data acceptable if eviction fails silently?**
+
+The 1-hour TTL is a safety net, not the primary eviction mechanism. `MemberCacheService` evicts explicitly on all mutation paths. If eviction fails (e.g., the service throws before eviction), the mutation itself also failed (transactional), so the cache is still consistent. The only scenario where stale data persists is if the eviction call succeeds but the cache entry is somehow not removed — this is a Caffeine bug, not a design issue. For security-sensitive operations (owner-only checks), the check reads `RequestScopes.ORG_ROLE` which is populated from the cached value — a stale "admin" could not pass a `requireOwner()` check because it compares against "owner" specifically.

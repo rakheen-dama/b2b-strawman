@@ -3,7 +3,7 @@ package io.b2mash.b2b.b2bstrawman.multitenancy;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import io.b2mash.b2b.b2bstrawman.security.ClerkJwtUtils;
+import io.b2mash.b2b.b2bstrawman.security.JwtUtils;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -55,8 +55,8 @@ public class TenantFilter extends OncePerRequestFilter {
 
     if (authentication instanceof JwtAuthenticationToken jwtAuth) {
       Jwt jwt = jwtAuth.getToken();
-      // ClerkJwtUtils.extractOrgId handles both Clerk v2 and Keycloak formats
-      String orgId = ClerkJwtUtils.extractOrgId(jwt);
+      // JwtUtils.extractOrgId handles Keycloak format
+      String orgId = JwtUtils.extractOrgId(jwt);
 
       if (orgId != null) {
         String schema = resolveTenant(orgId);
@@ -72,7 +72,7 @@ public class TenantFilter extends OncePerRequestFilter {
           TenantProvisioningService svc =
               jitProvisioningEnabled ? provisioningService.getIfAvailable() : null;
           if (svc != null) {
-            String orgRole = ClerkJwtUtils.extractOrgRole(jwt);
+            String orgRole = JwtUtils.extractOrgRole(jwt);
             // For Keycloak JWTs, role may not be in Clerk format — allow any authenticated user to
             // trigger JIT provisioning (first-login scenario)
             boolean canProvision =
@@ -137,7 +137,7 @@ public class TenantFilter extends OncePerRequestFilter {
   }
 
   private String attemptJitProvisioning(Jwt jwt, String orgId, TenantProvisioningService svc) {
-    String orgSlug = ClerkJwtUtils.extractOrgSlug(jwt);
+    String orgSlug = JwtUtils.extractOrgSlug(jwt);
     String orgName = orgSlug != null ? orgSlug : orgId;
     try {
       log.info("JIT provisioning tenant for org {}", orgId);

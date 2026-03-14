@@ -13,8 +13,8 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.stereotype.Component;
 
 /**
- * Converts JWT tokens (Clerk v2 or Keycloak) to Spring Security authentication tokens with proper
- * granted authorities. Supports both providers via ClerkJwtUtils dual-mode extraction.
+ * Converts JWT tokens (Keycloak) to Spring Security authentication tokens with proper granted
+ * authorities. Extracts role from Keycloak JWT via JwtUtils.
  */
 @Component
 public class ClerkJwtAuthenticationConverter
@@ -40,7 +40,7 @@ public class ClerkJwtAuthenticationConverter
 
     // Keep existing ROLE_ORG_* mapping during migration (needed until @PreAuthorize annotations
     // are migrated to capability-based checks)
-    String orgRole = ClerkJwtUtils.extractOrgRole(jwt);
+    String orgRole = JwtUtils.extractOrgRole(jwt);
     if (orgRole != null) {
       String springRole = ROLE_MAPPING.get(orgRole);
       if (springRole != null) {

@@ -9,7 +9,7 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.oauth2.jwt.Jwt;
 
-class ClerkJwtUtilsGroupsTest {
+class JwtUtilsGroupsTest {
 
   private static Jwt.Builder baseJwt() {
     return Jwt.withTokenValue("token")
@@ -23,16 +23,16 @@ class ClerkJwtUtilsGroupsTest {
   void extractGroups_keycloakJwt_returnsGroups() {
     Jwt jwt = baseJwt().claim("groups", List.of("platform-admins", "other-group")).build();
 
-    Set<String> groups = ClerkJwtUtils.extractGroups(jwt);
+    Set<String> groups = JwtUtils.extractGroups(jwt);
 
     assertThat(groups).containsExactlyInAnyOrder("platform-admins", "other-group");
   }
 
   @Test
-  void extractGroups_clerkJwt_returnsEmpty() {
-    Jwt jwt = baseJwt().claim("o", java.util.Map.of("id", "org_123", "rol", "owner")).build();
+  void extractGroups_jwtWithoutGroupsClaim_returnsEmpty() {
+    Jwt jwt = baseJwt().claim("organization", List.of("my-org")).build();
 
-    Set<String> groups = ClerkJwtUtils.extractGroups(jwt);
+    Set<String> groups = JwtUtils.extractGroups(jwt);
 
     assertThat(groups).isEmpty();
   }
@@ -41,7 +41,7 @@ class ClerkJwtUtilsGroupsTest {
   void extractGroups_missingClaim_returnsEmpty() {
     Jwt jwt = baseJwt().claim("sub", "user-1").build();
 
-    Set<String> groups = ClerkJwtUtils.extractGroups(jwt);
+    Set<String> groups = JwtUtils.extractGroups(jwt);
 
     assertThat(groups).isEmpty();
   }
@@ -51,7 +51,7 @@ class ClerkJwtUtilsGroupsTest {
     // Jwt.Builder does not allow null claim values, so a missing claim is the equivalent
     Jwt jwt = baseJwt().build();
 
-    Set<String> groups = ClerkJwtUtils.extractGroups(jwt);
+    Set<String> groups = JwtUtils.extractGroups(jwt);
 
     assertThat(groups).isEmpty();
   }

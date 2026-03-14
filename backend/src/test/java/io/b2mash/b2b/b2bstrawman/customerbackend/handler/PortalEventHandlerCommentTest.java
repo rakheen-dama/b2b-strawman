@@ -178,7 +178,7 @@ class PortalEventHandlerCommentTest {
     var comment =
         createComment(commentId, projectId, "Shared comment body", createdAt, authorMemberId);
     when(commentRepository.findById(commentId)).thenReturn(Optional.of(comment));
-    var author = new Member("clerk_author", "author@test.com", "Original Author", null, "member");
+    var author = new Member("clerk_author", "author@test.com", "Original Author", null);
     when(memberRepository.findById(authorMemberId)).thenReturn(Optional.of(author));
     when(readModelRepo.findCustomerIdsByProjectId(projectId, ORG_ID))
         .thenReturn(List.of(customerId));

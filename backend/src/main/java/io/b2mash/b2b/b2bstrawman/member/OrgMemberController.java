@@ -29,7 +29,7 @@ public class OrgMemberController {
 
   @GetMapping
   public ResponseEntity<List<OrgMemberResponse>> listOrgMembers() {
-    var members = memberRepository.findAll().stream().map(OrgMemberResponse::from).toList();
+    var members = memberRepository.findAllWithRole().stream().map(OrgMemberResponse::from).toList();
     return ResponseEntity.ok(members);
   }
 
@@ -54,7 +54,7 @@ public class OrgMemberController {
           member.getName(),
           member.getEmail(),
           member.getAvatarUrl(),
-          member.getOrgRole());
+          member.getRoleSlug());
     }
   }
 }

@@ -37,13 +37,10 @@ public class Member {
   @Column(name = "avatar_url", length = 1000)
   private String avatarUrl;
 
-  @Column(name = "org_role", nullable = false, length = 50)
-  private String orgRole;
-
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
-  @Column(name = "org_role_id")
+  @Column(name = "org_role_id", nullable = false)
   private UUID orgRoleId;
 
   @ManyToOne(fetch = FetchType.LAZY)
@@ -62,12 +59,11 @@ public class Member {
 
   protected Member() {}
 
-  public Member(String clerkUserId, String email, String name, String avatarUrl, String orgRole) {
+  public Member(String clerkUserId, String email, String name, String avatarUrl) {
     this.clerkUserId = clerkUserId;
     this.email = email;
     this.name = name;
     this.avatarUrl = avatarUrl;
-    this.orgRole = orgRole;
     this.createdAt = Instant.now();
     this.updatedAt = Instant.now();
   }
@@ -92,10 +88,6 @@ public class Member {
     return avatarUrl;
   }
 
-  public String getOrgRole() {
-    return orgRole;
-  }
-
   public Instant getCreatedAt() {
     return createdAt;
   }
@@ -116,8 +108,12 @@ public class Member {
     return orgRoleEntity;
   }
 
+  /**
+   * Returns the slug of the assigned OrgRole (e.g. "owner", "admin", "member"). Requires the
+   * orgRoleEntity to be loaded (via fetch join or Hibernate proxy).
+   */
   public String getRoleSlug() {
-    return orgRoleEntity != null ? orgRoleEntity.getSlug() : orgRole;
+    return orgRoleEntity.getSlug();
   }
 
   public Set<String> getCapabilityOverrides() {
@@ -128,11 +124,10 @@ public class Member {
     this.capabilityOverrides = new HashSet<>(capabilityOverrides);
   }
 
-  public void updateFrom(String email, String name, String avatarUrl, String orgRole) {
+  public void updateFrom(String email, String name, String avatarUrl) {
     if (email != null) this.email = email;
     if (name != null) this.name = name;
     if (avatarUrl != null) this.avatarUrl = avatarUrl;
-    if (orgRole != null) this.orgRole = orgRole;
     this.updatedAt = Instant.now();
   }
 }

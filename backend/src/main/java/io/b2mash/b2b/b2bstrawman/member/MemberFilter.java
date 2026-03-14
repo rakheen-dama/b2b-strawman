@@ -132,7 +132,7 @@ public class MemberFilter extends OncePerRequestFilter {
   private MemberCacheService.MemberInfo resolveOrCreateMember(String clerkUserId, Jwt jwt) {
     return memberRepository
         .findByClerkUserId(clerkUserId)
-        .map(m -> new MemberCacheService.MemberInfo(m.getId(), m.getOrgRole()))
+        .map(m -> new MemberCacheService.MemberInfo(m.getId(), resolveRoleSlug(m.getOrgRoleId())))
         .orElseGet(() -> lazyCreateMember(clerkUserId, jwt));
   }
 
@@ -176,7 +176,7 @@ public class MemberFilter extends OncePerRequestFilter {
     }
 
     try {
-      var member = new Member(clerkUserId, email, name, null, effectiveRole);
+      var member = new Member(clerkUserId, email, name, null);
 
       // Assign system role based on the effective org role before persisting
       orgRoleService
@@ -195,11 +195,18 @@ public class MemberFilter extends OncePerRequestFilter {
       // Race condition: another instance already created this member
       return memberRepository
           .findByClerkUserId(clerkUserId)
-          .map(m -> new MemberCacheService.MemberInfo(m.getId(), m.getOrgRole()))
+          .map(m -> new MemberCacheService.MemberInfo(m.getId(), resolveRoleSlug(m.getOrgRoleId())))
           .orElseThrow(
               () ->
                   new IllegalStateException(
                       "Member not found after constraint violation for: " + clerkUserId));
     }
+  }
+
+  private String resolveRoleSlug(UUID orgRoleId) {
+    if (orgRoleId == null) {
+      return null;
+    }
+    return orgRoleRepository.findById(orgRoleId).map(r -> r.getSlug()).orElse(null);
   }
 }

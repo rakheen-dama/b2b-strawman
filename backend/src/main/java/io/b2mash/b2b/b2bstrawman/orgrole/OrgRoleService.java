@@ -59,16 +59,6 @@ public class OrgRoleService {
             .findById(memberId)
             .orElseThrow(() -> new ResourceNotFoundException("Member", memberId));
 
-    if (member.getOrgRoleId() == null) {
-      // Fallback: if no explicit OrgRole is assigned, derive capabilities from the role slug.
-      // This path will be removed when orgRoleId becomes NOT NULL (Task 7 / V69 migration).
-      String roleSlug = member.getRoleSlug();
-      if ("owner".equals(roleSlug) || "admin".equals(roleSlug)) {
-        return Set.copyOf(Capability.ALL_NAMES);
-      }
-      return Collections.emptySet();
-    }
-
     var role =
         orgRoleRepository
             .findById(member.getOrgRoleId())
@@ -322,16 +312,8 @@ public class OrgRoleService {
     }
 
     // Resolve previous role name for audit
-    String previousRole;
-    if (member.getOrgRoleId() != null) {
-      previousRole =
-          orgRoleRepository
-              .findById(member.getOrgRoleId())
-              .map(OrgRole::getName)
-              .orElse(displayName(member.getRoleSlug()));
-    } else {
-      previousRole = displayName(member.getRoleSlug());
-    }
+    String previousRole =
+        orgRoleRepository.findById(member.getOrgRoleId()).map(OrgRole::getName).orElse("Unknown");
 
     member.setOrgRoleId(request.orgRoleId());
     member.setCapabilityOverrides(overrides);
@@ -394,19 +376,6 @@ public class OrgRoleService {
         .replaceAll("[^a-z0-9]+", "-")
         .replaceAll("-+", "-")
         .replaceAll("^-|-$", "");
-  }
-
-  /** Maps a Clerk role slug (e.g. "owner") to a human-readable display name. */
-  private static String displayName(String clerkRole) {
-    if (clerkRole == null) {
-      return "None";
-    }
-    return switch (clerkRole) {
-      case "owner" -> "Owner";
-      case "admin" -> "Admin";
-      case "member" -> "Member";
-      default -> clerkRole;
-    };
   }
 
   private void validateCapabilities(Set<String> capabilities) {

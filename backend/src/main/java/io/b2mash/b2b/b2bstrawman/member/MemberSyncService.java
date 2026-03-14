@@ -80,18 +80,25 @@ public class MemberSyncService {
                           if (existing.isPresent()) {
                             var member = existing.get();
 
-                            // Capture old role before mutation
-                            String oldRole = member.getOrgRole();
+                            // Capture old role slug before mutation
+                            String oldRoleSlug = resolveRoleSlug(member.getOrgRoleId());
 
-                            member.updateFrom(email, name, avatarUrl, orgRole);
+                            member.updateFrom(email, name, avatarUrl);
+
+                            // Update org role if explicitly provided
                             if (orgRoleId != null) {
                               member.setOrgRoleId(orgRoleId);
+                            } else if (orgRole != null) {
+                              orgRoleRepository
+                                  .findBySlug(normalizeRoleSlug(orgRole))
+                                  .ifPresent(systemRole -> member.setOrgRoleId(systemRole.getId()));
                             }
                             memberRepository.save(member);
                             log.info("Updated member {} in tenant {}", clerkUserId, schemaName);
 
                             // Only emit role_changed if role actually changed
-                            if (orgRole != null && !oldRole.equals(orgRole)) {
+                            String newRoleSlug = resolveRoleSlug(member.getOrgRoleId());
+                            if (newRoleSlug != null && !newRoleSlug.equals(oldRoleSlug)) {
                               auditService.log(
                                   AuditEventBuilder.builder()
                                       .eventType("member.role_changed")
@@ -101,7 +108,12 @@ public class MemberSyncService {
                                       .source("WEBHOOK")
                                       .details(
                                           Map.of(
-                                              "org_role", Map.of("from", oldRole, "to", orgRole)))
+                                              "org_role",
+                                              Map.of(
+                                                  "from",
+                                                  oldRoleSlug != null ? oldRoleSlug : "unknown",
+                                                  "to",
+                                                  newRoleSlug)))
                                       .build());
                             }
 
@@ -110,12 +122,12 @@ public class MemberSyncService {
 
                           enforceMemberLimit(clerkOrgId);
 
-                          var member = new Member(clerkUserId, email, name, avatarUrl, orgRole);
+                          var member = new Member(clerkUserId, email, name, avatarUrl);
                           if (orgRoleId != null) {
                             member.setOrgRoleId(orgRoleId);
                           } else if (orgRole != null) {
                             orgRoleRepository
-                                .findBySlug(orgRole)
+                                .findBySlug(normalizeRoleSlug(orgRole))
                                 .ifPresent(systemRole -> member.setOrgRoleId(systemRole.getId()));
                           }
                           memberRepository.save(member);
@@ -236,6 +248,25 @@ public class MemberSyncService {
         .orElseThrow(
             () -> new IllegalArgumentException("No tenant provisioned for org: " + clerkOrgId))
         .getSchemaName();
+  }
+
+  private String resolveRoleSlug(UUID orgRoleId) {
+    if (orgRoleId == null) {
+      return null;
+    }
+    return orgRoleRepository.findById(orgRoleId).map(r -> r.getSlug()).orElse(null);
+  }
+
+  /**
+   * Normalizes Keycloak-format role strings (e.g. "org:admin") to plain slugs ("admin"). Clerk
+   * format roles ("admin") pass through unchanged.
+   */
+  private static String normalizeRoleSlug(String role) {
+    if (role == null) {
+      return null;
+    }
+    // Strip "org:" prefix if present (Keycloak JWT format)
+    return role.startsWith("org:") ? role.substring(4) : role;
   }
 
   public record SyncResult(UUID memberId, boolean created) {}

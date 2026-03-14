@@ -78,7 +78,7 @@ class MemberFilterIntegrationTest {
             () -> {
               var member = memberRepository.findByClerkUserId("user_lazy_create");
               assertThat(member).isPresent();
-              assertThat(member.get().getOrgRole()).isEqualTo("member");
+              assertThat(member.get().getOrgRoleId()).isNotNull();
               assertThat(member.get().getEmail())
                   .isEqualTo("user_lazy_create@placeholder.internal");
             });

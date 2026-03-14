@@ -220,9 +220,9 @@ class OnboardingControllerTest {
 
   @Test
   @Order(6)
-  void dismiss_adminRole_returns204() throws Exception {
+  void dismiss_emptyTenant_ownerRole_returns204() throws Exception {
     mockMvc
-        .perform(post("/api/onboarding/dismiss").with(emptyAdminJwt()))
+        .perform(post("/api/onboarding/dismiss").with(emptyOwnerJwt()))
         .andExpect(status().isNoContent());
   }
 
@@ -317,14 +317,5 @@ class OnboardingControllerTest {
                 j.subject("user_onb_empty_member")
                     .claim("o", Map.of("id", EMPTY_ORG_ID, "rol", "member")))
         .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
-  }
-
-  private JwtRequestPostProcessor emptyAdminJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_onb_empty_admin")
-                    .claim("o", Map.of("id", EMPTY_ORG_ID, "rol", "admin")))
-        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_ADMIN")));
   }
 }

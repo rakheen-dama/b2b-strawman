@@ -9,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.Member;
+import io.b2mash.b2b.b2bstrawman.member.MemberFilter;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest;
 import io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.UpdateOrgRoleRequest;
@@ -33,6 +34,7 @@ class OrgRoleServiceTest {
   @Mock private MemberRepository memberRepository;
   @Mock private io.b2mash.b2b.b2bstrawman.audit.AuditService auditService;
   @Mock private io.b2mash.b2b.b2bstrawman.notification.NotificationService notificationService;
+  @Mock private MemberFilter memberFilter;
   @InjectMocks private OrgRoleService service;
 
   @Test
@@ -216,14 +218,20 @@ class OrgRoleServiceTest {
     when(orgRoleRepository.findById(ROLE_ID)).thenReturn(Optional.of(role));
     when(orgRoleRepository.existsByNameIgnoreCaseAndIdNot("New Name", ROLE_ID)).thenReturn(false);
     when(orgRoleRepository.save(any(OrgRole.class))).thenAnswer(inv -> inv.getArgument(0));
+    when(memberRepository.findByOrgRoleId(ROLE_ID)).thenReturn(List.of());
     when(memberRepository.countByOrgRoleId(ROLE_ID)).thenReturn(0L);
 
-    var result = service.updateRole(ROLE_ID, request);
+    // Bind TENANT_ID since cache eviction requires it when capabilities change
+    ScopedValue.where(io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes.TENANT_ID, "tenant_test")
+        .run(
+            () -> {
+              var result = service.updateRole(ROLE_ID, request);
 
-    assertThat(result.name()).isEqualTo("New Name");
-    assertThat(result.slug()).isEqualTo("new-name");
-    assertThat(result.description()).isEqualTo("New desc");
-    assertThat(result.capabilities()).containsExactly("PROJECT_MANAGEMENT");
+              assertThat(result.name()).isEqualTo("New Name");
+              assertThat(result.slug()).isEqualTo("new-name");
+              assertThat(result.description()).isEqualTo("New desc");
+              assertThat(result.capabilities()).containsExactly("PROJECT_MANAGEMENT");
+            });
   }
 
   @Test

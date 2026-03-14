@@ -1,8 +1,10 @@
 package io.b2mash.b2b.b2bstrawman.multitenancy;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -119,5 +121,25 @@ class RequestScopesTest {
             () -> {
               assertThat(RequestScopes.getOrgRole()).isEqualTo("admin");
             });
+  }
+
+  @Test
+  void requireOwner_withOwnerRole_succeeds() {
+    ScopedValue.where(RequestScopes.ORG_ROLE, "owner")
+        .run(() -> assertThatCode(RequestScopes::requireOwner).doesNotThrowAnyException());
+  }
+
+  @Test
+  void requireOwner_withAdminRole_throwsForbidden() {
+    ScopedValue.where(RequestScopes.ORG_ROLE, "admin")
+        .run(
+            () ->
+                assertThatThrownBy(RequestScopes::requireOwner)
+                    .isInstanceOf(ForbiddenException.class));
+  }
+
+  @Test
+  void requireOwner_withUnboundRole_throwsForbidden() {
+    assertThatThrownBy(RequestScopes::requireOwner).isInstanceOf(ForbiddenException.class);
   }
 }

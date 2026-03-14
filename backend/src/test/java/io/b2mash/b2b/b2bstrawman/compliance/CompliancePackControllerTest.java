@@ -62,6 +62,7 @@ class CompliancePackControllerTest {
     memberIdOwner =
         UUID.fromString(
             syncMember("user_pack_owner", "pack_owner@test.com", "Pack Owner", "owner"));
+    syncMember("user_admin", "pack_admin@test.com", "Pack Admin", "admin");
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();

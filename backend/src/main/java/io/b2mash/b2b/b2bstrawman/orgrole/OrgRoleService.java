@@ -7,6 +7,7 @@ import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.Member;
+import io.b2mash.b2b.b2bstrawman.member.MemberFilter;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
@@ -24,6 +25,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,16 +38,19 @@ public class OrgRoleService {
   private final MemberRepository memberRepository;
   private final AuditService auditService;
   private final NotificationService notificationService;
+  private final MemberFilter memberFilter;
 
   public OrgRoleService(
       OrgRoleRepository orgRoleRepository,
       MemberRepository memberRepository,
       AuditService auditService,
-      NotificationService notificationService) {
+      NotificationService notificationService,
+      @Lazy MemberFilter memberFilter) {
     this.orgRoleRepository = orgRoleRepository;
     this.memberRepository = memberRepository;
     this.auditService = auditService;
     this.notificationService = notificationService;
+    this.memberFilter = memberFilter;
   }
 
   @Transactional(readOnly = true)
@@ -241,6 +246,12 @@ public class OrgRoleService {
         AuditEventBuilder.roleUpdated(role, addedCaps, removedCaps, affectedMembers.size()));
 
     if (capsChanged) {
+      // Evict cached member info for all affected members so they resolve updated capabilities
+      String tenantId = RequestScopes.requireTenantId();
+      for (var affectedMember : affectedMembers) {
+        memberFilter.evictFromCache(tenantId, affectedMember.getClerkUserId());
+      }
+
       try {
         for (var affectedMember : affectedMembers) {
           notificationService.createIfEnabled(
@@ -328,6 +339,10 @@ public class OrgRoleService {
     member.setOrgRoleId(request.orgRoleId());
     member.setCapabilityOverrides(overrides);
     memberRepository.save(member);
+
+    // Evict cached member info so subsequent requests resolve the new role
+    String tenantId = RequestScopes.requireTenantId();
+    memberFilter.evictFromCache(tenantId, member.getClerkUserId());
 
     auditService.log(
         AuditEventBuilder.memberRoleChanged(member, previousRole, role.getName(), overrides));

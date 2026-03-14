@@ -2,7 +2,6 @@ package io.b2mash.b2b.b2bstrawman.security;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
@@ -12,18 +11,14 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.stereotype.Component;
 
 /**
- * Converts JWT tokens (Clerk v2 or Keycloak) to Spring Security authentication tokens with proper
- * granted authorities. Supports both providers via ClerkJwtUtils dual-mode extraction.
+ * Converts JWT tokens to Spring Security authentication tokens. Always grants ROLE_ORG_MEMBER as
+ * baseline authority for any authenticated user with an org context. The actual role-level
+ * authorization (admin/owner) is resolved from the DB by MemberFilter and bound via
+ * RequestScopes.ORG_ROLE. Migration to @RequiresCapability will happen in Epic 347.
  */
 @Component
 public class ClerkJwtAuthenticationConverter
     implements Converter<Jwt, AbstractAuthenticationToken> {
-
-  private static final Map<String, String> ROLE_MAPPING =
-      Map.of(
-          Roles.ORG_OWNER, Roles.AUTHORITY_ORG_OWNER,
-          Roles.ORG_ADMIN, Roles.AUTHORITY_ORG_ADMIN,
-          Roles.ORG_MEMBER, Roles.AUTHORITY_ORG_MEMBER);
 
   @Override
   public AbstractAuthenticationToken convert(Jwt jwt) {
@@ -32,15 +27,7 @@ public class ClerkJwtAuthenticationConverter
   }
 
   private Collection<GrantedAuthority> extractAuthorities(Jwt jwt) {
-    // ClerkJwtUtils.extractOrgRole handles both Clerk v2 and Keycloak formats
-    String orgRole = ClerkJwtUtils.extractOrgRole(jwt);
-    if (orgRole == null) {
-      return List.of();
-    }
-    String springRole = ROLE_MAPPING.get(orgRole);
-    if (springRole == null) {
-      return List.of();
-    }
-    return List.of(new SimpleGrantedAuthority(springRole));
+    // Always grant ROLE_ORG_MEMBER as baseline — real authorization is via DB role + capabilities
+    return List.of(new SimpleGrantedAuthority(Roles.AUTHORITY_ORG_MEMBER));
   }
 }

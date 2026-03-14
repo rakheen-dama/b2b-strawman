@@ -103,15 +103,6 @@ public final class ClerkJwtUtils {
     return null;
   }
 
-  /**
-   * Returns true if the JWT is Keycloak format with a flat list (no inline roles). This means the
-   * role came from a default, not from the token itself.
-   */
-  public static boolean isKeycloakFlatListFormat(Jwt jwt) {
-    Object orgClaim = jwt.getClaim(KEYCLOAK_ORG_CLAIM);
-    return orgClaim instanceof List<?>;
-  }
-
   @SuppressWarnings("unchecked")
   private static String extractKeycloakOrgRole(Jwt jwt) {
     Object orgClaim = jwt.getClaim(KEYCLOAK_ORG_CLAIM);

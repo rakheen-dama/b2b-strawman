@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.multitenancy;
 
+import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.MissingOrganizationContextException;
 import java.util.Collections;
 import java.util.Set;
@@ -67,6 +68,17 @@ public final class RequestScopes {
   /** Returns the current member's org role, or null if not bound. */
   public static String getOrgRole() {
     return ORG_ROLE.isBound() ? ORG_ROLE.get() : null;
+  }
+
+  /**
+   * Requires the current member to have the "owner" org role. Throws ForbiddenException if the
+   * current member is not the organization owner.
+   */
+  public static void requireOwner() {
+    if (!"owner".equals(getOrgRole())) {
+      throw new ForbiddenException(
+          "Owner required", "Only the organization owner can perform this action");
+    }
   }
 
   /** Returns the tenant schema name. Throws if not bound by filter chain. */

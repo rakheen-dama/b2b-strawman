@@ -2,10 +2,10 @@ package io.b2mash.b2b.b2bstrawman.member;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import io.b2mash.b2b.b2bstrawman.invitation.InvitationService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ScopedFilterChain;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
-import io.b2mash.b2b.b2bstrawman.security.ClerkJwtUtils;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -33,12 +33,17 @@ public class MemberFilter extends OncePerRequestFilter {
 
   private final MemberRepository memberRepository;
   private final OrgRoleService orgRoleService;
+  private final InvitationService invitationService;
   private final Cache<String, MemberInfo> memberCache =
       Caffeine.newBuilder().maximumSize(50_000).expireAfterWrite(Duration.ofHours(1)).build();
 
-  public MemberFilter(MemberRepository memberRepository, OrgRoleService orgRoleService) {
+  public MemberFilter(
+      MemberRepository memberRepository,
+      OrgRoleService orgRoleService,
+      InvitationService invitationService) {
     this.memberRepository = memberRepository;
     this.orgRoleService = orgRoleService;
+    this.invitationService = invitationService;
   }
 
   @Override
@@ -97,7 +102,6 @@ public class MemberFilter extends OncePerRequestFilter {
 
     Jwt jwt = jwtAuth.getToken();
     String clerkUserId = jwt.getSubject();
-    String jwtOrgRole = ClerkJwtUtils.extractOrgRole(jwt);
 
     if (clerkUserId == null) {
       return null;
@@ -106,7 +110,7 @@ public class MemberFilter extends OncePerRequestFilter {
     String cacheKey = tenantId + ":" + clerkUserId;
     MemberInfo info;
     try {
-      info = memberCache.get(cacheKey, k -> resolveOrCreateMember(clerkUserId, jwtOrgRole, jwt));
+      info = memberCache.get(cacheKey, k -> resolveOrCreateMember(clerkUserId, jwt));
     } catch (Exception e) {
       log.warn(
           "Failed to resolve/create member for user {} in tenant {}: {}",
@@ -116,22 +120,18 @@ public class MemberFilter extends OncePerRequestFilter {
       return null;
     }
 
-    // If JWT has an explicit role (rich format, Clerk, or org_role claim), prefer it.
-    // Otherwise (flat list default), trust the DB role — it was set correctly during onboarding.
-    boolean jwtHasExplicitRole =
-        !ClerkJwtUtils.isKeycloakFlatListFormat(jwt) || jwt.getClaimAsString("org_role") != null;
-    String effectiveRole = jwtHasExplicitRole ? jwtOrgRole : info.orgRole();
-    return new MemberInfo(info.memberId(), effectiveRole);
+    // Role always comes from DB — no JWT override
+    return info;
   }
 
-  private MemberInfo resolveOrCreateMember(String clerkUserId, String orgRole, Jwt jwt) {
+  private MemberInfo resolveOrCreateMember(String clerkUserId, Jwt jwt) {
     return memberRepository
         .findByClerkUserId(clerkUserId)
         .map(m -> new MemberInfo(m.getId(), m.getOrgRole()))
-        .orElseGet(() -> lazyCreateMember(clerkUserId, orgRole, jwt));
+        .orElseGet(() -> lazyCreateMember(clerkUserId, jwt));
   }
 
-  private MemberInfo lazyCreateMember(String clerkUserId, String orgRole, Jwt jwt) {
+  private MemberInfo lazyCreateMember(String clerkUserId, Jwt jwt) {
     // Always extract real email/name from JWT when available.
     // Keycloak JWTs include email/name directly; Clerk JWTs may not (updated via webhook).
     String jwtEmail = jwt.getClaimAsString("email");
@@ -142,10 +142,28 @@ public class MemberFilter extends OncePerRequestFilter {
             : clerkUserId + "@placeholder.internal";
     String name = jwtName;
 
+    // Determine role: check pending invitation first, then default to member
+    String effectiveRole = Roles.ORG_MEMBER;
+    UUID acceptedInvitationId = null;
+
+    if (jwtEmail != null && jwtEmail.contains("@")) {
+      try {
+        var pendingInvitation = invitationService.findPendingByEmail(jwtEmail);
+        if (pendingInvitation.isPresent()) {
+          var invitation = pendingInvitation.get();
+          effectiveRole = invitation.getOrgRole().getSlug();
+          acceptedInvitationId = invitation.getId();
+          log.info("Found pending invitation for email {} with role {}", jwtEmail, effectiveRole);
+        }
+      } catch (Exception e) {
+        log.warn("Failed to lookup pending invitation for email {}: {}", jwtEmail, e.getMessage());
+      }
+    }
+
     // First member in a newly-provisioned tenant becomes owner (founding user).
-    String effectiveRole = orgRole != null ? orgRole : Roles.ORG_MEMBER;
     if (Roles.ORG_MEMBER.equals(effectiveRole) && memberRepository.count() == 0) {
       effectiveRole = Roles.ORG_OWNER;
+      acceptedInvitationId = null; // Don't mark invitation as accepted if promoting to owner
       log.info("Promoting first member {} to owner (founding user)", clerkUserId);
     }
 
@@ -158,6 +176,16 @@ public class MemberFilter extends OncePerRequestFilter {
           .ifPresent(systemRole -> member.setOrgRoleId(systemRole.getId()));
 
       memberRepository.save(member);
+
+      // Mark the invitation as accepted after member creation succeeds
+      if (acceptedInvitationId != null) {
+        try {
+          invitationService.markAccepted(acceptedInvitationId);
+        } catch (Exception e) {
+          log.warn(
+              "Failed to mark invitation {} as accepted: {}", acceptedInvitationId, e.getMessage());
+        }
+      }
 
       log.info(
           "Lazy-created member {} for user {} in tenant {}",

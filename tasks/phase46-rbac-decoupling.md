@@ -21,7 +21,7 @@ This phase completes the separation of authentication from authorization. Keyclo
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 345 | PendingInvitation Entity & Invitation Service | Backend | — | M | 345A, 345B | |
+| 345 | PendingInvitation Entity & Invitation Service | Backend | — | M | 345A, 345B | **Done** (PR #670) |
 | 346 | MemberFilter DB-Only Role Resolution | Backend | 345 | M | 346A, 346B | |
 | 347 | @PreAuthorize Migration (Remaining Controllers) | Backend | 346 | L | 347A, 347B, 347C | |
 | 348 | Member Entity Cleanup & JwtUtils Rename | Backend | 347 | M | 348A, 348B | |
@@ -176,8 +176,8 @@ CLEANUP TRACK (after E351)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 0a | 345 | 345A | `PendingInvitation` entity, V68 migration, repository, DTO records. ~5 new files. Backend only. | |
-| 0b | 345 | 345B | `InvitationService` CRUD, `InvitationController` (POST, GET, DELETE), audit events, expiry validation. ~5 new files + 1 test file (~10 tests). Backend only. | |
+| 0a | 345 | 345A | `PendingInvitation` entity, V68 migration, repository, DTO records. ~5 new files. Backend only. | **Done** (PR #670) |
+| 0b | 345 | 345B | `InvitationService` CRUD, `InvitationController` (POST, GET, DELETE), audit events, expiry validation. ~5 new files + 1 test file (~10 tests). Backend only. | **Done** (PR #670) |
 
 ### Stage 1: MemberFilter DB-Only + KeycloakAdminClient Move (parallel tracks)
 
@@ -266,8 +266,8 @@ Stage 7: [353A] -> [353B]                                                      (
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **345A** | 345.1--345.5 | `PendingInvitation` entity, `InvitationStatus` enum (PENDING/ACCEPTED/EXPIRED/REVOKED), `PendingInvitationRepository`, DTO records, V68 tenant migration (1 new table + 2 indexes). ~5 new files. Backend only. | |
-| **345B** | 345.6--345.12 | `InvitationService` (create, list, revoke, findPendingByEmail, markAccepted, expiry check), `InvitationController` (POST, GET, DELETE), audit events (INVITATION_CREATED, INVITATION_REVOKED), validation (duplicate email, member exists, role exists). ~5 new files + 1 test file (~10 tests). Backend only. | |
+| **345A** | 345.1--345.5 | `PendingInvitation` entity, `InvitationStatus` enum (PENDING/ACCEPTED/EXPIRED/REVOKED), `PendingInvitationRepository`, DTO records, V68 tenant migration (1 new table + 2 indexes). ~5 new files. Backend only. | **Done** (PR #670) |
+| **345B** | 345.6--345.12 | `InvitationService` (create, list, revoke, findPendingByEmail, markAccepted, expiry check), `InvitationController` (POST, GET, DELETE), audit events (INVITATION_CREATED, INVITATION_REVOKED), validation (duplicate email, member exists, role exists). ~5 new files + 1 test file (~10 tests). Backend only. | **Done** (PR #670) |
 
 ### Tasks
 

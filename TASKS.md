@@ -389,6 +389,16 @@
 | 342 | Write Tools & Confirmation Flow | Backend | 341 | M | 342A, 342B | |
 | 343 | Chat UI — Panel & Message Rendering | Frontend | 341 | M | 343A, 343B | |
 | 344 | Chat UI — SSE Hook, Confirmation & Settings Page | Frontend | 342, 343 | M | 344A, 344B | |
+| **Phase 46 — RBAC Decoupling (Application-Managed Roles)** | | | | | | See [tasks/phase46-rbac-decoupling.md](tasks/phase46-rbac-decoupling.md) |
+| 345 | PendingInvitation Entity & Invitation Service | Backend | -- | M | 345A, 345B | **Done** (PR #670) |
+| 346 | MemberFilter DB-Only Role Resolution | Backend | 345 | M | 346A, 346B | |
+| 347 | @PreAuthorize Migration (Remaining Controllers) | Backend | 346 | L | 347A, 347B, 347C | |
+| 348 | Member Entity Cleanup & JwtUtils Rename | Backend | 347 | M | 348A, 348B | |
+| 349 | KeycloakAdminClient Backend Move & Org Endpoint | Backend | 345 | M | 349A, 349B | |
+| 350 | Gateway Authorization Removal | Gateway | 349 | M | 350A, 350B | |
+| 351 | Frontend Capabilities-Only Authorization | Frontend | 350A | L | 351A, 351B, 351C | |
+| 352 | Mock IDP & E2E Fixture Update | Frontend/E2E | 351 | S | 352A | |
+| 353 | Cleanup — Remove ROLE_ORG_* & Role Sync | Backend | 351 | S | 353A, 353B | |
 
 ---
 

@@ -6,12 +6,12 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldUsageInfo;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.IntakeFieldGroupResponse;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.PatchFieldDefinitionRequest;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.UpdateFieldDefinitionRequest;
+import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -44,7 +44,7 @@ public class FieldDefinitionController {
   }
 
   @PostMapping
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<FieldDefinitionResponse> create(
       @Valid @RequestBody CreateFieldDefinitionRequest request) {
     var response = fieldDefinitionService.create(request);
@@ -53,34 +53,33 @@ public class FieldDefinitionController {
   }
 
   @PutMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<FieldDefinitionResponse> update(
       @PathVariable UUID id, @Valid @RequestBody UpdateFieldDefinitionRequest request) {
     return ResponseEntity.ok(fieldDefinitionService.update(id, request));
   }
 
   @DeleteMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<Void> delete(@PathVariable UUID id) {
     fieldDefinitionService.deactivate(id);
     return ResponseEntity.noContent().build();
   }
 
   @GetMapping("/{id}/usage")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<FieldUsageInfo> getFieldUsage(@PathVariable UUID id) {
     return ResponseEntity.ok(fieldDefinitionService.getFieldUsage(id));
   }
 
   @GetMapping("/intake")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<IntakeFieldGroupResponse> getIntakeFields(
       @RequestParam EntityType entityType) {
     return ResponseEntity.ok(fieldDefinitionService.getIntakeFieldGroupResponse(entityType));
   }
 
   @PatchMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<FieldDefinitionResponse> patchRequiredForContexts(
       @PathVariable UUID id, @Valid @RequestBody PatchFieldDefinitionRequest request) {
     return ResponseEntity.ok(fieldDefinitionService.updateRequiredForContexts(id, request));

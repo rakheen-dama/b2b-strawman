@@ -8,7 +8,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,7 +28,6 @@ public class ProjectMemberController {
   }
 
   @GetMapping
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<ProjectMemberResponse>> listMembers(@PathVariable UUID projectId) {
     var members =
         projectMemberService.listProjectMembers(projectId).stream()
@@ -39,7 +37,6 @@ public class ProjectMemberController {
   }
 
   @PostMapping
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<Void> addMember(
       @PathVariable UUID projectId, @Valid @RequestBody AddMemberRequest request) {
     UUID addedBy = RequestScopes.requireMemberId();
@@ -51,7 +48,6 @@ public class ProjectMemberController {
   }
 
   @DeleteMapping("/{memberId}")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<Void> removeMember(
       @PathVariable UUID projectId, @PathVariable UUID memberId) {
     UUID requestedBy = RequestScopes.requireMemberId();
@@ -62,7 +58,6 @@ public class ProjectMemberController {
   }
 
   @PutMapping("/{memberId}/role")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<Void> transferLead(
       @PathVariable UUID projectId,
       @PathVariable UUID memberId,

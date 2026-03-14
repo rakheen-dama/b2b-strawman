@@ -99,8 +99,8 @@ class SecurityAuditTest {
   }
 
   @Test
-  void accessDenied_preAuthorize_producesAuditEvent() throws Exception {
-    // Member tries to DELETE a project (requires ROLE_ORG_OWNER) -- triggers AccessDeniedException
+  void accessDenied_requireOwner_producesAuditEvent() throws Exception {
+    // Member tries to DELETE a project (requires owner) -- triggers ForbiddenException
     mockMvc
         .perform(delete("/api/projects/" + projectId).with(memberJwt()))
         .andExpect(status().isForbidden());
@@ -130,7 +130,8 @@ class SecurityAuditTest {
               var event = matchingEvents.getFirst();
               assertThat(event.getEventType()).isEqualTo("security.access_denied");
               assertThat(event.getEntityType()).isEqualTo("security");
-              assertThat(event.getDetails()).containsEntry("reason", "insufficient_role");
+              assertThat(event.getDetails())
+                  .containsEntry("reason", "Only the organization owner can perform this action");
               assertThat(event.getSource()).isEqualTo("API");
             });
   }

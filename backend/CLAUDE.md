@@ -46,7 +46,7 @@ Organize by **feature**, not by layer. Each feature package contains its entity,
 ### Code Style
 - Use Java records for DTOs, request/response objects, and value objects
 - Prefer constructor injection (no `@Autowired` on fields)
-- Use `@PreAuthorize` annotations for role-based access control
+- Use `@RequiresCapability` annotations for capability-based access control (replaces `@PreAuthorize`)
 - Return `ResponseEntity` from controllers for explicit status codes
 - Use Spring's `ProblemDetail` (RFC 9457) for error responses
 - No Lombok — Java 25 records and pattern matching cover most use cases
@@ -105,7 +105,7 @@ Controllers are **HTTP adapters only**. Every controller method must be a one-li
 **Controllers MUST:**
 - Call exactly ONE service method per endpoint
 - Return `ResponseEntity` wrapping the service result
-- Use `@PreAuthorize` for role checks (declarative, not imperative)
+- Use `@RequiresCapability` for capability checks (declarative, not imperative)
 
 **Controllers MUST NOT:**
 - Inject repositories — if you need data, the service fetches it

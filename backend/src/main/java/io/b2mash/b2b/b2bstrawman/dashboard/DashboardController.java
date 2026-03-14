@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -43,7 +42,6 @@ public class DashboardController {
    * Requires view access to the project.
    */
   @GetMapping("/api/projects/{projectId}/health")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<ProjectHealthDetail> getProjectHealth(@PathVariable UUID projectId) {
     var actor = ActorContext.fromRequestScopes();
     String orgRole = actor.orgRole();
@@ -60,7 +58,6 @@ public class DashboardController {
    * Returns task counts broken down by status for a project. Requires view access to the project.
    */
   @GetMapping("/api/projects/{projectId}/task-summary")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<TaskSummary> getTaskSummary(@PathVariable UUID projectId) {
     var actor = ActorContext.fromRequestScopes();
     String orgRole = actor.orgRole();
@@ -78,7 +75,6 @@ public class DashboardController {
    * the project. Both date parameters are required.
    */
   @GetMapping("/api/projects/{projectId}/member-hours")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<MemberHoursEntry>> getProjectMemberHours(
       @PathVariable UUID projectId,
       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
@@ -106,7 +102,6 @@ public class DashboardController {
    * (billablePercent, averageMarginPercent) are null for non-admin members.
    */
   @GetMapping("/api/dashboard/kpis")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<KpiResponse> getCompanyKpis(
       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
@@ -127,7 +122,6 @@ public class DashboardController {
    * then by completion percent ascending.
    */
   @GetMapping("/api/dashboard/project-health")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<ProjectHealth>> getProjectHealthList() {
     String tenantId = RequestScopes.TENANT_ID.get();
     var actor = ActorContext.fromRequestScopes();
@@ -143,7 +137,6 @@ public class DashboardController {
    * members; regular members see only their own entry. Both date parameters are required.
    */
   @GetMapping("/api/dashboard/team-workload")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<TeamWorkloadEntry>> getTeamWorkload(
       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
@@ -166,7 +159,6 @@ public class DashboardController {
    * only events from projects they belong to. Limit is optional (default 10, clamped to 1-50).
    */
   @GetMapping("/api/dashboard/activity")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<CrossProjectActivityItem>> getCrossProjectActivity(
       @RequestParam(defaultValue = "10") int limit) {
     limit = Math.max(1, Math.min(50, limit));
@@ -188,7 +180,6 @@ public class DashboardController {
    * because queries filter by member_id (ADR-023).
    */
   @GetMapping("/api/dashboard/personal")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<PersonalDashboard> getPersonalDashboard(
       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {

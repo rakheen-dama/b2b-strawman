@@ -20,7 +20,6 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -43,7 +42,6 @@ public class ExpenseController {
   }
 
   @PostMapping("/api/projects/{projectId}/expenses")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<ExpenseResponse> createExpense(
       @PathVariable UUID projectId, @Valid @RequestBody CreateExpenseRequest request) {
     var actor = ActorContext.fromRequestScopes();
@@ -68,7 +66,6 @@ public class ExpenseController {
   }
 
   @GetMapping("/api/projects/{projectId}/expenses")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<Page<ExpenseResponse>> listExpenses(
       @PathVariable UUID projectId,
       @RequestParam(required = false) ExpenseCategory category,
@@ -84,7 +81,6 @@ public class ExpenseController {
   }
 
   @GetMapping("/api/projects/{projectId}/expenses/{id}")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<ExpenseResponse> getExpense(
       @PathVariable UUID projectId, @PathVariable UUID id) {
     var actor = ActorContext.fromRequestScopes();
@@ -94,7 +90,6 @@ public class ExpenseController {
   }
 
   @PutMapping("/api/projects/{projectId}/expenses/{id}")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<ExpenseResponse> updateExpense(
       @PathVariable UUID projectId,
       @PathVariable UUID id,
@@ -120,7 +115,6 @@ public class ExpenseController {
   }
 
   @DeleteMapping("/api/projects/{projectId}/expenses/{id}")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<Void> deleteExpense(@PathVariable UUID projectId, @PathVariable UUID id) {
     var actor = ActorContext.fromRequestScopes();
     String orgRole = actor.orgRole();
@@ -154,7 +148,6 @@ public class ExpenseController {
   }
 
   @GetMapping("/api/expenses/mine")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<Page<ExpenseResponse>> getMyExpenses(Pageable pageable) {
     UUID memberId = RequestScopes.requireMemberId();
     var page = expenseService.getMyExpenses(memberId, pageable);

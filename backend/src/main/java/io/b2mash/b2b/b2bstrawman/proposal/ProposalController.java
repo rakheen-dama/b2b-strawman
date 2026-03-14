@@ -19,7 +19,6 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -66,7 +65,6 @@ public class ProposalController {
   }
 
   @GetMapping("/api/proposals")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<Page<ProposalResponse>> listProposals(
       @RequestParam(required = false) UUID customerId,
       @RequestParam(required = false) ProposalStatus status,
@@ -79,7 +77,6 @@ public class ProposalController {
   }
 
   @GetMapping("/api/proposals/{id}")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<ProposalResponse> getProposal(@PathVariable UUID id) {
     var proposal = proposalService.getProposal(id);
     return ResponseEntity.ok(ProposalResponse.from(proposal));
@@ -109,8 +106,8 @@ public class ProposalController {
   }
 
   @DeleteMapping("/api/proposals/{id}")
-  @PreAuthorize("hasRole('ORG_OWNER')")
   public ResponseEntity<Void> deleteProposal(@PathVariable UUID id) {
+    RequestScopes.requireOwner();
     proposalService.deleteProposal(id);
     return ResponseEntity.noContent().build();
   }
@@ -159,7 +156,6 @@ public class ProposalController {
   }
 
   @GetMapping("/api/customers/{customerId}/proposals")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<Page<ProposalResponse>> listCustomerProposals(
       @PathVariable UUID customerId, Pageable pageable) {
     var page = proposalService.listByCustomer(customerId, pageable);

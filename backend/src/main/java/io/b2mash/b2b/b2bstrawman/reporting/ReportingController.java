@@ -9,7 +9,6 @@ import java.util.Map;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,20 +28,17 @@ public class ReportingController {
   }
 
   @GetMapping
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<ReportExportService.CategorizedReportsResponse> listReportDefinitions() {
     return ResponseEntity.ok(reportExportService.listCategorized());
   }
 
   @GetMapping("/{slug}")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<ReportExportService.ReportDetailResponse> getReportDefinition(
       @PathVariable String slug) {
     return ResponseEntity.ok(reportExportService.getBySlug(slug));
   }
 
   @PostMapping("/{slug}/execute")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<ReportExecutionResponse> executeReport(
       @PathVariable String slug, @Valid @RequestBody ExecuteReportRequest request) {
     var pageable = PageRequest.of(request.page(), request.size());
@@ -50,7 +46,6 @@ public class ReportingController {
   }
 
   @GetMapping("/{slug}/preview")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<String> previewReport(
       @PathVariable String slug, @RequestParam Map<String, Object> parameters) {
     return ResponseEntity.ok()
@@ -59,7 +54,6 @@ public class ReportingController {
   }
 
   @GetMapping("/{slug}/export/pdf")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<byte[]> exportPdf(
       @PathVariable String slug, @RequestParam Map<String, Object> parameters) {
     var result = reportExportService.exportAsPdf(slug, parameters);
@@ -70,7 +64,6 @@ public class ReportingController {
   }
 
   @GetMapping("/{slug}/export/csv")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public void exportCsv(
       @PathVariable String slug,
       @RequestParam Map<String, Object> parameters,

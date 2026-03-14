@@ -11,7 +11,6 @@ import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -33,7 +32,6 @@ public class RecurringScheduleController {
   }
 
   @GetMapping
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<ScheduleResponse>> listSchedules(
       @RequestParam(required = false) String status,
       @RequestParam(required = false) UUID customerId,
@@ -42,7 +40,6 @@ public class RecurringScheduleController {
   }
 
   @GetMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<ScheduleResponse> getSchedule(@PathVariable UUID id) {
     return ResponseEntity.ok(scheduleService.get(id));
   }
@@ -83,7 +80,6 @@ public class RecurringScheduleController {
   }
 
   @GetMapping("/{id}/executions")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<ScheduleExecutionResponse>> listExecutions(@PathVariable UUID id) {
     return ResponseEntity.ok(scheduleService.listExecutions(id));
   }

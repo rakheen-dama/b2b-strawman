@@ -9,7 +9,6 @@ import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,7 +28,6 @@ public class ProjectBudgetController {
   }
 
   @GetMapping
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<BudgetStatusResponse> getBudget(@PathVariable UUID projectId) {
     var actor = ActorContext.fromRequestScopes();
     String orgRole = actor.orgRole();
@@ -39,7 +37,6 @@ public class ProjectBudgetController {
   }
 
   @GetMapping("/status")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<LightweightStatusResponse> getBudgetStatus(@PathVariable UUID projectId) {
     var actor = ActorContext.fromRequestScopes();
     String orgRole = actor.orgRole();
@@ -49,7 +46,6 @@ public class ProjectBudgetController {
   }
 
   @PutMapping
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<BudgetStatusResponse> upsertBudget(
       @PathVariable UUID projectId, @Valid @RequestBody UpsertBudgetRequest request) {
     var actor = ActorContext.fromRequestScopes();
@@ -68,7 +64,6 @@ public class ProjectBudgetController {
   }
 
   @DeleteMapping
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<Void> deleteBudget(@PathVariable UUID projectId) {
     var actor = ActorContext.fromRequestScopes();
     String orgRole = actor.orgRole();

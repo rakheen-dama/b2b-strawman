@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.retainer;
 import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import io.b2mash.b2b.b2bstrawman.retainer.dto.PeriodCloseResult;
 import io.b2mash.b2b.b2bstrawman.retainer.dto.PeriodSummary;
 import java.util.List;
@@ -14,7 +15,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,7 +35,6 @@ public class RetainerPeriodController {
   }
 
   @GetMapping("/{id}/periods")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<Page<PeriodSummary>> listPeriods(
       @PathVariable UUID id, @PageableDefault(size = 20) Pageable pageable) {
     var periodsPage = retainerPeriodService.listPeriods(id, pageable);
@@ -45,7 +44,6 @@ public class RetainerPeriodController {
   }
 
   @GetMapping("/{id}/periods/current")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<PeriodSummary> getCurrentPeriod(@PathVariable UUID id) {
     var period = retainerPeriodService.getCurrentPeriod(id);
     var memberNames = resolvePeriodNames(List.of(period));
@@ -53,7 +51,7 @@ public class RetainerPeriodController {
   }
 
   @PostMapping("/{id}/periods/current/close")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("INVOICING")
   public ResponseEntity<PeriodCloseResult> closePeriod(@PathVariable UUID id) {
     UUID memberId = RequestScopes.requireMemberId();
     var result = retainerPeriodService.closePeriod(id, memberId);

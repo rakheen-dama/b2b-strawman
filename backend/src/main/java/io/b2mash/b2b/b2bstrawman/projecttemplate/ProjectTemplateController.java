@@ -16,7 +16,6 @@ import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -41,13 +40,11 @@ public class ProjectTemplateController {
   }
 
   @GetMapping
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<ProjectTemplateResponse>> listTemplates() {
     return ResponseEntity.ok(projectTemplateService.list());
   }
 
   @GetMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<ProjectTemplateResponse> getTemplate(@PathVariable UUID id) {
     return ResponseEntity.ok(projectTemplateService.get(id));
   }
@@ -86,7 +83,6 @@ public class ProjectTemplateController {
   }
 
   @PostMapping("/from-project/{projectId}")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<ProjectTemplateResponse> saveFromProject(
       @PathVariable UUID projectId, @Valid @RequestBody SaveFromProjectRequest request) {
     var actor = ActorContext.fromRequestScopes();
@@ -97,7 +93,6 @@ public class ProjectTemplateController {
   }
 
   @PostMapping("/{id}/instantiate")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<ProjectController.ProjectResponse> instantiateTemplate(
       @PathVariable UUID id, @Valid @RequestBody InstantiateTemplateRequest request) {
     UUID memberId = RequestScopes.requireMemberId();
@@ -115,7 +110,6 @@ public class ProjectTemplateController {
   }
 
   @GetMapping("/{id}/prerequisite-check")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<PrerequisiteCheckResponse> checkPrerequisites(
       @PathVariable UUID id, @RequestParam UUID customerId) {
     return ResponseEntity.ok(

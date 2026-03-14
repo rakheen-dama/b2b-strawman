@@ -937,7 +937,7 @@ public class InvoiceService {
             .findById(invoiceId)
             .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
 
-    // Validate before sending — @PreAuthorize on the controller already blocks members
+    // Validate before sending — @RequiresCapability on the controller already blocks members
     var validationChecks = invoiceValidationService.validateInvoiceSend(invoice);
     if (invoiceValidationService.hasCriticalFailures(validationChecks) && !overrideWarnings) {
       throw new InvoiceValidationFailedException(validationChecks);

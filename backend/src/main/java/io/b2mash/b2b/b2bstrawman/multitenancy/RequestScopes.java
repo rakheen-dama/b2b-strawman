@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.multitenancy;
 
+import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.MissingOrganizationContextException;
 import java.util.Collections;
 import java.util.Set;
@@ -125,6 +126,14 @@ public final class RequestScopes {
    */
   public static boolean hasCapability(String capability) {
     return getCapabilities().contains(capability);
+  }
+
+  /** Throws ForbiddenException unless the current member is the organization owner. */
+  public static void requireOwner() {
+    if (!"owner".equals(getOrgRole())) {
+      throw new ForbiddenException(
+          "Owner required", "Only the organization owner can perform this action");
+    }
   }
 
   private RequestScopes() {}

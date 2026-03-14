@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.template;
 
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import io.b2mash.b2b.b2bstrawman.setupstatus.DocumentGenerationReadinessService;
 import io.b2mash.b2b.b2bstrawman.setupstatus.TemplateReadiness;
 import jakarta.validation.Valid;
@@ -14,7 +15,6 @@ import java.util.UUID;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -50,7 +50,6 @@ public class DocumentTemplateController {
   }
 
   @GetMapping
-  @PreAuthorize("isAuthenticated()")
   public ResponseEntity<List<TemplateListResponse>> listTemplates(
       @RequestParam(required = false) TemplateCategory category,
       @RequestParam(required = false) TemplateEntityType primaryEntityType,
@@ -60,7 +59,6 @@ public class DocumentTemplateController {
   }
 
   @GetMapping("/readiness")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER', 'ORG_MEMBER')")
   public ResponseEntity<List<TemplateReadiness>> getReadiness(
       @RequestParam TemplateEntityType entityType, @RequestParam UUID entityId) {
     return ResponseEntity.ok(
@@ -68,26 +66,24 @@ public class DocumentTemplateController {
   }
 
   @GetMapping("/variables")
-  @PreAuthorize("isAuthenticated()")
   public ResponseEntity<VariableMetadataRegistry.VariableMetadataResponse> getVariables(
       @RequestParam TemplateEntityType entityType) {
     return ResponseEntity.ok(variableMetadataRegistry.getVariables(entityType));
   }
 
   @GetMapping("/{id}")
-  @PreAuthorize("isAuthenticated()")
   public ResponseEntity<TemplateDetailResponse> getTemplate(@PathVariable UUID id) {
     return ResponseEntity.ok(documentTemplateService.getById(id));
   }
 
   @GetMapping("/{id}/required-field-packs")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<List<FieldPackStatus>> getRequiredFieldPacks(@PathVariable UUID id) {
     return ResponseEntity.ok(documentTemplateService.getRequiredFieldPacks(id));
   }
 
   @PostMapping
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<TemplateDetailResponse> createTemplate(
       @Valid @RequestBody CreateTemplateRequest request) {
     var response = documentTemplateService.create(request);
@@ -95,7 +91,7 @@ public class DocumentTemplateController {
   }
 
   @PostMapping(value = "/docx/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<TemplateDetailResponse> uploadDocxTemplate(
       @RequestParam("file") MultipartFile file,
       @RequestParam("name") String name,
@@ -108,41 +104,39 @@ public class DocumentTemplateController {
   }
 
   @PutMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<TemplateDetailResponse> updateTemplate(
       @PathVariable UUID id, @Valid @RequestBody UpdateTemplateRequest request) {
     return ResponseEntity.ok(documentTemplateService.update(id, request));
   }
 
   @DeleteMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<Void> deactivateTemplate(@PathVariable UUID id) {
     documentTemplateService.deactivate(id);
     return ResponseEntity.noContent().build();
   }
 
   @PostMapping("/{id}/clone")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<TemplateDetailResponse> cloneTemplate(@PathVariable UUID id) {
     var response = documentTemplateService.cloneTemplate(id);
     return ResponseEntity.created(URI.create("/api/templates/" + response.id())).body(response);
   }
 
   @PostMapping("/{id}/reset")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<Void> resetTemplate(@PathVariable UUID id) {
     documentTemplateService.resetToDefault(id);
     return ResponseEntity.noContent().build();
   }
 
   @GetMapping("/{id}/docx/fields")
-  @PreAuthorize("isAuthenticated()")
   public ResponseEntity<List<Map<String, Object>>> getDocxFields(@PathVariable UUID id) {
     return ResponseEntity.ok(documentTemplateService.getDocxFields(id));
   }
 
   @GetMapping("/{id}/docx/download")
-  @PreAuthorize("isAuthenticated()")
   public ResponseEntity<Void> downloadDocxTemplate(@PathVariable UUID id) {
     return ResponseEntity.status(302)
         .header(HttpHeaders.LOCATION, documentTemplateService.getDocxDownloadUrl(id))
@@ -150,14 +144,14 @@ public class DocumentTemplateController {
   }
 
   @PutMapping(value = "/{id}/docx/replace", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<TemplateDetailResponse> replaceDocxFile(
       @PathVariable UUID id, @RequestParam("file") MultipartFile file) {
     return ResponseEntity.ok(documentTemplateService.replaceDocxFile(id, file));
   }
 
   @PostMapping("/{id}/preview")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<PdfRenderingService.PreviewResponse> previewTemplate(
       @PathVariable UUID id, @Valid @RequestBody PreviewRequest request) {
     UUID memberId = RequestScopes.requireMemberId();
@@ -167,7 +161,6 @@ public class DocumentTemplateController {
   }
 
   @PostMapping("/{id}/generate-docx")
-  @PreAuthorize("isAuthenticated()")
   public ResponseEntity<GeneratedDocumentService.GenerateDocxResult> generateDocx(
       @PathVariable UUID id, @Valid @RequestBody GenerateDocxRequest request) {
     UUID memberId = RequestScopes.requireMemberId();
@@ -177,7 +170,6 @@ public class DocumentTemplateController {
   }
 
   @PostMapping("/{id}/generate")
-  @PreAuthorize("isAuthenticated()")
   public ResponseEntity<?> generateDocument(
       @PathVariable UUID id, @Valid @RequestBody GenerateDocumentRequest request) {
     UUID memberId = RequestScopes.requireMemberId();

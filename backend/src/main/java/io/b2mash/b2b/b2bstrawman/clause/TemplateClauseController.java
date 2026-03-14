@@ -3,12 +3,12 @@ package io.b2mash.b2b.b2bstrawman.clause;
 import io.b2mash.b2b.b2bstrawman.clause.dto.TemplateClauseDetail;
 import io.b2mash.b2b.b2bstrawman.clause.dto.TemplateClauseRequest.AddClauseToTemplateRequest;
 import io.b2mash.b2b.b2bstrawman.clause.dto.TemplateClauseRequest.SetTemplateClausesRequest;
+import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,14 +30,13 @@ public class TemplateClauseController {
   }
 
   @GetMapping
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<TemplateClauseDetail>> getTemplateClauses(
       @PathVariable UUID templateId) {
     return ResponseEntity.ok(templateClauseService.getTemplateClauses(templateId));
   }
 
   @PutMapping
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<List<TemplateClauseDetail>> setTemplateClauses(
       @PathVariable UUID templateId, @Valid @RequestBody SetTemplateClausesRequest request) {
     return ResponseEntity.ok(
@@ -50,7 +49,7 @@ public class TemplateClauseController {
    */
   @Deprecated(forRemoval = true)
   @PostMapping
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<TemplateClauseDetail> addClauseToTemplate(
       @PathVariable UUID templateId, @Valid @RequestBody AddClauseToTemplateRequest request) {
     var detail =
@@ -67,7 +66,7 @@ public class TemplateClauseController {
    */
   @Deprecated(forRemoval = true)
   @DeleteMapping("/{clauseId}")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<Void> removeClauseFromTemplate(
       @PathVariable UUID templateId, @PathVariable UUID clauseId) {
     templateClauseService.removeClauseFromTemplate(templateId, clauseId);

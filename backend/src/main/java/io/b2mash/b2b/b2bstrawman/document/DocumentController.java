@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.MissingOrganizationContextException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import io.b2mash.b2b.b2bstrawman.security.ClerkJwtUtils;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -14,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,7 +37,6 @@ public class DocumentController {
   // --- PROJECT-scoped upload-init (existing) ---
 
   @PostMapping("/api/projects/{projectId}/documents/upload-init")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<UploadInitResponse> initiateUpload(
       @PathVariable UUID projectId,
       @Valid @RequestBody UploadInitRequest request,
@@ -62,7 +61,7 @@ public class DocumentController {
   // --- ORG-scoped upload-init ---
 
   @PostMapping("/api/documents/upload-init")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("PROJECT_MANAGEMENT")
   public ResponseEntity<UploadInitResponse> initiateOrgUpload(
       @Valid @RequestBody UploadInitRequest request, JwtAuthenticationToken auth) {
     String orgId = ClerkJwtUtils.extractOrgId(auth.getToken());
@@ -83,7 +82,7 @@ public class DocumentController {
   // --- CUSTOMER-scoped upload-init ---
 
   @PostMapping("/api/customers/{customerId}/documents/upload-init")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("PROJECT_MANAGEMENT")
   public ResponseEntity<UploadInitResponse> initiateCustomerUpload(
       @PathVariable UUID customerId,
       @Valid @RequestBody UploadInitRequest request,
@@ -106,7 +105,6 @@ public class DocumentController {
   // --- Document listing by scope ---
 
   @GetMapping("/api/documents")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<DocumentResponse>> listDocumentsByScope(
       @RequestParam String scope, @RequestParam(required = false) UUID customerId) {
     var documents =
@@ -130,7 +128,6 @@ public class DocumentController {
   // --- Confirm, cancel, project listing, download (existing) ---
 
   @PostMapping("/api/documents/{documentId}/confirm")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<DocumentResponse> confirmUpload(@PathVariable UUID documentId) {
     var actor = ActorContext.fromRequestScopes();
     String orgRole = actor.orgRole();
@@ -141,7 +138,6 @@ public class DocumentController {
   }
 
   @DeleteMapping("/api/documents/{documentId}/cancel")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<Void> cancelUpload(@PathVariable UUID documentId) {
     var actor = ActorContext.fromRequestScopes();
     String orgRole = actor.orgRole();
@@ -151,7 +147,6 @@ public class DocumentController {
   }
 
   @GetMapping("/api/projects/{projectId}/documents")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<DocumentResponse>> listDocuments(@PathVariable UUID projectId) {
     var actor = ActorContext.fromRequestScopes();
     String orgRole = actor.orgRole();
@@ -163,7 +158,6 @@ public class DocumentController {
   }
 
   @GetMapping("/api/documents/{documentId}/presign-download")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<PresignDownloadResponse> presignDownload(@PathVariable UUID documentId) {
     var actor = ActorContext.fromRequestScopes();
     String orgRole = actor.orgRole();
@@ -175,7 +169,7 @@ public class DocumentController {
   // --- Visibility toggle ---
 
   @PatchMapping("/api/documents/{documentId}/visibility")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("PROJECT_MANAGEMENT")
   public ResponseEntity<DocumentResponse> toggleVisibility(
       @PathVariable UUID documentId, @Valid @RequestBody VisibilityRequest request) {
     var document = documentService.toggleVisibility(documentId, request.visibility());

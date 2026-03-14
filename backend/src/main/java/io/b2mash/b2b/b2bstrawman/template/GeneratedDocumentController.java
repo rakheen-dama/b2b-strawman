@@ -3,13 +3,13 @@ package io.b2mash.b2b.b2bstrawman.template;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
+import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import io.b2mash.b2b.b2bstrawman.template.GeneratedDocumentService.GeneratedDocumentListResponse;
 import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,7 +37,6 @@ public class GeneratedDocumentController {
   }
 
   @GetMapping
-  @PreAuthorize("isAuthenticated()")
   public ResponseEntity<List<GeneratedDocumentListResponse>> listGeneratedDocuments(
       @RequestParam TemplateEntityType entityType, @RequestParam UUID entityId) {
     if (entityType == TemplateEntityType.PROJECT) {
@@ -49,7 +48,6 @@ public class GeneratedDocumentController {
   }
 
   @GetMapping("/{id}/download")
-  @PreAuthorize("isAuthenticated()")
   public ResponseEntity<Void> downloadGeneratedDocument(@PathVariable UUID id) {
     var generatedDoc = generatedDocumentService.getById(id);
     if (generatedDoc.getPrimaryEntityType() == TemplateEntityType.PROJECT) {
@@ -61,14 +59,13 @@ public class GeneratedDocumentController {
   }
 
   @GetMapping("/{id}/download-docx")
-  @PreAuthorize("isAuthenticated()")
   public ResponseEntity<Void> downloadDocxGeneratedDocument(@PathVariable UUID id) {
     String url = generatedDocumentService.getDocxDownloadUrl(id);
     return ResponseEntity.status(302).header(HttpHeaders.LOCATION, url).build();
   }
 
   @DeleteMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<Void> deleteGeneratedDocument(@PathVariable UUID id) {
     generatedDocumentService.delete(id);
     return ResponseEntity.noContent().build();

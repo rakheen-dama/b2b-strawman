@@ -1,8 +1,9 @@
 package io.b2mash.b2b.b2bstrawman.security;
 
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
@@ -12,18 +13,17 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.stereotype.Component;
 
 /**
- * Converts JWT tokens (Clerk v2 or Keycloak) to Spring Security authentication tokens with proper
- * granted authorities. Supports both providers via ClerkJwtUtils dual-mode extraction.
+ * Converts JWT tokens to Spring Security authentication tokens. Always grants ROLE_ORG_MEMBER as
+ * baseline authority for any authenticated user with an org context. Additionally grants
+ * ROLE_ORG_ADMIN and/or ROLE_ORG_OWNER based on the DB-resolved role bound via
+ * RequestScopes.ORG_ROLE by MemberFilter (which runs earlier in the filter chain).
+ *
+ * <p>This backward-compat approach preserves existing {@code @PreAuthorize} checks (e.g., {@code
+ * hasRole('ORG_OWNER')}) until migration to {@code @RequiresCapability} in Epic 347.
  */
 @Component
 public class ClerkJwtAuthenticationConverter
     implements Converter<Jwt, AbstractAuthenticationToken> {
-
-  private static final Map<String, String> ROLE_MAPPING =
-      Map.of(
-          Roles.ORG_OWNER, Roles.AUTHORITY_ORG_OWNER,
-          Roles.ORG_ADMIN, Roles.AUTHORITY_ORG_ADMIN,
-          Roles.ORG_MEMBER, Roles.AUTHORITY_ORG_MEMBER);
 
   @Override
   public AbstractAuthenticationToken convert(Jwt jwt) {
@@ -32,15 +32,23 @@ public class ClerkJwtAuthenticationConverter
   }
 
   private Collection<GrantedAuthority> extractAuthorities(Jwt jwt) {
-    // ClerkJwtUtils.extractOrgRole handles both Clerk v2 and Keycloak formats
-    String orgRole = ClerkJwtUtils.extractOrgRole(jwt);
-    if (orgRole == null) {
-      return List.of();
+    List<GrantedAuthority> authorities = new ArrayList<>();
+
+    // Always grant ROLE_ORG_MEMBER as baseline — MemberFilter guarantees membership
+    authorities.add(new SimpleGrantedAuthority(Roles.AUTHORITY_ORG_MEMBER));
+
+    // Grant role-level authorities based on DB-resolved role (bound by MemberFilter)
+    if (RequestScopes.ORG_ROLE.isBound()) {
+      String role = RequestScopes.ORG_ROLE.get();
+      if (Roles.ORG_ADMIN.equals(role)) {
+        authorities.add(new SimpleGrantedAuthority(Roles.AUTHORITY_ORG_ADMIN));
+      } else if (Roles.ORG_OWNER.equals(role)) {
+        // Owner has all admin privileges
+        authorities.add(new SimpleGrantedAuthority(Roles.AUTHORITY_ORG_ADMIN));
+        authorities.add(new SimpleGrantedAuthority(Roles.AUTHORITY_ORG_OWNER));
+      }
     }
-    String springRole = ROLE_MAPPING.get(orgRole);
-    if (springRole == null) {
-      return List.of();
-    }
-    return List.of(new SimpleGrantedAuthority(springRole));
+
+    return List.copyOf(authorities);
   }
 }

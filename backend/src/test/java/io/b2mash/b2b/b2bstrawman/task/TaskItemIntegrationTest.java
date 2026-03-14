@@ -259,9 +259,47 @@ class TaskItemIntegrationTest {
     var freshTaskId = createTask("Member Delete Forbidden Task");
     var itemId = addItem(freshTaskId, "Cannot Delete", 0);
 
-    // Member gets 403 on delete (ADMIN+ required by @PreAuthorize)
+    // Member gets 403 on delete (requires PROJECT_MANAGEMENT capability)
     mockMvc
         .perform(delete("/api/tasks/" + freshTaskId + "/items/" + itemId).with(memberJwt()))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void memberCannotUpdateItem() throws Exception {
+    var freshTaskId = createTask("Member Update Forbidden Task");
+    var itemId = addItem(freshTaskId, "Cannot Update", 0);
+
+    // Member gets 403 on update (requires PROJECT_MANAGEMENT capability)
+    mockMvc
+        .perform(
+            put("/api/tasks/" + freshTaskId + "/items/" + itemId)
+                .with(memberJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"title": "Attempted Update", "sortOrder": 1}
+                    """))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void memberCannotReorderItems() throws Exception {
+    var freshTaskId = createTask("Member Reorder Forbidden Task");
+    var id1 = addItem(freshTaskId, "Reorder A", 0);
+    var id2 = addItem(freshTaskId, "Reorder B", 1);
+
+    // Member gets 403 on reorder (requires PROJECT_MANAGEMENT capability)
+    mockMvc
+        .perform(
+            put("/api/tasks/" + freshTaskId + "/items/reorder")
+                .with(memberJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"orderedIds": ["%s", "%s"]}
+                    """
+                        .formatted(id2, id1)))
         .andExpect(status().isForbidden());
   }
 

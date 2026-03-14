@@ -427,6 +427,38 @@ class TaskIntegrationTest {
         .andExpect(status().isNotFound());
   }
 
+  // --- Capability Authorization ---
+
+  @Test
+  void memberCannotSetFieldGroups() throws Exception {
+    var createResult =
+        mockMvc
+            .perform(
+                post("/api/projects/" + projectId + "/tasks")
+                    .with(ownerJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"title": "Field Groups Auth Task"}
+                        """))
+            .andExpect(status().isCreated())
+            .andReturn();
+
+    var taskId = extractIdFromLocation(createResult);
+
+    // Member gets 403 on setFieldGroups (requires PROJECT_MANAGEMENT capability)
+    mockMvc
+        .perform(
+            put("/api/tasks/" + taskId + "/field-groups")
+                .with(memberJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"appliedFieldGroups": []}
+                    """))
+        .andExpect(status().isForbidden());
+  }
+
   // --- Validation ---
 
   @Test

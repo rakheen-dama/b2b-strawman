@@ -549,6 +549,50 @@ class ProjectBudgetIntegrationTest {
         .andExpect(status().isBadRequest());
   }
 
+  // --- Capability Authorization Tests (Order 18-19) ---
+
+  @Test
+  @Order(18)
+  void httpPut_budget_memberWithoutCapability_returns403() throws Exception {
+    mockMvc
+        .perform(
+            put("/api/projects/" + projectId + "/budget")
+                .with(memberJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "budgetHours": 50.00,
+                      "notes": "Member should not be able to upsert"
+                    }
+                    """))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  @Order(19)
+  void httpDelete_budget_memberWithoutCapability_returns403() throws Exception {
+    // Ensure a budget exists first
+    mockMvc
+        .perform(
+            put("/api/projects/" + projectId + "/budget")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "budgetHours": 100.00,
+                      "notes": "Budget for delete auth test"
+                    }
+                    """))
+        .andExpect(status().isOk());
+
+    // Member without FINANCIAL_VISIBILITY cannot delete
+    mockMvc
+        .perform(delete("/api/projects/" + projectId + "/budget").with(memberJwt()))
+        .andExpect(status().isForbidden());
+  }
+
   // --- Helpers ---
 
   private <T> T runInTenantAs(
@@ -579,6 +623,12 @@ class ProjectBudgetIntegrationTest {
     return jwt()
         .jwt(j -> j.subject("user_budget_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")))
         .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_OWNER")));
+  }
+
+  private JwtRequestPostProcessor memberJwt() {
+    return jwt()
+        .jwt(j -> j.subject("user_budget_member").claim("o", Map.of("id", ORG_ID, "rol", "member")))
+        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
   }
 
   private JwtRequestPostProcessor ownerJwtTenantB() {

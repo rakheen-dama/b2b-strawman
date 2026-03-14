@@ -535,7 +535,7 @@ Layer-by-layer, bottom-up. Each epic is independently deployable.
 | Slice | Scope | Files |
 |---|---|---|
 | **4A** | Remove `orgRole` from `AuthContext` type + both providers. Delete `requireRole()`. | ~5 files |
-| **4B** | Migrate all `orgRole` checks to `fetchMyCapabilities()` in layouts, pages, server actions. Note: `fetchMyCapabilities()` is `"server-only"` — client components receive `isAdmin`/`isOwner` as props from Server Components (existing pattern via `CapabilityProvider`). | ~50 files (mechanical, includes ~38 action files + ~12 page/layout files) |
+| **4B** | Migrate all `orgRole` checks to `fetchMyCapabilities()` in layouts, pages, server actions. Also update `lib/types/member.ts` (remove `orgRole` from TypeScript `Member` interface). Note: `fetchMyCapabilities()` is `"server-only"` — client components receive `isAdmin`/`isOwner` as props from Server Components (existing pattern via `CapabilityProvider`). | ~76 files (mechanical, includes ~26 action files + ~45 page/layout files + ~5 component files) |
 | **4C** | Update mock IDP token format + E2E fixtures. Update mock provider parser. | ~4 files |
 
 ### Epic 5: Cleanup

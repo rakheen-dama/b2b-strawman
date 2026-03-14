@@ -207,9 +207,13 @@ public class MemberFilter extends OncePerRequestFilter {
     }
   }
 
+  private static final Set<String> VALID_ROLES =
+      Set.of(Roles.ORG_OWNER, Roles.ORG_ADMIN, Roles.ORG_MEMBER);
+
   /**
-   * Looks up the pending invitation role for this user's email and org. Deletes the record after
-   * reading (consumed on first login). Returns null if no pending invitation exists.
+   * Atomically consumes the pending invitation for this user's email and org. Uses DELETE ...
+   * RETURNING to avoid read-then-delete race conditions in multi-instance deployments. Returns null
+   * if no pending invitation exists or the role is invalid.
    */
   private String resolvePendingRole(Jwt jwt, String email) {
     String orgSlug = ClerkJwtUtils.extractOrgSlug(jwt);
@@ -217,12 +221,17 @@ public class MemberFilter extends OncePerRequestFilter {
       return null;
     }
     try {
-      var pending = pendingInvitationRepository.findByOrgSlugAndEmailIgnoreCase(orgSlug, email);
-      if (pending.isPresent()) {
-        String role = pending.get().getRole();
-        pendingInvitationRepository.deleteByOrgSlugAndEmailIgnoreCase(orgSlug, email);
-        log.info("Consumed pending invitation for {} in org {} with role {}", email, orgSlug, role);
-        return role;
+      var role = pendingInvitationRepository.consumeByOrgSlugAndEmail(orgSlug, email);
+      if (role.isPresent()) {
+        String resolved = role.get();
+        if (!VALID_ROLES.contains(resolved)) {
+          log.warn(
+              "Invalid pending role '{}' for {} in org {} — ignoring", resolved, email, orgSlug);
+          return null;
+        }
+        log.info(
+            "Consumed pending invitation for {} in org {} with role {}", email, orgSlug, resolved);
+        return resolved;
       }
     } catch (Exception e) {
       log.warn("Error checking pending invitations for {}: {}", email, e.getMessage());

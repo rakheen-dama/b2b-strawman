@@ -1,4 +1,4 @@
-You-- Gateway test schema: provides pending_invitations table for H2 in-memory DB.
+-- Gateway test schema: provides pending_invitations table for H2 in-memory DB.
 -- In production, this table is created by the backend's Flyway migration (V16).
 CREATE TABLE IF NOT EXISTS pending_invitations (
     id         UUID DEFAULT RANDOM_UUID() PRIMARY KEY,

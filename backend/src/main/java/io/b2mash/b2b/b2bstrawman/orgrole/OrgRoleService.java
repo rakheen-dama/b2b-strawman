@@ -55,17 +55,6 @@ public class OrgRoleService {
             .findById(memberId)
             .orElseThrow(() -> new ResourceNotFoundException("Member", memberId));
 
-    if (member.getOrgRoleId() == null) {
-      // Fallback: if no explicit OrgRole is assigned, derive capabilities from the legacy orgRole
-      // string. This ensures owner/admin members who predate the OrgRole system still get full
-      // capabilities resolved.
-      String legacyRole = member.getOrgRole();
-      if ("owner".equals(legacyRole) || "admin".equals(legacyRole)) {
-        return Set.copyOf(Capability.ALL_NAMES);
-      }
-      return Collections.emptySet();
-    }
-
     var role =
         orgRoleRepository
             .findById(member.getOrgRoleId())
@@ -269,7 +258,7 @@ public class OrgRoleService {
             .orElseThrow(() -> new ResourceNotFoundException("Member", memberId));
 
     // Owner protection: cannot change the owner's role
-    if ("owner".equals(member.getOrgRole())) {
+    if ("owner".equals(member.getRoleSlug())) {
       throw new ForbiddenException(
           "Owner role protected", "Cannot change the role of the organization owner");
     }
@@ -314,16 +303,8 @@ public class OrgRoleService {
     }
 
     // Resolve previous role name for audit
-    String previousRole;
-    if (member.getOrgRoleId() != null) {
-      previousRole =
-          orgRoleRepository
-              .findById(member.getOrgRoleId())
-              .map(OrgRole::getName)
-              .orElse(displayName(member.getOrgRole()));
-    } else {
-      previousRole = displayName(member.getOrgRole());
-    }
+    String previousRole =
+        orgRoleRepository.findById(member.getOrgRoleId()).map(OrgRole::getName).orElse("Unknown");
 
     member.setOrgRoleId(request.orgRoleId());
     member.setCapabilityOverrides(overrides);

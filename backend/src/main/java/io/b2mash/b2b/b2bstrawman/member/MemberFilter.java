@@ -4,6 +4,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ScopedFilterChain;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.security.ClerkJwtUtils;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
@@ -33,12 +34,17 @@ public class MemberFilter extends OncePerRequestFilter {
 
   private final MemberRepository memberRepository;
   private final OrgRoleService orgRoleService;
+  private final OrgRoleRepository orgRoleRepository;
   private final Cache<String, MemberInfo> memberCache =
       Caffeine.newBuilder().maximumSize(50_000).expireAfterWrite(Duration.ofHours(1)).build();
 
-  public MemberFilter(MemberRepository memberRepository, OrgRoleService orgRoleService) {
+  public MemberFilter(
+      MemberRepository memberRepository,
+      OrgRoleService orgRoleService,
+      OrgRoleRepository orgRoleRepository) {
     this.memberRepository = memberRepository;
     this.orgRoleService = orgRoleService;
+    this.orgRoleRepository = orgRoleRepository;
   }
 
   @Override
@@ -127,7 +133,7 @@ public class MemberFilter extends OncePerRequestFilter {
   private MemberInfo resolveOrCreateMember(String clerkUserId, String orgRole, Jwt jwt) {
     return memberRepository
         .findByClerkUserId(clerkUserId)
-        .map(m -> new MemberInfo(m.getId(), m.getOrgRole()))
+        .map(m -> new MemberInfo(m.getId(), resolveRoleSlug(m.getOrgRoleId())))
         .orElseGet(() -> lazyCreateMember(clerkUserId, orgRole, jwt));
   }
 
@@ -150,9 +156,9 @@ public class MemberFilter extends OncePerRequestFilter {
     }
 
     try {
-      var member = new Member(clerkUserId, email, name, null, effectiveRole);
+      var member = new Member(clerkUserId, email, name, null);
 
-      // Assign default system role based on the effective org role before persisting
+      // Assign system role based on the effective org role before persisting
       orgRoleService
           .findSystemRoleBySlug(effectiveRole)
           .ifPresent(systemRole -> member.setOrgRoleId(systemRole.getId()));
@@ -169,11 +175,18 @@ public class MemberFilter extends OncePerRequestFilter {
       // Race condition: another instance already created this member
       return memberRepository
           .findByClerkUserId(clerkUserId)
-          .map(m -> new MemberInfo(m.getId(), m.getOrgRole()))
+          .map(m -> new MemberInfo(m.getId(), resolveRoleSlug(m.getOrgRoleId())))
           .orElseThrow(
               () ->
                   new IllegalStateException(
                       "Member not found after constraint violation for: " + clerkUserId));
     }
+  }
+
+  private String resolveRoleSlug(UUID orgRoleId) {
+    if (orgRoleId == null) {
+      return null;
+    }
+    return orgRoleRepository.findById(orgRoleId).map(r -> r.getSlug()).orElse(null);
   }
 }

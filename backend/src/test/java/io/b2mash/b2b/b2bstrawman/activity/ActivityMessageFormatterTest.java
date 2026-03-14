@@ -16,7 +16,7 @@ class ActivityMessageFormatterTest {
   private static final UUID ACTOR_ID = UUID.randomUUID();
   private static final UUID ENTITY_ID = UUID.randomUUID();
   private static final Member ACTOR_MEMBER =
-      new Member("clerk_user_1", "alice@test.com", "Alice", null, "member");
+      new Member("clerk_user_1", "alice@test.com", "Alice", null);
 
   private Map<UUID, Member> actorMap() {
     return Map.of(ACTOR_ID, ACTOR_MEMBER);

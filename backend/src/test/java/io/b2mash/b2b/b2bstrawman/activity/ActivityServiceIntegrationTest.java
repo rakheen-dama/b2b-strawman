@@ -11,6 +11,7 @@ import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
@@ -45,6 +46,7 @@ class ActivityServiceIntegrationTest {
   @Autowired private ProjectRepository projectRepository;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private PlanSyncService planSyncService;
+  @Autowired private OrgRoleRepository orgRoleRepository;
 
   private String tenantSchema;
   private UUID memberId;
@@ -65,8 +67,8 @@ class ActivityServiceIntegrationTest {
         .run(
             () -> {
               // Create a member via repository
-              var member =
-                  new Member("clerk_as_owner", "as_owner@test.com", "AS Owner", null, "owner");
+              var member = new Member("clerk_as_owner", "as_owner@test.com", "AS Owner", null);
+              member.setOrgRoleId(orgRoleRepository.findBySlug("owner").orElseThrow().getId());
               memberRepository.save(member);
               memberId = member.getId();
 

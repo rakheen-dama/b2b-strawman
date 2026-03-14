@@ -13,6 +13,7 @@ import io.b2mash.b2b.b2bstrawman.member.ProjectMember;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationRepository;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.ProjectTemplate;
@@ -60,6 +61,7 @@ class AutomationActionExecutorExtendedTest {
   @Autowired private TaskRepository taskRepository;
   @Autowired private NotificationRepository notificationRepository;
   @Autowired private ProjectTemplateRepository projectTemplateRepository;
+  @Autowired private OrgRoleRepository orgRoleRepository;
   @Autowired private ApplicationEventPublisher eventPublisher;
 
   private String schemaName;
@@ -80,14 +82,16 @@ class AutomationActionExecutorExtendedTest {
         .run(
             () -> {
               // Create actor member (owner)
-              var member =
-                  new Member("clerk_ext_test", "ext@test.com", "Extended Actor", null, "owner");
+              var ownerRoleId = orgRoleRepository.findBySlug("owner").orElseThrow().getId();
+              var memberRoleId = orgRoleRepository.findBySlug("member").orElseThrow().getId();
+              var member = new Member("clerk_ext_test", "ext@test.com", "Extended Actor", null);
+              member.setOrgRoleId(ownerRoleId);
               memberRepository.save(member);
               actorMemberId = member.getId();
 
               // Create a second member for assignment tests
-              var member2 =
-                  new Member("clerk_ext_test2", "ext2@test.com", "Second Member", null, "member");
+              var member2 = new Member("clerk_ext_test2", "ext2@test.com", "Second Member", null);
+              member2.setOrgRoleId(memberRoleId);
               memberRepository.save(member2);
               secondMemberId = member2.getId();
 

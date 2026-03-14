@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.math.BigDecimal;
@@ -35,6 +36,7 @@ class PaymentEventRepositoryIntegrationTest {
   @Autowired private InvoiceRepository invoiceRepository;
   @Autowired private CustomerRepository customerRepository;
   @Autowired private MemberRepository memberRepository;
+  @Autowired private OrgRoleRepository orgRoleRepository;
   @Autowired private TransactionTemplate transactionTemplate;
 
   private String tenantSchema;
@@ -54,8 +56,9 @@ class PaymentEventRepositoryIntegrationTest {
                 transactionTemplate.executeWithoutResult(
                     tx -> {
                       var member =
-                          new Member(
-                              "user_pe_test", "pe_test@example.com", "PE Tester", null, "owner");
+                          new Member("user_pe_test", "pe_test@example.com", "PE Tester", null);
+                      member.setOrgRoleId(
+                          orgRoleRepository.findBySlug("owner").orElseThrow().getId());
                       member = memberRepository.save(member);
 
                       var customer =

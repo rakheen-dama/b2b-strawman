@@ -392,7 +392,7 @@
 | **Phase 46 — RBAC Decoupling (Application-Managed Roles)** | | | | | | See [tasks/phase46-rbac-decoupling.md](tasks/phase46-rbac-decoupling.md) |
 | 345 | PendingInvitation Entity & Invitation Service | Backend | -- | M | 345A, 345B | **Done** (PR #670) |
 | 346 | MemberFilter DB-Only Role Resolution | Backend | 345 | M | 346A, 346B | **Done** (PR #671) |
-| 347 | @PreAuthorize Migration (Remaining Controllers) | Backend | 346 | L | 347A, 347B, 347C | |
+| 347 | @PreAuthorize Migration (Remaining Controllers) | Backend | 346 | L | 347A, 347B, 347C | 347A Done (PR #672) |
 | 348 | Member Entity Cleanup & JwtUtils Rename | Backend | 347 | M | 348A, 348B | |
 | 349 | KeycloakAdminClient Backend Move & Org Endpoint | Backend | 345 | M | 349A, 349B | |
 | 350 | Gateway Authorization Removal | Gateway | 349 | M | 350A, 350B | |

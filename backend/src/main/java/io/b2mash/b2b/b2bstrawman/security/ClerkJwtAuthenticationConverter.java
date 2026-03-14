@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 
 /**
  * Converts JWT tokens (Clerk v2 or Keycloak) to Spring Security authentication tokens with proper
- * granted authorities. Supports both providers via ClerkJwtUtils dual-mode extraction.
+ * granted authorities. Extracts role from Keycloak JWT via JwtUtils.
  */
 @Component
 public class ClerkJwtAuthenticationConverter
@@ -32,8 +32,8 @@ public class ClerkJwtAuthenticationConverter
   }
 
   private Collection<GrantedAuthority> extractAuthorities(Jwt jwt) {
-    // ClerkJwtUtils.extractOrgRole handles both Clerk v2 and Keycloak formats
-    String orgRole = ClerkJwtUtils.extractOrgRole(jwt);
+    // JwtUtils.extractOrgRole handles Keycloak format
+    String orgRole = JwtUtils.extractOrgRole(jwt);
     if (orgRole == null) {
       return List.of();
     }

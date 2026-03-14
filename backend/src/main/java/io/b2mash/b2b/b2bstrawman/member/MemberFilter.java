@@ -5,7 +5,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ScopedFilterChain;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
-import io.b2mash.b2b.b2bstrawman.security.ClerkJwtUtils;
+import io.b2mash.b2b.b2bstrawman.security.JwtUtils;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -97,7 +97,7 @@ public class MemberFilter extends OncePerRequestFilter {
 
     Jwt jwt = jwtAuth.getToken();
     String clerkUserId = jwt.getSubject();
-    String jwtOrgRole = ClerkJwtUtils.extractOrgRole(jwt);
+    String jwtOrgRole = JwtUtils.extractOrgRole(jwt);
 
     if (clerkUserId == null) {
       return null;
@@ -119,7 +119,7 @@ public class MemberFilter extends OncePerRequestFilter {
     // If JWT has an explicit role (rich format, Clerk, or org_role claim), prefer it.
     // Otherwise (flat list default), trust the DB role — it was set correctly during onboarding.
     boolean jwtHasExplicitRole =
-        !ClerkJwtUtils.isKeycloakFlatListFormat(jwt) || jwt.getClaimAsString("org_role") != null;
+        !JwtUtils.isKeycloakFlatListFormat(jwt) || jwt.getClaimAsString("org_role") != null;
     String effectiveRole = jwtHasExplicitRole ? jwtOrgRole : info.orgRole();
     return new MemberInfo(info.memberId(), effectiveRole);
   }

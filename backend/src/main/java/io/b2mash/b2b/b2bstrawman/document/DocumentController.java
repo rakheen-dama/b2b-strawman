@@ -4,7 +4,7 @@ import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.MissingOrganizationContextException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.security.ClerkJwtUtils;
+import io.b2mash.b2b.b2bstrawman.security.JwtUtils;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
@@ -42,7 +42,7 @@ public class DocumentController {
       @PathVariable UUID projectId,
       @Valid @RequestBody UploadInitRequest request,
       JwtAuthenticationToken auth) {
-    String orgId = ClerkJwtUtils.extractOrgId(auth.getToken());
+    String orgId = JwtUtils.extractOrgId(auth.getToken());
     if (orgId == null) {
       throw new MissingOrganizationContextException();
     }
@@ -65,7 +65,7 @@ public class DocumentController {
   @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<UploadInitResponse> initiateOrgUpload(
       @Valid @RequestBody UploadInitRequest request, JwtAuthenticationToken auth) {
-    String orgId = ClerkJwtUtils.extractOrgId(auth.getToken());
+    String orgId = JwtUtils.extractOrgId(auth.getToken());
     if (orgId == null) {
       throw new MissingOrganizationContextException();
     }
@@ -88,7 +88,7 @@ public class DocumentController {
       @PathVariable UUID customerId,
       @Valid @RequestBody UploadInitRequest request,
       JwtAuthenticationToken auth) {
-    String orgId = ClerkJwtUtils.extractOrgId(auth.getToken());
+    String orgId = JwtUtils.extractOrgId(auth.getToken());
     if (orgId == null) {
       throw new MissingOrganizationContextException();
     }

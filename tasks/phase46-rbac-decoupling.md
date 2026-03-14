@@ -22,7 +22,7 @@ This phase completes the separation of authentication from authorization. Keyclo
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 345 | PendingInvitation Entity & Invitation Service | Backend | — | M | 345A, 345B | **Done** (PR #670) |
-| 346 | MemberFilter DB-Only Role Resolution | Backend | 345 | M | 346A, 346B | |
+| 346 | MemberFilter DB-Only Role Resolution | Backend | 345 | M | 346A, 346B | **Done** (PR #671) |
 | 347 | @PreAuthorize Migration (Remaining Controllers) | Backend | 346 | L | 347A, 347B, 347C | |
 | 348 | Member Entity Cleanup & JwtUtils Rename | Backend | 347 | M | 348A, 348B | |
 | 349 | KeycloakAdminClient Backend Move & Org Endpoint | Backend | 345 | M | 349A, 349B | |
@@ -183,8 +183,8 @@ CLEANUP TRACK (after E351)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 1a (parallel) | 346 | 346A | `MemberFilter`: remove `jwtHasExplicitRole` branch, role always from DB `orgRoleId`, add invitation lookup in `lazyCreateMember()`, grant `ROLE_ORG_*` from DB role in converter (backward compat). ~4 modified files (~8 tests). Backend only. | |
-| 1b | 346 | 346B | `RequestScopes.requireOwner()`, cache eviction calls in `OrgRoleService.assignRole()` and `updateRole()`, `MemberRepository.findAllByOrgRoleId()`. ~4 modified files (~6 tests). Backend only. | |
+| 1a (parallel) | 346 | 346A | `MemberFilter`: remove `jwtHasExplicitRole` branch, role always from DB `orgRoleId`, add invitation lookup in `lazyCreateMember()`, grant `ROLE_ORG_*` from DB role in converter (backward compat). ~4 modified files (~8 tests). Backend only. | **Done** (PR #671) |
+| 1b | 346 | 346B | `RequestScopes.requireOwner()`, cache eviction calls in `OrgRoleService.assignRole()` and `updateRole()`, `MemberRepository.findAllByOrgRoleId()`. ~4 modified files (~6 tests). Backend only. | **Done** (PR #671) |
 | 1c (parallel with 1a) | 349 | 349A | Copy `KeycloakAdminClient` from gateway to backend `security/keycloak/`, add config properties, wire to `InvitationService`. ~4 new/modified files (~3 tests). Backend only. | |
 | 1d | 349 | 349B | `POST /api/orgs` endpoint in new `OrgController`, move org creation logic from gateway, platform-admin guard. ~3 new files (~4 tests). Backend only. | |
 
@@ -335,8 +335,8 @@ Stage 7: [353A] -> [353B]                                                      (
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **346A** | 346.1--346.6 | `MemberFilter`: remove `jwtHasExplicitRole` branch (and `isKeycloakFlatListFormat()` call from `ClerkJwtUtils`), role always from DB `orgRoleId`. Inject `InvitationService`, add pending invitation lookup in `lazyCreateMember()`. Update `ClerkJwtAuthenticationConverter` to grant `ROLE_ORG_*` from DB role (backward compat during migration). ~4 modified files (~8 tests). Backend only. | |
-| **346B** | 346.7--346.12 | `RequestScopes.requireOwner()` convenience method. Add cache eviction calls in `OrgRoleService.assignRole()` and `updateRole()`. Add `MemberRepository.findAllByOrgRoleId()` for bulk eviction. ~4 modified files (~6 tests). Backend only. | |
+| **346A** | 346.1--346.6 | `MemberFilter`: remove `jwtHasExplicitRole` branch (and `isKeycloakFlatListFormat()` call from `ClerkJwtUtils`), role always from DB `orgRoleId`. Inject `InvitationService`, add pending invitation lookup in `lazyCreateMember()`. Update `ClerkJwtAuthenticationConverter` to grant `ROLE_ORG_*` from DB role (backward compat during migration). ~4 modified files (~8 tests). Backend only. | **Done** (PR #671) |
+| **346B** | 346.7--346.12 | `RequestScopes.requireOwner()` convenience method. Add cache eviction calls in `OrgRoleService.assignRole()` and `updateRole()`. Add `MemberRepository.findAllByOrgRoleId()` for bulk eviction. ~4 modified files (~6 tests). Backend only. | **Done** (PR #671) |
 
 ### Tasks
 

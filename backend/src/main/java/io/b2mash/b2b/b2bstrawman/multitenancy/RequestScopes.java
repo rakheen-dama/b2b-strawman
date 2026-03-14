@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.multitenancy;
 
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.MissingOrganizationContextException;
+import io.b2mash.b2b.b2bstrawman.security.Roles;
 import java.util.Collections;
 import java.util.Set;
 import java.util.UUID;
@@ -75,7 +76,7 @@ public final class RequestScopes {
    * current member is not the organization owner.
    */
   public static void requireOwner() {
-    if (!"owner".equals(getOrgRole())) {
+    if (!Roles.ORG_OWNER.equals(getOrgRole())) {
       throw new ForbiddenException(
           "Owner required", "Only the organization owner can perform this action");
     }

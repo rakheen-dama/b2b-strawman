@@ -193,7 +193,7 @@ CLEANUP TRACK (after E351)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 2a | 347 | 347A | Migrate `@PreAuthorize` → `@RequiresCapability` or remove on: `OrgSettingsController` (10), `DocumentTemplateController` (9+8 overlap), `FieldDefinitionController` (6), `FieldGroupController` (7), `GeneratedDocumentController` (4), `DocumentController` (9). ~6-8 modified controller files + test updates (~12 test adjustments). Backend only. | **Done** (PR #672) |
-| 2b | 347 | 347B | Migrate on: `TaskController` (13), `TaskItemController` (6), `TimeEntryController` (5), `ProjectTimeSummaryController` (3), `ExpenseController` (6), `ProjectController` (8), `CalendarController` (1), `ProjectBudgetController` (4), `MyWorkController` (3). ~9 modified controller files + test updates (~12 test adjustments). Backend only. | |
+| 2b | 347 | 347B | Migrate on: `TaskController` (13), `TaskItemController` (6), `TimeEntryController` (5), `ProjectTimeSummaryController` (3), `ExpenseController` (6), `ProjectController` (8), `CalendarController` (1), `ProjectBudgetController` (4), `MyWorkController` (3). ~9 modified controller files + test updates (~12 test adjustments). Backend only. | **Done** (PR #673) |
 | 2c | 347 | 347C | Migrate on: `BillingController` (2), `RetainerAgreementController` (7), `RetainerPeriodController` (3), `RetainerSummaryController` (2), `NotificationController` (5), `NotificationPreferenceController` (2), `DashboardController` (8), `CommentController` (4), `AuditEventController` (2), `ReportingController` (6), `ReportController` (3), `TagController` (3), `SavedViewController` (4), `ViewOnboardingController` (2), remaining controllers. ~14-16 modified controller files + test updates (~12 test adjustments). Backend only. | |
 
 ### Stage 3: Entity Cleanup (parallel tracks)
@@ -396,7 +396,7 @@ Stage 7: [353A] -> [353B]                                                      (
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **347A** | 347.1--347.3 | Migrate `@PreAuthorize` on settings, template, document, and field definition controllers (~70 annotations across ~8 files). Replace `hasAnyRole('ORG_ADMIN', 'ORG_OWNER')` with appropriate `@RequiresCapability`. Remove `hasAnyRole('ORG_MEMBER', ...)` (redundant with MemberFilter). Replace `hasRole('ORG_OWNER')` with `RequestScopes.requireOwner()` call in service. + test updates (~12 adjustments). Backend only. | **Done** (PR #672) |
-| **347B** | 347.4--347.6 | Migrate `@PreAuthorize` on task, time entry, expense, project, calendar, and budget controllers (~60 annotations across ~10 files). + test updates (~12 adjustments). Backend only. | |
+| **347B** | 347.4--347.6 | Migrate `@PreAuthorize` on task, time entry, expense, project, calendar, and budget controllers (~60 annotations across ~10 files). + test updates (~12 adjustments). Backend only. | **Done** (PR #673) |
 | **347C** | 347.7--347.9 | Migrate `@PreAuthorize` on billing, retainer, notification, dashboard, comment, audit, reporting, tag, view, and remaining controllers (~55 annotations across ~16 files). + test updates (~12 adjustments). Backend only. | |
 
 ### Tasks

@@ -19,7 +19,7 @@ const mockBatchSend = vi.fn();
 const mockGetBillingRun = vi.fn();
 
 vi.mock(
-  "@/app/(app)/org/[slug]/invoices/billing-runs/new/actions",
+  "@/app/(app)/org/[slug]/invoices/billing-runs/new/billing-run-actions",
   () => ({
     createBillingRunAction: vi.fn(),
     loadPreviewAction: vi.fn(),
@@ -30,6 +30,12 @@ vi.mock(
     excludeCustomerAction: vi.fn().mockResolvedValue({ success: true }),
     includeCustomerAction: vi.fn().mockResolvedValue({ success: true }),
     getRetainerPreviewAction: vi.fn().mockResolvedValue({ success: true, retainers: [] }),
+  }),
+);
+
+vi.mock(
+  "@/app/(app)/org/[slug]/invoices/billing-runs/new/billing-step-actions",
+  () => ({
     generateAction: (...args: unknown[]) => mockGenerate(...args),
     getItemsAction: (...args: unknown[]) => mockGetItems(...args),
     batchApproveAction: (...args: unknown[]) => mockBatchApprove(...args),
@@ -39,7 +45,7 @@ vi.mock(
 );
 
 // Mock invoice actions
-vi.mock("@/app/(app)/org/[slug]/invoices/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/invoices/invoice-crud-actions", () => ({
   updateInvoice: vi.fn().mockResolvedValue({ success: true }),
 }));
 

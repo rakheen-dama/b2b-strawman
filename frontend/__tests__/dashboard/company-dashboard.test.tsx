@@ -90,17 +90,19 @@ describe("TeamWorkloadWidget", () => {
     cleanup();
   });
 
-  it("renders chart for admin with data", () => {
+  it("renders chart for admin with data", async () => {
     render(<TeamWorkloadWidget data={mockWorkloadData} isAdmin={true} />);
     expect(screen.getByText("Team Workload")).toBeInTheDocument();
-    expect(screen.getByTestId("responsive-container")).toBeInTheDocument();
+    // HorizontalBarChart is dynamically imported — wait for it to load
+    expect(await screen.findByTestId("responsive-container")).toBeInTheDocument();
     expect(screen.queryByText("Contact an admin")).not.toBeInTheDocument();
   });
 
-  it("shows admin note for non-admin with data", () => {
+  it("shows admin note for non-admin with data", async () => {
     render(<TeamWorkloadWidget data={mockWorkloadData} isAdmin={false} />);
     expect(screen.getByText("Team Workload")).toBeInTheDocument();
-    expect(screen.getByTestId("responsive-container")).toBeInTheDocument();
+    // HorizontalBarChart is dynamically imported — wait for it to load
+    expect(await screen.findByTestId("responsive-container")).toBeInTheDocument();
     expect(
       screen.getByText("Contact an admin to see team-wide data.")
     ).toBeInTheDocument();

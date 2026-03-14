@@ -1,6 +1,6 @@
 import "server-only";
 
-import { api } from "@/lib/api";
+import { api } from "./client";
 
 // ---- Response Types ----
 

@@ -7,7 +7,7 @@ const MOCK_IDP_URL = process.env.MOCK_IDP_URL || "http://mock-idp:8090";
  * Mock auth provider — reads JWT from mock-auth-token cookie.
  * Used when NEXT_PUBLIC_AUTH_MODE=mock (E2E testing / agent automation).
  *
- * JWT payload follows Clerk v2 format:
+ * JWT payload format:
  *   { sub, o: { id, rol, slg }, iss, aud, iat, exp, v }
  */
 
@@ -123,7 +123,7 @@ export async function requireRole(
     return;
   }
 
-  // orgRole is always normalized to "org:" prefix format (matches Clerk convention)
+  // orgRole is always normalized to "org:" prefix format
   if (role === "owner" && orgRole !== "org:owner") {
     throw new Error("Insufficient permissions — owner role required");
   }

@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,10 +14,21 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { updateCustomer } from "@/app/(app)/org/[slug]/customers/actions";
 import type { Customer, CustomerType } from "@/lib/types";
+import {
+  editCustomerSchema,
+  type EditCustomerFormData,
+} from "@/lib/schemas/customer";
 
 const CUSTOMER_TYPES: { value: CustomerType; label: string }[] = [
   { value: "INDIVIDUAL", label: "Individual" },
@@ -34,11 +47,32 @@ export function EditCustomerDialog({ customer, slug, children }: EditCustomerDia
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleSubmit(formData: FormData) {
+  const form = useForm<EditCustomerFormData>({
+    resolver: zodResolver(editCustomerSchema),
+    defaultValues: {
+      name: customer.name,
+      email: customer.email,
+      phone: customer.phone ?? "",
+      idNumber: customer.idNumber ?? "",
+      notes: customer.notes ?? "",
+      customerType: (customer.customerType as CustomerType) ?? "INDIVIDUAL",
+    },
+  });
+
+  async function onSubmit(values: EditCustomerFormData) {
     setError(null);
     setIsSubmitting(true);
 
     try {
+      // Build FormData to preserve existing API contract
+      const formData = new FormData();
+      formData.set("name", values.name);
+      formData.set("email", values.email);
+      formData.set("customerType", values.customerType);
+      formData.set("phone", values.phone ?? "");
+      formData.set("idNumber", values.idNumber ?? "");
+      formData.set("notes", values.notes ?? "");
+
       const result = await updateCustomer(slug, customer.id, formData);
       if (result.success) {
         setOpen(false);
@@ -55,6 +89,14 @@ export function EditCustomerDialog({ customer, slug, children }: EditCustomerDia
   function handleOpenChange(newOpen: boolean) {
     if (newOpen) {
       setError(null);
+      form.reset({
+        name: customer.name,
+        email: customer.email,
+        phone: customer.phone ?? "",
+        idNumber: customer.idNumber ?? "",
+        notes: customer.notes ?? "",
+        customerType: (customer.customerType as CustomerType) ?? "INDIVIDUAL",
+      });
     }
     setOpen(newOpen);
   }
@@ -67,94 +109,118 @@ export function EditCustomerDialog({ customer, slug, children }: EditCustomerDia
           <DialogTitle>Edit Customer</DialogTitle>
           <DialogDescription>Update customer information.</DialogDescription>
         </DialogHeader>
-        <form action={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="edit-customer-name">Name</Label>
-            <Input
-              id="edit-customer-name"
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
               name="name"
-              defaultValue={customer.name}
-              required
-              maxLength={255}
-              autoFocus
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Name</FormLabel>
+                  <FormControl>
+                    <Input maxLength={255} autoFocus {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="edit-customer-type">Type</Label>
-            <select
-              id="edit-customer-type"
+            <FormField
+              control={form.control}
               name="customerType"
-              defaultValue={customer.customerType ?? "INDIVIDUAL"}
-              className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 dark:border-slate-800"
-            >
-              {CUSTOMER_TYPES.map((ct) => (
-                <option key={ct.value} value={ct.value}>
-                  {ct.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="edit-customer-email">Email</Label>
-            <Input
-              id="edit-customer-email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Type</FormLabel>
+                  <FormControl>
+                    <select
+                      value={field.value}
+                      onChange={field.onChange}
+                      className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 dark:border-slate-800"
+                    >
+                      {CUSTOMER_TYPES.map((ct) => (
+                        <option key={ct.value} value={ct.value}>
+                          {ct.label}
+                        </option>
+                      ))}
+                    </select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
               name="email"
-              type="email"
-              defaultValue={customer.email}
-              required
-              maxLength={255}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input type="email" maxLength={255} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="edit-customer-phone">
-              Phone <span className="font-normal text-muted-foreground">(optional)</span>
-            </Label>
-            <Input
-              id="edit-customer-phone"
+            <FormField
+              control={form.control}
               name="phone"
-              type="tel"
-              defaultValue={customer.phone ?? ""}
-              maxLength={50}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Phone <span className="font-normal text-muted-foreground">(optional)</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Input type="tel" maxLength={50} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="edit-customer-id-number">
-              ID Number <span className="font-normal text-muted-foreground">(optional)</span>
-            </Label>
-            <Input
-              id="edit-customer-id-number"
+            <FormField
+              control={form.control}
               name="idNumber"
-              defaultValue={customer.idNumber ?? ""}
-              maxLength={100}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    ID Number <span className="font-normal text-muted-foreground">(optional)</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Input maxLength={100} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="edit-customer-notes">
-              Notes <span className="font-normal text-muted-foreground">(optional)</span>
-            </Label>
-            <Textarea
-              id="edit-customer-notes"
+            <FormField
+              control={form.control}
               name="notes"
-              defaultValue={customer.notes ?? ""}
-              maxLength={2000}
-              rows={3}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Notes <span className="font-normal text-muted-foreground">(optional)</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Textarea maxLength={2000} rows={3} {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-          {error && <p className="text-sm text-destructive">{error}</p>}
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="plain"
-              onClick={() => setOpen(false)}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Saving..." : "Save Changes"}
-            </Button>
-          </DialogFooter>
-        </form>
+            {error && <p className="text-sm text-destructive">{error}</p>}
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="plain"
+                onClick={() => setOpen(false)}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Saving..." : "Save Changes"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );

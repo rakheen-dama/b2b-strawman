@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { SWRTestProvider } from "@/lib/swr/test-utils";
 import { LinkProjectDialog } from "@/components/customers/link-project-dialog";
 import type { Project } from "@/lib/types";
 
@@ -58,9 +59,11 @@ describe("LinkProjectDialog", () => {
     const user = userEvent.setup();
 
     render(
-      <LinkProjectDialog slug="acme" customerId="c1" existingProjects={[]}>
-        <button>Link Project Dialog Trigger</button>
-      </LinkProjectDialog>,
+      <SWRTestProvider>
+        <LinkProjectDialog slug="acme" customerId="c1" existingProjects={[]}>
+          <button>Link Project Dialog Trigger</button>
+        </LinkProjectDialog>
+      </SWRTestProvider>,
     );
 
     await user.click(screen.getByText("Link Project Dialog Trigger"));
@@ -75,9 +78,11 @@ describe("LinkProjectDialog", () => {
     const user = userEvent.setup();
 
     render(
-      <LinkProjectDialog slug="acme" customerId="c1" existingProjects={existingProjects}>
-        <button>Link Project Dialog Trigger</button>
-      </LinkProjectDialog>,
+      <SWRTestProvider>
+        <LinkProjectDialog slug="acme" customerId="c1" existingProjects={existingProjects}>
+          <button>Link Project Dialog Trigger</button>
+        </LinkProjectDialog>
+      </SWRTestProvider>,
     );
 
     await user.click(screen.getByText("Link Project Dialog Trigger"));
@@ -97,9 +102,11 @@ describe("LinkProjectDialog", () => {
     const user = userEvent.setup();
 
     render(
-      <LinkProjectDialog slug="acme" customerId="c1" existingProjects={existingProjects}>
-        <button>Link Project Dialog Trigger</button>
-      </LinkProjectDialog>,
+      <SWRTestProvider>
+        <LinkProjectDialog slug="acme" customerId="c1" existingProjects={existingProjects}>
+          <button>Link Project Dialog Trigger</button>
+        </LinkProjectDialog>
+      </SWRTestProvider>,
     );
 
     await user.click(screen.getByText("Link Project Dialog Trigger"));
@@ -118,9 +125,11 @@ describe("LinkProjectDialog", () => {
     const user = userEvent.setup();
 
     render(
-      <LinkProjectDialog slug="acme" customerId="c1" existingProjects={existingProjects}>
-        <button>Link Project Dialog Trigger</button>
-      </LinkProjectDialog>,
+      <SWRTestProvider>
+        <LinkProjectDialog slug="acme" customerId="c1" existingProjects={existingProjects}>
+          <button>Link Project Dialog Trigger</button>
+        </LinkProjectDialog>
+      </SWRTestProvider>,
     );
 
     await user.click(screen.getByText("Link Project Dialog Trigger"));
@@ -139,9 +148,11 @@ describe("LinkProjectDialog", () => {
     const user = userEvent.setup();
 
     render(
-      <LinkProjectDialog slug="acme" customerId="c1" existingProjects={[]}>
-        <button>Link Project Dialog Trigger</button>
-      </LinkProjectDialog>,
+      <SWRTestProvider>
+        <LinkProjectDialog slug="acme" customerId="c1" existingProjects={[]}>
+          <button>Link Project Dialog Trigger</button>
+        </LinkProjectDialog>
+      </SWRTestProvider>,
     );
 
     await user.click(screen.getByText("Link Project Dialog Trigger"));
@@ -155,9 +166,11 @@ describe("LinkProjectDialog", () => {
     const user = userEvent.setup();
 
     render(
-      <LinkProjectDialog slug="acme" customerId="c1" existingProjects={[]}>
-        <button>Link Project Dialog Trigger</button>
-      </LinkProjectDialog>,
+      <SWRTestProvider>
+        <LinkProjectDialog slug="acme" customerId="c1" existingProjects={[]}>
+          <button>Link Project Dialog Trigger</button>
+        </LinkProjectDialog>
+      </SWRTestProvider>,
     );
 
     await user.click(screen.getByText("Link Project Dialog Trigger"));

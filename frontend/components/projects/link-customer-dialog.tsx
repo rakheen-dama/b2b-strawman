@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import useSWR from "swr";
 import {
   Dialog,
   DialogContent,
@@ -37,25 +38,20 @@ export function LinkCustomerDialog({
   children,
 }: LinkCustomerDialogProps) {
   const [open, setOpen] = useState(false);
-  const [allCustomers, setAllCustomers] = useState<Customer[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [isLinking, setIsLinking] = useState(false);
-  const [fetchError, setFetchError] = useState<string | null>(null);
   const [linkError, setLinkError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!open) return;
-
-    setIsLoading(true);
-    setFetchError(null);
-
-    fetchCustomers()
-      .then(setAllCustomers)
-      .catch(() => setFetchError("Failed to load customers."))
-      .finally(() => setIsLoading(false));
-  }, [open]);
+  const {
+    data: allCustomers,
+    error: fetchError,
+    isLoading,
+  } = useSWR<Customer[]>(
+    open ? "link-customer-list" : null,
+    () => fetchCustomers()
+  );
 
   const availableCustomers = useMemo(() => {
+    if (!allCustomers) return [];
     const linkedIds = new Set(existingCustomers.map((c) => c.id));
     return allCustomers.filter((c) => !linkedIds.has(c.id));
   }, [allCustomers, existingCustomers]);
@@ -81,9 +77,7 @@ export function LinkCustomerDialog({
   function handleOpenChange(newOpen: boolean) {
     if (isLinking) return;
     if (newOpen) {
-      setFetchError(null);
       setLinkError(null);
-      setAllCustomers([]);
     }
     setOpen(newOpen);
   }
@@ -107,10 +101,10 @@ export function LinkCustomerDialog({
                 Loading customers...
               </div>
             ) : fetchError ? (
-              <div className="py-6 text-center text-sm text-destructive">{fetchError}</div>
+              <div className="py-6 text-center text-sm text-destructive">Failed to load customers.</div>
             ) : availableCustomers.length === 0 ? (
               <CommandEmpty>
-                {allCustomers.length === 0
+                {!allCustomers || allCustomers.length === 0
                   ? "No customers found."
                   : "All customers are already linked to this project."}
               </CommandEmpty>

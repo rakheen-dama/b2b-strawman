@@ -29,11 +29,15 @@ const mockDeleteCapacity = vi.fn();
 const mockListCapacity = vi.fn();
 const mockListAllocations = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/resources/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/resources/allocation-actions", () => ({
   createAllocationAction: (...args: unknown[]) => mockCreateAllocation(...args),
   updateAllocationAction: (...args: unknown[]) => mockUpdateAllocation(...args),
   deleteAllocationAction: (...args: unknown[]) => mockDeleteAllocation(...args),
   bulkUpsertAction: (...args: unknown[]) => mockBulkUpsert(...args),
+  listAllocationsAction: (...args: unknown[]) => mockListAllocations(...args),
+}));
+
+vi.mock("@/app/(app)/org/[slug]/resources/resource-actions", () => ({
   createLeaveAction: (...args: unknown[]) => mockCreateLeave(...args),
   updateLeaveAction: (...args: unknown[]) => mockUpdateLeave(...args),
   deleteLeaveAction: (...args: unknown[]) => mockDeleteLeave(...args),
@@ -46,7 +50,6 @@ vi.mock("@/app/(app)/org/[slug]/resources/actions", () => ({
     mockDeleteCapacity(...args),
   listCapacityRecordsAction: (...args: unknown[]) =>
     mockListCapacity(...args),
-  listAllocationsAction: (...args: unknown[]) => mockListAllocations(...args),
 }));
 
 const testProjects = [

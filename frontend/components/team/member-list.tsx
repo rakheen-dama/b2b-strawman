@@ -1,19 +1,17 @@
 "use client";
 
-import { useOrganization } from "@clerk/nextjs";
 import { Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { AvatarCircle } from "@/components/ui/avatar-circle";
 import { EmptyState } from "@/components/empty-state";
 import { useOrgMembers } from "@/lib/auth/client";
-import { formatDate } from "@/lib/format";
 import { useState, useEffect } from "react";
-import { listMembers } from "@/app/(app)/org/[slug]/team/actions";
-import type { BffMember } from "@/app/(app)/org/[slug]/team/actions";
+import { listMembers } from "@/app/(app)/org/[slug]/team/member-actions";
+import type { BffMember } from "@/app/(app)/org/[slug]/team/member-actions";
 import { MemberDetailPanel } from "@/components/team/member-detail-panel";
 import type { OrgRole } from "@/lib/api/org-roles";
 
-const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "clerk";
+const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "keycloak";
 
 const ROLE_BADGES: Record<
   string,
@@ -45,75 +43,6 @@ interface MemberRowData {
   capabilityOverridesCount?: number;
 }
 
-function ClerkMemberList({
-  isAdmin,
-  onRowClick,
-}: InnerMemberListProps) {
-  const { memberships, isLoaded } = useOrganization({
-    memberships: {
-      infinite: true,
-      keepPreviousData: true,
-    },
-  });
-
-  if (!isLoaded) {
-    return (
-      <div className="py-8 text-center text-sm text-slate-600 dark:text-slate-400">
-        Loading members...
-      </div>
-    );
-  }
-
-  if (!memberships?.data?.length) {
-    return (
-      <EmptyState
-        icon={Users}
-        title="No members found"
-        description="Organization members will appear here"
-      />
-    );
-  }
-
-  return (
-    <div className="space-y-4">
-      <MemberTable>
-        {memberships.data.map((member) => {
-          const fullName =
-            `${member.publicUserData?.firstName ?? ""} ${member.publicUserData?.lastName ?? ""}`.trim() ||
-            "Unknown";
-          const row: MemberRowData = {
-            id: member.id,
-            name: fullName,
-            email: member.publicUserData?.identifier ?? "\u2014",
-            role: member.role,
-            joinedAt: member.createdAt ? formatDate(member.createdAt) : "\u2014",
-          };
-          return (
-            <MemberRow
-              key={member.id}
-              member={row}
-              isAdmin={isAdmin}
-              onRowClick={onRowClick}
-            />
-          );
-        })}
-      </MemberTable>
-
-      {memberships.hasNextPage && (
-        <div className="flex justify-center">
-          <button
-            onClick={() => memberships.fetchNext?.()}
-            disabled={memberships.isFetching}
-            className="text-sm font-medium text-slate-600 hover:text-slate-900 disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-600 dark:text-slate-400 dark:hover:text-slate-200"
-          >
-            {memberships.isFetching ? "Loading..." : "Load more"}
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
-
 function MockMemberList({
   isAdmin,
   onRowClick,
@@ -122,7 +51,7 @@ function MockMemberList({
 
   if (!isLoaded) {
     return (
-      <div className="py-8 text-center text-sm text-slate-600 dark:text-slate-400">
+      <div className="py-8 text-center text-sm text-slate-600 dark:text-slate-400" aria-live="polite">
         Loading members...
       </div>
     );
@@ -178,7 +107,7 @@ function KeycloakBffMemberList({
 
   if (!isLoaded) {
     return (
-      <div className="py-8 text-center text-sm text-slate-600 dark:text-slate-400">
+      <div className="py-8 text-center text-sm text-slate-600 dark:text-slate-400" aria-live="polite">
         Loading members...
       </div>
     );
@@ -324,10 +253,8 @@ export function MemberList({ isAdmin, roles, slug }: MemberListProps) {
     <>
       {AUTH_MODE === "mock" ? (
         <MockMemberList {...innerProps} />
-      ) : AUTH_MODE === "keycloak" ? (
-        <KeycloakBffMemberList {...innerProps} />
       ) : (
-        <ClerkMemberList {...innerProps} />
+        <KeycloakBffMemberList {...innerProps} />
       )}
 
       {isAdmin && (

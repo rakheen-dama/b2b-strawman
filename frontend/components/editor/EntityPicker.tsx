@@ -27,7 +27,7 @@ import {
   fetchProjectsForPicker,
   fetchCustomersForPicker,
   fetchInvoicesForPicker,
-} from "@/app/(app)/org/[slug]/settings/templates/actions";
+} from "@/app/(app)/org/[slug]/settings/templates/template-support-actions";
 import type {
   TemplateEntityType,
   Project,

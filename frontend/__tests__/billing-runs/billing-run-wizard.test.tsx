@@ -15,7 +15,7 @@ const mockCreateBillingRun = vi.fn();
 const mockLoadPreview = vi.fn();
 
 vi.mock(
-  "@/app/(app)/org/[slug]/invoices/billing-runs/new/actions",
+  "@/app/(app)/org/[slug]/invoices/billing-runs/new/billing-run-actions",
   () => ({
     createBillingRunAction: (...args: unknown[]) =>
       mockCreateBillingRun(...args),

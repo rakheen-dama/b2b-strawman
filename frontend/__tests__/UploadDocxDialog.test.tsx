@@ -12,19 +12,18 @@ import { UploadDocxDialog } from "@/app/(app)/org/[slug]/settings/templates/Uplo
 const mockUploadDocxTemplate = vi.fn();
 const mockPush = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/settings/templates/actions", () => ({
-  uploadDocxTemplateAction: (...args: unknown[]) =>
-    mockUploadDocxTemplate(...args),
+vi.mock("@/app/(app)/org/[slug]/settings/templates/template-crud-actions", () => ({
   createTemplateAction: vi.fn(),
   updateTemplateAction: vi.fn(),
   cloneTemplateAction: vi.fn(),
   resetTemplateAction: vi.fn(),
   deactivateTemplateAction: vi.fn(),
   previewTemplateAction: vi.fn(),
-  generateDocumentAction: vi.fn(),
-  fetchGeneratedDocumentsAction: vi.fn(),
-  deleteGeneratedDocumentAction: vi.fn(),
-  downloadGeneratedDocumentAction: vi.fn(),
+}));
+
+vi.mock("@/app/(app)/org/[slug]/settings/templates/template-support-actions", () => ({
+  uploadDocxTemplateAction: (...args: unknown[]) =>
+    mockUploadDocxTemplate(...args),
   uploadLogoAction: vi.fn(),
   deleteLogoAction: vi.fn(),
   saveBrandingAction: vi.fn(),
@@ -36,6 +35,13 @@ vi.mock("@/app/(app)/org/[slug]/settings/templates/actions", () => ({
   getDocxFieldsAction: vi.fn(),
   downloadDocxTemplateAction: vi.fn(),
   replaceDocxFileAction: vi.fn(),
+}));
+
+vi.mock("@/app/(app)/org/[slug]/settings/templates/template-generation-actions", () => ({
+  generateDocumentAction: vi.fn(),
+  fetchGeneratedDocumentsAction: vi.fn(),
+  deleteGeneratedDocumentAction: vi.fn(),
+  downloadGeneratedDocumentAction: vi.fn(),
 }));
 
 vi.mock("next/navigation", () => ({

@@ -1,6 +1,6 @@
 /**
  * Platform-owned auth types.
- * These interfaces decouple domain code from any specific auth provider (Clerk, Auth0, etc.).
+ * These interfaces decouple domain code from any specific auth provider (Keycloak, etc.).
  * All server-side auth functions return these types — never provider-specific types.
  */
 
@@ -15,7 +15,7 @@ export interface SessionIdentity {
   groups: string[];
 }
 
-/** Replaces auth() destructure from Clerk. Contains org + user identity. */
+/** Org-scoped auth context. Contains org + user identity. */
 export interface AuthContext {
   orgId: string;
   orgSlug: string;
@@ -26,7 +26,7 @@ export interface AuthContext {
   groups: string[];
 }
 
-/** Replaces currentUser() / useUser() from Clerk. User profile info. */
+/** User profile info. */
 export interface AuthUser {
   firstName: string | null;
   lastName: string | null;
@@ -34,7 +34,7 @@ export interface AuthUser {
   imageUrl: string | null;
 }
 
-/** Replaces useOrganization().memberships from Clerk. Single org member. */
+/** Single org member. */
 export interface OrgMemberInfo {
   id: string;
   role: string;

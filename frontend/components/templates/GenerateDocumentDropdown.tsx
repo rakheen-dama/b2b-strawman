@@ -10,7 +10,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { GenerateDocumentDialog } from "@/components/templates/GenerateDocumentDialog";
+import dynamic from "next/dynamic";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const GenerateDocumentDialog = dynamic(
+  () =>
+    import("@/components/templates/GenerateDocumentDialog").then(
+      (mod) => mod.GenerateDocumentDialog,
+    ),
+  { loading: () => <Skeleton className="h-96 w-full" />, ssr: false },
+);
 import { GenerateDocxDialog } from "@/components/templates/GenerateDocxDialog";
 import { PrerequisiteModal } from "@/components/prerequisite/prerequisite-modal";
 import { checkPrerequisitesAction } from "@/lib/actions/prerequisite-actions";

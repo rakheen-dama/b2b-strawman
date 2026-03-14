@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { SWRTestProvider } from "@/lib/swr/test-utils";
 import { AddMemberDialog } from "./add-member-dialog";
 import type { OrgMember, ProjectMember } from "@/lib/types";
 
@@ -50,9 +51,11 @@ describe("AddMemberDialog", () => {
     const user = userEvent.setup();
 
     render(
-      <AddMemberDialog slug="acme" projectId="proj1" existingMembers={[]}>
-        <button>Open Dialog</button>
-      </AddMemberDialog>,
+      <SWRTestProvider>
+        <AddMemberDialog slug="acme" projectId="proj1" existingMembers={[]}>
+          <button>Open Dialog</button>
+        </AddMemberDialog>
+      </SWRTestProvider>,
     );
 
     await user.click(screen.getByText("Open Dialog"));
@@ -67,9 +70,11 @@ describe("AddMemberDialog", () => {
     const user = userEvent.setup();
 
     render(
-      <AddMemberDialog slug="acme" projectId="proj1" existingMembers={existingMembers}>
-        <button>Open Dialog</button>
-      </AddMemberDialog>,
+      <SWRTestProvider>
+        <AddMemberDialog slug="acme" projectId="proj1" existingMembers={existingMembers}>
+          <button>Open Dialog</button>
+        </AddMemberDialog>
+      </SWRTestProvider>,
     );
 
     await user.click(screen.getByText("Open Dialog"));
@@ -89,9 +94,11 @@ describe("AddMemberDialog", () => {
     const user = userEvent.setup();
 
     render(
-      <AddMemberDialog slug="acme" projectId="proj1" existingMembers={existingMembers}>
-        <button>Open Dialog</button>
-      </AddMemberDialog>,
+      <SWRTestProvider>
+        <AddMemberDialog slug="acme" projectId="proj1" existingMembers={existingMembers}>
+          <button>Open Dialog</button>
+        </AddMemberDialog>
+      </SWRTestProvider>,
     );
 
     await user.click(screen.getByText("Open Dialog"));
@@ -111,9 +118,11 @@ describe("AddMemberDialog", () => {
     const user = userEvent.setup();
 
     render(
-      <AddMemberDialog slug="acme" projectId="proj1" existingMembers={existingMembers}>
-        <button>Open Dialog</button>
-      </AddMemberDialog>,
+      <SWRTestProvider>
+        <AddMemberDialog slug="acme" projectId="proj1" existingMembers={existingMembers}>
+          <button>Open Dialog</button>
+        </AddMemberDialog>
+      </SWRTestProvider>,
     );
 
     await user.click(screen.getByText("Open Dialog"));
@@ -130,9 +139,11 @@ describe("AddMemberDialog", () => {
     const user = userEvent.setup();
 
     render(
-      <AddMemberDialog slug="acme" projectId="proj1" existingMembers={existingMembers}>
-        <button>Open Dialog</button>
-      </AddMemberDialog>,
+      <SWRTestProvider>
+        <AddMemberDialog slug="acme" projectId="proj1" existingMembers={existingMembers}>
+          <button>Open Dialog</button>
+        </AddMemberDialog>
+      </SWRTestProvider>,
     );
 
     await user.click(screen.getByText("Open Dialog"));
@@ -151,9 +162,11 @@ describe("AddMemberDialog", () => {
     const user = userEvent.setup();
 
     render(
-      <AddMemberDialog slug="acme" projectId="proj1" existingMembers={[]}>
-        <button>Open Dialog</button>
-      </AddMemberDialog>,
+      <SWRTestProvider>
+        <AddMemberDialog slug="acme" projectId="proj1" existingMembers={[]}>
+          <button>Open Dialog</button>
+        </AddMemberDialog>
+      </SWRTestProvider>,
     );
 
     await user.click(screen.getByText("Open Dialog"));
@@ -166,9 +179,11 @@ describe("AddMemberDialog", () => {
     const user = userEvent.setup();
 
     render(
-      <AddMemberDialog slug="acme" projectId="proj1" existingMembers={[]}>
-        <button>Open Dialog</button>
-      </AddMemberDialog>,
+      <SWRTestProvider>
+        <AddMemberDialog slug="acme" projectId="proj1" existingMembers={[]}>
+          <button>Open Dialog</button>
+        </AddMemberDialog>
+      </SWRTestProvider>,
     );
 
     await user.click(screen.getByText("Open Dialog"));

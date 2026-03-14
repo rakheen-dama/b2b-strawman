@@ -1,24 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextRequest, NextResponse } from "next/server";
 
-// Mock @clerk/nextjs/server before any imports that use it
-const mockClerkMiddleware = vi.fn(() => vi.fn());
-const mockCreateRouteMatcher = vi.fn((routes: string[]) => {
-  // Simple public route matcher for testing
-  return (request: NextRequest) => {
-    const pathname = request.nextUrl.pathname;
-    return routes.some((route) => {
-      const pattern = route.replace("(.*)", ".*");
-      return new RegExp(`^${pattern}$`).test(pathname);
-    });
-  };
-});
-
-vi.mock("@clerk/nextjs/server", () => ({
-  clerkMiddleware: mockClerkMiddleware,
-  createRouteMatcher: mockCreateRouteMatcher,
-}));
-
 // Helper: build a mock JWT with the given payload
 function buildMockJwt(payload: Record<string, unknown>): string {
   const header = btoa(JSON.stringify({ alg: "RS256", typ: "JWT" }));
@@ -107,15 +89,21 @@ describe("Mock auth middleware", () => {
     }
   });
 
-  it("returns Clerk middleware when AUTH_MODE is clerk", async () => {
-    const clerkHandler = vi.fn(() => NextResponse.next());
-    mockClerkMiddleware.mockReturnValue(clerkHandler);
+  it("defaults to keycloak middleware when AUTH_MODE is not set", async () => {
+    vi.stubEnv("NEXT_PUBLIC_AUTH_MODE", "");
+    const mod = await import("@/lib/auth/middleware");
+    const middleware = mod.createAuthMiddleware();
 
-    const middleware = await loadMiddleware("clerk");
+    // Protected route without SESSION cookie should redirect to gateway
+    const request = createMockRequest("/org/acme-corp/dashboard");
+    const response = (await middleware(
+      request,
+      {} as never,
+    )) as NextResponse;
 
-    // The returned middleware should be the Clerk handler
-    expect(mockClerkMiddleware).toHaveBeenCalled();
-    expect(middleware).toBe(clerkHandler);
+    expect(response.status).toBe(307);
+    const location = response.headers.get("location");
+    expect(location).toContain("/oauth2/authorization/keycloak");
   });
 
   it("redirects /dashboard to org-scoped dashboard with valid cookie", async () => {

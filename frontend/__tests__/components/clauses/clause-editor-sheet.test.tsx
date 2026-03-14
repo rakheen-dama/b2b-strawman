@@ -133,12 +133,13 @@ describe("ClauseEditorSheet", () => {
 
   afterEach(() => cleanup());
 
-  it("renders sheet with DocumentEditor", () => {
+  it("renders sheet with DocumentEditor", async () => {
     render(<ClauseEditorSheet {...defaultProps} />);
 
     // "New Clause" appears in both sr-only SheetTitle and visible h2
     expect(screen.getAllByText("New Clause")).toHaveLength(2);
-    expect(screen.getByTestId("editor-content")).toBeInTheDocument();
+    // DocumentEditor is dynamically imported — wait for it to load
+    expect(await screen.findByTestId("editor-content")).toBeInTheDocument();
     expect(screen.getByLabelText(/title/i)).toBeInTheDocument();
     expect(screen.getByText("Create Clause")).toBeInTheDocument();
   });

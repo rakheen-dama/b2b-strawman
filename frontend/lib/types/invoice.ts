@@ -1,0 +1,207 @@
+// ---- Invoices (from InvoiceController.java) ----
+
+import type { ExpenseCategory } from "./expense";
+
+export type InvoiceStatus = "DRAFT" | "APPROVED" | "SENT" | "PAID" | "VOID";
+
+export type InvoiceLineType = "TIME" | "EXPENSE" | "RETAINER" | "MANUAL";
+
+export interface InvoiceLineResponse {
+  id: string;
+  projectId: string | null;
+  projectName: string | null;
+  timeEntryId: string | null;
+  expenseId: string | null;
+  lineType: InvoiceLineType;
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  amount: number;
+  sortOrder: number;
+  taxRateId: string | null;
+  taxRateName: string | null;
+  taxRatePercent: number | null;
+  taxAmount: number | null;
+  taxExempt: boolean;
+}
+
+export interface TaxBreakdownEntry {
+  taxRateName: string;
+  taxRatePercent: number;
+  taxableAmount: number;
+  taxAmount: number;
+}
+
+export interface InvoiceResponse {
+  id: string;
+  customerId: string;
+  invoiceNumber: string | null;
+  status: InvoiceStatus;
+  currency: string;
+  issueDate: string | null;
+  dueDate: string | null;
+  subtotal: number;
+  taxAmount: number;
+  total: number;
+  notes: string | null;
+  paymentTerms: string | null;
+  paymentReference: string | null;
+  paidAt: string | null;
+  customerName: string;
+  customerEmail: string | null;
+  customerAddress: string | null;
+  orgName: string;
+  createdBy: string;
+  createdByName: string | null;
+  approvedBy: string | null;
+  approvedByName: string | null;
+  createdAt: string;
+  updatedAt: string;
+  lines: InvoiceLineResponse[];
+  paymentSessionId: string | null;
+  paymentUrl: string | null;
+  paymentDestination: string | null;
+  customFields?: Record<string, unknown>;
+  appliedFieldGroups?: string[];
+  taxBreakdown: TaxBreakdownEntry[];
+  taxInclusive: boolean;
+  taxRegistrationNumber: string | null;
+  taxRegistrationLabel: string | null;
+  taxLabel: string | null;
+  hasPerLineTax: boolean;
+}
+
+export type PaymentEventStatus =
+  | "CREATED"
+  | "PENDING"
+  | "COMPLETED"
+  | "FAILED"
+  | "EXPIRED"
+  | "CANCELLED";
+
+export interface PaymentEvent {
+  id: string;
+  providerSlug: string;
+  sessionId: string | null;
+  paymentReference: string | null;
+  status: PaymentEventStatus;
+  amount: number;
+  currency: string;
+  paymentDestination: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateInvoiceDraftRequest {
+  customerId: string;
+  currency: string;
+  timeEntryIds: string[];
+  expenseIds?: string[];
+  dueDate?: string;
+  notes?: string;
+  paymentTerms?: string;
+}
+
+export interface UpdateInvoiceRequest {
+  dueDate?: string;
+  notes?: string;
+  paymentTerms?: string;
+  taxAmount?: number;
+}
+
+export interface AddLineItemRequest {
+  projectId?: string;
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  sortOrder?: number;
+  taxRateId?: string | null;
+}
+
+export interface UpdateLineItemRequest {
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  sortOrder?: number;
+  taxRateId?: string | null;
+}
+
+export interface RecordPaymentRequest {
+  paymentReference?: string;
+}
+
+export interface CurrencyTotal {
+  hours: number;
+  amount: number;
+}
+
+export interface UnbilledTimeEntry {
+  id: string;
+  taskTitle: string;
+  memberName: string;
+  date: string;
+  durationMinutes: number;
+  billingRateSnapshot: number;
+  billingRateCurrency: string;
+  billableValue: number;
+  description: string | null;
+}
+
+export interface UnbilledProjectGroup {
+  projectId: string;
+  projectName: string;
+  entries: UnbilledTimeEntry[];
+  totals: Record<string, CurrencyTotal>;
+}
+
+export interface UnbilledTimeResponse {
+  customerId: string;
+  customerName: string;
+  projects: UnbilledProjectGroup[];
+  grandTotals: Record<string, CurrencyTotal>;
+  unbilledExpenses: UnbilledExpenseEntry[];
+  unbilledExpenseTotals: Record<string, number>;
+}
+
+export interface UnbilledExpenseEntry {
+  id: string;
+  projectId: string;
+  projectName: string;
+  date: string;
+  description: string;
+  amount: number;
+  currency: string;
+  category: ExpenseCategory;
+  markupPercent: number | null;
+  billableAmount: number;
+  notes: string | null;
+}
+
+// ---- Invoice Validation ----
+
+export type ValidationSeverity = "INFO" | "WARNING" | "CRITICAL";
+
+export interface ValidationCheck {
+  name: string;
+  severity: ValidationSeverity;
+  passed: boolean;
+  message: string;
+}
+
+// ---- Retainers (shared types for client components — API functions live in @/lib/api/retainers) ----
+
+export type RetainerType = "HOUR_BANK" | "FIXED_FEE";
+
+export interface RetainerSummaryResponse {
+  hasActiveRetainer: boolean;
+  agreementId: string | null;
+  agreementName: string | null;
+  type: RetainerType | null;
+  allocatedHours: number | null;
+  consumedHours: number | null;
+  remainingHours: number | null;
+  percentConsumed: number | null;
+  isOverage: boolean;
+  periodStart: string | null;
+  periodEnd: string | null;
+}

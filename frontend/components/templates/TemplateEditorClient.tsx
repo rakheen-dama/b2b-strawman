@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useTransition, useEffect, useRef } from "react";
+import { useState, useCallback, useTransition, useEffect } from "react";
 // TODO(214B): Re-add requiredContextFields management UI in the settings panel.
 // The old TemplateEditorForm had UI for this; intentionally omitted in 214A.
 // The save handler preserves existing values so they are not lost.
@@ -17,23 +17,11 @@ import {
   FileText,
   Download,
   RefreshCw,
-  Upload,
-  Copy,
-  Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { HelpTip } from "@/components/help-tip";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { DocumentEditor } from "@/components/editor/DocumentEditor";
 import { TemplatePreviewDialog } from "@/components/templates/TemplatePreviewDialog";
 import {
@@ -48,58 +36,29 @@ import type { TiptapNode } from "@/components/editor";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { cn } from "@/lib/utils";
 import {
   updateTemplateAction,
+} from "@/app/(app)/org/[slug]/settings/templates/template-crud-actions";
+import {
   fetchRequiredFieldPacksAction,
   replaceDocxFileAction,
   downloadDocxTemplateAction,
   fetchVariableMetadataAction,
-} from "@/app/(app)/org/[slug]/settings/templates/actions";
-import type { FieldPackStatus } from "@/app/(app)/org/[slug]/settings/templates/actions";
+} from "@/app/(app)/org/[slug]/settings/templates/template-support-actions";
+import type { FieldPackStatus } from "@/app/(app)/org/[slug]/settings/templates/template-support-actions";
 import type { VariableMetadataResponse } from "@/components/editor/actions";
 import { getClause } from "@/lib/actions/clause-actions";
-import { FieldDiscoveryResults } from "@/app/(app)/org/[slug]/settings/templates/FieldDiscoveryResults";
-import { formatFileSize } from "@/lib/format";
-import type {
-  TemplateDetailResponse,
-  TemplateCategory,
-  TemplateEntityType,
-} from "@/lib/types";
-
-const DOCX_MIME_TYPE =
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-const MAX_DOCX_SIZE = 10 * 1024 * 1024; // 10MB
-const MAX_DOCX_SIZE_LABEL = "10 MB";
-
-function validateDocxFile(f: File): string | null {
-  if (f.type !== DOCX_MIME_TYPE && !f.name.toLowerCase().endsWith(".docx")) {
-    return "Only .docx files are accepted.";
-  }
-  if (f.size > MAX_DOCX_SIZE) {
-    return `File size exceeds ${MAX_DOCX_SIZE_LABEL}.`;
-  }
-  return null;
-}
-
-const CATEGORIES: { value: TemplateCategory; label: string }[] = [
-  { value: "ENGAGEMENT_LETTER", label: "Engagement Letter" },
-  { value: "STATEMENT_OF_WORK", label: "Statement of Work" },
-  { value: "COVER_LETTER", label: "Cover Letter" },
-  { value: "PROJECT_SUMMARY", label: "Project Summary" },
-  { value: "NDA", label: "NDA" },
-];
-
-const ENTITY_TYPES: { value: TemplateEntityType; label: string }[] = [
-  { value: "PROJECT", label: "Project" },
-  { value: "CUSTOMER", label: "Customer" },
-  { value: "INVOICE", label: "Invoice" },
-];
+import { TemplateEditorSettings } from "@/components/templates/template-editor-settings";
+import {
+  DocxFileInfoPanel,
+  DocxDiscoveredFields,
+  VariableReferencePanel,
+  ReplaceFileDialog,
+} from "@/components/templates/template-docx-sections";
+import type { TemplateDetailResponse } from "@/lib/types";
 
 interface TemplateEditorClientProps {
   slug: string;
@@ -117,12 +76,8 @@ export function TemplateEditorClient({
 
   const [name, setName] = useState(template.name);
   const [description, setDescription] = useState(template.description ?? "");
-  const category = template.category;
-  const entityType = template.primaryEntityType;
   const [css, setCss] = useState(template.css ?? "");
-  const [editorContent, setEditorContent] = useState<Record<string, unknown>>(
-    template.content,
-  );
+  const [editorContent, setEditorContent] = useState<Record<string, unknown>>(template.content);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -132,55 +87,40 @@ export function TemplateEditorClient({
   const [entityPickerOpen, setEntityPickerOpen] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewHtml, setPreviewHtml] = useState<string | null>(null);
-  const [missingVariables, setMissingVariables] = useState<Set<string>>(
-    new Set(),
-  );
+  const [missingVariables, setMissingVariables] = useState<Set<string>>(new Set());
   const [previewLoading, startPreviewTransition] = useTransition();
   const [fieldPacks, setFieldPacks] = useState<FieldPackStatus[]>([]);
 
   // DOCX-specific state
   const [replaceDialogOpen, setReplaceDialogOpen] = useState(false);
-  const [replaceFile, setReplaceFile] = useState<File | null>(null);
-  const [replaceFileError, setReplaceFileError] = useState<string | null>(null);
   const [isReplacing, setIsReplacing] = useState(false);
   const [replaceError, setReplaceError] = useState<string | null>(null);
-  const [isDragOver, setIsDragOver] = useState(false);
-  const replaceInputRef = useRef<HTMLInputElement>(null);
   const [isDownloading, setIsDownloading] = useState(false);
-  const [variableMetadata, setVariableMetadata] =
-    useState<VariableMetadataResponse | null>(null);
-  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [variableMetadata, setVariableMetadata] = useState<VariableMetadataResponse | null>(null);
 
   useEffect(() => {
     fetchRequiredFieldPacksAction(template.id).then((result) => {
-      if (result.success && result.data) {
-        setFieldPacks(result.data);
-      }
+      if (result.success && result.data) setFieldPacks(result.data);
     });
   }, [template.id]);
 
-  // Fetch variable metadata for DOCX templates
   useEffect(() => {
     if (isDocx) {
-      fetchVariableMetadataAction(template.primaryEntityType).then(
-        (data) => setVariableMetadata(data),
-      ).catch(() => setVariableMetadata(null));
+      fetchVariableMetadataAction(template.primaryEntityType)
+        .then((data) => setVariableMetadata(data))
+        .catch(() => setVariableMetadata(null));
     }
   }, [isDocx, template.primaryEntityType]);
 
-  const handleEditorUpdate = useCallback(
-    (json: Record<string, unknown>) => {
-      setEditorContent(json);
-      setMissingVariables(new Set());
-    },
-    [],
-  );
+  const handleEditorUpdate = useCallback((json: Record<string, unknown>) => {
+    setEditorContent(json);
+    setMissingVariables(new Set());
+  }, []);
 
   async function handleSave() {
     setIsSaving(true);
     setError(null);
     setSuccessMsg(null);
-
     try {
       const result = await updateTemplateAction(slug, template.id, {
         name,
@@ -189,7 +129,6 @@ export function TemplateEditorClient({
         css: isDocx ? undefined : css || undefined,
         requiredContextFields: template.requiredContextFields,
       });
-
       if (result.success) {
         setSuccessMsg("Template saved successfully.");
         setTimeout(() => setSuccessMsg(null), 3000);
@@ -208,92 +147,29 @@ export function TemplateEditorClient({
       const context = buildPreviewContext(template.primaryEntityType, entityData);
       const doc = editorContent as unknown as TiptapNode;
       const clauseIds = extractClauseIds(doc);
-
       const clausesMap = new Map<string, TiptapNode>();
       const clauseResults = await Promise.all(clauseIds.map((id) => getClause(id)));
       for (let i = 0; i < clauseIds.length; i++) {
         const clause = clauseResults[i];
-        if (clause?.body) {
-          clausesMap.set(clauseIds[i], clause.body as unknown as TiptapNode);
-        }
+        if (clause?.body) clausesMap.set(clauseIds[i], clause.body as unknown as TiptapNode);
       }
-
-      // Identify variables that resolve to empty with the selected entity
-      // (walks clause bodies too so clause-embedded variables are flagged)
       const missing = findMissingVariables(doc, context, clausesMap);
       setMissingVariables(missing);
-
       const html = renderTiptapToHtml(doc, context, clausesMap, css || undefined);
       setPreviewHtml(html);
       setPreviewOpen(true);
     });
   }
 
-  // DOCX-specific handlers
-  const handleReplaceFileSelected = useCallback((f: File) => {
-    const validationError = validateDocxFile(f);
-    if (validationError) {
-      setReplaceFileError(validationError);
-      setReplaceFile(null);
-    } else {
-      setReplaceFileError(null);
-      setReplaceFile(f);
-    }
-  }, []);
-
-  const handleReplaceDragEnter = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragOver(true);
-  }, []);
-
-  const handleReplaceDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragOver(false);
-  }, []);
-
-  const handleReplaceDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragOver(true);
-  }, []);
-
-  const handleReplaceDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragOver(false);
-    const files = Array.from(e.dataTransfer.files);
-    if (files.length > 0) {
-      handleReplaceFileSelected(files[0]);
-    }
-  }, [handleReplaceFileSelected]);
-
-  const handleReplaceInputChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const files = Array.from(e.target.files ?? []);
-      if (files.length > 0) {
-        handleReplaceFileSelected(files[0]);
-      }
-      e.target.value = "";
-    },
-    [handleReplaceFileSelected],
-  );
-
-  async function handleReplaceSubmit() {
-    if (!replaceFile) return;
+  async function handleReplaceSubmit(file: File) {
     setIsReplacing(true);
     setReplaceError(null);
-
     try {
       const formData = new FormData();
-      formData.append("file", replaceFile);
+      formData.append("file", file);
       const result = await replaceDocxFileAction(slug, template.id, formData);
-
       if (result.success) {
         setReplaceDialogOpen(false);
-        setReplaceFile(null);
-        setReplaceFileError(null);
         router.refresh();
       } else {
         setReplaceError(result.error ?? "Failed to replace file.");
@@ -319,13 +195,6 @@ export function TemplateEditorClient({
     } finally {
       setIsDownloading(false);
     }
-  }
-
-  function handleCopyVariable(key: string) {
-    navigator.clipboard.writeText(`{{${key}}}`).then(() => {
-      setCopiedKey(key);
-      setTimeout(() => setCopiedKey(null), 2000);
-    }).catch(() => { /* clipboard access denied — silently ignore */ });
   }
 
   const hasLegacyContent = template.legacyContent != null;
@@ -409,9 +278,7 @@ export function TemplateEditorClient({
               </Button>
             </>
           )}
-          {successMsg && (
-            <span className="text-sm text-teal-600">{successMsg}</span>
-          )}
+          {successMsg && <span className="text-sm text-teal-600">{successMsg}</span>}
           {error && <span className="text-sm text-destructive">{error}</span>}
           {!readOnly && (
             <Button onClick={handleSave} disabled={isSaving}>
@@ -436,15 +303,8 @@ export function TemplateEditorClient({
           <div className="flex flex-wrap gap-2">
             {fieldPacks.map((pack) => (
               <div key={pack.packId} className="flex flex-col gap-1">
-                <Badge
-                  variant={pack.applied ? "success" : "warning"}
-                  className="gap-1.5"
-                >
-                  {pack.applied ? (
-                    <CheckCircle2 className="size-3" />
-                  ) : (
-                    <AlertTriangle className="size-3" />
-                  )}
+                <Badge variant={pack.applied ? "success" : "warning"} className="gap-1.5">
+                  {pack.applied ? <CheckCircle2 className="size-3" /> : <AlertTriangle className="size-3" />}
                   {pack.packId}
                 </Badge>
                 {!pack.applied && (
@@ -468,102 +328,10 @@ export function TemplateEditorClient({
       {/* DOCX Detail Variant */}
       {isDocx ? (
         <div className="mt-4 space-y-6">
-          {/* File Info Panel */}
-          <div
-            className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900"
-            data-testid="docx-file-info"
-          >
-            <div className="flex items-center gap-2 mb-3">
-              <FileText className="size-4 text-slate-500 dark:text-slate-400" />
-              <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                File Information
-              </span>
-            </div>
-            <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              <div>
-                <dt className="text-xs text-slate-500 dark:text-slate-400">
-                  File Name
-                </dt>
-                <dd className="text-sm font-medium text-slate-950 dark:text-slate-50">
-                  {template.docxFileName ?? "N/A"}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs text-slate-500 dark:text-slate-400">
-                  File Size
-                </dt>
-                <dd className="text-sm font-medium text-slate-950 dark:text-slate-50">
-                  {template.docxFileSize != null
-                    ? formatFileSize(template.docxFileSize)
-                    : "N/A"}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs text-slate-500 dark:text-slate-400">
-                  Uploaded
-                </dt>
-                <dd className="text-sm font-medium text-slate-950 dark:text-slate-50">
-                  {new Date(template.createdAt).toLocaleDateString()}
-                </dd>
-              </div>
-            </dl>
-          </div>
-
-          {/* Discovered Fields */}
-          {template.discoveredFields && (
-            <FieldDiscoveryResults fields={template.discoveredFields} />
-          )}
-
-          {/* Variable Reference Panel */}
+          <DocxFileInfoPanel template={template} />
+          <DocxDiscoveredFields template={template} />
           {variableMetadata && variableMetadata.groups.length > 0 && (
-            <div
-              className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900"
-              data-testid="variable-reference-panel"
-            >
-              <h3 className="text-sm font-medium text-slate-950 dark:text-slate-50 mb-3">
-                Available Variables
-              </h3>
-              <div className="space-y-4">
-                {variableMetadata.groups.map((group) => (
-                  <div key={group.prefix}>
-                    <h4 className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">
-                      {group.label}
-                    </h4>
-                    <ul className="space-y-1">
-                      {group.variables.map((variable) => (
-                        <li
-                          key={variable.key}
-                          className="flex items-center justify-between rounded px-2 py-1 hover:bg-slate-100 dark:hover:bg-slate-800"
-                        >
-                          <div className="min-w-0 flex-1">
-                            <span className="font-mono text-xs text-teal-700 dark:text-teal-300">
-                              {"{{"}
-                              {variable.key}
-                              {"}}"}
-                            </span>
-                            <span className="ml-2 text-xs text-slate-500 dark:text-slate-400">
-                              {variable.label}
-                            </span>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => handleCopyVariable(variable.key)}
-                            className="ml-2 shrink-0 rounded p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-                            title="Copy variable"
-                          >
-                            {copiedKey === variable.key ? (
-                              <Check className="size-3 text-teal-600" />
-                            ) : (
-                              <Copy className="size-3" />
-                            )}
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <VariableReferencePanel variableMetadata={variableMetadata} />
           )}
         </div>
       ) : (
@@ -587,11 +355,7 @@ export function TemplateEditorClient({
                     className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-amber-800 hover:text-amber-900 dark:text-amber-200 dark:hover:text-amber-100"
                   >
                     {legacyExpanded ? "Hide" : "Show"} original HTML
-                    {legacyExpanded ? (
-                      <ChevronUp className="size-4" />
-                    ) : (
-                      <ChevronDown className="size-4" />
-                    )}
+                    {legacyExpanded ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
                   </button>
                   {legacyExpanded && (
                     <pre className="mt-2 max-h-64 overflow-auto rounded border border-amber-200 bg-white p-3 font-mono text-xs text-slate-800 dark:border-amber-800 dark:bg-slate-900 dark:text-slate-200">
@@ -606,122 +370,26 @@ export function TemplateEditorClient({
       )}
 
       {/* Collapsible settings panel */}
-      <div className="mt-4">
-        <button
-          type="button"
-          onClick={() => setSettingsOpen(!settingsOpen)}
-          className="inline-flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-slate-900 dark:text-slate-300 dark:hover:text-slate-100"
-          data-testid="settings-toggle"
-        >
-          {settingsOpen ? (
-            <ChevronUp className="size-4" />
-          ) : (
-            <ChevronDown className="size-4" />
-          )}
-          Settings
-        </button>
-
-        {settingsOpen && (
-          <div className="mt-3 space-y-4 rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="settings-name">Name</Label>
-                <Input
-                  id="settings-name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Template name"
-                  disabled={readOnly}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="settings-category">Category</Label>
-                <Select value={category} disabled>
-                  <SelectTrigger id="settings-category">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {CATEGORIES.map((c) => (
-                      <SelectItem key={c.value} value={c.value}>
-                        {c.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="settings-entity-type">Entity Type</Label>
-                <Select value={entityType} disabled>
-                  <SelectTrigger id="settings-entity-type">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ENTITY_TYPES.map((t) => (
-                      <SelectItem key={t.value} value={t.value}>
-                        {t.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="settings-description">Description</Label>
-                <Textarea
-                  id="settings-description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Brief description of this template"
-                  rows={2}
-                  disabled={readOnly}
-                />
-              </div>
-            </div>
-
-            {/* Advanced section — only for Tiptap templates */}
-            {!isDocx && (
-              <div>
-                <button
-                  type="button"
-                  onClick={() => setAdvancedOpen(!advancedOpen)}
-                  className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
-                >
-                  {advancedOpen ? (
-                    <ChevronUp className="size-4" />
-                  ) : (
-                    <ChevronDown className="size-4" />
-                  )}
-                  Advanced
-                </button>
-
-                {advancedOpen && (
-                  <div className="mt-3 space-y-2">
-                    <Label htmlFor="settings-css">Custom CSS</Label>
-                    <Textarea
-                      id="settings-css"
-                      value={css}
-                      onChange={(e) => setCss(e.target.value)}
-                      placeholder="/* Custom styles */"
-                      rows={8}
-                      className="font-mono text-sm"
-                      disabled={readOnly}
-                    />
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
+      <TemplateEditorSettings
+        settingsOpen={settingsOpen}
+        onSettingsToggle={() => setSettingsOpen(!settingsOpen)}
+        name={name}
+        onNameChange={setName}
+        description={description}
+        onDescriptionChange={setDescription}
+        category={template.category}
+        entityType={template.primaryEntityType}
+        readOnly={readOnly}
+        isDocx={isDocx}
+        advancedOpen={advancedOpen}
+        onAdvancedToggle={() => setAdvancedOpen(!advancedOpen)}
+        css={css}
+        onCssChange={setCss}
+      />
 
       {/* Tiptap-only sections */}
       {!isDocx && (
         <>
-          {/* Missing variables indicator */}
           {missingVariables.size > 0 && (
             <div className="mt-4 flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 px-4 py-2.5 dark:border-amber-800 dark:bg-amber-950">
               <div className="flex items-center gap-2">
@@ -742,7 +410,6 @@ export function TemplateEditorClient({
             </div>
           )}
 
-          {/* Document Editor */}
           <div className="mt-4 flex-1">
             <DocumentEditor
               content={editorContent}
@@ -754,7 +421,6 @@ export function TemplateEditorClient({
             />
           </div>
 
-          {/* Client-side preview entity picker */}
           <EntityPicker
             entityType={template.primaryEntityType}
             open={entityPickerOpen}
@@ -762,7 +428,6 @@ export function TemplateEditorClient({
             onSelect={handleEntitySelect}
           />
 
-          {/* Client-side preview dialog */}
           <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
             <DialogContent className="max-w-3xl">
               <DialogHeader>
@@ -776,111 +441,13 @@ export function TemplateEditorClient({
 
       {/* Replace File Dialog (DOCX only) */}
       {isDocx && (
-        <Dialog
+        <ReplaceFileDialog
           open={replaceDialogOpen}
-          onOpenChange={(open) => {
-            setReplaceDialogOpen(open);
-            if (!open) {
-              setReplaceFile(null);
-              setReplaceFileError(null);
-              setReplaceError(null);
-              setIsDragOver(false);
-            }
-          }}
-        >
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Replace Template File</DialogTitle>
-              <DialogDescription>
-                This will update the template file. Existing generated documents
-                are not affected.
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="space-y-4">
-              <div>
-                <Label>File</Label>
-                <div
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => replaceInputRef.current?.click()}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      replaceInputRef.current?.click();
-                    }
-                  }}
-                  onDragEnter={handleReplaceDragEnter}
-                  onDragOver={handleReplaceDragOver}
-                  onDragLeave={handleReplaceDragLeave}
-                  onDrop={handleReplaceDrop}
-                  className={cn(
-                    "mt-1 cursor-pointer rounded-lg border-2 border-dashed p-6 text-center transition-colors",
-                    isDragOver
-                      ? "border-primary bg-primary/5"
-                      : "border-slate-300 hover:border-slate-400 dark:border-slate-600 dark:hover:border-slate-500",
-                    isReplacing && "cursor-not-allowed opacity-50",
-                  )}
-                >
-                  <input
-                    ref={replaceInputRef}
-                    type="file"
-                    accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                    onChange={handleReplaceInputChange}
-                    className="hidden"
-                    disabled={isReplacing}
-                    data-testid="replace-file-input"
-                  />
-                  {replaceFile ? (
-                    <div>
-                      <p className="text-sm font-medium text-slate-950 dark:text-slate-50">
-                        {replaceFile.name}
-                      </p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">
-                        {formatFileSize(replaceFile.size)}
-                      </p>
-                    </div>
-                  ) : (
-                    <>
-                      <Upload className="mx-auto size-8 text-slate-400" />
-                      <p className="mt-2 text-sm font-medium">
-                        Drag and drop a .docx file, or click to browse
-                      </p>
-                      <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                        Max {MAX_DOCX_SIZE_LABEL}
-                      </p>
-                    </>
-                  )}
-                </div>
-                {replaceFileError && (
-                  <p className="mt-1 text-sm text-destructive">
-                    {replaceFileError}
-                  </p>
-                )}
-              </div>
-
-              {replaceError && (
-                <p className="text-sm text-destructive">{replaceError}</p>
-              )}
-            </div>
-
-            <DialogFooter>
-              <Button
-                variant="soft"
-                onClick={() => setReplaceDialogOpen(false)}
-                disabled={isReplacing}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleReplaceSubmit}
-                disabled={isReplacing || !replaceFile}
-              >
-                {isReplacing ? "Replacing..." : "Replace File"}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+          onOpenChange={setReplaceDialogOpen}
+          onReplace={handleReplaceSubmit}
+          isReplacing={isReplacing}
+          replaceError={replaceError}
+        />
       )}
     </div>
   );

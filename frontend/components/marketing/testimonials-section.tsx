@@ -15,7 +15,7 @@ const testimonials = [
   },
   {
     quote:
-      "We onboarded our 40-person team in under an hour. The Clerk integration made SSO setup painless, and the role-based access works exactly how we expected.",
+      "We onboarded our 40-person team in under an hour. The SSO integration was painless, and the role-based access works exactly how we expected.",
     name: "Maria Gonzalez",
     title: "Head of Operations, Catalyst Finance",
     initials: "MG",

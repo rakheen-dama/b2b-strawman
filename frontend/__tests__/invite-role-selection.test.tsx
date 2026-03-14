@@ -5,7 +5,7 @@ import userEvent from "@testing-library/user-event";
 // Must mock server-only before importing components that use it
 vi.mock("server-only", () => ({}));
 
-// Set auth mode to mock so InviteMemberForm renders MockInviteMemberForm (avoids Clerk hooks)
+// Set auth mode to mock so InviteMemberForm renders MockInviteMemberForm (avoids auth provider hooks)
 vi.stubEnv("NEXT_PUBLIC_AUTH_MODE", "mock");
 
 // Mock motion/react (Collapsible may use motion internally)
@@ -22,17 +22,9 @@ vi.mock("motion/react", () => ({
 // Mock server actions
 const mockInviteMember = vi.fn();
 
-vi.mock("@/app/(app)/org/[slug]/team/actions", () => ({
+vi.mock("@/app/(app)/org/[slug]/team/invitation-actions", () => ({
   inviteMember: (...args: unknown[]) => mockInviteMember(...args),
   listInvitations: vi.fn().mockResolvedValue([]),
-}));
-
-// Mock @clerk/nextjs since the module is imported even if mock path is used
-vi.mock("@clerk/nextjs", () => ({
-  useOrganization: vi.fn().mockReturnValue({
-    organization: { pendingInvitationsCount: 0 },
-    invitations: { revalidate: vi.fn() },
-  }),
 }));
 
 // Mock next/link

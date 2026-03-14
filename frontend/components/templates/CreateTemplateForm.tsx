@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { DocumentEditor } from "@/components/editor/DocumentEditor";
-import { createTemplateAction } from "@/app/(app)/org/[slug]/settings/templates/actions";
+import { createTemplateAction } from "@/app/(app)/org/[slug]/settings/templates/template-crud-actions";
 import type { TemplateCategory, TemplateEntityType } from "@/lib/types";
 
 const CATEGORIES: { value: TemplateCategory; label: string }[] = [

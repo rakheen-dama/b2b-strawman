@@ -38,7 +38,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { DocumentEditor } from "@/components/editor/DocumentEditor";
+import dynamic from "next/dynamic";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const DocumentEditor = dynamic(
+  () =>
+    import("@/components/editor/DocumentEditor").then(
+      (mod) => mod.DocumentEditor,
+    ),
+  { loading: () => <Skeleton className="h-64 w-full" />, ssr: false },
+);
 import { ClauseEditorSheet } from "@/components/clauses/clause-editor-sheet";
 import {
   cloneClause,

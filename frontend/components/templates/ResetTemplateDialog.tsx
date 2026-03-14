@@ -12,7 +12,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { resetTemplateAction } from "@/app/(app)/org/[slug]/settings/templates/actions";
+import { resetTemplateAction } from "@/app/(app)/org/[slug]/settings/templates/template-crud-actions";
 
 interface ResetTemplateDialogProps {
   slug: string;

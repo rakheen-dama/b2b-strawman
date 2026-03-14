@@ -39,7 +39,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DocumentEditor } from "@/components/editor/DocumentEditor";
+import dynamic from "next/dynamic";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const DocumentEditor = dynamic(
+  () =>
+    import("@/components/editor/DocumentEditor").then(
+      (mod) => mod.DocumentEditor,
+    ),
+  { loading: () => <Skeleton className="h-64 w-full" />, ssr: false },
+);
 import {
   EntityPicker,
   PreviewPanel,

@@ -9,7 +9,7 @@ When implementing epics, check TASKS.md and recent PRs to understand which parts
 
 ## Service-Specific Guides
 
-- `frontend/CLAUDE.md` — Next.js 16, Clerk, Shadcn conventions
+- `frontend/CLAUDE.md` — Next.js 16, Keycloak, Shadcn conventions
 - `backend/CLAUDE.md` — Spring Boot 4, Hibernate 7, multitenancy
 
 Always read the relevant subdirectory CLAUDE.md before making changes.
@@ -19,7 +19,7 @@ Always read the relevant subdirectory CLAUDE.md before making changes.
 | Layer | Technology |
 |-------|------------|
 | Frontend | Next.js 16 (App Router), React 19, TypeScript 5, Tailwind CSS v4, Shadcn UI |
-| Auth | Clerk (orgs, invitations, RBAC, webhooks) |
+| Auth | Keycloak (orgs, RBAC) with mock provider for E2E |
 | Backend | Spring Boot 4.0.2, Java 25, Maven |
 | Database | PostgreSQL 16 with schema-per-tenant multitenancy (Hibernate + Flyway) |
 | File Storage | AWS S3 (LocalStack locally) |
@@ -52,7 +52,7 @@ are in the worktree directory, not the main repo. Never write files to the main 
 
 ## Agent UI Navigation (Mock Auth)
 
-Clerk uses CAPTCHA — agents cannot authenticate on port 3000.
+Production uses Keycloak — agents cannot authenticate on port 3000.
 Use the E2E mock-auth stack on port 3001 instead.
 
 | Service | URL |

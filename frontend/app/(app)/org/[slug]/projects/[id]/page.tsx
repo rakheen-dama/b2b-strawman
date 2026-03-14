@@ -284,7 +284,7 @@ export default async function ProjectDetailPage({
   }
 
   // Resolve current user's backend member ID for "My Tasks" filter and claim/release actions.
-  // Match Clerk user email against org members list from the backend.
+  // Match current user email against org members list from the backend.
   let currentMemberId: string | null = null;
   try {
     const [email, orgMembers] = await Promise.all([

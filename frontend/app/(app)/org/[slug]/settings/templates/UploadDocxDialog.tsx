@@ -17,7 +17,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { uploadDocxTemplateAction } from "./actions";
+import { uploadDocxTemplateAction } from "./template-support-actions";
 import type { TemplateCategory, TemplateEntityType } from "@/lib/types";
 
 const DOCX_MIME_TYPE =

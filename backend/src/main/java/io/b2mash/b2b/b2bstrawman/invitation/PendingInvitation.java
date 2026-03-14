@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.UUID;
@@ -36,8 +37,8 @@ public class PendingInvitation {
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
-  @Column(name = "accepted_at")
-  private Instant acceptedAt;
+  @Column(name = "updated_at", nullable = false)
+  private Instant updatedAt;
 
   protected PendingInvitation() {}
 
@@ -52,23 +53,12 @@ public class PendingInvitation {
   @PrePersist
   void onPrePersist() {
     this.createdAt = Instant.now();
+    this.updatedAt = Instant.now();
   }
 
-  public boolean isExpired() {
-    return Instant.now().isAfter(expiresAt);
-  }
-
-  public boolean isPending() {
-    return "PENDING".equals(status);
-  }
-
-  public void markAccepted() {
-    this.status = "ACCEPTED";
-    this.acceptedAt = Instant.now();
-  }
-
-  public void markRevoked() {
-    this.status = "REVOKED";
+  @PreUpdate
+  void onPreUpdate() {
+    this.updatedAt = Instant.now();
   }
 
   public UUID getId() {
@@ -91,6 +81,10 @@ public class PendingInvitation {
     return status;
   }
 
+  public void setStatus(String status) {
+    this.status = status;
+  }
+
   public Instant getExpiresAt() {
     return expiresAt;
   }
@@ -99,7 +93,7 @@ public class PendingInvitation {
     return createdAt;
   }
 
-  public Instant getAcceptedAt() {
-    return acceptedAt;
+  public Instant getUpdatedAt() {
+    return updatedAt;
   }
 }

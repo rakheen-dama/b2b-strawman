@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.member;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import java.time.Duration;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -32,5 +33,10 @@ public class MemberCacheService {
 
   public void evictAll() {
     cache.invalidateAll();
+  }
+
+  public void evictAllForRole(UUID orgRoleId, MemberRepository memberRepo) {
+    String tenantId = RequestScopes.requireTenantId();
+    memberRepo.findByOrgRoleId(orgRoleId).forEach(m -> evict(tenantId, m.getClerkUserId()));
   }
 }

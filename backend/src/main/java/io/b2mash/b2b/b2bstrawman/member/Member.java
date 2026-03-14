@@ -1,13 +1,16 @@
 package io.b2mash.b2b.b2bstrawman.member;
 
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRole;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.HashSet;
@@ -42,6 +45,10 @@ public class Member {
 
   @Column(name = "org_role_id")
   private UUID orgRoleId;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "org_role_id", insertable = false, updatable = false)
+  private OrgRole orgRoleEntity;
 
   @ElementCollection
   @CollectionTable(
@@ -103,6 +110,14 @@ public class Member {
 
   public void setOrgRoleId(UUID orgRoleId) {
     this.orgRoleId = orgRoleId;
+  }
+
+  public OrgRole getOrgRoleEntity() {
+    return orgRoleEntity;
+  }
+
+  public String getRoleSlug() {
+    return orgRoleEntity != null ? orgRoleEntity.getSlug() : orgRole;
   }
 
   public Set<String> getCapabilityOverrides() {

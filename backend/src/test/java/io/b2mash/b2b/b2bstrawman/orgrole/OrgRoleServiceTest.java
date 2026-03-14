@@ -33,6 +33,7 @@ class OrgRoleServiceTest {
   @Mock private MemberRepository memberRepository;
   @Mock private io.b2mash.b2b.b2bstrawman.audit.AuditService auditService;
   @Mock private io.b2mash.b2b.b2bstrawman.notification.NotificationService notificationService;
+  @Mock private io.b2mash.b2b.b2bstrawman.member.MemberCacheService memberCacheService;
   @InjectMocks private OrgRoleService service;
 
   @Test

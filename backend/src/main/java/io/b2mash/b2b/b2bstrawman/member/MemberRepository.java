@@ -22,4 +22,6 @@ public interface MemberRepository extends JpaRepository<Member, UUID> {
   long countByOrgRoleId(UUID orgRoleId);
 
   List<Member> findByOrgRoleId(UUID orgRoleId);
+
+  boolean existsByEmail(String email);
 }

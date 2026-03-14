@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.security;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -32,15 +33,21 @@ public class ClerkJwtAuthenticationConverter
   }
 
   private Collection<GrantedAuthority> extractAuthorities(Jwt jwt) {
-    // ClerkJwtUtils.extractOrgRole handles both Clerk v2 and Keycloak formats
+    List<GrantedAuthority> authorities = new ArrayList<>();
+
+    // All authenticated users get ROLE_AUTHENTICATED
+    authorities.add(new SimpleGrantedAuthority("ROLE_AUTHENTICATED"));
+
+    // Keep existing ROLE_ORG_* mapping during migration (needed until @PreAuthorize annotations
+    // are migrated to capability-based checks)
     String orgRole = ClerkJwtUtils.extractOrgRole(jwt);
-    if (orgRole == null) {
-      return List.of();
+    if (orgRole != null) {
+      String springRole = ROLE_MAPPING.get(orgRole);
+      if (springRole != null) {
+        authorities.add(new SimpleGrantedAuthority(springRole));
+      }
     }
-    String springRole = ROLE_MAPPING.get(orgRole);
-    if (springRole == null) {
-      return List.of();
-    }
-    return List.of(new SimpleGrantedAuthority(springRole));
+
+    return authorities;
   }
 }

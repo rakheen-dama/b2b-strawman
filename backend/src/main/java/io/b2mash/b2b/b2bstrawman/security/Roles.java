@@ -19,6 +19,7 @@ public final class Roles {
   public static final String PROJECT_MEMBER = "member";
 
   // Spring Security granted authorities
+  public static final String AUTHORITY_AUTHENTICATED = "ROLE_AUTHENTICATED";
   public static final String AUTHORITY_ORG_OWNER = "ROLE_ORG_OWNER";
   public static final String AUTHORITY_ORG_ADMIN = "ROLE_ORG_ADMIN";
   public static final String AUTHORITY_ORG_MEMBER = "ROLE_ORG_MEMBER";

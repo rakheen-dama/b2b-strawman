@@ -4,6 +4,8 @@ import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRole;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -34,8 +36,9 @@ public class PendingInvitation {
   @JoinColumn(name = "invited_by", nullable = false)
   private Member invitedBy;
 
+  @Enumerated(EnumType.STRING)
   @Column(name = "status", nullable = false, length = 20)
-  private String status;
+  private InvitationStatus status;
 
   @Column(name = "expires_at", nullable = false)
   private Instant expiresAt;
@@ -52,7 +55,7 @@ public class PendingInvitation {
     this.email = email;
     this.orgRole = orgRole;
     this.invitedBy = invitedBy;
-    this.status = InvitationStatus.PENDING.name();
+    this.status = InvitationStatus.PENDING;
     this.expiresAt = expiresAt;
   }
 
@@ -62,12 +65,16 @@ public class PendingInvitation {
   }
 
   public void accept() {
-    this.status = InvitationStatus.ACCEPTED.name();
+    this.status = InvitationStatus.ACCEPTED;
     this.acceptedAt = Instant.now();
   }
 
   public void revoke() {
-    this.status = InvitationStatus.REVOKED.name();
+    this.status = InvitationStatus.REVOKED;
+  }
+
+  public void expire() {
+    this.status = InvitationStatus.EXPIRED;
   }
 
   public boolean isExpired() {
@@ -90,12 +97,8 @@ public class PendingInvitation {
     return invitedBy;
   }
 
-  public String getStatus() {
+  public InvitationStatus getStatus() {
     return status;
-  }
-
-  public void setStatus(String status) {
-    this.status = status;
   }
 
   public Instant getExpiresAt() {

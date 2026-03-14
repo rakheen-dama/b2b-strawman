@@ -19,6 +19,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -56,11 +57,11 @@ public class InvitationService {
     }
 
     Optional<PendingInvitation> existingPending =
-        invitationRepository.findByEmailAndStatus(email, InvitationStatus.PENDING.name());
+        invitationRepository.findByEmailAndStatus(email, InvitationStatus.PENDING);
     if (existingPending.isPresent()) {
       PendingInvitation existing = existingPending.get();
       if (existing.isExpired()) {
-        existing.setStatus(InvitationStatus.EXPIRED.name());
+        existing.expire();
         invitationRepository.save(existing);
       } else {
         throw new ResourceConflictException(
@@ -80,7 +81,13 @@ public class InvitationService {
 
     Instant expiresAt = Instant.now().plus(DEFAULT_EXPIRY);
     var invitation = new PendingInvitation(email, orgRole, invitedBy, expiresAt);
-    invitation = invitationRepository.save(invitation);
+
+    try {
+      invitation = invitationRepository.save(invitation);
+    } catch (DataIntegrityViolationException ex) {
+      throw new ResourceConflictException(
+          "Duplicate invitation", "A pending invitation for '" + email + "' already exists");
+    }
 
     auditService.log(
         AuditEventBuilder.builder()
@@ -102,8 +109,7 @@ public class InvitationService {
   public InvitationListResponse listInvitations(String statusFilter) {
     var invitations =
         (statusFilter != null && !statusFilter.isBlank())
-            ? invitationRepository.findAllByStatusOrderByCreatedAtDesc(
-                statusFilter.toUpperCase().trim())
+            ? invitationRepository.findAllByStatusOrderByCreatedAtDesc(parseStatus(statusFilter))
             : invitationRepository.findAllByOrderByCreatedAtDesc();
 
     var responses = invitations.stream().map(PendingInvitationResponse::from).toList();
@@ -117,7 +123,7 @@ public class InvitationService {
             .findById(invitationId)
             .orElseThrow(() -> new ResourceNotFoundException("PendingInvitation", invitationId));
 
-    if (!InvitationStatus.PENDING.name().equals(invitation.getStatus())) {
+    if (invitation.getStatus() != InvitationStatus.PENDING) {
       throw new InvalidStateException(
           "Cannot revoke invitation",
           "Invitation is in '"
@@ -143,11 +149,11 @@ public class InvitationService {
   public Optional<PendingInvitation> findPendingByEmail(String email) {
     Optional<PendingInvitation> result =
         invitationRepository.findByEmailAndStatus(
-            email.toLowerCase().trim(), InvitationStatus.PENDING.name());
+            email.toLowerCase().trim(), InvitationStatus.PENDING);
 
     if (result.isPresent() && result.get().isExpired()) {
       PendingInvitation expired = result.get();
-      expired.setStatus(InvitationStatus.EXPIRED.name());
+      expired.expire();
       invitationRepository.save(expired);
       return Optional.empty();
     }
@@ -165,5 +171,18 @@ public class InvitationService {
     invitation.accept();
     invitationRepository.save(invitation);
     log.info("Marked invitation id={} as accepted", invitationId);
+  }
+
+  private InvitationStatus parseStatus(String statusFilter) {
+    try {
+      return InvitationStatus.valueOf(statusFilter.toUpperCase().trim());
+    } catch (IllegalArgumentException ex) {
+      throw new InvalidStateException(
+          "Invalid status filter",
+          "'"
+              + statusFilter
+              + "' is not a valid invitation status. Valid values: "
+              + java.util.Arrays.toString(InvitationStatus.values()));
+    }
   }
 }

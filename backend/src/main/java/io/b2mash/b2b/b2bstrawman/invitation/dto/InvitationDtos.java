@@ -32,7 +32,7 @@ public final class InvitationDtos {
           invitation.getOrgRole().getName(),
           invitation.getOrgRole().getSlug(),
           invitation.getInvitedBy().getName(),
-          invitation.getStatus(),
+          invitation.getStatus().name(),
           invitation.getExpiresAt(),
           invitation.getCreatedAt(),
           invitation.getAcceptedAt());

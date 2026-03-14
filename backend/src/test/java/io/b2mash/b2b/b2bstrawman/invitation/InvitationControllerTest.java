@@ -192,6 +192,13 @@ class InvitationControllerTest {
   }
 
   @Test
+  void listInvitations_invalidStatusFilter_returns400() throws Exception {
+    mockMvc
+        .perform(get("/api/invitations").with(adminJwt()).param("status", "INVALID_STATUS"))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
   void revokeInvitation_admin_returns204() throws Exception {
     String email = "revoke_" + UUID.randomUUID().toString().substring(0, 8) + "@example.com";
 
@@ -281,12 +288,6 @@ class InvitationControllerTest {
   }
 
   // --- JWT helpers ---
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_inv_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")))
-        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_OWNER")));
-  }
-
   private JwtRequestPostProcessor adminJwt() {
     return jwt()
         .jwt(j -> j.subject("user_inv_admin").claim("o", Map.of("id", ORG_ID, "rol", "admin")))

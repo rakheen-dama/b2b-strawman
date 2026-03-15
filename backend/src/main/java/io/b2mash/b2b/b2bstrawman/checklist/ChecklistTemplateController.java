@@ -9,7 +9,6 @@ import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,7 +30,6 @@ public class ChecklistTemplateController {
   }
 
   @GetMapping
-  @PreAuthorize("isAuthenticated()")
   public ResponseEntity<List<ChecklistTemplateResponse>> listTemplates(
       @RequestParam(required = false) String customerType) {
     var templates = checklistTemplateService.listActive(customerType);
@@ -39,7 +37,6 @@ public class ChecklistTemplateController {
   }
 
   @GetMapping("/{id}")
-  @PreAuthorize("isAuthenticated()")
   public ResponseEntity<ChecklistTemplateResponse> getTemplate(@PathVariable UUID id) {
     return ResponseEntity.ok(checklistTemplateService.getById(id));
   }

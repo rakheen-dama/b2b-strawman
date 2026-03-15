@@ -6,7 +6,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,7 +24,6 @@ public class ProjectCustomerController {
   }
 
   @GetMapping
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<LinkedCustomerResponse>> listCustomersForProject(
       @PathVariable UUID projectId) {
     var actor = ActorContext.fromRequestScopes();
@@ -36,7 +34,6 @@ public class ProjectCustomerController {
   }
 
   @PostMapping("/{customerId}")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<CustomerController.CustomerProjectResponse> linkCustomerToProject(
       @PathVariable UUID projectId, @PathVariable UUID customerId) {
     var actor = ActorContext.fromRequestScopes();
@@ -49,7 +46,6 @@ public class ProjectCustomerController {
   }
 
   @DeleteMapping("/{customerId}")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<Void> unlinkCustomerFromProject(
       @PathVariable UUID projectId, @PathVariable UUID customerId) {
     var actor = ActorContext.fromRequestScopes();

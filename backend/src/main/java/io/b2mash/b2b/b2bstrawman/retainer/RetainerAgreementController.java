@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.retainer;
 
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import io.b2mash.b2b.b2bstrawman.retainer.dto.CreateRetainerRequest;
 import io.b2mash.b2b.b2bstrawman.retainer.dto.RetainerResponse;
 import io.b2mash.b2b.b2bstrawman.retainer.dto.UpdateRetainerRequest;
@@ -9,7 +10,6 @@ import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -34,7 +34,7 @@ public class RetainerAgreementController {
   }
 
   @GetMapping
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("FINANCIAL_VISIBILITY")
   public ResponseEntity<List<RetainerResponse>> listRetainers(
       @RequestParam(required = false) RetainerStatus status,
       @RequestParam(required = false) UUID customerId) {
@@ -44,13 +44,12 @@ public class RetainerAgreementController {
   }
 
   @GetMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<RetainerResponse> getRetainer(@PathVariable UUID id) {
     return ResponseEntity.ok(retainerAgreementService.getRetainer(id));
   }
 
   @PostMapping
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("FINANCIAL_VISIBILITY")
   public ResponseEntity<RetainerResponse> createRetainer(
       @Valid @RequestBody CreateRetainerRequest request) {
     UUID memberId = RequestScopes.requireMemberId();
@@ -59,7 +58,7 @@ public class RetainerAgreementController {
   }
 
   @PutMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("FINANCIAL_VISIBILITY")
   public ResponseEntity<RetainerResponse> updateRetainer(
       @PathVariable UUID id, @Valid @RequestBody UpdateRetainerRequest request) {
     UUID memberId = RequestScopes.requireMemberId();
@@ -67,21 +66,21 @@ public class RetainerAgreementController {
   }
 
   @PostMapping("/{id}/pause")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("FINANCIAL_VISIBILITY")
   public ResponseEntity<RetainerResponse> pauseRetainer(@PathVariable UUID id) {
     UUID memberId = RequestScopes.requireMemberId();
     return ResponseEntity.ok(retainerAgreementService.pauseRetainer(id, memberId));
   }
 
   @PostMapping("/{id}/resume")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("FINANCIAL_VISIBILITY")
   public ResponseEntity<RetainerResponse> resumeRetainer(@PathVariable UUID id) {
     UUID memberId = RequestScopes.requireMemberId();
     return ResponseEntity.ok(retainerAgreementService.resumeRetainer(id, memberId));
   }
 
   @PostMapping("/{id}/terminate")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("FINANCIAL_VISIBILITY")
   public ResponseEntity<RetainerResponse> terminateRetainer(@PathVariable UUID id) {
     UUID memberId = RequestScopes.requireMemberId();
     return ResponseEntity.ok(retainerAgreementService.terminateRetainer(id, memberId));

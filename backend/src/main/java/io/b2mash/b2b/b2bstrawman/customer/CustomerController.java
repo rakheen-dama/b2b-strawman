@@ -39,7 +39,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -86,7 +85,6 @@ public class CustomerController {
   }
 
   @GetMapping
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<CustomerResponse>> listCustomers(
       @RequestParam(required = false) UUID view,
       @RequestParam(required = false) LifecycleStatus lifecycleStatus,
@@ -165,7 +163,6 @@ public class CustomerController {
   }
 
   @GetMapping("/completeness-summary")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<Map<UUID, CompletenessScore>> getCompletenessSummary(
       @RequestParam List<UUID> customerIds) {
     return ResponseEntity.ok(customerReadinessService.batchComputeCompleteness(customerIds));
@@ -178,7 +175,6 @@ public class CustomerController {
   }
 
   @GetMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<CustomerResponse> getCustomer(@PathVariable UUID id) {
     var customer = customerService.getCustomer(id);
     var tags = entityTagService.getEntityTags("CUSTOMER", id);
@@ -247,7 +243,6 @@ public class CustomerController {
   // --- Customer-Project linking endpoints ---
 
   @PostMapping("/{id}/projects/{projectId}")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<CustomerProjectResponse> linkProject(
       @PathVariable UUID id, @PathVariable UUID projectId) {
     var actor = ActorContext.fromRequestScopes();
@@ -259,7 +254,6 @@ public class CustomerController {
   }
 
   @DeleteMapping("/{id}/projects/{projectId}")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<Void> unlinkProject(@PathVariable UUID id, @PathVariable UUID projectId) {
     var actor = ActorContext.fromRequestScopes();
     UUID memberId = actor.memberId();
@@ -269,7 +263,6 @@ public class CustomerController {
   }
 
   @GetMapping("/{id}/projects")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<LinkedProjectResponse>> listProjectsForCustomer(
       @PathVariable UUID id) {
     var actor = ActorContext.fromRequestScopes();
@@ -285,7 +278,6 @@ public class CustomerController {
   }
 
   @GetMapping("/{id}/readiness")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER', 'ORG_MEMBER')")
   public ResponseEntity<CustomerReadiness> getReadiness(@PathVariable UUID id) {
     return ResponseEntity.ok(customerReadinessService.getReadiness(id));
   }
@@ -300,7 +292,7 @@ public class CustomerController {
   }
 
   @PutMapping("/{id}/field-groups")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<List<FieldDefinitionResponse>> setFieldGroups(
       @PathVariable UUID id, @Valid @RequestBody SetFieldGroupsRequest request) {
     var fieldDefs = customerService.setFieldGroups(id, request.appliedFieldGroups());
@@ -308,7 +300,7 @@ public class CustomerController {
   }
 
   @PostMapping("/{id}/tags")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<List<TagResponse>> setCustomerTags(
       @PathVariable UUID id, @Valid @RequestBody SetEntityTagsRequest request) {
     // Verify customer exists
@@ -318,7 +310,6 @@ public class CustomerController {
   }
 
   @GetMapping("/{id}/tags")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<TagResponse>> getCustomerTags(@PathVariable UUID id) {
     // Verify customer exists
     customerService.getCustomer(id);
@@ -329,7 +320,7 @@ public class CustomerController {
   // --- Lifecycle endpoints ---
 
   @PostMapping("/{id}/transition")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<TransitionResponse> transitionLifecycle(
       @PathVariable UUID id, @Valid @RequestBody TransitionRequest request) {
     UUID actorId = RequestScopes.requireMemberId();
@@ -340,7 +331,6 @@ public class CustomerController {
   }
 
   @GetMapping("/{id}/lifecycle")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<AuditEvent>> getLifecycleHistory(@PathVariable UUID id) {
     customerService.getCustomer(id);
     var history = customerLifecycleService.getLifecycleHistory(id);
@@ -348,7 +338,7 @@ public class CustomerController {
   }
 
   @PostMapping("/dormancy-check")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<DormancyCheckResult> runDormancyCheck() {
     return ResponseEntity.ok(customerLifecycleService.runDormancyCheck());
   }

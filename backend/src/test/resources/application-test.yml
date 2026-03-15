@@ -42,5 +42,8 @@ docteams:
   email:
     unsubscribe-secret: test-unsubscribe-secret-for-integration-tests
 
+# Keycloak admin config — KC client is mocked via @MockitoBean in tests
+# Not setting keycloak.admin.auth-server-url to prevent ConditionalOnProperty from creating the bean
+
 # Webhook verification key intentionally NOT set here — fail-closed by default.
 # Tests that need webhook access use @DynamicPropertySource to inject a test ECDSA key.

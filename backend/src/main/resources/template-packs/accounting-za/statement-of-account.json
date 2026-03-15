@@ -1,0 +1,82 @@
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "heading",
+      "attrs": { "level": 1 },
+      "content": [
+        { "type": "variable", "attrs": { "key": "org.name" } }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 2 },
+      "content": [
+        { "type": "text", "text": "Statement of Account" }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Client:" },
+        { "type": "text", "text": " " },
+        { "type": "variable", "attrs": { "key": "customer.name" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Date:" },
+        { "type": "text", "text": " " },
+        { "type": "variable", "attrs": { "key": "generatedAt" } }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "Dear " },
+        { "type": "variable", "attrs": { "key": "customer.name" } },
+        { "type": "text", "text": "," }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "Please find below a summary of your account. This statement reflects all invoices, payments received, and any outstanding balance as at the date of this statement." }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "italic" }], "text": "Note: Detailed invoice line items and payment history will be available in a future release. This is a stub template." }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "Should you have any queries regarding this statement, please do not hesitate to contact our offices." }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "Yours faithfully," }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "variable", "attrs": { "key": "org.name" } }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "variable", "attrs": { "key": "org.documentFooterText" } }
+      ]
+    }
+  ]
+}

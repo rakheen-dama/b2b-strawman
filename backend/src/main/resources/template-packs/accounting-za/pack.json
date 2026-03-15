@@ -1,0 +1,79 @@
+{
+  "packId": "accounting-za",
+  "version": 1,
+  "verticalProfile": "accounting-za",
+  "name": "SA Accounting Templates",
+  "description": "Document templates for South African accounting firms: engagement letters, monthly reports, and compliance correspondence",
+  "templates": [
+    {
+      "templateKey": "engagement-letter-bookkeeping",
+      "name": "Engagement Letter — Monthly Bookkeeping",
+      "category": "ENGAGEMENT_LETTER",
+      "primaryEntityType": "PROJECT",
+      "contentFile": "engagement-letter-bookkeeping.json",
+      "cssFile": null,
+      "description": "Standard SAICA-format engagement letter for monthly bookkeeping services. Includes scope of work, monthly fee, and standard clauses.",
+      "sortOrder": 1
+    },
+    {
+      "templateKey": "engagement-letter-tax-return",
+      "name": "Engagement Letter — Annual Tax Return",
+      "category": "ENGAGEMENT_LETTER",
+      "primaryEntityType": "PROJECT",
+      "contentFile": "engagement-letter-tax-return.json",
+      "cssFile": null,
+      "description": "Engagement letter for annual income tax return preparation. References tax year and SARS submission deadline.",
+      "sortOrder": 2
+    },
+    {
+      "templateKey": "engagement-letter-advisory",
+      "name": "Engagement Letter — Advisory",
+      "category": "ENGAGEMENT_LETTER",
+      "primaryEntityType": "PROJECT",
+      "contentFile": "engagement-letter-advisory.json",
+      "cssFile": null,
+      "description": "Engagement letter for hourly advisory services. Specifies hourly rate and estimated hours.",
+      "sortOrder": 3
+    },
+    {
+      "templateKey": "monthly-report-cover",
+      "name": "Monthly Report Cover",
+      "category": "COVER_LETTER",
+      "primaryEntityType": "PROJECT",
+      "contentFile": "monthly-report-cover.json",
+      "cssFile": null,
+      "description": "Cover page for monthly bookkeeping deliverables package.",
+      "sortOrder": 4
+    },
+    {
+      "templateKey": "invoice-za",
+      "name": "SA Tax Invoice",
+      "category": "OTHER",
+      "primaryEntityType": "INVOICE",
+      "contentFile": "invoice-za.json",
+      "cssFile": null,
+      "description": "South African tax invoice template with VAT number, bank details, and SARS-compliant formatting.",
+      "sortOrder": 5
+    },
+    {
+      "templateKey": "statement-of-account",
+      "name": "Statement of Account",
+      "category": "REPORT",
+      "primaryEntityType": "CUSTOMER",
+      "contentFile": "statement-of-account.json",
+      "cssFile": null,
+      "description": "Client statement of account showing all invoices, payments, and outstanding balance.",
+      "sortOrder": 6
+    },
+    {
+      "templateKey": "fica-confirmation",
+      "name": "FICA Confirmation Letter",
+      "category": "OTHER",
+      "primaryEntityType": "CUSTOMER",
+      "contentFile": "fica-confirmation.json",
+      "cssFile": null,
+      "description": "Letter confirming FICA/KYC verification has been completed for a client.",
+      "sortOrder": 7
+    }
+  ]
+}

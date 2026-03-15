@@ -1,0 +1,146 @@
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "heading",
+      "attrs": { "level": 1 },
+      "content": [
+        { "type": "variable", "attrs": { "key": "org.name" } }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 2 },
+      "content": [
+        { "type": "text", "text": "Engagement Letter — Annual Tax Return Preparation" }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "Dear " },
+        { "type": "variable", "attrs": { "key": "customer.name" } },
+        { "type": "text", "text": "," }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "We confirm our appointment to prepare and submit your annual income tax return for the tax year ending " },
+        { "type": "variable", "attrs": { "key": "project.customFields.tax_year" } },
+        { "type": "text", "text": "." }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [
+        { "type": "text", "text": "Client Details" }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Client:" },
+        { "type": "text", "text": " " },
+        { "type": "variable", "attrs": { "key": "customer.name" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "SARS Tax Reference:" },
+        { "type": "text", "text": " " },
+        { "type": "variable", "attrs": { "key": "customer.customFields.sars_tax_reference" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Tax Year:" },
+        { "type": "text", "text": " " },
+        { "type": "variable", "attrs": { "key": "project.customFields.tax_year" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "SARS Submission Deadline:" },
+        { "type": "text", "text": " " },
+        { "type": "variable", "attrs": { "key": "project.customFields.sars_submission_deadline" } }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [
+        { "type": "text", "text": "Scope of Work" }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "Our engagement includes the following:" }
+      ]
+    },
+    {
+      "type": "bulletList",
+      "content": [
+        { "type": "listItem", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Review of all income and expenditure records for the tax year;" }] }] },
+        { "type": "listItem", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Preparation of the annual income tax return (ITR12/ITR14);" }] }] },
+        { "type": "listItem", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Submission of the return to SARS via eFiling;" }] }] },
+        { "type": "listItem", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Calculation of provisional tax payments where applicable;" }] }] },
+        { "type": "listItem", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Handling of any queries raised by SARS in respect of the return." }] }] }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [
+        { "type": "text", "text": "Client Responsibilities" }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "variable", "attrs": { "key": "customer.name" } },
+        { "type": "text", "text": " is responsible for providing all supporting documentation, including IRP5 certificates, medical aid certificates, retirement annuity certificates, and any other relevant tax documentation, within a reasonable time to enable timely submission." }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [
+        { "type": "text", "text": "Acceptance" }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "Please confirm your acceptance of the terms set out in this engagement letter by signing and returning a copy to our offices." }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "Yours faithfully," }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "variable", "attrs": { "key": "org.name" } }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "This engagement is subject to the standard terms and conditions of " },
+        { "type": "variable", "attrs": { "key": "org.name" } },
+        { "type": "text", "text": "." }
+      ]
+    }
+  ]
+}

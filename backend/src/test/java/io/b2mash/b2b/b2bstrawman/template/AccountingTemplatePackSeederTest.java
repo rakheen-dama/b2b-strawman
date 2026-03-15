@@ -10,7 +10,6 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
@@ -30,15 +29,13 @@ import org.springframework.transaction.support.TransactionTemplate;
 @Import(TestcontainersConfiguration.class)
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class TemplatePackSeederTest {
+class AccountingTemplatePackSeederTest {
 
   private static final String API_KEY = "test-api-key";
-  private static final String ORG_ID = "org_tps_test";
+  private static final String ORG_ID = "org_atps_test";
 
   @Autowired private MockMvc mockMvc;
-  @Autowired private TemplatePackSeeder templatePackSeeder;
   @Autowired private DocumentTemplateRepository documentTemplateRepository;
-  @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
@@ -48,141 +45,74 @@ class TemplatePackSeederTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Template Pack Seeder Test Org", null);
+    provisioningService.provisionTenant(
+        ORG_ID, "Accounting Template Pack Test Org", "accounting-za");
     planSyncService.syncPlan(ORG_ID, "pro-plan");
-
-    syncMember(ORG_ID, "user_tps_owner", "tps_owner@test.com", "TPS Owner", "owner");
-
+    syncMember(ORG_ID, "user_atps_owner", "atps_owner@test.com", "ATPS Owner", "owner");
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
   }
 
   @Test
-  void seedCreatesThreeTemplates() {
+  void seedCreatesSevenAccountingTemplates() {
     runInTenant(
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
                   var templates = documentTemplateRepository.findByActiveTrueOrderBySortOrder();
-                  var commonTemplates =
-                      templates.stream().filter(t -> "common".equals(t.getPackId())).toList();
-                  assertThat(commonTemplates).hasSize(3);
-                }));
-  }
-
-  @Test
-  void idempotencyDoesNotDuplicate() {
-    // Seed again — should not create duplicates
-    templatePackSeeder.seedPacksForTenant(tenantSchema, ORG_ID);
-
-    runInTenant(
-        () ->
-            transactionTemplate.executeWithoutResult(
-                tx -> {
-                  var templates = documentTemplateRepository.findByActiveTrueOrderBySortOrder();
-                  var commonTemplates =
-                      templates.stream().filter(t -> "common".equals(t.getPackId())).toList();
-                  assertThat(commonTemplates).hasSize(3);
-                }));
-  }
-
-  @Test
-  void sourceSetToPlatform() {
-    runInTenant(
-        () ->
-            transactionTemplate.executeWithoutResult(
-                tx -> {
-                  var templates = documentTemplateRepository.findByActiveTrueOrderBySortOrder();
-                  var platformTemplates =
+                  var accountingTemplates =
                       templates.stream()
-                          .filter(t -> t.getPackId() != null && t.getPackId().equals("common"))
+                          .filter(t -> "accounting-za".equals(t.getPackId()))
                           .toList();
-                  assertThat(platformTemplates)
-                      .allMatch(t -> t.getSource() == TemplateSource.PLATFORM);
-                }));
-  }
-
-  @Test
-  void packIdAndKeySet() {
-    runInTenant(
-        () ->
-            transactionTemplate.executeWithoutResult(
-                tx -> {
-                  var templates = documentTemplateRepository.findByActiveTrueOrderBySortOrder();
-                  var commonTemplates =
-                      templates.stream().filter(t -> "common".equals(t.getPackId())).toList();
-                  assertThat(commonTemplates).allMatch(t -> t.getPackTemplateKey() != null);
-
-                  var keys =
-                      commonTemplates.stream().map(DocumentTemplate::getPackTemplateKey).toList();
-                  assertThat(keys)
-                      .containsExactlyInAnyOrder(
-                          "engagement-letter", "project-summary", "invoice-cover-letter");
-                }));
-  }
-
-  @Test
-  void templatePackStatusUpdatedInOrgSettings() {
-    runInTenant(
-        () ->
-            transactionTemplate.executeWithoutResult(
-                tx -> {
-                  var settings = orgSettingsRepository.findForCurrentTenant();
-                  assertThat(settings).isPresent();
-                  assertThat(settings.get().getTemplatePackStatus()).isNotNull();
-                  assertThat(settings.get().getTemplatePackStatus())
-                      .anyMatch(entry -> "common".equals(entry.get("packId")));
-                }));
-  }
-
-  @Test
-  void seededContentJsonHasDocRootNode() {
-    runInTenant(
-        () ->
-            transactionTemplate.executeWithoutResult(
-                tx -> {
-                  var templates = documentTemplateRepository.findByActiveTrueOrderBySortOrder();
-                  var platformTemplates =
-                      templates.stream()
-                          .filter(t -> t.getSource() == TemplateSource.PLATFORM)
-                          .toList();
-                  assertThat(platformTemplates).isNotEmpty();
-                  assertThat(platformTemplates)
-                      .allSatisfy(
-                          t -> {
-                            assertThat(t.getContent()).isNotNull();
-                            assertThat(t.getContent()).containsEntry("type", "doc");
-                          });
+                  assertThat(accountingTemplates).hasSize(7);
                 }));
   }
 
   @SuppressWarnings("unchecked")
   @Test
-  void seededContentJsonHasContentArray() {
+  void seededContentIsValidTiptapJson() {
     runInTenant(
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
                   var templates = documentTemplateRepository.findByActiveTrueOrderBySortOrder();
-                  var platformTemplates =
+                  var accountingTemplates =
                       templates.stream()
-                          .filter(t -> t.getSource() == TemplateSource.PLATFORM)
+                          .filter(t -> "accounting-za".equals(t.getPackId()))
                           .toList();
-                  assertThat(platformTemplates).isNotEmpty();
-                  assertThat(platformTemplates)
+                  assertThat(accountingTemplates).isNotEmpty();
+                  assertThat(accountingTemplates)
                       .allSatisfy(
                           t -> {
-                            Map<String, Object> json = t.getContent();
-                            assertThat(json).containsKey("content");
-                            assertThat(json.get("content")).isInstanceOf(List.class);
+                            assertThat(t.getContent()).isNotNull();
+                            assertThat(t.getContent()).containsEntry("type", "doc");
+                            assertThat(t.getContent()).containsKey("content");
+                            assertThat(t.getContent().get("content")).isInstanceOf(List.class);
                             List<Map<String, Object>> content =
-                                (List<Map<String, Object>>) json.get("content");
+                                (List<Map<String, Object>>) t.getContent().get("content");
                             assertThat(content).isNotEmpty();
                           });
                 }));
   }
 
-  // --- Helpers ---
+  @Test
+  void verticalProfileFieldIsTolerated() {
+    // The pack.json contains "verticalProfile": "accounting-za" which is not on the DTO.
+    // If this test runs without error, deserialization tolerates the unknown field.
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var templates = documentTemplateRepository.findByActiveTrueOrderBySortOrder();
+                  var accountingTemplates =
+                      templates.stream()
+                          .filter(t -> "accounting-za".equals(t.getPackId()))
+                          .toList();
+                  assertThat(accountingTemplates)
+                      .as("verticalProfile field should not break deserialization")
+                      .hasSize(7);
+                }));
+  }
 
   private void runInTenant(Runnable action) {
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)

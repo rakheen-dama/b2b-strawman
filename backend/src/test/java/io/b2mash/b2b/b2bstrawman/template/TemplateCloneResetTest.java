@@ -76,7 +76,10 @@ class TemplateCloneResetTest {
                       var templates = documentTemplateRepository.findByActiveTrueOrderBySortOrder();
                       platformTemplateId =
                           templates.stream()
-                              .filter(t -> t.getSource() == TemplateSource.PLATFORM)
+                              .filter(
+                                  t ->
+                                      t.getSource() == TemplateSource.PLATFORM
+                                          && "common".equals(t.getPackId()))
                               .findFirst()
                               .orElseThrow()
                               .getId();

@@ -1,6 +1,6 @@
 "use server";
 
-import { getAuthContext } from "@/lib/auth";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { ApiError } from "@/lib/api";
 import {
   createLeaveBlock,
@@ -42,8 +42,8 @@ export async function createLeaveAction(
   memberId: string,
   data: CreateLeaveRequest,
 ): Promise<LeaveActionResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Only admins and owners can manage leave." };
   }
 
@@ -65,8 +65,8 @@ export async function updateLeaveAction(
   id: string,
   data: UpdateLeaveRequest,
 ): Promise<LeaveActionResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Only admins and owners can manage leave." };
   }
 
@@ -87,8 +87,8 @@ export async function deleteLeaveAction(
   memberId: string,
   id: string,
 ): Promise<ActionResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Only admins and owners can manage leave." };
   }
 
@@ -108,7 +108,6 @@ export async function listLeaveAction(
   _slug: string,
   memberId: string,
 ): Promise<LeaveListResult> {
-  await getAuthContext();
   try {
     const blocks = await listLeaveForMember(memberId);
     return { success: true, blocks };
@@ -135,8 +134,8 @@ export async function createCapacityRecordAction(
   memberId: string,
   data: CreateCapacityRequest,
 ): Promise<CapacityActionResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return {
       success: false,
       error: "Only admins and owners can manage capacity.",
@@ -161,8 +160,8 @@ export async function updateCapacityRecordAction(
   id: string,
   data: UpdateCapacityRequest,
 ): Promise<CapacityActionResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return {
       success: false,
       error: "Only admins and owners can manage capacity.",
@@ -186,8 +185,8 @@ export async function deleteCapacityRecordAction(
   memberId: string,
   id: string,
 ): Promise<ActionResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return {
       success: false,
       error: "Only admins and owners can manage capacity.",
@@ -210,7 +209,6 @@ export async function listCapacityRecordsAction(
   _slug: string,
   memberId: string,
 ): Promise<CapacityListResult> {
-  await getAuthContext();
   try {
     const records = await listCapacityRecords(memberId);
     return { success: true, records };

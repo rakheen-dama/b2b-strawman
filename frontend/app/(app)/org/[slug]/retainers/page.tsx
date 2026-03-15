@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { getAuthContext } from "@/lib/auth";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { FileText, Plus } from "lucide-react";
 import Link from "next/link";
@@ -45,14 +44,13 @@ export default async function RetainersPage({
 }) {
   const { slug } = await params;
   const search = await searchParams;
-  const { orgRole } = await getAuthContext();
   const caps = await fetchMyCapabilities();
 
   if (!caps.capabilities.includes("INVOICING") && !caps.isAdmin && !caps.isOwner) {
     notFound();
   }
 
-  const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
+  const isAdmin = caps.isAdmin || caps.isOwner;
 
   const [retainersResult, customersResult] = await Promise.allSettled([
     fetchRetainers({

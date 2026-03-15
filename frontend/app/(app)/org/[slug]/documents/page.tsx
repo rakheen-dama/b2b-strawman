@@ -1,4 +1,4 @@
-import { getAuthContext } from "@/lib/auth";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api, handleApiError } from "@/lib/api";
 import type { Document, DocumentScope, DocumentStatus } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
@@ -44,9 +44,9 @@ export default async function OrgDocumentsPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const { orgRole } = await getAuthContext();
+  const caps = await fetchMyCapabilities();
 
-  const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
+  const isAdmin = caps.isAdmin || caps.isOwner;
 
   let documents: Document[] = [];
   try {

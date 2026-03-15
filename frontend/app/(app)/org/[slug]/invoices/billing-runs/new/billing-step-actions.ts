@@ -1,6 +1,6 @@
 "use server";
 
-import { getAuthContext } from "@/lib/auth";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { ApiError } from "@/lib/api";
 import {
   generate,
@@ -38,8 +38,8 @@ interface GetBillingRunResult extends ActionResult {
 export async function generateAction(
   billingRunId: string,
 ): Promise<GenerateResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Permission denied." };
   }
   try {
@@ -56,8 +56,8 @@ export async function generateAction(
 export async function getItemsAction(
   billingRunId: string,
 ): Promise<GetItemsResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Permission denied." };
   }
   try {
@@ -74,8 +74,8 @@ export async function getItemsAction(
 export async function getBillingRunAction(
   billingRunId: string,
 ): Promise<GetBillingRunResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Permission denied." };
   }
   try {
@@ -92,8 +92,8 @@ export async function getBillingRunAction(
 export async function batchApproveAction(
   billingRunId: string,
 ): Promise<BatchOperationActionResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Permission denied." };
   }
   try {
@@ -111,8 +111,8 @@ export async function batchSendAction(
   billingRunId: string,
   request: BatchSendRequest,
 ): Promise<BatchOperationActionResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Permission denied." };
   }
   try {

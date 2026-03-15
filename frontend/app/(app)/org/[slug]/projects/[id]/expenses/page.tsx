@@ -1,4 +1,5 @@
-import { getAuthContext, getCurrentUserEmail } from "@/lib/auth";
+import { getCurrentUserEmail } from "@/lib/auth";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api } from "@/lib/api";
 import { ExpenseList } from "@/components/expenses/expense-list";
 import { LogExpenseDialog } from "@/components/expenses/log-expense-dialog";
@@ -17,7 +18,9 @@ export default async function ProjectExpensesPage({
   params: Promise<{ slug: string; id: string }>;
 }) {
   const { slug, id } = await params;
-  const { orgRole } = await getAuthContext();
+  const caps = await fetchMyCapabilities();
+  // Compatibility shim for child components not yet migrated
+  const orgRoleCompat = `org:${caps.role}`;
 
   let expenses: PaginatedExpenseResponse = {
     content: [],
@@ -85,7 +88,7 @@ export default async function ProjectExpensesPage({
         tasks={tasks.map((t) => ({ id: t.id, title: t.title }))}
         members={members.map((m) => ({ id: m.memberId, name: m.name }))}
         currentMemberId={currentMemberId}
-        orgRole={orgRole}
+        orgRole={orgRoleCompat}
       />
     </div>
   );

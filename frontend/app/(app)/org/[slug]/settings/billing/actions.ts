@@ -1,6 +1,6 @@
 "use server";
 
-import { getAuthContext } from "@/lib/auth";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api, ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
 import type { BillingResponse, UpgradeRequest } from "@/lib/internal-api";
@@ -12,8 +12,8 @@ interface UpgradeResult {
 }
 
 export async function upgradeToPro(slug: string): Promise<UpgradeResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Only admins and owners can upgrade plans." };
   }
 

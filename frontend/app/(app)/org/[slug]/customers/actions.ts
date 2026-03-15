@@ -1,6 +1,6 @@
 "use server";
 
-import { getAuthContext } from "@/lib/auth";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api, ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
 import type { Customer, CustomerType, UpdateCustomerRequest } from "@/lib/types";
@@ -23,8 +23,8 @@ interface CreateCustomerData {
 }
 
 export async function createCustomer(slug: string, data: CreateCustomerData): Promise<ActionResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Only admins and owners can manage customers." };
   }
 
@@ -68,8 +68,8 @@ export async function updateCustomer(
   id: string,
   formData: FormData
 ): Promise<ActionResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Only admins and owners can manage customers." };
   }
 
@@ -107,8 +107,8 @@ export async function updateCustomer(
 }
 
 export async function archiveCustomer(slug: string, id: string): Promise<ActionResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Only admins and owners can manage customers." };
   }
 

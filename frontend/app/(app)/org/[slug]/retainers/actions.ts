@@ -1,6 +1,6 @@
 "use server";
 
-import { getAuthContext } from "@/lib/auth";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
 import {
@@ -21,8 +21,8 @@ export async function createRetainerAction(
   slug: string,
   data: CreateRetainerRequest,
 ): Promise<ActionResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "You do not have permission to perform this action." };
   }
 
@@ -51,8 +51,8 @@ export async function pauseRetainerAction(
   slug: string,
   id: string,
 ): Promise<ActionResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "You do not have permission to perform this action." };
   }
 
@@ -79,8 +79,8 @@ export async function resumeRetainerAction(
   slug: string,
   id: string,
 ): Promise<ActionResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "You do not have permission to perform this action." };
   }
 
@@ -107,8 +107,8 @@ export async function terminateRetainerAction(
   slug: string,
   id: string,
 ): Promise<ActionResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "You do not have permission to perform this action." };
   }
 

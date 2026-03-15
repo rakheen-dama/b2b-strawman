@@ -1,4 +1,4 @@
-import { getAuthContext } from "@/lib/auth";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { InviteMemberForm } from "@/components/team/invite-member-form";
 import { TeamTabs } from "@/components/team/team-tabs";
 import { api } from "@/lib/api";
@@ -12,9 +12,9 @@ export default async function TeamPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const { orgRole } = await getAuthContext();
+  const caps = await fetchMyCapabilities();
 
-  const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
+  const isAdmin = caps.isAdmin || caps.isOwner;
 
   const billing = await api.get<BillingResponse>("/api/billing/subscription");
 

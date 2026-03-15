@@ -1,6 +1,6 @@
 "use server";
 
-import { getAuthContext } from "@/lib/auth";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api, ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
 import type { Task, CreateTaskRequest, CompleteTaskResponse } from "@/lib/types";
@@ -102,8 +102,8 @@ export async function deleteTask(
   taskId: string,
   projectId: string
 ): Promise<ActionResult> {
-  const { orgRole } = await getAuthContext();
-  const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
+  const caps = await fetchMyCapabilities();
+  const isAdmin = caps.isAdmin || caps.isOwner;
 
   if (!isAdmin) {
     return { success: false, error: "Only admins and owners can delete tasks." };
@@ -192,8 +192,8 @@ export async function cancelTask(
   taskId: string,
   projectId: string
 ): Promise<ActionResult> {
-  const { orgRole } = await getAuthContext();
-  const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
+  const caps = await fetchMyCapabilities();
+  const isAdmin = caps.isAdmin || caps.isOwner;
 
   if (!isAdmin) {
     return { success: false, error: "Only admins and owners can cancel tasks." };

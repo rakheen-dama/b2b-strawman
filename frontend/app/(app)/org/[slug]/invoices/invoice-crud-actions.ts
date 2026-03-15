@@ -1,6 +1,6 @@
 "use server";
 
-import { getAuthContext } from "@/lib/auth";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api, ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
 import type {
@@ -38,8 +38,8 @@ function revalidateInvoicePaths(
 export async function fetchInvoice(
   invoiceId: string,
 ): Promise<InvoiceActionResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Only admins and owners can view invoices." };
   }
 
@@ -59,8 +59,8 @@ export async function fetchInvoices(
   status?: string,
   customerId?: string,
 ): Promise<{ success: boolean; error?: string; invoices?: InvoiceResponse[] }> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Only admins and owners can view invoices." };
   }
 
@@ -87,8 +87,8 @@ export async function updateInvoice(
   customerId: string,
   request: UpdateInvoiceRequest,
 ): Promise<InvoiceActionResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Only admins and owners can update invoices." };
   }
 
@@ -113,8 +113,8 @@ export async function deleteInvoice(
   invoiceId: string,
   customerId: string,
 ): Promise<ActionResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Only admins and owners can delete invoices." };
   }
 
@@ -137,8 +137,8 @@ export async function addLineItem(
   customerId: string,
   request: AddLineItemRequest,
 ): Promise<InvoiceActionResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Only admins and owners can add line items." };
   }
 
@@ -165,8 +165,8 @@ export async function updateLineItem(
   customerId: string,
   request: UpdateLineItemRequest,
 ): Promise<InvoiceActionResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return {
       success: false,
       error: "Only admins and owners can update line items.",
@@ -195,8 +195,8 @@ export async function deleteLineItem(
   lineId: string,
   customerId: string,
 ): Promise<ActionResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return {
       success: false,
       error: "Only admins and owners can delete line items.",

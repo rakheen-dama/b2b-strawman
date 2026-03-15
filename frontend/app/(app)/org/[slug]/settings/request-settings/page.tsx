@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { getAuthContext } from "@/lib/auth";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api } from "@/lib/api";
 import { RequestReminderSettingsForm } from "@/components/information-requests/request-reminder-settings-form";
 import type { OrgSettings } from "@/lib/types";
@@ -11,9 +11,9 @@ export default async function RequestSettingsPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const { orgRole } = await getAuthContext();
+  const caps = await fetchMyCapabilities();
 
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  if (!caps.isAdmin && !caps.isOwner) {
     return (
       <div className="space-y-8">
         <Link

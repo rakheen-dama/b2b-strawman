@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { getAuthContext } from "@/lib/auth";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { getTemplates, getOrgSettings } from "@/lib/api";
 import { HelpTip } from "@/components/help-tip";
 import { TemplatesContent } from "./templates-content";
@@ -12,9 +12,9 @@ export default async function TemplatesSettingsPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const { orgRole } = await getAuthContext();
+  const caps = await fetchMyCapabilities();
 
-  const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
+  const isAdmin = caps.isAdmin || caps.isOwner;
 
   const [templatesResult, settingsResult] = await Promise.allSettled([
     getTemplates(),

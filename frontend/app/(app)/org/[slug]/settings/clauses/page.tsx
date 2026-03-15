@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { getAuthContext } from "@/lib/auth";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { getClauses, getClauseCategories } from "@/lib/actions/clause-actions";
 import { ClausesContent } from "@/components/clauses/clauses-content";
 import type { Clause } from "@/lib/actions/clause-actions";
@@ -11,9 +11,9 @@ export default async function ClausesSettingsPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const { orgRole } = await getAuthContext();
+  const caps = await fetchMyCapabilities();
 
-  const canManage = orgRole === "org:admin" || orgRole === "org:owner";
+  const canManage = caps.isAdmin || caps.isOwner;
 
   const [clausesResult, categoriesResult] = await Promise.allSettled([
     getClauses(true),

@@ -1,4 +1,4 @@
-import { getAuthContext } from "@/lib/auth";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { handleApiError } from "@/lib/api";
 import { getBillingRun, getItems } from "@/lib/api/billing-runs";
 import type { BillingRun, BillingRunItem } from "@/lib/api/billing-runs";
@@ -16,9 +16,9 @@ export default async function BillingRunDetailPage({
   params: Promise<{ slug: string; id: string }>;
 }) {
   const { slug, id } = await params;
-  const { orgRole } = await getAuthContext();
+  const caps = await fetchMyCapabilities();
 
-  const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
+  const isAdmin = caps.isAdmin || caps.isOwner;
 
   if (!isAdmin) {
     return (

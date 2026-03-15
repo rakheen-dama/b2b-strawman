@@ -1,6 +1,5 @@
 import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import { getAuthContext } from "@/lib/auth";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api, handleApiError, getFieldDefinitions, getViews, getTags } from "@/lib/api";
 import { RequiresCapability } from "@/lib/capabilities";
@@ -75,14 +74,13 @@ export default async function CustomersPage({
 }) {
   const { slug } = await params;
   const resolvedSearchParams = await searchParams;
-  const { orgRole } = await getAuthContext();
   const capData = await fetchMyCapabilities();
 
   if (!capData.isAdmin && !capData.isOwner && !capData.capabilities.includes("CUSTOMER_MANAGEMENT")) {
     notFound();
   }
 
-  const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
+  const isAdmin = capData.isAdmin || capData.isOwner;
 
   const currentViewId = typeof resolvedSearchParams.view === "string" ? resolvedSearchParams.view : null;
   const rawLifecycleFilter = typeof resolvedSearchParams.lifecycleStatus === "string" ? resolvedSearchParams.lifecycleStatus : null;

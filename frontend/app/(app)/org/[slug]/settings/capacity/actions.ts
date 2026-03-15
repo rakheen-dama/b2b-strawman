@@ -1,6 +1,7 @@
 "use server";
 
 import { getAuthContext } from "@/lib/auth";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api, ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
 
@@ -13,13 +14,14 @@ export async function updateCapacitySettings(
   slug: string,
   data: { defaultWeeklyCapacityHours: number },
 ): Promise<ActionResult> {
-  const { orgSlug, orgRole } = await getAuthContext();
+  const { orgSlug } = await getAuthContext();
+  const caps = await fetchMyCapabilities();
 
   if (slug !== orgSlug) {
     return { success: false, error: "Organization mismatch." };
   }
 
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Only admins and owners can update capacity settings." };
   }
 

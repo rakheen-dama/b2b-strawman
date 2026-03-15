@@ -1,4 +1,4 @@
-import { getAuthContext } from "@/lib/auth";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { listBillingRuns } from "@/lib/api/billing-runs";
 import type { BillingRun } from "@/lib/api/billing-runs";
 import { BillingRunStatusBadge } from "@/components/billing-runs/billing-run-status-badge";
@@ -14,9 +14,9 @@ export default async function BillingRunsPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const { orgRole } = await getAuthContext();
+  const caps = await fetchMyCapabilities();
 
-  const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
+  const isAdmin = caps.isAdmin || caps.isOwner;
 
   if (!isAdmin) {
     return (

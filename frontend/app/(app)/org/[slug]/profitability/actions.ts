@@ -1,6 +1,6 @@
 "use server";
 
-import { getAuthContext } from "@/lib/auth";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api, ApiError } from "@/lib/api";
 import type {
   UtilizationResponse,
@@ -18,8 +18,8 @@ export async function getUtilization(
   from: string,
   to: string,
 ): Promise<ActionResult<UtilizationResponse>> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { data: null, error: "Forbidden" };
   }
 
@@ -42,8 +42,8 @@ export async function getOrgProfitability(
   customerId?: string,
   includeProjections?: boolean,
 ): Promise<ActionResult<OrgProfitabilityResponse>> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { data: null, error: "Forbidden" };
   }
 
@@ -71,8 +71,8 @@ export async function getProjectProfitability(
   from?: string,
   to?: string,
 ): Promise<ActionResult<ProjectProfitabilityResponse>> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { data: null, error: "Forbidden" };
   }
 
@@ -98,8 +98,8 @@ export async function getCustomerProfitability(
   from?: string,
   to?: string,
 ): Promise<ActionResult<CustomerProfitabilityResponse>> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { data: null, error: "Forbidden" };
   }
 

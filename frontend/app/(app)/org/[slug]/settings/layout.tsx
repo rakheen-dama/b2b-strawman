@@ -1,4 +1,4 @@
-import { getAuthContext } from "@/lib/auth";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { SettingsSidebar } from "@/components/settings/settings-sidebar";
 
 export default async function SettingsLayout({
@@ -9,8 +9,8 @@ export default async function SettingsLayout({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const { orgRole } = await getAuthContext();
-  const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
+  const caps = await fetchMyCapabilities();
+  const isAdmin = caps.isAdmin || caps.isOwner;
 
   return (
     <div className="flex gap-6">

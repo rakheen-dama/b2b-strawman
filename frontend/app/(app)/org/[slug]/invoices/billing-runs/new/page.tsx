@@ -1,4 +1,4 @@
-import { getAuthContext } from "@/lib/auth";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { BillingRunWizard } from "@/components/billing-runs/billing-run-wizard";
 
 export default async function NewBillingRunPage({
@@ -10,9 +10,9 @@ export default async function NewBillingRunPage({
 }) {
   const { slug } = await params;
   const search = await searchParams;
-  const { orgRole } = await getAuthContext();
+  const caps = await fetchMyCapabilities();
 
-  const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
+  const isAdmin = caps.isAdmin || caps.isOwner;
 
   if (!isAdmin) {
     return (

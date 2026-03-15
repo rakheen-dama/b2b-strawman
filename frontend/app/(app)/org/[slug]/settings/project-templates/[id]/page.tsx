@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { getAuthContext } from "@/lib/auth";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { redirect } from "next/navigation";
 import { TemplateEditor } from "@/components/templates/TemplateEditor";
 import { getProjectTemplate } from "@/lib/api/templates";
@@ -16,9 +16,9 @@ export default async function TemplateEditorPage({
   params: Promise<{ slug: string; id: string }>;
 }) {
   const { slug, id } = await params;
-  const { orgRole } = await getAuthContext();
+  const caps = await fetchMyCapabilities();
 
-  const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
+  const isAdmin = caps.isAdmin || caps.isOwner;
 
   if (!isAdmin) {
     redirect(`/org/${slug}/settings/project-templates`);

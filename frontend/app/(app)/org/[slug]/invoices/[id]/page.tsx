@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { getAuthContext } from "@/lib/auth";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import {
   api,
@@ -32,14 +31,13 @@ export default async function InvoiceDetailPage({
   params: Promise<{ slug: string; id: string }>;
 }) {
   const { slug, id } = await params;
-  const { orgRole } = await getAuthContext();
   const caps = await fetchMyCapabilities();
 
   if (!caps.capabilities.includes("INVOICING") && !caps.isAdmin && !caps.isOwner) {
     notFound();
   }
 
-  const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
+  const isAdmin = caps.isAdmin || caps.isOwner;
 
   let invoice: InvoiceResponse;
   try {

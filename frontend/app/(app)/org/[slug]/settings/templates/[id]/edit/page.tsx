@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { getAuthContext } from "@/lib/auth";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { getTemplateDetail } from "@/lib/api";
 import { TemplateEditorClient } from "@/components/templates/TemplateEditorClient";
 import type { TemplateDetailResponse } from "@/lib/types";
@@ -11,8 +11,8 @@ export default async function TemplateEditorPage({
   params: Promise<{ slug: string; id: string }>;
 }) {
   const { slug, id } = await params;
-  const { orgRole } = await getAuthContext();
-  const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
+  const caps = await fetchMyCapabilities();
+  const isAdmin = caps.isAdmin || caps.isOwner;
 
   let template: TemplateDetailResponse;
   try {

@@ -41,7 +41,7 @@
 | GAP-023 | No saved views on list pages | minor | WONT_FIX | — | — | 90 | UX enhancement. Out of scope for bugfix cycle. |
 | GAP-024 | No aged debtors report | major | OPEN | Dev | — | 90 | Day 90 — not triaged yet (QA blocked at Day 1). |
 | GAP-025 | Team member list API calls port 8080 instead of 8081 in E2E stack | bug | FIXED | Dev | #688 | 0 | Added `NEXT_PUBLIC_BACKEND_URL=http://localhost:8081` build arg to E2E compose + declared ARG in Dockerfile. PR #688 merged. |
-| GAP-026 | FICA/KYC checklist template not seeded by accounting-za pack | major | SPEC_READY | Dev | — | 0 | Template IS seeded but created as inactive (`active=false`) because `autoInstantiate=false`. Fix spec: `qa_cycle/fix-specs/GAP-026.md` |
+| GAP-026 | FICA/KYC checklist template not seeded by accounting-za pack | major | FIXED | Dev | #690 | 0 | Removed inactive override for non-autoInstantiate packs in CompliancePackSeeder + added V71 tenant migration to activate existing data. PR #690 merged. |
 | GAP-027 | Customer pages SSR crash after ONBOARDING lifecycle transition | blocker | FIXED | Dev | #687 | 1 | Null guards added to `customerReadiness.requiredFields` accesses + error boundaries. PR #687 merged. |
 | GAP-028 | Customer detail page intermittent render crash | major | FIXED | Dev | #687 | 1 | Same root cause as GAP-027. Fixed by PR #687. |
 
@@ -64,3 +64,4 @@
 | 2026-03-16T02:00Z | Dev | GAP-027 FIXED: Added null guards (`?.` / `?? 0` / `?? []`) to all `customerReadiness.requiredFields` accesses in customer detail page. Added error boundaries at `customers/error.tsx` and `customers/[id]/error.tsx`. GAP-028 also fixed (same root cause). PR #687 merged to `bugfix_cycle_2026-03-15`. NEEDS_REBUILD=true (frontend changed). |
 | 2026-03-16T02:15Z | Dev | GAP-025 FIXED: Added `NEXT_PUBLIC_BACKEND_URL=http://localhost:8081` as Docker build arg in `compose/docker-compose.e2e.yml` and declared `ARG NEXT_PUBLIC_BACKEND_URL` in `frontend/Dockerfile`. PR #688 merged to `bugfix_cycle_2026-03-15`. NEEDS_REBUILD=true (frontend build arg changed). |
 | 2026-03-16T02:30Z | Dev | GAP-008C FIXED: Created `error.tsx` error boundary at projects route level. Added null guards on `project.status` (PROJECT_STATUS_BADGE lookup), `project.createdAt` (formatDate), and customer API result values (optional chaining). PR #689 merged to `bugfix_cycle_2026-03-15`. NEEDS_REBUILD=true. |
+| 2026-03-16T02:45Z | Dev | GAP-026 FIXED: Removed 4-line inactive override in `CompliancePackSeeder` (non-autoInstantiate templates were wrongly set to `active=false`). Added `V71__activate_fica_checklist_template.sql` tenant migration to fix existing data. PR #690 merged to `bugfix_cycle_2026-03-15`. NEEDS_REBUILD=true (backend changed). |

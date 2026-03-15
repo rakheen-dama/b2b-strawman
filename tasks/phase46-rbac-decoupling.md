@@ -26,7 +26,7 @@ This phase completes the separation of authentication from authorization. Keyclo
 | 347 | @PreAuthorize Migration (Remaining Controllers) | Backend | 346 | L | 347A, 347B, 347C | **Done** (PR #672, #673, #674) |
 | 348 | Member Entity Cleanup & JwtUtils Rename | Backend | 347 | M | 348A, 348B | **Done** (PR #676) |
 | 349 | KeycloakAdminClient Backend Move & Org Endpoint | Backend | 345 | M | 349A, 349B | **Done** (PR #675) |
-| 350 | Gateway Authorization Removal | Gateway | 349 | M | 350A, 350B | |
+| 350 | Gateway Authorization Removal | Gateway | 349 | M | 350A, 350B | **Done** (PR #677) |
 | 351 | Frontend Capabilities-Only Authorization | Frontend | 350A | L | 351A, 351B, 351C | |
 | 352 | Mock IDP & E2E Fixture Update | Frontend/E2E | 351 | S | 352A | |
 | 353 | Cleanup — Remove ROLE_ORG_* & Role Sync | Backend | 351 | S | 353A, 353B | |
@@ -207,8 +207,8 @@ CLEANUP TRACK (after E351)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 4a | 350 | 350A | `/bff/me` returns identity only: remove `orgRole` from `BffUserInfo`, update `BffUserInfoExtractor` to remove `extractOrgRole()` and `role` from `OrgInfo`. ~2 modified files (~3 tests). Gateway only. | |
-| 4b | 350 | 350B | Delete `BffSecurity.java`, `AdminProxyController.java`, `KeycloakAdminClient.java` from gateway. Remove `createOrg()` from `BffController`. Clean unused config. ~4 deleted + 1 modified file (~2 tests). Gateway only. | |
+| 4a | 350 | 350A | `/bff/me` returns identity only: remove `orgRole` from `BffUserInfo`, update `BffUserInfoExtractor` to remove `extractOrgRole()` and `role` from `OrgInfo`. ~2 modified files (~3 tests). Gateway only. | **Done** (PR #677) |
+| 4b | 350 | 350B | Delete `BffSecurity.java`, `AdminProxyController.java`, `KeycloakAdminClient.java` from gateway. Remove `createOrg()` from `BffController`. Clean unused config. ~4 deleted + 1 modified file (~2 tests). Gateway only. | **Done** (PR #677) |
 
 ### Stage 5: Frontend Migration (sequential)
 
@@ -588,8 +588,8 @@ Stage 7: [353A] -> [353B]                                                      (
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **350A** | 350.1--350.3 | `/bff/me` returns identity only: remove `orgRole` from `BffUserInfo` record, update `BffUserInfoExtractor` to remove `extractOrgRole()` and `role` from `OrgInfo`. ~2 modified files (~3 tests). Gateway only. | |
-| **350B** | 350.4--350.7 | Delete `BffSecurity.java`, `AdminProxyController.java`, `KeycloakAdminClient.java` from gateway. Remove `createOrg()` from `BffController`. Clean unused dependencies. ~4 deleted + 1 modified file (~2 tests). Gateway only. | |
+| **350A** | 350.1--350.3 | `/bff/me` returns identity only: remove `orgRole` from `BffUserInfo` record, update `BffUserInfoExtractor` to remove `extractOrgRole()` and `role` from `OrgInfo`. ~2 modified files (~3 tests). Gateway only. | **Done** (PR #677) |
+| **350B** | 350.4--350.7 | Delete `BffSecurity.java`, `AdminProxyController.java`, `KeycloakAdminClient.java` from gateway. Remove `createOrg()` from `BffController`. Clean unused dependencies. ~4 deleted + 1 modified file (~2 tests). Gateway only. | **Done** (PR #677) |
 
 ### Tasks
 

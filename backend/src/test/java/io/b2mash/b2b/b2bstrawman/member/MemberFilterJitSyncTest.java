@@ -11,7 +11,6 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -20,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -152,8 +150,7 @@ class MemberFilterJitSyncTest {
                 j.subject(userId)
                     .claim("o", Map.of("id", orgId, "rol", "member"))
                     .claim("email", userId + "@example.com")
-                    .claim("name", "Test User"))
-        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+                    .claim("name", "Test User"));
   }
 
   private JwtRequestPostProcessor jwtWithoutEmail(String userId, String orgId) {
@@ -162,8 +159,7 @@ class MemberFilterJitSyncTest {
             j ->
                 j.subject(userId)
                     .claim("o", Map.of("id", orgId, "rol", "member"))
-                    .claim("name", "Test User"))
-        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+                    .claim("name", "Test User"));
   }
 
   private JwtRequestPostProcessor jwtWithEmailOnly(String userId, String orgId) {
@@ -172,7 +168,6 @@ class MemberFilterJitSyncTest {
             j ->
                 j.subject(userId)
                     .claim("o", Map.of("id", orgId, "rol", "member"))
-                    .claim("email", userId + "@example.com"))
-        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+                    .claim("email", userId + "@example.com"));
   }
 }

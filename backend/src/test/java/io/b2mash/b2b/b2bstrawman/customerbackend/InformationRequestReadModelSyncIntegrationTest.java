@@ -78,7 +78,7 @@ class InformationRequestReadModelSyncIntegrationTest {
 
     var syncResult =
         memberSyncService.syncMember(
-            ORG_ID, CLERK_USER_ID, "info-sync@test.com", "Sync Test User", null, "org:admin");
+            ORG_ID, CLERK_USER_ID, "info-sync@test.com", "Sync Test User", null, "admin");
     memberId = syncResult.memberId();
 
     runInTenantWithMember(

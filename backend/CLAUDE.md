@@ -46,7 +46,7 @@ Organize by **feature**, not by layer. Each feature package contains its entity,
 ### Code Style
 - Use Java records for DTOs, request/response objects, and value objects
 - Prefer constructor injection (no `@Autowired` on fields)
-- Use `@PreAuthorize` annotations for role-based access control
+- Use `@RequiresCapability` annotations for capability-based access control
 - Return `ResponseEntity` from controllers for explicit status codes
 - Use Spring's `ProblemDetail` (RFC 9457) for error responses
 - No Lombok — Java 25 records and pattern matching cover most use cases
@@ -105,7 +105,7 @@ Controllers are **HTTP adapters only**. Every controller method must be a one-li
 **Controllers MUST:**
 - Call exactly ONE service method per endpoint
 - Return `ResponseEntity` wrapping the service result
-- Use `@PreAuthorize` for role checks (declarative, not imperative)
+- Use `@RequiresCapability` for capability checks (declarative, not imperative)
 
 **Controllers MUST NOT:**
 - Inject repositories — if you need data, the service fetches it
@@ -187,12 +187,8 @@ src/main/resources/db/migration/
   - Access via: `Map<String, Object> org = jwt.getClaim("o"); org.get("id");`
 - Top-level claims: `sub` (user ID), `sid` (session ID), `azp` (authorized party)
 
-### Role Mapping
-| Clerk JWT `o.rol` | Spring Authority | Access Level |
-|--------------------|------------------|--------------|
-| `owner` | `ROLE_ORG_OWNER` | Full access including delete |
-| `admin` | `ROLE_ORG_ADMIN` | CRUD on projects and settings |
-| `member` | `ROLE_ORG_MEMBER` | Read projects, upload documents |
+### Authorization
+Authorization uses `@RequiresCapability` annotations on controllers. Capabilities are resolved from the member's `OrgRole` entity by `MemberFilter` and bound to `RequestScopes.CAPABILITIES`. The JWT converter (`ClerkJwtAuthenticationConverter`) only extracts identity — no Spring Security authorities are granted for org roles.
 
 ### Filter Chain Order
 1. `ApiKeyAuthFilter` — API key validation for `/internal/*` endpoints
@@ -265,11 +261,10 @@ ScopedValue.where(RequestScopes.TENANT_ID, "tenant_test123").run(() -> {
 // Mock JWT with v2 nested org claims
 private JwtRequestPostProcessor memberJwt() {
     return jwt()
-        .jwt(j -> j.subject("user_member").claim("o", Map.of("id", ORG_ID, "rol", "member")))
-        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+        .jwt(j -> j.subject("user_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
 }
 ```
-Note: Spring Security Test `jwt()` mock does NOT invoke `ClerkJwtAuthenticationConverter` — set `.authorities()` explicitly.
+No `.authorities()` needed — authorization uses `@RequiresCapability` with capabilities resolved from the member's `OrgRole` entity by `MemberFilter`.
 
 ## Error Handling & Resilience
 

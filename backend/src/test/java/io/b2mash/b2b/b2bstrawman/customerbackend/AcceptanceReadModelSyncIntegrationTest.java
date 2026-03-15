@@ -83,7 +83,7 @@ class AcceptanceReadModelSyncIntegrationTest {
 
     var syncResult =
         memberSyncService.syncMember(
-            ORG_ID, CLERK_USER_ID, "acc-sync@test.com", "Sync Test User", null, "org:admin");
+            ORG_ID, CLERK_USER_ID, "acc-sync@test.com", "Sync Test User", null, "admin");
     memberId = syncResult.memberId();
 
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)

@@ -31,7 +31,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -888,21 +887,19 @@ class InformationRequestControllerTest {
 
   private JwtRequestPostProcessor ownerJwt() {
     return jwt()
-        .jwt(j -> j.subject("user_inforeq_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")))
-        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_OWNER")));
+        .jwt(j -> j.subject("user_inforeq_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
   }
 
   private JwtRequestPostProcessor adminJwt() {
     return jwt()
-        .jwt(j -> j.subject("user_inforeq_admin").claim("o", Map.of("id", ORG_ID, "rol", "admin")))
-        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_ADMIN")));
+        .jwt(j -> j.subject("user_inforeq_admin").claim("o", Map.of("id", ORG_ID, "rol", "admin")));
   }
 
   private JwtRequestPostProcessor memberJwt() {
     return jwt()
         .jwt(
-            j -> j.subject("user_inforeq_member").claim("o", Map.of("id", ORG_ID, "rol", "member")))
-        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+            j ->
+                j.subject("user_inforeq_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 
   private JwtRequestPostProcessor customRoleJwt() {
@@ -910,8 +907,7 @@ class InformationRequestControllerTest {
         .jwt(
             j ->
                 j.subject("user_inforeq_315a_custom")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")))
-        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 
   private JwtRequestPostProcessor noCapabilityJwt() {
@@ -919,7 +915,6 @@ class InformationRequestControllerTest {
         .jwt(
             j ->
                 j.subject("user_inforeq_315a_nocap")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")))
-        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 }

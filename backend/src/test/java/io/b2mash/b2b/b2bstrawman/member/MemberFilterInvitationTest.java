@@ -19,7 +19,6 @@ import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -30,7 +29,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -100,8 +98,7 @@ class MemberFilterInvitationTest {
                             j ->
                                 j.subject("user_invited_admin")
                                     .claim("o", Map.of("id", ORG_ID, "rol", "member"))
-                                    .claim("email", "invited_admin@test.com"))
-                        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")))))
+                                    .claim("email", "invited_admin@test.com"))))
         .andExpect(status().isOk());
 
     // Verify the member was created with the invitation's admin role
@@ -144,8 +141,7 @@ class MemberFilterInvitationTest {
                             j ->
                                 j.subject("user_invited_accepted")
                                     .claim("o", Map.of("id", ORG_ID, "rol", "member"))
-                                    .claim("email", "invited_accepted@test.com"))
-                        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")))))
+                                    .claim("email", "invited_accepted@test.com"))))
         .andExpect(status().isOk());
 
     // Verify the invitation is now ACCEPTED
@@ -186,8 +182,7 @@ class MemberFilterInvitationTest {
                             j ->
                                 j.subject("user_invited_expired")
                                     .claim("o", Map.of("id", ORG_ID, "rol", "member"))
-                                    .claim("email", "invited_expired@test.com"))
-                        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")))))
+                                    .claim("email", "invited_expired@test.com"))))
         .andExpect(status().isOk());
 
     // Verify the member gets default "member" role, not "admin" from expired invitation
@@ -212,8 +207,7 @@ class MemberFilterInvitationTest {
                             j ->
                                 j.subject("user_no_invitation")
                                     .claim("o", Map.of("id", ORG_ID, "rol", "admin"))
-                                    .claim("email", "no_invitation@test.com"))
-                        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_ADMIN")))))
+                                    .claim("email", "no_invitation@test.com"))))
         .andExpect(status().isOk());
 
     // Verify the member gets default "member" role

@@ -4,8 +4,8 @@ package io.b2mash.b2b.b2bstrawman.security;
  * Centralized role constants used across authentication, authorization, and access control.
  *
  * <p>Org roles come from Clerk JWT v2 {@code o.rol} claim. Project roles are application-defined in
- * the {@code project_members} table. Spring authorities are the {@code ROLE_} prefixed versions
- * used by {@code @PreAuthorize}.
+ * the {@code project_members} table. Authorization uses {@code @RequiresCapability} with
+ * capabilities resolved from the member's {@code OrgRole} entity.
  */
 public final class Roles {
 
@@ -18,10 +18,7 @@ public final class Roles {
   public static final String PROJECT_LEAD = "lead";
   public static final String PROJECT_MEMBER = "member";
 
-  // Spring Security granted authorities
-  public static final String AUTHORITY_ORG_OWNER = "ROLE_ORG_OWNER";
-  public static final String AUTHORITY_ORG_ADMIN = "ROLE_ORG_ADMIN";
-  public static final String AUTHORITY_ORG_MEMBER = "ROLE_ORG_MEMBER";
+  // Spring Security granted authority for internal API authentication
   public static final String AUTHORITY_INTERNAL = "ROLE_INTERNAL_SERVICE";
 
   private Roles() {}

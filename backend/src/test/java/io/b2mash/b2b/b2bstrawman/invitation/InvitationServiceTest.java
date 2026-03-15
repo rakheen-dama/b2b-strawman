@@ -59,9 +59,10 @@ class InvitationServiceTest {
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .run(
             () -> {
+              var ownerRole = orgRoleRepository.findBySlug("owner").orElseThrow();
               var member =
                   new io.b2mash.b2b.b2bstrawman.member.Member(
-                      "user_inv_svc_owner", "inv_svc_owner@test.com", "Owner", null, "owner");
+                      "user_inv_svc_owner", "inv_svc_owner@test.com", "Owner", null, ownerRole);
               member = memberRepository.save(member);
               ownerMemberId = member.getId();
               adminRoleId = orgRoleRepository.findBySlug("admin").orElseThrow().getId();

@@ -44,7 +44,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -1137,15 +1136,15 @@ class ProjectTemplateControllerTest {
   private JwtRequestPostProcessor ownerJwt() {
     return jwt()
         .jwt(
-            j -> j.subject("user_tmpl_ctrl_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")))
-        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_OWNER")));
+            j ->
+                j.subject("user_tmpl_ctrl_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
   }
 
   private JwtRequestPostProcessor adminJwt() {
     return jwt()
         .jwt(
-            j -> j.subject("user_tmpl_ctrl_admin").claim("o", Map.of("id", ORG_ID, "rol", "admin")))
-        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_ADMIN")));
+            j ->
+                j.subject("user_tmpl_ctrl_admin").claim("o", Map.of("id", ORG_ID, "rol", "admin")));
   }
 
   private JwtRequestPostProcessor memberJwt() {
@@ -1153,8 +1152,7 @@ class ProjectTemplateControllerTest {
         .jwt(
             j ->
                 j.subject("user_tmpl_ctrl_member")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")))
-        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 
   private String syncMember(
@@ -1181,15 +1179,14 @@ class ProjectTemplateControllerTest {
         .jwt(
             j ->
                 j.subject("user_tmpl_314b_custom")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")))
-        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 
   private JwtRequestPostProcessor noCapabilityJwt() {
     return jwt()
         .jwt(
             j ->
-                j.subject("user_tmpl_314b_nocap").claim("o", Map.of("id", ORG_ID, "rol", "member")))
-        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+                j.subject("user_tmpl_314b_nocap")
+                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 }

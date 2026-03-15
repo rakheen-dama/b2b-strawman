@@ -21,7 +21,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -123,8 +122,7 @@ class OrgCreationControllerTest {
             j ->
                 j.subject("user_platform_admin")
                     .claim("groups", List.of("platform-admins"))
-                    .claim("o", Map.of("id", EXISTING_ORG_ID, "rol", "owner")))
-        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_OWNER")));
+                    .claim("o", Map.of("id", EXISTING_ORG_ID, "rol", "owner")));
   }
 
   private JwtRequestPostProcessor regularMemberJwt() {
@@ -132,7 +130,6 @@ class OrgCreationControllerTest {
         .jwt(
             j ->
                 j.subject("user_regular_member")
-                    .claim("o", Map.of("id", EXISTING_ORG_ID, "rol", "member")))
-        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+                    .claim("o", Map.of("id", EXISTING_ORG_ID, "rol", "member")));
   }
 }

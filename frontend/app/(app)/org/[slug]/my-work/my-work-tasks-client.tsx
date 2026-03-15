@@ -20,7 +20,7 @@ interface MyWorkTasksClientProps {
   assigned: MyWorkTaskItem[];
   unassigned: MyWorkTaskItem[];
   slug: string;
-  orgRole: string;
+  isAdmin: boolean;
   canManage: boolean;
   canCreateShared: boolean;
   currentMemberId: string;
@@ -39,7 +39,7 @@ export function MyWorkTasksClient({
   assigned,
   unassigned,
   slug,
-  orgRole,
+  isAdmin,
   canManage,
   canCreateShared,
   currentMemberId,
@@ -103,7 +103,7 @@ export function MyWorkTasksClient({
         slug={slug}
         canManage={canManage}
         currentMemberId={currentMemberId}
-        orgRole={orgRole}
+        isAdmin={isAdmin}
         members={members}
         allTags={allTags}
         fieldDefinitions={fieldDefinitions}

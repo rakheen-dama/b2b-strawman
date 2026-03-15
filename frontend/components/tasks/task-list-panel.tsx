@@ -60,7 +60,7 @@ interface TaskListPanelProps {
   projectId: string;
   canManage: boolean;
   currentMemberId: string | null;
-  orgRole?: string | null;
+  isAdmin?: boolean;
   retainerSummary?: RetainerSummaryResponse | null;
   members?: { id: string; name: string; email: string }[];
   allTags?: TagResponse[];
@@ -77,7 +77,7 @@ export function TaskListPanel({
   projectId,
   canManage,
   currentMemberId,
-  orgRole,
+  isAdmin = false,
   retainerSummary,
   members = [],
   allTags = [],
@@ -270,7 +270,7 @@ export function TaskListPanel({
         entityType="TASK"
         views={savedViews}
         canCreate={canManage}
-        canCreateShared={orgRole === "org:admin" || orgRole === "org:owner"}
+        canCreateShared={isAdmin}
         slug={slug}
         allTags={allTags}
         fieldDefinitions={fieldDefinitions}
@@ -341,7 +341,7 @@ export function TaskListPanel({
         slug={slug}
         canManage={canManage}
         currentMemberId={currentMemberId ?? ""}
-        orgRole={orgRole ?? ""}
+        isAdmin={isAdmin}
         members={members}
         allTags={allTags}
         fieldDefinitions={fieldDefinitions}

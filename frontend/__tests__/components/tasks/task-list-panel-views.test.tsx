@@ -112,7 +112,7 @@ describe("TaskListPanel — ViewSelectorClient integration", () => {
         projectId="p1"
         canManage={true}
         currentMemberId="current-member"
-        orgRole="org:admin"
+        isAdmin={true}
         savedViews={[taskView]}
         onSave={mockOnSave}
       />,
@@ -135,7 +135,7 @@ describe("TaskListPanel — ViewSelectorClient integration", () => {
         projectId="p1"
         canManage={true}
         currentMemberId="current-member"
-        orgRole="org:admin"
+        isAdmin={true}
         savedViews={[taskView]}
         onSave={mockOnSave}
       />,
@@ -168,7 +168,7 @@ describe("TaskListPanel — ViewSelectorClient integration", () => {
         projectId="p1"
         canManage={true}
         currentMemberId="current-member"
-        orgRole="org:admin"
+        isAdmin={true}
         savedViews={[taskView]}
         onSave={mockOnSave}
       />,

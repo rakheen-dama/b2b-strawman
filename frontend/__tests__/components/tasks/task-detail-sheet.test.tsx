@@ -149,7 +149,7 @@ const defaultProps = {
   slug: "acme",
   canManage: true,
   currentMemberId: "current-member",
-  orgRole: "org:member",
+  isAdmin: false,
   members: [
     { id: "m1", name: "Alice", email: "alice@example.com" },
     { id: "m2", name: "Bob", email: "bob@example.com" },
@@ -442,7 +442,7 @@ describe("TaskDetailSheet", () => {
     mockFetchTask.mockResolvedValue(makeTask({ status: "IN_PROGRESS" }));
 
     render(
-      <TaskDetailSheet {...defaultProps} taskId="t1" orgRole="org:admin" />,
+      <TaskDetailSheet {...defaultProps} taskId="t1" isAdmin={true} />,
     );
 
     await waitFor(() => {
@@ -518,7 +518,7 @@ describe("TaskDetailSheet", () => {
         taskId="t1"
         canManage={false}
         currentMemberId="different-member"
-        orgRole="org:member"
+        isAdmin={false}
       />,
     );
 
@@ -547,7 +547,7 @@ describe("TaskDetailSheet", () => {
         taskId="t1"
         canManage={false}
         currentMemberId="current-member"
-        orgRole="org:member"
+        isAdmin={false}
       />,
     );
 

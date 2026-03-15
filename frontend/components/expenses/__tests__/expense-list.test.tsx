@@ -70,7 +70,7 @@ const defaultProps = {
     { id: "m2", name: "Bob Smith" },
   ],
   currentMemberId: "m1",
-  orgRole: "org:owner",
+  isAdmin: true,
 };
 
 describe("ExpenseList", () => {
@@ -152,7 +152,7 @@ describe("ExpenseList", () => {
       <ExpenseList
         {...defaultProps}
         expenses={expenses}
-        orgRole="org:member"
+        isAdmin={false}
         currentMemberId="m1"
       />
     );

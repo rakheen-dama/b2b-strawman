@@ -25,7 +25,7 @@ This phase completes the separation of authentication from authorization. Keyclo
 | 346 | MemberFilter DB-Only Role Resolution | Backend | 345 | M | 346A, 346B | **Done** (PR #671) |
 | 347 | @PreAuthorize Migration (Remaining Controllers) | Backend | 346 | L | 347A, 347B, 347C | **Done** (PR #672, #673, #674) |
 | 348 | Member Entity Cleanup & JwtUtils Rename | Backend | 347 | M | 348A, 348B | **Done** (PR #676) |
-| 349 | KeycloakAdminClient Backend Move & Org Endpoint | Backend | 345 | M | 349A, 349B | |
+| 349 | KeycloakAdminClient Backend Move & Org Endpoint | Backend | 345 | M | 349A, 349B | **Done** (PR #675) |
 | 350 | Gateway Authorization Removal | Gateway | 349 | M | 350A, 350B | |
 | 351 | Frontend Capabilities-Only Authorization | Frontend | 350A | L | 351A, 351B, 351C | |
 | 352 | Mock IDP & E2E Fixture Update | Frontend/E2E | 351 | S | 352A | |
@@ -185,8 +185,8 @@ CLEANUP TRACK (after E351)
 |-------|------|-------|---------|--------|
 | 1a (parallel) | 346 | 346A | `MemberFilter`: remove `jwtHasExplicitRole` branch, role always from DB `orgRoleId`, add invitation lookup in `lazyCreateMember()`, grant `ROLE_ORG_*` from DB role in converter (backward compat). ~4 modified files (~8 tests). Backend only. | **Done** (PR #671) |
 | 1b | 346 | 346B | `RequestScopes.requireOwner()`, cache eviction calls in `OrgRoleService.assignRole()` and `updateRole()`, `MemberRepository.findAllByOrgRoleId()`. ~4 modified files (~6 tests). Backend only. | **Done** (PR #671) |
-| 1c (parallel with 1a) | 349 | 349A | Copy `KeycloakAdminClient` from gateway to backend `security/keycloak/`, add config properties, wire to `InvitationService`. ~4 new/modified files (~3 tests). Backend only. | |
-| 1d | 349 | 349B | `POST /api/orgs` endpoint in new `OrgController`, move org creation logic from gateway, platform-admin guard. ~3 new files (~4 tests). Backend only. | |
+| 1c (parallel with 1a) | 349 | 349A | Copy `KeycloakAdminClient` from gateway to backend `security/keycloak/`, add config properties, wire to `InvitationService`. ~4 new/modified files (~3 tests). Backend only. | **Done** (PR #675) |
+| 1d | 349 | 349B | `POST /api/orgs` endpoint in new `OrgController`, move org creation logic from gateway, platform-admin guard. ~3 new files (~4 tests). Backend only. | **Done** (PR #675) |
 
 ### Stage 2: @PreAuthorize Migration (sequential batches)
 
@@ -528,8 +528,8 @@ Stage 7: [353A] -> [353B]                                                      (
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **349A** | 349.1--349.4 | Copy `KeycloakAdminClient` to backend `security/keycloak/` package, add Keycloak Admin REST API config properties, wire `inviteUser()` to `InvitationService.createInvitation()`. ~4 new/modified files (~3 tests). Backend only. | |
-| **349B** | 349.5--349.8 | New `OrgController` with `POST /api/orgs` endpoint, move org creation logic from gateway `BffController.createOrg()`, platform-admin guard via `RequestScopes.isPlatformAdmin()`. ~3 new files (~4 tests). Backend only. | |
+| **349A** | 349.1--349.4 | Copy `KeycloakAdminClient` to backend `security/keycloak/` package, add Keycloak Admin REST API config properties, wire `inviteUser()` to `InvitationService.createInvitation()`. ~4 new/modified files (~3 tests). Backend only. | **Done** (PR #675) |
+| **349B** | 349.5--349.8 | New `OrgController` with `POST /api/orgs` endpoint, move org creation logic from gateway `BffController.createOrg()`, platform-admin guard via `RequestScopes.isPlatformAdmin()`. ~3 new files (~4 tests). Backend only. | **Done** (PR #675) |
 
 ### Tasks
 

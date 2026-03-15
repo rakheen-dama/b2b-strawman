@@ -401,7 +401,7 @@
 | 353 | Cleanup — Remove ROLE_ORG_* & Role Sync | Backend | 351 | S | 353A, 353B | **Done** (PR #682) |
 | **Phase 47 — Vertical QA: Small SA Accounting Firm** | | | | | | See [tasks/phase47-vertical-qa-accounting.md](tasks/phase47-vertical-qa-accounting.md) |
 | 354 | Vertical Profile Infrastructure + Field & Compliance Packs | Backend | -- | M | 354A | **Done** (PR #684) |
-| 355 | Document Template Pack + Clause Pack | Backend | -- | M | 355A | |
+| 355 | Document Template Pack + Clause Pack | Backend | -- | M | 355A | **Done** (PR #683) |
 | 356 | Automation Templates + Request Pack + Profile Manifest | Backend + Frontend | -- | S | 356A | |
 | 357 | 90-Day Lifecycle Script + Agent Execution | Process | 354, 355, 356 | L | 357A | |
 | 358 | Founder Walkthrough Guide + Gap Consolidation | Process | 357 | M | 358A | |

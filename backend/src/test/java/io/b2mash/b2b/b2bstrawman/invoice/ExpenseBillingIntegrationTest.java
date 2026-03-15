@@ -39,7 +39,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -623,8 +622,7 @@ class ExpenseBillingIntegrationTest {
             j ->
                 j.subject("user_exp_billing_owner")
                     .claim(
-                        "o", Map.of("id", ORG_ID, "rol", "owner", "slg", "exp-billing-test-org")))
-        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_OWNER")));
+                        "o", Map.of("id", ORG_ID, "rol", "owner", "slg", "exp-billing-test-org")));
   }
 
   private String syncMember(String clerkUserId, String email, String name, String orgRole)

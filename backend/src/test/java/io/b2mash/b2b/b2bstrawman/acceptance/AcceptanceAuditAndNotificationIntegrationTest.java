@@ -77,7 +77,7 @@ class AcceptanceAuditAndNotificationIntegrationTest {
 
     var syncResult =
         memberSyncService.syncMember(
-            ORG_ID, CLERK_USER_ID, "audit-test@example.com", "Audit Test User", null, "org:admin");
+            ORG_ID, CLERK_USER_ID, "audit-test@example.com", "Audit Test User", null, "admin");
     memberId = syncResult.memberId();
 
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)

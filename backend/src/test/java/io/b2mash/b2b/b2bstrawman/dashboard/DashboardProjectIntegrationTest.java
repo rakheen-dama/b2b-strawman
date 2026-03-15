@@ -17,7 +17,6 @@ import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.TaskService;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -28,7 +27,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -424,22 +422,20 @@ class DashboardProjectIntegrationTest {
 
   private JwtRequestPostProcessor ownerJwt() {
     return jwt()
-        .jwt(j -> j.subject("user_dash_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")))
-        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_OWNER")));
+        .jwt(j -> j.subject("user_dash_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
   }
 
   private JwtRequestPostProcessor nonMemberJwt() {
     return jwt()
         .jwt(
-            j -> j.subject("user_dash_nonmember").claim("o", Map.of("id", ORG_ID, "rol", "member")))
-        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+            j ->
+                j.subject("user_dash_nonmember").claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 
   private JwtRequestPostProcessor adminJwt() {
     // Sync a separate admin member to avoid confusion
     return jwt()
-        .jwt(j -> j.subject("user_dash_member").claim("o", Map.of("id", ORG_ID, "rol", "admin")))
-        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_ADMIN")));
+        .jwt(j -> j.subject("user_dash_member").claim("o", Map.of("id", ORG_ID, "rol", "admin")));
   }
 
   // --- Member Sync Helper ---

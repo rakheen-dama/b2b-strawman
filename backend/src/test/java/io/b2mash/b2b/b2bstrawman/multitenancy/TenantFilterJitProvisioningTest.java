@@ -8,7 +8,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -17,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
@@ -126,14 +124,14 @@ class TenantFilterJitProvisioningTest {
   }
 
   @Test
-  void jitProvisioning_memberRole_returns403() throws Exception {
+  void jitProvisioning_memberRole_provisions() throws Exception {
+    // With capability-based auth, any authenticated user can trigger JIT provisioning
     String orgId = "org_jit_member_role";
     mockMvc
         .perform(get("/api/projects").with(jwtForOrgWithRole(orgId, "member-org", "member")))
-        .andExpect(status().isForbidden());
+        .andExpect(status().isOk());
 
-    // Verify org was NOT provisioned
-    assertThat(mappingRepository.findByClerkOrgId(orgId)).isEmpty();
+    assertThat(mappingRepository.findByClerkOrgId(orgId)).isPresent();
   }
 
   @Test
@@ -153,23 +151,20 @@ class TenantFilterJitProvisioningTest {
         .jwt(
             j ->
                 j.subject("user_jit_tenant_test")
-                    .claim("o", Map.of("id", orgId, "rol", "owner", "slg", slug)))
-        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_OWNER")));
+                    .claim("o", Map.of("id", orgId, "rol", "owner", "slg", slug)));
   }
 
   private JwtRequestPostProcessor jwtForOrgNoSlug(String orgId) {
     return jwt()
-        .jwt(j -> j.subject("user_jit_tenant_test").claim("o", Map.of("id", orgId, "rol", "owner")))
-        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_OWNER")));
+        .jwt(
+            j -> j.subject("user_jit_tenant_test").claim("o", Map.of("id", orgId, "rol", "owner")));
   }
 
   private JwtRequestPostProcessor jwtForOrgWithRole(String orgId, String slug, String role) {
-    String authority = "ROLE_ORG_" + role.toUpperCase();
     return jwt()
         .jwt(
             j ->
                 j.subject("user_jit_tenant_test")
-                    .claim("o", Map.of("id", orgId, "rol", role, "slg", slug)))
-        .authorities(List.of(new SimpleGrantedAuthority(authority)));
+                    .claim("o", Map.of("id", orgId, "rol", role, "slg", slug)));
   }
 }

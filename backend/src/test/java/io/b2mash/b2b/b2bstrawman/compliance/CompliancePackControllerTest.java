@@ -15,7 +15,6 @@ import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -27,7 +26,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -104,9 +102,7 @@ class CompliancePackControllerTest {
   }
 
   private JwtRequestPostProcessor adminJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_admin").claim("o", Map.of("id", ORG_ID, "rol", "admin")))
-        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_ADMIN")));
+    return jwt().jwt(j -> j.subject("user_admin").claim("o", Map.of("id", ORG_ID, "rol", "admin")));
   }
 
   private JwtRequestPostProcessor customRoleJwt() {
@@ -114,16 +110,15 @@ class CompliancePackControllerTest {
         .jwt(
             j ->
                 j.subject("user_pack_315a_custom")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")))
-        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 
   private JwtRequestPostProcessor noCapabilityJwt() {
     return jwt()
         .jwt(
             j ->
-                j.subject("user_pack_315a_nocap").claim("o", Map.of("id", ORG_ID, "rol", "member")))
-        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+                j.subject("user_pack_315a_nocap")
+                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 
   private String syncMember(String clerkUserId, String email, String name, String orgRole)
@@ -189,9 +184,7 @@ class CompliancePackControllerTest {
   @Test
   void getPackDefinition_returns403ForMember() throws Exception {
     var memberJwt =
-        jwt()
-            .jwt(j -> j.subject("user_member").claim("o", Map.of("id", ORG_ID, "rol", "member")))
-            .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+        jwt().jwt(j -> j.subject("user_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
     mockMvc
         .perform(get("/api/compliance-packs/generic-onboarding").with(memberJwt))
         .andExpect(status().isForbidden());

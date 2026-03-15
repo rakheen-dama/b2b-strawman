@@ -13,7 +13,6 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.io.ByteArrayOutputStream;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
@@ -31,7 +30,6 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -99,8 +97,8 @@ class DocxEndpointsTest {
   private JwtRequestPostProcessor ownerJwt() {
     return jwt()
         .jwt(
-            j -> j.subject("user_endpoints_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")))
-        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_OWNER")));
+            j ->
+                j.subject("user_endpoints_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
   }
 
   private JwtRequestPostProcessor memberJwt() {
@@ -108,8 +106,7 @@ class DocxEndpointsTest {
         .jwt(
             j ->
                 j.subject("user_endpoints_member")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")))
-        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 
   private JwtRequestPostProcessor ownerJwtTenantB() {
@@ -117,8 +114,7 @@ class DocxEndpointsTest {
         .jwt(
             j ->
                 j.subject("user_endpoints_owner_b")
-                    .claim("o", Map.of("id", ORG_ID_B, "rol", "owner")))
-        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_OWNER")));
+                    .claim("o", Map.of("id", ORG_ID_B, "rol", "owner")));
   }
 
   // --- Member sync helper ---

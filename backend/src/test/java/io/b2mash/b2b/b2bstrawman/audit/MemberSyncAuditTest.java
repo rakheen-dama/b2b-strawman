@@ -10,7 +10,6 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -101,7 +100,7 @@ class MemberSyncAuditTest {
   }
 
   @Test
-  void syncExistingMemberWithRoleChangeProducesAuditEvent() throws Exception {
+  void syncExistingMemberWithDifferentRoleDoesNotProduceRoleChangedEvent() throws Exception {
     // Create a member first
     var createResult =
         mockMvc
@@ -128,7 +127,7 @@ class MemberSyncAuditTest {
         UUID.fromString(
             JsonPath.read(createResult.getResponse().getContentAsString(), "$.memberId"));
 
-    // Update with a role change
+    // Update with a different role — webhook sync no longer changes roles
     mockMvc
         .perform(
             post("/internal/members/sync")
@@ -148,6 +147,7 @@ class MemberSyncAuditTest {
                         .formatted(ORG_ID)))
         .andExpect(status().isOk());
 
+    // Role sync was removed — no member.role_changed event should be emitted from webhook sync
     ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
         .run(
             () -> {
@@ -157,16 +157,7 @@ class MemberSyncAuditTest {
                           "member", memberId, null, "member.role_changed", null, null),
                       PageRequest.of(0, 10));
 
-              assertThat(page.getTotalElements()).isEqualTo(1);
-              var event = page.getContent().getFirst();
-              assertThat(event.getEventType()).isEqualTo("member.role_changed");
-              assertThat(event.getActorType()).isEqualTo("WEBHOOK");
-              assertThat(event.getSource()).isEqualTo("WEBHOOK");
-
-              @SuppressWarnings("unchecked")
-              var roleChange = (Map<String, Object>) event.getDetails().get("org_role");
-              assertThat(roleChange).containsEntry("from", "member");
-              assertThat(roleChange).containsEntry("to", "admin");
+              assertThat(page.getTotalElements()).isZero();
             });
   }
 

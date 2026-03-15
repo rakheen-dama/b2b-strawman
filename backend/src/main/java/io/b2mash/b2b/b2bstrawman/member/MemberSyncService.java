@@ -77,37 +77,21 @@ public class MemberSyncService {
                 () ->
                     txTemplate.execute(
                         status -> {
-                          // Resolve the OrgRole entity from orgRoleId or orgRole slug
-                          OrgRole resolvedRole = resolveOrgRole(orgRoleId, orgRole);
-
                           var existing = memberRepository.findByClerkUserId(clerkUserId);
                           if (existing.isPresent()) {
                             var member = existing.get();
 
-                            // Capture old role before mutation
-                            String oldRole = member.getOrgRole();
-
-                            member.updateFrom(email, name, avatarUrl, resolvedRole);
+                            // Identity sync only — role changes are managed via
+                            // OrgRoleService.assignRole()
+                            member.updateFrom(email, name, avatarUrl, null);
                             memberRepository.save(member);
                             log.info("Updated member {} in tenant {}", clerkUserId, schemaName);
 
-                            // Only emit role_changed if role actually changed
-                            if (orgRole != null && !orgRole.equals(oldRole)) {
-                              auditService.log(
-                                  AuditEventBuilder.builder()
-                                      .eventType("member.role_changed")
-                                      .entityType("member")
-                                      .entityId(member.getId())
-                                      .actorType("WEBHOOK")
-                                      .source("WEBHOOK")
-                                      .details(
-                                          Map.of(
-                                              "org_role", Map.of("from", oldRole, "to", orgRole)))
-                                      .build());
-                            }
-
                             return new SyncResult(member.getId(), false);
                           }
+
+                          // Resolve the OrgRole entity for new member creation
+                          OrgRole resolvedRole = resolveOrgRole(orgRoleId, orgRole);
 
                           enforceMemberLimit(clerkOrgId);
 

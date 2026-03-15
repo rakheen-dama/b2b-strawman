@@ -23,7 +23,6 @@ import io.b2mash.b2b.b2bstrawman.projecttemplate.ProjectTemplateRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -38,7 +37,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -481,8 +479,8 @@ class RecurringScheduleControllerTest {
     return jwt()
         .jwt(
             j ->
-                j.subject("user_sched_ctrl_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")))
-        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_OWNER")));
+                j.subject("user_sched_ctrl_owner")
+                    .claim("o", Map.of("id", ORG_ID, "rol", "owner")));
   }
 
   private JwtRequestPostProcessor memberJwt() {
@@ -490,8 +488,7 @@ class RecurringScheduleControllerTest {
         .jwt(
             j ->
                 j.subject("user_sched_ctrl_member")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")))
-        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 
   private String syncMember(
@@ -518,8 +515,7 @@ class RecurringScheduleControllerTest {
         .jwt(
             j ->
                 j.subject("user_sched_314b_custom")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")))
-        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 
   private JwtRequestPostProcessor noCapabilityJwt() {
@@ -527,7 +523,6 @@ class RecurringScheduleControllerTest {
         .jwt(
             j ->
                 j.subject("user_sched_314b_nocap")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")))
-        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 }

@@ -21,7 +21,6 @@ import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.TaskService;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryService;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -32,7 +31,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -380,22 +378,21 @@ class DashboardPersonalIntegrationTest {
 
   private JwtRequestPostProcessor adminJwt() {
     return jwt()
-        .jwt(j -> j.subject("user_pdash_admin").claim("o", Map.of("id", ORG_ID, "rol", "admin")))
-        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_ADMIN")));
+        .jwt(j -> j.subject("user_pdash_admin").claim("o", Map.of("id", ORG_ID, "rol", "admin")));
   }
 
   private JwtRequestPostProcessor member1Jwt() {
     return jwt()
-        .jwt(j -> j.subject("user_pdash_member1").claim("o", Map.of("id", ORG_ID, "rol", "member")))
-        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+        .jwt(
+            j -> j.subject("user_pdash_member1").claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 
   private JwtRequestPostProcessor nonMemberJwt() {
     return jwt()
         .jwt(
             j ->
-                j.subject("user_pdash_nonmember").claim("o", Map.of("id", ORG_ID, "rol", "member")))
-        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
+                j.subject("user_pdash_nonmember")
+                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 
   // --- Member Sync Helper ---

@@ -14,7 +14,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import java.util.List;
+import java.util.Collections;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import org.junit.jupiter.api.AfterEach;
@@ -25,7 +25,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.authentication.TestingAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -593,9 +592,7 @@ class ChecklistInstanceServiceTest {
   }
 
   private <T> T runInTenant(Callable<T> callable) {
-    var auth =
-        new TestingAuthenticationToken(
-            "user_ci_svc_test", null, List.of(new SimpleGrantedAuthority("ROLE_ORG_OWNER")));
+    var auth = new TestingAuthenticationToken("user_ci_svc_test", null, Collections.emptyList());
     SecurityContextHolder.getContext().setAuthentication(auth);
 
     return ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)

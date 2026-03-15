@@ -12,7 +12,6 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -22,7 +21,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -76,8 +74,7 @@ class MemberFilterDbRoleTest {
                         .jwt(
                             j ->
                                 j.subject("user_db_admin")
-                                    .claim("o", Map.of("id", ORG_ID, "rol", "member")))
-                        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")))))
+                                    .claim("o", Map.of("id", ORG_ID, "rol", "member")))))
         .andExpect(status().isOk());
 
     // Verify the member in DB still has "admin" role
@@ -101,8 +98,7 @@ class MemberFilterDbRoleTest {
                         .jwt(
                             j ->
                                 j.subject("user_db_member")
-                                    .claim("o", Map.of("id", ORG_ID, "rol", "admin")))
-                        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_ADMIN")))))
+                                    .claim("o", Map.of("id", ORG_ID, "rol", "admin")))))
         .andExpect(status().isOk());
 
     // Verify the member's DB role is still "member"
@@ -126,8 +122,7 @@ class MemberFilterDbRoleTest {
                         .jwt(
                             j ->
                                 j.subject("user_lazy_db_role")
-                                    .claim("o", Map.of("id", ORG_ID, "rol", "admin")))
-                        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_ADMIN")))))
+                                    .claim("o", Map.of("id", ORG_ID, "rol", "admin")))))
         .andExpect(status().isOk());
 
     // Verify lazy-created member has "member" role (default), not "admin" from JWT
@@ -154,8 +149,7 @@ class MemberFilterDbRoleTest {
                         .jwt(
                             j ->
                                 j.subject("user_db_admin")
-                                    .claim("o", Map.of("id", ORG_ID, "rol", "member")))
-                        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")))))
+                                    .claim("o", Map.of("id", ORG_ID, "rol", "member")))))
         .andExpect(status().isOk());
 
     // Second request — should hit cache, still resolve DB role
@@ -167,8 +161,7 @@ class MemberFilterDbRoleTest {
                         .jwt(
                             j ->
                                 j.subject("user_db_admin")
-                                    .claim("o", Map.of("id", ORG_ID, "rol", "member")))
-                        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")))))
+                                    .claim("o", Map.of("id", ORG_ID, "rol", "member")))))
         .andExpect(status().isOk());
 
     // Verify member role unchanged

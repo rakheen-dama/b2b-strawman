@@ -33,7 +33,6 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -394,8 +393,8 @@ class DocxGenerationTest {
 
   private JwtRequestPostProcessor ownerJwt() {
     return jwt()
-        .jwt(j -> j.subject("user_docx_gen_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")))
-        .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_OWNER")));
+        .jwt(
+            j -> j.subject("user_docx_gen_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
   }
 
   private String syncMember(

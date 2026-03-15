@@ -90,7 +90,7 @@ class AcceptanceServiceIntegrationTest {
     // Create member
     var syncResult =
         memberSyncService.syncMember(
-            ORG_ID, CLERK_USER_ID, "test@example.com", "Test User", null, "org:admin");
+            ORG_ID, CLERK_USER_ID, "test@example.com", "Test User", null, "admin");
     memberId = syncResult.memberId();
 
     // Create shared base data (customer + template)

@@ -94,12 +94,7 @@ class PortalInformationRequestControllerTest {
 
     var syncResult =
         memberSyncService.syncMember(
-            ORG_ID,
-            CLERK_USER_ID,
-            "portal-info-req@test.com",
-            "Portal Info Owner",
-            null,
-            "org:admin");
+            ORG_ID, CLERK_USER_ID, "portal-info-req@test.com", "Portal Info Owner", null, "admin");
     memberId = syncResult.memberId();
 
     runInTenantWithMember(

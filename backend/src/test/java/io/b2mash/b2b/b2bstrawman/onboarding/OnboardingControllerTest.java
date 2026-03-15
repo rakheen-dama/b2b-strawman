@@ -56,6 +56,7 @@ class OnboardingControllerTest {
   private static final String API_KEY = "test-api-key";
   private static final String EMPTY_ORG_ID = "org_onboarding_empty";
   private static final String POPULATED_ORG_ID = "org_onboarding_populated";
+  private static final String ADMIN_ORG_ID = "org_onboarding_admin";
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
@@ -71,16 +72,24 @@ class OnboardingControllerTest {
   private String populatedTenantSchema;
   private String emptyOwnerMemberId;
   private String populatedOwnerMemberId;
+  private String adminMemberId;
 
   @BeforeAll
   void provisionTenantsAndSeedData() throws Exception {
-    // Empty tenant — only has owner member
+    // Empty tenant — only owner member (to test zero-entity state)
     emptyTenantSchema =
         provisioningService.provisionTenant(EMPTY_ORG_ID, "Empty Onboarding Org").schemaName();
     planSyncService.syncPlan(EMPTY_ORG_ID, "pro-plan");
     emptyOwnerMemberId =
         syncMember(
             EMPTY_ORG_ID, "user_onb_empty_owner", "onb_empty@test.com", "Empty Owner", "owner");
+
+    // Admin test tenant — owner + admin to test admin dismiss capability
+    provisioningService.provisionTenant(ADMIN_ORG_ID, "Admin Test Org");
+    planSyncService.syncPlan(ADMIN_ORG_ID, "pro-plan");
+    syncMember(ADMIN_ORG_ID, "user_onb_adm_owner", "onb_adm_owner@test.com", "Adm Owner", "owner");
+    adminMemberId =
+        syncMember(ADMIN_ORG_ID, "user_onb_admin", "onb_admin@test.com", "Admin User", "admin");
 
     // Populated tenant — has all entity types
     populatedTenantSchema =
@@ -221,14 +230,19 @@ class OnboardingControllerTest {
   @Test
   @Order(6)
   void dismiss_adminRole_returns204() throws Exception {
+    // Admin in a properly synced org has TEAM_OVERSIGHT capability and can dismiss
     mockMvc
-        .perform(post("/api/onboarding/dismiss").with(emptyAdminJwt()))
+        .perform(post("/api/onboarding/dismiss").with(adminJwt()))
         .andExpect(status().isNoContent());
   }
 
   @Test
   @Order(7)
   void getProgress_afterDismiss_emptyTenant_returnsDismissedTrue() throws Exception {
+    // Dismiss empty tenant via owner, then verify dismissed state is reflected
+    mockMvc
+        .perform(post("/api/onboarding/dismiss").with(emptyOwnerJwt()))
+        .andExpect(status().isNoContent());
     mockMvc
         .perform(get("/api/onboarding/progress").with(emptyOwnerJwt()))
         .andExpect(status().isOk())
@@ -319,12 +333,10 @@ class OnboardingControllerTest {
         .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_MEMBER")));
   }
 
-  private JwtRequestPostProcessor emptyAdminJwt() {
+  private JwtRequestPostProcessor adminJwt() {
     return jwt()
         .jwt(
-            j ->
-                j.subject("user_onb_empty_admin")
-                    .claim("o", Map.of("id", EMPTY_ORG_ID, "rol", "admin")))
+            j -> j.subject("user_onb_admin").claim("o", Map.of("id", ADMIN_ORG_ID, "rol", "admin")))
         .authorities(List.of(new SimpleGrantedAuthority("ROLE_ORG_ADMIN")));
   }
 }

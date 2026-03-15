@@ -7,7 +7,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,7 +26,6 @@ public class NotificationController {
   }
 
   @GetMapping
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<Page<NotificationResponse>> listNotifications(
       @RequestParam(defaultValue = "false") boolean unreadOnly,
       @RequestParam(defaultValue = "0") int page,
@@ -42,7 +40,6 @@ public class NotificationController {
   }
 
   @GetMapping("/unread-count")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<UnreadCountResponse> getUnreadCount() {
     UUID memberId = RequestScopes.requireMemberId();
     long count = notificationService.getUnreadCount(memberId);
@@ -50,7 +47,6 @@ public class NotificationController {
   }
 
   @PutMapping("/{id}/read")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<Void> markAsRead(@PathVariable UUID id) {
     UUID memberId = RequestScopes.requireMemberId();
     notificationService.markAsRead(id, memberId);
@@ -58,7 +54,6 @@ public class NotificationController {
   }
 
   @PutMapping("/read-all")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<Void> markAllAsRead() {
     UUID memberId = RequestScopes.requireMemberId();
     notificationService.markAllAsRead(memberId);
@@ -66,7 +61,6 @@ public class NotificationController {
   }
 
   @DeleteMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<Void> dismissNotification(@PathVariable UUID id) {
     UUID memberId = RequestScopes.requireMemberId();
     notificationService.dismissNotification(id, memberId);

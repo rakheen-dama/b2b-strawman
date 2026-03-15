@@ -6,7 +6,6 @@ import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,14 +27,12 @@ public class SavedViewController {
   }
 
   @GetMapping
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<SavedViewResponse>> list(@RequestParam String entityType) {
     UUID memberId = RequestScopes.requireMemberId();
     return ResponseEntity.ok(savedViewService.listViews(entityType, memberId));
   }
 
   @PostMapping
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER', 'ORG_MEMBER')")
   public ResponseEntity<SavedViewResponse> create(
       @Valid @RequestBody CreateSavedViewRequest request) {
     var response = savedViewService.create(request);
@@ -43,14 +40,12 @@ public class SavedViewController {
   }
 
   @PutMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<SavedViewResponse> update(
       @PathVariable UUID id, @Valid @RequestBody UpdateSavedViewRequest request) {
     return ResponseEntity.ok(savedViewService.update(id, request));
   }
 
   @DeleteMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<Void> delete(@PathVariable UUID id) {
     savedViewService.delete(id);
     return ResponseEntity.noContent().build();

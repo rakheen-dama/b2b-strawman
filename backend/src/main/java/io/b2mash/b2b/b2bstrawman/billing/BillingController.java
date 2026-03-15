@@ -2,10 +2,10 @@ package io.b2mash.b2b.b2bstrawman.billing;
 
 import io.b2mash.b2b.b2bstrawman.billing.SubscriptionService.BillingResponse;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,14 +23,13 @@ public class BillingController {
   }
 
   @GetMapping("/subscription")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<BillingResponse> getSubscription() {
     String clerkOrgId = RequestScopes.requireOrgId();
     return ResponseEntity.ok(subscriptionService.getSubscription(clerkOrgId));
   }
 
   @PostMapping("/upgrade")
-  @PreAuthorize("hasAnyRole('ORG_ADMIN', 'ORG_OWNER')")
+  @RequiresCapability("INVOICING")
   public ResponseEntity<BillingResponse> upgrade(@Valid @RequestBody UpgradeRequest request) {
     String clerkOrgId = RequestScopes.requireOrgId();
     return ResponseEntity.ok(subscriptionService.upgradePlan(clerkOrgId, request.planSlug()));

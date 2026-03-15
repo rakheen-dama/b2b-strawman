@@ -279,6 +279,7 @@ public class ProposalService {
 
   @Transactional
   public void deleteProposal(UUID proposalId) {
+    RequestScopes.requireOwner();
     var proposal =
         proposalRepository
             .findById(proposalId)

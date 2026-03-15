@@ -4,7 +4,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -25,7 +24,6 @@ import org.springframework.http.MediaType;
  * <ul>
  *   <li>H2 session storage (verifying session creation/persistence)
  *   <li>WireMock backend (verifying token relay adds Authorization header)
- *   <li>WireMock Keycloak (verifying admin proxy relays to Keycloak)
  *   <li>Real Spring Security filter chain (CSRF, OAuth2 login, authorization)
  * </ul>
  */
@@ -47,8 +45,8 @@ class FullFlowIntegrationTest extends GatewayIntegrationTestBase {
     }
 
     @Test
-    @DisplayName("/bff/me returns full user info with org claims after login")
-    void bffMe_afterLogin_returnsFullUserInfo() throws Exception {
+    @DisplayName("/bff/me returns identity info with org claims after login (no orgRole)")
+    void bffMe_afterLogin_returnsIdentityInfo() throws Exception {
       var user = buildOwnerUser();
 
       mockMvc
@@ -60,7 +58,7 @@ class FullFlowIntegrationTest extends GatewayIntegrationTestBase {
           .andExpect(jsonPath("$.name").value("Alice Owner"))
           .andExpect(jsonPath("$.orgId").value(DEFAULT_ORG_ID))
           .andExpect(jsonPath("$.orgSlug").value(DEFAULT_ORG_SLUG))
-          .andExpect(jsonPath("$.orgRole").value("owner"));
+          .andExpect(jsonPath("$.orgRole").doesNotExist());
     }
 
     @Test
@@ -81,7 +79,6 @@ class FullFlowIntegrationTest extends GatewayIntegrationTestBase {
     @Test
     @DisplayName("GET /api/** proxied to backend via gateway route")
     void apiRoute_getRequest_proxiedToBackend() throws Exception {
-      // Stub backend to accept the proxied request
       backendWireMock.stubFor(
           WireMock.get(urlPathEqualTo("/api/projects"))
               .willReturn(
@@ -94,10 +91,6 @@ class FullFlowIntegrationTest extends GatewayIntegrationTestBase {
           .perform(get("/api/projects").with(oidcLogin().oidcUser(buildOwnerUser())))
           .andExpect(status().isOk());
 
-      // Verify the request was proxied to the backend WireMock
-      // Note: TokenRelay filter adds Authorization header in production config;
-      // MockMvc tests use oidcLogin() which provides the principal but not an
-      // OAuth2AuthorizedClient, so token relay is not exercised here.
       backendWireMock.verify(getRequestedFor(urlPathEqualTo("/api/projects")));
     }
   }
@@ -117,7 +110,6 @@ class FullFlowIntegrationTest extends GatewayIntegrationTestBase {
                       .withHeader("Content-Type", "application/json")
                       .withBody("{\"id\":1,\"name\":\"Test Project\"}")));
 
-      // POST without CSRF token should pass through to backend (not blocked)
       var result =
           mockMvc
               .perform(
@@ -150,114 +142,12 @@ class FullFlowIntegrationTest extends GatewayIntegrationTestBase {
   }
 
   @Nested
-  @DisplayName("Admin Proxy Integration")
-  class AdminProxyTests {
-
-    @Test
-    @DisplayName("Admin invite relays to Keycloak WireMock and returns response")
-    void adminProxy_invite_relaysToKeycloak() throws Exception {
-      // Stub Keycloak token endpoint for service account auth
-      keycloakWireMock.stubFor(
-          WireMock.post(urlPathEqualTo("/realms/master/protocol/openid-connect/token"))
-              .willReturn(
-                  aResponse()
-                      .withStatus(200)
-                      .withHeader("Content-Type", "application/json")
-                      .withBody(
-                          """
-                          {"access_token":"mock-admin-token","expires_in":300,"token_type":"Bearer"}
-                          """)));
-
-      // Stub Keycloak invite-user endpoint (Keycloak 26.5 form-urlencoded)
-      keycloakWireMock.stubFor(
-          WireMock.post(
-                  urlPathEqualTo(
-                      "/admin/realms/"
-                          + KEYCLOAK_REALM
-                          + "/organizations/"
-                          + DEFAULT_ORG_ID
-                          + "/members/invite-user"))
-              .willReturn(aResponse().withStatus(204)));
-
-      mockMvc
-          .perform(
-              post("/bff/admin/invite")
-                  .with(oidcLogin().oidcUser(buildAdminUser()))
-                  .with(csrf().asHeader())
-                  .contentType(MediaType.APPLICATION_JSON)
-                  .content(
-                      """
-                      {"email":"newuser@test.com","role":"member"}
-                      """))
-          .andExpect(status().isOk())
-          .andExpect(jsonPath("$.email").value("newuser@test.com"));
-    }
-
-    @Test
-    @DisplayName("Admin list members relays to Keycloak WireMock")
-    void adminProxy_listMembers_relaysToKeycloak() throws Exception {
-      // Stub Keycloak token endpoint
-      keycloakWireMock.stubFor(
-          WireMock.post(urlPathEqualTo("/realms/master/protocol/openid-connect/token"))
-              .willReturn(
-                  aResponse()
-                      .withStatus(200)
-                      .withHeader("Content-Type", "application/json")
-                      .withBody(
-                          """
-                          {"access_token":"mock-admin-token","expires_in":300,"token_type":"Bearer"}
-                          """)));
-
-      // Stub org fetch (for creatorUserId attribute lookup)
-      keycloakWireMock.stubFor(
-          WireMock.get(
-                  urlPathEqualTo(
-                      "/admin/realms/" + KEYCLOAK_REALM + "/organizations/" + DEFAULT_ORG_ID))
-              .willReturn(
-                  aResponse()
-                      .withStatus(200)
-                      .withHeader("Content-Type", "application/json")
-                      .withBody(
-                          """
-                          {"id":"%s","attributes":{"creatorUserId":["user-1"]}}
-                          """
-                              .formatted(DEFAULT_ORG_ID))));
-
-      // Stub Keycloak members endpoint
-      keycloakWireMock.stubFor(
-          WireMock.get(
-                  urlPathEqualTo(
-                      "/admin/realms/"
-                          + KEYCLOAK_REALM
-                          + "/organizations/"
-                          + DEFAULT_ORG_ID
-                          + "/members"))
-              .willReturn(
-                  aResponse()
-                      .withStatus(200)
-                      .withHeader("Content-Type", "application/json")
-                      .withBody(
-                          """
-                          [{"id":"user-1","email":"alice@example.com","firstName":"Alice","lastName":"Owner"}]
-                          """)));
-
-      mockMvc
-          .perform(get("/bff/admin/members").with(oidcLogin().oidcUser(buildAdminUser())))
-          .andExpect(status().isOk())
-          .andExpect(jsonPath("$[0].email").value("alice@example.com"))
-          .andExpect(jsonPath("$[0].role").value("owner"));
-    }
-  }
-
-  @Nested
   @DisplayName("Unauthenticated Access")
   class UnauthenticatedAccessTests {
 
     @Test
     @DisplayName("Unauthenticated request redirects to OAuth2 Keycloak login")
     void unauthenticated_redirectsToKeycloakLogin() throws Exception {
-      // Without any valid session/OAuth2Login, accessing a protected resource
-      // should redirect to the OAuth2 authorization endpoint
       var result = mockMvc.perform(get("/api/projects")).andReturn();
 
       assertThat(result.getResponse().getStatus())

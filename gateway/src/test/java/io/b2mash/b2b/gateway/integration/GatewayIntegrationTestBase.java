@@ -42,7 +42,6 @@ import org.springframework.test.web.servlet.MockMvc;
  * <ul>
  *   <li>H2 in-memory database for Spring Session JDBC storage
  *   <li>WireMock server for backend API (verifying token relay)
- *   <li>WireMock server for Keycloak admin API
  *   <li>Shared OidcUser builder methods
  *   <li>Session table initialization
  * </ul>
@@ -67,12 +66,8 @@ abstract class GatewayIntegrationTestBase {
 
   protected static final String DEFAULT_ORG_ID = "a1b2c3d4-e5f6-7890-abcd-ef1234567890";
   protected static final String DEFAULT_ORG_SLUG = "acme-corp";
-  protected static final String KEYCLOAK_REALM = "docteams";
 
   static WireMockServer backendWireMock =
-      new WireMockServer(WireMockConfiguration.wireMockConfig().dynamicPort());
-
-  static WireMockServer keycloakWireMock =
       new WireMockServer(WireMockConfiguration.wireMockConfig().dynamicPort());
 
   @Autowired protected MockMvc mockMvc;
@@ -82,13 +77,11 @@ abstract class GatewayIntegrationTestBase {
   @BeforeAll
   static void startWireMockServers() {
     backendWireMock.start();
-    keycloakWireMock.start();
   }
 
   @AfterAll
   static void stopWireMockServers() {
     backendWireMock.stop();
-    keycloakWireMock.stop();
   }
 
   @DynamicPropertySource
@@ -98,20 +91,12 @@ abstract class GatewayIntegrationTestBase {
     registry.add("spring.cloud.gateway.server.webmvc.routes[0].uri", backendWireMock::baseUrl);
     registry.add(
         "spring.cloud.gateway.server.webmvc.routes[0].predicates[0]", () -> "Path=/api/**");
-
-    // Keycloak admin config
-    registry.add("keycloak.admin.url", keycloakWireMock::baseUrl);
-    registry.add("keycloak.admin.auth-server-url", keycloakWireMock::baseUrl);
-    registry.add("keycloak.admin.realm", () -> KEYCLOAK_REALM);
-    registry.add("keycloak.admin.username", () -> "admin");
-    registry.add("keycloak.admin.password", () -> "admin");
   }
 
   @BeforeEach
   void setUp() {
     SessionTestSupport.initSessionSchema(dataSource);
     backendWireMock.resetAll();
-    keycloakWireMock.resetAll();
   }
 
   // --- Shared OidcUser builders ---

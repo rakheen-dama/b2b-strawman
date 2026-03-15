@@ -63,7 +63,7 @@ class PortalCommentPostIntegrationTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Portal Comment Post Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Portal Comment Post Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     var syncResult =

@@ -38,7 +38,8 @@ class ClauseRepositoryIntegrationTest {
 
   @BeforeAll
   void provisionTenant() {
-    tenantSchema = provisioningService.provisionTenant(ORG_ID, "Clause Test Org").schemaName();
+    tenantSchema =
+        provisioningService.provisionTenant(ORG_ID, "Clause Test Org", null).schemaName();
     planSyncService.syncPlan(ORG_ID, "pro-plan");
   }
 

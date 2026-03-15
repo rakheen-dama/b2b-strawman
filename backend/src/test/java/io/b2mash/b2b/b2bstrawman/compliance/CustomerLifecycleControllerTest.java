@@ -42,7 +42,7 @@ class CustomerLifecycleControllerTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Lifecycle Controller Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Lifecycle Controller Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     syncMember(ORG_ID, "user_lc_owner", "lc_owner@test.com", "LC Owner", "owner");
     syncMember(ORG_ID, "user_lc_member", "lc_member@test.com", "LC Member", "member");

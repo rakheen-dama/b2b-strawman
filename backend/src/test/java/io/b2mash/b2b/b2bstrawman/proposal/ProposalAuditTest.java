@@ -56,7 +56,7 @@ class ProposalAuditTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Proposal Audit Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Proposal Audit Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     schemaName = SchemaNameGenerator.generateSchemaName(ORG_ID);
 

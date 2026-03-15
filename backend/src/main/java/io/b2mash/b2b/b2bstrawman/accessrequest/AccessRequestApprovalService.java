@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +24,11 @@ import org.springframework.transaction.support.TransactionTemplate;
 public class AccessRequestApprovalService {
 
   private static final Logger log = LoggerFactory.getLogger(AccessRequestApprovalService.class);
+
+  private static final Map<String, String> INDUSTRY_TO_PROFILE =
+      Map.of(
+          "Accounting", "accounting-za",
+          "Legal", "law-za");
 
   private final AccessRequestRepository accessRequestRepository;
   private final KeycloakProvisioningClient keycloakProvisioningClient;
@@ -90,7 +96,8 @@ public class AccessRequestApprovalService {
       // Step 3: Provision tenant schema (NO outer transaction — seeders manage their own)
       // Use the slug (= Keycloak org alias) as the org identifier for schema mapping,
       // because Keycloak JWTs include the alias in the "organization" claim, not the UUID.
-      tenantProvisioningService.provisionTenant(slug, orgName);
+      String verticalProfile = INDUSTRY_TO_PROFILE.get(request.getIndustry());
+      tenantProvisioningService.provisionTenant(slug, orgName, verticalProfile);
       log.info("Provisioned tenant schema for org {} (slug={})", kcOrgId, slug);
 
       // Step 4: Invite user via Keycloak and mark as org creator

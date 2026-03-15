@@ -65,7 +65,7 @@ class PrerequisiteControllerTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Prereq Controller Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Prereq Controller Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     syncMember("user_prc_owner", "prc_owner@test.com", "PRC Owner", "owner");

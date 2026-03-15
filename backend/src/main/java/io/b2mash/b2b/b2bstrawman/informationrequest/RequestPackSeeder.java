@@ -55,6 +55,11 @@ public class RequestPackSeeder extends AbstractPackSeeder<RequestPackDefinition>
   }
 
   @Override
+  protected String getVerticalProfile(RequestPackDefinition pack) {
+    return pack.verticalProfile();
+  }
+
+  @Override
   protected boolean isPackAlreadyApplied(OrgSettings settings, String packId) {
     if (settings.getRequestPackStatus() == null) {
       return false;

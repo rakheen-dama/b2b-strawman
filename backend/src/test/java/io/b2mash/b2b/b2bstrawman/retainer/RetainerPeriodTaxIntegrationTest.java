@@ -72,7 +72,7 @@ class RetainerPeriodTaxIntegrationTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Retainer Tax Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Retainer Tax Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberId =

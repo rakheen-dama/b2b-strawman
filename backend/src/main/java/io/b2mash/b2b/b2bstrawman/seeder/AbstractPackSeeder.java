@@ -81,6 +81,12 @@ public abstract class AbstractPackSeeder<D> {
   protected abstract void applyPack(D pack, Resource packResource, String tenantId);
 
   /**
+   * Extract the vertical profile from a deserialized pack definition. Returns null for universal
+   * packs that apply to all tenants.
+   */
+  protected abstract String getVerticalProfile(D pack);
+
+  /**
    * Seeds all available packs for the given tenant. Entry point called by provisioning and
    * reconciliation code. Delegates to {@link TenantTransactionHelper} to run within the correct
    * tenant transaction scope.
@@ -108,6 +114,19 @@ public abstract class AbstractPackSeeder<D> {
     for (LoadedPack<D> loaded : packs) {
       D pack = loaded.definition();
       String packId = getPackId(pack);
+
+      // Vertical profile filtering: skip packs targeting a different vertical
+      String tenantProfile = settings.getVerticalProfile();
+      String packProfile = getVerticalProfile(pack);
+      if (packProfile != null && !packProfile.equals(tenantProfile)) {
+        log.debug(
+            "Skipping {} pack {} (profile {} != tenant profile {})",
+            getPackTypeName(),
+            packId,
+            packProfile,
+            tenantProfile);
+        continue;
+      }
 
       if (isPackAlreadyApplied(settings, packId)) {
         log.info(

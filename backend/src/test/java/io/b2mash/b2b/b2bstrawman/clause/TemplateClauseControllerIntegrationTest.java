@@ -53,7 +53,7 @@ class TemplateClauseControllerIntegrationTest {
 
   @BeforeAll
   void provisionAndSeed() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "TC Ctrl Test Org");
+    provisioningService.provisionTenant(ORG_ID, "TC Ctrl Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     syncMember(ORG_ID, "user_tc_owner", "tc_owner@test.com", "TC Owner", "owner");
     syncMember(ORG_ID, "user_tc_admin", "tc_admin@test.com", "TC Admin", "admin");

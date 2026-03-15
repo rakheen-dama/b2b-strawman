@@ -51,7 +51,7 @@ class TaskRecurrenceIntegrationTest {
 
   @BeforeAll
   void provisionTenantsAndProject() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Recurrence Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Recurrence Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =

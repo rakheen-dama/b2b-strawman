@@ -55,7 +55,7 @@ class FieldGroupAutoApplyIntegrationTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "FG Auto Apply Test Org");
+    provisioningService.provisionTenant(ORG_ID, "FG Auto Apply Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =

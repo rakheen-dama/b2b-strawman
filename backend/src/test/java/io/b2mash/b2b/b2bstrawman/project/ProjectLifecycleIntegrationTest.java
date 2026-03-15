@@ -47,7 +47,7 @@ class ProjectLifecycleIntegrationTest {
 
   @BeforeAll
   void provisionTenantAndMembers() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Project Lifecycle Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Project Lifecycle Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =

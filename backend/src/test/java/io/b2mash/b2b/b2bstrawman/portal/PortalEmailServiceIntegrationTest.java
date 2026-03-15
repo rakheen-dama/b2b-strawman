@@ -74,7 +74,7 @@ class PortalEmailServiceIntegrationTest {
   @BeforeAll
   void provisionTenant() {
     tenantSchema =
-        provisioningService.provisionTenant(ORG_ID, "Portal Email Test Org").schemaName();
+        provisioningService.provisionTenant(ORG_ID, "Portal Email Test Org", null).schemaName();
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     memberId =
         memberSyncService

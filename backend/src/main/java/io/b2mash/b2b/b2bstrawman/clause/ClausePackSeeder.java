@@ -63,6 +63,11 @@ public class ClausePackSeeder extends AbstractPackSeeder<ClausePackDefinition> {
   }
 
   @Override
+  protected String getVerticalProfile(ClausePackDefinition pack) {
+    return pack.verticalProfile();
+  }
+
+  @Override
   protected boolean isPackAlreadyApplied(OrgSettings settings, String packId) {
     if (settings.getClausePackStatus() == null) {
       return false;

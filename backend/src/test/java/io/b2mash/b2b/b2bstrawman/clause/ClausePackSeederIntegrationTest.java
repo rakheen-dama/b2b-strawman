@@ -49,7 +49,7 @@ class ClausePackSeederIntegrationTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Clause Pack Seeder Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Clause Pack Seeder Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     syncMember(ORG_ID, "user_cps_owner", "cps_owner@test.com", "CPS Owner", "owner");
     tenantSchema =

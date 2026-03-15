@@ -60,7 +60,7 @@ class RecurringScheduleServiceTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Schedule Service Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Schedule Service Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     memberId =
         UUID.fromString(

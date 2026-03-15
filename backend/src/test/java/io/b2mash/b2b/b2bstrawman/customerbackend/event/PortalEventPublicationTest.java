@@ -51,7 +51,7 @@ class PortalEventPublicationTest {
 
   @BeforeAll
   void provisionTenantAndSeedData() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Portal Event Pub Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Portal Event Pub Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =

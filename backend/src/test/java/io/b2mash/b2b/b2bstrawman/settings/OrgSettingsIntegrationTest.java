@@ -48,7 +48,7 @@ class OrgSettingsIntegrationTest {
 
   @BeforeAll
   void provisionTenant() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "OrgSettings Test Org");
+    provisioningService.provisionTenant(ORG_ID, "OrgSettings Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =

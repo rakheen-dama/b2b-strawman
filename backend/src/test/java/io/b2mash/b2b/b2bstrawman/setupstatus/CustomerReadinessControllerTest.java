@@ -75,7 +75,7 @@ class CustomerReadinessControllerTest {
   @BeforeAll
   void setup() throws Exception {
     // --- Tenant A ---
-    provisioningService.provisionTenant(ORG_ID, "Readiness Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Readiness Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =
@@ -153,7 +153,7 @@ class CustomerReadinessControllerTest {
                     }));
 
     // --- Tenant B (isolation) ---
-    provisioningService.provisionTenant(ORG_ID_B, "Readiness Test Org B");
+    provisioningService.provisionTenant(ORG_ID_B, "Readiness Test Org B", null);
     planSyncService.syncPlan(ORG_ID_B, "pro-plan");
 
     memberIdOwnerB =

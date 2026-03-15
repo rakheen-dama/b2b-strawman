@@ -1,0 +1,175 @@
+package io.b2mash.b2b.b2bstrawman.seeder;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldPackSeeder;
+import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
+import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
+import java.util.UUID;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.support.TransactionTemplate;
+
+@SpringBootTest
+@Import(TestcontainersConfiguration.class)
+@ActiveProfiles("test")
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+class VerticalProfileFilteringTest {
+
+  private static final String ACCOUNTING_ORG_ID = "org_vpf_accounting";
+  private static final String GENERIC_ORG_ID = "org_vpf_generic";
+  private static final String LAW_ORG_ID = "org_vpf_law";
+
+  @Autowired private TenantProvisioningService provisioningService;
+  @Autowired private PlanSyncService planSyncService;
+  @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
+  @Autowired private FieldDefinitionRepository fieldDefinitionRepository;
+  @Autowired private OrgSettingsRepository orgSettingsRepository;
+  @Autowired private FieldPackSeeder fieldPackSeeder;
+  @Autowired private TransactionTemplate transactionTemplate;
+
+  private String accountingSchema;
+  private String genericSchema;
+  private String lawSchema;
+
+  @BeforeAll
+  void setup() {
+    provisioningService.provisionTenant(ACCOUNTING_ORG_ID, "Accounting Firm", "accounting-za");
+    planSyncService.syncPlan(ACCOUNTING_ORG_ID, "pro-plan");
+    accountingSchema =
+        orgSchemaMappingRepository
+            .findByClerkOrgId(ACCOUNTING_ORG_ID)
+            .orElseThrow()
+            .getSchemaName();
+
+    provisioningService.provisionTenant(GENERIC_ORG_ID, "Generic Org", null);
+    planSyncService.syncPlan(GENERIC_ORG_ID, "pro-plan");
+    genericSchema =
+        orgSchemaMappingRepository.findByClerkOrgId(GENERIC_ORG_ID).orElseThrow().getSchemaName();
+
+    provisioningService.provisionTenant(LAW_ORG_ID, "Law Firm", "law-za");
+    planSyncService.syncPlan(LAW_ORG_ID, "pro-plan");
+    lawSchema =
+        orgSchemaMappingRepository.findByClerkOrgId(LAW_ORG_ID).orElseThrow().getSchemaName();
+  }
+
+  @Test
+  void accountingTenantGetsUniversalAndAccountingPacks() {
+    runInTenant(
+        accountingSchema,
+        ACCOUNTING_ORG_ID,
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var customerFields =
+                      fieldDefinitionRepository.findByEntityTypeAndActiveTrueOrderBySortOrder(
+                          EntityType.CUSTOMER);
+
+                  // Should have common-customer (universal) + accounting-za-customer (vertical)
+                  var commonFields =
+                      customerFields.stream()
+                          .filter(f -> "common-customer".equals(f.getPackId()))
+                          .toList();
+                  var accountingFields =
+                      customerFields.stream()
+                          .filter(f -> "accounting-za-customer".equals(f.getPackId()))
+                          .toList();
+
+                  assertThat(commonFields).hasSize(8);
+                  assertThat(accountingFields).hasSize(16);
+                }));
+  }
+
+  @Test
+  void genericTenantGetsOnlyUniversalPacks() {
+    runInTenant(
+        genericSchema,
+        GENERIC_ORG_ID,
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var customerFields =
+                      fieldDefinitionRepository.findByEntityTypeAndActiveTrueOrderBySortOrder(
+                          EntityType.CUSTOMER);
+
+                  // Should have common-customer (universal) only — no vertical-specific packs
+                  var commonFields =
+                      customerFields.stream()
+                          .filter(f -> "common-customer".equals(f.getPackId()))
+                          .toList();
+                  var accountingFields =
+                      customerFields.stream()
+                          .filter(f -> "accounting-za-customer".equals(f.getPackId()))
+                          .toList();
+
+                  assertThat(commonFields).hasSize(8);
+                  assertThat(accountingFields).isEmpty();
+                }));
+  }
+
+  @Test
+  void lawTenantDoesNotGetAccountingPacks() {
+    runInTenant(
+        lawSchema,
+        LAW_ORG_ID,
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var customerFields =
+                      fieldDefinitionRepository.findByEntityTypeAndActiveTrueOrderBySortOrder(
+                          EntityType.CUSTOMER);
+
+                  // Should have common-customer (universal) only — accounting packs skipped
+                  var accountingFields =
+                      customerFields.stream()
+                          .filter(f -> "accounting-za-customer".equals(f.getPackId()))
+                          .toList();
+
+                  assertThat(accountingFields).isEmpty();
+                }));
+  }
+
+  @Test
+  void reSeedingDoesNotDuplicatePacks() {
+    // Re-seed the accounting tenant
+    fieldPackSeeder.seedPacksForTenant(accountingSchema, ACCOUNTING_ORG_ID);
+
+    runInTenant(
+        accountingSchema,
+        ACCOUNTING_ORG_ID,
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var customerFields =
+                      fieldDefinitionRepository.findByEntityTypeAndActiveTrueOrderBySortOrder(
+                          EntityType.CUSTOMER);
+
+                  var accountingFields =
+                      customerFields.stream()
+                          .filter(f -> "accounting-za-customer".equals(f.getPackId()))
+                          .toList();
+
+                  // Should still be 16, not 32
+                  assertThat(accountingFields).hasSize(16);
+                }));
+  }
+
+  private void runInTenant(String schema, String orgId, Runnable action) {
+    ScopedValue.where(RequestScopes.TENANT_ID, schema)
+        .where(RequestScopes.ORG_ID, orgId)
+        .where(RequestScopes.MEMBER_ID, UUID.randomUUID())
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(action);
+  }
+}

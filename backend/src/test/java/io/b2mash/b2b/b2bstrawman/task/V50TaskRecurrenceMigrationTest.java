@@ -66,7 +66,7 @@ class V50TaskRecurrenceMigrationTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "V50 Migration Test Org");
+    provisioningService.provisionTenant(ORG_ID, "V50 Migration Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     // Return value intentionally discarded — we only need the member to exist

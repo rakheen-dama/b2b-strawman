@@ -64,7 +64,7 @@ class TemplateValidationIntegrationTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Template Validation Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Template Validation Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner = syncMember(ORG_ID, "user_tv_owner", "tv_owner@test.com", "TV Owner", "owner");

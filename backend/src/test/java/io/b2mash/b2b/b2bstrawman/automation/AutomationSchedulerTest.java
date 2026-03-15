@@ -49,11 +49,12 @@ class AutomationSchedulerTest {
 
   @BeforeAll
   void provisionTenants() {
-    schemaName = provisioningService.provisionTenant(ORG_ID, "Scheduler Test Org").schemaName();
+    schemaName =
+        provisioningService.provisionTenant(ORG_ID, "Scheduler Test Org", null).schemaName();
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     schemaName2 =
-        provisioningService.provisionTenant(ORG_ID_2, "Scheduler Test Org 2").schemaName();
+        provisioningService.provisionTenant(ORG_ID_2, "Scheduler Test Org 2", null).schemaName();
     planSyncService.syncPlan(ORG_ID_2, "pro-plan");
   }
 

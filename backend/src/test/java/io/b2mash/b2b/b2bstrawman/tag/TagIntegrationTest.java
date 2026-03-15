@@ -57,7 +57,7 @@ class TagIntegrationTest {
   @BeforeAll
   void setup() throws Exception {
     // --- Tenant A ---
-    provisioningService.provisionTenant(ORG_ID, "Tag Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Tag Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =
@@ -68,7 +68,7 @@ class TagIntegrationTest {
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
 
     // --- Tenant B ---
-    provisioningService.provisionTenant(ORG_ID_B, "Tag Test Org B");
+    provisioningService.provisionTenant(ORG_ID_B, "Tag Test Org B", null);
     planSyncService.syncPlan(ORG_ID_B, "pro-plan");
 
     memberIdOwnerB =

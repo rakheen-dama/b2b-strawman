@@ -61,7 +61,7 @@ class CapacityNotificationTest {
 
   @BeforeAll
   void provisionAndSeed() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Cap Notif Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Cap Notif Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     String ownerIdStr =
         syncMember(ORG_ID, "user_cn_owner", "cn_owner@test.com", "CN Owner", "owner");

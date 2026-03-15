@@ -61,7 +61,7 @@ class CrossTenantPortalIsolationTest {
   @BeforeAll
   void setup() throws Exception {
     // Provision Org A
-    provisioningService.provisionTenant(ORG_A_ID, "Isolation Org A");
+    provisioningService.provisionTenant(ORG_A_ID, "Isolation Org A", null);
     planSyncService.syncPlan(ORG_A_ID, "pro-plan");
 
     var syncA =
@@ -129,7 +129,7 @@ class CrossTenantPortalIsolationTest {
         Instant.parse("2026-02-10T12:00:00Z"));
 
     // Provision Org B
-    provisioningService.provisionTenant(ORG_B_ID, "Isolation Org B");
+    provisioningService.provisionTenant(ORG_B_ID, "Isolation Org B", null);
     planSyncService.syncPlan(ORG_B_ID, "pro-plan");
 
     var syncB =

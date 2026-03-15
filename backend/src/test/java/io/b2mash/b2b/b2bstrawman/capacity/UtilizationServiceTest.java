@@ -70,7 +70,7 @@ class UtilizationServiceTest {
 
   @BeforeAll
   void provisionAndSeed() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Util Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Util Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     String ownerStr =
         syncMember(ORG_ID, "user_util_owner", "util_owner@test.com", "Util Owner", "owner");

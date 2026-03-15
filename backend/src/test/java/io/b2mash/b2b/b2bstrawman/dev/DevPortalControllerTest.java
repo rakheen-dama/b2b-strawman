@@ -70,7 +70,7 @@ class DevPortalControllerTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Dev Harness Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Dev Harness Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     // Sync a member for creating customers

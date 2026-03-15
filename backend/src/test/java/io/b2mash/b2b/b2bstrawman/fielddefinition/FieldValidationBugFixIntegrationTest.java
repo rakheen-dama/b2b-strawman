@@ -50,7 +50,7 @@ class FieldValidationBugFixIntegrationTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Validation Bug Fix Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Validation Bug Fix Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =

@@ -145,6 +145,9 @@ public class OrgSettings {
   @Column(name = "onboarding_dismissed_at")
   private Instant onboardingDismissedAt;
 
+  @Column(name = "vertical_profile", length = 50)
+  private String verticalProfile;
+
   protected OrgSettings() {}
 
   public OrgSettings(String defaultCurrency) {
@@ -615,5 +618,14 @@ public class OrgSettings {
   /** Returns true if onboarding has been dismissed. */
   public boolean isOnboardingDismissed() {
     return onboardingDismissedAt != null;
+  }
+
+  public String getVerticalProfile() {
+    return verticalProfile;
+  }
+
+  public void setVerticalProfile(String verticalProfile) {
+    this.verticalProfile = verticalProfile;
+    this.updatedAt = Instant.now();
   }
 }

@@ -71,7 +71,7 @@ class AutoDraftInformationRequestTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Auto-Draft Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Auto-Draft Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     memberId =
         UUID.fromString(

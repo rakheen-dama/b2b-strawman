@@ -52,7 +52,9 @@ class AutomationEventListenerTest {
   @BeforeAll
   void provisionTenant() {
     schemaName =
-        provisioningService.provisionTenant(ORG_ID, "Automation Listener Test Org").schemaName();
+        provisioningService
+            .provisionTenant(ORG_ID, "Automation Listener Test Org", null)
+            .schemaName();
     planSyncService.syncPlan(ORG_ID, "pro-plan");
   }
 

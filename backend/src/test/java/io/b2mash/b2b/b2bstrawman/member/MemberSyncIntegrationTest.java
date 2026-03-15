@@ -39,9 +39,9 @@ class MemberSyncIntegrationTest {
 
   @BeforeAll
   void provisionTenants() {
-    provisioningService.provisionTenant(ORG_A, "Member Test Org A");
+    provisioningService.provisionTenant(ORG_A, "Member Test Org A", null);
     planSyncService.syncPlan(ORG_A, "pro-plan");
-    provisioningService.provisionTenant(ORG_B, "Member Test Org B");
+    provisioningService.provisionTenant(ORG_B, "Member Test Org B", null);
     planSyncService.syncPlan(ORG_B, "pro-plan");
   }
 

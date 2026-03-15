@@ -76,7 +76,7 @@ class ProfitabilityProjectionTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Profitability Projection Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Profitability Projection Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =

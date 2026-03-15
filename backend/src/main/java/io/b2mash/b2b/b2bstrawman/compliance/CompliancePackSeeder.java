@@ -95,6 +95,11 @@ public class CompliancePackSeeder extends AbstractPackSeeder<CompliancePackDefin
   }
 
   @Override
+  protected String getVerticalProfile(CompliancePackDefinition pack) {
+    return pack.verticalProfile();
+  }
+
+  @Override
   protected boolean isPackAlreadyApplied(OrgSettings settings, String packId) {
     if (settings.getCompliancePackStatus() == null) {
       return false;

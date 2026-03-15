@@ -80,7 +80,7 @@ class BillingRunPreviewTest {
 
   @BeforeAll
   void setUp() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Preview Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Preview Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =

@@ -67,7 +67,7 @@ class InformationRequestControllerTest {
 
   @BeforeAll
   void provisionTenantAndSeedData() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "InfoReq Controller Test Org");
+    provisioningService.provisionTenant(ORG_ID, "InfoReq Controller Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     memberIdOwner =
         syncMember("user_inforeq_owner", "inforeq_owner@test.com", "InfoReq Owner", "owner");

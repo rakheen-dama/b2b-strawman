@@ -50,9 +50,9 @@ class TaskIntegrationTest {
 
   @BeforeAll
   void provisionTenantsAndProject() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Task Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Task Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
-    provisioningService.provisionTenant(ORG_B_ID, "Task Test Org B");
+    provisioningService.provisionTenant(ORG_B_ID, "Task Test Org B", null);
     planSyncService.syncPlan(ORG_B_ID, "pro-plan");
 
     memberIdOwner =

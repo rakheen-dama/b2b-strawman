@@ -78,7 +78,7 @@ class AcceptanceReadModelSyncIntegrationTest {
   @BeforeAll
   void provisionTenantAndSetupData() {
     tenantSchema =
-        provisioningService.provisionTenant(ORG_ID, "Acceptance Sync Test Org").schemaName();
+        provisioningService.provisionTenant(ORG_ID, "Acceptance Sync Test Org", null).schemaName();
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     var syncResult =

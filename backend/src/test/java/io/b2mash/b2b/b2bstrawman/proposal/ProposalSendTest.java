@@ -51,7 +51,7 @@ class ProposalSendTest {
 
   @BeforeAll
   void provisionTenantAndSeedData() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Proposal Send Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Proposal Send Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =

@@ -64,7 +64,7 @@ class ExpenseControllerTest {
 
   @BeforeAll
   void provisionTenantAndSeedData() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Expense Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Expense Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner = syncMember("user_exp_owner", "exp_owner@test.com", "EXP Owner", "owner");

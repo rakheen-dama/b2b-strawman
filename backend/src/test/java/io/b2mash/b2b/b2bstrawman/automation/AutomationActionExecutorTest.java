@@ -65,7 +65,9 @@ class AutomationActionExecutorTest {
   @BeforeAll
   void provisionTenant() {
     schemaName =
-        provisioningService.provisionTenant(ORG_ID, "Automation Action Test Org").schemaName();
+        provisioningService
+            .provisionTenant(ORG_ID, "Automation Action Test Org", null)
+            .schemaName();
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     ScopedValue.where(RequestScopes.TENANT_ID, schemaName)

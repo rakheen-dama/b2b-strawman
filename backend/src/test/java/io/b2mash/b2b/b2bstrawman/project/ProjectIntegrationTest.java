@@ -65,9 +65,9 @@ class ProjectIntegrationTest {
 
   @BeforeAll
   void provisionTenants() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Project Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Project Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
-    provisioningService.provisionTenant(ORG_B_ID, "Project Test Org B");
+    provisioningService.provisionTenant(ORG_B_ID, "Project Test Org B", null);
 
     ownerMemberId =
         UUID.fromString(syncMember(ORG_ID, "user_owner", "proj_owner@test.com", "Owner", "owner"));

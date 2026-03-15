@@ -60,7 +60,7 @@ class PaymentEventsControllerIntegrationTest {
 
   @BeforeAll
   void setUp() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Payment Events Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Payment Events Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =

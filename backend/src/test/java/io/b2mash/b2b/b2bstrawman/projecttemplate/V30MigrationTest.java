@@ -64,7 +64,7 @@ class V30MigrationTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "V30 Migration Test Org");
+    provisioningService.provisionTenant(ORG_ID, "V30 Migration Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberId =

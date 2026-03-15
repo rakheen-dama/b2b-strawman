@@ -72,7 +72,7 @@ class AcceptanceAuditAndNotificationIntegrationTest {
   @BeforeAll
   void provisionTenantAndSetupData() {
     tenantSchema =
-        provisioningService.provisionTenant(ORG_ID, "Accept Audit Test Org").schemaName();
+        provisioningService.provisionTenant(ORG_ID, "Accept Audit Test Org", null).schemaName();
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     var syncResult =

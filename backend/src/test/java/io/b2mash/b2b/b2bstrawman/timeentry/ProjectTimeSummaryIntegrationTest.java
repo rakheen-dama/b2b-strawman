@@ -60,11 +60,11 @@ class ProjectTimeSummaryIntegrationTest {
   @BeforeAll
   void provisionTenantsAndSeedData() throws Exception {
     // Provision tenant A (Pro plan)
-    provisioningService.provisionTenant(ORG_ID, "PTS Test Org");
+    provisioningService.provisionTenant(ORG_ID, "PTS Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     // Provision tenant B (Pro plan)
-    provisioningService.provisionTenant(ORG_B_ID, "PTS Test Org B");
+    provisioningService.provisionTenant(ORG_B_ID, "PTS Test Org B", null);
     planSyncService.syncPlan(ORG_B_ID, "pro-plan");
 
     // Sync members for tenant A

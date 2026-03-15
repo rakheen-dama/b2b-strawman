@@ -55,7 +55,7 @@ class AuditEventControllerTest {
 
   @BeforeAll
   void provisionTenantAndSeedData() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Audit Controller Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Audit Controller Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner = syncMember(ORG_ID, "user_ac_owner", "ac_owner@test.com", "AC Owner", "owner");

@@ -29,7 +29,7 @@ class DocxFieldValidatorTest {
 
   @BeforeAll
   void setUp() {
-    provisioningService.provisionTenant(ORG_ID, "Field Validator Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Field Validator Test Org", null);
   }
 
   @Test

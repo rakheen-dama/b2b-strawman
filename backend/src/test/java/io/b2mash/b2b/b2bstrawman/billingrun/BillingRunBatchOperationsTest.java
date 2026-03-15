@@ -80,7 +80,7 @@ class BillingRunBatchOperationsTest {
 
   @BeforeAll
   void setUp() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Batch Ops Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Batch Ops Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =

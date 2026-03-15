@@ -36,7 +36,7 @@ class EmailDeliveryLogServiceIntegrationTest {
   @BeforeAll
   void provisionTenant() {
     tenantSchema =
-        provisioningService.provisionTenant(ORG_ID, "Email Delivery Test Org").schemaName();
+        provisioningService.provisionTenant(ORG_ID, "Email Delivery Test Org", null).schemaName();
     planSyncService.syncPlan(ORG_ID, "pro-plan");
   }
 

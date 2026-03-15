@@ -48,7 +48,7 @@ class ProjectCustomerLinkIntegrationTest {
 
   @BeforeAll
   void provisionTenantAndMembers() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Project Customer Link Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Project Customer Link Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     syncMember(ORG_ID, "user_pcl_owner", "pcl_owner@test.com", "PCL Owner", "owner");

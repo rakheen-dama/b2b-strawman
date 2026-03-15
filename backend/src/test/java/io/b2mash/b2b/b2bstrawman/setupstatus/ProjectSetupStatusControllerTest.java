@@ -59,7 +59,7 @@ class ProjectSetupStatusControllerTest {
   @BeforeAll
   void setup() throws Exception {
     // --- Tenant A ---
-    provisioningService.provisionTenant(ORG_ID, "Setup Status Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Setup Status Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =
@@ -86,7 +86,7 @@ class ProjectSetupStatusControllerTest {
             });
 
     // --- Tenant B (isolation) ---
-    provisioningService.provisionTenant(ORG_ID_B, "Setup Status Test Org B");
+    provisioningService.provisionTenant(ORG_ID_B, "Setup Status Test Org B", null);
     planSyncService.syncPlan(ORG_ID_B, "pro-plan");
 
     memberIdOwnerB =

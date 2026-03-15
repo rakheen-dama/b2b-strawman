@@ -32,7 +32,7 @@ class PlanSyncIntegrationTest {
 
   @BeforeAll
   void provisionTenants() {
-    provisioningService.provisionTenant(ORG_A, "Plan Sync Test Org A");
+    provisioningService.provisionTenant(ORG_A, "Plan Sync Test Org A", null);
   }
 
   // --- Happy path ---

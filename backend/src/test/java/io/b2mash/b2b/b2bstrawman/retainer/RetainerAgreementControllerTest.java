@@ -53,7 +53,7 @@ class RetainerAgreementControllerTest {
 
   @BeforeAll
   void provisionAndSeed() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Retainer Ctrl Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Retainer Ctrl Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =

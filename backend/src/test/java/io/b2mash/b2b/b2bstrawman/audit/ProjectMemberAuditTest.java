@@ -53,9 +53,10 @@ class ProjectMemberAuditTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "PM Audit Test Org");
+    provisioningService.provisionTenant(ORG_ID, "PM Audit Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
-    schemaName = provisioningService.provisionTenant(ORG_ID, "PM Audit Test Org").schemaName();
+    schemaName =
+        provisioningService.provisionTenant(ORG_ID, "PM Audit Test Org", null).schemaName();
 
     ownerMemberId =
         syncMember(ORG_ID, "user_pma_owner", "pma_owner@test.com", "PMA Owner", "owner");

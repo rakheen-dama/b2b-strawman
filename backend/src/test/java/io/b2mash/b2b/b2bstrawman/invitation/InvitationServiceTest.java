@@ -49,7 +49,7 @@ class InvitationServiceTest {
 
   @BeforeAll
   void setup() {
-    provisioningService.provisionTenant(ORG_ID, "Inv Svc Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Inv Svc Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     tenantSchema =

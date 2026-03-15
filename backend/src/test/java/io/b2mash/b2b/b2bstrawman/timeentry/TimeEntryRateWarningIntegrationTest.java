@@ -44,7 +44,7 @@ class TimeEntryRateWarningIntegrationTest {
 
   @BeforeAll
   void provisionAndSeed() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Rate Warning Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Rate Warning Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner = syncMember(ORG_ID, "user_rw_owner", "rw_owner@test.com", "RW Owner", "owner");

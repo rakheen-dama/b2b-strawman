@@ -78,7 +78,7 @@ class ResourceAllocationServiceTest {
 
   @BeforeAll
   void provisionAndSeed() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Alloc Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Alloc Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     memberIdOwnerStr =
         syncMember(ORG_ID, "user_alloc_owner", "alloc_owner@test.com", "Owner", "owner");

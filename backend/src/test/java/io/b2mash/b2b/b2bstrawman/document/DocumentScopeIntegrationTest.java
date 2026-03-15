@@ -43,7 +43,7 @@ class DocumentScopeIntegrationTest {
 
   @BeforeAll
   void provisionTenantAndCustomer() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Doc Scope Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Doc Scope Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     // Sync members

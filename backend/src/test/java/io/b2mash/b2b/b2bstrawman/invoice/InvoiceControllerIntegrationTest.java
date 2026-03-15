@@ -82,7 +82,7 @@ class InvoiceControllerIntegrationTest {
 
   @BeforeAll
   void setUp() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Invoice Ctrl Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Invoice Ctrl Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =

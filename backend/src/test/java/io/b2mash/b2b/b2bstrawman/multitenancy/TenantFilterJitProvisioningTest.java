@@ -42,7 +42,7 @@ class TenantFilterJitProvisioningTest {
 
   @BeforeAll
   void setup() {
-    provisioningService.provisionTenant(PRE_PROVISIONED_ORG_ID, "Pre-Provisioned Org");
+    provisioningService.provisionTenant(PRE_PROVISIONED_ORG_ID, "Pre-Provisioned Org", null);
     planSyncService.syncPlan(PRE_PROVISIONED_ORG_ID, "pro-plan");
   }
 

@@ -76,7 +76,7 @@ class AutomationEndToEndTest {
   @BeforeAll
   void provisionTenant() {
     schemaName =
-        provisioningService.provisionTenant(ORG_ID, "Automation E2E Test Org").schemaName();
+        provisioningService.provisionTenant(ORG_ID, "Automation E2E Test Org", null).schemaName();
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     ScopedValue.where(RequestScopes.TENANT_ID, schemaName)

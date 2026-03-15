@@ -79,7 +79,7 @@ class PortalProposalControllerTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Portal Proposal Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Portal Proposal Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     // Sync a member

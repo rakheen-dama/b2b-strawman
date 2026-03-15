@@ -1,0 +1,99 @@
+{
+  "packId": "fica-kyc-za",
+  "name": "FICA KYC — SA Accounting",
+  "description": "Comprehensive FICA/KYC compliance checklist for South African accounting firms. Covers identity verification, company registration, tax clearance, banking confirmation, beneficial ownership, and source of funds — aligned with FICA Amendment Act requirements.",
+  "version": "1.0.0",
+  "verticalProfile": "accounting-za",
+  "jurisdiction": "ZA",
+  "customerType": "ALL",
+  "checklistTemplate": {
+    "name": "FICA KYC — SA Accounting",
+    "slug": "fica-kyc-za-accounting",
+    "autoInstantiate": false,
+    "items": [
+      {
+        "name": "Certified ID Copy",
+        "description": "Certified copy of director/member ID document. For sole proprietors, the proprietor's ID. For companies, all directors with >25% ownership.",
+        "sortOrder": 1,
+        "required": true,
+        "requiresDocument": true,
+        "requiredDocumentLabel": "Certified ID document (certified within last 3 months)",
+        "dependsOnItemKey": null
+      },
+      {
+        "name": "Proof of Residence",
+        "description": "Utility bill or bank statement not older than 3 months, confirming residential address of the director/proprietor.",
+        "sortOrder": 2,
+        "required": true,
+        "requiresDocument": true,
+        "requiredDocumentLabel": "Proof of residence (utility bill or bank statement, <3 months)",
+        "dependsOnItemKey": null
+      },
+      {
+        "name": "Company Registration (CM29/CoR14.3)",
+        "description": "CIPC company registration certificate. Required for Pty Ltd, CC, and NPC entities. Not applicable to sole proprietors.",
+        "sortOrder": 3,
+        "required": true,
+        "requiresDocument": true,
+        "requiredDocumentLabel": "CIPC company registration certificate",
+        "dependsOnItemKey": null
+      },
+      {
+        "name": "Tax Clearance Certificate",
+        "description": "SARS tax clearance certificate or Tax Compliance Status (TCS) pin. Confirms the entity is in good standing with SARS.",
+        "sortOrder": 4,
+        "required": true,
+        "requiresDocument": true,
+        "requiredDocumentLabel": "SARS tax clearance certificate or TCS pin",
+        "dependsOnItemKey": null
+      },
+      {
+        "name": "Bank Confirmation Letter",
+        "description": "Confirmation of banking details issued by the client's bank. Required for payment processing and invoice reconciliation.",
+        "sortOrder": 5,
+        "required": true,
+        "requiresDocument": true,
+        "requiredDocumentLabel": "Bank confirmation letter (original or certified copy)",
+        "dependsOnItemKey": null
+      },
+      {
+        "name": "Proof of Business Address",
+        "description": "Lease agreement or utility bill for business premises. Confirms the entity has a physical place of business.",
+        "sortOrder": 6,
+        "required": false,
+        "requiresDocument": true,
+        "requiredDocumentLabel": "Proof of business address (lease or utility bill)",
+        "dependsOnItemKey": null
+      },
+      {
+        "name": "Resolution / Mandate",
+        "description": "Board resolution or member mandate authorising the engagement with the accounting firm. Recommended for Pty Ltd and CC entities.",
+        "sortOrder": 7,
+        "required": false,
+        "requiresDocument": true,
+        "requiredDocumentLabel": "Board resolution or member mandate",
+        "dependsOnItemKey": null
+      },
+      {
+        "name": "Beneficial Ownership Declaration",
+        "description": "Declaration identifying all ultimate beneficial owners holding >25% interest. Required by FICA Amendment Act for all non-natural person entities.",
+        "sortOrder": 8,
+        "required": true,
+        "requiresDocument": true,
+        "requiredDocumentLabel": "Beneficial ownership declaration form",
+        "dependsOnItemKey": null
+      },
+      {
+        "name": "Source of Funds Declaration",
+        "description": "Client declaration on the source of business funds. Required on a risk-based approach — mandatory for higher-risk clients (trusts, politically exposed persons, high-turnover entities).",
+        "sortOrder": 9,
+        "required": false,
+        "requiresDocument": true,
+        "requiredDocumentLabel": "Source of funds declaration",
+        "dependsOnItemKey": null
+      }
+    ]
+  },
+  "fieldDefinitions": null,
+  "retentionOverrides": null
+}

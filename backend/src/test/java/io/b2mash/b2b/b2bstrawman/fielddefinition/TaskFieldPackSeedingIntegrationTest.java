@@ -40,7 +40,7 @@ class TaskFieldPackSeedingIntegrationTest {
 
   @BeforeAll
   void setup() {
-    provisioningService.provisionTenant(ORG_ID, "Task Pack Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Task Pack Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();

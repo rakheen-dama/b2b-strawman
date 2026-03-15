@@ -56,7 +56,7 @@ class DataRequestControllerTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "DSR Controller Test Org");
+    provisioningService.provisionTenant(ORG_ID, "DSR Controller Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     memberIdOwner =
         UUID.fromString(

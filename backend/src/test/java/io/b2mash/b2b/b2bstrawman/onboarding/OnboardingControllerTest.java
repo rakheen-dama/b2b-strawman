@@ -76,14 +76,16 @@ class OnboardingControllerTest {
   void provisionTenantsAndSeedData() throws Exception {
     // Empty tenant — only owner member (to test zero-entity state)
     emptyTenantSchema =
-        provisioningService.provisionTenant(EMPTY_ORG_ID, "Empty Onboarding Org").schemaName();
+        provisioningService
+            .provisionTenant(EMPTY_ORG_ID, "Empty Onboarding Org", null)
+            .schemaName();
     planSyncService.syncPlan(EMPTY_ORG_ID, "pro-plan");
     emptyOwnerMemberId =
         syncMember(
             EMPTY_ORG_ID, "user_onb_empty_owner", "onb_empty@test.com", "Empty Owner", "owner");
 
     // Admin test tenant — owner + admin to test admin dismiss capability
-    provisioningService.provisionTenant(ADMIN_ORG_ID, "Admin Test Org");
+    provisioningService.provisionTenant(ADMIN_ORG_ID, "Admin Test Org", null);
     planSyncService.syncPlan(ADMIN_ORG_ID, "pro-plan");
     syncMember(ADMIN_ORG_ID, "user_onb_adm_owner", "onb_adm_owner@test.com", "Adm Owner", "owner");
     adminMemberId =
@@ -92,7 +94,7 @@ class OnboardingControllerTest {
     // Populated tenant — has all entity types
     populatedTenantSchema =
         provisioningService
-            .provisionTenant(POPULATED_ORG_ID, "Populated Onboarding Org")
+            .provisionTenant(POPULATED_ORG_ID, "Populated Onboarding Org", null)
             .schemaName();
     planSyncService.syncPlan(POPULATED_ORG_ID, "pro-plan");
     populatedOwnerMemberId =

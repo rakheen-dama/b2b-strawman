@@ -44,7 +44,7 @@ class UnsubscribeControllerIntegrationTest {
 
   @BeforeAll
   void provisionTenantAndMember() throws Exception {
-    tenantSchema = provisioningService.provisionTenant(ORG_ID, "Unsub Test Org").schemaName();
+    tenantSchema = provisioningService.provisionTenant(ORG_ID, "Unsub Test Org", null).schemaName();
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     // Sync a member via internal API

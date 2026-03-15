@@ -44,7 +44,7 @@ class TaskTagIntegrationTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Task Tag Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Task Tag Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     syncMember(ORG_ID, "user_tt_owner", "tt_owner@test.com", "TT Owner", "owner");
 

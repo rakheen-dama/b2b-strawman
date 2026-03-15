@@ -78,7 +78,7 @@ class BillingRunEntrySelectionTest {
 
   @BeforeAll
   void setUp() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Selection Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Selection Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =

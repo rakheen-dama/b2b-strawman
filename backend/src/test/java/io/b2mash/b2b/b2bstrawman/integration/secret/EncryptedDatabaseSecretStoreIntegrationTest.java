@@ -52,7 +52,7 @@ class EncryptedDatabaseSecretStoreIntegrationTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID_A, "Secret Test Org A");
+    provisioningService.provisionTenant(ORG_ID_A, "Secret Test Org A", null);
     planSyncService.syncPlan(ORG_ID_A, "pro-plan");
     memberIdA =
         UUID.fromString(
@@ -60,7 +60,7 @@ class EncryptedDatabaseSecretStoreIntegrationTest {
     tenantSchemaA =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID_A).orElseThrow().getSchemaName();
 
-    provisioningService.provisionTenant(ORG_ID_B, "Secret Test Org B");
+    provisioningService.provisionTenant(ORG_ID_B, "Secret Test Org B", null);
     planSyncService.syncPlan(ORG_ID_B, "pro-plan");
     memberIdB =
         UUID.fromString(

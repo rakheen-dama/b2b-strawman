@@ -84,7 +84,8 @@ class EmailWebhookControllerIntegrationTest {
 
   @BeforeAll
   void provisionTenant() {
-    tenantSchema = provisioningService.provisionTenant(ORG_ID, "Webhook Test Org").schemaName();
+    tenantSchema =
+        provisioningService.provisionTenant(ORG_ID, "Webhook Test Org", null).schemaName();
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     // Create an admin member so notifyAdminsAndOwners can find recipients

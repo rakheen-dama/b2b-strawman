@@ -59,7 +59,7 @@ class ClauseTitleEnrichmentTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Clause Enrich Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Clause Enrich Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =

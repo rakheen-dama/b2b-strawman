@@ -59,7 +59,7 @@ class TenantProvisioningServiceTest {
     var mapping = new OrgSchemaMapping("org_123", "tenant_abcdef012345");
     when(mappingRepository.findByClerkOrgId("org_123")).thenReturn(Optional.of(mapping));
 
-    var result = service.provisionTenant("org_123", "Test Org");
+    var result = service.provisionTenant("org_123", "Test Org", null);
 
     assertThat(result.success()).isTrue();
     assertThat(result.alreadyProvisioned()).isTrue();
@@ -86,7 +86,7 @@ class TenantProvisioningServiceTest {
 
     doNothing().when(service).runTenantMigrations(anyString());
 
-    var result = service.provisionTenant("org_new", "New Org");
+    var result = service.provisionTenant("org_new", "New Org", null);
 
     assertThat(result.success()).isTrue();
     assertThat(result.alreadyProvisioned()).isFalse();
@@ -113,7 +113,7 @@ class TenantProvisioningServiceTest {
 
     doNothing().when(service).runTenantMigrations(anyString());
 
-    var result = service.provisionTenant("org_pro", "Pro Org");
+    var result = service.provisionTenant("org_pro", "Pro Org", null);
 
     assertThat(result.success()).isTrue();
     assertThat(result.alreadyProvisioned()).isFalse();
@@ -133,7 +133,7 @@ class TenantProvisioningServiceTest {
 
     when(migrationDataSource.getConnection()).thenThrow(new SQLException("Connection refused"));
 
-    assertThatThrownBy(() -> service.provisionTenant("org_fail", "Fail Org"))
+    assertThatThrownBy(() -> service.provisionTenant("org_fail", "Fail Org", null))
         .isInstanceOf(ProvisioningException.class)
         .hasMessageContaining("org_fail");
 
@@ -159,7 +159,7 @@ class TenantProvisioningServiceTest {
 
     doNothing().when(service).runTenantMigrations(anyString());
 
-    var result = service.provisionTenant("org_idem", "Idem Org");
+    var result = service.provisionTenant("org_idem", "Idem Org", null);
 
     assertThat(result.success()).isTrue();
     verify(mappingRepository, never()).save(any(OrgSchemaMapping.class));

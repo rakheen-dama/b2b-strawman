@@ -59,7 +59,7 @@ class CalendarControllerTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Calendar Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Calendar Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     adminMemberId =

@@ -56,21 +56,25 @@ class AuditTenantIsolationTest {
     var proOrgA = new Organization(PRO_ORG_A_ID, "Pro Audit Iso A");
     proOrgA.updatePlan(Tier.PRO, "pro_plan");
     organizationRepository.save(proOrgA);
-    var resultA = provisioningService.provisionTenant(PRO_ORG_A_ID, "Pro Audit Iso A");
+    var resultA = provisioningService.provisionTenant(PRO_ORG_A_ID, "Pro Audit Iso A", null);
     proSchemaA = resultA.schemaName();
 
     // Pro org B — dedicated schema
     var proOrgB = new Organization(PRO_ORG_B_ID, "Pro Audit Iso B");
     proOrgB.updatePlan(Tier.PRO, "pro_plan");
     organizationRepository.save(proOrgB);
-    var resultB = provisioningService.provisionTenant(PRO_ORG_B_ID, "Pro Audit Iso B");
+    var resultB = provisioningService.provisionTenant(PRO_ORG_B_ID, "Pro Audit Iso B", null);
     proSchemaB = resultB.schemaName();
 
     // Starter orgs — each gets its own dedicated schema
     starterSchemaA =
-        provisioningService.provisionTenant(STARTER_ORG_A_ID, "Starter Audit Iso A").schemaName();
+        provisioningService
+            .provisionTenant(STARTER_ORG_A_ID, "Starter Audit Iso A", null)
+            .schemaName();
     starterSchemaB =
-        provisioningService.provisionTenant(STARTER_ORG_B_ID, "Starter Audit Iso B").schemaName();
+        provisioningService
+            .provisionTenant(STARTER_ORG_B_ID, "Starter Audit Iso B", null)
+            .schemaName();
   }
 
   @Test

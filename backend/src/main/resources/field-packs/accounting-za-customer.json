@@ -1,0 +1,158 @@
+{
+  "packId": "accounting-za-customer",
+  "version": 1,
+  "verticalProfile": "accounting-za",
+  "entityType": "CUSTOMER",
+  "group": {
+    "slug": "accounting_za_client",
+    "name": "SA Accounting — Client Details",
+    "description": "South African accounting-specific fields for client entities",
+    "autoApply": false
+  },
+  "fields": [
+    {
+      "slug": "acct_company_registration_number",
+      "name": "Company Registration Number",
+      "fieldType": "TEXT",
+      "description": "CIPC registration number (e.g., 2024/123456/07)",
+      "required": false,
+      "requiredForContexts": ["PROPOSAL_SEND", "INVOICE_GENERATION"],
+      "sortOrder": 1
+    },
+    {
+      "slug": "trading_as",
+      "name": "Trading As",
+      "fieldType": "TEXT",
+      "description": "Trading name if different from registered name",
+      "required": false,
+      "sortOrder": 2
+    },
+    {
+      "slug": "vat_number",
+      "name": "VAT Number",
+      "fieldType": "TEXT",
+      "description": "SARS VAT registration number (only if VAT-registered, threshold R1M turnover)",
+      "required": false,
+      "requiredForContexts": ["INVOICE_GENERATION"],
+      "sortOrder": 3
+    },
+    {
+      "slug": "sars_tax_reference",
+      "name": "SARS Tax Reference",
+      "fieldType": "TEXT",
+      "description": "Income tax reference number issued by SARS",
+      "required": true,
+      "sortOrder": 4
+    },
+    {
+      "slug": "sars_efiling_profile",
+      "name": "SARS eFiling Profile Number",
+      "fieldType": "TEXT",
+      "description": "Client's SARS eFiling profile number for electronic filing",
+      "required": false,
+      "sortOrder": 5
+    },
+    {
+      "slug": "financial_year_end",
+      "name": "Financial Year-End",
+      "fieldType": "DATE",
+      "description": "Financial year-end date (commonly Feb or Jun for SA companies)",
+      "required": true,
+      "sortOrder": 6
+    },
+    {
+      "slug": "acct_entity_type",
+      "name": "Entity Type",
+      "fieldType": "DROPDOWN",
+      "description": "Legal entity type",
+      "required": true,
+      "options": [
+        { "value": "PTY_LTD", "label": "Pty Ltd" },
+        { "value": "SOLE_PROPRIETOR", "label": "Sole Proprietor" },
+        { "value": "CC", "label": "Close Corporation (CC)" },
+        { "value": "TRUST", "label": "Trust" },
+        { "value": "PARTNERSHIP", "label": "Partnership" },
+        { "value": "NPC", "label": "Non-Profit Company (NPC)" }
+      ],
+      "sortOrder": 7
+    },
+    {
+      "slug": "industry_sic_code",
+      "name": "Industry (SIC Code)",
+      "fieldType": "TEXT",
+      "description": "SARS Standard Industrial Classification code for tax returns",
+      "required": false,
+      "sortOrder": 8
+    },
+    {
+      "slug": "registered_address",
+      "name": "Registered Address",
+      "fieldType": "TEXT",
+      "description": "Physical registered address (CIPC requirement)",
+      "required": true,
+      "requiredForContexts": ["PROPOSAL_SEND"],
+      "sortOrder": 9
+    },
+    {
+      "slug": "postal_address",
+      "name": "Postal Address",
+      "fieldType": "TEXT",
+      "description": "Postal address if different from registered address",
+      "required": false,
+      "sortOrder": 10
+    },
+    {
+      "slug": "primary_contact_name",
+      "name": "Primary Contact Name",
+      "fieldType": "TEXT",
+      "description": "Main contact person at the client company",
+      "required": true,
+      "sortOrder": 11
+    },
+    {
+      "slug": "primary_contact_email",
+      "name": "Primary Contact Email",
+      "fieldType": "TEXT",
+      "description": "Email address for primary contact",
+      "required": true,
+      "sortOrder": 12
+    },
+    {
+      "slug": "primary_contact_phone",
+      "name": "Primary Contact Phone",
+      "fieldType": "PHONE",
+      "description": "Phone number for primary contact",
+      "required": false,
+      "sortOrder": 13
+    },
+    {
+      "slug": "fica_verified",
+      "name": "FICA Verified",
+      "fieldType": "DROPDOWN",
+      "description": "FICA/KYC verification status for this client",
+      "required": true,
+      "options": [
+        { "value": "NOT_STARTED", "label": "Not Started" },
+        { "value": "IN_PROGRESS", "label": "In Progress" },
+        { "value": "VERIFIED", "label": "Verified" }
+      ],
+      "sortOrder": 14
+    },
+    {
+      "slug": "fica_verification_date",
+      "name": "FICA Verification Date",
+      "fieldType": "DATE",
+      "description": "Date FICA verification was completed",
+      "required": false,
+      "sortOrder": 15
+    },
+    {
+      "slug": "referred_by",
+      "name": "Referred By",
+      "fieldType": "TEXT",
+      "description": "Source of client referral for tracking",
+      "required": false,
+      "sortOrder": 16
+    }
+  ]
+}

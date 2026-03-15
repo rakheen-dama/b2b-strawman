@@ -79,7 +79,7 @@ class DashboardPersonalIntegrationTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Personal Dashboard Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Personal Dashboard Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     adminMemberId =

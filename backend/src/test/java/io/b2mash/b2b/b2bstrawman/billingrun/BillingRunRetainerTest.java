@@ -81,7 +81,7 @@ class BillingRunRetainerTest {
 
   @BeforeAll
   void setUp() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Retainer Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Retainer Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =

@@ -49,7 +49,7 @@ class ChecklistTemplateServiceTest {
 
   @BeforeAll
   void setup() {
-    provisioningService.provisionTenant(ORG_ID, "Checklist Service Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Checklist Service Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();

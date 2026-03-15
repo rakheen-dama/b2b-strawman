@@ -83,7 +83,7 @@ class InvoiceEmailServiceIntegrationTest {
   @BeforeAll
   void provisionTenant() {
     tenantSchema =
-        provisioningService.provisionTenant(ORG_ID, "Invoice Email Test Org").schemaName();
+        provisioningService.provisionTenant(ORG_ID, "Invoice Email Test Org", null).schemaName();
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     memberId =
         memberSyncService
@@ -193,7 +193,7 @@ class InvoiceEmailServiceIntegrationTest {
     // Provision a separate tenant so rate limit exhaustion doesn't affect other tests
     String rlOrgId = "org_inv_email_rl_test";
     String rlTenantSchema =
-        provisioningService.provisionTenant(rlOrgId, "Rate Limit Test Org").schemaName();
+        provisioningService.provisionTenant(rlOrgId, "Rate Limit Test Org", null).schemaName();
     planSyncService.syncPlan(rlOrgId, "pro-plan");
     var rlMemberId =
         memberSyncService

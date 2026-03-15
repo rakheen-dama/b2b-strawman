@@ -58,7 +58,7 @@ class RetainerPeriodControllerTest {
 
   @BeforeAll
   void provisionAndSeed() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Retainer Period Ctrl Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Retainer Period Ctrl Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     syncMember(ORG_ID, "user_rpc_owner", "rpc_owner@test.com", "RPC Owner", "owner");

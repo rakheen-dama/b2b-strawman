@@ -55,7 +55,7 @@ class ClauseControllerIntegrationTest {
 
   @BeforeAll
   void provisionAndSeed() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Clause Ctrl Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Clause Ctrl Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     syncMember(ORG_ID, "user_clause_owner", "clause_owner@test.com", "Clause Owner", "owner");
     syncMember(ORG_ID, "user_clause_admin", "clause_admin@test.com", "Clause Admin", "admin");

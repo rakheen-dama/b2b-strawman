@@ -63,10 +63,10 @@ class MyWorkIntegrationTest {
   @BeforeAll
   void provisionTenantsAndSeedData() throws Exception {
     // Provision tenant A (Pro) and tenant B (Pro)
-    provisioningService.provisionTenant(ORG_ID, "MyWork Test Org");
+    provisioningService.provisionTenant(ORG_ID, "MyWork Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
-    provisioningService.provisionTenant(ORG_B_ID, "MyWork Test Org B");
+    provisioningService.provisionTenant(ORG_B_ID, "MyWork Test Org B", null);
     planSyncService.syncPlan(ORG_B_ID, "pro-plan");
 
     // Sync members for tenant A

@@ -77,11 +77,11 @@ class PortalIntegrationTest {
   @BeforeAll
   void setup() throws Exception {
     // Provision org A
-    provisioningService.provisionTenant(ORG_ID, "Portal Integ Org A");
+    provisioningService.provisionTenant(ORG_ID, "Portal Integ Org A", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     // Provision org B (for cross-tenant isolation tests)
-    provisioningService.provisionTenant(ORG_ID_B, "Portal Integ Org B");
+    provisioningService.provisionTenant(ORG_ID_B, "Portal Integ Org B", null);
     planSyncService.syncPlan(ORG_ID_B, "pro-plan");
 
     // Sync a member for creating test data

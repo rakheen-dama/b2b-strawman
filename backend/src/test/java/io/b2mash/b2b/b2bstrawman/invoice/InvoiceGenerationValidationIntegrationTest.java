@@ -68,7 +68,7 @@ class InvoiceGenerationValidationIntegrationTest {
 
   @BeforeAll
   void setUp() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Invoice GenVal Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Invoice GenVal Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =

@@ -59,7 +59,7 @@ class EventProjectionIntegrationTest {
 
   @BeforeAll
   void provisionAndSeedData() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Event Projection Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Event Projection Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     syncMember(ORG_ID, "user_ep_owner", "ep_owner@test.com", "EP Owner", "owner");
 

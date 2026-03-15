@@ -58,7 +58,7 @@ class BillingRunControllerTest {
 
   @BeforeAll
   void provisionAndSeed() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner = syncMember(ORG_ID, "user_br_owner", "browner@test.com", "Owner", "owner");

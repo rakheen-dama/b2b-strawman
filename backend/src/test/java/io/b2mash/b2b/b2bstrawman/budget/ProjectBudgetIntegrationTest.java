@@ -78,7 +78,7 @@ class ProjectBudgetIntegrationTest {
   @BeforeAll
   void setup() throws Exception {
     // --- Tenant A ---
-    provisioningService.provisionTenant(ORG_ID, "Budget Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Budget Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =
@@ -162,7 +162,7 @@ class ProjectBudgetIntegrationTest {
     // Amount consumed (USD billable): 2.5 * $100 = $250
 
     // --- Tenant B (for isolation tests) ---
-    provisioningService.provisionTenant(ORG_ID_B, "Budget Test Org B");
+    provisioningService.provisionTenant(ORG_ID_B, "Budget Test Org B", null);
     planSyncService.syncPlan(ORG_ID_B, "pro-plan");
 
     memberIdOwnerB =

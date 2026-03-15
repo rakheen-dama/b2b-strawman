@@ -50,7 +50,7 @@ class CapacityEntityTest {
   @BeforeAll
   void provisionTenant() {
     schemaName =
-        provisioningService.provisionTenant(ORG_ID, "Capacity Entity Test Org").schemaName();
+        provisioningService.provisionTenant(ORG_ID, "Capacity Entity Test Org", null).schemaName();
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     ScopedValue.where(RequestScopes.TENANT_ID, schemaName)

@@ -63,7 +63,7 @@ class AutomationTemplateControllerTest {
 
   @BeforeAll
   void provisionTenantAndSeedData() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Automation Template Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Automation Template Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     memberIdOwner = syncMember("user_tmpl_owner", "tmpl_owner@test.com", "Tmpl Owner", "owner");
     syncMember("user_tmpl_member", "tmpl_member@test.com", "Tmpl Member", "member");

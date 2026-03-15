@@ -60,7 +60,7 @@ class AutomationRuleControllerTest {
 
   @BeforeAll
   void provisionTenantAndSeedData() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Automation Controller Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Automation Controller Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     memberIdOwner = syncMember("user_auto_owner", "auto_owner@test.com", "Auto Owner", "owner");
     syncMember("user_auto_member", "auto_member@test.com", "Auto Member", "member");

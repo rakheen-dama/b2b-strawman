@@ -61,7 +61,7 @@ class TimesheetReportQueryTest {
 
   @BeforeAll
   void setUp() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Timesheet Query Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Timesheet Query Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberId1 =

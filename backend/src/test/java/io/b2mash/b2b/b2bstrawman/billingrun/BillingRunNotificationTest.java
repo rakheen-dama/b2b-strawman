@@ -82,7 +82,7 @@ class BillingRunNotificationTest {
 
   @BeforeAll
   void setUp() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "BR Notif Test Org");
+    provisioningService.provisionTenant(ORG_ID, "BR Notif Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =

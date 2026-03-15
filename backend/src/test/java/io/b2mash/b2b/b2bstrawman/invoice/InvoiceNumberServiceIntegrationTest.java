@@ -139,7 +139,7 @@ class InvoiceNumberServiceIntegrationTest {
 
   private String provisionAndGetSchema(String orgId, String orgName, String userPrefix)
       throws Exception {
-    provisioningService.provisionTenant(orgId, orgName);
+    provisioningService.provisionTenant(orgId, orgName, null);
     planSyncService.syncPlan(orgId, "pro-plan");
     syncMember(orgId, userPrefix, userPrefix + "@test.com", orgName + " Owner", "owner");
     return orgSchemaMappingRepository.findByClerkOrgId(orgId).orElseThrow().getSchemaName();

@@ -43,7 +43,7 @@ class AcceptanceRequestRepositoryIntegrationTest {
   @BeforeAll
   void provisionTenant() {
     tenantSchema =
-        provisioningService.provisionTenant(ORG_ID, "Acceptance Repo Test Org").schemaName();
+        provisioningService.provisionTenant(ORG_ID, "Acceptance Repo Test Org", null).schemaName();
     planSyncService.syncPlan(ORG_ID, "pro-plan");
   }
 

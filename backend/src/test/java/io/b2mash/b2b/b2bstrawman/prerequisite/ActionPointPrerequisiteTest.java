@@ -83,7 +83,7 @@ class ActionPointPrerequisiteTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Action Prereq Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Action Prereq Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     schemaName = SchemaNameGenerator.generateSchemaName(ORG_ID);
 

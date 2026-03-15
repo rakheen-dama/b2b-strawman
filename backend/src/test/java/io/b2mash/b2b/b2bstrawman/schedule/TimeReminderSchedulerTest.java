@@ -70,7 +70,7 @@ class TimeReminderSchedulerTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Time Reminder Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Time Reminder Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     memberId =
         UUID.fromString(

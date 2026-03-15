@@ -73,7 +73,7 @@ class RecurringScheduleExecutorTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Executor Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Executor Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     memberId =
         UUID.fromString(
@@ -567,7 +567,7 @@ class RecurringScheduleExecutorTest {
   @Test
   void executeSchedules_multipleTenants_processedIndependently() throws Exception {
     var orgId2 = "org_executor_test2";
-    provisioningService.provisionTenant(orgId2, "Executor Test Org 2");
+    provisioningService.provisionTenant(orgId2, "Executor Test Org 2", null);
     planSyncService.syncPlan(orgId2, "pro-plan");
     var memberId2 =
         UUID.fromString(

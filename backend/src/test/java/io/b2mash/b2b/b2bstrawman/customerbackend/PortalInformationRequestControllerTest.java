@@ -89,7 +89,7 @@ class PortalInformationRequestControllerTest {
   @BeforeAll
   void setup() {
     tenantSchema =
-        provisioningService.provisionTenant(ORG_ID, "Portal Info Request Org").schemaName();
+        provisioningService.provisionTenant(ORG_ID, "Portal Info Request Org", null).schemaName();
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     var syncResult =

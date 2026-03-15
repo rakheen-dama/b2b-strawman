@@ -53,9 +53,10 @@ class TaskServiceAuditTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Task Audit Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Task Audit Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
-    schemaName = provisioningService.provisionTenant(ORG_ID, "Task Audit Test Org").schemaName();
+    schemaName =
+        provisioningService.provisionTenant(ORG_ID, "Task Audit Test Org", null).schemaName();
 
     ownerMemberId = syncMember(ORG_ID, "user_ta_owner", "ta_owner@test.com", "TA Owner", "owner");
     syncMember(ORG_ID, "user_ta_member", "ta_member@test.com", "TA Member", "member");

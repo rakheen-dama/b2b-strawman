@@ -45,7 +45,7 @@ class PaymentEventRepositoryIntegrationTest {
   @BeforeAll
   void provisionTenant() {
     tenantSchema =
-        provisioningService.provisionTenant(ORG_ID, "Payment Event Test Org").schemaName();
+        provisioningService.provisionTenant(ORG_ID, "Payment Event Test Org", null).schemaName();
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     // Create a member, customer, and invoice to reference from payment events

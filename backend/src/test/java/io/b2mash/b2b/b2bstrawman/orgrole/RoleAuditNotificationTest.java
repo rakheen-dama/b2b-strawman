@@ -56,7 +56,7 @@ class RoleAuditNotificationTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Role Audit Notif Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Role Audit Notif Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();

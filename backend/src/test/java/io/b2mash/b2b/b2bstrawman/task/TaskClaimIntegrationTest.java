@@ -50,7 +50,7 @@ class TaskClaimIntegrationTest {
 
   @BeforeAll
   void provisionTenantAndProject() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Claim Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Claim Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =

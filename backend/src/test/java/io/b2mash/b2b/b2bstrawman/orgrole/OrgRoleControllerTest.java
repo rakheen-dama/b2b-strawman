@@ -55,7 +55,7 @@ class OrgRoleControllerTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Role Ctrl Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Role Ctrl Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     ownerMemberId = syncMember("user_rc_owner", "rc_owner@test.com", "RC Owner", "owner");

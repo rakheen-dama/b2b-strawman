@@ -57,7 +57,7 @@ class InformationRequestNotificationAuditIntegrationTest {
 
   @BeforeAll
   void provisionTenantAndSeedData() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "InfoReq Notif Test Org");
+    provisioningService.provisionTenant(ORG_ID, "InfoReq Notif Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     schema = SchemaNameGenerator.generateSchemaName(ORG_ID);
 

@@ -64,6 +64,11 @@ public class AutomationTemplateSeeder extends AbstractPackSeeder<AutomationTempl
   }
 
   @Override
+  protected String getVerticalProfile(AutomationTemplatePack pack) {
+    return pack.verticalProfile();
+  }
+
+  @Override
   protected boolean isPackAlreadyApplied(OrgSettings settings, String packId) {
     return settings.isAutomationPackApplied(packId);
   }

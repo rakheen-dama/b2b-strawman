@@ -10,8 +10,10 @@ import io.b2mash.b2b.b2bstrawman.invitation.dto.InvitationDtos.InvitationListRes
 import io.b2mash.b2b.b2bstrawman.invitation.dto.InvitationDtos.PendingInvitationResponse;
 import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRole;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
+import io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
@@ -20,6 +22,7 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,16 +36,19 @@ public class InvitationService {
   private final OrgRoleRepository orgRoleRepository;
   private final MemberRepository memberRepository;
   private final AuditService auditService;
+  private final KeycloakAdminClient keycloakAdminClient;
 
   public InvitationService(
       PendingInvitationRepository invitationRepository,
       OrgRoleRepository orgRoleRepository,
       MemberRepository memberRepository,
-      AuditService auditService) {
+      AuditService auditService,
+      @Nullable KeycloakAdminClient keycloakAdminClient) {
     this.invitationRepository = invitationRepository;
     this.orgRoleRepository = orgRoleRepository;
     this.memberRepository = memberRepository;
     this.auditService = auditService;
+    this.keycloakAdminClient = keycloakAdminClient;
   }
 
   @Transactional
@@ -100,6 +106,20 @@ public class InvitationService {
                     "roleName", orgRole.getName(),
                     "invitedBy", invitedBy.getName()))
             .build());
+
+    // Trigger Keycloak invitation email (best-effort — failure doesn't roll back DB record)
+    if (keycloakAdminClient != null) {
+      try {
+        String orgId = RequestScopes.getOrgIdOrNull();
+        if (orgId != null) {
+          String kcOrgId = keycloakAdminClient.resolveOrgId(orgId);
+          keycloakAdminClient.inviteMember(kcOrgId, email, orgRole.getSlug(), null);
+          log.info("Triggered Keycloak invitation for email={}", email);
+        }
+      } catch (Exception e) {
+        log.warn("Failed to send Keycloak invitation for email={}: {}", email, e.getMessage());
+      }
+    }
 
     log.info("Created invitation for email={} with role={}", email, orgRole.getSlug());
     return PendingInvitationResponse.from(invitation);

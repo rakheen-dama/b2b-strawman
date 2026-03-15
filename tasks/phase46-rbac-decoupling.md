@@ -214,7 +214,7 @@ CLEANUP TRACK (after E351)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 5a | 351 | 351A | Remove `orgRole` from `AuthContext` interface in `types.ts`, update `keycloak-bff.ts` (remove `orgRole` extraction, delete `requireRole()`), update `mock/server.ts` (parse Keycloak-only format). ~4 modified files (~6 tests). Frontend only. | |
+| 5a | 351 | 351A | Remove `orgRole` from `AuthContext` interface in `types.ts`, update `keycloak-bff.ts` (remove `orgRole` extraction, delete `requireRole()`), update `mock/server.ts` (parse Keycloak-only format). ~4 modified files (~6 tests). Frontend only. | **Done** (PR #678) |
 | 5b | 351 | 351B | Migrate `orgRole` checks → `fetchMyCapabilities()` in: settings layout, invoices pages/actions (6 files), customers pages/actions (5 files), projects pages/actions (4 files). ~15 modified files (~5 test updates). Frontend only. | |
 | 5c | 351 | 351C | Migrate remaining `orgRole` checks: team page/actions, dashboard, my-work, retainers, schedules, compliance, documents, billing, resource pages/actions, component files (`member-list.tsx`, `task-list-panel.tsx`, `expense-list.tsx`, etc.). ~15 modified files (~5 test updates). Frontend only. | |
 

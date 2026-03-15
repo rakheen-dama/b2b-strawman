@@ -326,13 +326,13 @@ export default async function CustomerDetailPage({
         },
         {
           label:
-            customerReadiness.requiredFields.total === 0
+            (customerReadiness.requiredFields?.total ?? 0) === 0
               ? "No required fields defined"
-              : `Required fields filled (${customerReadiness.requiredFields.filled}/${customerReadiness.requiredFields.total})`,
+              : `Required fields filled (${customerReadiness.requiredFields?.filled ?? 0}/${customerReadiness.requiredFields?.total ?? 0})`,
           complete:
-            customerReadiness.requiredFields.total === 0 ||
-            customerReadiness.requiredFields.filled ===
-              customerReadiness.requiredFields.total,
+            (customerReadiness.requiredFields?.total ?? 0) === 0 ||
+            (customerReadiness.requiredFields?.filled ?? 0) ===
+              (customerReadiness.requiredFields?.total ?? 0),
           actionHref: "#custom-fields",
         },
       ]
@@ -349,13 +349,13 @@ export default async function CustomerDetailPage({
 
   // Build context groups from required fields for expandable display (Epic 251B)
   const contextGroups: ContextGroup[] =
-    customerReadiness && customerReadiness.requiredFields.fields.length > 0
+    customerReadiness && (customerReadiness.requiredFields?.fields?.length ?? 0) > 0
       ? [
           {
             contextLabel: "Required Fields",
-            filled: customerReadiness.requiredFields.filled,
-            total: customerReadiness.requiredFields.total,
-            fields: customerReadiness.requiredFields.fields.map((f) => ({
+            filled: customerReadiness.requiredFields?.filled ?? 0,
+            total: customerReadiness.requiredFields?.total ?? 0,
+            fields: (customerReadiness.requiredFields?.fields ?? []).map((f) => ({
               name: f.name,
               slug: f.slug,
               filled: f.filled,

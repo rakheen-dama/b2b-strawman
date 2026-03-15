@@ -11,7 +11,7 @@ import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 public final class BffUserInfoExtractor {
 
   /** Organization info extracted from OidcUser claims. */
-  public record OrgInfo(String slug, String id, String role) {}
+  public record OrgInfo(String slug, String id) {}
 
   private BffUserInfoExtractor() {}
 
@@ -31,18 +31,10 @@ public final class BffUserInfoExtractor {
     }
 
     // Keycloak 26.x built-in org scope emits a List<String> of org aliases
-    // (no roles in this format). Check the separate org_role claim (user attribute mapper)
-    // before defaulting to member. The backend DB lookup is the ultimate fallback.
     if (raw instanceof List<?> list) {
       if (list.isEmpty()) return null;
       String alias = (String) list.getFirst();
-      // org_role claim is set by oidc-usermodel-attribute-mapper (KC 26.x workaround)
-      Object orgRoleClaim = user.getClaim("org_role");
-      String role =
-          (orgRoleClaim instanceof String r && !r.isBlank())
-              ? (r.startsWith("org:") ? r.substring(4) : r)
-              : "member";
-      return new OrgInfo(alias, alias, role);
+      return new OrgInfo(alias, alias);
     }
 
     // Rich format: Map<alias, {id, roles}>
@@ -53,9 +45,7 @@ public final class BffUserInfoExtractor {
       String slug = entry.getKey();
       Map<String, Object> orgData = (Map<String, Object>) entry.getValue();
       String id = (String) orgData.getOrDefault("id", slug);
-      List<String> roles = (List<String>) orgData.get("roles");
-      String role = (roles != null && !roles.isEmpty()) ? roles.getFirst() : "member";
-      return new OrgInfo(slug, id, role);
+      return new OrgInfo(slug, id);
     }
 
     return null;
@@ -71,11 +61,5 @@ public final class BffUserInfoExtractor {
   public static String extractOrgId(OidcUser user) {
     OrgInfo info = extractOrgInfo(user);
     return info != null ? info.id() : null;
-  }
-
-  /** Extracts the organization role from OidcUser claims, or null if absent. */
-  public static String extractOrgRole(OidcUser user) {
-    OrgInfo info = extractOrgInfo(user);
-    return info != null ? info.role() : null;
   }
 }

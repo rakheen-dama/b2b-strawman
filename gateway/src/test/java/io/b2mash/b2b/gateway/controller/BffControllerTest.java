@@ -1,14 +1,10 @@
 package io.b2mash.b2b.gateway.controller;
 
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import io.b2mash.b2b.gateway.service.KeycloakAdminClient;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +15,6 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
@@ -28,7 +23,6 @@ import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
@@ -40,60 +34,12 @@ import org.springframework.test.web.servlet.MockMvc;
       "spring.cloud.gateway.server.webmvc.routes[0].uri=http://localhost:8080",
       "spring.cloud.gateway.server.webmvc.routes[0].predicates[0]=Path=/test/**",
       "spring.autoconfigure.exclude="
-          + "org.springframework.boot.security.oauth2.client.autoconfigure.OAuth2ClientAutoConfiguration",
-      "keycloak.admin.url=http://localhost:18080",
-      "keycloak.admin.realm=docteams",
-      "keycloak.admin.client-id=admin-cli",
-      "keycloak.admin.client-secret=test-secret"
+          + "org.springframework.boot.security.oauth2.client.autoconfigure.OAuth2ClientAutoConfiguration"
     })
 @Import(BffControllerTest.MockOAuth2Config.class)
 class BffControllerTest {
 
   @Autowired private MockMvc mockMvc;
-
-  @MockitoBean private KeycloakAdminClient keycloakAdminClient;
-
-  @Test
-  void createOrg_disabled_nonAdmin_returns403() throws Exception {
-    var oidcUser = buildOidcUser("user-uuid-123", "alice@example.com", "Alice", "owner");
-
-    mockMvc
-        .perform(
-            post("/bff/orgs")
-                .with(oidcLogin().oidcUser(oidcUser))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"name\": \"Test Org\"}"))
-        .andExpect(status().isForbidden());
-  }
-
-  @Test
-  void createOrg_disabled_platformAdmin_passesThroughGate() throws Exception {
-    when(keycloakAdminClient.createOrganization(anyString(), anyString(), anyString()))
-        .thenReturn("org-admin-123");
-
-    OidcIdToken idToken =
-        OidcIdToken.withTokenValue("mock-token")
-            .subject("admin-user")
-            .claim("email", "admin@example.com")
-            .claim("name", "Platform Admin")
-            .claim("groups", List.of("platform-admins"))
-            .issuer("https://keycloak.example.com/realms/docteams")
-            .issuedAt(Instant.now())
-            .expiresAt(Instant.now().plusSeconds(3600))
-            .build();
-
-    var oidcUser = new DefaultOidcUser(List.of(new SimpleGrantedAuthority("ROLE_USER")), idToken);
-
-    mockMvc
-        .perform(
-            post("/bff/orgs")
-                .with(oidcLogin().oidcUser(oidcUser))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"name\": \"Admin Org\"}"))
-        .andExpect(status().isCreated())
-        .andExpect(jsonPath("$.orgId").value("org-admin-123"))
-        .andExpect(jsonPath("$.slug").value("admin-org"));
-  }
 
   @Test
   void me_authenticated_returnsUserInfo() throws Exception {
@@ -105,28 +51,31 @@ class BffControllerTest {
         .andExpect(jsonPath("$.authenticated").value(true))
         .andExpect(jsonPath("$.userId").value("user-uuid-123"))
         .andExpect(jsonPath("$.email").value("alice@example.com"))
-        .andExpect(jsonPath("$.name").value("Alice Owner"));
+        .andExpect(jsonPath("$.name").value("Alice Owner"))
+        .andExpect(jsonPath("$.orgRole").doesNotExist());
   }
 
   @Test
-  void me_authenticated_returnsOrgId() throws Exception {
+  void me_authenticated_returnsOrgInfo() throws Exception {
     var oidcUser = buildOidcUser("user-uuid-123", "alice@example.com", "Alice Owner", "owner");
 
     mockMvc
         .perform(get("/bff/me").with(oidcLogin().oidcUser(oidcUser)))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.orgId").value("org-uuid-456"));
+        .andExpect(jsonPath("$.orgId").value("org-uuid-456"))
+        .andExpect(jsonPath("$.orgSlug").value("acme-corp"))
+        .andExpect(jsonPath("$.orgRole").doesNotExist());
   }
 
   @Test
-  void me_authenticated_returnsOrgRole() throws Exception {
+  void me_authenticated_doesNotIncludeOrgRole() throws Exception {
     var oidcUser = buildOidcUser("user-uuid-123", "alice@example.com", "Alice Owner", "admin");
 
     mockMvc
         .perform(get("/bff/me").with(oidcLogin().oidcUser(oidcUser)))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.orgRole").value("admin"))
-        .andExpect(jsonPath("$.orgSlug").value("acme-corp"));
+        .andExpect(jsonPath("$.orgSlug").value("acme-corp"))
+        .andExpect(jsonPath("$.orgRole").doesNotExist());
   }
 
   @Test
@@ -136,6 +85,7 @@ class BffControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.authenticated").value(false))
         .andExpect(jsonPath("$.userId").doesNotExist())
+        .andExpect(jsonPath("$.orgRole").doesNotExist())
         .andExpect(jsonPath("$.groups").isArray())
         .andExpect(jsonPath("$.groups").isEmpty());
   }
@@ -159,7 +109,8 @@ class BffControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.authenticated").value(true))
         .andExpect(jsonPath("$.userId").value("user-uuid-789"))
-        .andExpect(jsonPath("$.orgId").doesNotExist());
+        .andExpect(jsonPath("$.orgId").doesNotExist())
+        .andExpect(jsonPath("$.orgRole").doesNotExist());
   }
 
   @Test
@@ -187,7 +138,8 @@ class BffControllerTest {
         .perform(get("/bff/me").with(oidcLogin().oidcUser(oidcUser)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.authenticated").value(true))
-        .andExpect(jsonPath("$.orgId").isNotEmpty());
+        .andExpect(jsonPath("$.orgId").isNotEmpty())
+        .andExpect(jsonPath("$.orgRole").doesNotExist());
   }
 
   @Test

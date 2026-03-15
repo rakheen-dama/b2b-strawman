@@ -58,21 +58,8 @@ spring:
     virtual:
       enabled: true
 
-app:
-  self-service-org-creation:
-    enabled: false
-
 gateway:
   frontend-url: ${FRONTEND_URL:http://localhost:3000}
-
-keycloak:
-  admin:
-    url: ${KEYCLOAK_ADMIN_URL:http://localhost:8180}
-    realm: ${KEYCLOAK_ADMIN_REALM:docteams}
-    # Master realm admin credentials for Admin REST API access (password grant)
-    auth-server-url: ${KEYCLOAK_ADMIN_URL:http://localhost:8180}
-    username: ${KEYCLOAK_ADMIN_USERNAME:admin}
-    password: ${KEYCLOAK_ADMIN_PASSWORD:admin}
 
 management:
   endpoints:

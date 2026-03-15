@@ -12,6 +12,7 @@ import io.b2mash.b2b.b2bstrawman.capacity.dto.AllocationDtos.CreateAllocationReq
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
@@ -53,6 +54,7 @@ class CapacityControllerTest {
   @Autowired private ProjectService projectService;
   @Autowired private OrgRoleService orgRoleService;
   @Autowired private MemberRepository memberRepository;
+  @Autowired private OrgRoleRepository orgRoleRepository;
 
   private String tenantSchema;
   private UUID memberIdOwner;
@@ -103,7 +105,7 @@ class CapacityControllerTest {
                   new io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest(
                       "Resource Planner", "Can plan resources", Set.of("RESOURCE_PLANNING")));
           var customMember = memberRepository.findById(customRoleMemberId).orElseThrow();
-          customMember.setOrgRoleId(withCapRole.id());
+          customMember.setOrgRoleEntity(orgRoleRepository.findById(withCapRole.id()).orElseThrow());
           memberRepository.save(customMember);
 
           var withoutCapRole =
@@ -111,7 +113,8 @@ class CapacityControllerTest {
                   new io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest(
                       "Team Lead Cap", "Can manage teams", Set.of("TEAM_OVERSIGHT")));
           var noCapMember = memberRepository.findById(noCapMemberId).orElseThrow();
-          noCapMember.setOrgRoleId(withoutCapRole.id());
+          noCapMember.setOrgRoleEntity(
+              orgRoleRepository.findById(withoutCapRole.id()).orElseThrow());
           memberRepository.save(noCapMember);
 
           return null;

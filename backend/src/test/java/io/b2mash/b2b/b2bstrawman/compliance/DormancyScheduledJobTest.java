@@ -11,6 +11,7 @@ import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMapping;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRole;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -50,8 +51,9 @@ class DormancyScheduledJobTest {
     when(mappingRepository.findAll()).thenReturn(List.of(mapping));
     when(lifecycleService.executeDormancyTransitions()).thenReturn(2);
 
-    var admin = new Member("user_admin", "admin@test.com", "Admin", null, "admin");
-    when(memberRepository.findByOrgRoleIn(List.of("admin", "owner"))).thenReturn(List.of(admin));
+    var adminRole = new OrgRole("Admin", "admin", "Admin role", true);
+    var admin = new Member("user_admin", "admin@test.com", "Admin", null, adminRole);
+    when(memberRepository.findByRoleSlugsIn(List.of("admin", "owner"))).thenReturn(List.of(admin));
 
     job.executeDormancyCheck();
 
@@ -85,8 +87,9 @@ class DormancyScheduledJobTest {
     when(mappingRepository.findAll()).thenReturn(List.of(mapping));
     when(lifecycleService.executeDormancyTransitions()).thenReturn(1);
 
-    var admin = new Member("user_admin2", "admin2@test.com", "Admin2", null, "owner");
-    when(memberRepository.findByOrgRoleIn(List.of("admin", "owner"))).thenReturn(List.of(admin));
+    var ownerRole = new OrgRole("Owner", "owner", "Owner role", true);
+    var admin = new Member("user_admin2", "admin2@test.com", "Admin2", null, ownerRole);
+    when(memberRepository.findByRoleSlugsIn(List.of("admin", "owner"))).thenReturn(List.of(admin));
 
     job.executeDormancyCheck();
 

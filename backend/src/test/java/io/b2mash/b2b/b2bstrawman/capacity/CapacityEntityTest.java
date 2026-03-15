@@ -7,6 +7,7 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
@@ -35,6 +36,7 @@ class CapacityEntityTest {
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private PlanSyncService planSyncService;
   @Autowired private MemberRepository memberRepository;
+  @Autowired private OrgRoleRepository orgRoleRepository;
   @Autowired private MemberCapacityRepository capacityRepository;
   @Autowired private ResourceAllocationRepository allocationRepository;
   @Autowired private LeaveBlockRepository leaveBlockRepository;
@@ -55,7 +57,12 @@ class CapacityEntityTest {
         .run(
             () -> {
               var member =
-                  new Member("clerk_cap_test", "cap@test.com", "Cap Tester", null, "owner");
+                  new Member(
+                      "clerk_cap_test",
+                      "cap@test.com",
+                      "Cap Tester",
+                      null,
+                      orgRoleRepository.findBySlug("owner").orElseThrow());
               member = memberRepository.save(member);
               memberId = member.getId();
 
@@ -105,7 +112,12 @@ class CapacityEntityTest {
             () -> {
               // Use a dedicated member to avoid interference from other tests
               var member =
-                  new Member("clerk_eff_cap", "effcap@test.com", "Eff Cap Tester", null, "member");
+                  new Member(
+                      "clerk_eff_cap",
+                      "effcap@test.com",
+                      "Eff Cap Tester",
+                      null,
+                      orgRoleRepository.findBySlug("member").orElseThrow());
               member = memberRepository.save(member);
               var effMemberId = member.getId();
 
@@ -402,7 +414,12 @@ class CapacityEntityTest {
             () -> {
               // Create a separate member for this test
               var member =
-                  new Member("clerk_cascade", "cascade@test.com", "Cascade", null, "member");
+                  new Member(
+                      "clerk_cascade",
+                      "cascade@test.com",
+                      "Cascade",
+                      null,
+                      orgRoleRepository.findBySlug("member").orElseThrow());
               member = memberRepository.save(member);
               var mId = member.getId();
 

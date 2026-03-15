@@ -60,21 +60,10 @@ public class OrgRoleService {
             .findById(memberId)
             .orElseThrow(() -> new ResourceNotFoundException("Member", memberId));
 
-    if (member.getOrgRoleId() == null) {
-      // Fallback: if no explicit OrgRole is assigned, derive capabilities from the legacy orgRole
-      // string. This ensures owner/admin members who predate the OrgRole system still get full
-      // capabilities resolved.
-      String legacyRole = member.getOrgRole();
-      if ("owner".equals(legacyRole) || "admin".equals(legacyRole)) {
-        return Set.copyOf(Capability.ALL_NAMES);
-      }
+    var role = member.getOrgRoleEntity();
+    if (role == null) {
       return Collections.emptySet();
     }
-
-    var role =
-        orgRoleRepository
-            .findById(member.getOrgRoleId())
-            .orElseThrow(() -> new ResourceNotFoundException("OrgRole", member.getOrgRoleId()));
 
     if (role.isSystem() && ("owner".equals(role.getSlug()) || "admin".equals(role.getSlug()))) {
       return Set.copyOf(Capability.ALL_NAMES);
@@ -106,11 +95,8 @@ public class OrgRoleService {
             .findById(memberId)
             .orElseThrow(() -> new ResourceNotFoundException("Member", memberId));
 
-    String roleName = null;
-    if (member.getOrgRoleId() != null) {
-      roleName =
-          orgRoleRepository.findById(member.getOrgRoleId()).map(OrgRole::getName).orElse(null);
-    }
+    String roleName =
+        member.getOrgRoleEntity() != null ? member.getOrgRoleEntity().getName() : null;
 
     Set<String> capabilities = RequestScopes.getCapabilities();
     String orgRole = RequestScopes.getOrgRole();
@@ -140,13 +126,11 @@ public class OrgRoleService {
     String roleName = null;
     Set<String> roleCapabilities = Collections.emptySet();
 
-    if (member.getOrgRoleId() != null) {
-      var role = orgRoleRepository.findById(member.getOrgRoleId()).orElse(null);
-      if (role != null) {
-        roleName = role.getName();
-        roleCapabilities =
-            role.getCapabilities().stream().map(Capability::name).collect(Collectors.toSet());
-      }
+    var role = member.getOrgRoleEntity();
+    if (role != null) {
+      roleName = role.getName();
+      roleCapabilities =
+          role.getCapabilities().stream().map(Capability::name).collect(Collectors.toSet());
     }
 
     Set<String> effectiveCapabilities = resolveCapabilities(memberId);
@@ -162,7 +146,9 @@ public class OrgRoleService {
   @Transactional(readOnly = true)
   public List<OrgRoleResponse> listRoles() {
     return orgRoleRepository.findAll().stream()
-        .map(role -> OrgRoleResponse.from(role, memberRepository.countByOrgRoleId(role.getId())))
+        .map(
+            role ->
+                OrgRoleResponse.from(role, memberRepository.countByOrgRoleEntity_Id(role.getId())))
         .toList();
   }
 
@@ -172,7 +158,7 @@ public class OrgRoleService {
         orgRoleRepository
             .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("OrgRole", id));
-    return OrgRoleResponse.from(role, memberRepository.countByOrgRoleId(id));
+    return OrgRoleResponse.from(role, memberRepository.countByOrgRoleEntity_Id(id));
   }
 
   @Transactional
@@ -240,7 +226,8 @@ public class OrgRoleService {
           request.capabilities().stream().map(Capability::valueOf).collect(Collectors.toSet()));
     }
 
-    List<Member> affectedMembers = capsChanged ? memberRepository.findByOrgRoleId(id) : List.of();
+    List<Member> affectedMembers =
+        capsChanged ? memberRepository.findByOrgRoleEntity_Id(id) : List.of();
     role = orgRoleRepository.save(role);
     auditService.log(
         AuditEventBuilder.roleUpdated(role, addedCaps, removedCaps, affectedMembers.size()));
@@ -269,7 +256,7 @@ public class OrgRoleService {
       }
     }
 
-    return OrgRoleResponse.from(role, memberRepository.countByOrgRoleId(id));
+    return OrgRoleResponse.from(role, memberRepository.countByOrgRoleEntity_Id(id));
   }
 
   @Transactional
@@ -280,7 +267,7 @@ public class OrgRoleService {
             .orElseThrow(() -> new ResourceNotFoundException("Member", memberId));
 
     // Owner protection: cannot change the owner's role
-    if ("owner".equals(member.getOrgRole())) {
+    if (member.getOrgRoleEntity() != null && "owner".equals(member.getOrgRoleEntity().getSlug())) {
       throw new ForbiddenException(
           "Owner role protected", "Cannot change the role of the organization owner");
     }
@@ -325,18 +312,10 @@ public class OrgRoleService {
     }
 
     // Resolve previous role name for audit
-    String previousRole;
-    if (member.getOrgRoleId() != null) {
-      previousRole =
-          orgRoleRepository
-              .findById(member.getOrgRoleId())
-              .map(OrgRole::getName)
-              .orElse(displayName(member.getOrgRole()));
-    } else {
-      previousRole = displayName(member.getOrgRole());
-    }
+    String previousRole =
+        member.getOrgRoleEntity() != null ? member.getOrgRoleEntity().getName() : "None";
 
-    member.setOrgRoleId(request.orgRoleId());
+    member.setOrgRoleEntity(role);
     member.setCapabilityOverrides(overrides);
     memberRepository.save(member);
 
@@ -369,7 +348,7 @@ public class OrgRoleService {
       throw new InvalidStateException("System role deletion", "System roles cannot be deleted");
     }
 
-    long memberCount = memberRepository.countByOrgRoleId(id);
+    long memberCount = memberRepository.countByOrgRoleEntity_Id(id);
     if (memberCount > 0) {
       throw new ResourceConflictException(
           "Role in use",

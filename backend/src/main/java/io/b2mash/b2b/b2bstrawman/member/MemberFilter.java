@@ -5,6 +5,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import io.b2mash.b2b.b2bstrawman.invitation.InvitationService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ScopedFilterChain;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRole;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import jakarta.servlet.FilterChain;
@@ -167,23 +168,31 @@ public class MemberFilter extends OncePerRequestFilter {
       log.info("Promoting first member {} to owner (founding user)", clerkUserId);
     }
 
+    final String finalEffectiveRole = effectiveRole;
+    final UUID finalAcceptedInvitationId = acceptedInvitationId;
+
     try {
-      var member = new Member(clerkUserId, email, name, null, effectiveRole);
+      // Look up the OrgRole entity before constructing the Member
+      OrgRole orgRole =
+          orgRoleService
+              .findSystemRoleBySlug(finalEffectiveRole)
+              .orElseThrow(
+                  () ->
+                      new IllegalStateException(
+                          "System role not found for slug: " + finalEffectiveRole));
 
-      // Assign default system role based on the effective org role before persisting
-      orgRoleService
-          .findSystemRoleBySlug(effectiveRole)
-          .ifPresent(systemRole -> member.setOrgRoleId(systemRole.getId()));
-
+      var member = new Member(clerkUserId, email, name, null, orgRole);
       memberRepository.save(member);
 
       // Mark the invitation as accepted after member creation succeeds
-      if (acceptedInvitationId != null) {
+      if (finalAcceptedInvitationId != null) {
         try {
-          invitationService.markAccepted(acceptedInvitationId);
+          invitationService.markAccepted(finalAcceptedInvitationId);
         } catch (Exception e) {
           log.warn(
-              "Failed to mark invitation {} as accepted: {}", acceptedInvitationId, e.getMessage());
+              "Failed to mark invitation {} as accepted: {}",
+              finalAcceptedInvitationId,
+              e.getMessage());
         }
       }
 
@@ -192,7 +201,7 @@ public class MemberFilter extends OncePerRequestFilter {
           member.getId(),
           clerkUserId,
           RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : "unknown");
-      return new MemberInfo(member.getId(), effectiveRole);
+      return new MemberInfo(member.getId(), finalEffectiveRole);
     } catch (DataIntegrityViolationException e) {
       // Race condition: another instance already created this member
       return memberRepository

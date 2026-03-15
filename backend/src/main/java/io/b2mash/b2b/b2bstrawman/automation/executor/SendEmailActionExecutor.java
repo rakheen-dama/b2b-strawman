@@ -65,7 +65,7 @@ public class SendEmailActionExecutor implements ActionExecutor {
 
       // ALL_ADMINS: send individual emails to each admin
       if ("ALL_ADMINS".equals(emailConfig.recipientType())) {
-        var admins = memberRepository.findByOrgRoleIn(List.of("admin", "owner"));
+        var admins = memberRepository.findByRoleSlugsIn(List.of("admin", "owner"));
         if (admins.isEmpty()) {
           return new ActionFailure(
               "No email address resolved for recipient type: ALL_ADMINS", null);

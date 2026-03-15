@@ -481,7 +481,7 @@ public class RetainerPeriodService {
           "Agreement: %s, Period: %s to %s"
               .formatted(agreement.getName(), period.getPeriodStart(), period.getPeriodEnd());
 
-      var adminsAndOwners = memberRepository.findByOrgRoleIn(List.of("admin", "owner"));
+      var adminsAndOwners = memberRepository.findByRoleSlugsIn(List.of("admin", "owner"));
       for (var member : adminsAndOwners) {
         notificationService.createNotification(
             member.getId(),

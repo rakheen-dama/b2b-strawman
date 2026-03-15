@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEvent;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventRecord;
 import io.b2mash.b2b.b2bstrawman.member.Member;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRole;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -15,8 +16,10 @@ class ActivityMessageFormatterTest {
 
   private static final UUID ACTOR_ID = UUID.randomUUID();
   private static final UUID ENTITY_ID = UUID.randomUUID();
+  private static final OrgRole MEMBER_ROLE =
+      new OrgRole("Member", "member", "Default member role", true);
   private static final Member ACTOR_MEMBER =
-      new Member("clerk_user_1", "alice@test.com", "Alice", null, "member");
+      new Member("clerk_user_1", "alice@test.com", "Alice", null, MEMBER_ROLE);
 
   private Map<UUID, Member> actorMap() {
     return Map.of(ACTOR_ID, ACTOR_MEMBER);

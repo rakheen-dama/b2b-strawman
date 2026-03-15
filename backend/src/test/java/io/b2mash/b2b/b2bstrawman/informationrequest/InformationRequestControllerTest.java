@@ -13,6 +13,7 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.SchemaNameGenerator;
@@ -51,6 +52,7 @@ class InformationRequestControllerTest {
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private OrgRoleService orgRoleService;
   @Autowired private MemberRepository memberRepository;
+  @Autowired private OrgRoleRepository orgRoleRepository;
   @Autowired private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
 
   private String memberIdOwner;
@@ -110,7 +112,8 @@ class InformationRequestControllerTest {
                           "Can manage information requests",
                           Set.of("CUSTOMER_MANAGEMENT")));
               var customMember = memberRepository.findById(customRoleMemberId).orElseThrow();
-              customMember.setOrgRoleId(withCapRole.id());
+              customMember.setOrgRoleEntity(
+                  orgRoleRepository.findById(withCapRole.id()).orElseThrow());
               memberRepository.save(customMember);
 
               var withoutCapRole =
@@ -118,7 +121,8 @@ class InformationRequestControllerTest {
                       new io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest(
                           "Team Lead IR", "Can manage teams", Set.of("TEAM_OVERSIGHT")));
               var noCapMember = memberRepository.findById(noCapMemberId).orElseThrow();
-              noCapMember.setOrgRoleId(withoutCapRole.id());
+              noCapMember.setOrgRoleEntity(
+                  orgRoleRepository.findById(withoutCapRole.id()).orElseThrow());
               memberRepository.save(noCapMember);
             });
   }

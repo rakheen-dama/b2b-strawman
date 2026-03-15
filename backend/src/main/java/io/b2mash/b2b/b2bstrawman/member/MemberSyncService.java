@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.exception.PlanLimitExceededException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRole;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanLimits;
@@ -76,6 +77,9 @@ public class MemberSyncService {
                 () ->
                     txTemplate.execute(
                         status -> {
+                          // Resolve the OrgRole entity from orgRoleId or orgRole slug
+                          OrgRole resolvedRole = resolveOrgRole(orgRoleId, orgRole);
+
                           var existing = memberRepository.findByClerkUserId(clerkUserId);
                           if (existing.isPresent()) {
                             var member = existing.get();
@@ -83,15 +87,12 @@ public class MemberSyncService {
                             // Capture old role before mutation
                             String oldRole = member.getOrgRole();
 
-                            member.updateFrom(email, name, avatarUrl, orgRole);
-                            if (orgRoleId != null) {
-                              member.setOrgRoleId(orgRoleId);
-                            }
+                            member.updateFrom(email, name, avatarUrl, resolvedRole);
                             memberRepository.save(member);
                             log.info("Updated member {} in tenant {}", clerkUserId, schemaName);
 
                             // Only emit role_changed if role actually changed
-                            if (orgRole != null && !oldRole.equals(orgRole)) {
+                            if (orgRole != null && !orgRole.equals(oldRole)) {
                               auditService.log(
                                   AuditEventBuilder.builder()
                                       .eventType("member.role_changed")
@@ -110,14 +111,14 @@ public class MemberSyncService {
 
                           enforceMemberLimit(clerkOrgId);
 
-                          var member = new Member(clerkUserId, email, name, avatarUrl, orgRole);
-                          if (orgRoleId != null) {
-                            member.setOrgRoleId(orgRoleId);
-                          } else if (orgRole != null) {
-                            orgRoleRepository
-                                .findBySlug(orgRole)
-                                .ifPresent(systemRole -> member.setOrgRoleId(systemRole.getId()));
+                          if (resolvedRole == null) {
+                            throw new IllegalStateException(
+                                "Cannot create member without a valid OrgRole for slug: "
+                                    + orgRole);
                           }
+
+                          var member =
+                              new Member(clerkUserId, email, name, avatarUrl, resolvedRole);
                           memberRepository.save(member);
                           log.info("Created member {} in tenant {}", clerkUserId, schemaName);
 
@@ -135,6 +136,16 @@ public class MemberSyncService {
                         }));
     memberFilter.evictFromCache(schemaName, clerkUserId);
     return result;
+  }
+
+  private OrgRole resolveOrgRole(UUID orgRoleId, String orgRoleSlug) {
+    if (orgRoleId != null) {
+      return orgRoleRepository.findById(orgRoleId).orElse(null);
+    }
+    if (orgRoleSlug != null) {
+      return orgRoleRepository.findBySlug(orgRoleSlug).orElse(null);
+    }
+    return null;
   }
 
   public void deleteMember(String clerkOrgId, String clerkUserId) {

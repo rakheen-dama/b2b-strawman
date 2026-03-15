@@ -16,12 +16,12 @@ public interface MemberRepository extends JpaRepository<Member, UUID> {
 
   List<Member> findByEmailEndingWith(String suffix);
 
-  @Query("SELECT m FROM Member m WHERE m.orgRole IN :roles")
-  List<Member> findByOrgRoleIn(@Param("roles") List<String> roles);
+  @Query("SELECT m FROM Member m WHERE m.orgRoleEntity.slug IN :slugs")
+  List<Member> findByRoleSlugsIn(@Param("slugs") List<String> slugs);
 
-  long countByOrgRoleId(UUID orgRoleId);
+  long countByOrgRoleEntity_Id(UUID orgRoleId);
 
-  List<Member> findByOrgRoleId(UUID orgRoleId);
+  List<Member> findByOrgRoleEntity_Id(UUID orgRoleId);
 
   boolean existsByEmail(String email);
 }

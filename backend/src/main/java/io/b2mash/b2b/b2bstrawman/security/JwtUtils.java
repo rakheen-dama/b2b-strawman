@@ -15,7 +15,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
  * <p>Keycloak format (built-in org scope): {@code { "organization": ["org-alias"] }} or rich
  * format: {@code { "organization": { "org-alias": { "id": "uuid", "roles": ["owner"] } } }}
  */
-public final class ClerkJwtUtils {
+public final class JwtUtils {
 
   private static final String CLERK_ORG_CLAIM = "o";
   private static final String KEYCLOAK_ORG_CLAIM = "organization";
@@ -28,15 +28,6 @@ public final class ClerkJwtUtils {
     if (clerkId != null) return clerkId;
     // Keycloak: first alias from organization claim
     return extractKeycloakOrgId(jwt);
-  }
-
-  /** Extracts the org role from JWT. Tries Clerk format first, then Keycloak. */
-  public static String extractOrgRole(Jwt jwt) {
-    // Clerk v2: o.rol
-    String clerkRole = extractClerkClaim(jwt, "rol");
-    if (clerkRole != null) return clerkRole;
-    // Keycloak: check rich format for roles, or default to owner for org members
-    return extractKeycloakOrgRole(jwt);
   }
 
   /** Extracts the org slug from JWT. Tries Clerk format first, then Keycloak. */
@@ -63,9 +54,13 @@ public final class ClerkJwtUtils {
     return Collections.emptySet();
   }
 
-  /** Returns true if this JWT uses Clerk format (has "o" claim). */
-  public static boolean isClerkJwt(Jwt jwt) {
-    return jwt.getClaim(CLERK_ORG_CLAIM) instanceof Map<?, ?>;
+  /**
+   * Extracts the email claim from a JWT.
+   *
+   * @return the email string, or null if not present
+   */
+  public static String extractEmail(Jwt jwt) {
+    return jwt.getClaimAsString("email");
   }
 
   /** Returns true if this JWT uses Keycloak format (has "organization" claim). */
@@ -103,34 +98,5 @@ public final class ClerkJwtUtils {
     return null;
   }
 
-  @SuppressWarnings("unchecked")
-  private static String extractKeycloakOrgRole(Jwt jwt) {
-    Object orgClaim = jwt.getClaim(KEYCLOAK_ORG_CLAIM);
-    // Rich map format with roles
-    if (orgClaim instanceof Map<?, ?> map && !map.isEmpty()) {
-      var entry = map.values().iterator().next();
-      if (entry instanceof Map<?, ?> orgData) {
-        Object roles = orgData.get("roles");
-        if (roles instanceof List<?> roleList && !roleList.isEmpty()) {
-          String role = (String) roleList.getFirst();
-          // Normalize: "org:owner" -> "owner"
-          return role.startsWith("org:") ? role.substring(4) : role;
-        }
-      }
-    }
-    // Check for org_role claim (user attribute mapper workaround for KC 26.x)
-    String orgRoleClaim = jwt.getClaimAsString("org_role");
-    if (orgRoleClaim != null && !orgRoleClaim.isBlank()) {
-      return orgRoleClaim.startsWith("org:") ? orgRoleClaim.substring(4) : orgRoleClaim;
-    }
-    // List format has no roles — default to member.
-    // The first user to log into a newly-provisioned tenant gets promoted to owner
-    // by MemberFilter (see lazyCreateMember).
-    if (orgClaim instanceof List<?> list && !list.isEmpty()) {
-      return Roles.ORG_MEMBER;
-    }
-    return null;
-  }
-
-  private ClerkJwtUtils() {}
+  private JwtUtils() {}
 }

@@ -72,7 +72,7 @@ public class DormancyScheduledJob {
 
   private void notifyAdmins(int transitioned) {
     try {
-      var admins = memberRepository.findByOrgRoleIn(List.of("admin", "owner"));
+      var admins = memberRepository.findByRoleSlugsIn(List.of("admin", "owner"));
       String title =
           transitioned == 1
               ? "1 customer marked as dormant"

@@ -61,8 +61,6 @@ class MemberFilterCacheEvictionTest {
     org.mockito.Mockito.when(orgRoleRepository.findById(NEW_ROLE_ID))
         .thenReturn(Optional.of(newRole));
     org.mockito.Mockito.when(memberRepository.save(member)).thenReturn(member);
-    org.mockito.Mockito.when(orgRoleRepository.findById(ROLE_ID))
-        .thenReturn(Optional.of(orgRoleWithId(ROLE_ID, "Member", "member", true)));
 
     // Run within RequestScopes to provide TENANT_ID and MEMBER_ID + ORG_ROLE for owner check
     ScopedValue.where(io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes.TENANT_ID, TENANT_ID)
@@ -93,10 +91,10 @@ class MemberFilterCacheEvictionTest {
     var member2 = memberWithIdAndRole(UUID.randomUUID(), ROLE_ID, "user_2", "member");
 
     org.mockito.Mockito.when(orgRoleRepository.findById(ROLE_ID)).thenReturn(Optional.of(role));
-    org.mockito.Mockito.when(memberRepository.findByOrgRoleId(ROLE_ID))
+    org.mockito.Mockito.when(memberRepository.findByOrgRoleEntity_Id(ROLE_ID))
         .thenReturn(List.of(member1, member2));
     org.mockito.Mockito.when(orgRoleRepository.save(role)).thenReturn(role);
-    org.mockito.Mockito.when(memberRepository.countByOrgRoleId(ROLE_ID)).thenReturn(2L);
+    org.mockito.Mockito.when(memberRepository.countByOrgRoleEntity_Id(ROLE_ID)).thenReturn(2L);
 
     ScopedValue.where(io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes.TENANT_ID, TENANT_ID)
         .run(
@@ -115,7 +113,7 @@ class MemberFilterCacheEvictionTest {
 
     org.mockito.Mockito.when(orgRoleRepository.findById(ROLE_ID)).thenReturn(Optional.of(role));
     org.mockito.Mockito.when(orgRoleRepository.save(role)).thenReturn(role);
-    org.mockito.Mockito.when(memberRepository.countByOrgRoleId(ROLE_ID)).thenReturn(0L);
+    org.mockito.Mockito.when(memberRepository.countByOrgRoleEntity_Id(ROLE_ID)).thenReturn(0L);
 
     ScopedValue.where(io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes.TENANT_ID, TENANT_ID)
         .run(
@@ -136,9 +134,9 @@ class MemberFilterCacheEvictionTest {
 
   private static Member memberWithIdAndRole(
       UUID memberId, UUID orgRoleId, String clerkUserId, String orgRole) {
-    var member = new Member(clerkUserId, "test@test.com", "Test", null, orgRole);
+    var role = orgRoleWithId(orgRoleId, orgRole, orgRole, true);
+    var member = new Member(clerkUserId, "test@test.com", "Test", null, role);
     TestIds.withId(member, memberId);
-    member.setOrgRoleId(orgRoleId);
     member.setCapabilityOverrides(Set.of());
     return member;
   }

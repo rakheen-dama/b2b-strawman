@@ -111,12 +111,13 @@ class CapabilityEndpointTest {
 
               // Assign custom role to customRoleMember
               var customMember = memberRepository.findById(customRoleMemberId).orElseThrow();
-              customMember.setOrgRoleId(customRoleId);
+              customMember.setOrgRoleEntity(orgRoleRepository.findById(customRoleId).orElseThrow());
               memberRepository.save(customMember);
 
               // Assign custom role + overrides to overrideMember
               var overrideMember = memberRepository.findById(overrideMemberId).orElseThrow();
-              overrideMember.setOrgRoleId(customRoleId);
+              overrideMember.setOrgRoleEntity(
+                  orgRoleRepository.findById(customRoleId).orElseThrow());
               overrideMember.setCapabilityOverrides(Set.of("+INVOICING", "-TEAM_OVERSIGHT"));
               memberRepository.save(overrideMember);
 
@@ -127,7 +128,7 @@ class CapabilityEndpointTest {
                       .findFirst()
                       .orElseThrow();
               var ownerMember = memberRepository.findById(ownerMemberId).orElseThrow();
-              ownerMember.setOrgRoleId(ownerRole.getId());
+              ownerMember.setOrgRoleEntity(ownerRole);
               memberRepository.save(ownerMember);
 
               // Assign system admin role to admin member
@@ -137,7 +138,7 @@ class CapabilityEndpointTest {
                       .findFirst()
                       .orElseThrow();
               var adminMember = memberRepository.findById(adminMemberId).orElseThrow();
-              adminMember.setOrgRoleId(adminRole.getId());
+              adminMember.setOrgRoleEntity(adminRole);
               memberRepository.save(adminMember);
             });
   }

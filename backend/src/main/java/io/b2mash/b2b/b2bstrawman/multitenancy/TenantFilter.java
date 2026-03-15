@@ -3,8 +3,7 @@ package io.b2mash.b2b.b2bstrawman.multitenancy;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import io.b2mash.b2b.b2bstrawman.security.ClerkJwtUtils;
-import io.b2mash.b2b.b2bstrawman.security.Roles;
+import io.b2mash.b2b.b2bstrawman.security.JwtUtils;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -55,8 +54,8 @@ public class TenantFilter extends OncePerRequestFilter {
 
     if (authentication instanceof JwtAuthenticationToken jwtAuth) {
       Jwt jwt = jwtAuth.getToken();
-      // ClerkJwtUtils.extractOrgId handles both Clerk v2 and Keycloak formats
-      String orgId = ClerkJwtUtils.extractOrgId(jwt);
+      // JwtUtils.extractOrgId handles both Clerk v2 and Keycloak formats
+      String orgId = JwtUtils.extractOrgId(jwt);
 
       if (orgId != null) {
         String schema = resolveTenant(orgId);
@@ -72,21 +71,9 @@ public class TenantFilter extends OncePerRequestFilter {
           TenantProvisioningService svc =
               jitProvisioningEnabled ? provisioningService.getIfAvailable() : null;
           if (svc != null) {
-            String orgRole = ClerkJwtUtils.extractOrgRole(jwt);
-            // For Keycloak JWTs, role may not be in Clerk format — allow any authenticated user to
-            // trigger JIT provisioning (first-login scenario)
-            boolean canProvision =
-                orgRole == null
-                    || Roles.ORG_OWNER.equals(orgRole)
-                    || Roles.ORG_ADMIN.equals(orgRole);
-            if (canProvision) {
-              schema = attemptJitProvisioning(jwt, orgId, svc);
-            } else {
-              log.debug(
-                  "JIT provisioning skipped for org {} — user role '{}' is not admin/owner",
-                  orgId,
-                  orgRole);
-            }
+            // Any authenticated user can trigger JIT provisioning — the first user
+            // gets promoted to owner by MemberFilter (founding user logic)
+            schema = attemptJitProvisioning(jwt, orgId, svc);
           }
           if (schema != null) {
             ScopedFilterChain.runScoped(
@@ -137,7 +124,7 @@ public class TenantFilter extends OncePerRequestFilter {
   }
 
   private String attemptJitProvisioning(Jwt jwt, String orgId, TenantProvisioningService svc) {
-    String orgSlug = ClerkJwtUtils.extractOrgSlug(jwt);
+    String orgSlug = JwtUtils.extractOrgSlug(jwt);
     String orgName = orgSlug != null ? orgSlug : orgId;
     try {
       log.info("JIT provisioning tenant for org {}", orgId);

@@ -13,6 +13,7 @@ import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
@@ -58,6 +59,7 @@ class AdminReSnapshotTest {
   @Autowired private CostRateService costRateService;
   @Autowired private OrgRoleService orgRoleService;
   @Autowired private MemberRepository memberRepository;
+  @Autowired private OrgRoleRepository orgRoleRepository;
 
   private String tenantSchema;
   private UUID memberIdOwner;
@@ -226,7 +228,8 @@ class AdminReSnapshotTest {
                       new io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest(
                           "Team Oversight Manager", "Can oversee team", Set.of("TEAM_OVERSIGHT")));
               var customMember = memberRepository.findById(customRoleMemberId).orElseThrow();
-              customMember.setOrgRoleId(withCapRole.id());
+              customMember.setOrgRoleEntity(
+                  orgRoleRepository.findById(withCapRole.id()).orElseThrow());
               memberRepository.save(customMember);
 
               var withoutCapRole =
@@ -234,7 +237,8 @@ class AdminReSnapshotTest {
                       new io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest(
                           "Invoicer ReSnap", "Can manage invoices", Set.of("INVOICING")));
               var noCapMember = memberRepository.findById(noCapMemberId).orElseThrow();
-              noCapMember.setOrgRoleId(withoutCapRole.id());
+              noCapMember.setOrgRoleEntity(
+                  orgRoleRepository.findById(withoutCapRole.id()).orElseThrow());
               memberRepository.save(noCapMember);
             });
   }

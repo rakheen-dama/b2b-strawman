@@ -86,7 +86,7 @@ class ProjectAccessIntegrationTest {
                       .orElseThrow();
               var ownerMember =
                   memberRepository.findById(UUID.fromString(ownerMemberId)).orElseThrow();
-              ownerMember.setOrgRoleId(ownerRole.getId());
+              ownerMember.setOrgRoleEntity(ownerRole);
               memberRepository.save(ownerMember);
 
               var adminRole =
@@ -96,7 +96,7 @@ class ProjectAccessIntegrationTest {
                       .orElseThrow();
               var adminMember =
                   memberRepository.findById(UUID.fromString(adminMemberId)).orElseThrow();
-              adminMember.setOrgRoleId(adminRole.getId());
+              adminMember.setOrgRoleEntity(adminRole);
               memberRepository.save(adminMember);
             });
   }

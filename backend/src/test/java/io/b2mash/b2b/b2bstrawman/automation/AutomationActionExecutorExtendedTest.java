@@ -13,6 +13,7 @@ import io.b2mash.b2b.b2bstrawman.member.ProjectMember;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationRepository;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.ProjectTemplate;
@@ -55,6 +56,7 @@ class AutomationActionExecutorExtendedTest {
   @Autowired private PlanSyncService planSyncService;
   @Autowired private ProjectRepository projectRepository;
   @Autowired private MemberRepository memberRepository;
+  @Autowired private OrgRoleRepository orgRoleRepository;
   @Autowired private ProjectMemberRepository projectMemberRepository;
   @Autowired private CustomerRepository customerRepository;
   @Autowired private TaskRepository taskRepository;
@@ -81,13 +83,23 @@ class AutomationActionExecutorExtendedTest {
             () -> {
               // Create actor member (owner)
               var member =
-                  new Member("clerk_ext_test", "ext@test.com", "Extended Actor", null, "owner");
+                  new Member(
+                      "clerk_ext_test",
+                      "ext@test.com",
+                      "Extended Actor",
+                      null,
+                      orgRoleRepository.findBySlug("owner").orElseThrow());
               memberRepository.save(member);
               actorMemberId = member.getId();
 
               // Create a second member for assignment tests
               var member2 =
-                  new Member("clerk_ext_test2", "ext2@test.com", "Second Member", null, "member");
+                  new Member(
+                      "clerk_ext_test2",
+                      "ext2@test.com",
+                      "Second Member",
+                      null,
+                      orgRoleRepository.findBySlug("member").orElseThrow());
               memberRepository.save(member2);
               secondMemberId = member2.getId();
 

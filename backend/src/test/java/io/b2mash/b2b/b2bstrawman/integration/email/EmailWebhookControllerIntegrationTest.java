@@ -10,6 +10,7 @@ import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationRepository;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.nio.charset.StandardCharsets;
@@ -77,6 +78,7 @@ class EmailWebhookControllerIntegrationTest {
   @Autowired private AuditEventRepository auditEventRepository;
   @Autowired private NotificationRepository notificationRepository;
   @Autowired private MemberRepository memberRepository;
+  @Autowired private OrgRoleRepository orgRoleRepository;
 
   private String tenantSchema;
 
@@ -92,7 +94,11 @@ class EmailWebhookControllerIntegrationTest {
             () -> {
               var admin =
                   new Member(
-                      "clerk_webhook_admin", "admin@webhook-test.com", "Test Admin", null, "admin");
+                      "clerk_webhook_admin",
+                      "admin@webhook-test.com",
+                      "Test Admin",
+                      null,
+                      orgRoleRepository.findBySlug("admin").orElseThrow());
               memberRepository.save(admin);
             });
   }

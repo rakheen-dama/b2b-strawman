@@ -113,7 +113,7 @@ public class SendNotificationActionExecutor implements ActionExecutor {
             .toList();
       }
       case "ALL_ADMINS" -> {
-        yield memberRepository.findByOrgRoleIn(List.of("admin", "owner")).stream()
+        yield memberRepository.findByRoleSlugsIn(List.of("admin", "owner")).stream()
             .map(m -> m.getId())
             .toList();
       }

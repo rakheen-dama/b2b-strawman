@@ -28,7 +28,9 @@ public class ProvisioningController {
       @Valid @RequestBody ProvisioningRequest request) {
     log.info("Received provisioning request for org {}", request.clerkOrgId());
 
-    var result = provisioningService.provisionTenant(request.clerkOrgId(), request.orgName(), null);
+    var result =
+        provisioningService.provisionTenant(
+            request.clerkOrgId(), request.orgName(), request.verticalProfile());
 
     if (result.alreadyProvisioned()) {
       return ResponseEntity.status(409)
@@ -45,7 +47,8 @@ public class ProvisioningController {
 
   public record ProvisioningRequest(
       @NotBlank(message = "clerkOrgId is required") String clerkOrgId,
-      @NotBlank(message = "orgName is required") String orgName) {}
+      @NotBlank(message = "orgName is required") String orgName,
+      String verticalProfile) {}
 
   public record ProvisioningResponse(String schemaName, String message, String status) {}
 }

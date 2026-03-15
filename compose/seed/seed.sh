@@ -35,7 +35,8 @@ STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
   -H "X-API-KEY: ${API_KEY}" \
   -d "{
     \"clerkOrgId\": \"${ORG_ID}\",
-    \"orgName\": \"${ORG_NAME}\"
+    \"orgName\": \"${ORG_NAME}\",
+    \"verticalProfile\": \"accounting-za\"
   }")
 check_status "Provision org" "$STATUS"
 

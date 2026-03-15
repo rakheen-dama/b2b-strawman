@@ -4,7 +4,7 @@
 
 - **QA Position**: Day 0, Checkpoint 0.1 (not started)
 - **Cycle**: 0
-- **E2E Stack**: Not running
+- **E2E Stack**: Running
 - **Branch**: `bugfix_cycle_2026-03-15`
 - **Scenario**: `tasks/phase47-lifecycle-script.md`
 
@@ -12,7 +12,7 @@
 
 | ID | Summary | Severity | Status | Owner | PR | Day | Notes |
 |----|---------|----------|--------|-------|----|-----|-------|
-| GAP-008 | Accounting template pack not seeded (only 3 generic templates, missing 7 accounting-specific) | blocker | OPEN | Infra | — | 0 | Blocks all document generation flows |
+| GAP-008 | Accounting template pack not seeded (only 3 generic templates, missing 7 accounting-specific) | blocker | FIXED | Infra | — | 0 | Fixed: ProvisioningController now passes verticalProfile; seed.sh sends accounting-za |
 | GAP-008A | Org settings page "Coming Soon" — cannot rename org or set currency | major | OPEN | Dev | — | 0 | |
 | GAP-008B | FICA field groups not auto-attached during customer creation | major | OPEN | Dev | — | 1 | Only Contact & Address shown in Step 2 |
 | GAP-008C | Projects page JS error on first load (TypeError: null ref) | bug | OPEN | Dev | — | 0 | Race condition, non-cascading |
@@ -52,3 +52,4 @@
 | Timestamp | Agent | Action |
 |-----------|-------|--------|
 | 2026-03-15T22:35Z | Setup | Initial status seeded from gap report |
+| 2026-03-15T23:12Z | Infra | GAP-008 FIXED: Added verticalProfile to ProvisioningController DTO + seed.sh. All 10 templates seeded (3 common + 7 accounting-za). E2E stack running. |

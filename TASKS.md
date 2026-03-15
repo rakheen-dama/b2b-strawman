@@ -393,7 +393,7 @@
 | 345 | PendingInvitation Entity & Invitation Service | Backend | -- | M | 345A, 345B | **Done** (PR #670) |
 | 346 | MemberFilter DB-Only Role Resolution | Backend | 345 | M | 346A, 346B | **Done** (PR #671) |
 | 347 | @PreAuthorize Migration (Remaining Controllers) | Backend | 346 | L | 347A, 347B, 347C | **Done** (PR #672, #673, #674) |
-| 348 | Member Entity Cleanup & JwtUtils Rename | Backend | 347 | M | 348A, 348B | |
+| 348 | Member Entity Cleanup & JwtUtils Rename | Backend | 347 | M | 348A, 348B | **Done** (PR #676) |
 | 349 | KeycloakAdminClient Backend Move & Org Endpoint | Backend | 345 | M | 349A, 349B | |
 | 350 | Gateway Authorization Removal | Gateway | 349 | M | 350A, 350B | |
 | 351 | Frontend Capabilities-Only Authorization | Frontend | 350A | L | 351A, 351B, 351C | |

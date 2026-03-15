@@ -24,7 +24,7 @@ This phase completes the separation of authentication from authorization. Keyclo
 | 345 | PendingInvitation Entity & Invitation Service | Backend | — | M | 345A, 345B | **Done** (PR #670) |
 | 346 | MemberFilter DB-Only Role Resolution | Backend | 345 | M | 346A, 346B | **Done** (PR #671) |
 | 347 | @PreAuthorize Migration (Remaining Controllers) | Backend | 346 | L | 347A, 347B, 347C | **Done** (PR #672, #673, #674) |
-| 348 | Member Entity Cleanup & JwtUtils Rename | Backend | 347 | M | 348A, 348B | |
+| 348 | Member Entity Cleanup & JwtUtils Rename | Backend | 347 | M | 348A, 348B | **Done** (PR #676) |
 | 349 | KeycloakAdminClient Backend Move & Org Endpoint | Backend | 345 | M | 349A, 349B | |
 | 350 | Gateway Authorization Removal | Gateway | 349 | M | 350A, 350B | |
 | 351 | Frontend Capabilities-Only Authorization | Frontend | 350A | L | 351A, 351B, 351C | |
@@ -200,8 +200,8 @@ CLEANUP TRACK (after E351)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 3a (parallel) | 348 | 348A | V69 migration (backfill `org_role_id`, make NOT NULL, drop `org_role` VARCHAR), update `Member.java` entity (replace `orgRole` String with `@ManyToOne OrgRole orgRoleEntity`, add `getRoleSlug()`), update constructor and test factories. ~5 modified files (~8 test adjustments). Backend only. | |
-| 3b (parallel) | 348 | 348B | Rename `ClerkJwtUtils` → `JwtUtils`, remove `extractOrgRole()`, `extractClerkClaim()`, `isClerkJwt()`, `isKeycloakFlatListFormat()`. Add `extractEmail()`. Update all imports (~8 files). ~9 modified files (~5 tests). Backend only. | |
+| 3a (parallel) | 348 | 348A | V69 migration (backfill `org_role_id`, make NOT NULL, drop `org_role` VARCHAR), update `Member.java` entity (replace `orgRole` String with `@ManyToOne OrgRole orgRoleEntity`, add `getRoleSlug()`), update constructor and test factories. ~5 modified files (~8 test adjustments). Backend only. | **Done** (PR #676) |
+| 3b (parallel) | 348 | 348B | Rename `ClerkJwtUtils` → `JwtUtils`, remove `extractOrgRole()`, `extractClerkClaim()`, `isClerkJwt()`, `isKeycloakFlatListFormat()`. Add `extractEmail()`. Update all imports (~8 files). ~9 modified files (~5 tests). Backend only. | **Done** (PR #676) |
 
 ### Stage 4: Gateway Strip
 
@@ -467,8 +467,8 @@ Stage 7: [353A] -> [353B]                                                      (
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **348A** | 348.1--348.5 | V69 migration (backfill org_role_id, make NOT NULL, drop org_role VARCHAR). Update `Member.java`: replace `orgRole` String field with `@ManyToOne OrgRole orgRoleEntity`, add `getRoleSlug()`, update constructor. Update `MemberFilter`, `MemberSyncService`, test factories. ~5 modified files (~8 test adjustments). Backend only. | |
-| **348B** | 348.6--348.10 | Rename `ClerkJwtUtils.java` -> `JwtUtils.java`. Remove `extractClerkClaim()`, `extractOrgRole()`, `isClerkJwt()`. Add `extractEmail()`. Update all imports (~8 files). ~9 modified files (~5 tests). Backend only. | |
+| **348A** | 348.1--348.5 | V69 migration (backfill org_role_id, make NOT NULL, drop org_role VARCHAR). Update `Member.java`: replace `orgRole` String field with `@ManyToOne OrgRole orgRoleEntity`, add `getRoleSlug()`, update constructor. Update `MemberFilter`, `MemberSyncService`, test factories. ~5 modified files (~8 test adjustments). Backend only. | **Done** (PR #676) |
+| **348B** | 348.6--348.10 | Rename `ClerkJwtUtils.java` -> `JwtUtils.java`. Remove `extractClerkClaim()`, `extractOrgRole()`, `isClerkJwt()`. Add `extractEmail()`. Update all imports (~8 files). ~9 modified files (~5 tests). Backend only. | **Done** (PR #676) |
 
 ### Tasks
 

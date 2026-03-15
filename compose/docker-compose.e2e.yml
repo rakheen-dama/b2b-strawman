@@ -117,6 +117,7 @@ services:
       args:
         NEXT_PUBLIC_AUTH_MODE: mock
         NEXT_PUBLIC_MOCK_IDP_URL: http://localhost:8090
+        NEXT_PUBLIC_BACKEND_URL: http://localhost:8081
     container_name: e2e-frontend
     environment:
       BACKEND_URL: http://backend:8080

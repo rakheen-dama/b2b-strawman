@@ -107,11 +107,11 @@ class AutomationTemplateControllerTest {
   }
 
   @Test
-  void listTemplates_returns6() throws Exception {
+  void listTemplates_returns9() throws Exception {
     mockMvc
         .perform(get("/api/automation-templates").with(ownerJwt()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$", hasSize(6)))
+        .andExpect(jsonPath("$", hasSize(9)))
         .andExpect(jsonPath("$[0].slug").exists())
         .andExpect(jsonPath("$[0].name").exists())
         .andExpect(jsonPath("$[0].category").exists())

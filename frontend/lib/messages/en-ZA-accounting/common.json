@@ -1,0 +1,36 @@
+{
+  "nav": {
+    "projects": "Engagements",
+    "customers": "Clients",
+    "tasks": "Work Items",
+    "timeEntries": "Time Records",
+    "rateCards": "Fee Schedule",
+    "proposals": "Engagement Letters"
+  },
+  "entities": {
+    "project": {
+      "singular": "Engagement",
+      "plural": "Engagements"
+    },
+    "customer": {
+      "singular": "Client",
+      "plural": "Clients"
+    },
+    "task": {
+      "singular": "Work Item",
+      "plural": "Work Items"
+    },
+    "timeEntry": {
+      "singular": "Time Record",
+      "plural": "Time Records"
+    },
+    "rateCard": {
+      "singular": "Fee Schedule",
+      "plural": "Fee Schedules"
+    },
+    "proposal": {
+      "singular": "Engagement Letter",
+      "plural": "Engagement Letters"
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "profileId": "accounting-za",
+  "name": "South African Accounting Firm",
+  "description": "Complete configuration for a small SA accounting practice: FICA compliance, engagement letter templates, accounting-specific custom fields, automation rules, and request templates.",
+  "locale": "en-ZA",
+  "currency": "ZAR",
+  "packs": {
+    "field": ["accounting-za-customer", "accounting-za-project"],
+    "compliance": ["fica-kyc-za"],
+    "template": ["accounting-za"],
+    "clause": ["accounting-za-clauses"],
+    "automation": ["automation-accounting-za"],
+    "request": ["year-end-info-request-za"]
+  },
+  "rateCardDefaults": {
+    "currency": "ZAR",
+    "billingRates": [
+      { "roleName": "Owner", "hourlyRate": 1500 },
+      { "roleName": "Admin", "hourlyRate": 850 },
+      { "roleName": "Member", "hourlyRate": 450 }
+    ],
+    "costRates": [
+      { "roleName": "Owner", "hourlyRate": 650 },
+      { "roleName": "Admin", "hourlyRate": 350 },
+      { "roleName": "Member", "hourlyRate": 180 }
+    ]
+  },
+  "taxDefaults": [
+    { "name": "VAT", "rate": 15.00, "default": true }
+  ],
+  "terminologyOverrides": "en-ZA-accounting"
+}

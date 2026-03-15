@@ -5,7 +5,7 @@ BACKEND_URL="${BACKEND_URL:-http://backend:8080}"
 MOCK_IDP_URL="${MOCK_IDP_URL:-http://mock-idp:8090}"
 API_KEY="${API_KEY:-e2e-test-api-key}"
 
-ORG_ID="org_e2e_test"
+ORG_ID="e2e-test-org"
 ORG_NAME="E2E Test Organization"
 ORG_SLUG="e2e-test-org"
 

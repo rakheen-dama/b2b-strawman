@@ -7,8 +7,8 @@ const MOCK_IDP_URL = process.env.MOCK_IDP_URL || "http://mock-idp:8090";
  * Mock auth provider — reads JWT from mock-auth-token cookie.
  * Used when NEXT_PUBLIC_AUTH_MODE=mock (E2E testing / agent automation).
  *
- * JWT payload format:
- *   { sub, o: { id, slg }, iss, aud, iat, exp, v }
+ * JWT payload format (Keycloak):
+ *   { sub, organization: [orgSlug], groups: [...], email, iss, aud, iat, exp }
  */
 
 function getTokenFromCookie(
@@ -31,14 +31,6 @@ function decodeJwtPayload(token: string): Record<string, unknown> {
   return JSON.parse(atob(base64));
 }
 
-/**
- * Mock user groups — maps userId to group names.
- * Alice gets platform-admins so E2E tests can exercise the admin panel.
- */
-const MOCK_USER_GROUPS: Record<string, string[]> = {
-  user_e2e_alice: ["platform-admins"],
-};
-
 export async function getSessionIdentity(): Promise<SessionIdentity> {
   const cookieStore = await cookies();
   const token = getTokenFromCookie(cookieStore);
@@ -49,9 +41,11 @@ export async function getSessionIdentity(): Promise<SessionIdentity> {
     throw new Error("No userId in mock JWT");
   }
 
+  const groups = (payload.groups as string[]) ?? [];
+
   return {
     userId,
-    groups: MOCK_USER_GROUPS[userId] ?? [],
+    groups,
   };
 }
 
@@ -61,11 +55,12 @@ export async function getAuthContext(): Promise<AuthContext> {
   const payload = decodeJwtPayload(token);
 
   const userId = payload.sub as string | undefined;
-  const org = payload.o as
-    | { id?: string; slg?: string }
-    | undefined;
+  const organization = payload.organization as string[] | undefined;
+  const groups = (payload.groups as string[]) ?? [];
 
-  if (!userId || !org?.id || !org?.slg) {
+  const orgSlug = organization?.[0];
+
+  if (!userId || !orgSlug) {
     throw new Error(
       "No active organization — mock JWT missing required claims",
     );
@@ -73,9 +68,9 @@ export async function getAuthContext(): Promise<AuthContext> {
 
   return {
     userId,
-    orgId: org.id,
-    orgSlug: org.slg,
-    groups: MOCK_USER_GROUPS[userId] ?? [],
+    orgId: orgSlug, // In Keycloak format, orgId = orgSlug
+    orgSlug,
+    groups,
   };
 }
 
@@ -88,19 +83,20 @@ export async function getCurrentUserEmail(): Promise<string | null> {
   const cookieStore = await cookies();
   const token = getTokenFromCookie(cookieStore);
   const payload = decodeJwtPayload(token);
-  const userId = payload.sub as string | undefined;
 
-  if (!userId) {
-    return null;
-  }
+  // Email is now a top-level claim in the Keycloak-format token
+  const email = payload.email as string | undefined;
+  if (email) return email;
+
+  // Fallback: fetch from userinfo endpoint
+  const userId = payload.sub as string | undefined;
+  if (!userId) return null;
 
   try {
     const response = await fetch(`${MOCK_IDP_URL}/userinfo/${userId}`, {
       signal: AbortSignal.timeout(3000),
     });
-    if (!response.ok) {
-      return null;
-    }
+    if (!response.ok) return null;
     const data = await response.json();
     return data.email ?? null;
   } catch {
@@ -112,4 +108,3 @@ export async function hasPlan(_plan: string): Promise<boolean> {
   // Mock mode always returns true — E2E tests run with full Pro features
   return true;
 }
-

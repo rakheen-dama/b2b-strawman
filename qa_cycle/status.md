@@ -4,8 +4,7 @@
 
 - **QA Position**: Day 1, Checkpoint 1.4 (BLOCKED by GAP-027) — GAP-027 FIXED, awaiting rebuild
 - **Cycle**: 1
-- **E2E Stack**: Running
-- **NEEDS_REBUILD**: true (frontend changed — E2E stack needs rebuild before re-verification)
+- **E2E Stack**: Running (rebuilt after PRs #687-690)
 - **Branch**: `bugfix_cycle_2026-03-15`
 - **Scenario**: `tasks/phase47-lifecycle-script.md`
 
@@ -65,3 +64,4 @@
 | 2026-03-16T02:15Z | Dev | GAP-025 FIXED: Added `NEXT_PUBLIC_BACKEND_URL=http://localhost:8081` as Docker build arg in `compose/docker-compose.e2e.yml` and declared `ARG NEXT_PUBLIC_BACKEND_URL` in `frontend/Dockerfile`. PR #688 merged to `bugfix_cycle_2026-03-15`. NEEDS_REBUILD=true (frontend build arg changed). |
 | 2026-03-16T02:30Z | Dev | GAP-008C FIXED: Created `error.tsx` error boundary at projects route level. Added null guards on `project.status` (PROJECT_STATUS_BADGE lookup), `project.createdAt` (formatDate), and customer API result values (optional chaining). PR #689 merged to `bugfix_cycle_2026-03-15`. NEEDS_REBUILD=true. |
 | 2026-03-16T02:45Z | Dev | GAP-026 FIXED: Removed 4-line inactive override in `CompliancePackSeeder` (non-autoInstantiate templates were wrongly set to `active=false`). Added `V71__activate_fica_checklist_template.sql` tenant migration to fix existing data. PR #690 merged to `bugfix_cycle_2026-03-15`. NEEDS_REBUILD=true (backend changed). |
+| 2026-03-16T03:05Z | Infra | E2E stack rebuilt after cycle 1 fixes (PRs #687-690). All services healthy: frontend (3001), backend (8081), mock-idp (8090) all returning HTTP 200. NEEDS_REBUILD cleared. Stack ready for QA re-verification. |

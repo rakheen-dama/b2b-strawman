@@ -29,7 +29,7 @@ This phase completes the separation of authentication from authorization. Keyclo
 | 350 | Gateway Authorization Removal | Gateway | 349 | M | 350A, 350B | **Done** (PR #677) |
 | 351 | Frontend Capabilities-Only Authorization | Frontend | 350A | L | 351A, 351B, 351C | **Done** (PRs #678, #679, #680) |
 | 352 | Mock IDP & E2E Fixture Update | Frontend/E2E | 351 | S | 352A | **Done** (PR #681) |
-| 353 | Cleanup — Remove ROLE_ORG_* & Role Sync | Backend | 351 | S | 353A, 353B | |
+| 353 | Cleanup — Remove ROLE_ORG_* & Role Sync | Backend | 351 | S | 353A, 353B | **Done** (PR #682) |
 
 ---
 
@@ -228,8 +228,8 @@ CLEANUP TRACK (after E351)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 7a | 353 | 353A | Remove `ROLE_ORG_*` authority grants from `ClerkJwtAuthenticationConverter`, remove `Roles.AUTHORITY_ORG_OWNER/ADMIN/MEMBER` constants. ~2 modified files (~4 tests). Backend only. | |
-| 7b | 353 | 353B | Remove `MemberSyncService` role sync path (webhook role sync code), clean unused role sync audit events. ~2 modified files (~3 tests). Backend only. | |
+| 7a | 353 | 353A | Remove `ROLE_ORG_*` authority grants from `ClerkJwtAuthenticationConverter`, remove `Roles.AUTHORITY_ORG_OWNER/ADMIN/MEMBER` constants. ~2 modified files (~4 tests). Backend only. | **Done** (PR #682) |
+| 7b | 353 | 353B | Remove `MemberSyncService` role sync path (webhook role sync code), clean unused role sync audit events. ~2 modified files (~3 tests). Backend only. | **Done** (PR #682) |
 
 ### Timeline
 
@@ -757,8 +757,8 @@ Stage 7: [353A] -> [353B]                                                      (
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **353A** | 353.1--353.3 | Remove `ROLE_ORG_*` authority grants from `ClerkJwtAuthenticationConverter` (or renamed `JwtUtils` integration). Remove `Roles.AUTHORITY_ORG_OWNER`, `AUTHORITY_ORG_ADMIN`, `AUTHORITY_ORG_MEMBER` constants. ~2 modified files (~4 tests). Backend only. | |
-| **353B** | 353.4--353.6 | Remove `MemberSyncService` webhook role sync code path (the part that syncs Keycloak org role to DB). Clean unused role sync audit events. ~2 modified files (~3 tests). Backend only. | |
+| **353A** | 353.1--353.3 | Remove `ROLE_ORG_*` authority grants from `ClerkJwtAuthenticationConverter` (or renamed `JwtUtils` integration). Remove `Roles.AUTHORITY_ORG_OWNER`, `AUTHORITY_ORG_ADMIN`, `AUTHORITY_ORG_MEMBER` constants. ~2 modified files (~4 tests). Backend only. | **Done** (PR #682) |
+| **353B** | 353.4--353.6 | Remove `MemberSyncService` webhook role sync code path (the part that syncs Keycloak org role to DB). Clean unused role sync audit events. ~2 modified files (~3 tests). Backend only. | **Done** (PR #682) |
 
 ### Tasks
 

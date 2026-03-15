@@ -398,7 +398,13 @@
 | 350 | Gateway Authorization Removal | Gateway | 349 | M | 350A, 350B | **Done** (PR #677) |
 | 351 | Frontend Capabilities-Only Authorization | Frontend | 350A | L | 351A, 351B, 351C | **Done** (PRs #678, #679, #680) |
 | 352 | Mock IDP & E2E Fixture Update | Frontend/E2E | 351 | S | 352A | **Done** (PR #681) |
-| 353 | Cleanup — Remove ROLE_ORG_* & Role Sync | Backend | 351 | S | 353A, 353B | |
+| 353 | Cleanup — Remove ROLE_ORG_* & Role Sync | Backend | 351 | S | 353A, 353B | **Done** (PR #682) |
+| **Phase 47 — Vertical QA: Small SA Accounting Firm** | | | | | | See [tasks/phase47-vertical-qa-accounting.md](tasks/phase47-vertical-qa-accounting.md) |
+| 354 | Vertical Profile Infrastructure + Field & Compliance Packs | Backend | -- | M | 354A | |
+| 355 | Document Template Pack + Clause Pack | Backend | -- | M | 355A | |
+| 356 | Automation Templates + Request Pack + Profile Manifest | Backend + Frontend | -- | S | 356A | |
+| 357 | 90-Day Lifecycle Script + Agent Execution | Process | 354, 355, 356 | L | 357A | |
+| 358 | Founder Walkthrough Guide + Gap Consolidation | Process | 357 | M | 358A | |
 
 ---
 

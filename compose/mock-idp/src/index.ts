@@ -22,7 +22,9 @@ app.get("/.well-known/jwks.json", (_req, res) => {
   res.json({ keys: [publicKeyJwk] });
 });
 
-// User groups — Alice is platform admin
+// User groups — only Alice is in platform-admins for now.
+// Known simplification: Bob and Carol have no groups. Extend as needed
+// when E2E tests require group-based authorization for other users.
 const USER_GROUPS: Record<string, string[]> = {
   user_e2e_alice: ["platform-admins"],
 };

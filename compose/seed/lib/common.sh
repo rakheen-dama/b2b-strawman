@@ -12,7 +12,7 @@ else
 fi
 
 API_KEY="${API_KEY:-e2e-test-api-key}"
-ORG_ID="org_e2e_test"
+ORG_ID="e2e-test-org"
 ORG_SLUG="e2e-test-org"
 
 # Temp file for API responses (cleaned up on exit)

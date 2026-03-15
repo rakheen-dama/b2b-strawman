@@ -2,18 +2,16 @@ import { describe, it, expect } from "vitest";
 import type { AuthContext, AuthUser, OrgMemberInfo } from "@/lib/auth/types";
 
 describe("Auth types — compile-time type assertions", () => {
-  it("AuthContext has orgId, orgSlug, orgRole, userId, groups fields", () => {
+  it("AuthContext has orgId, orgSlug, userId, groups fields", () => {
     const ctx = {
       orgId: "org_123",
       orgSlug: "acme",
-      orgRole: "org:admin",
       userId: "user_456",
       groups: [],
     } satisfies AuthContext;
 
     expect(ctx.orgId).toBe("org_123");
     expect(ctx.orgSlug).toBe("acme");
-    expect(ctx.orgRole).toBe("org:admin");
     expect(ctx.userId).toBe("user_456");
     expect(ctx.groups).toEqual([]);
   });
@@ -22,7 +20,6 @@ describe("Auth types — compile-time type assertions", () => {
     const ctx = {
       orgId: "org_123",
       orgSlug: "acme",
-      orgRole: "org:admin",
       userId: "user_456",
       groups: ["platform-admins"],
     } satisfies AuthContext;

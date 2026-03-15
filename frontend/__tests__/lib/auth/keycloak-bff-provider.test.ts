@@ -17,7 +17,6 @@ import {
   getAuthToken,
   getCurrentUserEmail,
   hasPlan,
-  requireRole,
 } from "@/lib/auth/providers/keycloak-bff";
 import { cookies } from "next/headers";
 
@@ -29,7 +28,6 @@ const defaultBffResponse = {
   picture: "https://example.com/alice.jpg",
   orgId: "kc-org-456",
   orgSlug: "acme-corp",
-  orgRole: "owner",
 };
 
 describe("Keycloak BFF auth provider", () => {
@@ -51,7 +49,6 @@ describe("Keycloak BFF auth provider", () => {
       userId: "kc-user-123",
       orgId: "kc-org-456",
       orgSlug: "acme-corp",
-      orgRole: "org:owner",
       groups: [],
     });
   });
@@ -70,27 +67,6 @@ describe("Keycloak BFF auth provider", () => {
     );
   });
 
-  it("getAuthContext() normalizes orgRole with org: prefix", async () => {
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve({ ...defaultBffResponse, orgRole: "admin" }),
-    });
-
-    const ctx = await getAuthContext();
-    expect(ctx.orgRole).toBe("org:admin");
-  });
-
-  it("getAuthContext() preserves existing org: prefix", async () => {
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: () =>
-        Promise.resolve({ ...defaultBffResponse, orgRole: "org:member" }),
-    });
-
-    const ctx = await getAuthContext();
-    expect(ctx.orgRole).toBe("org:member");
-  });
-
   it("getAuthContext() throws when user is not authenticated", async () => {
     mockFetch.mockResolvedValue({
       ok: true,
@@ -103,7 +79,6 @@ describe("Keycloak BFF auth provider", () => {
           picture: null,
           orgId: null,
           orgSlug: null,
-          orgRole: null,
         }),
     });
 
@@ -133,51 +108,5 @@ describe("Keycloak BFF auth provider", () => {
   it("hasPlan() always returns true", async () => {
     const result = await hasPlan("pro");
     expect(result).toBe(true);
-  });
-
-  it("requireRole('any') passes for any role", async () => {
-    await expect(requireRole("any")).resolves.toBeUndefined();
-  });
-
-  it("requireRole('owner') passes when role is owner", async () => {
-    await expect(requireRole("owner")).resolves.toBeUndefined();
-  });
-
-  it("requireRole('owner') throws when role is admin", async () => {
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: () =>
-        Promise.resolve({ ...defaultBffResponse, orgRole: "admin" }),
-    });
-
-    await expect(requireRole("owner")).rejects.toThrow(
-      "Insufficient permissions — owner role required",
-    );
-  });
-
-  it("requireRole('admin') passes when role is admin", async () => {
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: () =>
-        Promise.resolve({ ...defaultBffResponse, orgRole: "admin" }),
-    });
-
-    await expect(requireRole("admin")).resolves.toBeUndefined();
-  });
-
-  it("requireRole('admin') passes when role is owner", async () => {
-    await expect(requireRole("admin")).resolves.toBeUndefined();
-  });
-
-  it("requireRole('admin') throws when role is member", async () => {
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: () =>
-        Promise.resolve({ ...defaultBffResponse, orgRole: "member" }),
-    });
-
-    await expect(requireRole("admin")).rejects.toThrow(
-      "Insufficient permissions — admin role required",
-    );
   });
 });

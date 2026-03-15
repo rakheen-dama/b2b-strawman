@@ -8,7 +8,7 @@ const MOCK_IDP_URL = process.env.MOCK_IDP_URL || "http://mock-idp:8090";
  * Used when NEXT_PUBLIC_AUTH_MODE=mock (E2E testing / agent automation).
  *
  * JWT payload format:
- *   { sub, o: { id, rol, slg }, iss, aud, iat, exp, v }
+ *   { sub, o: { id, slg }, iss, aud, iat, exp, v }
  */
 
 function getTokenFromCookie(
@@ -62,10 +62,10 @@ export async function getAuthContext(): Promise<AuthContext> {
 
   const userId = payload.sub as string | undefined;
   const org = payload.o as
-    | { id?: string; slg?: string; rol?: string }
+    | { id?: string; slg?: string }
     | undefined;
 
-  if (!userId || !org?.id || !org?.slg || !org?.rol) {
+  if (!userId || !org?.id || !org?.slg) {
     throw new Error(
       "No active organization — mock JWT missing required claims",
     );
@@ -75,7 +75,6 @@ export async function getAuthContext(): Promise<AuthContext> {
     userId,
     orgId: org.id,
     orgSlug: org.slg,
-    orgRole: org.rol.startsWith("org:") ? org.rol : `org:${org.rol}`,
     groups: MOCK_USER_GROUPS[userId] ?? [],
   };
 }
@@ -114,25 +113,3 @@ export async function hasPlan(_plan: string): Promise<boolean> {
   return true;
 }
 
-export async function requireRole(
-  role: "admin" | "owner" | "any",
-): Promise<void> {
-  const { orgRole } = await getAuthContext();
-
-  if (role === "any") {
-    return;
-  }
-
-  // orgRole is always normalized to "org:" prefix format
-  if (role === "owner" && orgRole !== "org:owner") {
-    throw new Error("Insufficient permissions — owner role required");
-  }
-
-  if (
-    role === "admin" &&
-    orgRole !== "org:admin" &&
-    orgRole !== "org:owner"
-  ) {
-    throw new Error("Insufficient permissions — admin role required");
-  }
-}

@@ -215,7 +215,7 @@ CLEANUP TRACK (after E351)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 5a | 351 | 351A | Remove `orgRole` from `AuthContext` interface in `types.ts`, update `keycloak-bff.ts` (remove `orgRole` extraction, delete `requireRole()`), update `mock/server.ts` (parse Keycloak-only format). ~4 modified files (~6 tests). Frontend only. | **Done** (PR #678) |
-| 5b | 351 | 351B | Migrate `orgRole` checks → `fetchMyCapabilities()` in: settings layout, invoices pages/actions (6 files), customers pages/actions (5 files), projects pages/actions (4 files). ~15 modified files (~5 test updates). Frontend only. | |
+| 5b | 351 | 351B | Migrate `orgRole` checks → `fetchMyCapabilities()` in: settings layout, invoices pages/actions (6 files), customers pages/actions (5 files), projects pages/actions (4 files). ~15 modified files (~5 test updates). Frontend only. | **Done** (PR #679) |
 | 5c | 351 | 351C | Migrate remaining `orgRole` checks: team page/actions, dashboard, my-work, retainers, schedules, compliance, documents, billing, resource pages/actions, component files (`member-list.tsx`, `task-list-panel.tsx`, `expense-list.tsx`, etc.). ~15 modified files (~5 test updates). Frontend only. | |
 
 ### Stage 6: E2E & Mock IDP
@@ -642,7 +642,7 @@ Stage 7: [353A] -> [353B]                                                      (
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **351A** | 351.1--351.5 | Remove `orgRole` from `AuthContext` interface, update `keycloak-bff.ts` (remove extraction, delete `requireRole()`), update `mock/server.ts` (Keycloak-only format), update `types.ts`. ~4 modified files (~6 tests). Frontend only. | |
-| **351B** | 351.6--351.9 | Migrate `orgRole` checks to capabilities in settings, invoices, customers, projects pages/actions (~15 files). + test updates. Frontend only. | |
+| **351B** | 351.6--351.9 | Migrate `orgRole` checks to capabilities in settings, invoices, customers, projects pages/actions (~15 files). + test updates. Frontend only. | **Done** (PR #679) |
 | **351C** | 351.10--351.13 | Migrate remaining `orgRole` checks in team, dashboard, retainers, schedules, compliance, documents, my-work, billing, resources, and component files (~15 files). + test updates. Frontend only. | |
 
 ### Tasks

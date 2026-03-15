@@ -402,7 +402,7 @@
 | **Phase 47 — Vertical QA: Small SA Accounting Firm** | | | | | | See [tasks/phase47-vertical-qa-accounting.md](tasks/phase47-vertical-qa-accounting.md) |
 | 354 | Vertical Profile Infrastructure + Field & Compliance Packs | Backend | -- | M | 354A | **Done** (PR #684) |
 | 355 | Document Template Pack + Clause Pack | Backend | -- | M | 355A | **Done** (PR #683) |
-| 356 | Automation Templates + Request Pack + Profile Manifest | Backend + Frontend | -- | S | 356A | |
+| 356 | Automation Templates + Request Pack + Profile Manifest | Backend + Frontend | -- | S | 356A | **Done** (PR #685) |
 | 357 | 90-Day Lifecycle Script + Agent Execution | Process | 354, 355, 356 | L | 357A | |
 | 358 | Founder Walkthrough Guide + Gap Consolidation | Process | 357 | M | 358A | |
 

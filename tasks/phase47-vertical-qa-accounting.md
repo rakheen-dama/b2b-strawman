@@ -29,7 +29,7 @@ This phase creates a production-quality accounting vertical profile (pack data, 
 |------|------|-------|------|--------|--------|--------|
 | 354 | Vertical Profile Infrastructure + Field & Compliance Packs | Backend | — | M | 354A | **Done** (PR #684) |
 | 355 | Document Template Pack + Clause Pack | Backend | — | M | 355A | **Done** (PR #683) |
-| 356 | Automation Templates + Request Pack + Profile Manifest | Backend + Frontend | — | S | 356A | |
+| 356 | Automation Templates + Request Pack + Profile Manifest | Backend + Frontend | — | S | 356A | **Done** (PR #685) |
 | 357 | 90-Day Lifecycle Script + Agent Execution | Process | 354, 355, 356 | L | 357A | |
 | 358 | Founder Walkthrough Guide + Gap Consolidation | Process | 357 | M | 358A | |
 
@@ -90,7 +90,7 @@ PROCESS ARTIFACTS (sequential, after all packs)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 1a (parallel) | 355 | 355A | Template pack `accounting-za/pack.json` + 7 Tiptap content files, clause pack with 7 clauses + associations, integration tests (~6). Backend only. | **Done** (PR #683) |
-| 1b (parallel) | 356 | 356A | Automation templates (3 rules), request pack (8 items), profile manifest, terminology overrides, integration tests (~4). Backend + Frontend. | |
+| 1b (parallel) | 356 | 356A | Automation templates (3 rules), request pack (8 items), profile manifest, terminology overrides, integration tests (~4). Backend + Frontend. | **Done** (PR #685) |
 
 ### Stage 2: Agent Execution
 
@@ -220,7 +220,7 @@ PROCESS ARTIFACTS (sequential, after all packs)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **356A** | 356.1--356.7 | Automation templates (3 rules), request pack (8 items), profile manifest, terminology overrides, integration tests (~4). Backend + Frontend. | |
+| **356A** | 356.1--356.7 | Automation templates (3 rules), request pack (8 items), profile manifest, terminology overrides, integration tests (~4). Backend + Frontend. | **Done** (PR #685) |
 
 ### Tasks
 

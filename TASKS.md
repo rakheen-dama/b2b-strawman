@@ -403,7 +403,7 @@
 | 354 | Vertical Profile Infrastructure + Field & Compliance Packs | Backend | -- | M | 354A | **Done** (PR #684) |
 | 355 | Document Template Pack + Clause Pack | Backend | -- | M | 355A | **Done** (PR #683) |
 | 356 | Automation Templates + Request Pack + Profile Manifest | Backend + Frontend | -- | S | 356A | **Done** (PR #685) |
-| 357 | 90-Day Lifecycle Script + Agent Execution | Process | 354, 355, 356 | L | 357A | |
+| 357 | 90-Day Lifecycle Script + Agent Execution | Process | 354, 355, 356 | L | 357A | **Done** (PR #686) |
 | 358 | Founder Walkthrough Guide + Gap Consolidation | Process | 357 | M | 358A | |
 
 ---

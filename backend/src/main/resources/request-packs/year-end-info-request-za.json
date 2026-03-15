@@ -1,0 +1,73 @@
+{
+  "packId": "year-end-info-request-za",
+  "version": 1,
+  "verticalProfile": "accounting-za",
+  "name": "Year-End Information Request (SA)",
+  "description": "Information request template for year-end tax and financial statement preparation — requests trial balance, bank statements, loan agreements, and fixed asset register from the client via portal",
+  "items": [
+    {
+      "name": "Trial Balance",
+      "description": "Trial balance as at the financial year-end date, exported from the client's accounting system (Sage, Xero, QuickBooks, or manual records)",
+      "responseType": "FILE_UPLOAD",
+      "required": true,
+      "fileTypeHints": "PDF, Excel",
+      "sortOrder": 1
+    },
+    {
+      "name": "Bank Statements (Full Year)",
+      "description": "Complete bank statements for all business accounts for the full financial year",
+      "responseType": "FILE_UPLOAD",
+      "required": true,
+      "fileTypeHints": "PDF",
+      "sortOrder": 2
+    },
+    {
+      "name": "Loan Agreements",
+      "description": "All loan agreements (bank loans, shareholder loans, hire purchase) with current balances and repayment schedules",
+      "responseType": "FILE_UPLOAD",
+      "required": true,
+      "fileTypeHints": "PDF",
+      "sortOrder": 3
+    },
+    {
+      "name": "Fixed Asset Register",
+      "description": "List of all fixed assets owned by the business, with purchase dates, cost, and current book values. Include any additions or disposals during the year.",
+      "responseType": "FILE_UPLOAD",
+      "required": true,
+      "fileTypeHints": "PDF, Excel",
+      "sortOrder": 4
+    },
+    {
+      "name": "Debtors Age Analysis",
+      "description": "Age analysis of accounts receivable as at year-end",
+      "responseType": "FILE_UPLOAD",
+      "required": false,
+      "fileTypeHints": "PDF, Excel",
+      "sortOrder": 5
+    },
+    {
+      "name": "Creditors Age Analysis",
+      "description": "Age analysis of accounts payable as at year-end",
+      "responseType": "FILE_UPLOAD",
+      "required": false,
+      "fileTypeHints": "PDF, Excel",
+      "sortOrder": 6
+    },
+    {
+      "name": "Insurance Schedule",
+      "description": "Schedule of all business insurance policies (short-term, professional indemnity, key-man) with premium amounts",
+      "responseType": "FILE_UPLOAD",
+      "required": false,
+      "fileTypeHints": "PDF",
+      "sortOrder": 7
+    },
+    {
+      "name": "Payroll Summary",
+      "description": "Annual payroll summary including EMP201 submissions, UIF, SDL, and PAYE reconciliation",
+      "responseType": "FILE_UPLOAD",
+      "required": true,
+      "fileTypeHints": "PDF, Excel",
+      "sortOrder": 8
+    }
+  ]
+}

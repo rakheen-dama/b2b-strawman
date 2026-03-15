@@ -1,0 +1,84 @@
+{
+  "packId": "automation-accounting-za",
+  "version": 1,
+  "verticalProfile": "accounting-za",
+  "templates": [
+    {
+      "slug": "fica-reminder",
+      "name": "FICA Reminder (7 days)",
+      "description": "Notifies the assigned member when a new client has not started FICA verification after 7 days",
+      "category": "compliance",
+      "triggerType": "CUSTOMER_STATUS_CHANGED",
+      "triggerConfig": { "toStatus": "PROSPECT" },
+      "conditions": [],
+      "actions": [
+        {
+          "actionType": "SEND_NOTIFICATION",
+          "actionConfig": {
+            "recipientType": "ORG_ADMINS",
+            "title": "FICA not started: {{customer.name}}",
+            "message": "Client {{customer.name}} was created 7 days ago and FICA verification has not been started. Please initiate the FICA/KYC process."
+          },
+          "delayDuration": 7,
+          "delayUnit": "DAYS",
+          "sortOrder": 0
+        }
+      ]
+    },
+    {
+      "slug": "accounting-za-budget-alert",
+      "name": "Engagement Budget Alert (80%)",
+      "description": "Notifies the owner when an engagement budget reaches 80% consumption",
+      "category": "monitoring",
+      "triggerType": "BUDGET_THRESHOLD_REACHED",
+      "triggerConfig": { "thresholdPercent": 80 },
+      "conditions": [],
+      "actions": [
+        {
+          "actionType": "SEND_NOTIFICATION",
+          "actionConfig": {
+            "recipientType": "PROJECT_OWNER",
+            "title": "Budget alert: {{project.name}} at 80%",
+            "message": "The engagement {{project.name}} for {{customer.name}} has consumed 80% of its budget. Review time logged and consider whether scope or budget needs adjustment."
+          },
+          "delayDuration": null,
+          "delayUnit": null,
+          "sortOrder": 0
+        }
+      ]
+    },
+    {
+      "slug": "accounting-za-invoice-overdue",
+      "name": "Invoice Overdue (30 days)",
+      "description": "Notifies the admin/bookkeeper when an invoice is overdue for 30 days",
+      "category": "notifications",
+      "triggerType": "INVOICE_STATUS_CHANGED",
+      "triggerConfig": { "toStatus": "OVERDUE" },
+      "conditions": [],
+      "actions": [
+        {
+          "actionType": "SEND_NOTIFICATION",
+          "actionConfig": {
+            "recipientType": "ORG_ADMINS",
+            "title": "Invoice overdue: {{invoice.invoiceNumber}}",
+            "message": "Invoice {{invoice.invoiceNumber}} for {{customer.name}} (R{{invoice.total}}) is now overdue. Please follow up with the client for payment."
+          },
+          "delayDuration": null,
+          "delayUnit": null,
+          "sortOrder": 0
+        },
+        {
+          "actionType": "SEND_EMAIL",
+          "actionConfig": {
+            "recipientType": "CUSTOMER_CONTACT",
+            "subject": "Payment reminder: Invoice {{invoice.invoiceNumber}}",
+            "body": "Dear {{customer.name}},\n\nThis is a friendly reminder that invoice {{invoice.invoiceNumber}} dated {{invoice.date}} for the amount of R{{invoice.total}} is now overdue.\n\nPlease arrange payment at your earliest convenience. If payment has already been made, please disregard this notice.\n\nKind regards,\n{{org.name}}"
+          },
+          "delayDuration": null,
+          "delayUnit": null,
+          "sortOrder": 1
+        }
+      ]
+    }
+  ]
+}

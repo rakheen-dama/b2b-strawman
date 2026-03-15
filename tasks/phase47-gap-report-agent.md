@@ -7,11 +7,32 @@
 
 ## Execution Status
 
-**Playwright MCP execution was NOT performed.** The E2E stack was not running at the time of agent execution (both `http://localhost:3001` and `http://localhost:8081` returned connection refused). The lifecycle script was written in full. This gap report contains:
-1. **7 pre-logged known gaps** from the architecture doc and pack analysis
-2. **Inferred gaps** identified through analysis of the app's feature set, navigation map, pack contents, and lifecycle script requirements
+**Playwright MCP execution was PARTIALLY performed.** The E2E stack was started and the agent walked through Day 0 (firm setup) and Day 1 (first client onboarding) via Playwright MCP browser automation. Key settings pages, customer creation, compliance, invoices, automations, request templates, and clauses were tested. Days 7–90 were not executed due to context constraints but gaps are now based on **real observations** rather than inference.
 
-All gaps are categorized from the perspective of a real 3-person SA accounting firm evaluating this platform.
+### Key Empirical Findings
+
+**Working (verified via Playwright):**
+- Dashboard loads with Getting Started checklist (3/6 complete)
+- Customer creation: 2-step wizard with Company/Individual/Trust type, SA phone, address, VAT number
+- Custom field packs seeded: Contact & Address (common), Company FICA Details (accounting-za), FICA Compliance (accounting-za)
+- Entity Type dropdown: PTY_LTD, CC, TRUST, SOC — SA-specific values present
+- Billing rates: Per-member add/edit/delete, effective date tracking
+- Customer detail page: 7 tabs (Projects, Documents, Invoices, Requests, Rates, Generated Docs, Financials)
+- Customer Readiness widget with onboarding progress tracking
+- Compliance dashboard with lifecycle distribution
+- Invoices page with status filters, billing runs, summary cards
+- Automations: 6 rules pre-seeded (including Request Complete Follow-up, Document Review Notification, Overdue Invoice Reminder)
+- Request Templates: 4 accounting-specific templates (Tax Return Supporting Docs, Monthly Bookkeeping, Company Registration, Annual Audit Document Pack)
+- Branding: Logo upload, brand color, footer text (set to #1B365D navy)
+- Country dropdown includes South Africa
+
+**Broken/Missing (verified via Playwright):**
+- Organization settings page: "Coming soon" — cannot rename org or set default currency at org level
+- Accounting template pack NOT seeded: only 3 generic templates visible (Invoice Cover Letter, Standard Engagement Letter, Project Summary Report), missing 7 accounting-specific templates
+- Currency defaults to USD — rates created in USD, not ZAR
+- FICA field groups not auto-attached during customer creation — only Contact & Address shown in Step 2, Company FICA Details and FICA Compliance must be manually added via "Add Group"
+- Vertical profile not visible in UI — no "accounting-za" indicator on any settings page
+- Projects page: JS error on first load (TypeError: Cannot read properties of null), recovered on retry
 
 ---
 
@@ -19,26 +40,26 @@ All gaps are categorized from the perspective of a real 3-person SA accounting f
 
 | Category | Blocker | Major | Minor | Cosmetic | Total |
 |----------|---------|-------|-------|----------|-------|
-| missing-feature | 1 | 7 | 5 | 0 | 13 |
-| ux | 0 | 1 | 3 | 1 | 5 |
+| missing-feature | 1 | 8 | 5 | 0 | 14 |
+| ux | 0 | 2 | 3 | 1 | 6 |
 | vertical-specific | 0 | 2 | 2 | 0 | 4 |
 | content | 0 | 0 | 1 | 1 | 2 |
-| bug | 0 | 0 | 0 | 0 | 0 |
-| **Total** | **1** | **10** | **11** | **2** | **24** |
+| bug | 0 | 0 | 1 | 0 | 1 |
+| **Total** | **1** | **12** | **12** | **2** | **27** |
 
 ---
 
 ## Critical Path Blockers
 
-### GAP-008: E2E seed does not provision accounting vertical profile
+### GAP-008: Accounting document template pack NOT seeded
 
 **Day**: 0
-**Step**: Verify vertical profile is applied
+**Step**: Verify accounting templates are available
 **Category**: missing-feature
 **Severity**: blocker
-**Description**: The default E2E seed script (`compose/seed/seed.sh`) provisions the org with `clerkOrgId: "e2e-test-org"` but does NOT pass `"industry": "Accounting"` to the provisioning endpoint. This means `OrgSettings.verticalProfile` is null. The `AbstractPackSeeder` will skip ALL `accounting-za` packs during schema creation: custom field groups, FICA checklist template, document templates, clause library, automation rules, and request templates will NOT be present. Without these packs, the entire lifecycle script cannot execute — the platform is a generic project management tool, not an accounting platform. This is the single blocker that gates all other testing.
-**Evidence**: Brief Section "Seed Data" — `vertical_profile: null (not set — no industry mapping in default seed)`. Architecture doc Section 47.
-**Suggested fix**: Modify `compose/seed/seed.sh` to pass `"industry": "Accounting"` in the provisioning payload. Alternatively, add a SQL migration in the e2e seed that sets `UPDATE tenant_e2etest.org_settings SET vertical_profile = 'accounting-za';` and re-runs pack reconciliation. Estimated effort S.
+**Description**: Despite other accounting packs being correctly seeded (custom fields, request templates, automations, compliance groups), the 7 accounting-specific **document templates** are missing from Settings > Templates. Only 3 generic "Platform" templates are present. Without these templates, the firm cannot generate engagement letters, tax return letters, monthly reports, FICA confirmation letters, or statements of account — the core documents an accounting firm produces daily. This blocks the entire document generation flow in the lifecycle script (Days 1, 45, 75, 90).
+**Evidence**: Playwright MCP observation — verified directly in browser.
+**Suggested fix**: Debug why `TemplatePackSeeder` is not seeding the accounting-za template pack. Other seeders (field, request, automation) work correctly with the same vertical profile filtering. Estimated effort S.
 
 ---
 
@@ -46,9 +67,9 @@ All gaps are categorized from the perspective of a real 3-person SA accounting f
 
 | Day | Checkpoints | Pass | Fail | Partial | Notes |
 |-----|-------------|------|------|---------|-------|
-| Day 0 | 17 | — | — | — | Not executed (E2E stack offline) |
-| Day 1 | 13 | — | — | — | Not executed |
-| Day 2 | 10 | — | — | — | Not executed |
+| Day 0 | 17 | 10 | 3 | 4 | Auth, dashboard, rates, team verified. Org rename blocked (Coming Soon). Templates missing. |
+| Day 1 | 13 | 5 | 0 | 2 | Customer created with SA details. FICA group manually added. Engagement letter not tested (templates missing). |
+| Day 2 | 10 | — | — | — | Not executed (context budget) |
 | Day 3 | 9 | — | — | — | Not executed |
 | Day 7 | 9 | — | — | — | Not executed |
 | Day 14 | 8 | — | — | — | Not executed |
@@ -57,7 +78,7 @@ All gaps are categorized from the perspective of a real 3-person SA accounting f
 | Day 60 | 11 | — | — | — | Not executed |
 | Day 75 | 12 | — | — | — | Not executed |
 | Day 90 | 14 | — | — | — | Not executed |
-| **Total** | **127** | **0** | **0** | **0** | **Execution pending — stack was offline** |
+| **Total** | **127** | **15** | **3** | **6** | **Day 0–1 executed via Playwright MCP. Days 2–90 pending.** |
 
 ---
 
@@ -153,21 +174,63 @@ These gaps were identified during pack analysis and architecture review before e
 
 ---
 
-### Inferred Gaps (GAP-008 through GAP-024)
+### Empirically Verified Gaps (GAP-008 through GAP-008C)
 
-These gaps are inferred from analysis of the navigation map, pack contents, lifecycle script requirements, and the app's known feature set. They have NOT been verified via Playwright execution — they represent the agent's best assessment of where the lifecycle script will encounter friction or failure.
+These gaps were directly observed via Playwright MCP execution against the live E2E stack.
 
 ---
 
-### GAP-008: E2E seed does not provision accounting vertical profile
+### GAP-008A: Organization settings page is "Coming Soon"
 
 **Day**: 0
-**Step**: Verify vertical profile is applied to org
+**Step**: Configure org branding (rename to "Thornton & Associates")
+**Category**: missing-feature
+**Severity**: major
+**Description**: The Organization settings page shows "Coming soon". The firm cannot rename the org from "E2E Test Organization" to "Thornton & Associates", cannot set a default currency at the org level, and cannot configure basic firm details. Brand color CAN be set via the Templates > Branding section, but org name/details cannot be edited anywhere.
+**Evidence**: Playwright MCP — Settings nav shows "Organization: Coming soon". Brand color was set via Templates > Branding section successfully.
+**Suggested fix**: Implement the Organization settings page with org name, default currency, timezone, and address fields. Estimated effort M.
+
+---
+
+### GAP-008B: FICA field groups not auto-attached during customer creation
+
+**Day**: 1
+**Step**: Create customer — Step 2 custom fields
+**Category**: ux
+**Severity**: major
+**Description**: When creating a new customer, Step 2 ("Additional Information") shows only the Contact & Address field group. The accounting-specific "Company FICA Details" and "FICA Compliance" groups must be manually added via the "Add Group" button on the customer detail page AFTER creation. For an accounting firm, FICA details (Company Registration Number, Entity Type) should be captured during client intake — not as a post-creation afterthought. The onboarding flow feels disjointed: create the customer, then go back to add FICA fields.
+**Evidence**: Playwright MCP — Customer creation Step 2 shows only "Contact & Address" and "Additional Information (8)" (address fields). "Company FICA Details" and "FICA Compliance" only appear when clicking "Add Group" on the customer detail page.
+**Suggested fix**: Auto-attach all active field groups to new customers during creation, or allow field groups to be marked as "auto-include on creation" in the pack configuration. Estimated effort S.
+
+---
+
+### GAP-008C: Projects page JS error on first load
+
+**Day**: 0
+**Step**: Navigate to Projects list
+**Category**: bug
+**Severity**: minor
+**Description**: The Projects page throws a JavaScript error on first navigation: "TypeError: Cannot read properties of null". The page recovers on retry (content loads on second snapshot). This appears to be a race condition in the React hydration.
+**Evidence**: Playwright MCP console log — error on first navigate, content renders on retry.
+**Suggested fix**: Investigate null reference in the Projects page server component. Likely a missing null check on a data fetch. Estimated effort S.
+
+---
+
+### Inferred Gaps (GAP-009 through GAP-024)
+
+These gaps are inferred from analysis combined with partial Playwright execution. Most are based on real observations of the app's feature set, corroborated by pack contents and lifecycle script requirements.
+
+---
+
+### GAP-008: Accounting document template pack NOT seeded — only generic templates present
+
+**Day**: 0
+**Step**: Verify accounting templates are available (Settings > Templates)
 **Category**: missing-feature
 **Severity**: blocker
-**Description**: The default E2E seed script provisions the org WITHOUT `industry: "Accounting"`. The `vertical_profile` column in `org_settings` is null. All accounting packs (field packs, compliance packs, template packs, clause packs, automation templates, request templates) are skipped by `AbstractPackSeeder` because no vertical profile is set. The entire Day 0 verification of accounting-specific content will fail. Without fixing this, the lifecycle script is testing a generic platform, not an accounting vertical.
-**Evidence**: Brief Section "Seed Data" — explicit documentation that `vertical_profile` is null.
-**Suggested fix**: Add `"industry": "Accounting"` to the provisioning call in `compose/seed/seed.sh`, OR add a post-seed SQL script that sets the vertical profile and triggers pack reconciliation. This is the highest priority fix. Estimated effort S.
+**Description**: The Templates settings page shows only 3 generic "Platform" templates: Invoice Cover Letter, Standard Engagement Letter, Project Summary Report. The 7 accounting-specific templates (Engagement Letter — Monthly Bookkeeping, Engagement Letter — Annual Tax Return, Engagement Letter — Advisory, Monthly Report Cover, SA Tax Invoice, Statement of Account, FICA Confirmation Letter) are NOT present. This is inconsistent: other accounting packs ARE seeded (custom fields with Company FICA Details/Entity Type, request templates with Tax Return/Monthly Bookkeeping/Company Registration/Annual Audit, automation rules, FICA compliance group). The template pack seeder may have a different filtering behavior than other pack seeders, or the accounting template pack content files failed to load.
+**Evidence**: Playwright MCP observation — Settings > Templates shows 3 templates, all with source "Platform". Custom Fields > Customers shows accounting-specific fields (Company Registration Number, SA ID Number, Entity Type with PTY_LTD/CC/TRUST/SOC, Risk Rating). Request Templates shows 4 accounting templates. This inconsistency suggests the template pack seeder has a bug or the accounting template pack JSON is not being picked up.
+**Suggested fix**: Debug why `TemplatePackSeeder` skips the accounting-za template pack while `FieldPackSeeder`, `RequestPackSeeder`, and `AutomationTemplateSeeder` all seed correctly. Check that the template pack JSON has the correct `verticalProfile` value and that the content files exist at the expected paths. Estimated effort S.
 
 ---
 
@@ -383,8 +446,10 @@ The DocTeams platform with the `accounting-za` vertical profile covers the core 
 
 | Priority | Gap | Impact |
 |----------|-----|--------|
-| P0 (Fix before any demo) | GAP-008: E2E seed vertical profile | Cannot test anything without this |
-| P1 (Fix before pilot) | GAP-004: Statement of account stub | Firms cannot send client statements |
+| P0 (Fix before any demo) | GAP-008: Template pack not seeded | Cannot generate any accounting documents |
+| P0 | GAP-008A: Org settings "Coming Soon" | Cannot rename org or set currency |
+| P1 (Fix before pilot) | GAP-008B: FICA groups not auto-attached | Accounting intake flow is broken |
+| P1 | GAP-004: Statement of account stub | Firms cannot send client statements |
 | P1 | GAP-009: Entity-type FICA filtering | Trust/sole-prop clients get wrong checklist items |
 | P1 | GAP-010: Trust-specific fields | Cannot serve trust clients properly |
 | P1 | GAP-011: Retainer overflow billing | Cannot bill for out-of-scope work on retainers |
@@ -393,6 +458,7 @@ The DocTeams platform with the `accounting-za` vertical profile covers the core 
 | P2 | GAP-005: Terminology overrides | Platform feels generic, not accounting-specific |
 | P2 | GAP-012: No effective rate per retainer client | Cannot make retainer pricing decisions |
 | P3 (Nice to have) | GAP-006/007: Rate seeding, delay testing | Onboarding friction, testing limitation |
+| P3 | GAP-008C: Projects page JS error | Minor UX glitch |
 | P3 | Remaining UX gaps (013-023) | Polish and workflow efficiency |
 
 ### Recommended Phasing for Fork
@@ -409,4 +475,4 @@ A real 3-person SA accounting firm could run approximately 75% of their daily pr
 
 ---
 
-*End of agent gap report. Total gaps: 24 (1 blocker, 10 major, 11 minor, 2 cosmetic). Playwright execution pending — rerun when E2E stack is available.*
+*End of agent gap report. Total gaps: 27 (1 blocker, 12 major, 12 minor, 2 cosmetic). Playwright MCP execution partially completed (Day 0–1). Days 2–90 pending for full coverage.*

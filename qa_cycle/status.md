@@ -2,7 +2,7 @@
 
 ## Current State
 
-- **QA Position**: Day 1, Checkpoint 1.1 (not started)
+- **QA Position**: Day 1, Checkpoint 1.4 (BLOCKED by GAP-027)
 - **Cycle**: 1
 - **E2E Stack**: Running
 - **Branch**: `bugfix_cycle_2026-03-15`
@@ -41,6 +41,8 @@
 | GAP-024 | No aged debtors report | major | OPEN | Dev | — | 90 | Cannot manage cash flow |
 | GAP-025 | Team member list API calls port 8080 instead of 8081 in E2E stack | bug | OPEN | Dev | — | 0 | Member list shows "No members found" despite 3 members existing; ERR_CONNECTION_REFUSED to localhost:8080/api/members |
 | GAP-026 | FICA/KYC checklist template not seeded by accounting-za pack | major | OPEN | Dev | — | 0 | Only generic "Generic Client Onboarding" (4 items) exists; expected "FICA/KYC — SA Accounting" with 9 items |
+| GAP-027 | Customer pages SSR crash after ONBOARDING lifecycle transition | blocker | OPEN | Dev | — | 1 | All customer pages (list + detail) crash with TypeError null ref after transitioning any customer to ONBOARDING. Backend API works fine. Blocks all remaining Day 1+ checkpoints. |
+| GAP-028 | Customer detail page intermittent render crash | major | OPEN | Dev | — | 1 | Pages sometimes render as empty table instead of content. Related to GAP-008C. Became persistent after ONBOARDING transition (GAP-027). |
 
 ## Status Values
 
@@ -56,3 +58,4 @@
 | 2026-03-15T22:35Z | Setup | Initial status seeded from gap report |
 | 2026-03-15T23:12Z | Infra | GAP-008 FIXED: Added verticalProfile to ProvisioningController DTO + seed.sh. All 10 templates seeded (3 common + 7 accounting-za). E2E stack running. |
 | 2026-03-16T00:15Z | QA | Day 0 execution complete (cycle 1). 13 checkpoints: 8 PASS, 3 PARTIAL, 2 FAIL. GAP-008 VERIFIED. New gaps: GAP-025 (team API port), GAP-026 (FICA checklist not seeded). No blockers for Day 1. |
+| 2026-03-15T21:27Z | QA | Day 1 execution partial (cycle 1). 10 checkpoints: 2 PASS, 1 PARTIAL, 7 FAIL (6 blocked). Kgosi Construction created with all 16 custom fields. Checklist partially tested (generic 4-item, not FICA 9-item). ONBOARDING transition succeeded in backend but caused cascading frontend crash (GAP-027 BLOCKER). New gaps: GAP-027 (SSR crash, blocker), GAP-028 (intermittent render crash). QA halted — cannot proceed past checkpoint 1.4. |

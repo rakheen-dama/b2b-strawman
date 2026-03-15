@@ -5,6 +5,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.Nullable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
@@ -23,7 +24,7 @@ public class OrgProvisioningService {
   private final OrganizationRepository organizationRepository;
 
   public OrgProvisioningService(
-      KeycloakAdminClient keycloakAdminClient,
+      @Nullable KeycloakAdminClient keycloakAdminClient,
       TenantProvisioningService tenantProvisioningService,
       OrganizationRepository organizationRepository) {
     this.keycloakAdminClient = keycloakAdminClient;
@@ -38,6 +39,11 @@ public class OrgProvisioningService {
    * @return response with the org ID and slug
    */
   public OrgController.CreateOrgResponse createOrg(OrgController.CreateOrgRequest request) {
+    if (keycloakAdminClient == null) {
+      throw new InvalidStateException(
+          "Keycloak not configured",
+          "Organization creation requires Keycloak Admin to be configured");
+    }
     String name = request.name().trim();
     String slug = toSlug(name);
     String userId = extractUserId();

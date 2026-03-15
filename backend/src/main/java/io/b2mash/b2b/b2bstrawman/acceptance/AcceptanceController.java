@@ -10,7 +10,6 @@ import java.util.UUID;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -42,7 +41,6 @@ public class AcceptanceController {
   }
 
   @GetMapping
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<List<AcceptanceRequestResponse>> list(
       @RequestParam(required = false) UUID documentId,
       @RequestParam(required = false) UUID customerId) {
@@ -50,7 +48,6 @@ public class AcceptanceController {
   }
 
   @GetMapping("/{id}")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<AcceptanceRequestResponse> getDetail(@PathVariable UUID id) {
     return ResponseEntity.ok(acceptanceService.getDetail(id));
   }
@@ -68,7 +65,6 @@ public class AcceptanceController {
   }
 
   @GetMapping("/{id}/certificate")
-  @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN', 'ORG_OWNER')")
   public ResponseEntity<byte[]> downloadCertificate(@PathVariable UUID id) {
     var download = acceptanceService.downloadCertificate(id);
     return ResponseEntity.ok()

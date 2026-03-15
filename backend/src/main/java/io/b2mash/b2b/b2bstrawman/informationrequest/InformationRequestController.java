@@ -12,7 +12,6 @@ import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -40,7 +39,6 @@ public class InformationRequestController {
   }
 
   @GetMapping("/api/information-requests")
-  @PreAuthorize("isAuthenticated()")
   public ResponseEntity<List<InformationRequestResponse>> list(
       @RequestParam(required = false) UUID customerId,
       @RequestParam(required = false) UUID projectId,
@@ -49,7 +47,6 @@ public class InformationRequestController {
   }
 
   @GetMapping("/api/information-requests/{id}")
-  @PreAuthorize("isAuthenticated()")
   public ResponseEntity<InformationRequestResponse> get(@PathVariable UUID id) {
     return ResponseEntity.ok(informationRequestService.getById(id));
   }
@@ -103,21 +100,18 @@ public class InformationRequestController {
   }
 
   @GetMapping("/api/customers/{customerId}/information-requests")
-  @PreAuthorize("isAuthenticated()")
   public ResponseEntity<List<InformationRequestResponse>> listByCustomer(
       @PathVariable UUID customerId) {
     return ResponseEntity.ok(informationRequestService.listByCustomer(customerId));
   }
 
   @GetMapping("/api/projects/{projectId}/information-requests")
-  @PreAuthorize("isAuthenticated()")
   public ResponseEntity<List<InformationRequestResponse>> listByProject(
       @PathVariable UUID projectId) {
     return ResponseEntity.ok(informationRequestService.listByProject(projectId));
   }
 
   @GetMapping("/api/information-requests/summary")
-  @PreAuthorize("isAuthenticated()")
   public ResponseEntity<DashboardSummaryResponse> getSummary() {
     return ResponseEntity.ok(informationRequestService.getDashboardSummary());
   }

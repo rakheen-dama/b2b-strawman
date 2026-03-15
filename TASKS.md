@@ -396,7 +396,7 @@
 | 348 | Member Entity Cleanup & JwtUtils Rename | Backend | 347 | M | 348A, 348B | **Done** (PR #676) |
 | 349 | KeycloakAdminClient Backend Move & Org Endpoint | Backend | 345 | M | 349A, 349B | **Done** (PR #675) |
 | 350 | Gateway Authorization Removal | Gateway | 349 | M | 350A, 350B | **Done** (PR #677) |
-| 351 | Frontend Capabilities-Only Authorization | Frontend | 350A | L | 351A, 351B, 351C | 351A **Done** (PR #678), 351B **Done** (PR #679) |
+| 351 | Frontend Capabilities-Only Authorization | Frontend | 350A | L | 351A, 351B, 351C | **Done** (PRs #678, #679, #680) |
 | 352 | Mock IDP & E2E Fixture Update | Frontend/E2E | 351 | S | 352A | |
 | 353 | Cleanup — Remove ROLE_ORG_* & Role Sync | Backend | 351 | S | 353A, 353B | |
 

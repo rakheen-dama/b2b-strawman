@@ -107,7 +107,16 @@ public class KeycloakAdminClient {
         .uri("/organizations/{orgId}/members", orgId)
         .header("Authorization", "Bearer " + getAdminToken())
         .contentType(MediaType.APPLICATION_JSON)
-        .body("\"" + userId + "\"")
+        .body(Map.of("id", userId))
+        .retrieve()
+        .toBodilessEntity();
+  }
+
+  public void deleteOrganization(String orgId) {
+    restClient
+        .delete()
+        .uri("/organizations/{orgId}", orgId)
+        .header("Authorization", "Bearer " + getAdminToken())
         .retrieve()
         .toBodilessEntity();
   }

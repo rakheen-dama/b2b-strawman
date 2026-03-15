@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.provisioning;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -65,6 +66,10 @@ class OrgCreationControllerTest {
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.orgId").value("kc-new-org-id"))
         .andExpect(jsonPath("$.slug").value("new-test-org"));
+
+    verify(keycloakAdminClient).addMember(eq("kc-new-org-id"), eq("user_platform_admin"));
+    verify(keycloakAdminClient)
+        .updateMemberRole(eq("kc-new-org-id"), eq("user_platform_admin"), eq("owner"));
   }
 
   @Test

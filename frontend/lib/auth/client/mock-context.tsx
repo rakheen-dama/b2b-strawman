@@ -44,11 +44,11 @@ function parseInitialState(): {
 
   const payload = decodeJwtPayload(rawToken);
   const userId = (payload?.sub as string) ?? null;
-  const org = payload?.o as { slg?: string } | undefined;
+  const organization = payload?.organization as string[] | undefined;
 
   return {
     token: rawToken,
-    orgSlug: org?.slg ?? null,
+    orgSlug: organization?.[0] ?? null,
     userId,
   };
 }

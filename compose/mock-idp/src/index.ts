@@ -22,16 +22,23 @@ app.get("/.well-known/jwks.json", (_req, res) => {
   res.json({ keys: [publicKeyJwk] });
 });
 
-// POST /token — Issue a Clerk v2 format JWT
-app.post("/token", (req, res) => {
-  const { userId, orgId, orgSlug, orgRole } = req.body;
+// User groups — Alice is platform admin
+const USER_GROUPS: Record<string, string[]> = {
+  user_e2e_alice: ["platform-admins"],
+};
 
-  if (!userId || !orgId || !orgSlug || !orgRole) {
+// POST /token — Issue a Keycloak-format JWT
+app.post("/token", (req, res) => {
+  const { userId, orgSlug } = req.body;
+
+  if (!userId || !orgSlug) {
     res.status(400).json({
-      error: "Missing required fields: userId, orgId, orgSlug, orgRole",
+      error: "Missing required fields: userId, orgSlug",
     });
     return;
   }
+
+  const user = USERS[userId];
 
   const now = Math.floor(Date.now() / 1000);
   const payload = {
@@ -40,12 +47,9 @@ app.post("/token", (req, res) => {
     aud: "docteams-e2e",
     iat: now,
     exp: now + 86400,
-    v: 2,
-    o: {
-      id: orgId,
-      rol: orgRole,
-      slg: orgSlug,
-    },
+    organization: [orgSlug],
+    groups: USER_GROUPS[userId] || [],
+    email: user?.email || `${userId}@unknown.local`,
   };
 
   const privateKeyPem = rsaPrivateKey.export({ type: "pkcs8", format: "pem" });

@@ -26,12 +26,13 @@ function buildMockJwt(payload: Record<string, unknown>): string {
 
 const defaultPayload = {
   sub: "user_e2e_alice",
-  o: { id: "org_e2e_test", slg: "e2e-test-org", rol: "owner" },
+  organization: ["e2e-test-org"],
+  groups: ["platform-admins"],
+  email: "alice@e2e-test.local",
   iss: "http://mock-idp:8090",
   aud: "docteams-e2e",
   iat: 1708000000,
   exp: 1708086400,
-  v: 2,
 };
 
 describe("Mock auth provider", () => {
@@ -53,7 +54,7 @@ describe("Mock auth provider", () => {
   });
 
   it("getSessionIdentity() returns empty groups for non-admin user", async () => {
-    const bobPayload = { ...defaultPayload, sub: "user_e2e_bob" };
+    const bobPayload = { ...defaultPayload, sub: "user_e2e_bob", groups: [] };
     vi.mocked(cookies).mockResolvedValue({
       get: vi.fn().mockReturnValue({ value: buildMockJwt(bobPayload) }),
     } as never);
@@ -71,7 +72,7 @@ describe("Mock auth provider", () => {
 
     expect(ctx).toEqual({
       userId: "user_e2e_alice",
-      orgId: "org_e2e_test",
+      orgId: "e2e-test-org",
       orgSlug: "e2e-test-org",
       groups: ["platform-admins"],
     });
@@ -102,7 +103,21 @@ describe("Mock auth provider", () => {
     await expect(getAuthToken()).rejects.toThrow("No mock-auth-token cookie");
   });
 
-  it("getCurrentUserEmail() fetches from mock IDP", async () => {
+  it("getCurrentUserEmail() reads email from JWT claim", async () => {
+    const email = await getCurrentUserEmail();
+
+    expect(email).toBe("alice@e2e-test.local");
+    // Should NOT fetch from userinfo when email is in the token
+    expect(mockFetch).not.toHaveBeenCalled();
+  });
+
+  it("getCurrentUserEmail() falls back to userinfo when email not in token", async () => {
+    const noEmailPayload = { ...defaultPayload };
+    delete (noEmailPayload as Record<string, unknown>).email;
+    vi.mocked(cookies).mockResolvedValue({
+      get: vi.fn().mockReturnValue({ value: buildMockJwt(noEmailPayload) }),
+    } as never);
+
     mockFetch.mockResolvedValue({
       ok: true,
       json: () => Promise.resolve({ email: "alice@e2e-test.local" }),
@@ -117,7 +132,13 @@ describe("Mock auth provider", () => {
     );
   });
 
-  it("getCurrentUserEmail() returns null on fetch failure", async () => {
+  it("getCurrentUserEmail() returns null when no email in token and fetch fails", async () => {
+    const noEmailPayload = { ...defaultPayload };
+    delete (noEmailPayload as Record<string, unknown>).email;
+    vi.mocked(cookies).mockResolvedValue({
+      get: vi.fn().mockReturnValue({ value: buildMockJwt(noEmailPayload) }),
+    } as never);
+
     mockFetch.mockResolvedValue({ ok: false });
 
     const email = await getCurrentUserEmail();

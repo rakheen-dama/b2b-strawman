@@ -88,10 +88,11 @@ function createMockMiddleware(): NextMiddleware {
     // Redirect /dashboard to org-scoped dashboard
     if (pathname === "/dashboard") {
       const payload = decodeMockJwtPayload(token);
-      const org = payload?.o as { slg?: string } | undefined;
-      if (org?.slg) {
+      const organization = payload?.organization as string[] | undefined;
+      const orgSlug = organization?.[0];
+      if (orgSlug) {
         return NextResponse.redirect(
-          new URL(`/org/${org.slg}/dashboard`, request.url),
+          new URL(`/org/${orgSlug}/dashboard`, request.url),
         );
       }
       // No org in token — send back to mock login

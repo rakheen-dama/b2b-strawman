@@ -10,12 +10,13 @@ function buildMockJwt(payload: Record<string, unknown>): string {
 
 const defaultPayload = {
   sub: "user_e2e_alice",
-  o: { id: "org_e2e_test", slg: "e2e-test-org", rol: "owner" },
+  organization: ["e2e-test-org"],
+  groups: ["platform-admins"],
+  email: "alice@e2e-test.local",
   iss: "http://mock-idp:8090",
   aud: "docteams-e2e",
   iat: 1708000000,
   exp: 1708086400,
-  v: 2,
 };
 
 function createMockRequest(

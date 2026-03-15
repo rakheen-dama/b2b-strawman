@@ -4,10 +4,10 @@ const MOCK_IDP_URL = process.env.MOCK_IDP_URL || 'http://localhost:8090'
 
 type SeedUser = 'alice' | 'bob' | 'carol'
 
-const USERS: Record<SeedUser, { userId: string; orgId: string; orgRole: string; orgSlug: string }> = {
-  alice: { userId: 'user_e2e_alice', orgId: 'org_e2e_test', orgRole: 'owner', orgSlug: 'e2e-test-org' },
-  bob:   { userId: 'user_e2e_bob',   orgId: 'org_e2e_test', orgRole: 'admin', orgSlug: 'e2e-test-org' },
-  carol: { userId: 'user_e2e_carol', orgId: 'org_e2e_test', orgRole: 'member', orgSlug: 'e2e-test-org' },
+const USERS: Record<SeedUser, { userId: string; orgSlug: string }> = {
+  alice: { userId: 'user_e2e_alice', orgSlug: 'e2e-test-org' },
+  bob:   { userId: 'user_e2e_bob',   orgSlug: 'e2e-test-org' },
+  carol: { userId: 'user_e2e_carol', orgSlug: 'e2e-test-org' },
 }
 
 export async function loginAs(page: Page, user: SeedUser): Promise<void> {

@@ -10,19 +10,15 @@ interface MockLoginFormProps {
 interface SeedUser {
   userId: string;
   label: string;
-  role: string;
 }
 
 const SEED_USERS: SeedUser[] = [
-  { userId: "user_e2e_alice", label: "Alice Owner", role: "owner" },
-  { userId: "user_e2e_bob", label: "Bob Admin", role: "admin" },
-  { userId: "user_e2e_carol", label: "Carol Member", role: "member" },
+  { userId: "user_e2e_alice", label: "Alice (Owner)" },
+  { userId: "user_e2e_bob", label: "Bob (Admin)" },
+  { userId: "user_e2e_carol", label: "Carol (Member)" },
 ];
 
-const DEFAULT_ORG = {
-  orgId: "org_e2e_test",
-  orgSlug: "e2e-test-org",
-};
+const DEFAULT_ORG_SLUG = "e2e-test-org";
 
 export function MockLoginForm({ mockIdpUrl }: MockLoginFormProps) {
   const router = useRouter();
@@ -41,9 +37,7 @@ export function MockLoginForm({ mockIdpUrl }: MockLoginFormProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           userId: selectedUser.userId,
-          orgId: DEFAULT_ORG.orgId,
-          orgSlug: DEFAULT_ORG.orgSlug,
-          orgRole: selectedUser.role,
+          orgSlug: DEFAULT_ORG_SLUG,
         }),
       });
 
@@ -56,7 +50,7 @@ export function MockLoginForm({ mockIdpUrl }: MockLoginFormProps) {
 
       const { access_token } = await response.json();
       document.cookie = `mock-auth-token=${access_token}; path=/; SameSite=Lax`;
-      router.push(`/org/${DEFAULT_ORG.orgSlug}/dashboard`);
+      router.push(`/org/${DEFAULT_ORG_SLUG}/dashboard`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Sign-in failed");
       setLoading(false);
@@ -83,7 +77,7 @@ export function MockLoginForm({ mockIdpUrl }: MockLoginFormProps) {
         >
           {SEED_USERS.map((user) => (
             <option key={user.userId} value={user.userId}>
-              {user.label} ({user.role})
+              {user.label}
             </option>
           ))}
         </select>

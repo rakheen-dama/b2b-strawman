@@ -1,6 +1,6 @@
 "use server";
 
-import { getAuthContext } from "@/lib/auth";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
 import {
@@ -39,8 +39,8 @@ export async function createBillingRunAction(
   slug: string,
   data: CreateBillingRunRequest,
 ): Promise<CreateBillingRunResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Permission denied." };
   }
 
@@ -60,8 +60,8 @@ export async function loadPreviewAction(
   slug: string,
   billingRunId: string,
 ): Promise<LoadPreviewResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Permission denied." };
   }
 
@@ -101,8 +101,8 @@ export async function getUnbilledTimeAction(
   billingRunId: string,
   itemId: string,
 ): Promise<UnbilledTimeResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Permission denied." };
   }
 
@@ -121,8 +121,8 @@ export async function getUnbilledExpensesAction(
   billingRunId: string,
   itemId: string,
 ): Promise<UnbilledExpenseResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Permission denied." };
   }
 
@@ -142,8 +142,8 @@ export async function updateSelectionsAction(
   itemId: string,
   selections: UpdateEntrySelectionsRequest,
 ): Promise<UpdateSelectionsResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Permission denied." };
   }
 
@@ -162,8 +162,8 @@ export async function excludeCustomerAction(
   billingRunId: string,
   itemId: string,
 ): Promise<UpdateSelectionsResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Permission denied." };
   }
 
@@ -182,8 +182,8 @@ export async function includeCustomerAction(
   billingRunId: string,
   itemId: string,
 ): Promise<UpdateSelectionsResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Permission denied." };
   }
 
@@ -201,8 +201,8 @@ export async function includeCustomerAction(
 export async function getRetainerPreviewAction(
   billingRunId: string,
 ): Promise<RetainerPreviewResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Permission denied." };
   }
 

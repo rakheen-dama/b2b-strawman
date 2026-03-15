@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { getAuthContext } from "@/lib/auth";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { getRequestTemplate } from "@/lib/api/information-requests";
 import { TemplateSourceBadge } from "@/components/information-requests/template-source-badge";
 import { EditRequestTemplateForm } from "@/components/information-requests/edit-request-template-form";
@@ -11,8 +11,8 @@ export default async function EditRequestTemplatePage({
   params: Promise<{ slug: string; id: string }>;
 }) {
   const { slug, id } = await params;
-  const { orgRole } = await getAuthContext();
-  const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
+  const caps = await fetchMyCapabilities();
+  const isAdmin = caps.isAdmin || caps.isOwner;
 
   if (!isAdmin) {
     return (

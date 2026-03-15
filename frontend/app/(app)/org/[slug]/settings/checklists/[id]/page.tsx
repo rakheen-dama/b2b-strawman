@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ChevronLeft, Pencil } from "lucide-react";
-import { getAuthContext } from "@/lib/auth";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,8 +18,8 @@ export default async function ChecklistTemplateDetailPage({
   params: Promise<{ slug: string; id: string }>;
 }) {
   const { slug, id } = await params;
-  const { orgRole } = await getAuthContext();
-  const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
+  const caps = await fetchMyCapabilities();
+  const isAdmin = caps.isAdmin || caps.isOwner;
 
   let template: ChecklistTemplateResponse | null = null;
   let notFound = false;

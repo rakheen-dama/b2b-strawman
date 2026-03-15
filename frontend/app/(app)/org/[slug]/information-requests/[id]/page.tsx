@@ -1,4 +1,4 @@
-import { getAuthContext } from "@/lib/auth";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { handleApiError } from "@/lib/api";
 import { getRequest } from "@/lib/api/information-requests";
 import { ArrowLeft } from "lucide-react";
@@ -11,9 +11,9 @@ export default async function InformationRequestDetailPage({
   params: Promise<{ slug: string; id: string }>;
 }) {
   const { slug, id } = await params;
-  const { orgRole } = await getAuthContext();
+  const caps = await fetchMyCapabilities();
 
-  const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
+  const isAdmin = caps.isAdmin || caps.isOwner;
 
   if (!isAdmin) {
     return (

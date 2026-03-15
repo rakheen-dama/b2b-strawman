@@ -1,6 +1,6 @@
 "use server";
 
-import { getAuthContext } from "@/lib/auth";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { ApiError } from "@/lib/api";
 import {
   getCustomerChecklists,
@@ -20,11 +20,8 @@ interface ActionResult {
 export async function fetchCustomerChecklists(
   customerId: string,
 ): Promise<ChecklistInstanceResponse[]> {
-  const { orgRole } = await getAuthContext();
-  if (!orgRole) {
-    return [];
-  }
-
+  // Authentication is handled by the API client; no role guard needed for reads.
+  // The backend enforces tenant scoping.
   try {
     return await getCustomerChecklists(customerId);
   } catch {
@@ -39,8 +36,8 @@ export async function completeChecklistItem(
   notes: string,
   documentId?: string,
 ): Promise<ActionResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Only admins and owners can manage checklist items." };
   }
 
@@ -63,8 +60,8 @@ export async function skipChecklistItem(
   itemId: string,
   reason: string,
 ): Promise<ActionResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Only admins and owners can manage checklist items." };
   }
 
@@ -86,8 +83,8 @@ export async function reopenChecklistItem(
   customerId: string,
   itemId: string,
 ): Promise<ActionResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Only admins and owners can manage checklist items." };
   }
 
@@ -109,8 +106,8 @@ export async function instantiateChecklist(
   templateId: string,
   slug: string,
 ): Promise<ActionResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Only admins and owners can instantiate checklists." };
   }
 

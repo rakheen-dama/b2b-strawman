@@ -1,6 +1,6 @@
 "use server";
 
-import { getAuthContext } from "@/lib/auth";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api, ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
 import type { Customer, CustomerProject, UploadInitRequest, UploadInitResponse, PresignDownloadResponse } from "@/lib/types";
@@ -103,8 +103,8 @@ export async function linkCustomerToProject(
   projectId: string,
   customerId: string
 ): Promise<ActionResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Only admins and owners can link customers." };
   }
 
@@ -126,8 +126,8 @@ export async function unlinkCustomerFromProject(
   projectId: string,
   customerId: string
 ): Promise<ActionResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Only admins and owners can unlink customers." };
   }
 

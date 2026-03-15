@@ -1,6 +1,6 @@
 "use server";
 
-import { getAuthContext } from "@/lib/auth";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api, ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
 import type {
@@ -36,8 +36,8 @@ export async function approveInvoice(
   invoiceId: string,
   customerId: string,
 ): Promise<InvoiceActionResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Only admins and owners can approve invoices." };
   }
 
@@ -62,8 +62,8 @@ export async function sendInvoice(
   customerId: string,
   overrideWarnings?: boolean,
 ): Promise<InvoiceActionResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Only admins and owners can send invoices." };
   }
 
@@ -102,8 +102,8 @@ export async function recordPayment(
   customerId: string,
   request?: RecordPaymentRequest,
 ): Promise<InvoiceActionResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return {
       success: false,
       error: "Only admins and owners can record payments.",
@@ -131,8 +131,8 @@ export async function voidInvoice(
   invoiceId: string,
   customerId: string,
 ): Promise<InvoiceActionResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Only admins and owners can void invoices." };
   }
 
@@ -156,8 +156,8 @@ export async function refreshPaymentLink(
   invoiceId: string,
   customerId: string,
 ): Promise<InvoiceActionResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return {
       success: false,
       error: "Only admins and owners can regenerate payment links.",

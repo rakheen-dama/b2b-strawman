@@ -1,4 +1,5 @@
-import { getAuthContext, getCurrentUserEmail } from "@/lib/auth";
+import { getCurrentUserEmail } from "@/lib/auth";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import {
   api,
   handleApiError,
@@ -81,7 +82,9 @@ export default async function MyWorkPage({
   searchParams: Promise<{ from?: string; to?: string }>;
 }) {
   const { slug } = await params;
-  const { orgRole } = await getAuthContext();
+  const caps = await fetchMyCapabilities();
+  // Compatibility shim for child components not yet migrated
+  const orgRoleCompat = `org:${caps.role}`;
   const resolvedSearchParams = await searchParams;
   const { from, to } = resolveMyWorkDateRange(resolvedSearchParams);
 
@@ -187,7 +190,7 @@ export default async function MyWorkPage({
     // Non-fatal
   }
 
-  const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
+  const isAdmin = caps.isAdmin || caps.isOwner;
   const canManage = isAdmin;
   const canCreateShared = isAdmin;
 
@@ -240,7 +243,7 @@ export default async function MyWorkPage({
               assigned={tasksData.assigned}
               unassigned={tasksData.unassigned}
               slug={slug}
-              orgRole={orgRole ?? ""}
+              orgRole={orgRoleCompat}
               canManage={canManage}
               canCreateShared={canCreateShared}
               currentMemberId={currentMemberId}

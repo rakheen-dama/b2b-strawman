@@ -1,6 +1,6 @@
 "use server";
 
-import { getAuthContext } from "@/lib/auth";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { ApiError } from "@/lib/api";
 import {
   getLifecycleStatusCounts,
@@ -41,8 +41,8 @@ interface DashboardData {
 export async function getComplianceDashboardData(
   orgSlug: string,
 ): Promise<{ success: boolean; data?: DashboardData; error?: string }> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Only admins and owners can view compliance data." };
   }
 
@@ -75,8 +75,8 @@ export async function getComplianceDashboardData(
 export async function runDormancyCheck(
   orgSlug: string,
 ): Promise<{ success: boolean; candidates?: DormancyCandidate[]; error?: string }> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Only admins and owners can run dormancy checks." };
   }
 
@@ -95,8 +95,8 @@ export async function markCustomerDormant(
   customerId: string,
   slug: string,
 ): Promise<ActionResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Only admins and owners can mark customers as dormant." };
   }
 

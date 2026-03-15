@@ -1,16 +1,27 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
-import TaxSettingsPage from "@/app/(app)/org/[slug]/settings/tax/page";
+
+vi.mock("server-only", () => ({}));
 
 vi.mock("@/lib/auth", () => ({
   getAuthContext: vi.fn().mockResolvedValue({
     userId: "user_1",
     orgId: "org_1",
     orgSlug: "acme",
-    orgRole: "org:owner",
-    memberId: "member_1",
+    groups: [],
   }),
 }));
+
+vi.mock("@/lib/api/capabilities", () => ({
+  fetchMyCapabilities: vi.fn().mockResolvedValue({
+    capabilities: [],
+    role: "owner",
+    isAdmin: false,
+    isOwner: true,
+  }),
+}));
+
+import TaxSettingsPage from "@/app/(app)/org/[slug]/settings/tax/page";
 
 vi.mock("@/lib/api", () => ({
   api: {

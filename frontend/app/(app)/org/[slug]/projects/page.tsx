@@ -1,5 +1,6 @@
 import { Suspense } from "react";
-import { getAuthContext, hasPlan } from "@/lib/auth";
+import { hasPlan } from "@/lib/auth";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { RequiresCapability } from "@/lib/capabilities";
 import { api, handleApiError, getFieldDefinitions, getViews, getTags } from "@/lib/api";
 import { fetchRetainerSummary } from "@/lib/api/retainers";
@@ -45,9 +46,9 @@ export default async function ProjectsPage({
 }) {
   const { slug } = await params;
   const resolvedSearchParams = await searchParams;
-  const { orgRole } = await getAuthContext();
+  const caps = await fetchMyCapabilities();
 
-  const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
+  const isAdmin = caps.isAdmin || caps.isOwner;
   const isPro = await hasPlan("pro");
 
   const currentViewId = typeof resolvedSearchParams.view === "string" ? resolvedSearchParams.view : null;

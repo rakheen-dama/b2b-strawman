@@ -17,15 +17,22 @@ vi.mock("@/lib/auth", () => ({
 
 // Compatibility shim: old tests used `mockAuth` with `has` prop
 const mockAuth = {
-  mockResolvedValue: (val: { orgId: string; orgSlug: string; userId: string; orgRole: string; has: (v?: boolean) => boolean }) => {
+  mockResolvedValue: (val: { orgId: string; orgSlug: string; userId: string; orgRole?: string; has: (v?: boolean) => boolean }) => {
     mockGetAuthContext.mockResolvedValue({
       orgId: val.orgId,
       orgSlug: val.orgSlug,
       userId: val.userId,
-      orgRole: val.orgRole,
       groups: [],
     });
     mockHasPlan.mockResolvedValue(val.has?.() ?? false);
+    // Derive capabilities from orgRole for backward compatibility
+    const role = val.orgRole?.replace("org:", "") ?? "member";
+    mockFetchCaps.mockResolvedValue({
+      capabilities: [],
+      role,
+      isAdmin: role === "admin",
+      isOwner: role === "owner",
+    });
   },
 };
 
@@ -43,6 +50,12 @@ vi.mock("@/lib/api", () => ({
 // Mock templates API (has "server-only" import)
 vi.mock("@/lib/api/templates", () => ({
   getProjectTemplates: vi.fn().mockResolvedValue([]),
+}));
+
+// Mock fetchMyCapabilities (page now uses capabilities instead of orgRole)
+const mockFetchCaps = vi.fn();
+vi.mock("@/lib/api/capabilities", () => ({
+  fetchMyCapabilities: () => mockFetchCaps(),
 }));
 
 // Mock capabilities (RequiresCapability wraps create buttons on projects page)

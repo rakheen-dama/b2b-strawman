@@ -1,6 +1,5 @@
 import { Plus } from "lucide-react";
 import { notFound } from "next/navigation";
-import { getAuthContext } from "@/lib/auth";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { Button } from "@/components/ui/button";
 import { ScheduleList } from "@/components/schedules/ScheduleList";
@@ -18,14 +17,13 @@ export default async function SchedulesPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const { orgRole } = await getAuthContext();
   const caps = await fetchMyCapabilities();
 
   if (!caps.capabilities.includes("PROJECT_MANAGEMENT") && !caps.isAdmin && !caps.isOwner) {
     notFound();
   }
 
-  const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
+  const isAdmin = caps.isAdmin || caps.isOwner;
 
   let schedules: ScheduleResponse[] = [];
   let activeTemplates: ProjectTemplateResponse[] = [];

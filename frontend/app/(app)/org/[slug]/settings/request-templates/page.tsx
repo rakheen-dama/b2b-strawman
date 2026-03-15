@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ChevronLeft, ClipboardList, Plus } from "lucide-react";
-import { getAuthContext } from "@/lib/auth";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { Button } from "@/components/ui/button";
 import { TemplateSourceBadge } from "@/components/information-requests/template-source-badge";
 import { RequestTemplateActions } from "@/components/information-requests/request-template-actions";
@@ -15,8 +15,8 @@ export default async function RequestTemplatesPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const { orgRole } = await getAuthContext();
-  const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
+  const caps = await fetchMyCapabilities();
+  const isAdmin = caps.isAdmin || caps.isOwner;
 
   if (!isAdmin) {
     return (

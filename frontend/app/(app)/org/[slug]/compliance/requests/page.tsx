@@ -1,4 +1,4 @@
-import { getAuthContext } from "@/lib/auth";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { getDataRequests } from "@/lib/compliance-api";
 import { EmptyState } from "@/components/empty-state";
 import { DataRequestTable } from "@/components/compliance/DataRequestTable";
@@ -16,9 +16,9 @@ export default async function DataRequestsPage({
 }) {
   const { slug } = await params;
   const search = await searchParams;
-  const { orgRole } = await getAuthContext();
+  const caps = await fetchMyCapabilities();
 
-  const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
+  const isAdmin = caps.isAdmin || caps.isOwner;
 
   if (!isAdmin) {
     return (

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ChevronLeft, Plus } from "lucide-react";
-import { getAuthContext } from "@/lib/auth";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { Button } from "@/components/ui/button";
 import { TemplateList } from "@/components/templates/TemplateList";
 import { getProjectTemplates } from "@/lib/api/templates";
@@ -12,9 +12,9 @@ export default async function ProjectTemplatesSettingsPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const { orgRole } = await getAuthContext();
+  const caps = await fetchMyCapabilities();
 
-  const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
+  const isAdmin = caps.isAdmin || caps.isOwner;
 
   let templates: ProjectTemplateResponse[] = [];
 

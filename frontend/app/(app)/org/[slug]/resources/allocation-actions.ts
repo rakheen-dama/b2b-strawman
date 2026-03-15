@@ -1,6 +1,6 @@
 "use server";
 
-import { getAuthContext } from "@/lib/auth";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { ApiError } from "@/lib/api";
 import {
   createAllocation,
@@ -39,8 +39,8 @@ export async function createAllocationAction(
   slug: string,
   data: CreateAllocationRequest,
 ): Promise<AllocationActionResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return {
       success: false,
       error: "Only admins and owners can manage allocations.",
@@ -64,8 +64,8 @@ export async function updateAllocationAction(
   id: string,
   data: UpdateAllocationRequest,
 ): Promise<AllocationActionResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return {
       success: false,
       error: "Only admins and owners can manage allocations.",
@@ -88,8 +88,8 @@ export async function deleteAllocationAction(
   slug: string,
   id: string,
 ): Promise<ActionResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return {
       success: false,
       error: "Only admins and owners can manage allocations.",
@@ -112,7 +112,6 @@ export async function listAllocationsAction(
   _slug: string,
   memberId: string,
 ): Promise<AllocationListResult> {
-  await getAuthContext();
   try {
     const allocations = await listAllocations({ memberId });
     return { success: true, allocations };
@@ -128,8 +127,8 @@ export async function bulkUpsertAction(
   slug: string,
   data: BulkAllocationRequest,
 ): Promise<BulkActionResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return {
       success: false,
       error: "Only admins and owners can manage allocations.",

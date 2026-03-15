@@ -1,4 +1,5 @@
-import { getAuthContext, getCurrentUserEmail } from "@/lib/auth";
+import { getCurrentUserEmail } from "@/lib/auth";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api, ApiError, handleApiError } from "@/lib/api";
 import { Loader2 } from "lucide-react";
 import { ProvisioningPendingRefresh } from "./provisioning-pending-refresh";
@@ -42,8 +43,8 @@ export default async function OrgDashboardPage({
 }) {
   const { slug } = await params;
   const resolvedSearchParams = await searchParams;
-  const { orgRole } = await getAuthContext();
-  const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
+  const caps = await fetchMyCapabilities();
+  const isAdmin = caps.isAdmin || caps.isOwner;
   const { from, to } = resolveDateRange(resolvedSearchParams);
 
   let kpis;

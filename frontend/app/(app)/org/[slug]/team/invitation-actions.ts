@@ -1,6 +1,7 @@
 "use server";
 
-import { getAuthContext, AUTH_MODE } from "@/lib/auth";
+import { AUTH_MODE } from "@/lib/auth";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api, ApiError } from "@/lib/api";
 import { classifyError } from "@/lib/error-handler";
 import { createMessages } from "@/lib/messages";
@@ -116,9 +117,9 @@ export async function inviteMember(
   orgRoleId?: string,
   capabilityOverrides?: string[],
 ): Promise<ActionResult> {
-  const { orgRole } = await getAuthContext();
+  const caps = await fetchMyCapabilities();
 
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  if (!caps.isAdmin && !caps.isOwner) {
     return {
       success: false,
       error: "You must be an admin to invite members.",
@@ -141,9 +142,8 @@ export async function listInvitations(): Promise<MappedInvitation[]> {
 }
 
 export async function revokeInvitation(id: string): Promise<ActionResult> {
-  const { orgRole } = await getAuthContext();
-
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return {
       success: false,
       error: "You must be an admin to revoke invitations.",

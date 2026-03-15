@@ -1,4 +1,5 @@
 import { getAuthContext, getCurrentUserEmail } from "@/lib/auth";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api, handleApiError, getFieldDefinitions, getFieldGroups, getGroupMembers, getTags, getTemplates, getViews } from "@/lib/api";
 import type { OrgMember, Project, ProjectStatus, Customer, Document, ProjectMember, ProjectRole, Task, ProjectTimeSummary, MemberTimeSummary, TaskTimeSummary, BillingRate, OrgSettings, BudgetStatusResponse, ProjectProfitabilityResponse, FieldDefinitionResponse, FieldGroupResponse, FieldGroupMemberResponse, TagResponse, TemplateListResponse, SavedViewResponse, PaginatedExpenseResponse } from "@/lib/types";
 import { Button } from "@/components/ui/button";
@@ -70,10 +71,14 @@ export default async function ProjectDetailPage({
   params: Promise<{ slug: string; id: string }>;
 }) {
   const { slug, id } = await params;
-  const { orgRole, userId } = await getAuthContext();
+  const { userId } = await getAuthContext();
+  const caps = await fetchMyCapabilities();
 
-  const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
-  const isOwner = orgRole === "org:owner";
+  const isAdmin = caps.isAdmin || caps.isOwner;
+  const isOwner = caps.isOwner;
+
+  // Compatibility shim for child components not yet migrated
+  const orgRoleCompat = `org:${caps.role}`;
 
   let project: Project;
   try {
@@ -627,7 +632,7 @@ export default async function ProjectDetailPage({
             projectId={id}
             canManage={canManage}
             currentMemberId={currentMemberId}
-            orgRole={orgRole}
+            orgRole={orgRoleCompat}
             retainerSummary={taskRetainerSummary}
             members={members.map((m) => ({ id: m.memberId, name: m.name, email: m.email }))}
             allTags={allTags}
@@ -694,7 +699,7 @@ export default async function ProjectDetailPage({
               tasks={tasks.map((t) => ({ id: t.id, title: t.title }))}
               members={members.map((m) => ({ id: m.memberId, name: m.name }))}
               currentMemberId={currentMemberId}
-              orgRole={orgRole}
+              orgRole={orgRoleCompat}
             />
           </div>
         }

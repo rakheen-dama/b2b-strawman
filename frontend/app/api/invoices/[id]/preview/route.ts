@@ -1,5 +1,6 @@
 import "server-only";
-import { getAuthContext, getAuthToken } from "@/lib/auth";
+import { getAuthToken } from "@/lib/auth";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { NextResponse } from "next/server";
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
@@ -17,9 +18,9 @@ export async function GET(
     return new NextResponse("Bad Request", { status: 400 });
   }
 
-  const { orgRole } = await getAuthContext();
+  const caps = await fetchMyCapabilities();
 
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  if (!caps.isAdmin && !caps.isOwner) {
     return new NextResponse("Forbidden", { status: 403 });
   }
 

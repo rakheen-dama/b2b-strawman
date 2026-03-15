@@ -1,6 +1,6 @@
 "use server";
 
-import { getAuthContext } from "@/lib/auth";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api, ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -77,8 +77,8 @@ export async function updateProject(
 }
 
 export async function deleteProject(slug: string, id: string): Promise<ActionResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isOwner) {
     return { success: false, error: "Only organization owners can delete projects." };
   }
 
@@ -103,8 +103,8 @@ export async function completeProject(
   projectId: string,
   acknowledgeUnbilledTime?: boolean
 ): Promise<ActionResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Only admins and owners can complete projects." };
   }
 
@@ -130,8 +130,8 @@ export async function archiveProject(
   slug: string,
   projectId: string
 ): Promise<ActionResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Only admins and owners can archive projects." };
   }
 
@@ -156,8 +156,8 @@ export async function reopenProject(
   slug: string,
   projectId: string
 ): Promise<ActionResult> {
-  const { orgRole } = await getAuthContext();
-  if (orgRole !== "org:admin" && orgRole !== "org:owner") {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Only admins and owners can reopen projects." };
   }
 

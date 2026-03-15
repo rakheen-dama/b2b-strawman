@@ -19,8 +19,6 @@ export interface SessionIdentity {
 export interface AuthContext {
   orgId: string;
   orgSlug: string;
-  /** Role string from the auth provider (e.g. "org:admin", "org:member") */
-  orgRole: string;
   userId: string;
   /** Keycloak groups the user belongs to (e.g. ["platform-admins"]) */
   groups: string[];

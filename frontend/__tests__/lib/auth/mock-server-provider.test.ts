@@ -14,7 +14,6 @@ import {
   getAuthContext,
   getAuthToken,
   getCurrentUserEmail,
-  requireRole,
 } from "@/lib/auth/providers/mock/server";
 import { cookies } from "next/headers";
 
@@ -74,7 +73,6 @@ describe("Mock auth provider", () => {
       userId: "user_e2e_alice",
       orgId: "org_e2e_test",
       orgSlug: "e2e-test-org",
-      orgRole: "org:owner",
       groups: ["platform-admins"],
     });
   });
@@ -125,57 +123,5 @@ describe("Mock auth provider", () => {
     const email = await getCurrentUserEmail();
 
     expect(email).toBeNull();
-  });
-
-  it("requireRole('any') passes for any role", async () => {
-    await expect(requireRole("any")).resolves.toBeUndefined();
-  });
-
-  it("requireRole('owner') passes when role is owner", async () => {
-    await expect(requireRole("owner")).resolves.toBeUndefined();
-  });
-
-  it("requireRole('owner') throws when role is admin", async () => {
-    const adminPayload = {
-      ...defaultPayload,
-      o: { ...defaultPayload.o, rol: "admin" },
-    };
-    vi.mocked(cookies).mockResolvedValue({
-      get: vi.fn().mockReturnValue({ value: buildMockJwt(adminPayload) }),
-    } as never);
-
-    await expect(requireRole("owner")).rejects.toThrow(
-      "Insufficient permissions — owner role required",
-    );
-  });
-
-  it("requireRole('admin') passes when role is admin", async () => {
-    const adminPayload = {
-      ...defaultPayload,
-      o: { ...defaultPayload.o, rol: "admin" },
-    };
-    vi.mocked(cookies).mockResolvedValue({
-      get: vi.fn().mockReturnValue({ value: buildMockJwt(adminPayload) }),
-    } as never);
-
-    await expect(requireRole("admin")).resolves.toBeUndefined();
-  });
-
-  it("requireRole('admin') passes when role is owner", async () => {
-    await expect(requireRole("admin")).resolves.toBeUndefined();
-  });
-
-  it("requireRole('admin') throws when role is member", async () => {
-    const memberPayload = {
-      ...defaultPayload,
-      o: { ...defaultPayload.o, rol: "member" },
-    };
-    vi.mocked(cookies).mockResolvedValue({
-      get: vi.fn().mockReturnValue({ value: buildMockJwt(memberPayload) }),
-    } as never);
-
-    await expect(requireRole("admin")).rejects.toThrow(
-      "Insufficient permissions — admin role required",
-    );
   });
 });

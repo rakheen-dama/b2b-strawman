@@ -35,10 +35,3 @@ export async function hasPlan(plan: string): Promise<boolean> {
   if (AUTH_MODE === "mock") return mockProvider.hasPlan(plan);
   return keycloakBffProvider.hasPlan(plan);
 }
-
-export async function requireRole(
-  role: "admin" | "owner" | "any",
-): Promise<void> {
-  if (AUTH_MODE === "mock") return mockProvider.requireRole(role);
-  return keycloakBffProvider.requireRole(role);
-}

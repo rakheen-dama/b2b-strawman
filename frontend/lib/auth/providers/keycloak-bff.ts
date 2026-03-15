@@ -16,7 +16,6 @@ interface BffUserInfo {
   picture: string | null;
   orgId: string | null;
   orgSlug: string | null;
-  orgRole: string | null;
   groups: string[] | null;
 }
 
@@ -86,7 +85,7 @@ export async function getSessionIdentity(): Promise<SessionIdentity> {
 export async function getAuthContext(): Promise<AuthContext> {
   const info = await fetchBffMe();
 
-  if (!info.authenticated || !info.userId || !info.orgId || !info.orgSlug || !info.orgRole) {
+  if (!info.authenticated || !info.userId || !info.orgId || !info.orgSlug) {
     throw new Error("No active organization — user is not authenticated via BFF");
   }
 
@@ -94,7 +93,6 @@ export async function getAuthContext(): Promise<AuthContext> {
     userId: info.userId,
     orgId: info.orgId,
     orgSlug: info.orgSlug,
-    orgRole: info.orgRole.startsWith("org:") ? info.orgRole : `org:${info.orgRole}`,
     groups: info.groups ?? [],
   };
 }
@@ -119,24 +117,3 @@ export async function hasPlan(_plan: string): Promise<boolean> {
   return true;
 }
 
-export async function requireRole(
-  role: "admin" | "owner" | "any",
-): Promise<void> {
-  const { orgRole } = await getAuthContext();
-
-  if (role === "any") {
-    return;
-  }
-
-  if (role === "owner" && orgRole !== "org:owner") {
-    throw new Error("Insufficient permissions — owner role required");
-  }
-
-  if (
-    role === "admin" &&
-    orgRole !== "org:admin" &&
-    orgRole !== "org:owner"
-  ) {
-    throw new Error("Insufficient permissions — admin role required");
-  }
-}

@@ -1,0 +1,129 @@
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "heading",
+      "attrs": { "level": 1 },
+      "content": [
+        { "type": "text", "text": "TAX INVOICE" }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "From:" },
+        { "type": "text", "text": " " },
+        { "type": "variable", "attrs": { "key": "org.name" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "To:" },
+        { "type": "text", "text": " " },
+        { "type": "variable", "attrs": { "key": "customer.name" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Client VAT Number:" },
+        { "type": "text", "text": " " },
+        { "type": "variable", "attrs": { "key": "customer.customFields.vat_number" } }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Invoice Number:" },
+        { "type": "text", "text": " " },
+        { "type": "variable", "attrs": { "key": "invoice.invoiceNumber" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Issue Date:" },
+        { "type": "text", "text": " " },
+        { "type": "variable", "attrs": { "key": "invoice.issueDate" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Due Date:" },
+        { "type": "text", "text": " " },
+        { "type": "variable", "attrs": { "key": "invoice.dueDate" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Currency:" },
+        { "type": "text", "text": " " },
+        { "type": "variable", "attrs": { "key": "invoice.currency" } }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [
+        { "type": "text", "text": "Amount Summary" }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Subtotal (excl. VAT):" },
+        { "type": "text", "text": " " },
+        { "type": "variable", "attrs": { "key": "invoice.subtotal" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "VAT (15%):" },
+        { "type": "text", "text": " " },
+        { "type": "variable", "attrs": { "key": "invoice.taxAmount" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Total Due:" },
+        { "type": "text", "text": " " },
+        { "type": "variable", "attrs": { "key": "invoice.total" } }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [
+        { "type": "text", "text": "Banking Details" }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "Please use your invoice number as payment reference. Bank details are available on request or as provided in your engagement letter." }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "italic" }], "text": "This is a tax invoice as defined in section 20 of the Value-Added Tax Act 89 of 1991." }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "variable", "attrs": { "key": "org.documentFooterText" } }
+      ]
+    }
+  ]
+}

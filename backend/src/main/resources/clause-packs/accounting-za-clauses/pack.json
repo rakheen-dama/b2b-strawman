@@ -1,0 +1,263 @@
+{
+  "packId": "accounting-za-clauses",
+  "version": 1,
+  "verticalProfile": "accounting-za",
+  "name": "SA Accounting Clauses",
+  "description": "Clauses for South African accounting firm engagement letters, aligned with SAICA guidance and SA legislation",
+  "clauses": [
+    {
+      "title": "Limitation of Liability (Accounting)",
+      "slug": "accounting-za-limitation-of-liability",
+      "category": "Legal",
+      "description": "Liability cap aligned with SAICA recommended terms for accounting engagements",
+      "body": {
+        "type": "doc",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "text", "text": "The liability of " },
+              { "type": "variable", "attrs": { "key": "org.name" } },
+              { "type": "text", "text": " to " },
+              { "type": "variable", "attrs": { "key": "customer.name" } },
+              { "type": "text", "text": " in respect of any claim arising out of or in connection with this engagement, whether in contract, delict or otherwise, shall be limited to three (3) times the total fees charged for the specific engagement giving rise to the claim, or R1,000,000 (one million Rand), whichever is the lesser." }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "text", "text": "This limitation shall not apply in cases of fraud, wilful misconduct, or gross negligence on the part of " },
+              { "type": "variable", "attrs": { "key": "org.name" } },
+              { "type": "text", "text": "." }
+            ]
+          }
+        ]
+      },
+      "sortOrder": 1
+    },
+    {
+      "title": "Fee Escalation",
+      "slug": "accounting-za-fee-escalation",
+      "category": "Commercial",
+      "description": "Annual fee increase clause linked to CPI, standard in SA retainer agreements",
+      "body": {
+        "type": "doc",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "variable", "attrs": { "key": "org.name" } },
+              { "type": "text", "text": " reserves the right to adjust fees annually, effective from 1 March each year, by an amount not exceeding the official Consumer Price Index (CPI) as published by Statistics South Africa, plus two percentage points (CPI + 2%)." }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "text", "text": "Written notice of any fee adjustment shall be provided to " },
+              { "type": "variable", "attrs": { "key": "customer.name" } },
+              { "type": "text", "text": " at least thirty (30) days prior to the effective date. If the client does not accept the revised fees, either party may terminate this engagement in accordance with the termination provisions herein." }
+            ]
+          }
+        ]
+      },
+      "sortOrder": 2
+    },
+    {
+      "title": "Termination (Accounting)",
+      "slug": "accounting-za-termination",
+      "category": "Legal",
+      "description": "30-day notice termination with handover provisions specific to accounting engagements",
+      "body": {
+        "type": "doc",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "text", "text": "Either party may terminate this engagement by providing thirty (30) days written notice to the other party. Upon termination, " },
+              { "type": "variable", "attrs": { "key": "org.name" } },
+              { "type": "text", "text": " shall:" }
+            ]
+          },
+          {
+            "type": "bulletList",
+            "content": [
+              { "type": "listItem", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Complete any work in progress to a logical handover point;" }] }] },
+              { "type": "listItem", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Deliver all client-owned records and documents within fourteen (14) days;" }] }] },
+              { "type": "listItem", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Provide a summary of outstanding SARS obligations and filing deadlines;" }] }] },
+              { "type": "listItem", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "Co-operate with the incoming accountant for a reasonable handover period." }] }] }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "variable", "attrs": { "key": "customer.name" } },
+              { "type": "text", "text": " shall remain liable for all fees and disbursements incurred up to the effective date of termination." }
+            ]
+          }
+        ]
+      },
+      "sortOrder": 3
+    },
+    {
+      "title": "Confidentiality (Accounting)",
+      "slug": "accounting-za-confidentiality",
+      "category": "Legal",
+      "description": "Client data protection commitment with POPIA reference",
+      "body": {
+        "type": "doc",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "variable", "attrs": { "key": "org.name" } },
+              { "type": "text", "text": " undertakes to treat all information received from or on behalf of " },
+              { "type": "variable", "attrs": { "key": "customer.name" } },
+              { "type": "text", "text": " as confidential, in accordance with the Protection of Personal Information Act 4 of 2013 (POPIA) and the ethical requirements of the South African Institute of Chartered Accountants (SAICA) and the Independent Regulatory Board for Auditors (IRBA) where applicable." }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "text", "text": "Confidential information shall not be disclosed to any third party without the client's prior written consent, except where disclosure is required by law, regulation, or professional obligation (including disclosures to SARS, the Financial Intelligence Centre, or professional regulatory bodies)." }
+            ]
+          }
+        ]
+      },
+      "sortOrder": 4
+    },
+    {
+      "title": "Document Retention (Accounting)",
+      "slug": "accounting-za-document-retention",
+      "category": "Compliance",
+      "description": "5-year retention aligned with SARS requirements under Tax Administration Act",
+      "body": {
+        "type": "doc",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "variable", "attrs": { "key": "org.name" } },
+              { "type": "text", "text": " shall retain all engagement records, working papers, and supporting documentation for a minimum period of five (5) years from the date of the relevant assessment or the completion of the engagement, whichever is later, in compliance with the Tax Administration Act 28 of 2011 and the Companies Act 71 of 2008." }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "text", "text": "Records required for FICA purposes shall be retained for a minimum of five (5) years from the date the business relationship is terminated, in accordance with the Financial Intelligence Centre Act 38 of 2001." }
+            ]
+          }
+        ]
+      },
+      "sortOrder": 5
+    },
+    {
+      "title": "Third-Party Reliance",
+      "slug": "accounting-za-third-party-reliance",
+      "category": "Legal",
+      "description": "Limits who may rely on the firm's work product",
+      "body": {
+        "type": "doc",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "text", "text": "The services provided under this engagement, and any reports, opinions, or work product arising therefrom, are prepared solely for the use and benefit of " },
+              { "type": "variable", "attrs": { "key": "customer.name" } },
+              { "type": "text", "text": " and may not be relied upon by any third party without the prior written consent of " },
+              { "type": "variable", "attrs": { "key": "org.name" } },
+              { "type": "text", "text": "." }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "variable", "attrs": { "key": "org.name" } },
+              { "type": "text", "text": " accepts no responsibility or liability to any third party who obtains access to or relies upon any work product arising from this engagement." }
+            ]
+          }
+        ]
+      },
+      "sortOrder": 6
+    },
+    {
+      "title": "Electronic Communication Consent",
+      "slug": "accounting-za-electronic-consent",
+      "category": "Compliance",
+      "description": "Consent to email, portal, and electronic document delivery",
+      "body": {
+        "type": "doc",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "variable", "attrs": { "key": "customer.name" } },
+              { "type": "text", "text": " consents to " },
+              { "type": "variable", "attrs": { "key": "org.name" } },
+              { "type": "text", "text": " communicating by electronic means, including email and the client portal, for the delivery of invoices, statements, engagement documents, information requests, and general correspondence." }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "text", "text": "The client acknowledges that electronic communications may be subject to interception and that " },
+              { "type": "variable", "attrs": { "key": "org.name" } },
+              { "type": "text", "text": " shall not be liable for any loss or damage arising from the use of electronic communication, provided reasonable security measures are in place. This consent is given in terms of the Electronic Communications and Transactions Act 25 of 2002." }
+            ]
+          }
+        ]
+      },
+      "sortOrder": 7
+    }
+  ],
+  "templateAssociations": [
+    {
+      "templatePackId": "accounting-za",
+      "templateKey": "engagement-letter-bookkeeping",
+      "clauseSlugs": [
+        "accounting-za-limitation-of-liability",
+        "accounting-za-fee-escalation",
+        "accounting-za-termination",
+        "accounting-za-confidentiality",
+        "accounting-za-document-retention",
+        "accounting-za-third-party-reliance",
+        "accounting-za-electronic-consent"
+      ],
+      "requiredSlugs": [
+        "accounting-za-limitation-of-liability",
+        "accounting-za-termination",
+        "accounting-za-confidentiality",
+        "accounting-za-document-retention"
+      ]
+    },
+    {
+      "templatePackId": "accounting-za",
+      "templateKey": "engagement-letter-tax-return",
+      "clauseSlugs": [
+        "accounting-za-limitation-of-liability",
+        "accounting-za-termination",
+        "accounting-za-confidentiality",
+        "accounting-za-document-retention",
+        "accounting-za-third-party-reliance"
+      ],
+      "requiredSlugs": [
+        "accounting-za-limitation-of-liability",
+        "accounting-za-termination",
+        "accounting-za-confidentiality"
+      ]
+    },
+    {
+      "templatePackId": "accounting-za",
+      "templateKey": "engagement-letter-advisory",
+      "clauseSlugs": [
+        "accounting-za-limitation-of-liability",
+        "accounting-za-termination",
+        "accounting-za-confidentiality",
+        "accounting-za-third-party-reliance"
+      ],
+      "requiredSlugs": [
+        "accounting-za-limitation-of-liability",
+        "accounting-za-confidentiality"
+      ]
+    }
+  ]
+}

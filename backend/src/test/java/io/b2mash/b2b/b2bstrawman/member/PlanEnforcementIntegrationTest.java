@@ -39,8 +39,8 @@ class PlanEnforcementIntegrationTest {
 
   @BeforeAll
   void provisionTenants() {
-    provisioningService.provisionTenant(STARTER_ORG, "Starter Enforcement Org");
-    provisioningService.provisionTenant(PRO_ORG, "Pro Enforcement Org");
+    provisioningService.provisionTenant(STARTER_ORG, "Starter Enforcement Org", null);
+    provisioningService.provisionTenant(PRO_ORG, "Pro Enforcement Org", null);
     planSyncService.syncPlan(PRO_ORG, "pro-plan");
   }
 

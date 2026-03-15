@@ -49,12 +49,12 @@ class InternalAuditControllerTest {
   @BeforeAll
   void provisionTenantAndSeedData() throws Exception {
     // Provision main org with audit events
-    provisioningService.provisionTenant(ORG_ID, "Internal Audit Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Internal Audit Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     // Provision empty org -- no members/projects synced, so no audit events for this org.
     // Each org gets its own dedicated schema; tenant isolation is via search_path.
-    provisioningService.provisionTenant(EMPTY_ORG_ID, "Empty Audit Org");
+    provisioningService.provisionTenant(EMPTY_ORG_ID, "Empty Audit Org", null);
 
     // Sync members into main org
     syncMember(ORG_ID, "user_iat_owner", "iat_owner@test.com", "IAT Owner", "owner");

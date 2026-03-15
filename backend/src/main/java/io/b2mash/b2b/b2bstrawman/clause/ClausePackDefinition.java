@@ -6,6 +6,7 @@ import java.util.List;
 public record ClausePackDefinition(
     String packId,
     int version,
+    String verticalProfile,
     String name,
     String description,
     List<ClauseDefinition> clauses,

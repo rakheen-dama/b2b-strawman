@@ -64,6 +64,11 @@ public class FieldPackSeeder extends AbstractPackSeeder<FieldPackDefinition> {
   }
 
   @Override
+  protected String getVerticalProfile(FieldPackDefinition pack) {
+    return pack.verticalProfile();
+  }
+
+  @Override
   protected boolean isPackAlreadyApplied(OrgSettings settings, String packId) {
     if (settings.getFieldPackStatus() == null) {
       return false;

@@ -66,7 +66,7 @@ class TaxRateBatchRecalcIntegrationTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Batch Recalc Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Batch Recalc Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberId =

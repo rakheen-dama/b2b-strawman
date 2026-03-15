@@ -66,7 +66,7 @@ class CapacityControllerTest {
 
   @BeforeAll
   void provisionAndSeed() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Cap Ctrl Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Cap Ctrl Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     memberIdOwnerStr =
         syncMember(ORG_ID, "user_cap_ctrl_owner", "cap_ctrl_owner@test.com", "Cap Owner", "owner");

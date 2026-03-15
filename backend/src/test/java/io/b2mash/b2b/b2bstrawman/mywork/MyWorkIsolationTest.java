@@ -51,14 +51,14 @@ class MyWorkIsolationTest {
   @BeforeAll
   void provisionAndSeed() throws Exception {
     // Pro tenants (dedicated schema)
-    provisioningService.provisionTenant(ORG_PRO_A_ID, "Pro Iso A");
+    provisioningService.provisionTenant(ORG_PRO_A_ID, "Pro Iso A", null);
     planSyncService.syncPlan(ORG_PRO_A_ID, "pro-plan");
-    provisioningService.provisionTenant(ORG_PRO_B_ID, "Pro Iso B");
+    provisioningService.provisionTenant(ORG_PRO_B_ID, "Pro Iso B", null);
     planSyncService.syncPlan(ORG_PRO_B_ID, "pro-plan");
 
     // Starter tenants (shared schema)
-    provisioningService.provisionTenant(ORG_STARTER_A_ID, "Starter Iso A");
-    provisioningService.provisionTenant(ORG_STARTER_B_ID, "Starter Iso B");
+    provisioningService.provisionTenant(ORG_STARTER_A_ID, "Starter Iso A", null);
+    provisioningService.provisionTenant(ORG_STARTER_B_ID, "Starter Iso B", null);
 
     // Pro A: sync member, create project + task + time entry
     syncMember(ORG_PRO_A_ID, "user_mw_iso_pro_a", "mw_iso_pro_a@test.com", "Pro A User", "owner");

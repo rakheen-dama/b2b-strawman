@@ -48,7 +48,7 @@ class PortalBrandingControllerIntegrationTest {
   @BeforeAll
   void setup() {
     // Org without logo
-    provisioningService.provisionTenant(ORG_ID, "Branding Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Branding Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     var schema = orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).get().getSchemaName();
@@ -64,7 +64,7 @@ class PortalBrandingControllerIntegrationTest {
             });
 
     // Org with logo
-    provisioningService.provisionTenant(ORG_WITH_LOGO_ID, "Branding Logo Test Org");
+    provisioningService.provisionTenant(ORG_WITH_LOGO_ID, "Branding Logo Test Org", null);
     planSyncService.syncPlan(ORG_WITH_LOGO_ID, "pro-plan");
 
     var logoSchema =

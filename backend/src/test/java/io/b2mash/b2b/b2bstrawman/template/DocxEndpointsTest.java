@@ -56,7 +56,7 @@ class DocxEndpointsTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "DOCX Endpoints Test Org");
+    provisioningService.provisionTenant(ORG_ID, "DOCX Endpoints Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     syncMember(
         ORG_ID, "user_endpoints_owner", "endpoints_owner@test.com", "Endpoints Owner", "owner");
@@ -64,7 +64,7 @@ class DocxEndpointsTest {
         ORG_ID, "user_endpoints_member", "endpoints_member@test.com", "Endpoints Member", "member");
 
     // --- Tenant B (for cross-tenant isolation test) ---
-    provisioningService.provisionTenant(ORG_ID_B, "DOCX Endpoints Test Org B");
+    provisioningService.provisionTenant(ORG_ID_B, "DOCX Endpoints Test Org B", null);
     planSyncService.syncPlan(ORG_ID_B, "pro-plan");
     syncMember(
         ORG_ID_B,

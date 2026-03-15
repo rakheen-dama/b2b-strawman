@@ -46,7 +46,7 @@ class StandardReportPackSeederTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Report Pack Seeder Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Report Pack Seeder Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     syncMember(ORG_ID, "user_rps_owner", "rps_owner@test.com", "RPS Owner", "owner");
     tenantSchema =

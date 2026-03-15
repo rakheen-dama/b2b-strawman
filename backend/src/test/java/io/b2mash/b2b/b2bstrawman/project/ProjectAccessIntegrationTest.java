@@ -54,7 +54,7 @@ class ProjectAccessIntegrationTest {
 
   @BeforeAll
   void setUp() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Access Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Access Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     ownerMemberId =

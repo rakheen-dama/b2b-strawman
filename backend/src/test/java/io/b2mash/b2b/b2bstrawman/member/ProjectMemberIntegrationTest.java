@@ -48,9 +48,9 @@ class ProjectMemberIntegrationTest {
 
   @BeforeAll
   void setUp() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "PM Test Org");
+    provisioningService.provisionTenant(ORG_ID, "PM Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
-    provisioningService.provisionTenant(ORG_B_ID, "PM Test Org B");
+    provisioningService.provisionTenant(ORG_B_ID, "PM Test Org B", null);
 
     ownerMemberId = syncMember(ORG_ID, "user_pm_owner", "owner@test.com", "Owner", "owner");
     adminMemberId = syncMember(ORG_ID, "user_pm_admin", "admin@test.com", "Admin", "admin");

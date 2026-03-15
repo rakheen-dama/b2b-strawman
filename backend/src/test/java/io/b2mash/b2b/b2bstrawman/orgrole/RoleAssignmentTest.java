@@ -54,7 +54,7 @@ class RoleAssignmentTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Role Assign Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Role Assign Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     ownerMemberId = syncMember("user_ra_owner", "ra_owner@test.com", "RA Owner", "owner");

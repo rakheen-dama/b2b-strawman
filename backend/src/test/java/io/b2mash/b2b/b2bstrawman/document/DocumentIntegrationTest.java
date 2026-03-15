@@ -47,9 +47,9 @@ class DocumentIntegrationTest {
 
   @BeforeAll
   void provisionTenantsAndProjects() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Document Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Document Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
-    provisioningService.provisionTenant(ORG_B_ID, "Document Test Org B");
+    provisioningService.provisionTenant(ORG_B_ID, "Document Test Org B", null);
 
     // Sync members so MemberContext is populated and we know member IDs
     syncMember(ORG_ID, "user_owner", "doc_owner@test.com", "Owner", "owner");

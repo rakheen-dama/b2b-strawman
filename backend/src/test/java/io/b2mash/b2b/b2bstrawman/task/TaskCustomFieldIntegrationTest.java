@@ -42,7 +42,7 @@ class TaskCustomFieldIntegrationTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Task CF Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Task CF Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     syncMember(ORG_ID, "user_tcf_owner", "tcf_owner@test.com", "Owner", "owner");
 

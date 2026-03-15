@@ -51,7 +51,7 @@ class CommentControllerTest {
 
   @BeforeAll
   void provisionAndSeed() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Comment Ctrl Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Comment Ctrl Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner = syncMember(ORG_ID, "user_cc_owner", "cc_owner@test.com", "CC Owner", "owner");

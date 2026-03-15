@@ -69,7 +69,7 @@ class InvoiceLineIntegrationTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Invoice Line Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Invoice Line Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =
@@ -114,7 +114,7 @@ class InvoiceLineIntegrationTest {
                     }));
 
     // --- Tenant B ---
-    provisioningService.provisionTenant(ORG_ID_B, "Invoice Line Test Org B");
+    provisioningService.provisionTenant(ORG_ID_B, "Invoice Line Test Org B", null);
     planSyncService.syncPlan(ORG_ID_B, "pro-plan");
 
     memberIdOwnerB =

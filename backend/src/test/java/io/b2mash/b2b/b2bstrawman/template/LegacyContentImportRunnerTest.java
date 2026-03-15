@@ -50,7 +50,7 @@ class LegacyContentImportRunnerTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Legacy Import Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Legacy Import Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     syncMember(ORG_ID, "user_legacy_owner", "legacy_owner@test.com", "Legacy Owner", "owner");
     tenantSchema =

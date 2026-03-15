@@ -33,7 +33,7 @@ class ProvisioningIntegrationTest {
     String clerkOrgId = "org_provision_test";
     String orgName = "Provision Test Org";
 
-    var result = provisioningService.provisionTenant(clerkOrgId, orgName);
+    var result = provisioningService.provisionTenant(clerkOrgId, orgName, null);
 
     assertThat(result.success()).isTrue();
     assertThat(result.alreadyProvisioned()).isFalse();
@@ -55,8 +55,8 @@ class ProvisioningIntegrationTest {
     String clerkOrgId = "org_idempotent_test";
     String orgName = "Idempotent Test Org";
 
-    var result1 = provisioningService.provisionTenant(clerkOrgId, orgName);
-    var result2 = provisioningService.provisionTenant(clerkOrgId, orgName);
+    var result1 = provisioningService.provisionTenant(clerkOrgId, orgName, null);
+    var result2 = provisioningService.provisionTenant(clerkOrgId, orgName, null);
 
     assertThat(result1.success()).isTrue();
     assertThat(result1.alreadyProvisioned()).isFalse();
@@ -72,7 +72,7 @@ class ProvisioningIntegrationTest {
     org.updatePlan(Tier.PRO, "pro_plan");
     organizationRepository.save(org);
 
-    var result = provisioningService.provisionTenant("org_pro_test", "Pro Org");
+    var result = provisioningService.provisionTenant("org_pro_test", "Pro Org", null);
 
     assertThat(result.success()).isTrue();
     assertThat(result.alreadyProvisioned()).isFalse();
@@ -84,8 +84,8 @@ class ProvisioningIntegrationTest {
 
   @Test
   void starterOrgsGetSeparateDedicatedSchemas() {
-    var result1 = provisioningService.provisionTenant("org_diff_a", "Org A");
-    var result2 = provisioningService.provisionTenant("org_diff_b", "Org B");
+    var result1 = provisioningService.provisionTenant("org_diff_a", "Org A", null);
+    var result2 = provisioningService.provisionTenant("org_diff_b", "Org B", null);
 
     assertThat(result1.schemaName()).matches("tenant_[0-9a-f]{12}");
     assertThat(result2.schemaName()).matches("tenant_[0-9a-f]{12}");

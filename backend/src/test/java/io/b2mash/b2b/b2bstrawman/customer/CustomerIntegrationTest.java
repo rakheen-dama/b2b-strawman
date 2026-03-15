@@ -65,9 +65,9 @@ class CustomerIntegrationTest {
 
   @BeforeAll
   void provisionTenants() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Customer Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Customer Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
-    provisioningService.provisionTenant(ORG_B_ID, "Customer Test Org B");
+    provisioningService.provisionTenant(ORG_B_ID, "Customer Test Org B", null);
     planSyncService.syncPlan(ORG_B_ID, "pro-plan");
 
     memberIdOwner =

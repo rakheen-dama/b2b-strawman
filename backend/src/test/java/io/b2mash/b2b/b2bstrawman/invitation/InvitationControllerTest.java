@@ -52,7 +52,7 @@ class InvitationControllerTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Invitation Ctrl Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Invitation Ctrl Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     ownerMemberId = syncMember("user_inv_owner", "inv_owner@test.com", "Inv Owner", "owner");

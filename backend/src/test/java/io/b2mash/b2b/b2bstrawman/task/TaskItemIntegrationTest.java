@@ -47,7 +47,7 @@ class TaskItemIntegrationTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Task Item Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Task Item Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner = syncMember(ORG_ID, "user_ti_owner", "ti_owner@test.com", "TI Owner", "owner");

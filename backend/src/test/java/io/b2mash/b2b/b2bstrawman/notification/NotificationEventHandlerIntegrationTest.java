@@ -62,7 +62,7 @@ class NotificationEventHandlerIntegrationTest {
   @BeforeAll
   void provisionTenantAndSeedData() throws Exception {
     tenantSchema =
-        provisioningService.provisionTenant(ORG_ID, "Notif Handler Test Org").schemaName();
+        provisioningService.provisionTenant(ORG_ID, "Notif Handler Test Org", null).schemaName();
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =

@@ -64,7 +64,7 @@ class BillingRateResolutionTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "BillingRate Resolution Test Org");
+    provisioningService.provisionTenant(ORG_ID, "BillingRate Resolution Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =

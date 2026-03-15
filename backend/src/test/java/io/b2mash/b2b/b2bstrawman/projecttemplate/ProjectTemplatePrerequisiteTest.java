@@ -68,7 +68,7 @@ class ProjectTemplatePrerequisiteTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Template Prereq 243B Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Template Prereq 243B Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     ownerMemberId =
         UUID.fromString(syncMember("user_tpq243_owner", "tpq243_owner@test.com", "Owner", "owner"));

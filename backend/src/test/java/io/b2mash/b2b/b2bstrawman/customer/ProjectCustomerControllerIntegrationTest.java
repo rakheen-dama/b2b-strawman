@@ -48,7 +48,7 @@ class ProjectCustomerControllerIntegrationTest {
 
   @BeforeAll
   void setUp() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "ProjCust Ctrl Test Org");
+    provisioningService.provisionTenant(ORG_ID, "ProjCust Ctrl Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     syncMember("user_pcc_owner", "pcc_owner@test.com", "Owner", "owner");

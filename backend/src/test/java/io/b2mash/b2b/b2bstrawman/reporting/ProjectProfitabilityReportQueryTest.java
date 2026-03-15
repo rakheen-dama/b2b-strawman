@@ -69,7 +69,7 @@ class ProjectProfitabilityReportQueryTest {
 
   @BeforeAll
   void setUp() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Profitability Query Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Profitability Query Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberId =

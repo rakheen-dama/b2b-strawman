@@ -50,7 +50,7 @@ class EntityTagIntegrationTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Entity Tag Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Entity Tag Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =
@@ -60,7 +60,7 @@ class EntityTagIntegrationTest {
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
 
-    provisioningService.provisionTenant(ORG_ID_B, "Entity Tag Test Org B");
+    provisioningService.provisionTenant(ORG_ID_B, "Entity Tag Test Org B", null);
     planSyncService.syncPlan(ORG_ID_B, "pro-plan");
 
     memberIdOwnerB =

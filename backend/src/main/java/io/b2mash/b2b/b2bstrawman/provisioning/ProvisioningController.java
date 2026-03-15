@@ -28,7 +28,7 @@ public class ProvisioningController {
       @Valid @RequestBody ProvisioningRequest request) {
     log.info("Received provisioning request for org {}", request.clerkOrgId());
 
-    var result = provisioningService.provisionTenant(request.clerkOrgId(), request.orgName());
+    var result = provisioningService.provisionTenant(request.clerkOrgId(), request.orgName(), null);
 
     if (result.alreadyProvisioned()) {
       return ResponseEntity.status(409)

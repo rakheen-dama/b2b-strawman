@@ -55,11 +55,11 @@ class PortalContactIntegrationTest {
   @BeforeAll
   void setup() throws Exception {
     // Provision tenant A
-    provisioningService.provisionTenant(ORG_ID_A, "Contact Test Org A");
+    provisioningService.provisionTenant(ORG_ID_A, "Contact Test Org A", null);
     planSyncService.syncPlan(ORG_ID_A, "pro-plan");
 
     // Provision tenant B
-    provisioningService.provisionTenant(ORG_ID_B, "Contact Test Org B");
+    provisioningService.provisionTenant(ORG_ID_B, "Contact Test Org B", null);
     planSyncService.syncPlan(ORG_ID_B, "pro-plan");
 
     // Sync member for org A

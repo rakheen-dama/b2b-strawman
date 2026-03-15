@@ -60,6 +60,11 @@ public class TemplatePackSeeder extends AbstractPackSeeder<TemplatePackDefinitio
   }
 
   @Override
+  protected String getVerticalProfile(TemplatePackDefinition pack) {
+    return pack.verticalProfile();
+  }
+
+  @Override
   protected boolean isPackAlreadyApplied(OrgSettings settings, String packId) {
     if (settings.getTemplatePackStatus() == null) {
       return false;

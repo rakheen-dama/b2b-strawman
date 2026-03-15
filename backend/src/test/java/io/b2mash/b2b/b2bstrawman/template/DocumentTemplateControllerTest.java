@@ -53,7 +53,7 @@ class DocumentTemplateControllerTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "DT Controller Test Org");
+    provisioningService.provisionTenant(ORG_ID, "DT Controller Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =
@@ -63,7 +63,7 @@ class DocumentTemplateControllerTest {
         ORG_ID, "user_dt_ctrl_member", "dt_ctrl_member@test.com", "DT Ctrl Member", "member");
 
     // Provision tenant B for isolation tests
-    provisioningService.provisionTenant(ORG_ID_B, "DT Controller Test Org B");
+    provisioningService.provisionTenant(ORG_ID_B, "DT Controller Test Org B", null);
     planSyncService.syncPlan(ORG_ID_B, "pro-plan");
     memberIdOwnerB =
         syncMember(

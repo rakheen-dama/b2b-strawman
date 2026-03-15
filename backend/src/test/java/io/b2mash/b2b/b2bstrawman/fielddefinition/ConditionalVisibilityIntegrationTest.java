@@ -52,7 +52,7 @@ class ConditionalVisibilityIntegrationTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Cond Vis Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Cond Vis Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =

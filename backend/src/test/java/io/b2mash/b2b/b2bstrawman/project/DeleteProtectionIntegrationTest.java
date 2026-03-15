@@ -53,7 +53,7 @@ class DeleteProtectionIntegrationTest {
 
   @BeforeAll
   void provisionTenantAndMembers() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Delete Protection Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Delete Protection Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner = syncMember(ORG_ID, "user_dp_owner", "dp_owner@test.com", "DP Owner", "owner");

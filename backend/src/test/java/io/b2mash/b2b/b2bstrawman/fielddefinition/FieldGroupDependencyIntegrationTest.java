@@ -54,7 +54,7 @@ class FieldGroupDependencyIntegrationTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "FG Dep Test Org");
+    provisioningService.provisionTenant(ORG_ID, "FG Dep Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =

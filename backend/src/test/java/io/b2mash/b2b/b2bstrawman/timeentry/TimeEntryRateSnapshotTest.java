@@ -60,7 +60,7 @@ class TimeEntryRateSnapshotTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "TimeEntry Snapshot Test Org");
+    provisioningService.provisionTenant(ORG_ID, "TimeEntry Snapshot Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =

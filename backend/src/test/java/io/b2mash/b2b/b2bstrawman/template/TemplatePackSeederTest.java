@@ -48,7 +48,7 @@ class TemplatePackSeederTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Template Pack Seeder Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Template Pack Seeder Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     syncMember(ORG_ID, "user_tps_owner", "tps_owner@test.com", "TPS Owner", "owner");

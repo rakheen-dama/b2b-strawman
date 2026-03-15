@@ -45,7 +45,7 @@ class FieldPackSeederIntegrationTest {
   @BeforeAll
   void setup() {
     // provisionTenant now calls fieldPackSeeder.seedPacksForTenant internally
-    provisioningService.provisionTenant(ORG_ID, "FPS Test Org");
+    provisioningService.provisionTenant(ORG_ID, "FPS Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();

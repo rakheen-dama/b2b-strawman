@@ -44,7 +44,7 @@ class OrgCreationControllerTest {
   @BeforeAll
   void setup() {
     // Provision a tenant so there's a valid org context for JWT-authenticated requests
-    provisioningService.provisionTenant(EXISTING_ORG_ID, "OrgCtrl Test Org");
+    provisioningService.provisionTenant(EXISTING_ORG_ID, "OrgCtrl Test Org", null);
     planSyncService.syncPlan(EXISTING_ORG_ID, "pro-plan");
   }
 

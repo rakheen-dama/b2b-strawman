@@ -47,7 +47,7 @@ class VariableMetadataEndpointTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Variable Metadata Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Variable Metadata Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     syncMember(ORG_ID, "user_vm_owner", "vm_owner@test.com", "VM Owner", "owner");
     syncMember(ORG_ID, "user_vm_member", "vm_member@test.com", "VM Member", "member");

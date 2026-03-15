@@ -8,7 +8,10 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldPackSeeder;
 import io.b2mash.b2b.b2bstrawman.informationrequest.RequestPackSeeder;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMapping;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
 import io.b2mash.b2b.b2bstrawman.reporting.StandardReportPackSeeder;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.template.TemplatePackSeeder;
 import java.sql.SQLException;
 import javax.sql.DataSource;
@@ -36,6 +39,8 @@ public class TenantProvisioningService {
   private final StandardReportPackSeeder standardReportPackSeeder;
   private final RequestPackSeeder requestPackSeeder;
   private final AutomationTemplateSeeder automationTemplateSeeder;
+  private final TenantTransactionHelper tenantTransactionHelper;
+  private final OrgSettingsRepository orgSettingsRepository;
 
   public TenantProvisioningService(
       OrganizationRepository organizationRepository,
@@ -48,7 +53,9 @@ public class TenantProvisioningService {
       CompliancePackSeeder compliancePackSeeder,
       StandardReportPackSeeder standardReportPackSeeder,
       RequestPackSeeder requestPackSeeder,
-      AutomationTemplateSeeder automationTemplateSeeder) {
+      AutomationTemplateSeeder automationTemplateSeeder,
+      TenantTransactionHelper tenantTransactionHelper,
+      OrgSettingsRepository orgSettingsRepository) {
     this.organizationRepository = organizationRepository;
     this.mappingRepository = mappingRepository;
     this.migrationDataSource = migrationDataSource;
@@ -60,6 +67,8 @@ public class TenantProvisioningService {
     this.standardReportPackSeeder = standardReportPackSeeder;
     this.requestPackSeeder = requestPackSeeder;
     this.automationTemplateSeeder = automationTemplateSeeder;
+    this.tenantTransactionHelper = tenantTransactionHelper;
+    this.orgSettingsRepository = orgSettingsRepository;
   }
 
   @Retryable(
@@ -67,7 +76,8 @@ public class TenantProvisioningService {
       noRetryFor = IllegalArgumentException.class,
       maxAttempts = 3,
       backoff = @Backoff(delay = 1000, multiplier = 2))
-  public ProvisioningResult provisionTenant(String clerkOrgId, String orgName) {
+  public ProvisioningResult provisionTenant(
+      String clerkOrgId, String orgName, String verticalProfile) {
     // Idempotency check: already fully provisioned?
     var existingMapping = mappingRepository.findByClerkOrgId(clerkOrgId);
     if (existingMapping.isPresent()) {
@@ -94,6 +104,9 @@ public class TenantProvisioningService {
       // schema once all tables exist (prevents race with first request).
       createSchema(schemaName);
       runTenantMigrations(schemaName);
+      if (verticalProfile != null) {
+        setVerticalProfile(schemaName, clerkOrgId, verticalProfile);
+      }
       fieldPackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
       templatePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
       clausePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
@@ -150,6 +163,24 @@ public class TenantProvisioningService {
     if (!schemaName.matches("^tenant_[0-9a-f]{12}$")) {
       throw new IllegalArgumentException("Invalid schema name: " + schemaName);
     }
+  }
+
+  private void setVerticalProfile(String schemaName, String orgId, String verticalProfile) {
+    tenantTransactionHelper.executeInTenantTransaction(
+        schemaName,
+        orgId,
+        tenantId -> {
+          var settings =
+              orgSettingsRepository
+                  .findForCurrentTenant()
+                  .orElseGet(
+                      () -> {
+                        var newSettings = new OrgSettings("USD");
+                        return orgSettingsRepository.save(newSettings);
+                      });
+          settings.setVerticalProfile(verticalProfile);
+          orgSettingsRepository.save(settings);
+        });
   }
 
   public record ProvisioningResult(boolean success, String schemaName, boolean alreadyProvisioned) {

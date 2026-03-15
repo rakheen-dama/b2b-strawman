@@ -54,7 +54,7 @@ class ComplianceProvisioningTest {
 
   @BeforeAll
   void setup() {
-    provisioningService.provisionTenant(ORG_ID, "Compliance Provisioning Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Compliance Provisioning Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();

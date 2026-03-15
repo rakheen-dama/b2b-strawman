@@ -50,7 +50,9 @@ class NotificationPreferenceControllerTest {
   @BeforeAll
   void provisionTenantAndSeedData() throws Exception {
     tenantSchema =
-        provisioningService.provisionTenant(ORG_ID, "Notif Pref Controller Test Org").schemaName();
+        provisioningService
+            .provisionTenant(ORG_ID, "Notif Pref Controller Test Org", null)
+            .schemaName();
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =

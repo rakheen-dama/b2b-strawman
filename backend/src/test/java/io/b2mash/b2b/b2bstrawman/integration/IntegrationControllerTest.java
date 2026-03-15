@@ -64,7 +64,7 @@ class IntegrationControllerTest {
 
   @BeforeAll
   void provisionTenant() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Integration Controller Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Integration Controller Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =

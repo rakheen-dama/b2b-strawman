@@ -70,7 +70,7 @@ class AcceptanceControllerIntegrationTest {
 
   @BeforeAll
   void provisionAndSeed() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Acceptance Ctrl Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Acceptance Ctrl Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     ownerMemberId =
@@ -363,7 +363,7 @@ class AcceptanceControllerIntegrationTest {
   void get_detail_returns404_forDifferentTenant() throws Exception {
     // Provision a second, completely separate tenant
     String otherOrgId = "org_acceptance_other_tenant";
-    provisioningService.provisionTenant(otherOrgId, "Other Tenant Org");
+    provisioningService.provisionTenant(otherOrgId, "Other Tenant Org", null);
     planSyncService.syncPlan(otherOrgId, "pro-plan");
 
     syncMember(otherOrgId, "user_other_owner", "other_owner@test.com", "Other Owner", "owner");

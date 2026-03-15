@@ -79,7 +79,7 @@ class UnbilledTimeIntegrationTest {
 
   @BeforeAll
   void setUp() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Unbilled Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Unbilled Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =

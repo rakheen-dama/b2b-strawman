@@ -50,7 +50,7 @@ class TemplateFieldPackLinkageTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "FPL Test Org");
+    provisioningService.provisionTenant(ORG_ID, "FPL Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     syncMember(ORG_ID, "user_fpl_owner", "fpl_owner@test.com", "FPL Owner", "owner");
 

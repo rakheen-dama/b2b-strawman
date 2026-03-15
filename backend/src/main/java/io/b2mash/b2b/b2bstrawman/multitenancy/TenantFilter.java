@@ -128,7 +128,7 @@ public class TenantFilter extends OncePerRequestFilter {
     String orgName = orgSlug != null ? orgSlug : orgId;
     try {
       log.info("JIT provisioning tenant for org {}", orgId);
-      svc.provisionTenant(orgId, orgName);
+      svc.provisionTenant(orgId, orgName, null);
       // Provisioning succeeded — retry lookup (bypasses cache)
       String schema = lookupTenant(orgId);
       if (schema == null) {

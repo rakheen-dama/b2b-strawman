@@ -43,7 +43,7 @@ class ProjectTagIntegrationTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Project Tag Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Project Tag Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     syncMember(ORG_ID, "user_pt_owner", "pt_owner@test.com", "PT Owner", "owner");
 

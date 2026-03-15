@@ -41,7 +41,7 @@ class SubscriptionIntegrationTest {
 
   @BeforeAll
   void provisionTenants() throws Exception {
-    provisioningService.provisionTenant(ORG_A, "Billing Test Org A");
+    provisioningService.provisionTenant(ORG_A, "Billing Test Org A", null);
 
     // Sync a member so member count is > 0
     syncMember(ORG_A, "user_billing_owner", "billing_owner@test.com", "Owner", "owner");
@@ -53,7 +53,7 @@ class SubscriptionIntegrationTest {
   void shouldCreateSubscriptionOnProvisioning() {
     // Use a fresh org to verify initial provisioning state (other tests mutate ORG_A)
     String freshOrg = "org_billing_provision_check";
-    provisioningService.provisionTenant(freshOrg, "Provision Check Org");
+    provisioningService.provisionTenant(freshOrg, "Provision Check Org", null);
 
     var org = organizationRepository.findByClerkOrgId(freshOrg).orElseThrow();
     var subscription = subscriptionRepository.findByOrganizationId(org.getId());
@@ -138,7 +138,7 @@ class SubscriptionIntegrationTest {
   @Test
   void shouldTriggerUpgradeOnStarterToProTransition() throws Exception {
     String upgradeOrg = "org_billing_upgrade";
-    provisioningService.provisionTenant(upgradeOrg, "Upgrade Test Org");
+    provisioningService.provisionTenant(upgradeOrg, "Upgrade Test Org", null);
 
     // Verify starts as STARTER
     var org = organizationRepository.findByClerkOrgId(upgradeOrg).orElseThrow();

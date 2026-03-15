@@ -78,7 +78,7 @@ class ViewFilterIntegrationTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "View Filter Test Org");
+    provisioningService.provisionTenant(ORG_ID, "View Filter Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =

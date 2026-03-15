@@ -64,7 +64,7 @@ class ReportRenderingServiceTest {
 
   @BeforeAll
   void setUp() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Report Rendering Service Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Report Rendering Service Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberId =

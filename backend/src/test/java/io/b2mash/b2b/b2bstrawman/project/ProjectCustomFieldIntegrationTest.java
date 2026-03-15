@@ -40,7 +40,7 @@ class ProjectCustomFieldIntegrationTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Project CF Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Project CF Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     syncMember(ORG_ID, "user_pcf_owner", "pcf_owner@test.com", "Owner", "owner");
     syncMember(ORG_ID, "user_pcf_admin", "pcf_admin@test.com", "Admin", "admin");

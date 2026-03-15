@@ -54,7 +54,7 @@ class FieldDefinitionContextTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "FD Context Test Org");
+    provisioningService.provisionTenant(ORG_ID, "FD Context Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     memberIdOwner =
         UUID.fromString(

@@ -52,10 +52,10 @@ class CustomerServiceAuditTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Customer Audit Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Customer Audit Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     schemaName =
-        provisioningService.provisionTenant(ORG_ID, "Customer Audit Test Org").schemaName();
+        provisioningService.provisionTenant(ORG_ID, "Customer Audit Test Org", null).schemaName();
 
     syncMember(ORG_ID, "user_ca_owner", "ca_owner@test.com", "CA Owner", "owner");
   }

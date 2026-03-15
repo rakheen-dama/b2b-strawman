@@ -78,7 +78,7 @@ class ChecklistInstanceAdvancedTest {
 
   @BeforeAll
   void setup() {
-    provisioningService.provisionTenant(ORG_ID, "Checklist Advanced Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Checklist Advanced Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();

@@ -53,12 +53,12 @@ class PortalResyncIntegrationTest {
 
   @BeforeAll
   void provisionAndSeedData() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Resync Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Resync Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     syncMember(ORG_ID, "user_resync_owner", "resync_owner@test.com", "Resync Owner", "owner");
 
     // Provision a separate empty org (no projects, customers, or documents)
-    provisioningService.provisionTenant(EMPTY_ORG_ID, "Resync Empty Org");
+    provisioningService.provisionTenant(EMPTY_ORG_ID, "Resync Empty Org", null);
     planSyncService.syncPlan(EMPTY_ORG_ID, "pro-plan");
 
     // Create two projects

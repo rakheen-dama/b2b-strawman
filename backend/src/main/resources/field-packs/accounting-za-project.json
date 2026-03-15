@@ -1,0 +1,70 @@
+{
+  "packId": "accounting-za-project",
+  "version": 1,
+  "verticalProfile": "accounting-za",
+  "entityType": "PROJECT",
+  "group": {
+    "slug": "accounting_za_engagement",
+    "name": "SA Accounting — Engagement Details",
+    "description": "South African accounting-specific fields for engagement (project) entities",
+    "autoApply": false
+  },
+  "fields": [
+    {
+      "slug": "engagement_type",
+      "name": "Engagement Type",
+      "fieldType": "DROPDOWN",
+      "description": "Type of accounting engagement",
+      "required": true,
+      "options": [
+        { "value": "MONTHLY_BOOKKEEPING", "label": "Monthly Bookkeeping" },
+        { "value": "ANNUAL_TAX_RETURN", "label": "Annual Tax Return" },
+        { "value": "ANNUAL_FINANCIAL_STATEMENTS", "label": "Annual Financial Statements" },
+        { "value": "ADVISORY", "label": "Advisory" },
+        { "value": "TRUST_ADMINISTRATION", "label": "Trust Administration" },
+        { "value": "COMPANY_SECRETARIAL", "label": "Company Secretarial" },
+        { "value": "VAT_RETURNS", "label": "VAT Returns" },
+        { "value": "PAYROLL", "label": "Payroll" },
+        { "value": "OTHER", "label": "Other" }
+      ],
+      "sortOrder": 1
+    },
+    {
+      "slug": "tax_year",
+      "name": "Tax Year",
+      "fieldType": "TEXT",
+      "description": "Relevant tax year (e.g., 2026) for tax return engagements",
+      "required": false,
+      "sortOrder": 2
+    },
+    {
+      "slug": "sars_submission_deadline",
+      "name": "SARS Submission Deadline",
+      "fieldType": "DATE",
+      "description": "Filing deadline based on engagement type and financial year-end",
+      "required": false,
+      "sortOrder": 3
+    },
+    {
+      "slug": "assigned_reviewer",
+      "name": "Assigned Reviewer",
+      "fieldType": "TEXT",
+      "description": "Senior person who reviews deliverables before client delivery",
+      "required": false,
+      "sortOrder": 4
+    },
+    {
+      "slug": "complexity",
+      "name": "Complexity",
+      "fieldType": "DROPDOWN",
+      "description": "Engagement complexity level for planning and billing",
+      "required": false,
+      "options": [
+        { "value": "SIMPLE", "label": "Simple" },
+        { "value": "MODERATE", "label": "Moderate" },
+        { "value": "COMPLEX", "label": "Complex" }
+      ],
+      "sortOrder": 5
+    }
+  ]
+}

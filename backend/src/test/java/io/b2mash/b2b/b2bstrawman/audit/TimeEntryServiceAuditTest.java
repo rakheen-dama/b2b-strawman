@@ -49,10 +49,10 @@ class TimeEntryServiceAuditTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "TimeEntry Audit Test Org");
+    provisioningService.provisionTenant(ORG_ID, "TimeEntry Audit Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     schemaName =
-        provisioningService.provisionTenant(ORG_ID, "TimeEntry Audit Test Org").schemaName();
+        provisioningService.provisionTenant(ORG_ID, "TimeEntry Audit Test Org", null).schemaName();
 
     syncMember(ORG_ID, "user_te_owner", "te_owner@test.com", "TE Owner", "owner");
 

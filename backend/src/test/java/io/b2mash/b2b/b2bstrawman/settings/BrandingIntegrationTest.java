@@ -45,7 +45,7 @@ class BrandingIntegrationTest {
 
   void ensureProvisioned() throws Exception {
     if (!provisioned) {
-      provisioningService.provisionTenant(ORG_ID, "Branding Test Org");
+      provisioningService.provisionTenant(ORG_ID, "Branding Test Org", null);
       planSyncService.syncPlan(ORG_ID, "pro-plan");
       syncMember(ORG_ID, "user_brand_owner", "brand_owner@test.com", "Brand Owner", "owner");
       syncMember(ORG_ID, "user_brand_member", "brand_member@test.com", "Brand Member", "member");

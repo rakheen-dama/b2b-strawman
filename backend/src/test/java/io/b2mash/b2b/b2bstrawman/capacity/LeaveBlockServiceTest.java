@@ -54,7 +54,7 @@ class LeaveBlockServiceTest {
 
   @BeforeAll
   void provisionAndSeed() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Leave Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Leave Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     memberIdOwnerStr =
         syncMember(ORG_ID, "user_leave_owner", "leave_owner@test.com", "Owner", "owner");

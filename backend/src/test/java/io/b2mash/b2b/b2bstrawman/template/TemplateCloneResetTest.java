@@ -58,7 +58,7 @@ class TemplateCloneResetTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Clone Reset Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Clone Reset Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     syncMember(ORG_ID, "user_cr_owner", "cr_owner@test.com", "CR Owner", "owner");

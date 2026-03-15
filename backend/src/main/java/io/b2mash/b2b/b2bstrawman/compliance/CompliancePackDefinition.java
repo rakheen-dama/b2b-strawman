@@ -8,6 +8,7 @@ public record CompliancePackDefinition(
     String name,
     String description,
     String version,
+    String verticalProfile,
     String jurisdiction,
     String customerType,
     CompliancePackChecklistTemplate checklistTemplate,

@@ -59,7 +59,7 @@ class CapacityServiceTest {
 
   @BeforeAll
   void provisionAndSeed() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Capacity Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Capacity Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     memberIdOwnerStr = syncMember(ORG_ID, "user_cap_owner", "cap_owner@test.com", "Owner", "owner");
     memberIdOwner = UUID.fromString(memberIdOwnerStr);

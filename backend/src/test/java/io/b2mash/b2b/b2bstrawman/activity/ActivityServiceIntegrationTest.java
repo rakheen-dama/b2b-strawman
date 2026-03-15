@@ -57,7 +57,7 @@ class ActivityServiceIntegrationTest {
   @BeforeAll
   void provisionTenantAndSeed() {
     tenantSchema =
-        provisioningService.provisionTenant(ORG_ID, "Activity Svc Test Org").schemaName();
+        provisioningService.provisionTenant(ORG_ID, "Activity Svc Test Org", null).schemaName();
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     unknownActorId = UUID.randomUUID();

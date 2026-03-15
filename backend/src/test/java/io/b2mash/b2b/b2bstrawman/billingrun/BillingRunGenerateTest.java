@@ -83,7 +83,7 @@ class BillingRunGenerateTest {
 
   @BeforeAll
   void setUp() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Generate Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Generate Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =

@@ -54,7 +54,7 @@ class IntegrationRegistryIntegrationTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Registry Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Registry Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     memberId =
         UUID.fromString(

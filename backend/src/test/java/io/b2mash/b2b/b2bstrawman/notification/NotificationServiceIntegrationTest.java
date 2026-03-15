@@ -52,7 +52,7 @@ class NotificationServiceIntegrationTest {
   @BeforeAll
   void provisionTenant() {
     tenantSchema =
-        provisioningService.provisionTenant(ORG_ID, "Notification Svc Test Org").schemaName();
+        provisioningService.provisionTenant(ORG_ID, "Notification Svc Test Org", null).schemaName();
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdA =

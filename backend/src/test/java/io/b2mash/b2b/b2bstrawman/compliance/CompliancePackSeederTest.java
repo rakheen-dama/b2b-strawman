@@ -46,7 +46,7 @@ class CompliancePackSeederTest {
 
   @BeforeAll
   void setup() {
-    provisioningService.provisionTenant(ORG_ID, "Compliance Seeder Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Compliance Seeder Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();

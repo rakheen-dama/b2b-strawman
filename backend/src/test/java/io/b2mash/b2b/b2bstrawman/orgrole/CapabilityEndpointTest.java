@@ -68,7 +68,7 @@ class CapabilityEndpointTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Cap Endpoint Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Cap Endpoint Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     ownerMemberId =

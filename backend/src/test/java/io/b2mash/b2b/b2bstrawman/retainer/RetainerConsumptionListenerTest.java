@@ -67,7 +67,7 @@ class RetainerConsumptionListenerTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Consumption Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Consumption Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     memberId =
         UUID.fromString(

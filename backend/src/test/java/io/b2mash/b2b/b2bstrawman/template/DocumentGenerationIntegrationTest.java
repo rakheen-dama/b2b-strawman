@@ -73,7 +73,7 @@ class DocumentGenerationIntegrationTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Doc Gen Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Doc Gen Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =

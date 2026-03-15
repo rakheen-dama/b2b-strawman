@@ -64,7 +64,7 @@ class PortalTaskSyncIntegrationTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Portal Task Sync Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Portal Task Sync Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     syncMember(
         ORG_ID, "user_task_sync_owner", "task_sync_owner@test.com", "Task Sync Owner", "owner");

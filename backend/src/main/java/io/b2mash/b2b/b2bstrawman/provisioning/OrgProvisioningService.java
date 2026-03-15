@@ -82,7 +82,7 @@ public class OrgProvisioningService {
     try {
       keycloakAdminClient.addMember(orgId, userId);
       keycloakAdminClient.updateMemberRole(orgId, userId, "owner");
-      tenantProvisioningService.provisionTenant(slug, name);
+      tenantProvisioningService.provisionTenant(slug, name, null);
     } catch (Exception e) {
       log.error(
           "Post-creation steps failed for org '{}' (orgId={}), attempting compensation: {}",

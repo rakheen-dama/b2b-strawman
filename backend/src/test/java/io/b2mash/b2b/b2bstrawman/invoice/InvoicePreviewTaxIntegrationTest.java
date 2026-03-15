@@ -85,7 +85,7 @@ class InvoicePreviewTaxIntegrationTest {
   @BeforeAll
   void setUp() throws Exception {
     // --- Tenant 1: Exclusive tax ---
-    provisioningService.provisionTenant(ORG_ID, "Tax Preview Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Tax Preview Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =
@@ -224,7 +224,7 @@ class InvoicePreviewTaxIntegrationTest {
                     }));
 
     // --- Tenant 2: Inclusive tax ---
-    provisioningService.provisionTenant(ORG_ID_INCLUSIVE, "Tax Inclusive Org");
+    provisioningService.provisionTenant(ORG_ID_INCLUSIVE, "Tax Inclusive Org", null);
     planSyncService.syncPlan(ORG_ID_INCLUSIVE, "pro-plan");
 
     memberIdInclusive =

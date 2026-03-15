@@ -59,7 +59,7 @@ class CompletenessQueryTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Completeness Query Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Completeness Query Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     syncMember("user_cqt_owner", "cqt_owner@test.com", "CQT Owner", "owner");

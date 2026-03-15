@@ -72,7 +72,7 @@ class InvoicePreviewIntegrationTest {
 
   @BeforeAll
   void setUp() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Preview Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Preview Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =
@@ -186,7 +186,7 @@ class InvoicePreviewIntegrationTest {
                     }));
 
     // --- Tenant B (for cross-tenant isolation test) ---
-    provisioningService.provisionTenant(ORG_ID_B, "Preview Test Org B");
+    provisioningService.provisionTenant(ORG_ID_B, "Preview Test Org B", null);
     planSyncService.syncPlan(ORG_ID_B, "pro-plan");
     syncMember(
         ORG_ID_B,

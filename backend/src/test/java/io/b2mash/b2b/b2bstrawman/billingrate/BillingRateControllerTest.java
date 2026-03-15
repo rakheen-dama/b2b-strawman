@@ -61,7 +61,7 @@ class BillingRateControllerTest {
   @BeforeAll
   void provisionAndSeed() throws Exception {
     // Provision tenant A
-    provisioningService.provisionTenant(ORG_ID, "Billing Ctrl Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Billing Ctrl Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =
@@ -111,7 +111,7 @@ class BillingRateControllerTest {
         .andExpect(status().isCreated());
 
     // Provision tenant B for isolation tests
-    provisioningService.provisionTenant(ORG_ID_B, "Billing Ctrl Test Org B");
+    provisioningService.provisionTenant(ORG_ID_B, "Billing Ctrl Test Org B", null);
     planSyncService.syncPlan(ORG_ID_B, "pro-plan");
     memberIdOwnerB =
         syncMember(ORG_ID_B, "user_brc_owner_b", "brc_owner_b@test.com", "BRC Owner B", "owner");

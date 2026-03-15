@@ -49,7 +49,7 @@ class EventPublicationTest {
 
   @BeforeAll
   void provisionTenantAndSeedData() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Event Pub Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Event Pub Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner = syncMember(ORG_ID, "user_ep_owner", "ep_owner@test.com", "EP Owner", "owner");

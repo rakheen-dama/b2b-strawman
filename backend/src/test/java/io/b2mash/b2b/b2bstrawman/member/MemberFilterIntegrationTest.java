@@ -46,7 +46,7 @@ class MemberFilterIntegrationTest {
 
   @BeforeAll
   void setup() {
-    provisioningService.provisionTenant(ORG_ID, "MemberFilter Test Org");
+    provisioningService.provisionTenant(ORG_ID, "MemberFilter Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     schemaName =
         mappingRepository

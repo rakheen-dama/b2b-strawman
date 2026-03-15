@@ -58,7 +58,7 @@ class RequestReminderSchedulerTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Request Reminder Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Request Reminder Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     memberId =
         UUID.fromString(

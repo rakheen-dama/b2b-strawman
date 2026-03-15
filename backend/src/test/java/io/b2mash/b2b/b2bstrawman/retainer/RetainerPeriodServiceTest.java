@@ -83,7 +83,7 @@ class RetainerPeriodServiceTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Retainer Period Service Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Retainer Period Service Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberId =

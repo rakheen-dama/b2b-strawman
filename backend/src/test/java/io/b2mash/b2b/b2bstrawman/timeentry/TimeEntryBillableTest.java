@@ -64,7 +64,7 @@ class TimeEntryBillableTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Billable Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Billable Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =

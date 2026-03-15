@@ -59,7 +59,7 @@ class ProposalExpiryProcessorTest {
 
   @BeforeAll
   void setup() {
-    provisioningService.provisionTenant(ORG_ID, "Expiry Processor Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Expiry Processor Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();

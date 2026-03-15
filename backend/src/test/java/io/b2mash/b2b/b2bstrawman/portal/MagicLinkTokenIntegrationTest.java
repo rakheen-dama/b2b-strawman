@@ -77,11 +77,11 @@ class MagicLinkTokenIntegrationTest {
   @BeforeAll
   void setup() throws Exception {
     // Provision tenant A
-    provisioningService.provisionTenant(ORG_ID_A, "MLT Test Org A");
+    provisioningService.provisionTenant(ORG_ID_A, "MLT Test Org A", null);
     planSyncService.syncPlan(ORG_ID_A, "pro-plan");
 
     // Provision tenant B
-    provisioningService.provisionTenant(ORG_ID_B, "MLT Test Org B");
+    provisioningService.provisionTenant(ORG_ID_B, "MLT Test Org B", null);
     planSyncService.syncPlan(ORG_ID_B, "pro-plan");
 
     // Sync member for org A

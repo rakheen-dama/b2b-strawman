@@ -58,7 +58,7 @@ class SavedViewIntegrationTest {
   @BeforeAll
   void setup() throws Exception {
     // --- Tenant A ---
-    provisioningService.provisionTenant(ORG_ID, "View Test Org");
+    provisioningService.provisionTenant(ORG_ID, "View Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =
@@ -73,7 +73,7 @@ class SavedViewIntegrationTest {
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
 
     // --- Tenant B ---
-    provisioningService.provisionTenant(ORG_ID_B, "View Test Org B");
+    provisioningService.provisionTenant(ORG_ID_B, "View Test Org B", null);
     planSyncService.syncPlan(ORG_ID_B, "pro-plan");
 
     memberIdOwnerB =

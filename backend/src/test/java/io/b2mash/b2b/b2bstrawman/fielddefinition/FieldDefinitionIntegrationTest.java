@@ -55,7 +55,7 @@ class FieldDefinitionIntegrationTest {
   @BeforeAll
   void setup() throws Exception {
     // --- Tenant A ---
-    provisioningService.provisionTenant(ORG_ID, "FD Test Org");
+    provisioningService.provisionTenant(ORG_ID, "FD Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =
@@ -66,7 +66,7 @@ class FieldDefinitionIntegrationTest {
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
 
     // --- Tenant B ---
-    provisioningService.provisionTenant(ORG_ID_B, "FD Test Org B");
+    provisioningService.provisionTenant(ORG_ID_B, "FD Test Org B", null);
     planSyncService.syncPlan(ORG_ID_B, "pro-plan");
 
     memberIdOwnerB =

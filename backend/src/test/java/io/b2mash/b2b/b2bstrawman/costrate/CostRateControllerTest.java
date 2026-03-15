@@ -72,7 +72,7 @@ class CostRateControllerTest {
   @BeforeAll
   void provisionAndSeed() throws Exception {
     // Provision tenant A
-    provisioningService.provisionTenant(ORG_ID, "Cost Ctrl Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Cost Ctrl Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =
@@ -83,7 +83,7 @@ class CostRateControllerTest {
         syncMember(ORG_ID, "user_crc_member", "crc_member@test.com", "CRC Member", "member");
 
     // Provision tenant B for isolation tests
-    provisioningService.provisionTenant(ORG_ID_B, "Cost Ctrl Test Org B");
+    provisioningService.provisionTenant(ORG_ID_B, "Cost Ctrl Test Org B", null);
     planSyncService.syncPlan(ORG_ID_B, "pro-plan");
     memberIdOwnerB =
         syncMember(ORG_ID_B, "user_crc_owner_b", "crc_owner_b@test.com", "CRC Owner B", "owner");

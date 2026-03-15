@@ -53,11 +53,11 @@ class TimeEntryIntegrationTest {
   @BeforeAll
   void provisionTenantsAndSeedData() throws Exception {
     // Provision tenant A with Pro plan
-    provisioningService.provisionTenant(ORG_ID, "TimeEntry Test Org");
+    provisioningService.provisionTenant(ORG_ID, "TimeEntry Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     // Provision tenant B with Pro plan
-    provisioningService.provisionTenant(ORG_B_ID, "TimeEntry Test Org B");
+    provisioningService.provisionTenant(ORG_B_ID, "TimeEntry Test Org B", null);
     planSyncService.syncPlan(ORG_B_ID, "pro-plan");
 
     // Sync members for tenant A

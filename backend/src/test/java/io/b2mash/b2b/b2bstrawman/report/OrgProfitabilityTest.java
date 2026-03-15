@@ -79,7 +79,7 @@ class OrgProfitabilityTest {
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Org Profitability Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Org Profitability Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =

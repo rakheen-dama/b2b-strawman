@@ -26,7 +26,10 @@ public record AutomationTemplateDefinition(
 
   /** Top-level pack wrapper matching the JSON structure. */
   public record AutomationTemplatePack(
-      String packId, int version, List<AutomationTemplateDefinition> templates) {}
+      String packId,
+      int version,
+      String verticalProfile,
+      List<AutomationTemplateDefinition> templates) {}
 
   /** Response DTO for listing available templates. */
   public record TemplateDefinitionResponse(

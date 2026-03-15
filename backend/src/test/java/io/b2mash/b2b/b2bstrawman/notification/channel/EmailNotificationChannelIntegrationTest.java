@@ -71,7 +71,7 @@ class EmailNotificationChannelIntegrationTest {
   @BeforeAll
   void provisionTenant() {
     tenantSchema =
-        provisioningService.provisionTenant(ORG_ID, "Email Channel Test Org").schemaName();
+        provisioningService.provisionTenant(ORG_ID, "Email Channel Test Org", null).schemaName();
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     memberId =
         memberSyncService
@@ -79,7 +79,9 @@ class EmailNotificationChannelIntegrationTest {
             .memberId();
 
     rateLimitTenantSchema =
-        provisioningService.provisionTenant(RATE_LIMIT_ORG_ID, "Rate Limit Test Org").schemaName();
+        provisioningService
+            .provisionTenant(RATE_LIMIT_ORG_ID, "Rate Limit Test Org", null)
+            .schemaName();
     planSyncService.syncPlan(RATE_LIMIT_ORG_ID, "pro-plan");
     rateLimitMemberId =
         memberSyncService

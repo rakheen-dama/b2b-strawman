@@ -73,7 +73,7 @@ class InformationRequestReadModelSyncIntegrationTest {
   @BeforeAll
   void provisionTenantAndSetupData() {
     tenantSchema =
-        provisioningService.provisionTenant(ORG_ID, "Info Request Sync Org").schemaName();
+        provisioningService.provisionTenant(ORG_ID, "Info Request Sync Org", null).schemaName();
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     var syncResult =

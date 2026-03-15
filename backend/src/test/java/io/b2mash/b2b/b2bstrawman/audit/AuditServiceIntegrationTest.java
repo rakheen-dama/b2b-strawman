@@ -41,11 +41,12 @@ class AuditServiceIntegrationTest {
 
   @BeforeAll
   void provisionTenant() {
-    provisioningService.provisionTenant(ORG_ID, "Audit Service Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Audit Service Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     // Resolve the schema name for this Pro org
-    schemaName = provisioningService.provisionTenant(ORG_ID, "Audit Service Test Org").schemaName();
+    schemaName =
+        provisioningService.provisionTenant(ORG_ID, "Audit Service Test Org", null).schemaName();
   }
 
   @Test

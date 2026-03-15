@@ -84,7 +84,9 @@ class AcceptanceServiceIntegrationTest {
   @BeforeAll
   void provisionTenantAndSetupData() {
     tenantSchema =
-        provisioningService.provisionTenant(ORG_ID, "Acceptance Service Test Org").schemaName();
+        provisioningService
+            .provisionTenant(ORG_ID, "Acceptance Service Test Org", null)
+            .schemaName();
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     // Create member

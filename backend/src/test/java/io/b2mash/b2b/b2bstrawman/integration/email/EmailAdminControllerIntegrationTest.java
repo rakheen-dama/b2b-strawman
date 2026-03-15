@@ -51,7 +51,8 @@ class EmailAdminControllerIntegrationTest {
 
   @BeforeAll
   void provisionTenantAndMembers() throws Exception {
-    tenantSchema = provisioningService.provisionTenant(ORG_ID, "Email Admin Test Org").schemaName();
+    tenantSchema =
+        provisioningService.provisionTenant(ORG_ID, "Email Admin Test Org", null).schemaName();
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     // Sync owner member

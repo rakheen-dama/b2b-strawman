@@ -62,7 +62,7 @@ class ProposalControllerTest {
 
   @BeforeAll
   void provisionTenantAndSeedData() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Proposal Controller Test Org");
+    provisioningService.provisionTenant(ORG_ID, "Proposal Controller Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =

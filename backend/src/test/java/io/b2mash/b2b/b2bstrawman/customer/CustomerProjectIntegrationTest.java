@@ -59,9 +59,9 @@ class CustomerProjectIntegrationTest {
   @BeforeAll
   void provisionTenants() throws Exception {
     // Pro-tier orgs for main linking tests
-    provisioningService.provisionTenant(ORG_ID, "CustProj Test Org");
+    provisioningService.provisionTenant(ORG_ID, "CustProj Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
-    provisioningService.provisionTenant(ORG_B_ID, "CustProj Test Org B");
+    provisioningService.provisionTenant(ORG_B_ID, "CustProj Test Org B", null);
     planSyncService.syncPlan(ORG_B_ID, "pro-plan");
 
     syncMember(ORG_ID, "user_cp_owner", "cp_owner@test.com", "Owner", "owner");
@@ -105,8 +105,8 @@ class CustomerProjectIntegrationTest {
         .andExpect(status().isNoContent());
 
     // Additional orgs for cross-tenant isolation tests (37.12)
-    provisioningService.provisionTenant(STARTER_A_ID, "Starter A CustProj");
-    provisioningService.provisionTenant(STARTER_B_ID, "Starter B CustProj");
+    provisioningService.provisionTenant(STARTER_A_ID, "Starter A CustProj", null);
+    provisioningService.provisionTenant(STARTER_B_ID, "Starter B CustProj", null);
 
     syncMember(
         STARTER_A_ID, "user_cp_starter_a", "cp_starter_a@test.com", "Starter A Owner", "owner");

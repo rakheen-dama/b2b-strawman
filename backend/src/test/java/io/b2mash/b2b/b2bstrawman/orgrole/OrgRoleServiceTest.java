@@ -39,11 +39,10 @@ class OrgRoleServiceTest {
 
   @Test
   void resolveCapabilities_ownerRole_returnsAll() {
-    var member = memberWithIdAndRole(MEMBER_ID, ROLE_ID, Set.of());
     var role = orgRoleWithId(ROLE_ID, "Owner", "owner", true);
+    var member = memberWithRole(MEMBER_ID, role, Set.of());
 
     when(memberRepository.findById(MEMBER_ID)).thenReturn(Optional.of(member));
-    when(orgRoleRepository.findById(ROLE_ID)).thenReturn(Optional.of(role));
 
     var result = service.resolveCapabilities(MEMBER_ID);
 
@@ -52,11 +51,10 @@ class OrgRoleServiceTest {
 
   @Test
   void resolveCapabilities_memberRole_returnsEmpty() {
-    var member = memberWithIdAndRole(MEMBER_ID, ROLE_ID, Set.of());
     var role = orgRoleWithId(ROLE_ID, "Member", "member", true);
+    var member = memberWithRole(MEMBER_ID, role, Set.of());
 
     when(memberRepository.findById(MEMBER_ID)).thenReturn(Optional.of(member));
-    when(orgRoleRepository.findById(ROLE_ID)).thenReturn(Optional.of(role));
 
     var result = service.resolveCapabilities(MEMBER_ID);
 
@@ -65,12 +63,11 @@ class OrgRoleServiceTest {
 
   @Test
   void resolveCapabilities_customRole_returnsRoleCaps() {
-    var member = memberWithIdAndRole(MEMBER_ID, ROLE_ID, Set.of());
     var role = orgRoleWithId(ROLE_ID, "Project Lead", "project-lead", false);
     role.setCapabilities(Set.of(Capability.PROJECT_MANAGEMENT, Capability.TEAM_OVERSIGHT));
+    var member = memberWithRole(MEMBER_ID, role, Set.of());
 
     when(memberRepository.findById(MEMBER_ID)).thenReturn(Optional.of(member));
-    when(orgRoleRepository.findById(ROLE_ID)).thenReturn(Optional.of(role));
 
     var result = service.resolveCapabilities(MEMBER_ID);
 
@@ -79,12 +76,11 @@ class OrgRoleServiceTest {
 
   @Test
   void resolveCapabilities_withAddOverride_addsCapability() {
-    var member = memberWithIdAndRole(MEMBER_ID, ROLE_ID, Set.of("+INVOICING"));
     var role = orgRoleWithId(ROLE_ID, "Project Lead", "project-lead", false);
     role.setCapabilities(Set.of(Capability.PROJECT_MANAGEMENT));
+    var member = memberWithRole(MEMBER_ID, role, Set.of("+INVOICING"));
 
     when(memberRepository.findById(MEMBER_ID)).thenReturn(Optional.of(member));
-    when(orgRoleRepository.findById(ROLE_ID)).thenReturn(Optional.of(role));
 
     var result = service.resolveCapabilities(MEMBER_ID);
 
@@ -93,12 +89,11 @@ class OrgRoleServiceTest {
 
   @Test
   void resolveCapabilities_withRemoveOverride_removesCapability() {
-    var member = memberWithIdAndRole(MEMBER_ID, ROLE_ID, Set.of("-PROJECT_MANAGEMENT"));
     var role = orgRoleWithId(ROLE_ID, "Project Lead", "project-lead", false);
     role.setCapabilities(Set.of(Capability.PROJECT_MANAGEMENT, Capability.TEAM_OVERSIGHT));
+    var member = memberWithRole(MEMBER_ID, role, Set.of("-PROJECT_MANAGEMENT"));
 
     when(memberRepository.findById(MEMBER_ID)).thenReturn(Optional.of(member));
-    when(orgRoleRepository.findById(ROLE_ID)).thenReturn(Optional.of(role));
 
     var result = service.resolveCapabilities(MEMBER_ID);
 
@@ -145,7 +140,7 @@ class OrgRoleServiceTest {
     var role = orgRoleWithId(ROLE_ID, "Custom Role", "custom-role", false);
 
     when(orgRoleRepository.findById(ROLE_ID)).thenReturn(Optional.of(role));
-    when(memberRepository.countByOrgRoleId(ROLE_ID)).thenReturn(3L);
+    when(memberRepository.countByOrgRoleEntity_Id(ROLE_ID)).thenReturn(3L);
 
     assertThatThrownBy(() -> service.deleteRole(ROLE_ID))
         .isInstanceOf(ResourceConflictException.class);
@@ -175,8 +170,8 @@ class OrgRoleServiceTest {
     var role2 = orgRoleWithId(UUID.randomUUID(), "Custom", "custom", false);
 
     when(orgRoleRepository.findAll()).thenReturn(List.of(role1, role2));
-    when(memberRepository.countByOrgRoleId(role1.getId())).thenReturn(2L);
-    when(memberRepository.countByOrgRoleId(role2.getId())).thenReturn(1L);
+    when(memberRepository.countByOrgRoleEntity_Id(role1.getId())).thenReturn(2L);
+    when(memberRepository.countByOrgRoleEntity_Id(role2.getId())).thenReturn(1L);
 
     var result = service.listRoles();
 
@@ -191,7 +186,7 @@ class OrgRoleServiceTest {
     role.setCapabilities(Set.of(Capability.INVOICING));
 
     when(orgRoleRepository.findById(ROLE_ID)).thenReturn(Optional.of(role));
-    when(memberRepository.countByOrgRoleId(ROLE_ID)).thenReturn(5L);
+    when(memberRepository.countByOrgRoleEntity_Id(ROLE_ID)).thenReturn(5L);
 
     var result = service.getRole(ROLE_ID);
 
@@ -218,8 +213,8 @@ class OrgRoleServiceTest {
     when(orgRoleRepository.findById(ROLE_ID)).thenReturn(Optional.of(role));
     when(orgRoleRepository.existsByNameIgnoreCaseAndIdNot("New Name", ROLE_ID)).thenReturn(false);
     when(orgRoleRepository.save(any(OrgRole.class))).thenAnswer(inv -> inv.getArgument(0));
-    when(memberRepository.findByOrgRoleId(ROLE_ID)).thenReturn(List.of());
-    when(memberRepository.countByOrgRoleId(ROLE_ID)).thenReturn(0L);
+    when(memberRepository.findByOrgRoleEntity_Id(ROLE_ID)).thenReturn(List.of());
+    when(memberRepository.countByOrgRoleEntity_Id(ROLE_ID)).thenReturn(0L);
 
     // Bind TENANT_ID since cache eviction requires it when capabilities change
     ScopedValue.where(io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes.TENANT_ID, "tenant_test")
@@ -269,19 +264,10 @@ class OrgRoleServiceTest {
   }
 
   @Test
-  void resolveCapabilities_legacyOwnerWithoutOrgRoleId_returnsAll() {
-    var member = memberWithLegacyRole(MEMBER_ID, "owner");
-
-    when(memberRepository.findById(MEMBER_ID)).thenReturn(Optional.of(member));
-
-    var result = service.resolveCapabilities(MEMBER_ID);
-
-    assertThat(result).containsExactlyInAnyOrderElementsOf(Capability.ALL_NAMES);
-  }
-
-  @Test
-  void resolveCapabilities_legacyMemberWithoutOrgRoleId_returnsEmpty() {
-    var member = memberWithLegacyRole(MEMBER_ID, "member");
+  void resolveCapabilities_memberWithNullOrgRoleEntity_returnsEmpty() {
+    // Covers the defensive null check — should not happen after V69 migration
+    var member = new Member("clerk_user", "test@test.com", "Test", null, (OrgRole) null);
+    TestIds.withId(member, MEMBER_ID);
 
     when(memberRepository.findById(MEMBER_ID)).thenReturn(Optional.of(member));
 
@@ -292,12 +278,11 @@ class OrgRoleServiceTest {
 
   @Test
   void resolveCapabilities_invalidOverride_skipped() {
-    var member = memberWithIdAndRole(MEMBER_ID, ROLE_ID, Set.of("+NONEXISTENT_CAP"));
     var role = orgRoleWithId(ROLE_ID, "Custom", "custom", false);
     role.setCapabilities(Set.of(Capability.INVOICING));
+    var member = memberWithRole(MEMBER_ID, role, Set.of("+NONEXISTENT_CAP"));
 
     when(memberRepository.findById(MEMBER_ID)).thenReturn(Optional.of(member));
-    when(orgRoleRepository.findById(ROLE_ID)).thenReturn(Optional.of(role));
 
     var result = service.resolveCapabilities(MEMBER_ID);
 
@@ -320,17 +305,10 @@ class OrgRoleServiceTest {
     return TestIds.withId(role, id);
   }
 
-  private static Member memberWithIdAndRole(UUID memberId, UUID orgRoleId, Set<String> overrides) {
-    var member = new Member("clerk_user", "test@test.com", "Test", null, "member");
+  private static Member memberWithRole(UUID memberId, OrgRole role, Set<String> overrides) {
+    var member = new Member("clerk_user", "test@test.com", "Test", null, role);
     TestIds.withId(member, memberId);
-    member.setOrgRoleId(orgRoleId);
     member.setCapabilityOverrides(overrides);
     return member;
-  }
-
-  /** Creates a member with the given legacy orgRole string and NO orgRoleId assigned. */
-  private static Member memberWithLegacyRole(UUID memberId, String orgRole) {
-    var member = new Member("clerk_user", "test@test.com", "Test", null, orgRole);
-    return TestIds.withId(member, memberId);
   }
 }

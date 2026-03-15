@@ -188,7 +188,7 @@ class InvoiceControllerIntegrationTest {
                       .findFirst()
                       .orElseThrow();
               var ownerMember = memberRepository.findById(memberIdOwner).orElseThrow();
-              ownerMember.setOrgRoleId(ownerRole.getId());
+              ownerMember.setOrgRoleEntity(ownerRole);
               memberRepository.save(ownerMember);
             });
 
@@ -212,7 +212,8 @@ class InvoiceControllerIntegrationTest {
                       new io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest(
                           "Invoicer", "Can invoice", Set.of("INVOICING")));
               var customMember = memberRepository.findById(customRoleMemberId).orElseThrow();
-              customMember.setOrgRoleId(withCapRole.id());
+              customMember.setOrgRoleEntity(
+                  orgRoleRepository.findById(withCapRole.id()).orElseThrow());
               memberRepository.save(customMember);
 
               var withoutCapRole =
@@ -220,7 +221,8 @@ class InvoiceControllerIntegrationTest {
                       new io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest(
                           "Team Lead", "Can manage teams", Set.of("TEAM_OVERSIGHT")));
               var noCapMember = memberRepository.findById(noCapMemberId).orElseThrow();
-              noCapMember.setOrgRoleId(withoutCapRole.id());
+              noCapMember.setOrgRoleEntity(
+                  orgRoleRepository.findById(withoutCapRole.id()).orElseThrow());
               memberRepository.save(noCapMember);
             });
   }

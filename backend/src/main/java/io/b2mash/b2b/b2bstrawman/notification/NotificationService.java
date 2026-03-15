@@ -477,7 +477,7 @@ public class NotificationService {
     }
 
     // Org admins and owners
-    var adminsAndOwners = memberRepository.findByOrgRoleIn(List.of("admin", "owner"));
+    var adminsAndOwners = memberRepository.findByRoleSlugsIn(List.of("admin", "owner"));
     for (var member : adminsAndOwners) {
       recipients.add(member.getId());
     }
@@ -528,7 +528,7 @@ public class NotificationService {
   public List<Notification> handleInvoiceSent(InvoiceSentEvent event) {
     // Recipients: org admins + owners
     var recipients = new HashSet<UUID>();
-    for (var m : memberRepository.findByOrgRoleIn(List.of("admin", "owner"))) {
+    for (var m : memberRepository.findByRoleSlugsIn(List.of("admin", "owner"))) {
       recipients.add(m.getId());
     }
     recipients.remove(event.actorMemberId());
@@ -542,7 +542,7 @@ public class NotificationService {
     // Recipients: creator + admins/owners
     var recipients = new HashSet<UUID>();
     if (event.createdByMemberId() != null) recipients.add(event.createdByMemberId());
-    for (var m : memberRepository.findByOrgRoleIn(List.of("admin", "owner"))) {
+    for (var m : memberRepository.findByRoleSlugsIn(List.of("admin", "owner"))) {
       recipients.add(m.getId());
     }
     recipients.remove(event.actorMemberId());
@@ -557,7 +557,7 @@ public class NotificationService {
     var recipients = new HashSet<UUID>();
     if (event.createdByMemberId() != null) recipients.add(event.createdByMemberId());
     if (event.approvedByMemberId() != null) recipients.add(event.approvedByMemberId());
-    for (var m : memberRepository.findByOrgRoleIn(List.of("admin", "owner"))) {
+    for (var m : memberRepository.findByRoleSlugsIn(List.of("admin", "owner"))) {
       recipients.add(m.getId());
     }
     recipients.remove(event.actorMemberId());
@@ -578,7 +578,7 @@ public class NotificationService {
       }
     } else {
       // CUSTOMER or INVOICE-scoped: notify org admins/owners
-      var adminsAndOwners = memberRepository.findByOrgRoleIn(List.of("admin", "owner"));
+      var adminsAndOwners = memberRepository.findByRoleSlugsIn(List.of("admin", "owner"));
       for (var member : adminsAndOwners) {
         recipients.add(member.getId());
       }
@@ -623,7 +623,7 @@ public class NotificationService {
     }
 
     // Notify org admins and owners
-    for (var m : memberRepository.findByOrgRoleIn(List.of("admin", "owner"))) {
+    for (var m : memberRepository.findByRoleSlugsIn(List.of("admin", "owner"))) {
       recipients.add(m.getId());
     }
 
@@ -657,7 +657,7 @@ public class NotificationService {
     var recipients = new HashSet<UUID>();
 
     // Notify org admins and owners
-    for (var m : memberRepository.findByOrgRoleIn(List.of("admin", "owner"))) {
+    for (var m : memberRepository.findByRoleSlugsIn(List.of("admin", "owner"))) {
       recipients.add(m.getId());
     }
 
@@ -686,7 +686,7 @@ public class NotificationService {
     var recipients = new HashSet<UUID>();
 
     // Notify org admins and owners
-    for (var m : memberRepository.findByOrgRoleIn(List.of("admin", "owner"))) {
+    for (var m : memberRepository.findByRoleSlugsIn(List.of("admin", "owner"))) {
       recipients.add(m.getId());
     }
 
@@ -796,7 +796,7 @@ public class NotificationService {
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void notifyAdminsAndOwners(
       String type, String title, String body, String entityType, UUID entityId) {
-    var adminsAndOwners = memberRepository.findByOrgRoleIn(List.of("admin", "owner"));
+    var adminsAndOwners = memberRepository.findByRoleSlugsIn(List.of("admin", "owner"));
     for (var member : adminsAndOwners) {
       createNotification(member.getId(), type, title, body, entityType, entityId, null);
     }

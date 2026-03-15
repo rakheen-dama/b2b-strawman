@@ -34,7 +34,7 @@ public class PlatformAdminFilter extends OncePerRequestFilter {
 
     if (authentication instanceof JwtAuthenticationToken jwtAuth) {
       Jwt jwt = jwtAuth.getToken();
-      Set<String> groups = ClerkJwtUtils.extractGroups(jwt);
+      Set<String> groups = JwtUtils.extractGroups(jwt);
       ScopedFilterChain.runScoped(
           ScopedValue.where(RequestScopes.GROUPS, groups), filterChain, request, response);
       return;

@@ -379,7 +379,7 @@ public class ResourceAllocationService {
     // Collect unique recipients: the member + admins/owners, excluding actor
     Set<UUID> recipients = new HashSet<>();
     recipients.add(memberId);
-    var adminsAndOwners = memberRepository.findByOrgRoleIn(List.of("admin", "owner"));
+    var adminsAndOwners = memberRepository.findByRoleSlugsIn(List.of("admin", "owner"));
     for (var admin : adminsAndOwners) {
       recipients.add(admin.getId());
     }

@@ -13,6 +13,7 @@ import io.b2mash.b2b.b2bstrawman.member.ProjectMember;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationRepository;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
@@ -50,6 +51,7 @@ class AutomationActionExecutorTest {
   @Autowired private PlanSyncService planSyncService;
   @Autowired private ProjectRepository projectRepository;
   @Autowired private MemberRepository memberRepository;
+  @Autowired private OrgRoleRepository orgRoleRepository;
   @Autowired private ProjectMemberRepository projectMemberRepository;
   @Autowired private CustomerRepository customerRepository;
   @Autowired private TaskRepository taskRepository;
@@ -72,7 +74,12 @@ class AutomationActionExecutorTest {
             () -> {
               // Create a member
               var member =
-                  new Member("clerk_action_test", "action@test.com", "Action Actor", null, "owner");
+                  new Member(
+                      "clerk_action_test",
+                      "action@test.com",
+                      "Action Actor",
+                      null,
+                      orgRoleRepository.findBySlug("owner").orElseThrow());
               memberRepository.save(member);
               actorMemberId = member.getId();
 

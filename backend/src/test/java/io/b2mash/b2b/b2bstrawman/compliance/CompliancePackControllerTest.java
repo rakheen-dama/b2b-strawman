@@ -11,6 +11,7 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
@@ -46,6 +47,7 @@ class CompliancePackControllerTest {
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private OrgRoleService orgRoleService;
   @Autowired private MemberRepository memberRepository;
+  @Autowired private OrgRoleRepository orgRoleRepository;
 
   private static final String ORG_ID = "org_pack_controller_test";
 
@@ -86,7 +88,8 @@ class CompliancePackControllerTest {
                       new io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest(
                           "Pack Manager", "Can manage packs", Set.of("CUSTOMER_MANAGEMENT")));
               var customMember = memberRepository.findById(customRoleMemberId).orElseThrow();
-              customMember.setOrgRoleId(withCapRole.id());
+              customMember.setOrgRoleEntity(
+                  orgRoleRepository.findById(withCapRole.id()).orElseThrow());
               memberRepository.save(customMember);
 
               var withoutCapRole =
@@ -94,7 +97,8 @@ class CompliancePackControllerTest {
                       new io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest(
                           "Team Lead Pack", "Can manage teams", Set.of("TEAM_OVERSIGHT")));
               var noCapMember = memberRepository.findById(noCapMemberId).orElseThrow();
-              noCapMember.setOrgRoleId(withoutCapRole.id());
+              noCapMember.setOrgRoleEntity(
+                  orgRoleRepository.findById(withoutCapRole.id()).orElseThrow());
               memberRepository.save(noCapMember);
             });
   }

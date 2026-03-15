@@ -149,7 +149,7 @@ class RecurringScheduleControllerTest {
                       .findFirst()
                       .orElseThrow();
               var ownerMember = memberRepository.findById(ownerMemberId).orElseThrow();
-              ownerMember.setOrgRoleId(ownerRole.getId());
+              ownerMember.setOrgRoleEntity(ownerRole);
               memberRepository.save(ownerMember);
             });
 
@@ -179,7 +179,8 @@ class RecurringScheduleControllerTest {
                       new io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest(
                           "Project Manager", "Has project cap", Set.of("PROJECT_MANAGEMENT")));
               var customMember = memberRepository.findById(customRoleMemberId).orElseThrow();
-              customMember.setOrgRoleId(withCapRole.id());
+              customMember.setOrgRoleEntity(
+                  orgRoleRepository.findById(withCapRole.id()).orElseThrow());
               memberRepository.save(customMember);
 
               var withoutCapRole =
@@ -187,7 +188,8 @@ class RecurringScheduleControllerTest {
                       new io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos.CreateOrgRoleRequest(
                           "Team Lead", "No project cap", Set.of("TEAM_OVERSIGHT")));
               var noCapMember = memberRepository.findById(noCapMemberId).orElseThrow();
-              noCapMember.setOrgRoleId(withoutCapRole.id());
+              noCapMember.setOrgRoleEntity(
+                  orgRoleRepository.findById(withoutCapRole.id()).orElseThrow());
               memberRepository.save(noCapMember);
             });
   }

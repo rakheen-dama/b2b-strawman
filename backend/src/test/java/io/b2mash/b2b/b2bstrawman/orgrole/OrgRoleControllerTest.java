@@ -262,7 +262,7 @@ class OrgRoleControllerTest {
         .run(
             () -> {
               var member = memberRepository.findById(memberUuid).orElseThrow();
-              member.setOrgRoleId(roleUuid);
+              member.setOrgRoleEntity(orgRoleRepository.findById(roleUuid).orElseThrow());
               memberRepository.save(member);
             });
 

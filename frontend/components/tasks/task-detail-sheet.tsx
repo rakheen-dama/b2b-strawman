@@ -90,7 +90,7 @@ interface TaskDetailSheetProps {
   slug: string;
   canManage: boolean;
   currentMemberId: string;
-  orgRole: string;
+  isAdmin?: boolean;
   members: { id: string; name: string; email: string }[];
   allTags?: TagResponse[];
   fieldDefinitions?: FieldDefinitionResponse[];
@@ -107,7 +107,7 @@ export function TaskDetailSheet({
   slug,
   canManage,
   currentMemberId,
-  orgRole,
+  isAdmin = false,
   members,
   allTags = [],
   fieldDefinitions = [],
@@ -117,8 +117,6 @@ export function TaskDetailSheet({
   const [state, dispatch] = useReducer(sheetReducer, initialState);
   const { task, timeEntries, loadingTask, loadingEntries, error } = state;
   const [, startTransition] = useTransition();
-
-  const isAdmin = orgRole === "org:admin" || orgRole === "org:owner";
 
   // Fetch task and time entries when taskId changes
   useEffect(() => {
@@ -360,7 +358,7 @@ export function TaskDetailSheet({
                       slug={slug}
                       projectId={effectiveProjectId}
                       currentMemberId={currentMemberId}
-                      orgRole={orgRole}
+                      isAdmin={isAdmin}
                       canManage={canManage}
                     />
                   )}

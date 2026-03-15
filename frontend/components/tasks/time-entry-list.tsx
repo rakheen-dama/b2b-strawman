@@ -26,9 +26,6 @@ import { formatCurrencySafe, formatDate, formatDuration } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { TimeEntry } from "@/lib/types";
 
-/** Org roles that can edit/delete any time entry in the project */
-const ELEVATED_ROLES = new Set(["org:admin", "org:owner"]);
-
 type BillingStatusFilter = "all" | "unbilled" | "billed" | "non-billable";
 
 const BILLING_STATUS_FILTER_OPTIONS: {
@@ -46,7 +43,7 @@ interface TimeEntryListProps {
   slug?: string;
   projectId?: string;
   currentMemberId?: string | null;
-  orgRole?: string | null;
+  isAdmin?: boolean;
   /** Whether the current user can manage the project (lead, admin, or owner) */
   canManage?: boolean;
 }
@@ -56,7 +53,7 @@ export function TimeEntryList({
   slug,
   projectId,
   currentMemberId,
-  orgRole,
+  isAdmin = false,
   canManage = false,
 }: TimeEntryListProps) {
   const [billingFilter, setBillingFilter] =
@@ -78,8 +75,7 @@ export function TimeEntryList({
   );
 
   // Determine if the current user has elevated privileges (lead/admin/owner)
-  const isElevated =
-    canManage || (orgRole ? ELEVATED_ROLES.has(orgRole) : false);
+  const isElevated = canManage || isAdmin;
 
   // Whether any actions are possible (need slug + projectId to wire up actions)
   const actionsEnabled = !!slug && !!projectId;

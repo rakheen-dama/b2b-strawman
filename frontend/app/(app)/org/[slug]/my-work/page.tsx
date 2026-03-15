@@ -83,8 +83,6 @@ export default async function MyWorkPage({
 }) {
   const { slug } = await params;
   const caps = await fetchMyCapabilities();
-  // Compatibility shim for child components not yet migrated
-  const orgRoleCompat = `org:${caps.role}`;
   const resolvedSearchParams = await searchParams;
   const { from, to } = resolveMyWorkDateRange(resolvedSearchParams);
 
@@ -243,7 +241,7 @@ export default async function MyWorkPage({
               assigned={tasksData.assigned}
               unassigned={tasksData.unassigned}
               slug={slug}
-              orgRole={orgRoleCompat}
+              isAdmin={isAdmin}
               canManage={canManage}
               canCreateShared={canCreateShared}
               currentMemberId={currentMemberId}

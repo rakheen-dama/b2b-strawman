@@ -45,8 +45,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
-const ADMIN_OR_OWNER_ROLES = new Set(["org:admin", "org:owner"]);
-
 type BillingStatusFilter = "all" | "UNBILLED" | "BILLED" | "NON_BILLABLE";
 
 const BILLING_STATUS_FILTER_OPTIONS: {
@@ -77,7 +75,7 @@ interface ExpenseListProps {
   tasks: { id: string; title: string }[];
   members: { id: string; name: string }[];
   currentMemberId: string | null;
-  orgRole: string | null;
+  isAdmin?: boolean;
 }
 
 function ExpenseBillingBadge({
@@ -102,7 +100,7 @@ export function ExpenseList({
   tasks,
   members,
   currentMemberId,
-  orgRole,
+  isAdmin = false,
 }: ExpenseListProps) {
   const [billingFilter, setBillingFilter] =
     useState<BillingStatusFilter>("all");
@@ -112,8 +110,8 @@ export function ExpenseList({
   const [memberFilter, setMemberFilter] = useState<string>("all");
   const [isPending, startTransition] = useTransition();
 
-  const isElevated = orgRole ? ADMIN_OR_OWNER_ROLES.has(orgRole) : false;
-  const isAdminOrOwner = isElevated;
+  const isElevated = isAdmin;
+  const isAdminOrOwner = isAdmin;
 
   // Apply client-side filters
   const filteredExpenses = expenses.filter((e) => {

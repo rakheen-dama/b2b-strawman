@@ -67,7 +67,7 @@ describe("TimeEntryList", () => {
         slug="acme"
         projectId="p1"
         currentMemberId="current-member"
-        orgRole="org:member"
+        isAdmin={false}
       />,
     );
 
@@ -98,7 +98,7 @@ describe("TimeEntryList", () => {
         slug="acme"
         projectId="p1"
         currentMemberId="current-member"
-        orgRole="org:member"
+        isAdmin={false}
       />,
     );
 
@@ -115,7 +115,7 @@ describe("TimeEntryList", () => {
         slug="acme"
         projectId="p1"
         currentMemberId="current-member"
-        orgRole="org:member"
+        isAdmin={false}
       />,
     );
 
@@ -135,7 +135,7 @@ describe("TimeEntryList", () => {
         slug="acme"
         projectId="p1"
         currentMemberId="current-member"
-        orgRole="org:member"
+        isAdmin={false}
       />,
     );
 
@@ -156,7 +156,7 @@ describe("TimeEntryList", () => {
         slug="acme"
         projectId="p1"
         currentMemberId="current-member"
-        orgRole="org:admin"
+        isAdmin={true}
       />,
     );
 
@@ -183,7 +183,7 @@ describe("TimeEntryList", () => {
         slug="acme"
         projectId="p1"
         currentMemberId="current-member"
-        orgRole="org:member"
+        isAdmin={false}
         canManage={true}
       />,
     );
@@ -212,7 +212,7 @@ describe("TimeEntryList", () => {
         slug="acme"
         projectId="p1"
         currentMemberId="current-member"
-        orgRole="org:member"
+        isAdmin={false}
         canManage={false}
       />,
     );
@@ -242,7 +242,7 @@ describe("TimeEntryList", () => {
         slug="acme"
         projectId="p1"
         currentMemberId="current-member"
-        orgRole="org:admin"
+        isAdmin={true}
       />,
     );
 
@@ -273,7 +273,7 @@ describe("TimeEntryList", () => {
         slug="acme"
         projectId="p1"
         currentMemberId="current-member"
-        orgRole="org:member"
+        isAdmin={false}
       />,
     );
 
@@ -303,7 +303,7 @@ describe("TimeEntryList", () => {
         slug="acme"
         projectId="p1"
         currentMemberId="m1"
-        orgRole="org:member"
+        isAdmin={false}
       />,
     );
 

@@ -77,9 +77,6 @@ export default async function ProjectDetailPage({
   const isAdmin = caps.isAdmin || caps.isOwner;
   const isOwner = caps.isOwner;
 
-  // Compatibility shim for child components not yet migrated
-  const orgRoleCompat = `org:${caps.role}`;
-
   let project: Project;
   try {
     project = await api.get<Project>(`/api/projects/${id}`);
@@ -632,7 +629,7 @@ export default async function ProjectDetailPage({
             projectId={id}
             canManage={canManage}
             currentMemberId={currentMemberId}
-            orgRole={orgRoleCompat}
+            isAdmin={isAdmin}
             retainerSummary={taskRetainerSummary}
             members={members.map((m) => ({ id: m.memberId, name: m.name, email: m.email }))}
             allTags={allTags}
@@ -699,7 +696,7 @@ export default async function ProjectDetailPage({
               tasks={tasks.map((t) => ({ id: t.id, title: t.title }))}
               members={members.map((m) => ({ id: m.memberId, name: m.name }))}
               currentMemberId={currentMemberId}
-              orgRole={orgRoleCompat}
+              isAdmin={isAdmin}
             />
           </div>
         }

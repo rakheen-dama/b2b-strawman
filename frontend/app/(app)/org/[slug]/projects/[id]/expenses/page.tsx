@@ -19,8 +19,7 @@ export default async function ProjectExpensesPage({
 }) {
   const { slug, id } = await params;
   const caps = await fetchMyCapabilities();
-  // Compatibility shim for child components not yet migrated
-  const orgRoleCompat = `org:${caps.role}`;
+  const isAdmin = caps.isAdmin || caps.isOwner;
 
   let expenses: PaginatedExpenseResponse = {
     content: [],
@@ -88,7 +87,7 @@ export default async function ProjectExpensesPage({
         tasks={tasks.map((t) => ({ id: t.id, title: t.title }))}
         members={members.map((m) => ({ id: m.memberId, name: m.name }))}
         currentMemberId={currentMemberId}
-        orgRole={orgRoleCompat}
+        isAdmin={isAdmin}
       />
     </div>
   );

@@ -57,7 +57,7 @@ All gaps are categorized from the perspective of a real 3-person SA accounting f
 | Day 60 | 11 | — | — | — | Not executed |
 | Day 75 | 12 | — | — | — | Not executed |
 | Day 90 | 14 | — | — | — | Not executed |
-| **Total** | **124** | **0** | **0** | **0** | **Execution pending — stack was offline** |
+| **Total** | **127** | **0** | **0** | **0** | **Execution pending — stack was offline** |
 
 ---
 

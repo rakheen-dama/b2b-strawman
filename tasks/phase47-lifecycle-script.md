@@ -1502,10 +1502,10 @@ Before executing Day 90 actions, ensure the following state exists:
 | 75 | Year-end | Kgosi focus | Tax engagement, info request, portal, engagement letter |
 | 90 | Final review | All 4 | Portfolio review, reports, fork readiness |
 
-**Total checkpoints**: 101
+**Total checkpoints**: 127
 **Clients onboarded**: 4 (Pty Ltd, Sole Proprietor, Pty Ltd, Trust)
 **Billing models tested**: Retainer, hourly, retainer + overflow, fixed fee
-**Templates exercised**: 5 of 7 (bookkeeping letter, tax return letter, advisory letter, monthly report, FICA confirmation)
+**Templates exercised**: 6 of 7 (bookkeeping letter, tax return letter, advisory letter, monthly report, statement of account, FICA confirmation)
 **Portal flows tested**: Information requests, document upload, engagement letter acceptance, invoice viewing
 
 ---

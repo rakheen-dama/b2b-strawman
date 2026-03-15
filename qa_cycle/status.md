@@ -2,9 +2,10 @@
 
 ## Current State
 
-- **QA Position**: Day 1, Checkpoint 1.4 (BLOCKED by GAP-027)
+- **QA Position**: Day 1, Checkpoint 1.4 (BLOCKED by GAP-027) — GAP-027 FIXED, awaiting rebuild
 - **Cycle**: 1
 - **E2E Stack**: Running
+- **NEEDS_REBUILD**: true (frontend changed — E2E stack needs rebuild before re-verification)
 - **Branch**: `bugfix_cycle_2026-03-15`
 - **Scenario**: `tasks/phase47-lifecycle-script.md`
 
@@ -41,8 +42,8 @@
 | GAP-024 | No aged debtors report | major | OPEN | Dev | — | 90 | Day 90 — not triaged yet (QA blocked at Day 1). |
 | GAP-025 | Team member list API calls port 8080 instead of 8081 in E2E stack | bug | SPEC_READY | Dev | — | 0 | `NEXT_PUBLIC_BACKEND_URL` not set as build arg in E2E compose. Fix spec: `qa_cycle/fix-specs/GAP-025.md` |
 | GAP-026 | FICA/KYC checklist template not seeded by accounting-za pack | major | SPEC_READY | Dev | — | 0 | Template IS seeded but created as inactive (`active=false`) because `autoInstantiate=false`. Fix spec: `qa_cycle/fix-specs/GAP-026.md` |
-| GAP-027 | Customer pages SSR crash after ONBOARDING lifecycle transition | blocker | SPEC_READY | Dev | — | 1 | Null dereference in SSR rendering of customer readiness data. Fix spec: `qa_cycle/fix-specs/GAP-027.md`. PRIORITY 1. |
-| GAP-028 | Customer detail page intermittent render crash | major | SPEC_READY | Dev | — | 1 | Same root cause as GAP-027. Will be resolved when GAP-027 is fixed. |
+| GAP-027 | Customer pages SSR crash after ONBOARDING lifecycle transition | blocker | FIXED | Dev | #687 | 1 | Null guards added to `customerReadiness.requiredFields` accesses + error boundaries. PR #687 merged. |
+| GAP-028 | Customer detail page intermittent render crash | major | FIXED | Dev | #687 | 1 | Same root cause as GAP-027. Fixed by PR #687. |
 
 ## Status Values
 
@@ -60,3 +61,4 @@
 | 2026-03-16T00:15Z | QA | Day 0 execution complete (cycle 1). 13 checkpoints: 8 PASS, 3 PARTIAL, 2 FAIL. GAP-008 VERIFIED. New gaps: GAP-025 (team API port), GAP-026 (FICA checklist not seeded). No blockers for Day 1. |
 | 2026-03-15T21:27Z | QA | Day 1 execution partial (cycle 1). 10 checkpoints: 2 PASS, 1 PARTIAL, 7 FAIL (6 blocked). Kgosi Construction created with all 16 custom fields. Checklist partially tested (generic 4-item, not FICA 9-item). ONBOARDING transition succeeded in backend but caused cascading frontend crash (GAP-027 BLOCKER). New gaps: GAP-027 (SSR crash, blocker), GAP-028 (intermittent render crash). QA halted — cannot proceed past checkpoint 1.4. |
 | 2026-03-16T01:30Z | Product | Triage cycle 1 complete. 5 items SPEC_READY (GAP-027, GAP-026, GAP-025, GAP-008B, GAP-008C). 11 items WONT_FIX (new features out of scope). GAP-028 deduped with GAP-027 (same root cause). Priority order: GAP-027 (blocker) > GAP-026 (FICA checklist) > GAP-025 (team API port) > GAP-008C/GAP-008B (lower priority). Fix specs written to `qa_cycle/fix-specs/`. |
+| 2026-03-16T02:00Z | Dev | GAP-027 FIXED: Added null guards (`?.` / `?? 0` / `?? []`) to all `customerReadiness.requiredFields` accesses in customer detail page. Added error boundaries at `customers/error.tsx` and `customers/[id]/error.tsx`. GAP-028 also fixed (same root cause). PR #687 merged to `bugfix_cycle_2026-03-15`. NEEDS_REBUILD=true (frontend changed). |

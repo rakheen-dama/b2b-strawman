@@ -237,7 +237,7 @@ When finished, confirm: "Brief written to {path}" and list the section sizes (li
 
 ## Step 3 — Dispatch Builder Agent
 
-Verify the brief file exists, then launch a **blocking** `general-purpose` subagent:
+Verify the brief file exists, then launch a **blocking** `general-purpose` subagent with `model: "opus"`:
 
 ### Builder Prompt Template
 

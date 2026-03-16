@@ -22,9 +22,9 @@ describe("NAV_GROUPS", () => {
     }
   });
 
-  it("total items across all groups equals 14", () => {
+  it("total items across all groups equals 15", () => {
     const total = NAV_GROUPS.reduce((sum, g) => sum + g.items.length, 0);
-    expect(total).toBe(14);
+    expect(total).toBe(15);
   });
 
   it("clients and finance zones default to collapsed", () => {
@@ -79,8 +79,8 @@ describe("NAV_ITEMS (backward compat)", () => {
     expect(NAV_ITEMS).toEqual(expected);
   });
 
-  it("total count is 16 (14 group items + 2 utility items)", () => {
-    expect(NAV_ITEMS).toHaveLength(16);
+  it("total count is 17 (15 group items + 2 utility items)", () => {
+    expect(NAV_ITEMS).toHaveLength(17);
   });
 
   it("includes Notifications and Settings from UTILITY_ITEMS", () => {

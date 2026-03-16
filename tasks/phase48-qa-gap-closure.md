@@ -99,7 +99,7 @@ AUTOMATION WIRING (sequential)        SA VERTICAL POLISH (parallel)         BULK
 | 2a | 360 | 360B | `FieldDateScannerJob` with `@Scheduled`, per-tenant iteration, dedup check, `sars-deadline-reminder` automation template, integration tests (~4). Backend only. | **Done** (PR #706) |
 | 2b (parallel) | 362 | 362B | `proposals/page.tsx` dashboard, summary cards, needs-attention list, proposal table, sidebar nav update, frontend tests (~4). Frontend only. | **Done** (PR #709) |
 | 2c (parallel) | 364 | 364B | Apply `t()` to ~30-40 locations: sidebar nav labels, page headings, breadcrumbs, empty states, button labels, frontend tests (~3). Frontend only. | **Done** (PR #712) |
-| 2d (parallel) | 366 | 366A | `WeeklyTimeGrid` component, grid state management, editable cells, row/column/grand totals, week navigation, batch save integration, frontend tests (~4). Frontend only. | |
+| 2d (parallel) | 366 | 366A | `WeeklyTimeGrid` component, grid state management, editable cells, row/column/grand totals, week navigation, batch save integration, frontend tests (~4). Frontend only. | **Done** (PR #714) |
 
 ### Stage 3: Final Dependent Slices
 
@@ -458,7 +458,7 @@ AUTOMATION WIRING (sequential)        SA VERTICAL POLISH (parallel)         BULK
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **366A** | 366.1--366.8 | `WeeklyTimeGrid` component, grid state management, editable cells, row/column/grand totals, week navigation, batch save integration, add-task-row autocomplete, frontend tests (~4). Frontend only. | |
+| **366A** | 366.1--366.8 | `WeeklyTimeGrid` component, grid state management, editable cells, row/column/grand totals, week navigation, batch save integration, add-task-row autocomplete, frontend tests (~4). Frontend only. | **Done** (PR #714) |
 | **366B** | 366.9--366.14 | "Copy Previous Week" logic (fetch + date shift + pre-fill), CSV import stretch (file upload + parser + preview + validation), template download, frontend tests (~3). Frontend only. | |
 
 ### Tasks

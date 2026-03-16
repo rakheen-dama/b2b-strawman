@@ -46,7 +46,7 @@ function getStatusVariant(
 
 function formatDate(dateStr: string): string {
   const date = new Date(dateStr);
-  return date.toLocaleString(undefined, {
+  return date.toLocaleString("en-ZA", {
     year: "numeric",
     month: "short",
     day: "numeric",

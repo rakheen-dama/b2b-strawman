@@ -216,12 +216,17 @@ export function PaymentIntegrationCard({
     }
   }
 
-  const baseUrl =
-    process.env.NEXT_PUBLIC_BACKEND_URL ??
-    (typeof window !== "undefined" ? window.location.origin : "");
-  const webhookUrl = baseUrl
-    ? `${baseUrl}/api/webhooks/payment/${provider}`
-    : "";
+  const [webhookUrl, setWebhookUrl] = useState(
+    process.env.NEXT_PUBLIC_BACKEND_URL
+      ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/webhooks/payment/${provider}`
+      : ""
+  );
+
+  useEffect(() => {
+    if (!process.env.NEXT_PUBLIC_BACKEND_URL && typeof window !== "undefined") {
+      setWebhookUrl(`${window.location.origin}/api/webhooks/payment/${provider}`);
+    }
+  }, [provider]);
 
   return (
     <Card>

@@ -56,7 +56,7 @@ export function RetentionCheckResults({ result, onPurge }: RetentionCheckResults
         </div>
         <p className="mt-1 text-sm text-green-700 dark:text-green-300">
           No records match the current retention policies. Checked at{" "}
-          {new Date(result.checkedAt).toLocaleString()}.
+          {new Date(result.checkedAt).toLocaleString("en-ZA")}.
         </p>
       </div>
     );
@@ -72,7 +72,7 @@ export function RetentionCheckResults({ result, onPurge }: RetentionCheckResults
           {result.totalFlagged} record{result.totalFlagged !== 1 ? "s" : ""} flagged
         </p>
         <span className="text-sm text-slate-500 dark:text-slate-400">
-          Checked at {new Date(result.checkedAt).toLocaleString()}
+          Checked at {new Date(result.checkedAt).toLocaleString("en-ZA")}
         </span>
       </div>
 

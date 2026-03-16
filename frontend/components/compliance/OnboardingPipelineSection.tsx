@@ -85,7 +85,7 @@ export function OnboardingPipelineSection({
                         {customer.name}
                       </Link>
                     </td>
-                    <td className="px-4 py-3 text-slate-600 dark:text-slate-400">
+                    <td className="px-4 py-3 text-slate-600 dark:text-slate-400" suppressHydrationWarning>
                       In onboarding {days} {days === 1 ? "day" : "days"}
                     </td>
                     <td className="w-48 px-4 py-3">

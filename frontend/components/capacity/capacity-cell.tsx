@@ -61,9 +61,9 @@ function getUtilizationClasses(pct: number): {
 }
 
 export function CapacityCell({ cell, onClick }: CapacityCellProps) {
-  const isEmpty =
-    cell.allocations.length === 0 && cell.effectiveCapacity === 0;
-  const hasAllocations = cell.allocations.length > 0;
+  const allocations = cell.allocations ?? [];
+  const isEmpty = allocations.length === 0 && cell.effectiveCapacity === 0;
+  const hasAllocations = allocations.length > 0;
   const colours = getUtilizationClasses(cell.utilizationPct);
 
   if (isEmpty) {
@@ -104,7 +104,7 @@ export function CapacityCell({ cell, onClick }: CapacityCellProps) {
 
       {hasAllocations && (
         <div className="flex gap-0.5">
-          {cell.allocations.map((slot) => {
+          {allocations.map((slot) => {
             const widthPct =
               cell.effectiveCapacity > 0
                 ? Math.min((slot.hours / cell.effectiveCapacity) * 100, 100)

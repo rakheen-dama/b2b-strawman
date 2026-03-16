@@ -2,12 +2,12 @@
 
 ## Current State
 
-- **QA Position**: Day 14 tested — GAP-030 REOPENED (fix incomplete). Time logging remains fully blocked.
+- **QA Position**: Day 14 tested — GAP-030 FIXED (attempt 2, PR #692). Awaiting rebuild + re-verification.
 - **Cycle**: 3
-- **E2E Stack**: Running (rebuilt after PR #691)
+- **E2E Stack**: NEEDS_REBUILD (frontend changed)
 - **Branch**: `bugfix_cycle_2026-03-15`
 - **Scenario**: `tasks/phase47-lifecycle-script.md`
-- **BLOCKER**: GAP-030 — Log Time dialog crashes. Fix in PR #691 addressed one null path but a different null access (`toLowerCase` on null source) still crashes the page. All Day 30+ checkpoints remain blocked.
+- **NEEDS_REBUILD**: true (PR #692 merged — frontend `log-time-dialog.tsx` + `format.ts` changed)
 
 ## Tracker
 
@@ -45,7 +45,7 @@
 | GAP-027 | Customer pages SSR crash after ONBOARDING lifecycle transition | blocker | VERIFIED | Dev | #687 | 1 | Cycle 2: Created customer, transitioned to ONBOARDING — page renders correctly. Status shows "Onboarding". Onboarding tab appears. All tabs accessible. Customer list page also works. No crash. |
 | GAP-028 | Customer detail page intermittent render crash | major | VERIFIED | Dev | #687 | 1 | Same root cause as GAP-027. Fixed by PR #687. Cycle 2: Customer detail pages render reliably after SSR hydration (~2s). |
 | GAP-029 | React #418 hydration mismatch on multiple pages | cosmetic | OPEN | — | — | 0 | Pre-existing issue across all pages. Console shows `Minified React error #418` on every page load. Non-blocking — pages render correctly after hydration. Likely SSR/client mismatch in date formatting or locale-dependent content. |
-| GAP-030 | Log Time crashes — null currency/source in dialog rendering | blocker | REOPENED | Dev | #691 | 7 | PR #691 fixed `formatCurrency()` null currency but dialog still crashes: `TypeError: Cannot read properties of null (reading 'toLowerCase')` in `formatRateSource()` (`log-time-dialog.tsx:37`). Fix was incomplete — need null guards on `resolvedRate.source` and potentially other properties. |
+| GAP-030 | Log Time crashes — null currency/source in dialog rendering | blocker | FIXED | Dev | #692 | 7 | Attempt 2: PR #692 — full null-safety audit. Fixed `formatRateSource()` null crash, switched all `formatCurrency` to `formatCurrencySafe`, guarded `hourlyRate` computation. Previous fix PR #691 was incomplete (only addressed currency, not source). |
 
 ## Status Values
 
@@ -80,3 +80,4 @@
 | 2026-03-16T03:00Z | QA | Cycle 3: GAP-030 verification FAILED (REOPENED). Recreated prerequisite data (Kgosi customer, project, task) since E2E stack was rebuilt. Clicked "Log Time" — page crashes with `TypeError: Cannot read properties of null (reading 'toLowerCase')`. Different error from cycle 2 (`RangeError`) but same crash behavior. PR #691 fix was incomplete. |
 | 2026-03-16T03:10Z | QA | Cycle 3: Day 7 partial re-test. Comment system works (PASS) — posted comment on task, appeared correctly with attribution. All time entry checkpoints remain FAIL (blocked by GAP-030). Day 7 result: 1 PASS, 5 FAIL, 4 NOT TESTED. |
 | 2026-03-16T03:20Z | QA | Cycle 3: Day 14 execution. Completed 3/4 generic onboarding checklist items for Kgosi. Item 4 ("Upload signed engagement letter") blocked — requires document upload. Activation blocked: "Cannot activate customer — one or more onboarding checklists are not yet completed." Notifications page loads (empty, no automation triggers fired — GAP-003/GAP-007 confirmed). Time entry summaries blocked by GAP-030. Day 14 result: 1 PASS, 2 FAIL, 2 NOT TESTED, 1 PARTIAL, 2 CONFIRMED. |
+| 2026-03-16T05:50Z | Dev | GAP-030 FIXED (attempt 2): Full null-safety audit of `log-time-dialog.tsx`. Fixed `formatRateSource()` null crash (null guard + early return). Switched all 3 `formatCurrency` calls to `formatCurrencySafe`. Added `resolvedRate?.hourlyRate != null` guard on computed value. Hardened `formatCurrency` base function with `amount ?? 0`. All 12 related tests pass. PR #692 merged to `bugfix_cycle_2026-03-15`. NEEDS_REBUILD=true (frontend changed). |

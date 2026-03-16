@@ -138,6 +138,12 @@ export const NAV_GROUPS: NavGroup[] = [
         requiredCapability: "INVOICING",
       },
       {
+        label: "Proposals",
+        href: (slug) => `/org/${slug}/proposals`,
+        icon: FileText,
+        requiredCapability: "INVOICING",
+      },
+      {
         label: "Profitability",
         href: (slug) => `/org/${slug}/profitability`,
         icon: TrendingUp,

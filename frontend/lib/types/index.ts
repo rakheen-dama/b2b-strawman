@@ -12,3 +12,4 @@ export * from "./field";
 export * from "./billing";
 export * from "./settings";
 export * from "./expense";
+export * from "./proposal";

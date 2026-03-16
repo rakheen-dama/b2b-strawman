@@ -32,14 +32,15 @@ export default async function TimesheetPage({
   const { slug } = await params;
   const { week } = await searchParams;
 
-  const weekStart = week ?? getCurrentWeekMonday();
+  const isValidWeekParam = week != null && /^\d{4}-\d{2}-\d{2}$/.test(week);
+  const weekStart = isValidWeekParam ? week : getCurrentWeekMonday();
   const weekEnd = addDaysToIso(weekStart, 6);
 
   let tasksData: MyWorkTasksResponse = { assigned: [], unassigned: [] };
   try {
     tasksData = await api.get<MyWorkTasksResponse>("/api/my-work/tasks");
-  } catch {
-    // Non-fatal: show empty grid
+  } catch (error) {
+    console.error("Failed to fetch tasks for timesheet:", error);
   }
 
   let existingEntries: MyWorkTimeEntryItem[] = [];
@@ -47,8 +48,8 @@ export default async function TimesheetPage({
     existingEntries = await api.get<MyWorkTimeEntryItem[]>(
       `/api/my-work/time-entries?from=${weekStart}&to=${weekEnd}`,
     );
-  } catch {
-    // Non-fatal
+  } catch (error) {
+    console.error("Failed to fetch time entries for timesheet:", error);
   }
 
   // Build GridTaskRow[] from assigned tasks

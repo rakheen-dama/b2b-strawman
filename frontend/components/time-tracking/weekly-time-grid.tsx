@@ -160,6 +160,7 @@ export function WeeklyTimeGrid({
   );
 
   function navigateWeek(direction: -1 | 1) {
+    if (dirty && !confirm("You have unsaved changes. Discard?")) return;
     const newMonday = addDays(weekStart, direction * 7);
     setWeekStart(newMonday);
     setCellValues({});
@@ -175,6 +176,7 @@ export function WeeklyTimeGrid({
   }
 
   function goToThisWeek() {
+    if (dirty && !confirm("You have unsaved changes. Discard?")) return;
     const monday = getIsoWeekMonday(new Date());
     setWeekStart(monday);
     setCellValues({});
@@ -212,32 +214,35 @@ export function WeeklyTimeGrid({
       billable: true as const,
     }));
 
-    const response = await saveWeeklyEntries(slug, batchEntries);
-    setIsSaving(false);
+    try {
+      const response = await saveWeeklyEntries(slug, batchEntries);
 
-    if (!response.success) {
-      toast.error(response.error ?? "Failed to save entries");
-      return;
-    }
+      if (!response.success) {
+        toast.error(response.error ?? "Failed to save entries");
+        return;
+      }
 
-    const { result } = response;
-    if (!result) return;
+      const { result } = response;
+      if (!result) return;
 
-    if (result.totalErrors === 0) {
-      toast.success(
-        `Saved ${result.totalCreated} ${result.totalCreated === 1 ? "entry" : "entries"}`,
-      );
-      setDirty(false);
-    } else if (result.totalCreated > 0) {
-      toast.warning(
-        `Saved ${result.totalCreated} entries, ${result.totalErrors} failed`,
-      );
-      const newCellErrors = mapErrorsToCells(result.errors, batchEntries);
-      setCellErrors(newCellErrors);
-    } else {
-      toast.error(`Save failed \u2014 ${result.totalErrors} errors`);
-      const newCellErrors = mapErrorsToCells(result.errors, batchEntries);
-      setCellErrors(newCellErrors);
+      if (result.totalErrors === 0) {
+        toast.success(
+          `Saved ${result.totalCreated} ${result.totalCreated === 1 ? "entry" : "entries"}`,
+        );
+        setDirty(false);
+      } else if (result.totalCreated > 0) {
+        toast.warning(
+          `Saved ${result.totalCreated} entries, ${result.totalErrors} failed`,
+        );
+        const newCellErrors = mapErrorsToCells(result.errors, batchEntries);
+        setCellErrors(newCellErrors);
+      } else {
+        toast.error(`Save failed \u2014 ${result.totalErrors} errors`);
+        const newCellErrors = mapErrorsToCells(result.errors, batchEntries);
+        setCellErrors(newCellErrors);
+      }
+    } finally {
+      setIsSaving(false);
     }
   }
 

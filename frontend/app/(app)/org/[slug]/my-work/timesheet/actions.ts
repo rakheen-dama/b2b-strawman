@@ -53,5 +53,10 @@ export async function fetchWeekEntries(
   from: string,
   to: string,
 ): Promise<import("@/lib/types").MyWorkTimeEntryItem[]> {
-  return api.get(`/api/my-work/time-entries?from=${from}&to=${to}`);
+  try {
+    return await api.get(`/api/my-work/time-entries?from=${from}&to=${to}`);
+  } catch (error) {
+    console.error("Failed to fetch week entries:", error);
+    return [];
+  }
 }

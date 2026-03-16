@@ -29,7 +29,7 @@ export function TimeCell({
   const handleBlur = useCallback(
     (e: React.FocusEvent<HTMLInputElement>) => {
       const parsed = parseFloat(e.target.value);
-      const hours = isNaN(parsed) || parsed < 0 ? 0 : parsed;
+      const hours = isNaN(parsed) || parsed < 0 ? 0 : Math.min(parsed, 24);
       onChange(taskId, dayIndex, hours);
       // Normalize the displayed value after blur
       e.target.value = hours === 0 ? "" : String(hours);

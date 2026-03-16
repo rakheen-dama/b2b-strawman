@@ -7,6 +7,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.time.Instant;
@@ -33,14 +34,17 @@ public class TimeEntryController {
   private final TimeEntryService timeEntryService;
   private final MemberNameResolver memberNameResolver;
   private final InvoiceRepository invoiceRepository;
+  private final TimeEntryBatchService timeEntryBatchService;
 
   public TimeEntryController(
       TimeEntryService timeEntryService,
       MemberNameResolver memberNameResolver,
-      InvoiceRepository invoiceRepository) {
+      InvoiceRepository invoiceRepository,
+      TimeEntryBatchService timeEntryBatchService) {
     this.timeEntryService = timeEntryService;
     this.memberNameResolver = memberNameResolver;
     this.invoiceRepository = invoiceRepository;
+    this.timeEntryBatchService = timeEntryBatchService;
   }
 
   @PostMapping("/api/tasks/{taskId}/time-entries")
@@ -112,6 +116,14 @@ public class TimeEntryController {
     return ResponseEntity.ok(TimeEntryResponse.from(entry, names, invoiceNumbers));
   }
 
+  @PostMapping("/api/time-entries/batch")
+  public ResponseEntity<BatchTimeEntryResult> createBatch(
+      @Valid @RequestBody BatchTimeEntryRequest request) {
+    var actor = ActorContext.fromRequestScopes();
+    var result = timeEntryBatchService.createBatch(request, actor);
+    return ResponseEntity.ok(result);
+  }
+
   @DeleteMapping("/api/time-entries/{id}")
   public ResponseEntity<Void> deleteTimeEntry(@PathVariable UUID id) {
     var actor = ActorContext.fromRequestScopes();
@@ -171,6 +183,25 @@ public class TimeEntryController {
       Boolean billable,
       Integer rateCents,
       String description) {}
+
+  public record BatchTimeEntryItem(
+      @NotNull(message = "taskId is required") UUID taskId,
+      @NotNull(message = "date is required") LocalDate date,
+      @Positive(message = "durationMinutes must be positive") int durationMinutes,
+      String description,
+      boolean billable) {}
+
+  public record BatchTimeEntryRequest(
+      @NotNull(message = "entries is required")
+          @Size(min = 1, max = 50, message = "entries must have between 1 and 50 items")
+          List<BatchTimeEntryItem> entries) {}
+
+  public record CreatedEntry(UUID id, UUID taskId, LocalDate date) {}
+
+  public record EntryError(int index, UUID taskId, String message) {}
+
+  public record BatchTimeEntryResult(
+      List<CreatedEntry> created, List<EntryError> errors, int totalCreated, int totalErrors) {}
 
   public record TimeEntryResponse(
       UUID id,

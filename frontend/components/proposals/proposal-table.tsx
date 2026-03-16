@@ -77,7 +77,7 @@ export function ProposalTable({ proposals, slug, now }: ProposalTableProps) {
                   Title
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
-                  Customer
+                  Number
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
                   Status

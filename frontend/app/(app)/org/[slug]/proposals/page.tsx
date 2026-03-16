@@ -36,21 +36,17 @@ export default async function ProposalsPage({
   let summary: ProposalSummaryDto = emptySummary;
   let proposals: ProposalResponse[] = [];
 
-  try {
-    const [summaryResult, proposalsResult] = await Promise.allSettled([
-      api.get<ProposalSummaryDto>("/api/proposals/summary"),
-      api.get<{ content: ProposalResponse[] }>("/api/proposals?size=200"),
-    ]);
+  const [summaryResult, proposalsResult] = await Promise.allSettled([
+    api.get<ProposalSummaryDto>("/api/proposals/summary"),
+    api.get<{ content: ProposalResponse[] }>("/api/proposals?size=200"),
+  ]);
 
-    if (summaryResult.status === "fulfilled") {
-      summary = summaryResult.value;
-    }
+  if (summaryResult.status === "fulfilled") {
+    summary = summaryResult.value;
+  }
 
-    if (proposalsResult.status === "fulfilled") {
-      proposals = proposalsResult.value.content;
-    }
-  } catch {
-    // Non-fatal: show empty state
+  if (proposalsResult.status === "fulfilled") {
+    proposals = proposalsResult.value.content;
   }
 
   return (

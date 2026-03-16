@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import type { ProposalSummaryDto } from "@/lib/types/proposal";
 

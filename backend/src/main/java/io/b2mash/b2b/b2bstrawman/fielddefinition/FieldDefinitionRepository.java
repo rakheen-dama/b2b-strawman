@@ -32,4 +32,7 @@ public interface FieldDefinitionRepository extends JpaRepository<FieldDefinition
       "SELECT CASE WHEN COUNT(fd) > 0 THEN true ELSE false END FROM FieldDefinition fd"
           + " WHERE fd.packId = :packId AND fd.active = true")
   boolean existsByPackIdAndActiveTrue(@Param("packId") String packId);
+
+  @Query("SELECT fd FROM FieldDefinition fd WHERE fd.fieldType = :fieldType AND fd.active = true")
+  List<FieldDefinition> findByFieldTypeAndActiveTrue(@Param("fieldType") FieldType fieldType);
 }

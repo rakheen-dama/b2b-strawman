@@ -1,6 +1,6 @@
 {
   "packId": "automation-accounting-za",
-  "version": 2,
+  "version": 3,
   "verticalProfile": "accounting-za",
   "templates": [
     {
@@ -77,6 +77,28 @@
           "delayDuration": null,
           "delayUnit": null,
           "sortOrder": 1
+        }
+      ]
+    },
+    {
+      "slug": "sars-deadline-reminder",
+      "name": "SARS Deadline Reminder",
+      "description": "Notifies org admins when a SARS submission deadline is approaching (14, 7, and 1 day before)",
+      "category": "compliance",
+      "triggerType": "FIELD_DATE_APPROACHING",
+      "triggerConfig": { "fieldName": "sars_submission_deadline" },
+      "conditions": [],
+      "actions": [
+        {
+          "actionType": "SEND_NOTIFICATION",
+          "actionConfig": {
+            "recipientType": "ORG_ADMINS",
+            "title": "SARS deadline approaching: {{field.label}} for {{entity.name}}",
+            "message": "The {{field.label}} for {{entity.name}} is in {{field.daysUntil}} day(s). Please ensure all submissions are prepared and filed on time."
+          },
+          "delayDuration": null,
+          "delayUnit": null,
+          "sortOrder": 0
         }
       ]
     }

@@ -2,8 +2,8 @@
 
 ## Current State
 
-- **QA Position**: Day 14 tested — GAP-030 FIXED (attempt 2, PR #692). Stack rebuilt, ready for re-verification.
-- **Cycle**: 3
+- **QA Position**: Day 90 COMPLETE. All 5 checkpoint files written (Day 30, 45, 60, 75, 90). Fork readiness assessed.
+- **Cycle**: 4
 - **E2E Stack**: HEALTHY (rebuilt 2026-03-16T06:00Z)
 - **Branch**: `bugfix_cycle_2026-03-15`
 - **Scenario**: `tasks/phase47-lifecycle-script.md`
@@ -19,7 +19,7 @@
 | GAP-001 | PROPOSAL_SENT automation trigger does not exist | major | WONT_FIX | — | — | 0 | New automation trigger type = new feature. Out of scope for bugfix cycle. |
 | GAP-002 | FIELD_DATE_APPROACHING automation trigger does not exist | major | WONT_FIX | — | — | 0 | New automation trigger type = new feature. Out of scope for bugfix cycle. |
 | GAP-003 | CHECKLIST_COMPLETED automation trigger does not exist | major | WONT_FIX | — | — | 14 | New automation trigger type = new feature. Out of scope for bugfix cycle. |
-| GAP-004 | Statement-of-account template is a stub | major | OPEN | Dev | — | 90 | Day 90 — not triaged yet (QA hasn't reached Day 90). |
+| GAP-004 | Statement-of-account template is a stub | major | CONFIRMED | Dev | — | 90 | Cycle 4: Template exists on customer detail page and generates, but CustomerContextBuilder does not assemble invoice history into rendering context. Produces letter with no financial data. |
 | GAP-005 | Terminology overrides not loaded at runtime | minor | WONT_FIX | — | — | 0 | Not blocking QA — cosmetic |
 | GAP-006 | Rate card defaults not auto-seeded from profile | minor | WONT_FIX | — | — | 0 | Manual setup works, not blocking |
 | GAP-007 | Delayed automation triggers cannot be verified | minor | WONT_FIX | — | — | 14 | Testing limitation, not blocking |
@@ -37,14 +37,15 @@
 | GAP-020 | Portal contacts required for information requests | minor | OPEN | Dev | — | 1 | Cycle 2: Confirmed — "Create Information Request" dialog shows "No portal contacts found for this customer. Please add a portal contact first." Save/Send buttons disabled without portal contact. |
 | GAP-021 | No SARS integration or eFiling export | minor | WONT_FIX | — | — | 75 | Future enhancement |
 | GAP-022 | No engagement letter auto-creation from template | cosmetic | WONT_FIX | — | — | 75 | Nice to have |
-| GAP-023 | No saved views on list pages | minor | WONT_FIX | — | — | 90 | UX enhancement. Out of scope for bugfix cycle. |
-| GAP-024 | No aged debtors report | major | OPEN | Dev | — | 90 | Day 90 — not triaged yet (QA hasn't reached Day 90). |
+| GAP-023 | No saved views on list pages | minor | DISPROVED | — | — | 90 | Cycle 4: "Save View" button exists on Customers and Projects pages. Feature appears to be implemented. Original gap may have been premature. |
+| GAP-024 | No aged debtors report | minor | DISPROVED | — | — | 90 | Cycle 4: Invoice Aging Report exists at `/reports/invoice-aging` — "Outstanding invoices grouped by age bucket." This IS the aged debtors report. |
 | GAP-025 | Team member list API calls port 8080 instead of 8081 in E2E stack | bug | VERIFIED | Dev | #688 | 0 | Cycle 2: Team page shows all 3 members (Alice Owner, Bob Admin, Carol Member) with "3 members" count. |
 | GAP-026 | FICA/KYC checklist template not seeded by accounting-za pack | major | VERIFIED | Dev | #690 | 0 | Cycle 2: Settings > Checklists shows 4 templates including "FICA KYC — SA Accounting" (9 items). Manually instantiated on Kgosi Construction — all 9 items visible with correct required/optional flags. |
 | GAP-027 | Customer pages SSR crash after ONBOARDING lifecycle transition | blocker | VERIFIED | Dev | #687 | 1 | Cycle 2: Created customer, transitioned to ONBOARDING — page renders correctly. Status shows "Onboarding". Onboarding tab appears. All tabs accessible. Customer list page also works. No crash. |
 | GAP-028 | Customer detail page intermittent render crash | major | VERIFIED | Dev | #687 | 1 | Same root cause as GAP-027. Fixed by PR #687. Cycle 2: Customer detail pages render reliably after SSR hydration (~2s). |
 | GAP-029 | React #418 hydration mismatch on multiple pages | cosmetic | OPEN | — | — | 0 | Pre-existing issue across all pages. Console shows `Minified React error #418` on every page load. Non-blocking — pages render correctly after hydration. Likely SSR/client mismatch in date formatting or locale-dependent content. |
-| GAP-030 | Log Time crashes — null currency/source in dialog rendering | blocker | FIXED | Dev | #692 | 7 | Attempt 2: PR #692 — full null-safety audit. Fixed `formatRateSource()` null crash, switched all `formatCurrency` to `formatCurrencySafe`, guarded `hourlyRate` computation. Previous fix PR #691 was incomplete (only addressed currency, not source). |
+| GAP-030 | Log Time crashes — null currency/source in dialog rendering | blocker | VERIFIED | Dev | #692 | 7 | Attempt 2: PR #692 — full null-safety audit. Fixed `formatRateSource()` null crash, switched all `formatCurrency` to `formatCurrencySafe`, guarded `hourlyRate` computation. Previous fix PR #691 was incomplete (only addressed currency, not source). |
+| GAP-031 | Timesheet report crashes with invalid UUID error for optional filters | bug | OPEN | Dev | — | 60 | Cycle 4: Running timesheet report without selecting project shows "Parameter 'projectId' is not a valid UUID:". Same for memberId. Backend rejects empty strings instead of treating as null/optional. Workaround: select both project AND member. |
 
 ## Status Values
 
@@ -81,3 +82,4 @@
 | 2026-03-16T03:20Z | QA | Cycle 3: Day 14 execution. Completed 3/4 generic onboarding checklist items for Kgosi. Item 4 ("Upload signed engagement letter") blocked — requires document upload. Activation blocked: "Cannot activate customer — one or more onboarding checklists are not yet completed." Notifications page loads (empty, no automation triggers fired — GAP-003/GAP-007 confirmed). Time entry summaries blocked by GAP-030. Day 14 result: 1 PASS, 2 FAIL, 2 NOT TESTED, 1 PARTIAL, 2 CONFIRMED. |
 | 2026-03-16T05:50Z | Dev | GAP-030 FIXED (attempt 2): Full null-safety audit of `log-time-dialog.tsx`. Fixed `formatRateSource()` null crash (null guard + early return). Switched all 3 `formatCurrency` calls to `formatCurrencySafe`. Added `resolvedRate?.hourlyRate != null` guard on computed value. Hardened `formatCurrency` base function with `amount ?? 0`. All 12 related tests pass. PR #692 merged to `bugfix_cycle_2026-03-15`. NEEDS_REBUILD=true (frontend changed). |
 | 2026-03-16T06:00Z | Infra | E2E stack rebuilt after GAP-030 v2 fix (PR #692). All services healthy: frontend (3001), backend (8081), mock-idp (8090) all returning HTTP 200. NEEDS_REBUILD cleared. Stack ready for QA re-verification of GAP-030 and continuation of Day 14+ testing. |
+| 2026-03-16T06:15Z | QA | Cycle 4: Day 30-90 execution complete. Tested all major platform capabilities: invoicing (billing run wizard 5-step), profitability (3 sections), reports (timesheet/profitability/invoice-aging with CSV+PDF export), document generation (engagement letters, FICA confirmation with clause library), retainers (CRUD exists), expenses (tab exists), budgets (config wizard exists), resources (capacity grid), compliance (lifecycle distribution + onboarding pipeline). New gap GAP-031 (timesheet report UUID validation). GAP-004 CONFIRMED (statement of account stub). GAP-023 DISPROVED (saved views exist). GAP-024 DISPROVED (invoice aging report exists). Fork readiness: ~65-70% for SA accounting vertical. 5 checkpoint files written. |

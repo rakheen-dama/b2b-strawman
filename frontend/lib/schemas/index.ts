@@ -6,3 +6,6 @@ export type { CreateProjectFormData, EditProjectFormData } from "./project";
 
 export { inviteMemberSchema } from "./invite-member";
 export type { InviteMemberFormData } from "./invite-member";
+
+export { generalSettingsSchema } from "./general-settings";
+export type { GeneralSettingsFormData } from "./general-settings";

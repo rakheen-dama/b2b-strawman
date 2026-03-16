@@ -21,7 +21,8 @@ describe("SettingsSidebar", () => {
 
     render(<SettingsSidebar slug="test-org" isAdmin={true} />);
 
-    expect(screen.getByText("General")).toBeInTheDocument();
+    // "General" appears as both a group header and a nav link, so use getAllByText
+    expect(screen.getAllByText("General").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("Work")).toBeInTheDocument();
     expect(screen.getByText("Documents")).toBeInTheDocument();
     expect(screen.getByText("Finance")).toBeInTheDocument();
@@ -58,14 +59,8 @@ describe("SettingsSidebar", () => {
 
     render(<SettingsSidebar slug="test-org" isAdmin={true} />);
 
-    // "Organization" and "Security" are comingSoon — should not be <a> tags
+    // "Security" is comingSoon — should not be <a> tags
     // They only appear in desktop nav (filtered out of mobile)
-    const orgElements = screen.getAllByText("Organization");
-    expect(orgElements.length).toBe(1); // desktop only
-    for (const el of orgElements) {
-      expect(el.tagName).not.toBe("A");
-    }
-
     const secElements = screen.getAllByText("Security");
     expect(secElements.length).toBe(1); // desktop only
     for (const el of secElements) {
@@ -111,10 +106,10 @@ describe("SettingsSidebar", () => {
 
     render(<SettingsSidebar slug="acme" isAdmin={true} />);
 
-    // "Organization" and "Security" are comingSoon — each should show a badge
+    // "Security" is comingSoon — should show a badge
     const badges = screen.getAllByText("Coming soon");
-    // 2 comingSoon items in SETTINGS_NAV_GROUPS: Organization and Security
-    expect(badges.length).toBe(2);
+    // 1 comingSoon item in SETTINGS_NAV_GROUPS: Security
+    expect(badges.length).toBe(1);
   });
 
   it("renders Coming Soon items as <span> not <a>", () => {
@@ -122,12 +117,8 @@ describe("SettingsSidebar", () => {
 
     render(<SettingsSidebar slug="acme" isAdmin={true} />);
 
-    const orgElements = screen.getAllByText("Organization");
-    // comingSoon items only appear in desktop nav (filtered out of mobile tab row)
-    expect(orgElements.length).toBe(1);
-    expect(orgElements[0].closest("a")).toBeNull(); // Not wrapped in <a>
-
     const secElements = screen.getAllByText("Security");
+    // comingSoon items only appear in desktop nav (filtered out of mobile tab row)
     expect(secElements.length).toBe(1);
     expect(secElements[0].closest("a")).toBeNull();
   });

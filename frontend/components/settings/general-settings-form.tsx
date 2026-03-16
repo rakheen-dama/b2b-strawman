@@ -273,6 +273,7 @@ export function GeneralSettingsForm({
                 />
                 <button
                   type="button"
+                  aria-label="Remove logo"
                   onClick={handleDeleteLogo}
                   disabled={isUploading}
                   className="absolute -right-2 -top-2 rounded-full bg-slate-950 p-0.5 text-white hover:bg-slate-700 dark:bg-slate-50 dark:text-slate-950 dark:hover:bg-slate-300"

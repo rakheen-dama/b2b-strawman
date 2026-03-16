@@ -28,7 +28,7 @@ Phase 47's QA cycle surfaced 31 gaps; 10 were fixed during the cycle (PRs #687-#
 | 360 | Field Date Scanner + FIELD_DATE_APPROACHING Trigger (GAP-002) | Backend | 359 | M | 360A, 360B | **Done** (PRs #705, #706) |
 | 361 | SA Invoice Template Wiring (GAP-016) | Backend | -- | S | 361A | **Done** (PR #707) |
 | 362 | Proposal Summary Backend + Dashboard Frontend (GAP-013) | Both | -- | M | 362A, 362B | **Done** (PRs #708, #709) |
-| 363 | Org Settings Hub Page (GAP-008A) | Frontend | -- | S | 363A | |
+| 363 | Org Settings Hub Page (GAP-008A) | Frontend | -- | S | 363A | **Done** (PR #710) |
 | 364 | Terminology Overrides (GAP-005) | Frontend | -- | M | 364A, 364B | |
 | 365 | Bulk Time Entry Backend (GAP-015) | Backend | -- | M | 365A | |
 | 366 | Bulk Time Entry Frontend -- Weekly Grid (GAP-015) | Frontend | 365 | L | 366A, 366B | |
@@ -89,7 +89,7 @@ AUTOMATION WIRING (sequential)        SA VERTICAL POLISH (parallel)         BULK
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 1a | 360 | 360A | V73 migration, `FieldDateNotificationLog` entity + repo, `FieldDateApproachingEvent` record, `DomainEvent` permits update, `TriggerType.FIELD_DATE_APPROACHING`, `TriggerTypeMapping` entry, `AutomationContext.buildFieldDateApproaching()`, integration tests (~4). Backend only. | **Done** (PR #705) |
-| 1b (parallel) | 363 | 363A | `settings/general/page.tsx`, form fields, `ColorPicker` reuse, settings layout/sidebar update, redirect change, frontend tests (~4). Frontend only. | |
+| 1b (parallel) | 363 | 363A | `settings/general/page.tsx`, form fields, `ColorPicker` reuse, settings layout/sidebar update, redirect change, frontend tests (~4). Frontend only. | **Done** (PR #710) |
 | 1c (parallel) | 364 | 364A | `lib/terminology.ts` map, `lib/terminology.tsx` provider + hook, wrap app layout, frontend tests (~3). Frontend only. | |
 
 ### Stage 2: Remaining Dependent Slices (parallel tracks)
@@ -321,7 +321,7 @@ AUTOMATION WIRING (sequential)        SA VERTICAL POLISH (parallel)         BULK
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **363A** | 363.1--363.7 | `settings/general/page.tsx` with form fields (org name, currency, tax reg, tax label, tax-inclusive toggle, logo upload, brand color, footer), settings layout/sidebar update, redirect change, frontend tests (~4). Frontend only. | |
+| **363A** | 363.1--363.7 | `settings/general/page.tsx` with form fields (org name, currency, tax reg, tax label, tax-inclusive toggle, logo upload, brand color, footer), settings layout/sidebar update, redirect change, frontend tests (~4). Frontend only. | **Done** (PR #710) |
 
 ### Tasks
 

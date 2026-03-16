@@ -10,16 +10,16 @@
 
 ## Executive Summary
 
-The DocTeams platform with the `accounting-za` vertical profile covers **~75%** of a small SA accounting firm's daily needs. The core workflow loop — onboard client, log time, generate documents, review profitability — is functional. Three blockers were found and resolved during the cycle. ~~Remaining gaps cluster around entity-type-specific compliance (trusts), billing flow completeness, and SA currency display.~~ All P1 and P2 remaining gaps were resolved in a follow-up fix cycle (PR #703, 2026-03-16).
+The DocTeams platform with the `accounting-za` vertical profile covers **~75%** of a small SA accounting firm's daily needs. The core workflow loop — onboard client, log time, generate documents, review profitability — is functional. Three blockers were found and resolved during the cycle. Remaining gaps cluster around entity-type-specific compliance (trusts), billing flow completeness, and SA currency display.
 
 | Category | Count |
 |----------|-------|
 | Total gaps identified | 31 |
 | Resolved during cycle (PRs merged) | 10 |
-| Resolved in follow-up fix cycle (PR #703) | 6 |
-| Deferred (new features, out of scope) | 13 |
-| Disproved (feature already exists) | 2 |
-| Remaining open | 0 |
+| Deferred (new features, out of scope) | 9 |
+| Wiring fixes (partially built, need small fix) | 2 |
+| Disproved (feature already exists) | 6 |
+| Remaining open | 4 |
 
 ---
 
@@ -50,23 +50,23 @@ These issues were found, fixed, verified, and merged to `main` in 8 PRs (#687–
 
 ## Remaining Open Gaps
 
-~~These items were not resolved during the cycle.~~ **All P1 and P2 gaps resolved in follow-up fix cycle (PR #703, merged 2026-03-16).**
+These items were not resolved during the cycle. They require product decisions or dedicated phase work.
 
-### P1 — ~~Should Fix Before Pilot~~ RESOLVED
+### P1 — Should Fix Before Pilot
 
-| ID | Summary | Severity | Fix (PR) |
-|----|---------|----------|----------|
-| GAP-019 | Currency displays as USD not ZAR | cosmetic | Backend: `TenantProvisioningService` reads currency from vertical profile JSON. Frontend: `formatCurrency` uses locale-aware `Intl.NumberFormat` (en-ZA for ZAR). Retainer components receive `defaultCurrency` prop. (PR #696) |
-| GAP-008B | FICA field groups not auto-attached during customer creation | major | Changed `autoApply: false` → `true` in `accounting-za-customer.json`. PackReconciliationRunner retroactively attaches to existing customers. (PR #697) |
-| GAP-010 | Trust-specific custom fields missing | major | New `accounting-za-customer-trust.json` field pack with 6 trust fields (Registration Number, Deed Date, Trust Type, Trustees, Appointment Type, Letters of Authority). All fields visibility-conditioned on `acct_entity_type = TRUST`. (PR #699) |
-| GAP-009 | FICA checklist does not filter by entity type | major | New `applicable_entity_types` JSONB column on checklist items (V72 migration). Items filtered at instantiation by customer's `acct_entity_type`. Company Registration excluded for sole proprietors. 2 new trust-specific items (Letters of Authority, Trust Deed). (PR #701) |
+| ID | Summary | Severity | Day | Effort | Impact |
+|----|---------|----------|-----|--------|--------|
+| GAP-008B | FICA field groups not auto-attached during customer creation | major | 1 | M | During customer creation wizard Step 2, only "Contact & Address" is shown. The 16 accounting-specific fields (Company Registration, VAT Number, Entity Type, SARS Tax Reference, etc.) must be manually added via "Add Group" on the customer detail page AFTER creation. For an accounting firm, FICA details should be captured during intake — not as a post-creation afterthought. **Workaround**: Users manually add the field group after creation. |
+| GAP-009 | FICA checklist does not filter by entity type | major | 3 | M | All customers see the same 9-item FICA checklist regardless of entity type. Sole proprietors see "Company Registration (CM29/CoR14.3)" which is irrelevant. Trusts see nothing about Letters of Authority from the Master. SA FICA requirements differ significantly by entity type (Pty Ltd vs Trust vs Sole Proprietor). **Impact**: Accounting firms must manually tell clients to ignore inapplicable items. |
+| GAP-010 | Trust-specific custom fields missing | major | 3 | M | No fields for Trust Registration Number (Master's reference), Trust Deed Date, Names of Trustees, Appointed vs Ex Officio, Trust Type (inter vivos / testamentary / business). The generic "Company Registration Number" field is used as a catch-all, but trusts are not registered with CIPC. **Impact**: Cannot properly serve trust clients without manual workarounds. |
+| GAP-019 | Currency displays as USD not ZAR | cosmetic | 0 | S | All amounts display with `$` prefix instead of `R`. Invoices show `$5,500.00` instead of `R5,500.00`. Rate cards show `$1,500/hr` instead of `R1,500/hr`. The `Intl.NumberFormat` locale is hardcoded to `en-US`. **Impact**: Unprofessional appearance for a South African firm. Easy fix — change default currency in org settings or formatCurrency locale. |
 
-### P2 — ~~Nice to Have~~ RESOLVED
+### P2 — Nice to Have / Future Phases
 
-| ID | Summary | Severity | Fix (PR) |
-|----|---------|----------|----------|
-| GAP-020 | Portal contacts required for information requests | minor | New `GET /api/customers/{id}/portal-contacts` endpoint. Auto-creates PRIMARY portal contact from customer email during PROSPECT → ONBOARDING transition. (PR #698) |
-| GAP-029 | React #418 hydration mismatch on all pages | cosmetic | New `RelativeDate` client component for time-relative rendering. Explicit `en-ZA` locale on `toLocaleDateString`/`toLocaleString` calls. `suppressHydrationWarning` on Date.now()-dependent elements. Fixed `window.location.origin` SSR mismatch. (PR #700) |
+| ID | Summary | Severity | Day | Notes |
+|----|---------|----------|-----|-------|
+| GAP-020 | Portal contacts required for information requests | minor | 1 | "Create Information Request" dialog requires a portal contact. Users must create a portal contact first. Onboarding flow should auto-create a portal contact from the customer's email. |
+| GAP-029 | React #418 hydration mismatch on all pages | cosmetic | 0 | Pre-existing SSR/client mismatch. Pages render correctly after hydration. Likely date formatting or locale-dependent content divergence. Non-blocking. |
 
 ---
 
@@ -74,32 +74,26 @@ These issues were found, fixed, verified, and merged to `main` in 8 PRs (#687–
 
 These gaps represent missing features, not bugs. Each is a potential epic for a future phase.
 
-### Automation Triggers (3 gaps)
+### Automation Triggers (1 genuine gap)
 
 | ID | Summary | Effort | Business Impact |
 |----|---------|--------|-----------------|
-| GAP-001 | `PROPOSAL_SENT` trigger does not exist | M | Cannot automate engagement letter follow-up ("not accepted after 5 days"). Practice admin must manually track pending proposals. Revenue risk — unsigned engagement letters delay billable work. |
-| GAP-002 | `FIELD_DATE_APPROACHING` trigger does not exist | L | Cannot automate SARS deadline reminders, financial year-end alerts, or provisional tax due date notifications. These are mission-critical compliance deadlines — missing them results in SARS penalties. Requires scheduled polling job. |
-| GAP-003 | `CHECKLIST_COMPLETED` trigger does not exist | M | When FICA is complete, no automatic notification fires to the partner for review. Completed FICA files sit unnoticed until someone manually checks. Blocks the PROSPECT → ACTIVE flow from being fully automated. |
+| GAP-002 | `FIELD_DATE_APPROACHING` trigger does not exist | L | Cannot automate SARS deadline reminders, financial year-end alerts, or provisional tax due date notifications. These are mission-critical compliance deadlines — missing them results in SARS penalties. Requires scheduled polling job + new event + trigger type. Infrastructure (scheduled jobs) exists at ~20%. |
 
-### Billing & Invoicing (4 gaps)
+### Billing & Invoicing (1 genuine gap)
 
 | ID | Summary | Effort | Business Impact |
 |----|---------|--------|-----------------|
-| GAP-011 | No retainer overage/overflow billing | M | When actual hours exceed the retainer cap, the firm absorbs the overage. No mechanism for "retainer + overflow at hourly rates." Vukani Tech's advisory overflow model unsupported. |
-| GAP-012 | No effective hourly rate per retainer client | S | Cannot calculate retainer fee / actual hours = effective rate. Critical for retainer pricing decisions. Firms must calculate in Excel. |
-| GAP-014 | No disbursement/expense invoicing workflow | M | Expenses can be logged on projects but cannot be included as line items on invoices. Accounting firms frequently disburse CIPC/SARS/Master's Office fees on behalf of clients. |
-| GAP-016 | No SA-specific invoice PDF formatting | S | Invoices use the platform's built-in format, not the SA-mandated SARS requirements (seller VAT number, buyer VAT number, tax amount separately stated). The `invoice-za` template exists but may not be wired into the invoice send flow. |
+| GAP-016 | No SA-specific invoice PDF formatting | S | VAT fields, tax infrastructure, and vertical profile all exist. Missing: an `invoice-za` Thymeleaf template wired into the invoice send flow, and customer VAT number extraction into the invoice render context. |
 
-### Workflow & UX (5 gaps)
+### Workflow & UX (4 gaps)
 
 | ID | Summary | Effort | Business Impact |
 |----|---------|--------|-----------------|
-| GAP-005 | Terminology overrides not loaded at runtime | M | UI shows "Projects" not "Engagements", "Customers" not "Clients". Feels generic, not accounting-specific. `next-intl` doesn't load vertical overlay namespace. |
-| GAP-008A | Org settings page "Coming Soon" | M | Cannot rename org, set default currency, or configure basic firm details. Brand color is settable via Templates page as workaround. |
-| GAP-013 | No proposal/engagement letter lifecycle tracking | M | No dashboard showing pending engagement letters, days since sent, conversion rate. Engagement letters are project-scoped, not customer-scoped. |
-| GAP-015 | No bulk time entry creation | M | Each time entry is 6-8 clicks. No "copy previous week" or CSV import. Tedious for 20+ entries. |
-| GAP-017 | No recurring engagement auto-creation | M | Monthly bookkeeping engagements must be manually recreated each year. No "roll over engagement to next year" from project templates. |
+| GAP-005 | Terminology overrides not loaded at runtime | M | UI shows "Projects" not "Engagements", "Customers" not "Clients". Feels generic, not accounting-specific. No `next-intl` or i18n infrastructure exists in the frontend. |
+| GAP-008A | Org settings page "Coming Soon" | M | 20+ sub-settings pages exist but no central hub page for org name, default currency, branding. Backend `OrgSettingsController` is ready. |
+| GAP-013 | No proposal/engagement letter lifecycle tracking | M | Proposal entity has full lifecycle (DRAFT → SENT → ACCEPTED/DECLINED/EXPIRED) with timestamps. Missing: a dashboard page showing pending proposals, days since sent, conversion metrics. Backend data is ready — frontend page needed. |
+| GAP-015 | No bulk time entry creation | M | Each time entry is 6-8 clicks. No "copy previous week" or CSV import. Single-entry CRUD only. Tedious for 20+ entries. |
 
 ### Out of Scope (3 gaps)
 
@@ -107,16 +101,31 @@ These gaps represent missing features, not bugs. Each is a potential epic for a 
 |----|---------|-------|
 | GAP-006 | Rate card defaults not auto-seeded from profile | Manual setup works. Nice-to-have for onboarding friction. |
 | GAP-021 | No SARS integration or eFiling export | Future vertical-specific enhancement. Large effort. |
-| GAP-022 | No engagement letter auto-creation from template | Nice-to-have — auto-generate document on project creation. |
+| GAP-022 | No engagement letter auto-creation from template | Rendering pipeline exists. Needs auto-trigger on project creation. Nice-to-have. |
+
+---
+
+## Wiring Fixes — Partially Built, Need Small Integration
+
+These were categorized as "new features" but investigation shows 60-80% of the work is done. The missing piece is wiring existing events into the automation engine.
+
+| ID | Original Claim | Reality | Fix |
+|----|---------------|---------|-----|
+| GAP-001 | `PROPOSAL_SENT` trigger does not exist | `ProposalSentEvent` exists and fires. `NotificationEventHandler.onProposalSent()` creates notifications. **Missing**: not mapped in `TriggerTypeMapping` so the automation engine can't react to it. | Add `PROPOSAL_SENT` to `TriggerType` enum + `TriggerTypeMapping` + create automation template. ~S effort. |
+| GAP-003 | `CHECKLIST_COMPLETED` trigger does not exist | `ChecklistInstanceService.checkInstanceCompletion()` detects completion and triggers lifecycle transition → publishes `CustomerStatusChangedEvent`. **Missing**: `CustomerStatusChangedEvent` is a Spring `ApplicationEvent`, not a `DomainEvent` — `AutomationEventListener` only listens to `DomainEvent`. | Convert to `DomainEvent` or add `ApplicationEvent` listener in `AutomationEventListener`. ~S effort. |
 
 ---
 
 ## Disproved Gaps
 
-These gaps were reported in the initial analysis but **empirical testing proved the features exist**.
+These gaps were reported in the initial analysis but **investigation proved the features already exist**.
 
 | ID | Original Claim | Reality |
 |----|---------------|---------|
+| GAP-011 | No retainer overage/overflow billing | **Fully implemented.** `RetainerPeriod` tracks `overageHours`, `closePeriod()` resolves overage rate via 3-tier lookup, creates invoice with base fee + overage line items. Rollover policies (FORFEIT/CARRY_FORWARD/CARRY_CAPPED) all work. |
+| GAP-012 | No effective hourly rate per retainer client | **Fully implemented.** `RetainerPeriodService.resolveCustomerRate()` provides 3-tier rate lookup (customer → org default) with effective date filtering. |
+| GAP-014 | No disbursement/expense invoicing workflow | **Fully implemented.** `Expense` entity (V50) with `billable` flag, `markupPercent`, `invoiceId` link. `InvoiceLineType.EXPENSE` supported. Full CRUD via `ExpenseController`. |
+| GAP-017 | No recurring engagement auto-creation | **Fully implemented** as `RecurringSchedule`. Entity, service, executor, controller, event publishing (`RecurringProjectCreatedEvent`). Complete pipeline — just not exercised during QA scenario. |
 | GAP-023 | No saved views on list pages | "Save View" button exists on Customers and Projects pages. Feature appears implemented. |
 | GAP-024 | No aged debtors report | Invoice Aging Report exists at `/reports/invoice-aging` — "Outstanding invoices grouped by age bucket." This IS the aged debtors report. |
 
@@ -132,7 +141,7 @@ These gaps were reported in the initial analysis but **empirical testing proved 
 | **FICA/KYC checklists** | 9-item checklist template seeded by accounting-za pack. Manual instantiation via "Add Checklist" dialog. Required/optional item flags. |
 | **Custom field packs** | 16 SA-specific client fields seeded (Company Registration, VAT Number, Entity Type, SARS Tax Ref, Financial Year-End, Risk Rating, etc.). Entity type dropdown with SA values. |
 | **Time tracking** | Log time on tasks. Billable/non-billable classification. Project time summaries. "My Work" cross-project view (5.5h, 100% billable). |
-| **Document generation** | 7 accounting-specific templates (engagement letters, FICA confirmation, monthly report, statement of account). Thymeleaf + OpenHTMLToPDF rendering. SA-specific clauses (SAICA, POPIA, SARS, Tax Administration Act). PDF download. |
+| **Document generation** | 7 accounting-specific templates (engagement letters, FICA confirmation, monthly report, statement of account). Tiptap + OpenHTMLToPDF rendering. SA-specific clauses (SAICA, POPIA, SARS, Tax Administration Act). PDF download. |
 | **Clause library** | 7 accounting clauses with required/optional/reorderable associations. Template-to-clause linking. |
 | **Team management** | 3 members with roles (Owner/Admin/Member). Project membership required for access. Role-based permissions enforced. |
 | **Profitability** | Team utilization (hours/billable/utilization %), project profitability, customer profitability. Date range filtering. Sortable columns. |
@@ -179,33 +188,29 @@ These gaps were reported in the initial analysis but **empirical testing proved 
 
 ## Recommended Phasing for Remaining Work
 
-### ~~Sprint 1 (1 week) — Quick Wins~~ DONE (PR #703)
-- ~~**GAP-019**: Currency display (S)~~ — RESOLVED
-- ~~**GAP-020**: Auto-create portal contact (S)~~ — RESOLVED
-- ~~**GAP-008B**: Auto-attach vertical field groups (M)~~ — RESOLVED
-- ~~**GAP-029**: Hydration mismatch (S)~~ — RESOLVED
+### Sprint 1 (1 week) — Quick Wins + Wiring Fixes
+- **GAP-019**: Currency display (S) — change default locale/currency in formatCurrency or seed org with ZAR
+- **GAP-020**: Auto-create portal contact from customer email during onboarding (S)
+- **GAP-001**: Wire `ProposalSentEvent` into `TriggerTypeMapping` + automation template (S — event already fires)
+- **GAP-003**: Wire `CustomerStatusChangedEvent` into automation engine as DomainEvent (S — lifecycle logic exists)
+- **GAP-016**: Create SA invoice template + extract customer VAT into render context (S — infrastructure ready)
 
-### ~~Sprint 2 (2 weeks) — Entity-Type Specialization~~ DONE (PR #703)
-- ~~**GAP-009**: Entity-type-specific FICA checklists (M)~~ — RESOLVED
-- ~~**GAP-010**: Trust-specific custom field group (M)~~ — RESOLVED
+### Sprint 2 (1 week) — Entity-Type Specialization
+- **GAP-008B**: Auto-attach vertical field groups during customer creation (M)
+- **GAP-009**: Entity-type-specific FICA checklists (M) — create variants or add conditional visibility
+- **GAP-010**: Trust-specific custom field group (M) — new field pack with conditional display
 
-### Sprint 3 (2 weeks) — Billing Flow Completion
-- Investigate and fix billing run "no unbilled work" issue (may be configuration, may be query bug)
-- **GAP-011**: Retainer overflow billing model (M)
-- **GAP-014**: Include expenses as invoice line items (M)
-- **GAP-016**: Wire SA tax invoice template into invoice send flow (S)
-
-### Sprint 4 (2 weeks) — Automation & Workflow
-- **GAP-001**: `PROPOSAL_SENT` trigger type + engagement letter follow-up (M)
-- **GAP-003**: `CHECKLIST_COMPLETED` trigger type + FICA completion notification (M)
-- **GAP-002**: `FIELD_DATE_APPROACHING` scheduled trigger + SARS deadline reminders (L)
+### Sprint 3 (2 weeks) — Genuine New Features
+- **GAP-002**: `FIELD_DATE_APPROACHING` scheduled trigger + SARS deadline reminders (L — new scheduled job)
+- **GAP-008A**: Org settings hub page (M — backend ready, frontend page needed)
+- **GAP-013**: Proposal lifecycle dashboard (M — backend data ready, frontend page needed)
 
 ### Post-Launch Polish
-- **GAP-005**: Terminology overrides via next-intl vertical overlay (M)
-- **GAP-008A**: Org settings page (M)
-- **GAP-012**: Effective rate per retainer client metric (S)
-- **GAP-015**: Bulk time entry / copy previous week (M)
-- **GAP-017**: Recurring engagement auto-creation (M)
+- **GAP-005**: Terminology overrides via next-intl vertical overlay (M — no i18n exists yet)
+- **GAP-015**: Bulk time entry / copy previous week (M — new feature)
+
+### Verification Needed (Features Exist But Untested in QA)
+- **GAP-011/012/014/017**: Retainer overflow, effective rates, expense invoicing, recurring schedules — all fully implemented but QA scenario didn't exercise them. Need dedicated test coverage in next QA cycle.
 
 ---
 
@@ -239,25 +244,6 @@ These gaps were reported in the initial analysis but **empirical testing proved 
 **Total PRs**: 8 (#687–#695) merged to main
 **Total test suite**: 1513 frontend tests passing, 3630+ backend tests passing
 
-### Follow-Up Fix Cycle (PR #703)
-
-| Timestamp | Action |
-|-----------|--------|
-| 2026-03-16 09:00 | 6 research agents dispatched in parallel for gap analysis |
-| 2026-03-16 09:22 | GAP-019 fixed — currency display (PR #696) |
-| 2026-03-16 10:28 | GAP-008B fixed — auto-attach field groups (PR #697) |
-| 2026-03-16 11:35 | GAP-020 fixed — portal contact auto-creation + endpoint (PR #698) |
-| 2026-03-16 11:49 | GAP-010 fixed — trust custom fields (PR #699) |
-| 2026-03-16 11:55 | GAP-029 fixed — hydration mismatch (PR #700) |
-| 2026-03-16 12:24 | GAP-009 fixed — entity-type FICA filtering (PR #701) |
-| 2026-03-16 12:27 | Review feedback addressed (PR #702) |
-| 2026-03-16 12:30 | All PRs merged, PR #703 merged to main |
-
-**Follow-up duration**: ~3.5 hours
-**Follow-up PRs**: 7 (#696–#702), merged via parent branch PR #703
-**Files changed**: 42 files, +1,247/-72 lines
-**New tests**: 3 integration test classes (ProvisioningIntegrationTest, PortalContactAutoCreationTest, ChecklistEntityTypeFilterTest)
-
 ---
 
-*Generated by QA Cycle `/qa-cycle` skill on 2026-03-16. Follow-up fixes by feature-gap-analysis-and-dev workflow. Checkpoint results in `qa_cycle/checkpoint-results/`. Fix specs in `qa_cycle/fix-specs/`.*
+*Generated by QA Cycle `/qa-cycle` skill on 2026-03-16. Checkpoint results in `qa_cycle/checkpoint-results/`. Fix specs in `qa_cycle/fix-specs/`.*

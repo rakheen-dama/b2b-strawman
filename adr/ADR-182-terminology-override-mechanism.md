@@ -1,6 +1,6 @@
 # ADR-182: Terminology Override Mechanism
 
-**Status**: Accepted
+**Status**: Superseded by [ADR-185](ADR-185-terminology-switching-approach.md)
 **Date**: 2026-03-15
 
 ## Context

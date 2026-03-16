@@ -405,6 +405,15 @@
 | 356 | Automation Templates + Request Pack + Profile Manifest | Backend + Frontend | -- | S | 356A | **Done** (PR #685) |
 | 357 | 90-Day Lifecycle Script + Agent Execution | Process | 354, 355, 356 | L | 357A | **Done** (PR #686) |
 | 358 | Founder Walkthrough Guide + Gap Consolidation | Process | 357 | M | 358A | |
+| **Phase 48 — QA Gap Closure (Automation Wiring, SA Invoice, Org Settings, Bulk UX)** | | | | | | See [tasks/phase48-qa-gap-closure.md](tasks/phase48-qa-gap-closure.md) |
+| 359 | Automation Wiring: PROPOSAL_SENT + CUSTOMER_STATUS_CHANGED (GAP-001, GAP-003) | Backend | -- | M | 359A | |
+| 360 | Field Date Scanner + FIELD_DATE_APPROACHING Trigger (GAP-002) | Backend | 359 | M | 360A, 360B | |
+| 361 | SA Invoice Template Wiring (GAP-016) | Backend | -- | S | 361A | |
+| 362 | Proposal Summary Backend + Dashboard Frontend (GAP-013) | Both | -- | M | 362A, 362B | |
+| 363 | Org Settings Hub Page (GAP-008A) | Frontend | -- | S | 363A | |
+| 364 | Terminology Overrides (GAP-005) | Frontend | -- | M | 364A, 364B | |
+| 365 | Bulk Time Entry Backend (GAP-015) | Backend | -- | M | 365A | |
+| 366 | Bulk Time Entry Frontend — Weekly Grid (GAP-015) | Frontend | 365 | L | 366A, 366B | |
 
 ---
 

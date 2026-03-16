@@ -412,7 +412,7 @@
 | 362 | Proposal Summary Backend + Dashboard Frontend (GAP-013) | Both | -- | M | 362A, 362B | **Done** (PRs #708, #709) |
 | 363 | Org Settings Hub Page (GAP-008A) | Frontend | -- | S | 363A | **Done** (PR #710) |
 | 364 | Terminology Overrides (GAP-005) | Frontend | -- | M | 364A, 364B | **Done** (PRs #711, #712) |
-| 365 | Bulk Time Entry Backend (GAP-015) | Backend | -- | M | 365A | |
+| 365 | Bulk Time Entry Backend (GAP-015) | Backend | -- | M | 365A | **Done** (PR #713) |
 | 366 | Bulk Time Entry Frontend — Weekly Grid (GAP-015) | Frontend | 365 | L | 366A, 366B | |
 
 ---

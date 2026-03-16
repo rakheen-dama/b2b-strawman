@@ -30,7 +30,7 @@ Phase 47's QA cycle surfaced 31 gaps; 10 were fixed during the cycle (PRs #687-#
 | 362 | Proposal Summary Backend + Dashboard Frontend (GAP-013) | Both | -- | M | 362A, 362B | **Done** (PRs #708, #709) |
 | 363 | Org Settings Hub Page (GAP-008A) | Frontend | -- | S | 363A | **Done** (PR #710) |
 | 364 | Terminology Overrides (GAP-005) | Frontend | -- | M | 364A, 364B | **Done** (PRs #711, #712) |
-| 365 | Bulk Time Entry Backend (GAP-015) | Backend | -- | M | 365A | |
+| 365 | Bulk Time Entry Backend (GAP-015) | Backend | -- | M | 365A | **Done** (PR #713) |
 | 366 | Bulk Time Entry Frontend -- Weekly Grid (GAP-015) | Frontend | 365 | L | 366A, 366B | |
 
 ---
@@ -82,7 +82,7 @@ AUTOMATION WIRING (sequential)        SA VERTICAL POLISH (parallel)         BULK
 | 0a (parallel) | 359 | 359A | `PROPOSAL_SENT` + `CUSTOMER_STATUS_CHANGED` trigger wiring, `CustomerStatusChangedEvent` DomainEvent conversion, `AutomationContext` stubs, automation templates, integration tests (~6). Backend only. | **Done** (PR #704) |
 | 0b (parallel) | 361 | 361A | `InvoiceContextBuilder` VAT extraction, `invoice-za` template pack wiring, vertical-to-template slug lookup, render integration test (~3). Backend only. | **Done** (PR #707) |
 | 0c (parallel) | 362 | 362A | `ProposalService.getProposalSummary()`, `GET /api/proposals/summary` endpoint, DTO records, integration tests (~4). Backend only. | **Done** (PR #708) |
-| 0d (parallel) | 365 | 365A | `TimeEntryBatchService`, `POST /api/time-entries/batch` endpoint, partial success logic, rate snapshots, integration tests (~5). Backend only. | |
+| 0d (parallel) | 365 | 365A | `TimeEntryBatchService`, `POST /api/time-entries/batch` endpoint, partial success logic, rate snapshots, integration tests (~5). Backend only. | **Done** (PR #713) |
 
 ### Stage 1: Dependent Backend Slices + Independent Frontend Slices (parallel)
 
@@ -413,7 +413,7 @@ AUTOMATION WIRING (sequential)        SA VERTICAL POLISH (parallel)         BULK
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **365A** | 365.1--365.7 | `TimeEntryBatchService` with partial success, `BatchTimeEntryRequest`/`BatchTimeEntryResult` DTOs, `TimeEntryController.createBatch()` endpoint, rate snapshot per entry, budget threshold checks, integration tests (~5). Backend only. | |
+| **365A** | 365.1--365.7 | `TimeEntryBatchService` with partial success, `BatchTimeEntryRequest`/`BatchTimeEntryResult` DTOs, `TimeEntryController.createBatch()` endpoint, rate snapshot per entry, budget threshold checks, integration tests (~5). Backend only. | **Done** (PR #713) |
 
 ### Tasks
 

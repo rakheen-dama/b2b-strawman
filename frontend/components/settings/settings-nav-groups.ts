@@ -16,7 +16,7 @@ export const SETTINGS_NAV_GROUPS: SettingsNavGroup[] = [
     id: "general",
     label: "General",
     items: [
-      { label: "Organization", href: "", comingSoon: true },
+      { label: "General", href: "general" },
       { label: "Billing", href: "billing" },
       { label: "Notifications", href: "notifications" },
       { label: "Email", href: "email", adminOnly: true },

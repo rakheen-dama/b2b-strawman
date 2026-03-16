@@ -6,5 +6,5 @@ export default async function SettingsPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  redirect(`/org/${slug}/settings/billing`);
+  redirect(`/org/${slug}/settings/general`);
 }

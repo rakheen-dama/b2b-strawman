@@ -55,7 +55,7 @@ export function formatCurrency(amount: number, currency: string): string {
     currency: currency || "USD",
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(amount);
+  }).format(amount ?? 0);
 }
 
 /**

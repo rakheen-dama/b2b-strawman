@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.event.BudgetThresholdEvent;
 import io.b2mash.b2b.b2bstrawman.event.CustomerStatusChangedEvent;
 import io.b2mash.b2b.b2bstrawman.event.DocumentUploadedEvent;
 import io.b2mash.b2b.b2bstrawman.event.DomainEvent;
+import io.b2mash.b2b.b2bstrawman.event.FieldDateApproachingEvent;
 import io.b2mash.b2b.b2bstrawman.event.InformationRequestCompletedEvent;
 import io.b2mash.b2b.b2bstrawman.event.InvoicePaidEvent;
 import io.b2mash.b2b.b2bstrawman.event.InvoiceSentEvent;
@@ -39,7 +40,8 @@ public final class TriggerTypeMapping {
           Map.entry(
               InformationRequestCompletedEvent.class, TriggerType.INFORMATION_REQUEST_COMPLETED),
           Map.entry(ProposalSentEvent.class, TriggerType.PROPOSAL_SENT),
-          Map.entry(CustomerStatusChangedEvent.class, TriggerType.CUSTOMER_STATUS_CHANGED));
+          Map.entry(CustomerStatusChangedEvent.class, TriggerType.CUSTOMER_STATUS_CHANGED),
+          Map.entry(FieldDateApproachingEvent.class, TriggerType.FIELD_DATE_APPROACHING));
 
   private TriggerTypeMapping() {}
 

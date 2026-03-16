@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.automation;
 import io.b2mash.b2b.b2bstrawman.event.BudgetThresholdEvent;
 import io.b2mash.b2b.b2bstrawman.event.DocumentUploadedEvent;
 import io.b2mash.b2b.b2bstrawman.event.DomainEvent;
+import io.b2mash.b2b.b2bstrawman.event.FieldDateApproachingEvent;
 import io.b2mash.b2b.b2bstrawman.event.InformationRequestCompletedEvent;
 import io.b2mash.b2b.b2bstrawman.event.InvoicePaidEvent;
 import io.b2mash.b2b.b2bstrawman.event.InvoiceSentEvent;
@@ -56,6 +57,8 @@ public final class AutomationContext {
       case INFORMATION_REQUEST_COMPLETED ->
           buildInformationRequestCompleted((InformationRequestCompletedEvent) event, context);
       case PROPOSAL_SENT -> buildProposalSent((ProposalSentEvent) event, context);
+      case FIELD_DATE_APPROACHING ->
+          buildFieldDateApproaching((FieldDateApproachingEvent) event, context);
     }
 
     return context;
@@ -242,6 +245,22 @@ public final class AutomationContext {
     var customer = new LinkedHashMap<String, Object>();
     customer.put("id", uuidToString(event.customerId()));
     context.put("customer", customer);
+  }
+
+  private static void buildFieldDateApproaching(
+      FieldDateApproachingEvent event, Map<String, Map<String, Object>> context) {
+    var entity = new LinkedHashMap<String, Object>();
+    entity.put("type", event.entityType());
+    entity.put("id", uuidToString(event.entityId()));
+    entity.put("name", detailValue(event, "entity_name"));
+    context.put("entity", entity);
+
+    var field = new LinkedHashMap<String, Object>();
+    field.put("name", detailValue(event, "field_name"));
+    field.put("label", detailValue(event, "field_label"));
+    field.put("value", detailValue(event, "field_value"));
+    field.put("daysUntil", detailValue(event, "days_until"));
+    context.put("field", field);
   }
 
   private static Object detailValue(DomainEvent event, String key) {

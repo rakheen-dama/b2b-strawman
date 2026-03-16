@@ -24,7 +24,7 @@ public class AutomationConfigDeserializer {
           objectMapper.convertValue(raw, StatusChangeTriggerConfig.class);
       case BUDGET_THRESHOLD_REACHED ->
           objectMapper.convertValue(raw, BudgetThresholdTriggerConfig.class);
-      case TIME_ENTRY_CREATED, DOCUMENT_ACCEPTED, INFORMATION_REQUEST_COMPLETED ->
+      case TIME_ENTRY_CREATED, DOCUMENT_ACCEPTED, INFORMATION_REQUEST_COMPLETED, PROPOSAL_SENT ->
           new EmptyTriggerConfig();
     };
   }

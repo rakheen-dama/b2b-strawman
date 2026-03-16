@@ -1,6 +1,6 @@
 {
   "packId": "automation-accounting-za",
-  "version": 1,
+  "version": 2,
   "verticalProfile": "accounting-za",
   "templates": [
     {
@@ -9,7 +9,7 @@
       "description": "Notifies the assigned member when a new client has not started FICA verification after 7 days",
       "category": "compliance",
       "triggerType": "CUSTOMER_STATUS_CHANGED",
-      "triggerConfig": { "toStatus": "PROSPECT" },
+      "triggerConfig": { "toStatus": "ONBOARDING" },
       "conditions": [],
       "actions": [
         {

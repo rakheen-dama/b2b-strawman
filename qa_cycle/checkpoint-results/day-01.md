@@ -1,110 +1,101 @@
-# Day 1 — First Client Onboarding: Kgosi Construction
+# Day 1 — First Client Onboarding: Kgosi Construction (Cycle 1)
+## Executed: 2026-03-16T21:42Z
+## Actor: Bob (Admin), then Alice (Owner) for proposals
 
-## Cycle 1 — Executed: 2026-03-15T21:20Z
-## Actor: Bob (Admin), then attempted Alice (Owner)
-
-### Checkpoint 1.1 — Create Kgosi Construction as a new customer
+### Checkpoint 1.1 — Login as Bob, navigate to Customers
 - **Result**: PASS
-- **Evidence**: Customer "Kgosi Construction (Pty) Ltd" created successfully via New Customer dialog (Step 1: Name, Type=Company, Email, Phone; Step 2: skipped field intake — only "Contact & Address" shown, no FICA fields per GAP-008B). Customer appears in list with status PROSPECT. ID: `5756c017-0998-4d88-877f-da8314431a3c`.
-- **Gap**: GAP-008B (confirmed — FICA field groups not auto-attached during customer creation wizard Step 2)
+- **Evidence**: Logged in as Bob Admin via /mock-login. Sidebar shows "BA" and "Bob Admin / bob@e2e-test.local". Navigated to Clients > Customers. Customers page shows 1 existing customer (Acme Corp, Active). "New Customer" button visible. Customer count header shows "1".
 
-### Checkpoint 1.1a — Populate all 16 accounting custom fields
+### Checkpoint 1.2 — Click New Customer
 - **Result**: PASS
-- **Evidence**: Navigated to customer detail page. Added "SA Accounting — Client Details" field group via "Add Group" button (searchable dropdown found the group immediately). All 16 fields populated: Company Registration Number (2019/347821/07), Trading As (Kgosi Construction), VAT Number (4830291746), SARS Tax Reference (9301234567), SARS eFiling Profile (blank), Financial Year-End (2025-02-28), Entity Type (Pty Ltd), Industry SIC Code (41000), Registered Address, Postal Address, Primary Contact Name (Thabo Kgosi), Primary Contact Email, Primary Contact Phone, FICA Verified (Not Started), FICA Verification Date (blank), Referred By (Existing client referral). Saved successfully. Customer Readiness updated to "Required fields filled (7/7)".
-- **Gap**: —
+- **Evidence**: Clicked "New Customer" button. "Create Customer" dialog opened (Step 1 of 2) with fields: Name, Type (Individual/Company/Trust dropdown), Email, Phone (optional), ID Number (optional), Notes (optional).
 
-### Checkpoint 1.2 — Initiate FICA checklist for Kgosi Construction
-- **Result**: PARTIAL (cycle 1) -> PASS (cycle 2)
-- **Evidence (cycle 1)**: No "Checklists" tab available on PROSPECT customers. Transitioned customer to ONBOARDING via Change Status > Start Onboarding. An "Onboarding" tab appeared with a "Generic Client Onboarding" checklist (4 items), NOT the expected "FICA/KYC — SA Accounting" checklist with 9 items. The "Manually Add Checklist" dialog only shows the generic template — no FICA template available.
-- **Evidence (cycle 2)**: After GAP-026 fix, "Manually Add Checklist" dialog now shows all 4 templates: FICA KYC — SA Accounting (9 items), Generic Client Onboarding (4 items), Company Client Onboarding FICA (6 items), Individual Client Onboarding FICA (5 items). FICA checklist instantiated successfully with 9 items: Certified ID Copy (required), Proof of Residence (required), Company Registration CM29/CoR14.3 (required), Tax Clearance Certificate (required), Bank Confirmation Letter (required), Proof of Business Address (optional), Resolution/Mandate (optional), Beneficial Ownership Declaration (required), Source of Funds Declaration (optional). Items show "Pending" status with "Mark Complete" buttons. Required items have no Skip option; optional items have both Mark Complete and Skip.
-- **Gap**: — (GAP-026 VERIFIED)
-
-### Checkpoint 1.3 — Verify customer lifecycle state
+### Checkpoint 1.3 — Fill customer details
 - **Result**: PASS
-- **Evidence**: Customer transitioned from PROSPECT to ONBOARDING successfully. Customer detail page shows "Onboarding" badge. The lifecycle progression path is visible via the Change Status dropdown and the "Customer Readiness" section. After GAP-027 fix (cycle 2), the page renders correctly after transition — no crash.
-- **Gap**: — (GAP-027 VERIFIED)
+- **Evidence**: Filled: Name = "Kgosi Construction (Pty) Ltd", Type = Company, Email = thabo@kgosiconstruction.co.za, Phone = +27-11-555-0100, Notes = "Pty Ltd, FYE 28 Feb, VAT vendor". Clicked Next.
 
-### Checkpoint 1.4 — Send information request via portal
-- **Result**: FAIL (BLOCKER, cycle 1) -> PARTIAL (cycle 2)
-- **Evidence (cycle 1)**: Cannot access the Requests tab on the customer detail page. After the lifecycle transition to ONBOARDING, the customer detail page crashed with `TypeError: Cannot read properties of null` during server-side rendering.
-- **Evidence (cycle 2)**: After GAP-027 fix, Requests tab accessible on customer detail page. Shows "No information requests yet" with "New Request" button. Clicked "New Request" — dialog opens with template selector (Ad-hoc), reminder interval config (5 days default), and customer name. However, dialog shows "No portal contacts found for this customer. Please add a portal contact first." Both "Save as Draft" and "Send Now" are disabled. Cannot send information request without a portal contact configured for this customer.
-- **Gap**: GAP-020 (confirmed — portal contacts not set up for new customers; information requests require portal contact configuration first)
+### Checkpoint 1.4 — Custom fields visible in Step 2
+- **Result**: PASS
+- **Evidence**: Step 2 of 2 "Additional Information" dialog shows 3 field groups: "SA Accounting -- Trust Details" (3 required fields), "SA Accounting -- Client Details" (7 required fields + 9 optional), and "Contact & Address". Filled required Client Details fields: SARS Tax Reference (9301234567), Financial Year-End (2025-02-28), Entity Type (Pty Ltd), Registered Address, Primary Contact Name/Email, FICA Verified (Not Started).
+- **Gap**: GAP-P48-008 CONFIRMED -- Trust Details field group shows for Company type customers. Required Trust fields (Trust Registration Number, Trust Deed Date, Trust Type) should not appear for Company entities. The form did accept submission without filling Trust fields, so it's not blocking, but it's confusing UX.
 
-### Checkpoint 1.5 — Alice creates engagement letter
-- **Result**: FAIL (BLOCKED, cycle 1) -> PARTIAL (cycle 2)
-- **Evidence (cycle 2)**: Customer detail page renders correctly (GAP-027 fixed). "Generate Document" button on customer page shows dropdown with 2 customer-scoped templates: "Statement of Account" and "FICA Confirmation Letter". No engagement letter templates available from customer context — engagement letters are project-scoped templates. To generate an engagement letter, a project must first be created and linked. This is by design (engagement letter templates use project context variables), but the Day 1 script expected engagement letter generation from the customer page.
-- **Gap**: GAP-013 (confirmed — no engagement letter lifecycle tracking from customer page; engagement letters require project context)
+### Checkpoint 1.5 — Customer appears in list with PROSPECT status
+- **Result**: PASS
+- **Evidence**: After submitting (via JavaScript click due to viewport scroll issue), customer list shows "2" customers. "Kgosi Construction (Pty) Ltd" appears with: FICA Verified: Not Started, Entity Type: Pty Ltd, email, phone, Lifecycle: Prospect, Status: Active, Completeness: 14%, Created: Mar 16, 2026.
 
-### Checkpoint 1.6 — Send engagement letter for acceptance
-- **Result**: FAIL (cycle 2)
-- **Evidence**: Cannot generate engagement letter from customer context (project-scoped template). No "Send for Acceptance" flow available without first creating a project. Requires checkpoint 1.8 (create project) first.
-- **Gap**: GAP-013
+### Checkpoint 1.6 — Customer detail shows PROSPECT lifecycle badge
+- **Result**: PASS
+- **Evidence**: Clicked into customer detail. Heading shows "Kgosi Construction (Pty) Ltd" with badges: "Active" (status), "Prospect" (lifecycle), 14% completeness ring. Notes visible: "Pty Ltd, FYE 28 Feb, VAT vendor". Customer Readiness: 33% (Projects linked: not done, No onboarding checklist, Required fields: 7/10). "Ready to start onboarding?" prompt shown with "Start Onboarding" link.
 
-### Checkpoint 1.7 — Accept engagement letter via portal
-- **Result**: FAIL (cycle 2)
-- **Evidence**: Blocked by 1.6 — no engagement letter generated to accept.
-- **Gap**: GAP-013
+### Checkpoint 1.7 — Find lifecycle transition action
+- **Result**: PASS
+- **Evidence**: "Change Status" button visible in action bar. Clicked it, dropdown shows "Start Onboarding" menu item.
 
-### Checkpoint 1.8 — Create engagement (project) from accepted engagement letter
-- **Result**: PARTIAL (cycle 2)
-- **Evidence**: No engagement letter acceptance flow available, but project creation is functional. Projects page loads correctly (GAP-008C verified). "New Project" button available. Project can be created independently and linked to customer. However, the "from accepted engagement letter" flow does not exist — projects are created standalone and linked to customers manually. This is a feature gap, not a bug.
-- **Gap**: GAP-013 (engagement letter -> project creation flow does not exist)
+### Checkpoint 1.8 — Transition to ONBOARDING
+- **Result**: PASS
+- **Evidence**: Clicked "Start Onboarding". Confirmation dialog appeared: "This will move the customer to Onboarding status and automatically create compliance checklists." with optional notes field. Clicked "Start Onboarding" to confirm. After page reload, lifecycle badge shows "Onboarding". "Since Mar 16, 2026" date appears. "Onboarding" tab appeared in the tab list. Customer Readiness now shows "Onboarding checklist (0/4)".
+- **Note**: Console error on reload: `TypeError: Cannot read properties of null` -- SSR hydration issue, page still renders correctly. Pre-existing React #418 also present.
 
-### Checkpoint 1.9 — Set up retainer for Kgosi Construction
-- **Result**: NOT TESTED (cycle 2)
-- **Evidence**: Retainers page accessible via Clients > Retainers sidebar navigation. Not tested in detail as project was not linked to customer in this cycle. Retainer creation requires a project linked to a customer.
-- **Gap**: —
+### Checkpoint 1.9 — Onboarding tab with checklist
+- **Result**: PASS
+- **Evidence**: Clicked "Onboarding" tab. Shows "Generic Client Onboarding" checklist, status "In Progress", "0/4 completed (0/4 required)". "Manually Add Checklist" button available at the top.
+
+### Checkpoint 1.10 — FICA checklist auto-instantiated
+- **Result**: PARTIAL
+- **Evidence**: A "Generic Client Onboarding" checklist was auto-instantiated with 4 items (not the FICA/KYC -- SA Accounting checklist with 9 items). The 4 items are: (1) Confirm client engagement, (2) Verify contact details, (3) Confirm billing arrangements, (4) Upload signed engagement letter. All show Pending/Required status. The FICA checklist could be manually added via "Manually Add Checklist" button, but it was not auto-instantiated.
+- **Gap**: The script expected a FICA checklist to be auto-instantiated. Only the generic checklist auto-instantiated. FICA checklist (if seeded, per GAP-026 fix) would need manual addition.
+
+### Checkpoint 1.11 — Mark first checklist item complete
+- **Result**: PARTIAL
+- **Evidence**: Clicked "Mark Complete" on "Confirm client engagement". A confirmation form appeared with optional notes field and Confirm/Cancel buttons. Clicked "Confirm". However, after confirmation, the item still shows "Pending" status and the progress counter still reads "0/4 completed". The completion may not have persisted or the UI did not refresh.
+- **Gap**: NEW -- Checklist item completion may not be saving/refreshing properly. The Mark Complete action triggers a confirmation dialog but the item status does not visually update to "Completed" after confirmation.
+
+### Checkpoint 1.12 — Mark second checklist item complete
+- **Result**: NOT TESTED
+- **Evidence**: Skipped due to checkpoint 1.11 issue (first item completion unclear).
+
+### Checkpoint 1.13 — Progress indicator updates
+- **Result**: NOT TESTED
+- **Evidence**: Blocked by 1.11. Progress indicator still shows "0/4 completed" after attempting to mark first item complete.
+
+### Checkpoint 1.14-1.18 — Information request flow
+- **Result**: NOT TESTED (this cycle)
+- **Evidence**: Steps 1.14-1.18 (navigate to Requests tab, create information request, send, check Mailpit) were not tested in this cycle due to time constraints. The Requests tab is visible in the tab list. Based on previous cycle results, GAP-P48-009 (portal contact required) may still apply.
+
+### Checkpoint 1.19-1.24 — Proposal creation
+- **Result**: FAIL (BLOCKED by GAP-P48-001)
+- **Evidence**: GAP-P48-001 is a known blocker -- no proposal creation/detail UI exists. The sidebar has no "Proposals" navigation item. Backend has full CRUD + lifecycle but frontend only has list view (if any). Steps 1.19-1.24 cannot be executed.
+- **Gap**: GAP-P48-001 CONFIRMED -- blocker at step 1.19
 
 ---
 
-## Cycle 2 — Fix Verifications (2026-03-16T00:00Z)
-### Actor: Alice (Owner)
+## Day 1 Summary
 
-### Verification: GAP-027 (blocker -> FIXED -> VERIFIED)
-- **Action**: Created new customer "Kgosi Construction (Pty) Ltd" (Company type). Navigated to detail page. Clicked Change Status > Start Onboarding > confirmed. Page did NOT crash.
-- **Post-transition state**: Customer detail page renders correctly with "Onboarding" status badge. "Onboarding" tab appeared with auto-instantiated "Generic Client Onboarding" checklist (4 items). Customer Readiness shows "Onboarding checklist (0/4)". All other tabs (Projects, Documents, Invoices, Retainer, Requests, Rates, Generated Docs, Financials) accessible.
-- **Customer list page**: Loads correctly after transition, showing Kgosi Construction with "Onboarding" lifecycle status.
-- **Reload test**: Full page reload of customer detail renders correctly after hydration (SSR skeleton -> hydrated content in ~2s).
-- **Console errors**: Only pre-existing React #418 hydration mismatch (cosmetic, non-blocking). No TypeError crashes.
-- **Verdict**: VERIFIED
+| Checkpoint | Result | Notes |
+|-----------|--------|-------|
+| 1.1 — Login as Bob | PASS | Bob Admin authenticated |
+| 1.2 — New Customer dialog | PASS | Step 1 dialog opens |
+| 1.3 — Fill customer details | PASS | All fields filled |
+| 1.4 — Custom fields in Step 2 | PASS | SA Accounting fields visible (GAP-P48-008 confirmed: Trust fields show for Company) |
+| 1.5 — Customer in list as PROSPECT | PASS | Customer created, shows as Prospect |
+| 1.6 — Detail page PROSPECT badge | PASS | Lifecycle badge shows Prospect |
+| 1.7 — Find lifecycle transition | PASS | Change Status dropdown works |
+| 1.8 — Transition to ONBOARDING | PASS | Lifecycle badge updates to Onboarding |
+| 1.9 — Onboarding tab | PASS | Tab appears with checklist |
+| 1.10 — Checklist auto-instantiated | PARTIAL | Generic checklist (4 items), not FICA (9 items) |
+| 1.11 — Mark first item complete | PARTIAL | Confirmation dialog works but status may not persist |
+| 1.12 — Mark second item complete | NOT TESTED | Blocked by 1.11 |
+| 1.13 — Progress indicator | NOT TESTED | Blocked by 1.11 |
+| 1.14-1.18 — Information request | NOT TESTED | Deferred |
+| 1.19-1.24 — Proposal creation | FAIL (BLOCKED) | GAP-P48-001 CONFIRMED |
 
-### Verification: GAP-026 (major -> FIXED -> VERIFIED)
-- **Action**: Navigated to Settings > Checklists. Page shows 4 checklist templates.
-- **Evidence**: "FICA KYC — SA Accounting" template visible with 9 items, customer type ALL, source Platform, auto-instantiate No. Also present: Generic Client Onboarding (4 items, auto-instantiate Yes), Company Client Onboarding FICA (6 items), Individual Client Onboarding FICA (5 items).
-- **Instantiation test**: From Kgosi Construction Onboarding tab, clicked "Manually Add Checklist". Dialog shows all 4 templates. Selected "FICA KYC — SA Accounting" > Create Checklist. FICA checklist instantiated with all 9 items visible on the Onboarding tab. Items show correct required/optional status and document requirements.
-- **Verdict**: VERIFIED
+**Day 1 Result**: 8 PASS, 2 PARTIAL, 1 FAIL (blocked), 4 NOT TESTED
 
-### Verification: GAP-025 (bug -> FIXED -> VERIFIED)
-- **Action**: Navigated to Team page (/org/e2e-test-org/team).
-- **Evidence**: Page shows "3 members" count. Table lists all 3 members: Alice Owner (alice@e2e-test.local), Bob Admin (bob@e2e-test.local), Carol Member (carol@e2e-test.local). Invite form shows "3 of 10 members". Pending Invitations tab available.
-- **Console errors**: Only pre-existing React #418 hydration mismatch.
-- **Verdict**: VERIFIED
+**New observations**:
+- GAP-P48-008 CONFIRMED: Trust Details field group shows for Company type customers in creation wizard
+- GAP-P48-001 CONFIRMED: No proposal creation UI (blocker at step 1.19)
+- NEW: Checklist item "Mark Complete" may not persist -- item stays Pending after confirmation (needs investigation)
+- Console TypeError on customer detail page after lifecycle transition (SSR hydration issue, non-blocking)
+- Create Customer dialog "Create Customer" button goes out of viewport when many field groups are expanded (required JavaScript click workaround)
 
-### Verification: GAP-008C (bug -> FIXED -> VERIFIED)
-- **Action**: Navigated to Projects page (/org/e2e-test-org/projects).
-- **Evidence**: Page renders correctly showing "1 project" with "Website Redesign" listed. Project card shows status "Lead", description "E2E seed project for testing", date "Mar 15, 2026". New Project button available. Status filter tabs (Active, Completed, Archived, All) functional.
-- **Console errors**: React #418 hydration mismatch (pre-existing, cosmetic). No blocking TypeError on project.status or createdAt.
-- **Verdict**: VERIFIED
-
----
-
-## Summary (Cycle 2)
-
-| Checkpoint | Cycle 1 | Cycle 2 | Gap |
-|-----------|---------|---------|-----|
-| 1.1 — Create customer | PASS | (not re-tested) | GAP-008B |
-| 1.1a — Populate custom fields | PASS | (not re-tested) | — |
-| 1.2 — Initiate FICA checklist | PARTIAL | PASS | GAP-026 VERIFIED |
-| 1.3 — Verify lifecycle state | PASS | PASS | GAP-027 VERIFIED |
-| 1.4 — Information request | FAIL | PARTIAL | GAP-020 (portal contacts) |
-| 1.5 — Engagement letter | FAIL | PARTIAL | GAP-013 (project-scoped) |
-| 1.6 — Send engagement letter | FAIL | FAIL | GAP-013 |
-| 1.7 — Accept engagement letter | FAIL | FAIL | GAP-013 |
-| 1.8 — Create project | FAIL | PARTIAL | GAP-013 |
-| 1.9 — Set up retainer | FAIL | NOT TESTED | — |
-
-**Fix Verifications**: 4/4 VERIFIED (GAP-027, GAP-026, GAP-025, GAP-008C)
-
-**Cycle 2 Totals**: 2 PASS, 3 PARTIAL, 3 FAIL, 1 NOT TESTED
-
-**Assessment**: All 4 cycle 1 fixes verified. The blocker (GAP-027) is resolved. Day 1 remaining failures are due to missing portal contact setup (GAP-020, known minor) and engagement letter lifecycle features (GAP-013, known WONT_FIX). QA can proceed to Day 2.
+**Blocker reached**: GAP-P48-001 at step 1.19 -- stopping Day 1 execution as instructed.

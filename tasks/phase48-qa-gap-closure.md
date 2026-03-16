@@ -88,7 +88,7 @@ AUTOMATION WIRING (sequential)        SA VERTICAL POLISH (parallel)         BULK
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 1a | 360 | 360A | V73 migration, `FieldDateNotificationLog` entity + repo, `FieldDateApproachingEvent` record, `DomainEvent` permits update, `TriggerType.FIELD_DATE_APPROACHING`, `TriggerTypeMapping` entry, `AutomationContext.buildFieldDateApproaching()`, integration tests (~4). Backend only. | |
+| 1a | 360 | 360A | V73 migration, `FieldDateNotificationLog` entity + repo, `FieldDateApproachingEvent` record, `DomainEvent` permits update, `TriggerType.FIELD_DATE_APPROACHING`, `TriggerTypeMapping` entry, `AutomationContext.buildFieldDateApproaching()`, integration tests (~4). Backend only. | **Done** (PR #705) |
 | 1b (parallel) | 363 | 363A | `settings/general/page.tsx`, form fields, `ColorPicker` reuse, settings layout/sidebar update, redirect change, frontend tests (~4). Frontend only. | |
 | 1c (parallel) | 364 | 364A | `lib/terminology.ts` map, `lib/terminology.tsx` provider + hook, wrap app layout, frontend tests (~3). Frontend only. | |
 
@@ -176,7 +176,7 @@ AUTOMATION WIRING (sequential)        SA VERTICAL POLISH (parallel)         BULK
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **360A** | 360.1--360.8 | V73 migration, `FieldDateNotificationLog` entity + repo, `FieldDateApproachingEvent` record, `DomainEvent` permits update, `FIELD_DATE_APPROACHING` TriggerType + mapping, `AutomationContext.buildFieldDateApproaching()`, integration tests (~4). Backend only. | |
+| **360A** | 360.1--360.8 | V73 migration, `FieldDateNotificationLog` entity + repo, `FieldDateApproachingEvent` record, `DomainEvent` permits update, `FIELD_DATE_APPROACHING` TriggerType + mapping, `AutomationContext.buildFieldDateApproaching()`, integration tests (~4). Backend only. | **Done** (PR #705) |
 | **360B** | 360.9--360.14 | `FieldDateScannerJob` with `@Scheduled` annotation, per-tenant iteration via `ScopedValue`, dedup check logic, `sars-deadline-reminder` automation template seeding, integration tests (~4). Backend only. | |
 
 ### Tasks

@@ -80,13 +80,13 @@ Keep `CustomerStatusChangedEvent extends ApplicationEvent` unchanged. Add a seco
 
 The `DomainEvent` sealed interface is the established event contract in DocTeams. All 35 domain event types are records in the `event/` package, all implement the same interface, and all carry the same base fields. `CustomerStatusChangedEvent` predates this contract (Phase 15 vs. Phase 37) and is the only `ApplicationEvent` subclass that should participate in automation. Converting it aligns with the existing pattern rather than creating exceptions.
 
-The breaking change cost is small and well-contained. A codebase search shows three consumers of `CustomerStatusChangedEvent`:
+The breaking change cost is small and well-contained. A codebase search shows one consumer of `CustomerStatusChangedEvent`:
 
-1. `CustomerLifecycleEventHandler.onStatusChanged()` -- handles post-transition logic (e.g., notifications). Needs to be updated to accept the record type and read from `details()` map instead of getter methods.
-2. `AuditEventListener.onCustomerStatusChanged()` -- logs audit events. Reads `customerId`, `oldStatus`, `newStatus` -- all available in the record's `details()` map.
-3. `AutomationEventListener.onDomainEvent()` -- the new path being wired. Already expects `DomainEvent`.
+1. `AutomationEventListener.onDomainEvent()` -- the new path being wired. Already expects `DomainEvent`.
 
-Updating 2 existing listeners and 1-2 publishers is a bounded, low-risk change. The record constructor is more verbose (10 fields vs. 4), but this follows the same pattern as every other `DomainEvent` -- the consistency benefit outweighs the verbosity cost.
+Note: `CustomerLifecycleEventHandler.onStatusChanged()` and `AuditEventListener.onCustomerStatusChanged()` were planned but never implemented. There are no existing listeners that need updating.
+
+Updating 1-2 publishers is a bounded, low-risk change. The record constructor is more verbose (10 fields vs. 4), but this follows the same pattern as every other `DomainEvent` -- the consistency benefit outweighs the verbosity cost.
 
 Creating a parallel event type (Option 2) introduces long-term confusion that costs more than the one-time migration. Two event types for the same concept means every developer who encounters customer status changes must understand the distinction, and every new consumer must choose between them. This is exactly the kind of technical debt that Phase 48 should eliminate, not create.
 
@@ -98,7 +98,7 @@ Spring's `ApplicationEventPublisher.publishEvent()` accepts any `Object`, not on
 
 - `CustomerStatusChangedEvent` moves from `compliance/` to `event/` package, from a class to a record, from `ApplicationEvent` to `DomainEvent`.
 - The `DomainEvent` permits clause grows from 35 to 36 types (37 with `FieldDateApproachingEvent` in the same phase).
-- Existing listeners (`CustomerLifecycleEventHandler`, `AuditEventListener`) are updated to accept the record type. They read `oldStatus` and `newStatus` from `event.details().get("old_status")` and `event.details().get("new_status")` respectively, consistent with how other domain events carry status data.
+- No existing listeners need updating (`CustomerLifecycleEventHandler` and `AuditEventListener` were planned but never implemented). Future listeners that consume `CustomerStatusChangedEvent` will read `oldStatus` and `newStatus` from `event.details().get("old_status")` and `event.details().get("new_status")` respectively, consistent with how other domain events carry status data.
 - Publishers (`ChecklistInstanceService` and any other code that publishes this event) are updated to construct the record with all required `DomainEvent` fields. A factory method or builder can reduce constructor verbosity.
 - The `CUSTOMER_STATUS_CHANGED` trigger type, which has existed since Phase 37 without a mapped event, now works end-to-end.
 - The `fica-reminder` automation template in `accounting-za.json` activates and fires on customer status transitions.

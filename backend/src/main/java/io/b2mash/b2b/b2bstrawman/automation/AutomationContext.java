@@ -10,6 +10,7 @@ import io.b2mash.b2b.b2bstrawman.event.InvoiceVoidedEvent;
 import io.b2mash.b2b.b2bstrawman.event.ProjectArchivedEvent;
 import io.b2mash.b2b.b2bstrawman.event.ProjectCompletedEvent;
 import io.b2mash.b2b.b2bstrawman.event.ProjectReopenedEvent;
+import io.b2mash.b2b.b2bstrawman.event.ProposalSentEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskStatusChangedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TimeEntryChangedEvent;
 import java.util.LinkedHashMap;
@@ -54,6 +55,7 @@ public final class AutomationContext {
       case DOCUMENT_ACCEPTED -> buildDocumentAccepted((DocumentUploadedEvent) event, context);
       case INFORMATION_REQUEST_COMPLETED ->
           buildInformationRequestCompleted((InformationRequestCompletedEvent) event, context);
+      case PROPOSAL_SENT -> buildProposalSent((ProposalSentEvent) event, context);
     }
 
     return context;
@@ -125,14 +127,30 @@ public final class AutomationContext {
 
   private static void buildCustomerStatusChanged(
       DomainEvent event, Map<String, Map<String, Object>> context) {
-    // No event is currently mapped for CUSTOMER_STATUS_CHANGED in TriggerTypeMapping.
-    // Build a minimal context from base DomainEvent fields for forward compatibility.
     var customer = new LinkedHashMap<String, Object>();
     customer.put("id", uuidToString(event.entityId()));
     customer.put("name", detailValue(event, "customer_name"));
     customer.put("status", detailValue(event, "new_status"));
-    customer.put("previousStatus", detailValue(event, "previous_status"));
+    customer.put("previousStatus", detailValue(event, "old_status"));
     context.put("customer", customer);
+  }
+
+  private static void buildProposalSent(
+      ProposalSentEvent event, Map<String, Map<String, Object>> context) {
+    var proposal = new LinkedHashMap<String, Object>();
+    proposal.put("id", uuidToString(event.entityId()));
+    proposal.put("sentAt", event.occurredAt().toString());
+    context.put("proposal", proposal);
+
+    var customer = new LinkedHashMap<String, Object>();
+    customer.put("id", detailValue(event, "customer_id"));
+    customer.put("name", detailValue(event, "customer_name"));
+    context.put("customer", customer);
+
+    var project = new LinkedHashMap<String, Object>();
+    project.put("id", uuidToString(event.projectId()));
+    project.put("name", detailValue(event, "project_name"));
+    context.put("project", project);
   }
 
   private static void buildInvoiceStatusChanged(

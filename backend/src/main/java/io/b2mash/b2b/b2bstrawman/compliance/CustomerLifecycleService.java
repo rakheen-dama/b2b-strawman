@@ -187,7 +187,23 @@ public class CustomerLifecycleService {
             .build());
 
     eventPublisher.publishEvent(
-        new CustomerStatusChangedEvent(this, customerId, oldStatus.name(), target.name()));
+        new io.b2mash.b2b.b2bstrawman.event.CustomerStatusChangedEvent(
+            "customer.status.changed",
+            "customer",
+            customerId,
+            null,
+            actorId,
+            actorId != null ? actorId.toString() : "system",
+            RequestScopes.requireTenantId(),
+            RequestScopes.requireOrgId(),
+            Instant.now(),
+            Map.of(
+                "old_status",
+                oldStatus.name(),
+                "new_status",
+                target.name(),
+                "customer_name",
+                customer.getName())));
 
     log.info(
         "Customer {} lifecycle transitioned from {} to {} by actor {} (checklistsInstantiated={})",
@@ -281,7 +297,23 @@ public class CustomerLifecycleService {
                           .build());
 
                   eventPublisher.publishEvent(
-                      new CustomerStatusChangedEvent(this, customer.getId(), "ACTIVE", "DORMANT"));
+                      new io.b2mash.b2b.b2bstrawman.event.CustomerStatusChangedEvent(
+                          "customer.status.changed",
+                          "customer",
+                          customer.getId(),
+                          null,
+                          null,
+                          "system",
+                          RequestScopes.requireTenantId(),
+                          RequestScopes.requireOrgId(),
+                          Instant.now(),
+                          Map.of(
+                              "old_status",
+                              "ACTIVE",
+                              "new_status",
+                              "DORMANT",
+                              "customer_name",
+                              customer.getName())));
 
                   log.info(
                       "Auto-dormancy: customer {} ({}) transitioned to DORMANT (inactive {}"

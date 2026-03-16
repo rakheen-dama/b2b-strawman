@@ -1,5 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.provisioning;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.b2mash.b2b.b2bstrawman.automation.template.AutomationTemplateSeeder;
 import io.b2mash.b2b.b2bstrawman.billing.SubscriptionService;
 import io.b2mash.b2b.b2bstrawman.clause.ClausePackSeeder;
@@ -13,12 +15,14 @@ import io.b2mash.b2b.b2bstrawman.reporting.StandardReportPackSeeder;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.template.TemplatePackSeeder;
+import java.io.IOException;
 import java.sql.SQLException;
 import javax.sql.DataSource;
 import org.flywaydb.core.Flyway;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
@@ -41,6 +45,8 @@ public class TenantProvisioningService {
   private final AutomationTemplateSeeder automationTemplateSeeder;
   private final TenantTransactionHelper tenantTransactionHelper;
   private final OrgSettingsRepository orgSettingsRepository;
+
+  private static final ObjectMapper PROFILE_READER = new ObjectMapper();
 
   public TenantProvisioningService(
       OrganizationRepository organizationRepository,
@@ -166,6 +172,7 @@ public class TenantProvisioningService {
   }
 
   private void setVerticalProfile(String schemaName, String orgId, String verticalProfile) {
+    String currency = readCurrencyFromProfile(verticalProfile);
     tenantTransactionHelper.executeInTenantTransaction(
         schemaName,
         orgId,
@@ -179,8 +186,34 @@ public class TenantProvisioningService {
                         return orgSettingsRepository.save(newSettings);
                       });
           settings.setVerticalProfile(verticalProfile);
+          if (currency != null) {
+            settings.updateCurrency(currency);
+          }
           orgSettingsRepository.save(settings);
         });
+  }
+
+  /**
+   * Reads the "currency" field from a vertical profile JSON file on the classpath. Returns null if
+   * the file doesn't exist or has no currency field.
+   */
+  private String readCurrencyFromProfile(String verticalProfile) {
+    var resource = new ClassPathResource("vertical-profiles/" + verticalProfile + ".json");
+    if (!resource.exists()) {
+      log.warn("Vertical profile JSON not found: {}", verticalProfile);
+      return null;
+    }
+    try (var is = resource.getInputStream()) {
+      JsonNode root = PROFILE_READER.readTree(is);
+      JsonNode currencyNode = root.get("currency");
+      if (currencyNode != null && currencyNode.isTextual()) {
+        return currencyNode.asText();
+      }
+    } catch (IOException e) {
+      log.warn(
+          "Failed to read currency from vertical profile {}: {}", verticalProfile, e.getMessage());
+    }
+    return null;
   }
 
   public record ProvisioningResult(boolean success, String schemaName, boolean alreadyProvisioned) {

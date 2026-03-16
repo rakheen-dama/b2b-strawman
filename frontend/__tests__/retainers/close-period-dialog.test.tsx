@@ -95,6 +95,7 @@ describe("ClosePeriodDialog", () => {
         retainerId="ret-1"
         period={PERIOD_WITH_OVERAGE}
         retainer={BASE_RETAINER}
+        currency="USD"
         open={true}
         onOpenChange={vi.fn()}
       />,
@@ -126,6 +127,7 @@ describe("ClosePeriodDialog", () => {
         retainerId="ret-2"
         period={FIXED_FEE_PERIOD}
         retainer={FIXED_FEE_RETAINER}
+        currency="USD"
         open={true}
         onOpenChange={vi.fn()}
       />,

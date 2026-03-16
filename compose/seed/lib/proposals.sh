@@ -21,7 +21,7 @@ seed_proposals() {
       \"customerId\": \"${BRIGHT_ID}\",
       \"feeModel\": \"FIXED\",
       \"fixedFeeAmount\": 8500.00,
-      \"fixedFeeCurrency\": \"USD\",
+      \"fixedFeeCurrency\": \"ZAR\",
       \"expiresAt\": \"${expires_at}\"
     }" "$jwt")
     check_status "Create proposal" || return 1

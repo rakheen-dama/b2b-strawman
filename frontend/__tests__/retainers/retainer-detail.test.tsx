@@ -63,7 +63,7 @@ describe("RetainerDetailActions", () => {
 
   it("shows Pause button for ACTIVE retainer", () => {
     render(
-      <RetainerDetailActions slug="acme" retainer={BASE_RETAINER} />,
+      <RetainerDetailActions slug="acme" retainer={BASE_RETAINER} currency="USD" />,
     );
 
     expect(screen.getByText("Pause")).toBeInTheDocument();
@@ -78,7 +78,7 @@ describe("RetainerDetailActions", () => {
     };
 
     render(
-      <RetainerDetailActions slug="acme" retainer={paused} />,
+      <RetainerDetailActions slug="acme" retainer={paused} currency="USD" />,
     );
 
     expect(screen.getByText("Resume")).toBeInTheDocument();
@@ -96,7 +96,7 @@ describe("RetainerDetailActions", () => {
     };
 
     render(
-      <RetainerDetailActions slug="acme" retainer={readyRetainer} />,
+      <RetainerDetailActions slug="acme" retainer={readyRetainer} currency="USD" />,
     );
 
     expect(screen.getByText("Close Period")).toBeInTheDocument();
@@ -104,7 +104,7 @@ describe("RetainerDetailActions", () => {
 
   it("hides Close Period button when readyToClose is false", () => {
     render(
-      <RetainerDetailActions slug="acme" retainer={BASE_RETAINER} />,
+      <RetainerDetailActions slug="acme" retainer={BASE_RETAINER} currency="USD" />,
     );
 
     expect(screen.queryByText("Close Period")).not.toBeInTheDocument();

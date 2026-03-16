@@ -25,11 +25,13 @@ import type { RetainerStatus, PeriodSummary, RetainerResponse } from "@/lib/api/
 interface RetainerDetailActionsProps {
   slug: string;
   retainer: RetainerResponse;
+  currency: string;
 }
 
 export function RetainerDetailActions({
   slug,
   retainer,
+  currency,
 }: RetainerDetailActionsProps) {
   const router = useRouter();
   const [pauseDialogOpen, setPauseDialogOpen] = useState(false);
@@ -213,6 +215,7 @@ export function RetainerDetailActions({
           retainerId={retainer.id}
           period={currentPeriod}
           retainer={retainer}
+          currency={currency}
           open={closePeriodOpen}
           onOpenChange={setClosePeriodOpen}
         />

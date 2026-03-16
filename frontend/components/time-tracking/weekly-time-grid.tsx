@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Copy, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,9 +16,11 @@ import { TimeCell } from "./time-cell";
 import {
   saveWeeklyEntries,
   fetchWeekEntries,
+  fetchPreviousWeekEntries,
 } from "@/app/(app)/org/[slug]/my-work/timesheet/actions";
 import { cn } from "@/lib/utils";
 import type { MyWorkTimeEntryItem } from "@/lib/types";
+import { CsvImportDialog } from "./csv-import-dialog";
 
 // --- Helpers ---
 
@@ -280,6 +282,159 @@ export function WeeklyTimeGrid({
     setAddTaskQuery("");
   }
 
+  // --- Copy Previous Week ---
+  const [isCopying, setIsCopying] = useState(false);
+
+  async function handleCopyPreviousWeek() {
+    // Check if grid has data — confirm before overwriting
+    const hasData = Object.values(cellValues).some((v) => v > 0);
+    if (hasData) {
+      if (
+        !confirm(
+          "Current week has data. Copy previous week will overwrite existing entries. Continue?",
+        )
+      ) {
+        return;
+      }
+    }
+
+    setIsCopying(true);
+    try {
+      const entries = await fetchPreviousWeekEntries(toIsoDate(weekStart));
+      if (entries.length === 0) {
+        toast.error("No entries found in the previous week");
+        return;
+      }
+
+      // Shift entries by +7 days so they map to the current week
+      const shiftedEntries: MyWorkTimeEntryItem[] = entries.map((entry) => {
+        const entryDate = parseIsoDate(entry.date);
+        const shifted = addDays(entryDate, 7);
+        return { ...entry, date: toIsoDate(shifted) };
+      });
+
+      // Add any new task rows that aren't already in the grid
+      const currentTaskIds = new Set(taskRows.map((t) => t.id));
+      const newTaskRows: GridTaskRow[] = [];
+
+      for (const entry of shiftedEntries) {
+        if (!currentTaskIds.has(entry.taskId)) {
+          // Check allTasks first
+          const fromAllTasks = allTasks.find((t) => t.id === entry.taskId);
+          if (fromAllTasks) {
+            newTaskRows.push(fromAllTasks);
+          } else {
+            // Build from entry data
+            newTaskRows.push({
+              id: entry.taskId,
+              projectId: entry.projectId,
+              projectName: entry.projectName,
+              title: entry.taskTitle,
+            });
+          }
+          currentTaskIds.add(entry.taskId);
+        }
+      }
+
+      if (newTaskRows.length > 0) {
+        setTaskRows((prev) => [...prev, ...newTaskRows]);
+      }
+
+      // Build cell values from shifted entries
+      const newCellValues = buildCellValuesFromEntries(
+        shiftedEntries,
+        weekStart,
+      );
+      setCellValues(newCellValues);
+      setCellErrors({});
+      setDirty(true);
+      toast.success(`Copied ${entries.length} entries from previous week`);
+    } catch {
+      toast.error("Failed to copy previous week entries");
+    } finally {
+      setIsCopying(false);
+    }
+  }
+
+  // --- CSV Import Handler ---
+  function handleCsvImport(
+    rows: Array<{
+      taskId: string;
+      task: GridTaskRow;
+      date: string;
+      hours: number;
+      description: string;
+      billable: boolean;
+    }>,
+  ) {
+    if (rows.length === 0) return;
+
+    const totalRows = rows.length;
+
+    // Pre-filter rows to entries within the current week
+    const weekEndMs = addDays(weekStart, 6).getTime();
+    const weekStartMs = weekStart.getTime();
+    const inWeekRows = rows.filter((row) => {
+      const entryMs = parseIsoDate(row.date).getTime();
+      return entryMs >= weekStartMs && entryMs <= weekEndMs;
+    });
+
+    const skippedCount = totalRows - inWeekRows.length;
+
+    if (inWeekRows.length === 0) {
+      toast.warning(
+        `No entries fell within the current week (${totalRows} outside range)`,
+      );
+      return;
+    }
+
+    // Add any new task rows
+    const currentTaskIds = new Set(taskRows.map((t) => t.id));
+    const newTaskRows: GridTaskRow[] = [];
+
+    for (const row of inWeekRows) {
+      if (!currentTaskIds.has(row.taskId)) {
+        newTaskRows.push(row.task);
+        currentTaskIds.add(row.taskId);
+      }
+    }
+
+    if (newTaskRows.length > 0) {
+      setTaskRows((prev) => [...prev, ...newTaskRows]);
+    }
+
+    // Convert imported rows to MyWorkTimeEntryItem format for buildCellValuesFromEntries
+    const importedEntries: MyWorkTimeEntryItem[] = inWeekRows.map((row) => ({
+      id: "",
+      taskId: row.taskId,
+      taskTitle: row.task.title,
+      projectId: row.task.projectId,
+      projectName: row.task.projectName,
+      date: row.date,
+      durationMinutes: Math.round(row.hours * 60),
+      billable: row.billable,
+      description: row.description || null,
+    }));
+
+    const importedCellValues = buildCellValuesFromEntries(
+      importedEntries,
+      weekStart,
+    );
+
+    // Merge with existing cell values (imported values overwrite)
+    setCellValues((prev) => ({ ...prev, ...importedCellValues }));
+    setCellErrors({});
+    setDirty(true);
+
+    if (skippedCount > 0) {
+      toast.warning(
+        `Imported ${inWeekRows.length} of ${totalRows} entries (${skippedCount} outside current week)`,
+      );
+    } else {
+      toast.success(`Imported ${inWeekRows.length} entries from CSV`);
+    }
+  }
+
   return (
     <div className="space-y-4">
       {/* Header: week nav + save */}
@@ -317,12 +472,32 @@ export function WeeklyTimeGrid({
             This Week
           </Button>
         </div>
-        <Button
-          onClick={handleSave}
-          disabled={!dirty || isSaving || isNavigating}
-        >
-          {isSaving ? "Saving..." : "Save"}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleCopyPreviousWeek}
+            disabled={isCopying || isNavigating}
+          >
+            <Copy className="mr-1.5 size-3.5" />
+            {isCopying ? "Copying..." : "Copy Previous Week"}
+          </Button>
+          <CsvImportDialog
+            availableTasks={allTasks}
+            onImport={handleCsvImport}
+          >
+            <Button variant="outline" size="sm">
+              <Upload className="mr-1.5 size-3.5" />
+              Import CSV
+            </Button>
+          </CsvImportDialog>
+          <Button
+            onClick={handleSave}
+            disabled={!dirty || isSaving || isNavigating}
+          >
+            {isSaving ? "Saving..." : "Save"}
+          </Button>
+        </div>
       </div>
 
       {/* Grid */}

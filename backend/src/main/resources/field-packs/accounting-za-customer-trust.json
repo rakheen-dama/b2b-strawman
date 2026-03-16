@@ -1,0 +1,102 @@
+{
+  "packId": "accounting-za-customer-trust",
+  "version": 1,
+  "verticalProfile": "accounting-za",
+  "entityType": "CUSTOMER",
+  "group": {
+    "slug": "accounting_za_trust_details",
+    "name": "SA Accounting — Trust Details",
+    "description": "Trust-specific fields for South African trust entity clients",
+    "autoApply": true
+  },
+  "fields": [
+    {
+      "slug": "trust_registration_number",
+      "name": "Trust Registration Number",
+      "description": "Master's Office reference number (e.g., IT 12345/2020)",
+      "fieldType": "TEXT",
+      "required": true,
+      "sortOrder": 1,
+      "visibilityCondition": {
+        "dependsOnSlug": "acct_entity_type",
+        "operator": "eq",
+        "value": "TRUST"
+      }
+    },
+    {
+      "slug": "trust_deed_date",
+      "name": "Trust Deed Date",
+      "description": "Date the trust deed was executed",
+      "fieldType": "DATE",
+      "required": true,
+      "sortOrder": 2,
+      "visibilityCondition": {
+        "dependsOnSlug": "acct_entity_type",
+        "operator": "eq",
+        "value": "TRUST"
+      }
+    },
+    {
+      "slug": "trust_type",
+      "name": "Trust Type",
+      "description": "Classification of the trust",
+      "fieldType": "DROPDOWN",
+      "required": true,
+      "sortOrder": 3,
+      "options": [
+        { "value": "INTER_VIVOS", "label": "Inter Vivos (Living Trust)" },
+        { "value": "TESTAMENTARY", "label": "Testamentary (Will Trust)" },
+        { "value": "BUSINESS", "label": "Business Trust" }
+      ],
+      "visibilityCondition": {
+        "dependsOnSlug": "acct_entity_type",
+        "operator": "eq",
+        "value": "TRUST"
+      }
+    },
+    {
+      "slug": "trustee_names",
+      "name": "Names of Trustees",
+      "description": "Full names of all appointed trustees (comma-separated)",
+      "fieldType": "TEXT",
+      "required": false,
+      "sortOrder": 4,
+      "visibilityCondition": {
+        "dependsOnSlug": "acct_entity_type",
+        "operator": "eq",
+        "value": "TRUST"
+      }
+    },
+    {
+      "slug": "trustee_type",
+      "name": "Trustee Appointment Type",
+      "description": "How trustees were appointed",
+      "fieldType": "DROPDOWN",
+      "required": false,
+      "sortOrder": 5,
+      "options": [
+        { "value": "APPOINTED", "label": "Appointed" },
+        { "value": "EX_OFFICIO", "label": "Ex Officio" },
+        { "value": "BOTH", "label": "Both Appointed and Ex Officio" }
+      ],
+      "visibilityCondition": {
+        "dependsOnSlug": "acct_entity_type",
+        "operator": "eq",
+        "value": "TRUST"
+      }
+    },
+    {
+      "slug": "letters_of_authority_date",
+      "name": "Letters of Authority Date",
+      "description": "Date Letters of Authority were issued by the Master of the High Court",
+      "fieldType": "DATE",
+      "required": false,
+      "sortOrder": 6,
+      "visibilityCondition": {
+        "dependsOnSlug": "acct_entity_type",
+        "operator": "eq",
+        "value": "TRUST"
+      }
+    }
+  ]
+}

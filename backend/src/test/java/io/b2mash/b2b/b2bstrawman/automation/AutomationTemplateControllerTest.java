@@ -111,7 +111,7 @@ class AutomationTemplateControllerTest {
     mockMvc
         .perform(get("/api/automation-templates").with(ownerJwt()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$", hasSize(10)))
+        .andExpect(jsonPath("$", hasSize(11)))
         .andExpect(jsonPath("$[0].slug").exists())
         .andExpect(jsonPath("$[0].name").exists())
         .andExpect(jsonPath("$[0].category").exists())

@@ -2,7 +2,9 @@ import { notFound } from "next/navigation";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api } from "@/lib/api";
 import type { InvoiceResponse, InvoiceStatus } from "@/lib/types";
+import type { Customer } from "@/lib/types/customer";
 import { StatusBadge } from "@/components/invoices/status-badge";
+import { CreateInvoiceButton } from "@/components/invoices/create-invoice-button";
 import { EmptyState } from "@/components/empty-state";
 import { createMessages } from "@/lib/messages";
 import { formatCurrency, formatDate } from "@/lib/format";
@@ -78,6 +80,17 @@ export default async function InvoicesPage({
     // Non-fatal: show empty state
   }
 
+  // Fetch active customers for "New Invoice" button
+  let customers: { id: string; name: string }[] = [];
+  try {
+    const raw = await api.get<Customer[]>("/api/customers");
+    customers = (Array.isArray(raw) ? raw : [])
+      .filter((c) => c.status === "ACTIVE")
+      .map((c) => ({ id: c.id, name: c.name }));
+  } catch {
+    // Non-fatal — button will be hidden if no customers
+  }
+
   // Compute summary from all invoices (when no filter applied, or from filtered set)
   const summary = computeSummary(invoices);
 
@@ -106,6 +119,7 @@ export default async function InvoicesPage({
             </span>
           )}
         </div>
+        <CreateInvoiceButton customers={customers} slug={slug} />
       </div>
 
       {/* Tab Navigation */}

@@ -1,6 +1,6 @@
 {
   "packId": "automation-common",
-  "version": 1,
+  "version": 2,
   "templates": [
     {
       "slug": "task-completion-chain",
@@ -119,6 +119,28 @@
           },
           "delayDuration": null,
           "delayUnit": null,
+          "sortOrder": 0
+        }
+      ]
+    },
+    {
+      "slug": "proposal-sent-followup",
+      "name": "Proposal Follow-up (5 days)",
+      "description": "Notifies the sender 5 days after a proposal is sent if no response has been received",
+      "category": "notifications",
+      "triggerType": "PROPOSAL_SENT",
+      "triggerConfig": {},
+      "conditions": [],
+      "actions": [
+        {
+          "actionType": "SEND_NOTIFICATION",
+          "actionConfig": {
+            "recipientType": "ORG_ADMINS",
+            "title": "Proposal follow-up: {{customer.name}}",
+            "message": "A proposal sent to {{customer.name}} 5 days ago has not yet received a response. Consider following up."
+          },
+          "delayDuration": 5,
+          "delayUnit": "DAYS",
           "sortOrder": 0
         }
       ]

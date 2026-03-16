@@ -52,7 +52,8 @@ public sealed interface DomainEvent
         RequestItemSubmittedEvent,
         RequestItemAcceptedEvent,
         RequestItemRejectedEvent,
-        InformationRequestDraftCreatedEvent {
+        InformationRequestDraftCreatedEvent,
+        CustomerStatusChangedEvent {
 
   String eventType();
 

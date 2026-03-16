@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.automation;
 
 import io.b2mash.b2b.b2bstrawman.event.BudgetThresholdEvent;
+import io.b2mash.b2b.b2bstrawman.event.CustomerStatusChangedEvent;
 import io.b2mash.b2b.b2bstrawman.event.DocumentUploadedEvent;
 import io.b2mash.b2b.b2bstrawman.event.DomainEvent;
 import io.b2mash.b2b.b2bstrawman.event.InformationRequestCompletedEvent;
@@ -10,6 +11,7 @@ import io.b2mash.b2b.b2bstrawman.event.InvoiceVoidedEvent;
 import io.b2mash.b2b.b2bstrawman.event.ProjectArchivedEvent;
 import io.b2mash.b2b.b2bstrawman.event.ProjectCompletedEvent;
 import io.b2mash.b2b.b2bstrawman.event.ProjectReopenedEvent;
+import io.b2mash.b2b.b2bstrawman.event.ProposalSentEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskStatusChangedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TimeEntryChangedEvent;
 import java.util.Map;
@@ -35,7 +37,9 @@ public final class TriggerTypeMapping {
           Map.entry(InvoicePaidEvent.class, TriggerType.INVOICE_STATUS_CHANGED),
           Map.entry(InvoiceVoidedEvent.class, TriggerType.INVOICE_STATUS_CHANGED),
           Map.entry(
-              InformationRequestCompletedEvent.class, TriggerType.INFORMATION_REQUEST_COMPLETED));
+              InformationRequestCompletedEvent.class, TriggerType.INFORMATION_REQUEST_COMPLETED),
+          Map.entry(ProposalSentEvent.class, TriggerType.PROPOSAL_SENT),
+          Map.entry(CustomerStatusChangedEvent.class, TriggerType.CUSTOMER_STATUS_CHANGED));
 
   private TriggerTypeMapping() {}
 

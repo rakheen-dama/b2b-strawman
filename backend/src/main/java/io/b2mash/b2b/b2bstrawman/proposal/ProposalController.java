@@ -5,6 +5,7 @@ import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import io.b2mash.b2b.b2bstrawman.proposal.dto.MilestoneRequest;
 import io.b2mash.b2b.b2bstrawman.proposal.dto.ProposalFilterCriteria;
 import io.b2mash.b2b.b2bstrawman.proposal.dto.ProposalStats;
+import io.b2mash.b2b.b2bstrawman.proposal.dto.ProposalSummaryDto;
 import io.b2mash.b2b.b2bstrawman.proposal.dto.TeamMemberRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -152,6 +153,14 @@ public class ProposalController {
   @RequiresCapability("INVOICING")
   public ResponseEntity<ProposalStats> getStats() {
     return ResponseEntity.ok(proposalService.getStats());
+  }
+
+  // --- 362.3: Proposal summary endpoint ---
+
+  @GetMapping("/api/proposals/summary")
+  @RequiresCapability("INVOICING")
+  public ResponseEntity<ProposalSummaryDto> getProposalSummary() {
+    return ResponseEntity.ok(proposalService.getProposalSummary());
   }
 
   @GetMapping("/api/customers/{customerId}/proposals")

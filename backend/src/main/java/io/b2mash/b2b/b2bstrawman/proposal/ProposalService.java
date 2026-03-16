@@ -16,13 +16,20 @@ import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteContext;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService;
+import io.b2mash.b2b.b2bstrawman.projecttemplate.ProjectTemplateRepository;
 import io.b2mash.b2b.b2bstrawman.proposal.dto.MilestoneRequest;
 import io.b2mash.b2b.b2bstrawman.proposal.dto.ProposalFilterCriteria;
 import io.b2mash.b2b.b2bstrawman.proposal.dto.ProposalStats;
+import io.b2mash.b2b.b2bstrawman.proposal.dto.ProposalSummaryDto;
 import io.b2mash.b2b.b2bstrawman.proposal.dto.TeamMemberRequest;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -54,6 +61,7 @@ public class ProposalService {
   private final AuditService auditService;
   private final NotificationService notificationService;
   private final PrerequisiteService prerequisiteService;
+  private final ProjectTemplateRepository projectTemplateRepository;
 
   public ProposalService(
       ProposalRepository proposalRepository,
@@ -68,7 +76,8 @@ public class ProposalService {
       MemberNameResolver memberNameResolver,
       AuditService auditService,
       NotificationService notificationService,
-      PrerequisiteService prerequisiteService) {
+      PrerequisiteService prerequisiteService,
+      ProjectTemplateRepository projectTemplateRepository) {
     this.proposalRepository = proposalRepository;
     this.milestoneRepository = milestoneRepository;
     this.teamMemberRepository = teamMemberRepository;
@@ -82,6 +91,7 @@ public class ProposalService {
     this.auditService = auditService;
     this.notificationService = notificationService;
     this.prerequisiteService = prerequisiteService;
+    this.projectTemplateRepository = projectTemplateRepository;
   }
 
   // --- 231.1: createProposal ---
@@ -454,6 +464,93 @@ public class ProposalService {
         totalExpired,
         conversionRate,
         averageDaysToAccept);
+  }
+
+  // --- 362.2: getProposalSummary ---
+
+  private record ProposalWithDays(Proposal proposal, long daysSinceSent) {}
+
+  @Transactional(readOnly = true)
+  public ProposalSummaryDto getProposalSummary() {
+    var all = proposalRepository.findAll();
+
+    // 1. byStatus counts — initialize all statuses to 0
+    var byStatus = new HashMap<ProposalStatus, Integer>();
+    for (var status : ProposalStatus.values()) {
+      byStatus.put(status, 0);
+    }
+    for (var p : all) {
+      byStatus.merge(p.getStatus(), 1, Integer::sum);
+    }
+
+    // 2. total
+    int total = all.size();
+
+    // 3. avgDaysToAcceptance from ACCEPTED proposals with non-null sentAt and acceptedAt
+    var accepted =
+        all.stream()
+            .filter(
+                p ->
+                    p.getStatus() == ProposalStatus.ACCEPTED
+                        && p.getSentAt() != null
+                        && p.getAcceptedAt() != null)
+            .toList();
+    double avgDaysToAcceptance = 0.0;
+    if (!accepted.isEmpty()) {
+      avgDaysToAcceptance =
+          accepted.stream()
+              .mapToDouble(
+                  p -> ChronoUnit.SECONDS.between(p.getSentAt(), p.getAcceptedAt()) / 86400.0)
+              .average()
+              .orElse(0.0);
+    }
+
+    // 4. conversionRate = accepted / (accepted + declined + expired)
+    int acceptedCount = byStatus.getOrDefault(ProposalStatus.ACCEPTED, 0);
+    int declinedCount = byStatus.getOrDefault(ProposalStatus.DECLINED, 0);
+    int expiredCount = byStatus.getOrDefault(ProposalStatus.EXPIRED, 0);
+    long denominator = (long) acceptedCount + declinedCount + expiredCount;
+    double conversionRate = denominator > 0 ? (double) acceptedCount / denominator : 0.0;
+
+    // 5. pendingOverdue: SENT proposals where daysSinceSent > 5
+    var today = LocalDate.now(ZoneOffset.UTC);
+    var overdue =
+        all.stream()
+            .filter(p -> p.getStatus() == ProposalStatus.SENT && p.getSentAt() != null)
+            .map(
+                p ->
+                    new ProposalWithDays(
+                        p,
+                        ChronoUnit.DAYS.between(
+                            p.getSentAt().atZone(ZoneOffset.UTC).toLocalDate(), today)))
+            .filter(pd -> pd.daysSinceSent() > 5)
+            .sorted(Comparator.comparingLong(ProposalWithDays::daysSinceSent).reversed())
+            .map(
+                pd -> {
+                  var p = pd.proposal();
+                  String customerName =
+                      customerRepository
+                          .findById(p.getCustomerId())
+                          .map(c -> c.getName())
+                          .orElse(null);
+                  String projectName =
+                      p.getProjectTemplateId() != null
+                          ? projectTemplateRepository
+                              .findById(p.getProjectTemplateId())
+                              .map(pt -> pt.getName())
+                              .orElse(null)
+                          : null;
+                  return new ProposalSummaryDto.OverdueProposalDto(
+                      p.getId(),
+                      p.getTitle(),
+                      customerName,
+                      projectName,
+                      p.getSentAt(),
+                      pd.daysSinceSent());
+                })
+            .toList();
+
+    return new ProposalSummaryDto(total, byStatus, avgDaysToAcceptance, conversionRate, overdue);
   }
 
   // --- 232.6–232.9: sendProposal ---

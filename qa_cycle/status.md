@@ -2,11 +2,12 @@
 
 ## Current State
 
-- **QA Position**: Day 14 complete, ready for Day 30
+- **QA Position**: Day 90 complete — full lifecycle script finished
 - **Cycle**: 2
 - **E2E Stack**: HEALTHY
 - **Branch**: `bugfix_cycle_2026-03-16`
 - **Scenario**: `tasks/phase48-lifecycle-script.md`
+- **Overall Verdict**: YES (with caveats) — firm could run on this platform
 
 ## Tracker
 
@@ -22,8 +23,14 @@
 | GAP-P48-008 | FICA checklist does not filter by entity type (GAP-009) | minor | WONT_FIX | — | — | 3 | New feature. Requires entity-type-specific templates or conditional visibility. Out of scope. |
 | GAP-P48-009 | Portal contact required for information request send (GAP-020) | minor | OPEN | Dev | — | 1 | No auto-creation from customer email. Quick fix: auto-create on first request. |
 | GAP-P48-010 | Carol gets 404 instead of permission denied on admin pages | minor | VERIFIED | Dev | #716 | 90 | Carol sees "You do not have permission..." message on `/settings/rates`. Not a 404. Confirmed. |
-| GAP-P48-012 | Customer combobox in New Proposal dialog non-functional | blocker | OPEN | Dev | — | 1 | Radix Popover event handlers lost through `PopoverTrigger asChild → FormControl asChild` chain. Button type defaults to `submit` in form. Fix: add `type="button"` to Button. File: `frontend/components/proposals/create-proposal-dialog.tsx`. |
+| GAP-P48-012 | Customer combobox in New Proposal dialog non-functional | blocker | FIXED | Dev | #720 | 1 | Added `type="button"` to combobox trigger Button. NEEDS_REBUILD: true |
 | GAP-P48-011 | No close-period UI for retainers | major | OPEN | Dev | — | 30 | Backend has `closePeriod()` endpoint. Frontend retainer detail page needs "Close Period" button. |
+| GAP-P48-013 | Invoice send does not trigger email notification | minor | OPEN | Dev | — | 30 | Invoice transitions to SENT but no email appears in Mailpit. May be E2E config or missing notification wiring. |
+| GAP-P48-014 | Resources page crashes with TypeError | major | OPEN | Dev | — | 45 | `/resources` shows "Something went wrong". Console: TypeError: Cannot read properties of null. |
+| GAP-P48-015 | Customer detail shows "0 projects" despite API-linked projects | major | OPEN | Dev | — | 75 | Projects tab on customer detail says "No linked projects" even though projects have `customerId` set. UI does not query project-customer linkage. |
+| GAP-P48-016 | Invoice send requires overrideWarnings for 70%+ complete profiles | minor | OPEN | Dev | — | 30 | Send validation fails with "7 of 10 required fields filled" even after filling all invoice-relevant fields. Must use `overrideWarnings: true`. |
+| GAP-P48-017 | Budget dialog may close without saving | minor | OPEN | Dev | — | 30 | UI "Configure budget" dialog closes but budget not persisted. API PUT works. Possible frontend race condition. |
+| GAP-P48-018 | Project/Customer Profitability show "No data" despite time entries | minor | OPEN | Dev | — | 30 | Team Utilization section works. Project Profitability and Customer Profitability sections show "No data for this period" despite 21.5h of time entries across 7 projects. |
 
 ## Status Values
 
@@ -44,3 +51,5 @@
 | 2026-03-16T22:18Z | Infra | E2E stack rebuilt after cycle 1 fixes (PRs #716-#719). Full teardown + rebuild. All services healthy: frontend (3001 HTTP 200), backend (8081 HTTP 200), mock-idp (8090 JWKS OK). Removed NEEDS_REBUILD flags from GAP-P48-004, GAP-P48-006, GAP-P48-010. Ready for QA cycle 2 verification. |
 | 2026-03-17T00:40Z | QA | Cycle 2: Fix verification complete. GAP-P48-004 VERIFIED, GAP-P48-006 VERIFIED, GAP-P48-010 VERIFIED. GAP-P48-001 PARTIAL (detail+send work, but create dialog Customer combobox broken — new GAP-P48-012 logged). |
 | 2026-03-17T00:45Z | QA | Cycle 2: Days 1-14 lifecycle execution complete. 5 customers (all ACTIVE), 5 projects, 8 tasks, 9 time entries (15.5h, 100% billable), 1 proposal (SENT), 1 invoice (APPROVED). Data created via API + UI verification. React SSR hydration errors on multiple pages (non-blocking). Results: `checkpoint-results/cycle2-day1-day14.md`. |
+| 2026-03-17T01:15Z | Dev | GAP-P48-012 FIXED (PR #720). Added `type="button"` to customer combobox trigger Button in `create-proposal-dialog.tsx`. Button defaulted to `type="submit"` inside form, causing form submission instead of popover open. Audited all buttons in file — no other instances. Build passes. NEEDS_REBUILD. |
+| 2026-03-17T01:30Z | QA | Cycle 2: Days 30-90 lifecycle execution complete. Created 2 new invoices (INV-0002 Naledi R1,638.75, INV-0003 Kgosi R6,325.00), approved+sent both. Recorded payment on INV-0003 (PAID). Logged expense (CIPC R150). Created BEE project for Vukani (budget 5h/R7,500, 2h consumed). Created Kgosi Feb retainer invoice (INV-0004 R6,497.50 with expense line). Created BEE invoice for Vukani (R3,450 draft). Created Annual Tax Return project for Kgosi (3 tasks, 4h logged by Carol). Verified: Timesheet report (17.5h/10 entries), Compliance dashboard (5 Active), RBAC (Carol blocked from /settings/rates), My Work (6 tasks for Carol). 6 new gaps logged (GAP-P48-013 through GAP-P48-018). Resources page crashes (GAP-P48-014). Customer detail doesn't show linked projects (GAP-P48-015). Final state: 5 customers, 7 projects, 5 invoices, 21.5h logged. Results: `checkpoint-results/cycle2-day30-day90.md`. |

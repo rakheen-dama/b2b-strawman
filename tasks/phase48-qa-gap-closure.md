@@ -27,7 +27,7 @@ Phase 47's QA cycle surfaced 31 gaps; 10 were fixed during the cycle (PRs #687-#
 | 359 | Automation Wiring: PROPOSAL_SENT + CUSTOMER_STATUS_CHANGED (GAP-001, GAP-003) | Backend | -- | M | 359A | **Done** (PR #704) |
 | 360 | Field Date Scanner + FIELD_DATE_APPROACHING Trigger (GAP-002) | Backend | 359 | M | 360A, 360B | **Done** (PRs #705, #706) |
 | 361 | SA Invoice Template Wiring (GAP-016) | Backend | -- | S | 361A | **Done** (PR #707) |
-| 362 | Proposal Summary Backend + Dashboard Frontend (GAP-013) | Both | -- | M | 362A, 362B | |
+| 362 | Proposal Summary Backend + Dashboard Frontend (GAP-013) | Both | -- | M | 362A, 362B | **Done** (PRs #708, #709) |
 | 363 | Org Settings Hub Page (GAP-008A) | Frontend | -- | S | 363A | |
 | 364 | Terminology Overrides (GAP-005) | Frontend | -- | M | 364A, 364B | |
 | 365 | Bulk Time Entry Backend (GAP-015) | Backend | -- | M | 365A | |
@@ -97,7 +97,7 @@ AUTOMATION WIRING (sequential)        SA VERTICAL POLISH (parallel)         BULK
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 2a | 360 | 360B | `FieldDateScannerJob` with `@Scheduled`, per-tenant iteration, dedup check, `sars-deadline-reminder` automation template, integration tests (~4). Backend only. | **Done** (PR #706) |
-| 2b (parallel) | 362 | 362B | `proposals/page.tsx` dashboard, summary cards, needs-attention list, proposal table, sidebar nav update, frontend tests (~4). Frontend only. | |
+| 2b (parallel) | 362 | 362B | `proposals/page.tsx` dashboard, summary cards, needs-attention list, proposal table, sidebar nav update, frontend tests (~4). Frontend only. | **Done** (PR #709) |
 | 2c (parallel) | 364 | 364B | Apply `t()` to ~30-40 locations: sidebar nav labels, page headings, breadcrumbs, empty states, button labels, frontend tests (~3). Frontend only. | |
 | 2d (parallel) | 366 | 366A | `WeeklyTimeGrid` component, grid state management, editable cells, row/column/grand totals, week navigation, batch save integration, frontend tests (~4). Frontend only. | |
 
@@ -273,7 +273,7 @@ AUTOMATION WIRING (sequential)        SA VERTICAL POLISH (parallel)         BULK
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **362A** | 362.1--362.5 | `ProposalService.getProposalSummary()` method, `ProposalSummaryDto` record, `ProposalController.getSummary()` endpoint, integration tests (~4). Backend only. | **Done** (PR #708) |
-| **362B** | 362.6--362.11 | `proposals/page.tsx` dashboard, summary cards component, needs-attention list, proposal table with filters, sidebar nav update, frontend tests (~4). Frontend only. | |
+| **362B** | 362.6--362.11 | `proposals/page.tsx` dashboard, summary cards component, needs-attention list, proposal table with filters, sidebar nav update, frontend tests (~4). Frontend only. | **Done** (PR #709) |
 
 ### Tasks
 

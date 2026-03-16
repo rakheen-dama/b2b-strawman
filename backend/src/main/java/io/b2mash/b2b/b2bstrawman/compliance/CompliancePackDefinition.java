@@ -25,7 +25,8 @@ public record CompliancePackDefinition(
       boolean required,
       boolean requiresDocument,
       String requiredDocumentLabel,
-      String dependsOnItemKey) {}
+      String dependsOnItemKey,
+      List<String> applicableEntityTypes) {}
 
   public record CompliancePackFieldDefinition(
       String fieldKey,

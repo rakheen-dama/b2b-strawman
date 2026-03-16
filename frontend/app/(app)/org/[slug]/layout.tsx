@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getAuthContext } from "@/lib/auth";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
+import { getOrgSettings } from "@/lib/api/settings";
 import { DesktopSidebar } from "@/components/desktop-sidebar";
 import { MobileSidebar } from "@/components/mobile-sidebar";
 import { Breadcrumbs } from "@/components/breadcrumbs";
@@ -10,6 +11,7 @@ import { PageTransition } from "@/components/page-transition";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { AuthHeaderControls } from "@/components/auth-header-controls";
 import { CapabilityProvider } from "@/lib/capabilities";
+import { TerminologyProvider } from "@/lib/terminology";
 import { CommandPaletteProvider } from "@/components/command-palette-provider";
 import { RecentItemsProvider } from "@/components/recent-items-provider";
 
@@ -50,6 +52,15 @@ export default async function OrgLayout({
     console.error("Failed to fetch capabilities, falling back to empty:", err);
   }
 
+  let verticalProfile: string | null = null;
+  try {
+    const settings = await getOrgSettings();
+    verticalProfile = settings.verticalProfile ?? null;
+  } catch (err) {
+    // Settings unavailable — fall back to no terminology overrides
+    console.error("Failed to fetch org settings for terminology:", err);
+  }
+
   return (
     <CapabilityProvider
       capabilities={capData.capabilities}
@@ -57,6 +68,7 @@ export default async function OrgLayout({
       isAdmin={capData.isAdmin}
       isOwner={capData.isOwner}
     >
+      <TerminologyProvider verticalProfile={verticalProfile}>
       <RecentItemsProvider>
         <CommandPaletteProvider slug={slug}>
         <div className="flex min-h-screen">
@@ -82,6 +94,7 @@ export default async function OrgLayout({
         </div>
         </CommandPaletteProvider>
       </RecentItemsProvider>
+      </TerminologyProvider>
     </CapabilityProvider>
   );
 }

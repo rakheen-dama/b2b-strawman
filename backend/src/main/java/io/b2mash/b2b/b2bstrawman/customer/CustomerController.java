@@ -325,6 +325,7 @@ public class CustomerController {
   // --- Portal contacts endpoint ---
 
   @GetMapping("/{id}/portal-contacts")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<List<PortalContactSummary>> getPortalContacts(@PathVariable UUID id) {
     return ResponseEntity.ok(portalContactService.listPortalContactSummaries(id));
   }

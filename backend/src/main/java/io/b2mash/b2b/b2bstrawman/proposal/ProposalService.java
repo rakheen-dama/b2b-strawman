@@ -472,51 +472,32 @@ public class ProposalService {
 
   @Transactional(readOnly = true)
   public ProposalSummaryDto getProposalSummary() {
-    var all = proposalRepository.findAll();
-
-    // 1. byStatus counts — initialize all statuses to 0
+    // 1. byStatus counts — reuse existing countByStatus() repository queries (no findAll)
     var byStatus = new HashMap<ProposalStatus, Integer>();
+    int total = 0;
     for (var status : ProposalStatus.values()) {
-      byStatus.put(status, 0);
-    }
-    for (var p : all) {
-      byStatus.merge(p.getStatus(), 1, Integer::sum);
-    }
-
-    // 2. total
-    int total = all.size();
-
-    // 3. avgDaysToAcceptance from ACCEPTED proposals with non-null sentAt and acceptedAt
-    var accepted =
-        all.stream()
-            .filter(
-                p ->
-                    p.getStatus() == ProposalStatus.ACCEPTED
-                        && p.getSentAt() != null
-                        && p.getAcceptedAt() != null)
-            .toList();
-    double avgDaysToAcceptance = 0.0;
-    if (!accepted.isEmpty()) {
-      avgDaysToAcceptance =
-          accepted.stream()
-              .mapToDouble(
-                  p -> ChronoUnit.SECONDS.between(p.getSentAt(), p.getAcceptedAt()) / 86400.0)
-              .average()
-              .orElse(0.0);
+      int count = (int) proposalRepository.countByStatus(status);
+      byStatus.put(status, count);
+      total += count;
     }
 
-    // 4. conversionRate = accepted / (accepted + declined + expired)
+    // 2. avgDaysToAcceptance — reuse existing averageDaysToAccept() native query
+    Double avgDays = proposalRepository.averageDaysToAccept();
+    double avgDaysToAcceptance = avgDays != null ? avgDays : 0.0;
+
+    // 3. conversionRate = accepted / (accepted + declined + expired)
     int acceptedCount = byStatus.getOrDefault(ProposalStatus.ACCEPTED, 0);
     int declinedCount = byStatus.getOrDefault(ProposalStatus.DECLINED, 0);
     int expiredCount = byStatus.getOrDefault(ProposalStatus.EXPIRED, 0);
     long denominator = (long) acceptedCount + declinedCount + expiredCount;
     double conversionRate = denominator > 0 ? (double) acceptedCount / denominator : 0.0;
 
-    // 5. pendingOverdue: SENT proposals where daysSinceSent > 5
+    // 4. pendingOverdue: load only SENT proposals, filter for overdue (> 5 days)
     var today = LocalDate.now(ZoneOffset.UTC);
-    var overdue =
-        all.stream()
-            .filter(p -> p.getStatus() == ProposalStatus.SENT && p.getSentAt() != null)
+    var sentProposals = proposalRepository.findByStatus(ProposalStatus.SENT);
+    var overdueWithDays =
+        sentProposals.stream()
+            .filter(p -> p.getSentAt() != null)
             .map(
                 p ->
                     new ProposalWithDays(
@@ -525,20 +506,37 @@ public class ProposalService {
                             p.getSentAt().atZone(ZoneOffset.UTC).toLocalDate(), today)))
             .filter(pd -> pd.daysSinceSent() > 5)
             .sorted(Comparator.comparingLong(ProposalWithDays::daysSinceSent).reversed())
+            .toList();
+
+    // Batch-fetch customer and project template names to avoid N+1 queries
+    var customerIds =
+        overdueWithDays.stream()
+            .map(pd -> pd.proposal().getCustomerId())
+            .collect(Collectors.toSet());
+    var customerNameMap =
+        customerRepository.findAllById(customerIds).stream()
+            .collect(Collectors.toMap(c -> c.getId(), c -> c.getName()));
+
+    var templateIds =
+        overdueWithDays.stream()
+            .map(pd -> pd.proposal().getProjectTemplateId())
+            .filter(id -> id != null)
+            .collect(Collectors.toSet());
+    var templateNameMap =
+        templateIds.isEmpty()
+            ? Map.<UUID, String>of()
+            : projectTemplateRepository.findAllById(templateIds).stream()
+                .collect(Collectors.toMap(pt -> pt.getId(), pt -> pt.getName()));
+
+    var overdue =
+        overdueWithDays.stream()
             .map(
                 pd -> {
                   var p = pd.proposal();
-                  String customerName =
-                      customerRepository
-                          .findById(p.getCustomerId())
-                          .map(c -> c.getName())
-                          .orElse(null);
+                  String customerName = customerNameMap.get(p.getCustomerId());
                   String projectName =
                       p.getProjectTemplateId() != null
-                          ? projectTemplateRepository
-                              .findById(p.getProjectTemplateId())
-                              .map(pt -> pt.getName())
-                              .orElse(null)
+                          ? templateNameMap.get(p.getProjectTemplateId())
                           : null;
                   return new ProposalSummaryDto.OverdueProposalDto(
                       p.getId(),

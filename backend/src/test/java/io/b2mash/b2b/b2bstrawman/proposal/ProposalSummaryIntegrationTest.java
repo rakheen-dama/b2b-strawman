@@ -94,6 +94,15 @@ class ProposalSummaryIntegrationTest {
 
   @Test
   void getProposalSummary_variousStates_returnsCorrectByStatusCounts() throws Exception {
+    // Capture baseline counts before creating test data
+    var baseline = getSummaryBaseline();
+    int baseDraft = baseline.draft();
+    int baseSent = baseline.sent();
+    int baseAccepted = baseline.accepted();
+    int baseDeclined = baseline.declined();
+    int baseExpired = baseline.expired();
+    int baseTotal = baseline.total();
+
     String draftId = createProposal("Draft Summary Proposal");
     String sentId = createProposal("Sent Summary Proposal");
     String acceptedId = createProposal("Accepted Summary Proposal");
@@ -108,21 +117,12 @@ class ProposalSummaryIntegrationTest {
     mockMvc
         .perform(get("/api/proposals/summary").with(ownerJwt()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.total").isNumber())
-        .andExpect(jsonPath("$.byStatus.DRAFT").isNumber())
-        .andExpect(jsonPath("$.byStatus.SENT").isNumber())
-        .andExpect(jsonPath("$.byStatus.ACCEPTED").isNumber())
-        .andExpect(jsonPath("$.byStatus.DECLINED").isNumber())
-        .andExpect(jsonPath("$.byStatus.EXPIRED").isNumber())
-        .andExpect(
-            jsonPath("$.byStatus.DRAFT").value(org.hamcrest.Matchers.greaterThanOrEqualTo(1)))
-        .andExpect(jsonPath("$.byStatus.SENT").value(org.hamcrest.Matchers.greaterThanOrEqualTo(1)))
-        .andExpect(
-            jsonPath("$.byStatus.ACCEPTED").value(org.hamcrest.Matchers.greaterThanOrEqualTo(1)))
-        .andExpect(
-            jsonPath("$.byStatus.DECLINED").value(org.hamcrest.Matchers.greaterThanOrEqualTo(1)))
-        .andExpect(
-            jsonPath("$.byStatus.EXPIRED").value(org.hamcrest.Matchers.greaterThanOrEqualTo(1)));
+        .andExpect(jsonPath("$.total").value(baseTotal + 5))
+        .andExpect(jsonPath("$.byStatus.DRAFT").value(baseDraft + 1))
+        .andExpect(jsonPath("$.byStatus.SENT").value(baseSent + 1))
+        .andExpect(jsonPath("$.byStatus.ACCEPTED").value(baseAccepted + 1))
+        .andExpect(jsonPath("$.byStatus.DECLINED").value(baseDeclined + 1))
+        .andExpect(jsonPath("$.byStatus.EXPIRED").value(baseExpired + 1));
   }
 
   // --- 362.4: Test 2 — avgDaysToAcceptance ---
@@ -193,6 +193,62 @@ class ProposalSummaryIntegrationTest {
     mockMvc
         .perform(get("/api/proposals/summary").with(memberJwt()))
         .andExpect(status().isForbidden());
+  }
+
+  // --- 362.6: Tenant isolation ---
+
+  @Test
+  void getProposalSummary_secondTenant_returnsZeroCounts() throws Exception {
+    // Provision a separate tenant with no proposals
+    String isolatedOrgId = "org_proposal_isolation_test";
+    provisioningService.provisionTenant(isolatedOrgId, "Isolation Test Org", null);
+    planSyncService.syncPlan(isolatedOrgId, "pro-plan");
+
+    String isolatedMemberId =
+        syncMemberForOrg(
+            isolatedOrgId, "user_iso_owner", "iso_owner@test.com", "Isolation Owner", "owner");
+
+    // Assign system owner role
+    UUID isoMemberUuid = UUID.fromString(isolatedMemberId);
+    String isoSchema =
+        orgSchemaMappingRepository.findByClerkOrgId(isolatedOrgId).orElseThrow().getSchemaName();
+    ScopedValue.where(RequestScopes.TENANT_ID, isoSchema)
+        .where(RequestScopes.ORG_ID, isolatedOrgId)
+        .where(RequestScopes.MEMBER_ID, isoMemberUuid)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () -> {
+              var ownerRole =
+                  orgRoleRepository.findAll().stream()
+                      .filter(r -> r.isSystem() && "owner".equals(r.getSlug()))
+                      .findFirst()
+                      .orElseThrow();
+              var member = memberRepository.findById(isoMemberUuid).orElseThrow();
+              member.setOrgRoleEntity(ownerRole);
+              memberRepository.save(member);
+            });
+
+    // The second tenant should see zero proposals
+    JwtRequestPostProcessor isoJwt =
+        jwt()
+            .jwt(
+                j ->
+                    j.subject("user_iso_owner")
+                        .claim("o", Map.of("id", isolatedOrgId, "rol", "owner")));
+
+    mockMvc
+        .perform(get("/api/proposals/summary").with(isoJwt))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.total").value(0))
+        .andExpect(jsonPath("$.byStatus.DRAFT").value(0))
+        .andExpect(jsonPath("$.byStatus.SENT").value(0))
+        .andExpect(jsonPath("$.byStatus.ACCEPTED").value(0))
+        .andExpect(jsonPath("$.byStatus.DECLINED").value(0))
+        .andExpect(jsonPath("$.byStatus.EXPIRED").value(0))
+        .andExpect(jsonPath("$.avgDaysToAcceptance").value(0.0))
+        .andExpect(jsonPath("$.conversionRate").value(0.0))
+        .andExpect(jsonPath("$.pendingOverdue").isArray())
+        .andExpect(jsonPath("$.pendingOverdue").isEmpty());
   }
 
   // --- Helper methods ---
@@ -308,5 +364,46 @@ class ProposalSummaryIntegrationTest {
         "UPDATE \"%s\".proposals SET status = 'SENT', sent_at = now() - interval '%d days' WHERE id = ?::uuid"
             .formatted(schema, days),
         proposalId);
+  }
+
+  private record SummaryBaseline(
+      int total, int draft, int sent, int accepted, int declined, int expired) {}
+
+  private SummaryBaseline getSummaryBaseline() throws Exception {
+    var result =
+        mockMvc
+            .perform(get("/api/proposals/summary").with(ownerJwt()))
+            .andExpect(status().isOk())
+            .andReturn();
+    String body = result.getResponse().getContentAsString();
+    int total = JsonPath.<Integer>read(body, "$.total");
+    int draft = JsonPath.<Integer>read(body, "$.byStatus.DRAFT");
+    int sent = JsonPath.<Integer>read(body, "$.byStatus.SENT");
+    int accepted = JsonPath.<Integer>read(body, "$.byStatus.ACCEPTED");
+    int declined = JsonPath.<Integer>read(body, "$.byStatus.DECLINED");
+    int expired = JsonPath.<Integer>read(body, "$.byStatus.EXPIRED");
+    return new SummaryBaseline(total, draft, sent, accepted, declined, expired);
+  }
+
+  private String syncMemberForOrg(
+      String orgId, String clerkUserId, String email, String name, String orgRole)
+      throws Exception {
+    var result =
+        mockMvc
+            .perform(
+                post("/internal/members/sync")
+                    .header("X-API-KEY", API_KEY)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "clerkOrgId": "%s", "clerkUserId": "%s", "email": "%s",
+                          "name": "%s", "avatarUrl": null, "orgRole": "%s"
+                        }
+                        """
+                            .formatted(orgId, clerkUserId, email, name, orgRole)))
+            .andExpect(status().isCreated())
+            .andReturn();
+    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

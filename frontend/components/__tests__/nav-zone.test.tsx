@@ -21,6 +21,7 @@ vi.mock("motion/react", () => ({
 
 import { usePathname } from "next/navigation";
 import { CapabilityProvider } from "@/lib/capabilities";
+import { TerminologyProvider } from "@/lib/terminology";
 import { NavZone } from "@/components/nav-zone";
 import type { NavGroup } from "@/lib/nav-items";
 import { LayoutDashboard, FolderOpen, Receipt } from "lucide-react";
@@ -75,14 +76,16 @@ function renderWithCapabilities(
   }: { capabilities?: string[]; isAdmin?: boolean; isOwner?: boolean } = {},
 ) {
   return render(
-    <CapabilityProvider
-      capabilities={capabilities}
-      role="Member"
-      isAdmin={isAdmin}
-      isOwner={isOwner}
-    >
-      {ui}
-    </CapabilityProvider>,
+    <TerminologyProvider verticalProfile={null}>
+      <CapabilityProvider
+        capabilities={capabilities}
+        role="Member"
+        isAdmin={isAdmin}
+        isOwner={isOwner}
+      >
+        {ui}
+      </CapabilityProvider>
+    </TerminologyProvider>,
   );
 }
 

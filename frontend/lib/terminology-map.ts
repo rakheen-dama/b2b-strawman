@@ -10,6 +10,8 @@ export const TERMINOLOGY: Record<string, Record<string, string>> = {
     customers: "clients",
     Proposal: "Engagement Letter",
     Proposals: "Engagement Letters",
+    proposal: "engagement letter",
+    proposals: "engagement letters",
     "Rate Card": "Fee Schedule",
     "Rate Cards": "Fee Schedules",
   },

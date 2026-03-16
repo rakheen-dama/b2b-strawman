@@ -3,6 +3,7 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { CreateProjectDialog } from "@/components/projects/create-project-dialog";
 import { ProjectStatusFilter } from "@/components/projects/project-status-filter";
+import { TerminologyProvider } from "@/lib/terminology";
 import type { Customer } from "@/lib/types";
 
 // --- Mocks ---
@@ -104,7 +105,7 @@ describe("CreateProjectDialog", () => {
 
   it("renders due date picker when dialog is opened", async () => {
     const user = userEvent.setup();
-    render(<CreateProjectDialog slug="acme" />);
+    render(<TerminologyProvider verticalProfile={null}><CreateProjectDialog slug="acme" /></TerminologyProvider>);
     await user.click(screen.getByText("New Project"));
     await waitFor(() => {
       expect(screen.getByLabelText(/due date/i)).toBeInTheDocument();
@@ -115,7 +116,7 @@ describe("CreateProjectDialog", () => {
 
   it("renders customer dropdown when dialog is opened", async () => {
     const user = userEvent.setup();
-    render(<CreateProjectDialog slug="acme" />);
+    render(<TerminologyProvider verticalProfile={null}><CreateProjectDialog slug="acme" /></TerminologyProvider>);
     await user.click(screen.getByText("New Project"));
     await waitFor(() => {
       expect(screen.getByLabelText(/customer/i)).toBeInTheDocument();
@@ -130,7 +131,7 @@ describe("CreateProjectDialog", () => {
 
   it("fetches active customers on dialog open", async () => {
     const user = userEvent.setup();
-    render(<CreateProjectDialog slug="acme" />);
+    render(<TerminologyProvider verticalProfile={null}><CreateProjectDialog slug="acme" /></TerminologyProvider>);
     await user.click(screen.getByText("New Project"));
     await waitFor(() => {
       expect(mockFetchActiveCustomers).toHaveBeenCalledOnce();

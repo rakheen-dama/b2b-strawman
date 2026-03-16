@@ -143,6 +143,9 @@ public class CompliancePackSeeder extends AbstractPackSeeder<CompliancePackDefin
         templateItem.setRequiresDocument(true);
         templateItem.setRequiredDocumentLabel(item.requiredDocumentLabel());
       }
+      if (item.applicableEntityTypes() != null && !item.applicableEntityTypes().isEmpty()) {
+        templateItem.setApplicableEntityTypes(item.applicableEntityTypes());
+      }
       templateItem = checklistTemplateItemRepository.save(templateItem);
 
       String itemKey = ChecklistTemplate.generateSlug(item.name());

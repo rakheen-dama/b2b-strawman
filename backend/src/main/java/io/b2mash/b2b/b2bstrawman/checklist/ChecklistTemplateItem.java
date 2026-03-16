@@ -7,7 +7,10 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "checklist_template_items")
@@ -40,6 +43,10 @@ public class ChecklistTemplateItem {
 
   @Column(name = "depends_on_item_id")
   private UUID dependsOnItemId;
+
+  @JdbcTypeCode(SqlTypes.JSON)
+  @Column(name = "applicable_entity_types", columnDefinition = "jsonb")
+  private List<String> applicableEntityTypes;
 
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
@@ -114,6 +121,10 @@ public class ChecklistTemplateItem {
     return dependsOnItemId;
   }
 
+  public List<String> getApplicableEntityTypes() {
+    return applicableEntityTypes;
+  }
+
   public Instant getCreatedAt() {
     return createdAt;
   }
@@ -137,5 +148,9 @@ public class ChecklistTemplateItem {
 
   public void setDependsOnItemId(UUID dependsOnItemId) {
     this.dependsOnItemId = dependsOnItemId;
+  }
+
+  public void setApplicableEntityTypes(List<String> applicableEntityTypes) {
+    this.applicableEntityTypes = applicableEntityTypes;
   }
 }

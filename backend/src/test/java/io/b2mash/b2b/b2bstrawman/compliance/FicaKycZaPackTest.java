@@ -56,7 +56,7 @@ class FicaKycZaPackTest {
   }
 
   @Test
-  void accountingTenantGetsFicaKycChecklistWith9Items() {
+  void accountingTenantGetsFicaKycChecklistWith11Items() {
     runInTenant(
         accountingSchema,
         ACCOUNTING_ORG_ID,
@@ -74,7 +74,8 @@ class FicaKycZaPackTest {
                       checklistTemplateItemRepository.findByTemplateIdOrderBySortOrder(
                           template.getId());
 
-                  assertThat(items).hasSize(9);
+                  // 9 original items + 2 trust-specific items (Letters of Authority, Trust Deed)
+                  assertThat(items).hasSize(11);
                   assertThat(template.getName()).isEqualTo("FICA KYC — SA Accounting");
                 }));
   }

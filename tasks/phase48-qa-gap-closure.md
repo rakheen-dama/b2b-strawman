@@ -90,7 +90,7 @@ AUTOMATION WIRING (sequential)        SA VERTICAL POLISH (parallel)         BULK
 |-------|------|-------|---------|--------|
 | 1a | 360 | 360A | V73 migration, `FieldDateNotificationLog` entity + repo, `FieldDateApproachingEvent` record, `DomainEvent` permits update, `TriggerType.FIELD_DATE_APPROACHING`, `TriggerTypeMapping` entry, `AutomationContext.buildFieldDateApproaching()`, integration tests (~4). Backend only. | **Done** (PR #705) |
 | 1b (parallel) | 363 | 363A | `settings/general/page.tsx`, form fields, `ColorPicker` reuse, settings layout/sidebar update, redirect change, frontend tests (~4). Frontend only. | **Done** (PR #710) |
-| 1c (parallel) | 364 | 364A | `lib/terminology.ts` map, `lib/terminology.tsx` provider + hook, wrap app layout, frontend tests (~3). Frontend only. | |
+| 1c (parallel) | 364 | 364A | `lib/terminology.ts` map, `lib/terminology.tsx` provider + hook, wrap app layout, frontend tests (~3). Frontend only. | **Done** (PR #711) |
 
 ### Stage 2: Remaining Dependent Slices (parallel tracks)
 
@@ -365,7 +365,7 @@ AUTOMATION WIRING (sequential)        SA VERTICAL POLISH (parallel)         BULK
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **364A** | 364.1--364.5 | `lib/terminology.ts` map, `lib/terminology.tsx` TerminologyProvider + useTerminology hook, wrap app layout with provider, unit tests (~3). Frontend only. | |
+| **364A** | 364.1--364.5 | `lib/terminology.ts` map, `lib/terminology.tsx` TerminologyProvider + useTerminology hook, wrap app layout with provider, unit tests (~3). Frontend only. | **Done** (PR #711) |
 | **364B** | 364.6--364.10 | Apply `t()` to ~30-40 locations: sidebar nav labels, page headings, breadcrumbs, empty states, major button labels, integration tests (~3). Frontend only. | |
 
 ### Tasks

@@ -25,7 +25,7 @@ Phase 47's QA cycle surfaced 31 gaps; 10 were fixed during the cycle (PRs #687-#
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 359 | Automation Wiring: PROPOSAL_SENT + CUSTOMER_STATUS_CHANGED (GAP-001, GAP-003) | Backend | -- | M | 359A | **Done** (PR #704) |
-| 360 | Field Date Scanner + FIELD_DATE_APPROACHING Trigger (GAP-002) | Backend | 359 | M | 360A, 360B | |
+| 360 | Field Date Scanner + FIELD_DATE_APPROACHING Trigger (GAP-002) | Backend | 359 | M | 360A, 360B | **Done** (PRs #705, #706) |
 | 361 | SA Invoice Template Wiring (GAP-016) | Backend | -- | S | 361A | |
 | 362 | Proposal Summary Backend + Dashboard Frontend (GAP-013) | Both | -- | M | 362A, 362B | |
 | 363 | Org Settings Hub Page (GAP-008A) | Frontend | -- | S | 363A | |
@@ -96,7 +96,7 @@ AUTOMATION WIRING (sequential)        SA VERTICAL POLISH (parallel)         BULK
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 2a | 360 | 360B | `FieldDateScannerJob` with `@Scheduled`, per-tenant iteration, dedup check, `sars-deadline-reminder` automation template, integration tests (~4). Backend only. | |
+| 2a | 360 | 360B | `FieldDateScannerJob` with `@Scheduled`, per-tenant iteration, dedup check, `sars-deadline-reminder` automation template, integration tests (~4). Backend only. | **Done** (PR #706) |
 | 2b (parallel) | 362 | 362B | `proposals/page.tsx` dashboard, summary cards, needs-attention list, proposal table, sidebar nav update, frontend tests (~4). Frontend only. | |
 | 2c (parallel) | 364 | 364B | Apply `t()` to ~30-40 locations: sidebar nav labels, page headings, breadcrumbs, empty states, button labels, frontend tests (~3). Frontend only. | |
 | 2d (parallel) | 366 | 366A | `WeeklyTimeGrid` component, grid state management, editable cells, row/column/grand totals, week navigation, batch save integration, frontend tests (~4). Frontend only. | |
@@ -177,7 +177,7 @@ AUTOMATION WIRING (sequential)        SA VERTICAL POLISH (parallel)         BULK
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **360A** | 360.1--360.8 | V73 migration, `FieldDateNotificationLog` entity + repo, `FieldDateApproachingEvent` record, `DomainEvent` permits update, `FIELD_DATE_APPROACHING` TriggerType + mapping, `AutomationContext.buildFieldDateApproaching()`, integration tests (~4). Backend only. | **Done** (PR #705) |
-| **360B** | 360.9--360.14 | `FieldDateScannerJob` with `@Scheduled` annotation, per-tenant iteration via `ScopedValue`, dedup check logic, `sars-deadline-reminder` automation template seeding, integration tests (~4). Backend only. | |
+| **360B** | 360.9--360.14 | `FieldDateScannerJob` with `@Scheduled` annotation, per-tenant iteration via `ScopedValue`, dedup check logic, `sars-deadline-reminder` automation template seeding, integration tests (~4). Backend only. | **Done** (PR #706) |
 
 ### Tasks
 

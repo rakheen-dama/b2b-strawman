@@ -28,6 +28,7 @@ import type { Customer } from "@/lib/types";
 import { Plus } from "lucide-react";
 import { createMessages } from "@/lib/messages";
 import { scrollToFirstError } from "@/lib/error-handler";
+import { useTerminology } from "@/lib/terminology";
 import {
   createProjectSchema,
   type CreateProjectFormData,
@@ -38,6 +39,7 @@ interface CreateProjectDialogProps {
 }
 
 export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
+  const { t } = useTerminology();
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -102,7 +104,7 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
       <DialogTrigger asChild>
         <Button size="sm">
           <Plus className="mr-1.5 size-4" />
-          New Project
+          New {t("Project")}
         </Button>
       </DialogTrigger>
       <DialogContent>

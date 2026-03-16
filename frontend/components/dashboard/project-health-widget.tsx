@@ -15,6 +15,7 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { HelpTip } from "@/components/help-tip";
+import { useTerminology } from "@/lib/terminology";
 import { HealthBadge } from "@/components/dashboard/health-badge";
 import { CompletionProgressBar } from "@/components/dashboard/completion-progress-bar";
 import type { ProjectHealth } from "@/lib/dashboard-types";
@@ -41,6 +42,7 @@ export function ProjectHealthWidget({
   const [activeFilter, setActiveFilter] = useState<FilterTab>("ALL");
   const router = useRouter();
   const pathname = usePathname();
+  const { t } = useTerminology();
 
   if (!projects || projects.length === 0) {
     return (
@@ -54,8 +56,8 @@ export function ProjectHealthWidget({
         <CardContent>
           <EmptyState
             icon={HeartPulse}
-            title="No projects yet"
-            description="Create a project to start tracking health status."
+            title={`No ${t("projects")} yet`}
+            description={`Create a ${t("project")} to start tracking health status.`}
           />
         </CardContent>
       </Card>
@@ -144,7 +146,7 @@ export function ProjectHealthWidget({
           className="text-muted-foreground"
           onClick={() => router.push(`/org/${orgSlug}/projects`)}
         >
-          View all projects &rarr;
+          View all {t("projects")} &rarr;
         </Button>
       </CardFooter>
     </Card>

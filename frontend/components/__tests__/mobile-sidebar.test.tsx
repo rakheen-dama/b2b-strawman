@@ -26,6 +26,7 @@ vi.mock("@/components/sidebar-user-footer", () => ({
 
 import { usePathname } from "next/navigation";
 import { CapabilityProvider } from "@/lib/capabilities";
+import { TerminologyProvider } from "@/lib/terminology";
 import { MobileSidebar } from "@/components/mobile-sidebar";
 
 const mockUsePathname = vi.mocked(usePathname);
@@ -47,14 +48,16 @@ const ALL_CAPABILITIES = [
 
 function renderMobileSidebar(props: { groups?: string[] } = {}) {
   return render(
-    <CapabilityProvider
-      capabilities={ALL_CAPABILITIES}
-      role="Owner"
-      isAdmin={false}
-      isOwner={true}
-    >
-      <MobileSidebar slug="test-org" {...props} />
-    </CapabilityProvider>,
+    <TerminologyProvider verticalProfile={null}>
+      <CapabilityProvider
+        capabilities={ALL_CAPABILITIES}
+        role="Owner"
+        isAdmin={false}
+        isOwner={true}
+      >
+        <MobileSidebar slug="test-org" {...props} />
+      </CapabilityProvider>
+    </TerminologyProvider>,
   );
 }
 

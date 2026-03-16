@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, render, screen, fireEvent } from "@testing-library/react";
 import { ProjectHealthWidget } from "@/components/dashboard/project-health-widget";
+import { TerminologyProvider } from "@/lib/terminology";
 import type { ProjectHealth } from "@/lib/dashboard-types";
 
 // Mock next/navigation
@@ -49,6 +50,12 @@ const mockProjects: ProjectHealth[] = [
   },
 ];
 
+function renderWidget(ui: React.ReactElement) {
+  return render(
+    <TerminologyProvider verticalProfile={null}>{ui}</TerminologyProvider>,
+  );
+}
+
 describe("ProjectHealthWidget", () => {
   afterEach(() => {
     cleanup();
@@ -56,17 +63,17 @@ describe("ProjectHealthWidget", () => {
   });
 
   it("renders empty state when projects is null", () => {
-    render(<ProjectHealthWidget projects={null} orgSlug="acme" />);
+    renderWidget(<ProjectHealthWidget projects={null} orgSlug="acme" />);
     expect(screen.getByText("No projects yet")).toBeInTheDocument();
   });
 
   it("renders empty state when projects is empty", () => {
-    render(<ProjectHealthWidget projects={[]} orgSlug="acme" />);
+    renderWidget(<ProjectHealthWidget projects={[]} orgSlug="acme" />);
     expect(screen.getByText("No projects yet")).toBeInTheDocument();
   });
 
   it("renders all projects by default", () => {
-    render(
+    renderWidget(
       <ProjectHealthWidget projects={mockProjects} orgSlug="acme" />
     );
 
@@ -76,7 +83,7 @@ describe("ProjectHealthWidget", () => {
   });
 
   it("shows customer names when available", () => {
-    render(
+    renderWidget(
       <ProjectHealthWidget projects={mockProjects} orgSlug="acme" />
     );
 
@@ -85,7 +92,7 @@ describe("ProjectHealthWidget", () => {
   });
 
   it("shows health reasons", () => {
-    render(
+    renderWidget(
       <ProjectHealthWidget projects={mockProjects} orgSlug="acme" />
     );
 
@@ -95,7 +102,7 @@ describe("ProjectHealthWidget", () => {
   });
 
   it("filters to AT_RISK projects when At Risk tab clicked", () => {
-    render(
+    renderWidget(
       <ProjectHealthWidget projects={mockProjects} orgSlug="acme" />
     );
 
@@ -107,7 +114,7 @@ describe("ProjectHealthWidget", () => {
   });
 
   it("filters to CRITICAL projects when Critical tab clicked", () => {
-    render(
+    renderWidget(
       <ProjectHealthWidget projects={mockProjects} orgSlug="acme" />
     );
 
@@ -121,7 +128,7 @@ describe("ProjectHealthWidget", () => {
   });
 
   it("navigates to project detail on row click", () => {
-    render(
+    renderWidget(
       <ProjectHealthWidget projects={mockProjects} orgSlug="acme" />
     );
 
@@ -133,7 +140,7 @@ describe("ProjectHealthWidget", () => {
   });
 
   it("navigates to projects page when 'View all projects' clicked", () => {
-    render(
+    renderWidget(
       <ProjectHealthWidget projects={mockProjects} orgSlug="acme" />
     );
 
@@ -143,7 +150,7 @@ describe("ProjectHealthWidget", () => {
   });
 
   it("renders filter tabs", () => {
-    render(
+    renderWidget(
       <ProjectHealthWidget projects={mockProjects} orgSlug="acme" />
     );
 
@@ -172,7 +179,7 @@ describe("ProjectHealthWidget", () => {
       },
     ];
 
-    render(
+    renderWidget(
       <ProjectHealthWidget projects={healthyOnly} orgSlug="acme" />
     );
 

@@ -94,6 +94,11 @@ vi.mock("./view-actions", () => ({
   createSavedViewAction: vi.fn(),
 }));
 
+// Mock TerminologyHeading (client component that needs TerminologyProvider)
+vi.mock("@/components/terminology-heading", () => ({
+  TerminologyHeading: ({ term }: { term: string }) => <span>{term}</span>,
+}));
+
 // Mock CreateProjectDialog (client component with dialog portal)
 vi.mock("@/components/projects/create-project-dialog", () => ({
   CreateProjectDialog: ({ slug }: { slug: string }) => (

@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { CreateCustomerDialog } from "@/components/customers/create-customer-dialog";
+import { TerminologyProvider } from "@/lib/terminology";
 import type { IntakeFieldGroup } from "@/components/prerequisite/types";
 
 const mockCreateCustomer = vi.fn();
@@ -52,7 +53,7 @@ describe("CreateCustomerDialog", () => {
   it("showsStep2AfterStep1Next", async () => {
     const user = userEvent.setup();
 
-    render(<CreateCustomerDialog slug="acme" />);
+    render(<TerminologyProvider verticalProfile={null}><CreateCustomerDialog slug="acme" /></TerminologyProvider>);
 
     await user.click(screen.getByText("New Customer"));
     await waitFor(() => {
@@ -76,7 +77,7 @@ describe("CreateCustomerDialog", () => {
     mockFetchIntakeFields.mockResolvedValue({ groups: [makeGroup()] });
     const user = userEvent.setup();
 
-    render(<CreateCustomerDialog slug="acme" />);
+    render(<TerminologyProvider verticalProfile={null}><CreateCustomerDialog slug="acme" /></TerminologyProvider>);
 
     await user.click(screen.getByText("New Customer"));
     await waitFor(() => {
@@ -102,7 +103,7 @@ describe("CreateCustomerDialog", () => {
     mockFetchIntakeFields.mockResolvedValue({ groups: [makeGroup()] });
     const user = userEvent.setup();
 
-    render(<CreateCustomerDialog slug="acme" />);
+    render(<TerminologyProvider verticalProfile={null}><CreateCustomerDialog slug="acme" /></TerminologyProvider>);
 
     await user.click(screen.getByText("New Customer"));
     await waitFor(() => expect(screen.getByLabelText("Name")).toBeInTheDocument());
@@ -140,7 +141,7 @@ describe("CreateCustomerDialog", () => {
   it("backButtonReturnsToStep1", async () => {
     const user = userEvent.setup();
 
-    render(<CreateCustomerDialog slug="acme" />);
+    render(<TerminologyProvider verticalProfile={null}><CreateCustomerDialog slug="acme" /></TerminologyProvider>);
 
     await user.click(screen.getByText("New Customer"));
     await waitFor(() => expect(screen.getByText("Create Customer")).toBeInTheDocument());
@@ -186,7 +187,7 @@ describe("CreateCustomerDialog", () => {
     });
     const user = userEvent.setup();
 
-    render(<CreateCustomerDialog slug="acme" />);
+    render(<TerminologyProvider verticalProfile={null}><CreateCustomerDialog slug="acme" /></TerminologyProvider>);
 
     await user.click(screen.getByText("New Customer"));
     await waitFor(() => expect(screen.getByLabelText("Name")).toBeInTheDocument());

@@ -15,6 +15,7 @@ import { LifecycleStatusBadge } from "@/components/compliance/LifecycleStatusBad
 import { UserRound, Users } from "lucide-react";
 import Link from "next/link";
 import { EmptyState } from "@/components/empty-state";
+import { TerminologyHeading } from "@/components/terminology-heading";
 import { createMessages } from "@/lib/messages";
 
 const VALID_LIFECYCLE_STATUSES: ReadonlySet<LifecycleStatus> = new Set([
@@ -189,7 +190,7 @@ export default async function CustomersPage({
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Customers</h1>
+          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50"><TerminologyHeading term="Customers" /></h1>
           <span className="rounded-full bg-slate-200 px-2.5 py-0.5 text-sm text-slate-700 dark:bg-slate-800 dark:text-slate-300">
             {customers.length}
           </span>

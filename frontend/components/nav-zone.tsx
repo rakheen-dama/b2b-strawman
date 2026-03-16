@@ -7,6 +7,7 @@ import { ChevronRight } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { useCapabilities } from "@/lib/capabilities";
+import { useTerminology } from "@/lib/terminology";
 import type { NavGroup } from "@/lib/nav-items";
 
 export interface NavZoneProps {
@@ -19,6 +20,7 @@ export function NavZone({ zone, slug, onNavItemClick }: NavZoneProps) {
   const [expanded, setExpanded] = useState(zone.defaultExpanded ?? true);
   const pathname = usePathname();
   const { hasCapability } = useCapabilities();
+  const { t } = useTerminology();
 
   const visibleItems = zone.items.filter(
     (item) => !item.requiredCapability || hasCapability(item.requiredCapability),
@@ -83,7 +85,7 @@ export function NavZone({ zone, slug, onNavItemClick }: NavZoneProps) {
                     />
                   )}
                   <item.icon className="h-4 w-4" />
-                  {item.label}
+                  {t(item.label)}
                 </Link>
               );
             })}

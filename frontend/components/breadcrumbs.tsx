@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
+import { useTerminology } from "@/lib/terminology";
 
 const SEGMENT_LABELS: Record<string, string> = {
   // Core nav
@@ -59,6 +60,7 @@ interface BreadcrumbsProps {
 
 export function Breadcrumbs({ slug }: BreadcrumbsProps) {
   const pathname = usePathname();
+  const { t } = useTerminology();
 
   // Strip the /org/[slug]/ prefix to get the relative path segments
   const prefix = `/org/${slug}/`;
@@ -82,11 +84,12 @@ export function Breadcrumbs({ slug }: BreadcrumbsProps) {
       {segments.map((segment, index) => {
         const isLast = index === segments.length - 1;
         const parentSegment = index > 0 ? segments[index - 1] : undefined;
-        const label =
+        const rawLabel =
           SEGMENT_LABELS[segment] ??
           (isUuid(segment) && parentSegment
             ? PARENT_SEGMENT_FALLBACKS[parentSegment] ?? segment
             : segment);
+        const label = t(rawLabel);
 
         // Build the href for intermediate segments
         const href = `/org/${slug}/${segments.slice(0, index + 1).join("/")}`;

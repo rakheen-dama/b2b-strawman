@@ -3,6 +3,7 @@ import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api } from "@/lib/api";
 import { FileText } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
+import { TerminologyHeading } from "@/components/terminology-heading";
 import { ProposalSummaryCards } from "@/components/proposals/proposal-summary-cards";
 import { ProposalsAttentionList } from "@/components/proposals/proposals-attention-list";
 import { ProposalTable } from "@/components/proposals/proposal-table";
@@ -55,7 +56,7 @@ export default async function ProposalsPage({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-            Proposals
+            <TerminologyHeading term="Proposals" />
           </h1>
           {proposals.length > 0 && (
             <span className="rounded-full bg-slate-200 px-2.5 py-0.5 text-sm text-slate-700 dark:bg-slate-800 dark:text-slate-300">

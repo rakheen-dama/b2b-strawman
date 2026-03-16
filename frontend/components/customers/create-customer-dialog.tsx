@@ -27,6 +27,7 @@ import { Loader2, Plus } from "lucide-react";
 import { createCustomer } from "@/app/(app)/org/[slug]/customers/actions";
 import { createMessages } from "@/lib/messages";
 import { scrollToFirstError } from "@/lib/error-handler";
+import { useTerminology } from "@/lib/terminology";
 import { fetchIntakeFields } from "@/app/(app)/org/[slug]/customers/intake-actions";
 import {
   IntakeFieldsSection,
@@ -51,6 +52,7 @@ interface CreateCustomerDialogProps {
 }
 
 export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
+  const { t } = useTerminology();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -183,7 +185,7 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
       <DialogTrigger asChild>
         <Button size="sm">
           <Plus className="mr-1.5 size-4" />
-          New Customer
+          New {t("Customer")}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg">

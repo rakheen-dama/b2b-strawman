@@ -34,6 +34,7 @@ vi.mock("@/components/command-palette-provider", () => ({
 }));
 
 import { CapabilityProvider, RequiresCapability } from "@/lib/capabilities";
+import { TerminologyProvider } from "@/lib/terminology";
 import { DesktopSidebar } from "@/components/desktop-sidebar";
 
 afterEach(() => {
@@ -43,14 +44,16 @@ afterEach(() => {
 describe("Sidebar capability gating", () => {
   it("hides Invoices when user lacks INVOICING capability", () => {
     render(
-      <CapabilityProvider
-        capabilities={["PROJECT_MANAGEMENT"]}
-        role="Member"
-        isAdmin={false}
-        isOwner={false}
-      >
-        <DesktopSidebar slug="test-org" />
-      </CapabilityProvider>,
+      <TerminologyProvider verticalProfile={null}>
+        <CapabilityProvider
+          capabilities={["PROJECT_MANAGEMENT"]}
+          role="Member"
+          isAdmin={false}
+          isOwner={false}
+        >
+          <DesktopSidebar slug="test-org" />
+        </CapabilityProvider>
+      </TerminologyProvider>,
     );
 
     expect(screen.queryByText("Invoices")).not.toBeInTheDocument();
@@ -59,14 +62,16 @@ describe("Sidebar capability gating", () => {
   it("shows Invoices when user has INVOICING capability", async () => {
     const user = userEvent.setup();
     render(
-      <CapabilityProvider
-        capabilities={["INVOICING"]}
-        role="Accountant"
-        isAdmin={false}
-        isOwner={false}
-      >
-        <DesktopSidebar slug="test-org" />
-      </CapabilityProvider>,
+      <TerminologyProvider verticalProfile={null}>
+        <CapabilityProvider
+          capabilities={["INVOICING"]}
+          role="Accountant"
+          isAdmin={false}
+          isOwner={false}
+        >
+          <DesktopSidebar slug="test-org" />
+        </CapabilityProvider>
+      </TerminologyProvider>,
     );
 
     // Finance zone starts collapsed (defaultExpanded: false) — expand it
@@ -79,14 +84,16 @@ describe("Sidebar capability gating", () => {
   it("shows all nav items for admin users", async () => {
     const user = userEvent.setup();
     render(
-      <CapabilityProvider
-        capabilities={[]}
-        role="Admin"
-        isAdmin={true}
-        isOwner={false}
-      >
-        <DesktopSidebar slug="test-org" />
-      </CapabilityProvider>,
+      <TerminologyProvider verticalProfile={null}>
+        <CapabilityProvider
+          capabilities={[]}
+          role="Admin"
+          isAdmin={true}
+          isOwner={false}
+        >
+          <DesktopSidebar slug="test-org" />
+        </CapabilityProvider>
+      </TerminologyProvider>,
     );
 
     // Expand collapsed zones (Clients and Finance have defaultExpanded: false)

@@ -8,6 +8,7 @@ vi.mock("next/navigation", () => ({
 
 import { usePathname } from "next/navigation";
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { TerminologyProvider } from "@/lib/terminology";
 
 const mockUsePathname = vi.mocked(usePathname);
 
@@ -18,7 +19,7 @@ afterEach(() => {
 describe("Breadcrumbs", () => {
   it("renders Settings as a link segment when on settings subpage", () => {
     mockUsePathname.mockReturnValue("/org/acme/settings/billing");
-    render(<Breadcrumbs slug="acme" />);
+    render(<TerminologyProvider verticalProfile={null}><Breadcrumbs slug="acme" /></TerminologyProvider>);
     const settingsLink = screen.getByRole("link", { name: "Settings" });
     expect(settingsLink).toBeInTheDocument();
     expect(settingsLink).toHaveAttribute("href", "/org/acme/settings");
@@ -26,25 +27,25 @@ describe("Breadcrumbs", () => {
 
   it('renders correct label for rates segment ("Rates & Currency")', () => {
     mockUsePathname.mockReturnValue("/org/acme/settings/rates");
-    render(<Breadcrumbs slug="acme" />);
+    render(<TerminologyProvider verticalProfile={null}><Breadcrumbs slug="acme" /></TerminologyProvider>);
     expect(screen.getByText("Rates & Currency")).toBeInTheDocument();
   });
 
   it('renders correct label for custom-fields segment ("Custom Fields")', () => {
     mockUsePathname.mockReturnValue("/org/acme/settings/custom-fields");
-    render(<Breadcrumbs slug="acme" />);
+    render(<TerminologyProvider verticalProfile={null}><Breadcrumbs slug="acme" /></TerminologyProvider>);
     expect(screen.getByText("Custom Fields")).toBeInTheDocument();
   });
 
   it('renders correct label for project-naming segment ("Project Naming")', () => {
     mockUsePathname.mockReturnValue("/org/acme/settings/project-naming");
-    render(<Breadcrumbs slug="acme" />);
+    render(<TerminologyProvider verticalProfile={null}><Breadcrumbs slug="acme" /></TerminologyProvider>);
     expect(screen.getByText("Project Naming")).toBeInTheDocument();
   });
 
   it("renders Settings > Billing two-level path correctly", () => {
     mockUsePathname.mockReturnValue("/org/acme/settings/billing");
-    render(<Breadcrumbs slug="acme" />);
+    render(<TerminologyProvider verticalProfile={null}><Breadcrumbs slug="acme" /></TerminologyProvider>);
     // "Settings" should be a link (intermediate)
     const settingsLink = screen.getByRole("link", { name: "Settings" });
     expect(settingsLink).toBeInTheDocument();

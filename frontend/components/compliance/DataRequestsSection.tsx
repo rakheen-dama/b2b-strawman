@@ -85,7 +85,7 @@ export function DataRequestsSection({
                           <span className="text-slate-600 dark:text-slate-400">
                             {formatLocalDate(req.deadline)}
                           </span>
-                          <span className={cn("text-xs font-medium", getDeadlineColor(daysUntil))}>
+                          <span className={cn("text-xs font-medium", getDeadlineColor(daysUntil))} suppressHydrationWarning>
                             {formatDeadlineCountdown(daysUntil)}
                           </span>
                         </div>

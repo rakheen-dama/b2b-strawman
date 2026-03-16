@@ -63,7 +63,7 @@ export function DocxFileInfoPanel({ template }: { template: TemplateDetailRespon
         <div>
           <dt className="text-xs text-slate-500 dark:text-slate-400">Uploaded</dt>
           <dd className="text-sm font-medium text-slate-950 dark:text-slate-50">
-            {new Date(template.createdAt).toLocaleDateString()}
+            {new Date(template.createdAt).toLocaleDateString("en-ZA")}
           </dd>
         </div>
       </dl>

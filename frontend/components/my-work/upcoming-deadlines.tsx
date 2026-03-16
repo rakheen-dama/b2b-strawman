@@ -119,7 +119,9 @@ export function UpcomingDeadlines({ deadlines }: UpcomingDeadlinesProps) {
                     </span>
                   </div>
                 </div>
-                <DaysRemainingLabel daysRemaining={daysRemaining} />
+                <span suppressHydrationWarning>
+                  <DaysRemainingLabel daysRemaining={daysRemaining} />
+                </span>
               </li>
             );
           })}

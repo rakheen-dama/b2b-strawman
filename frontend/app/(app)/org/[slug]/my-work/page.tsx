@@ -36,6 +36,7 @@ import { ApiError } from "@/lib/api";
 import { EmptyState } from "@/components/empty-state";
 import { createMessages } from "@/lib/messages";
 import { ClipboardList } from "lucide-react";
+import Link from "next/link";
 
 /**
  * Resolves date range from search params, defaulting to current week
@@ -209,7 +210,15 @@ export default async function MyWorkPage({
   return (
     <div className="space-y-8">
       {/* Page Header with Date Range Selector */}
-      <MyWorkHeader from={from} to={to} />
+      <div className="flex items-center justify-between">
+        <MyWorkHeader from={from} to={to} />
+        <Link
+          href={`/org/${slug}/my-work/timesheet`}
+          className="rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+        >
+          Timesheet
+        </Link>
+      </div>
 
       {/* Personal KPI Cards */}
       <PersonalKpis data={personalDashboard} periodLabel={periodLabel} />

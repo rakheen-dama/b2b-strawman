@@ -5,6 +5,7 @@ import io.b2mash.b2b.b2bstrawman.automation.config.BudgetThresholdTriggerConfig;
 import io.b2mash.b2b.b2bstrawman.automation.config.EmptyTriggerConfig;
 import io.b2mash.b2b.b2bstrawman.automation.config.StatusChangeTriggerConfig;
 import io.b2mash.b2b.b2bstrawman.automation.config.TriggerConfig;
+import io.b2mash.b2b.b2bstrawman.event.CustomerStatusChangedEvent;
 import io.b2mash.b2b.b2bstrawman.event.DomainEvent;
 import io.b2mash.b2b.b2bstrawman.event.InvoicePaidEvent;
 import io.b2mash.b2b.b2bstrawman.event.InvoiceSentEvent;
@@ -64,6 +65,7 @@ public class TriggerConfigMatcher {
   private String deriveNewStatus(DomainEvent event) {
     return switch (event) {
       case TaskStatusChangedEvent e -> e.newStatus();
+      case CustomerStatusChangedEvent _ -> detailOrNull(event.details(), "new_status");
       case ProjectCompletedEvent _ -> "COMPLETED";
       case ProjectArchivedEvent _ -> "ARCHIVED";
       case ProjectReopenedEvent _ -> "ACTIVE";
@@ -77,6 +79,7 @@ public class TriggerConfigMatcher {
   private String deriveOldStatus(DomainEvent event) {
     return switch (event) {
       case TaskStatusChangedEvent e -> e.oldStatus();
+      case CustomerStatusChangedEvent _ -> detailOrNull(event.details(), "old_status");
       case ProjectReopenedEvent e -> e.previousStatus();
       case ProjectCompletedEvent _ -> detailOrNull(event.details(), "previous_status");
       case ProjectArchivedEvent _ -> detailOrNull(event.details(), "previous_status");

@@ -93,6 +93,87 @@ class CustomerStatusChangedTriggerWiringTest {
   }
 
   @Test
+  void customerStatusChangedEvent_matchesRuleWithSpecificToStatus() {
+    ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .run(
+            () -> {
+              var rule =
+                  createRule(
+                      "Onboarding watcher",
+                      TriggerType.CUSTOMER_STATUS_CHANGED,
+                      Map.of("toStatus", "ONBOARDING"),
+                      RuleSource.CUSTOM);
+              ruleRepository.save(rule);
+
+              UUID customerId = UUID.randomUUID();
+
+              var event =
+                  new CustomerStatusChangedEvent(
+                      "customer.status.changed",
+                      "customer",
+                      customerId,
+                      null,
+                      ACTOR_MEMBER_ID,
+                      ACTOR_NAME,
+                      schemaName,
+                      ORG_ID,
+                      Instant.now(),
+                      Map.of(
+                          "old_status", "PROSPECT",
+                          "new_status", "ONBOARDING",
+                          "customer_name", "Test Customer"));
+
+              eventPublisher.publishEvent(event);
+
+              var executions = executionRepository.findByRuleIdOrderByStartedAtDesc(rule.getId());
+              assertThat(executions).hasSize(1);
+              assertThat(executions.getFirst().getStatus())
+                  .isEqualTo(ExecutionStatus.ACTIONS_COMPLETED);
+            });
+  }
+
+  @Test
+  void customerStatusChangedEvent_doesNotMatchRuleWithDifferentToStatus() {
+    ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .run(
+            () -> {
+              var rule =
+                  createRule(
+                      "Active watcher",
+                      TriggerType.CUSTOMER_STATUS_CHANGED,
+                      Map.of("toStatus", "ACTIVE"),
+                      RuleSource.CUSTOM);
+              ruleRepository.save(rule);
+
+              UUID customerId = UUID.randomUUID();
+
+              // Event transitions to ONBOARDING, not ACTIVE — should NOT match
+              var event =
+                  new CustomerStatusChangedEvent(
+                      "customer.status.changed",
+                      "customer",
+                      customerId,
+                      null,
+                      ACTOR_MEMBER_ID,
+                      ACTOR_NAME,
+                      schemaName,
+                      ORG_ID,
+                      Instant.now(),
+                      Map.of(
+                          "old_status", "PROSPECT",
+                          "new_status", "ONBOARDING",
+                          "customer_name", "Test Customer"));
+
+              eventPublisher.publishEvent(event);
+
+              var executions = executionRepository.findByRuleIdOrderByStartedAtDesc(rule.getId());
+              assertThat(executions).isEmpty();
+            });
+  }
+
+  @Test
   void triggerTypeMapping_customerStatusChangedEvent_returnsCUSTOMER_STATUS_CHANGED() {
     var event =
         new CustomerStatusChangedEvent(

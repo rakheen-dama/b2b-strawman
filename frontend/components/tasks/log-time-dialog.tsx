@@ -18,14 +18,15 @@ import {
   createTimeEntry,
   resolveRate,
 } from "@/app/(app)/org/[slug]/projects/[id]/time-entry-actions";
-import { formatCurrency, formatDuration } from "@/lib/format";
+import { formatCurrencySafe, formatDuration } from "@/lib/format";
 import type { ResolvedRate } from "@/lib/types";
 import type { RetainerSummaryResponse } from "@/lib/types";
 import { RetainerIndicator } from "@/components/time-entries/retainer-indicator";
 import { HelpTip } from "@/components/help-tip";
 
 /** Maps backend source enum to human-readable label */
-function formatRateSource(source: string): string {
+function formatRateSource(source: string | null | undefined): string {
+  if (!source) return "unknown";
   switch (source) {
     case "MEMBER_DEFAULT":
       return "member default";
@@ -168,7 +169,7 @@ export function LogTimeDialog({
   const totalMinutes = hours * 60 + minutes;
   const durationHours = totalMinutes / 60;
   const computedValue =
-    resolvedRate && totalMinutes > 0
+    resolvedRate?.hourlyRate != null && totalMinutes > 0
       ? durationHours * resolvedRate.hourlyRate
       : null;
 
@@ -290,7 +291,7 @@ export function LogTimeDialog({
                 <div className="space-y-1">
                   <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
                     Billing rate:{" "}
-                    {formatCurrency(
+                    {formatCurrencySafe(
                       resolvedRate.hourlyRate,
                       resolvedRate.currency,
                     )}
@@ -302,13 +303,16 @@ export function LogTimeDialog({
                   {computedValue !== null && (
                     <p className="text-sm text-slate-600 dark:text-slate-400">
                       {formatDuration(totalMinutes)} x{" "}
-                      {formatCurrency(
+                      {formatCurrencySafe(
                         resolvedRate.hourlyRate,
                         resolvedRate.currency,
                       )}{" "}
                       ={" "}
                       <span className="font-medium">
-                        {formatCurrency(computedValue, resolvedRate.currency)}
+                        {formatCurrencySafe(
+                          computedValue,
+                          resolvedRate.currency,
+                        )}
                       </span>
                     </p>
                   )}

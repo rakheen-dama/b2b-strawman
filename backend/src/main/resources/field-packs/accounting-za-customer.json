@@ -1,13 +1,13 @@
 {
   "packId": "accounting-za-customer",
-  "version": 1,
+  "version": 2,
   "verticalProfile": "accounting-za",
   "entityType": "CUSTOMER",
   "group": {
     "slug": "accounting_za_client",
     "name": "SA Accounting — Client Details",
     "description": "South African accounting-specific fields for client entities",
-    "autoApply": false
+    "autoApply": true
   },
   "fields": [
     {

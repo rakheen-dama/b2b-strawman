@@ -17,6 +17,8 @@ public interface ProposalRepository extends JpaRepository<Proposal, UUID> {
 
   long countByStatus(ProposalStatus status);
 
+  List<Proposal> findByStatus(ProposalStatus status);
+
   @Query(
       """
       SELECT p FROM Proposal p

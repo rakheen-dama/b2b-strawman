@@ -48,11 +48,36 @@
       ]
     },
     {
-      "type": "paragraph",
+      "type": "heading",
+      "attrs": { "level": 3 },
       "content": [
-        { "type": "text", "marks": [{ "type": "italic" }], "text": "Note: Detailed invoice line items and payment history will be available in a future release. This is a stub template." }
+        { "type": "text", "text": "Invoice History" }
       ]
     },
+    {
+      "type": "loopTable",
+      "attrs": {
+        "dataSource": "invoices",
+        "columns": [
+          { "header": "Invoice #", "key": "invoiceNumber" },
+          { "header": "Date", "key": "issueDate" },
+          { "header": "Due Date", "key": "dueDate" },
+          { "header": "Amount", "key": "total" },
+          { "header": "Currency", "key": "currency" },
+          { "header": "Status", "key": "status" },
+          { "header": "Running Balance", "key": "runningBalance" }
+        ]
+      }
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Total Outstanding: " },
+        { "type": "variable", "attrs": { "key": "totalOutstanding" } }
+      ]
+    },
+    { "type": "horizontalRule" },
     {
       "type": "paragraph",
       "content": [

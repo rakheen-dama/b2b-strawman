@@ -1,15 +1,18 @@
 import { notFound } from "next/navigation";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api } from "@/lib/api";
-import { FileText } from "lucide-react";
+import { FileText, Plus } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
 import { TerminologyHeading } from "@/components/terminology-heading";
 import { TerminologyText } from "@/components/terminology-text";
 import { ProposalSummaryCards } from "@/components/proposals/proposal-summary-cards";
 import { ProposalsAttentionList } from "@/components/proposals/proposals-attention-list";
 import { ProposalTable } from "@/components/proposals/proposal-table";
+import { CreateProposalDialog } from "@/components/proposals/create-proposal-dialog";
+import { Button } from "@/components/ui/button";
 import type { ProposalSummaryDto } from "@/lib/types/proposal";
 import type { ProposalResponse } from "@/lib/types/proposal";
+import type { Customer } from "@/lib/types";
 
 const emptySummary: ProposalSummaryDto = {
   total: 0,
@@ -38,9 +41,10 @@ export default async function ProposalsPage({
   let summary: ProposalSummaryDto = emptySummary;
   let proposals: ProposalResponse[] = [];
 
-  const [summaryResult, proposalsResult] = await Promise.allSettled([
+  const [summaryResult, proposalsResult, customersResult] = await Promise.allSettled([
     api.get<ProposalSummaryDto>("/api/proposals/summary"),
     api.get<{ content: ProposalResponse[] }>("/api/proposals?size=200"),
+    api.get<Customer[]>("/api/customers?size=200"),
   ]);
 
   if (summaryResult.status === "fulfilled") {
@@ -50,6 +54,20 @@ export default async function ProposalsPage({
   if (proposalsResult.status === "fulfilled") {
     proposals = proposalsResult.value.content;
   }
+
+  const customers: Array<{ id: string; name: string; email: string }> =
+    customersResult.status === "fulfilled"
+      ? (Array.isArray(customersResult.value)
+          ? customersResult.value
+          : (customersResult.value as unknown as { content: Customer[] }).content ?? []
+        )
+          .filter(
+            (c) =>
+              c.lifecycleStatus !== "OFFBOARDED" &&
+              c.lifecycleStatus !== "PROSPECT",
+          )
+          .map((c) => ({ id: c.id, name: c.name, email: c.email }))
+      : [];
 
   return (
     <div className="space-y-8">
@@ -65,6 +83,12 @@ export default async function ProposalsPage({
             </span>
           )}
         </div>
+        <CreateProposalDialog slug={slug} customers={customers}>
+          <Button>
+            <Plus className="mr-2 size-4" />
+            New Proposal
+          </Button>
+        </CreateProposalDialog>
       </div>
 
       {/* Summary Cards */}

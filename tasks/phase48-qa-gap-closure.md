@@ -31,7 +31,7 @@ Phase 47's QA cycle surfaced 31 gaps; 10 were fixed during the cycle (PRs #687-#
 | 363 | Org Settings Hub Page (GAP-008A) | Frontend | -- | S | 363A | **Done** (PR #710) |
 | 364 | Terminology Overrides (GAP-005) | Frontend | -- | M | 364A, 364B | **Done** (PRs #711, #712) |
 | 365 | Bulk Time Entry Backend (GAP-015) | Backend | -- | M | 365A | **Done** (PR #713) |
-| 366 | Bulk Time Entry Frontend -- Weekly Grid (GAP-015) | Frontend | 365 | L | 366A, 366B | |
+| 366 | Bulk Time Entry Frontend -- Weekly Grid (GAP-015) | Frontend | 365 | L | 366A, 366B | **Done** (PRs #714, #715) |
 
 ---
 
@@ -105,7 +105,7 @@ AUTOMATION WIRING (sequential)        SA VERTICAL POLISH (parallel)         BULK
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 3a | 366 | 366B | "Copy Previous Week" logic, CSV import (stretch), template download, preview table, frontend tests (~3). Frontend only. | |
+| 3a | 366 | 366B | "Copy Previous Week" logic, CSV import (stretch), template download, preview table, frontend tests (~3). Frontend only. | **Done** (PR #715) |
 
 ---
 
@@ -459,7 +459,7 @@ AUTOMATION WIRING (sequential)        SA VERTICAL POLISH (parallel)         BULK
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **366A** | 366.1--366.8 | `WeeklyTimeGrid` component, grid state management, editable cells, row/column/grand totals, week navigation, batch save integration, add-task-row autocomplete, frontend tests (~4). Frontend only. | **Done** (PR #714) |
-| **366B** | 366.9--366.14 | "Copy Previous Week" logic (fetch + date shift + pre-fill), CSV import stretch (file upload + parser + preview + validation), template download, frontend tests (~3). Frontend only. | |
+| **366B** | 366.9--366.14 | "Copy Previous Week" logic (fetch + date shift + pre-fill), CSV import stretch (file upload + parser + preview + validation), template download, frontend tests (~3). Frontend only. | **Done** (PR #715) |
 
 ### Tasks
 

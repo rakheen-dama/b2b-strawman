@@ -43,7 +43,7 @@ const mockProposals: ProposalResponse[] = [
     customerId: "c1",
     portalContactId: null,
     status: "DRAFT",
-    feeModel: "FIXED_FEE",
+    feeModel: "FIXED",
     fixedFeeAmount: 5000,
     fixedFeeCurrency: "USD",
     hourlyRateNote: null,

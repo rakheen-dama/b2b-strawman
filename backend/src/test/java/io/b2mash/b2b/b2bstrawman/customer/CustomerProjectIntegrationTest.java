@@ -16,6 +16,7 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestChecklistHelper;
+import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -175,6 +176,77 @@ class CustomerProjectIntegrationTest {
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$.length()").value(greaterThanOrEqualTo(1)))
         .andExpect(jsonPath("$[*].name", hasItem("Link Test Project")));
+  }
+
+  @Test
+  void shouldListProjectsLinkedViaDirectFk() throws Exception {
+    var customerId = createCustomer("Direct FK Corp", "directfk@test.com");
+
+    // Create a project with customerId set directly (not via join table)
+    var projectResult =
+        mockMvc
+            .perform(
+                post("/api/projects")
+                    .with(ownerJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"name": "Direct FK Project", "description": "Linked via customerId FK", "customerId": "%s"}
+                        """
+                            .formatted(customerId)))
+            .andExpect(status().isCreated())
+            .andReturn();
+
+    // List projects for customer — should include the project linked via direct FK
+    mockMvc
+        .perform(get("/api/customers/" + customerId + "/projects").with(ownerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$").isArray())
+        .andExpect(jsonPath("$.length()").value(greaterThanOrEqualTo(1)))
+        .andExpect(jsonPath("$[*].name", hasItem("Direct FK Project")));
+  }
+
+  @Test
+  void shouldDeduplicateProjectsLinkedViaBothMechanisms() throws Exception {
+    var customerId = createCustomer("Dedup Corp", "dedup@test.com");
+
+    // Create a project with customerId set directly
+    var projectResult =
+        mockMvc
+            .perform(
+                post("/api/projects")
+                    .with(ownerJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"name": "Dedup Project", "description": "Linked both ways", "customerId": "%s"}
+                        """
+                            .formatted(customerId)))
+            .andExpect(status().isCreated())
+            .andReturn();
+    var dedupProjectId = extractIdFromLocation(projectResult);
+
+    // Also link the same project via the join table
+    mockMvc
+        .perform(
+            post("/api/customers/" + customerId + "/projects/" + dedupProjectId).with(ownerJwt()))
+        .andExpect(status().isCreated());
+
+    // List projects — should contain the project exactly once (no duplicates)
+    var result =
+        mockMvc
+            .perform(get("/api/customers/" + customerId + "/projects").with(ownerJwt()))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$[*].name", hasItem("Dedup Project")))
+            .andReturn();
+
+    // Verify no duplicates: count occurrences of the project name
+    var responseBody = result.getResponse().getContentAsString();
+    List<String> projectNames = JsonPath.read(responseBody, "$[*].name");
+    long dedupCount = projectNames.stream().filter(name -> "Dedup Project".equals(name)).count();
+    org.junit.jupiter.api.Assertions.assertEquals(
+        1, dedupCount, "Expected exactly 1 'Dedup Project' but found " + dedupCount);
   }
 
   @Test

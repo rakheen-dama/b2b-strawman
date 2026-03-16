@@ -7,7 +7,7 @@ export type ProposalStatus =
   | "DECLINED"
   | "EXPIRED";
 
-export type FeeModel = "FIXED_FEE" | "HOURLY" | "RETAINER";
+export type FeeModel = "FIXED" | "HOURLY" | "RETAINER";
 
 export interface ProposalResponse {
   id: string;

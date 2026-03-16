@@ -10,15 +10,16 @@
 
 ## Executive Summary
 
-The DocTeams platform with the `accounting-za` vertical profile covers **~75%** of a small SA accounting firm's daily needs. The core workflow loop — onboard client, log time, generate documents, review profitability — is functional. Three blockers were found and resolved during the cycle. Remaining gaps cluster around entity-type-specific compliance (trusts), billing flow completeness, and SA currency display.
+The DocTeams platform with the `accounting-za` vertical profile covers **~75%** of a small SA accounting firm's daily needs. The core workflow loop — onboard client, log time, generate documents, review profitability — is functional. Three blockers were found and resolved during the cycle. ~~Remaining gaps cluster around entity-type-specific compliance (trusts), billing flow completeness, and SA currency display.~~ All P1 and P2 remaining gaps were resolved in a follow-up fix cycle (PR #703, 2026-03-16).
 
 | Category | Count |
 |----------|-------|
 | Total gaps identified | 31 |
 | Resolved during cycle (PRs merged) | 10 |
-| Deferred (new features, out of scope) | 15 |
+| Resolved in follow-up fix cycle (PR #703) | 6 |
+| Deferred (new features, out of scope) | 13 |
 | Disproved (feature already exists) | 2 |
-| Remaining open | 4 |
+| Remaining open | 0 |
 
 ---
 
@@ -49,23 +50,23 @@ These issues were found, fixed, verified, and merged to `main` in 8 PRs (#687–
 
 ## Remaining Open Gaps
 
-These items were not resolved during the cycle. They require product decisions or dedicated phase work.
+~~These items were not resolved during the cycle.~~ **All P1 and P2 gaps resolved in follow-up fix cycle (PR #703, merged 2026-03-16).**
 
-### P1 — Should Fix Before Pilot
+### P1 — ~~Should Fix Before Pilot~~ RESOLVED
 
-| ID | Summary | Severity | Day | Effort | Impact |
-|----|---------|----------|-----|--------|--------|
-| GAP-008B | FICA field groups not auto-attached during customer creation | major | 1 | M | During customer creation wizard Step 2, only "Contact & Address" is shown. The 16 accounting-specific fields (Company Registration, VAT Number, Entity Type, SARS Tax Reference, etc.) must be manually added via "Add Group" on the customer detail page AFTER creation. For an accounting firm, FICA details should be captured during intake — not as a post-creation afterthought. **Workaround**: Users manually add the field group after creation. |
-| GAP-009 | FICA checklist does not filter by entity type | major | 3 | M | All customers see the same 9-item FICA checklist regardless of entity type. Sole proprietors see "Company Registration (CM29/CoR14.3)" which is irrelevant. Trusts see nothing about Letters of Authority from the Master. SA FICA requirements differ significantly by entity type (Pty Ltd vs Trust vs Sole Proprietor). **Impact**: Accounting firms must manually tell clients to ignore inapplicable items. |
-| GAP-010 | Trust-specific custom fields missing | major | 3 | M | No fields for Trust Registration Number (Master's reference), Trust Deed Date, Names of Trustees, Appointed vs Ex Officio, Trust Type (inter vivos / testamentary / business). The generic "Company Registration Number" field is used as a catch-all, but trusts are not registered with CIPC. **Impact**: Cannot properly serve trust clients without manual workarounds. |
-| GAP-019 | Currency displays as USD not ZAR | cosmetic | 0 | S | All amounts display with `$` prefix instead of `R`. Invoices show `$5,500.00` instead of `R5,500.00`. Rate cards show `$1,500/hr` instead of `R1,500/hr`. The `Intl.NumberFormat` locale is hardcoded to `en-US`. **Impact**: Unprofessional appearance for a South African firm. Easy fix — change default currency in org settings or formatCurrency locale. |
+| ID | Summary | Severity | Fix (PR) |
+|----|---------|----------|----------|
+| GAP-019 | Currency displays as USD not ZAR | cosmetic | Backend: `TenantProvisioningService` reads currency from vertical profile JSON. Frontend: `formatCurrency` uses locale-aware `Intl.NumberFormat` (en-ZA for ZAR). Retainer components receive `defaultCurrency` prop. (PR #696) |
+| GAP-008B | FICA field groups not auto-attached during customer creation | major | Changed `autoApply: false` → `true` in `accounting-za-customer.json`. PackReconciliationRunner retroactively attaches to existing customers. (PR #697) |
+| GAP-010 | Trust-specific custom fields missing | major | New `accounting-za-customer-trust.json` field pack with 6 trust fields (Registration Number, Deed Date, Trust Type, Trustees, Appointment Type, Letters of Authority). All fields visibility-conditioned on `acct_entity_type = TRUST`. (PR #699) |
+| GAP-009 | FICA checklist does not filter by entity type | major | New `applicable_entity_types` JSONB column on checklist items (V72 migration). Items filtered at instantiation by customer's `acct_entity_type`. Company Registration excluded for sole proprietors. 2 new trust-specific items (Letters of Authority, Trust Deed). (PR #701) |
 
-### P2 — Nice to Have / Future Phases
+### P2 — ~~Nice to Have~~ RESOLVED
 
-| ID | Summary | Severity | Day | Notes |
-|----|---------|----------|-----|-------|
-| GAP-020 | Portal contacts required for information requests | minor | 1 | "Create Information Request" dialog requires a portal contact. Users must create a portal contact first. Onboarding flow should auto-create a portal contact from the customer's email. |
-| GAP-029 | React #418 hydration mismatch on all pages | cosmetic | 0 | Pre-existing SSR/client mismatch. Pages render correctly after hydration. Likely date formatting or locale-dependent content divergence. Non-blocking. |
+| ID | Summary | Severity | Fix (PR) |
+|----|---------|----------|----------|
+| GAP-020 | Portal contacts required for information requests | minor | New `GET /api/customers/{id}/portal-contacts` endpoint. Auto-creates PRIMARY portal contact from customer email during PROSPECT → ONBOARDING transition. (PR #698) |
+| GAP-029 | React #418 hydration mismatch on all pages | cosmetic | New `RelativeDate` client component for time-relative rendering. Explicit `en-ZA` locale on `toLocaleDateString`/`toLocaleString` calls. `suppressHydrationWarning` on Date.now()-dependent elements. Fixed `window.location.origin` SSR mismatch. (PR #700) |
 
 ---
 
@@ -178,14 +179,15 @@ These gaps were reported in the initial analysis but **empirical testing proved 
 
 ## Recommended Phasing for Remaining Work
 
-### Sprint 1 (1 week) — Quick Wins
-- **GAP-019**: Currency display (S) — change default locale/currency in formatCurrency or seed org with ZAR
-- **GAP-020**: Auto-create portal contact from customer email during onboarding (S)
-- **GAP-008B**: Auto-attach vertical field groups during customer creation (M — needs investigation into intake system)
+### ~~Sprint 1 (1 week) — Quick Wins~~ DONE (PR #703)
+- ~~**GAP-019**: Currency display (S)~~ — RESOLVED
+- ~~**GAP-020**: Auto-create portal contact (S)~~ — RESOLVED
+- ~~**GAP-008B**: Auto-attach vertical field groups (M)~~ — RESOLVED
+- ~~**GAP-029**: Hydration mismatch (S)~~ — RESOLVED
 
-### Sprint 2 (2 weeks) — Entity-Type Specialization
-- **GAP-009**: Entity-type-specific FICA checklists (M) — create variants or add conditional visibility
-- **GAP-010**: Trust-specific custom field group (M) — new field pack with conditional display
+### ~~Sprint 2 (2 weeks) — Entity-Type Specialization~~ DONE (PR #703)
+- ~~**GAP-009**: Entity-type-specific FICA checklists (M)~~ — RESOLVED
+- ~~**GAP-010**: Trust-specific custom field group (M)~~ — RESOLVED
 
 ### Sprint 3 (2 weeks) — Billing Flow Completion
 - Investigate and fix billing run "no unbilled work" issue (may be configuration, may be query bug)
@@ -237,6 +239,25 @@ These gaps were reported in the initial analysis but **empirical testing proved 
 **Total PRs**: 8 (#687–#695) merged to main
 **Total test suite**: 1513 frontend tests passing, 3630+ backend tests passing
 
+### Follow-Up Fix Cycle (PR #703)
+
+| Timestamp | Action |
+|-----------|--------|
+| 2026-03-16 09:00 | 6 research agents dispatched in parallel for gap analysis |
+| 2026-03-16 09:22 | GAP-019 fixed — currency display (PR #696) |
+| 2026-03-16 10:28 | GAP-008B fixed — auto-attach field groups (PR #697) |
+| 2026-03-16 11:35 | GAP-020 fixed — portal contact auto-creation + endpoint (PR #698) |
+| 2026-03-16 11:49 | GAP-010 fixed — trust custom fields (PR #699) |
+| 2026-03-16 11:55 | GAP-029 fixed — hydration mismatch (PR #700) |
+| 2026-03-16 12:24 | GAP-009 fixed — entity-type FICA filtering (PR #701) |
+| 2026-03-16 12:27 | Review feedback addressed (PR #702) |
+| 2026-03-16 12:30 | All PRs merged, PR #703 merged to main |
+
+**Follow-up duration**: ~3.5 hours
+**Follow-up PRs**: 7 (#696–#702), merged via parent branch PR #703
+**Files changed**: 42 files, +1,247/-72 lines
+**New tests**: 3 integration test classes (ProvisioningIntegrationTest, PortalContactAutoCreationTest, ChecklistEntityTypeFilterTest)
+
 ---
 
-*Generated by QA Cycle `/qa-cycle` skill on 2026-03-16. Checkpoint results in `qa_cycle/checkpoint-results/`. Fix specs in `qa_cycle/fix-specs/`.*
+*Generated by QA Cycle `/qa-cycle` skill on 2026-03-16. Follow-up fixes by feature-gap-analysis-and-dev workflow. Checkpoint results in `qa_cycle/checkpoint-results/`. Fix specs in `qa_cycle/fix-specs/`.*

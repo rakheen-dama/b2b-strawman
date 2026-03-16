@@ -5,7 +5,7 @@
   "locale": "en-ZA",
   "currency": "ZAR",
   "packs": {
-    "field": ["accounting-za-customer", "accounting-za-project"],
+    "field": ["accounting-za-customer", "accounting-za-project", "accounting-za-customer-trust"],
     "compliance": ["fica-kyc-za"],
     "template": ["accounting-za"],
     "clause": ["accounting-za-clauses"],

@@ -4,6 +4,7 @@ import { api } from "@/lib/api";
 import { FileText } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
 import { TerminologyHeading } from "@/components/terminology-heading";
+import { TerminologyText } from "@/components/terminology-text";
 import { ProposalSummaryCards } from "@/components/proposals/proposal-summary-cards";
 import { ProposalsAttentionList } from "@/components/proposals/proposals-attention-list";
 import { ProposalTable } from "@/components/proposals/proposal-table";
@@ -76,8 +77,8 @@ export default async function ProposalsPage({
       {proposals.length === 0 ? (
         <EmptyState
           icon={FileText}
-          title="No proposals yet"
-          description="Create a proposal to start tracking client engagements."
+          title={<TerminologyText template="No {proposals} yet" />}
+          description={<TerminologyText template="Create a {proposal} to start tracking client engagements." />}
         />
       ) : (
         <ProposalTable proposals={proposals} slug={slug} now={new Date().getTime()} />

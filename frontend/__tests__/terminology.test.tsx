@@ -45,6 +45,8 @@ describe("terminology", () => {
     expect(t("customers")).toBe("clients");
     expect(t("Proposal")).toBe("Engagement Letter");
     expect(t("Proposals")).toBe("Engagement Letters");
+    expect(t("proposal")).toBe("engagement letter");
+    expect(t("proposals")).toBe("engagement letters");
     expect(t("Rate Card")).toBe("Fee Schedule");
     expect(t("Rate Cards")).toBe("Fee Schedules");
   });

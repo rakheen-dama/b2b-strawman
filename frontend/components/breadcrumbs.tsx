@@ -37,6 +37,8 @@ const SEGMENT_LABELS: Record<string, string> = {
   roles: "Roles & Permissions",
   integrations: "Integrations",
   // Additional segments
+  customers: "Customers",
+  proposals: "Proposals",
   "my-work": "My Work",
   schedules: "Recurring Schedules",
   retainers: "Retainers",
@@ -48,6 +50,7 @@ const PARENT_SEGMENT_FALLBACKS: Record<string, string> = {
   settings: "Settings",
   customers: "Customer",
   invoices: "Invoice",
+  proposals: "Proposal",
 };
 
 function isUuid(value: string): boolean {

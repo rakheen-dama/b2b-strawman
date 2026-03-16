@@ -25,6 +25,7 @@ import { CapabilityProvider } from "@/lib/capabilities";
 import { NavZone } from "@/components/nav-zone";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { TerminologyHeading } from "@/components/terminology-heading";
+import { TerminologyText } from "@/components/terminology-text";
 import { FolderOpen } from "lucide-react";
 import type { NavGroup } from "@/lib/nav-items";
 
@@ -86,6 +87,32 @@ describe("364B: terminology in breadcrumbs", () => {
     expect(screen.getByText("Engagements")).toBeInTheDocument();
     expect(screen.queryByText("Projects")).not.toBeInTheDocument();
   });
+
+  it("renders Clients instead of Customers in breadcrumb for /customers route", () => {
+    mockUsePathname.mockReturnValue("/org/test-org/customers");
+
+    render(
+      <TerminologyProvider verticalProfile="accounting-za">
+        <Breadcrumbs slug="test-org" />
+      </TerminologyProvider>,
+    );
+
+    expect(screen.getByText("Clients")).toBeInTheDocument();
+    expect(screen.queryByText("Customers")).not.toBeInTheDocument();
+  });
+
+  it("renders Engagement Letters instead of Proposals in breadcrumb for /proposals route", () => {
+    mockUsePathname.mockReturnValue("/org/test-org/proposals");
+
+    render(
+      <TerminologyProvider verticalProfile="accounting-za">
+        <Breadcrumbs slug="test-org" />
+      </TerminologyProvider>,
+    );
+
+    expect(screen.getByText("Engagement Letters")).toBeInTheDocument();
+    expect(screen.queryByText("Proposals")).not.toBeInTheDocument();
+  });
 });
 
 // ---- Test 3: Page heading via TerminologyHeading ----
@@ -101,5 +128,73 @@ describe("364B: terminology in page heading component", () => {
     );
 
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Engagements");
+  });
+});
+
+// ---- Test 4: TerminologyHeading with count prop ----
+
+describe("364B: terminology heading with count", () => {
+  it("renders '3 engagements' for count=3 with accounting-za profile", () => {
+    render(
+      <TerminologyProvider verticalProfile="accounting-za">
+        <TerminologyHeading count={3} term="projects" singularTerm="project" />
+      </TerminologyProvider>,
+    );
+
+    expect(screen.getByText("3 engagements")).toBeInTheDocument();
+  });
+
+  it("renders '1 engagement' for count=1 with accounting-za profile", () => {
+    render(
+      <TerminologyProvider verticalProfile="accounting-za">
+        <TerminologyHeading count={1} term="projects" singularTerm="project" />
+      </TerminologyProvider>,
+    );
+
+    expect(screen.getByText("1 engagement")).toBeInTheDocument();
+  });
+
+  it("renders '3 projects' for count=3 with null profile", () => {
+    render(
+      <TerminologyProvider verticalProfile={null}>
+        <TerminologyHeading count={3} term="projects" singularTerm="project" />
+      </TerminologyProvider>,
+    );
+
+    expect(screen.getByText("3 projects")).toBeInTheDocument();
+  });
+});
+
+// ---- Test 5: TerminologyText with template placeholders ----
+
+describe("364B: terminology text template replacement", () => {
+  it("replaces {proposals} in template with 'engagement letters' for accounting-za", () => {
+    render(
+      <TerminologyProvider verticalProfile="accounting-za">
+        <TerminologyText template="No {proposals} yet" />
+      </TerminologyProvider>,
+    );
+
+    expect(screen.getByText("No engagement letters yet")).toBeInTheDocument();
+  });
+
+  it("replaces {proposal} in template with 'engagement letter' for accounting-za", () => {
+    render(
+      <TerminologyProvider verticalProfile="accounting-za">
+        <TerminologyText template="Create a {proposal} to get started." />
+      </TerminologyProvider>,
+    );
+
+    expect(screen.getByText("Create a engagement letter to get started.")).toBeInTheDocument();
+  });
+
+  it("passes through template unchanged with null profile", () => {
+    render(
+      <TerminologyProvider verticalProfile={null}>
+        <TerminologyText template="No {proposals} yet" />
+      </TerminologyProvider>,
+    );
+
+    expect(screen.getByText("No proposals yet")).toBeInTheDocument();
   });
 });

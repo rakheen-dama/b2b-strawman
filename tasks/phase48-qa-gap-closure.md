@@ -26,7 +26,7 @@ Phase 47's QA cycle surfaced 31 gaps; 10 were fixed during the cycle (PRs #687-#
 |------|------|-------|------|--------|--------|--------|
 | 359 | Automation Wiring: PROPOSAL_SENT + CUSTOMER_STATUS_CHANGED (GAP-001, GAP-003) | Backend | -- | M | 359A | **Done** (PR #704) |
 | 360 | Field Date Scanner + FIELD_DATE_APPROACHING Trigger (GAP-002) | Backend | 359 | M | 360A, 360B | **Done** (PRs #705, #706) |
-| 361 | SA Invoice Template Wiring (GAP-016) | Backend | -- | S | 361A | |
+| 361 | SA Invoice Template Wiring (GAP-016) | Backend | -- | S | 361A | **Done** (PR #707) |
 | 362 | Proposal Summary Backend + Dashboard Frontend (GAP-013) | Both | -- | M | 362A, 362B | |
 | 363 | Org Settings Hub Page (GAP-008A) | Frontend | -- | S | 363A | |
 | 364 | Terminology Overrides (GAP-005) | Frontend | -- | M | 364A, 364B | |
@@ -80,7 +80,7 @@ AUTOMATION WIRING (sequential)        SA VERTICAL POLISH (parallel)         BULK
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 0a (parallel) | 359 | 359A | `PROPOSAL_SENT` + `CUSTOMER_STATUS_CHANGED` trigger wiring, `CustomerStatusChangedEvent` DomainEvent conversion, `AutomationContext` stubs, automation templates, integration tests (~6). Backend only. | **Done** (PR #704) |
-| 0b (parallel) | 361 | 361A | `InvoiceContextBuilder` VAT extraction, `invoice-za` template pack wiring, vertical-to-template slug lookup, render integration test (~3). Backend only. | |
+| 0b (parallel) | 361 | 361A | `InvoiceContextBuilder` VAT extraction, `invoice-za` template pack wiring, vertical-to-template slug lookup, render integration test (~3). Backend only. | **Done** (PR #707) |
 | 0c (parallel) | 362 | 362A | `ProposalService.getProposalSummary()`, `GET /api/proposals/summary` endpoint, DTO records, integration tests (~4). Backend only. | |
 | 0d (parallel) | 365 | 365A | `TimeEntryBatchService`, `POST /api/time-entries/batch` endpoint, partial success logic, rate snapshots, integration tests (~5). Backend only. | |
 
@@ -229,7 +229,7 @@ AUTOMATION WIRING (sequential)        SA VERTICAL POLISH (parallel)         BULK
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **361A** | 361.1--361.6 | `InvoiceContextBuilder` VAT extraction, per-line tax fields in context, vertical-to-template slug lookup in `DocumentGenerationService`, verify `invoice-za.json` content renders, integration tests (~3). Backend only. | |
+| **361A** | 361.1--361.6 | `InvoiceContextBuilder` VAT extraction, per-line tax fields in context, vertical-to-template slug lookup in `DocumentGenerationService`, verify `invoice-za.json` content renders, integration tests (~3). Backend only. | **Done** (PR #707) |
 
 ### Tasks
 

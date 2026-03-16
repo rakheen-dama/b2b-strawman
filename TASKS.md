@@ -408,7 +408,7 @@
 | **Phase 48 — QA Gap Closure (Automation Wiring, SA Invoice, Org Settings, Bulk UX)** | | | | | | See [tasks/phase48-qa-gap-closure.md](tasks/phase48-qa-gap-closure.md) |
 | 359 | Automation Wiring: PROPOSAL_SENT + CUSTOMER_STATUS_CHANGED (GAP-001, GAP-003) | Backend | -- | M | 359A | **Done** (PR #704) |
 | 360 | Field Date Scanner + FIELD_DATE_APPROACHING Trigger (GAP-002) | Backend | 359 | M | 360A, 360B | **Done** (PRs #705, #706) |
-| 361 | SA Invoice Template Wiring (GAP-016) | Backend | -- | S | 361A | |
+| 361 | SA Invoice Template Wiring (GAP-016) | Backend | -- | S | 361A | **Done** (PR #707) |
 | 362 | Proposal Summary Backend + Dashboard Frontend (GAP-013) | Both | -- | M | 362A, 362B | |
 | 363 | Org Settings Hub Page (GAP-008A) | Frontend | -- | S | 363A | |
 | 364 | Terminology Overrides (GAP-005) | Frontend | -- | M | 364A, 364B | |

@@ -18,7 +18,7 @@ seed_invoices() {
   else
     body=$(api_post "/api/invoices" "{
       \"customerId\": \"${ACME_ID}\",
-      \"currency\": \"USD\",
+      \"currency\": \"ZAR\",
       \"notes\": \"Legacy migration completed work\",
       \"paymentTerms\": \"Net 30\"
     }" "$jwt")
@@ -59,7 +59,7 @@ seed_invoices() {
   else
     body=$(api_post "/api/invoices" "{
       \"customerId\": \"${BRIGHT_ID}\",
-      \"currency\": \"USD\",
+      \"currency\": \"ZAR\",
       \"notes\": \"Mobile App and SEO Audit work\",
       \"paymentTerms\": \"Net 15\"
     }" "$jwt")

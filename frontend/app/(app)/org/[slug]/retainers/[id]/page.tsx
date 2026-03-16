@@ -1,5 +1,5 @@
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
-import { handleApiError } from "@/lib/api";
+import { api, handleApiError } from "@/lib/api";
 import { fetchRetainer } from "@/lib/api/retainers";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ArrowLeft, Pencil, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import type { RetainerResponse, PeriodSummary } from "@/lib/api/retainers";
+import type { OrgSettings } from "@/lib/types";
 
 export default async function RetainerDetailPage({
   params,
@@ -30,6 +31,16 @@ export default async function RetainerDetailPage({
     retainer = await fetchRetainer(id);
   } catch (error) {
     handleApiError(error);
+  }
+
+  let defaultCurrency = "USD";
+  try {
+    const settingsRes = await api.get<OrgSettings>("/api/settings");
+    if (settingsRes?.defaultCurrency) {
+      defaultCurrency = settingsRes.defaultCurrency;
+    }
+  } catch {
+    // Non-fatal: fall back to USD
   }
 
   // Combine currentPeriod with recentPeriods for the history table
@@ -94,7 +105,7 @@ export default async function RetainerDetailPage({
                 Edit
               </Button>
             </EditRetainerDialog>
-            <RetainerDetailActions slug={slug} retainer={retainer} />
+            <RetainerDetailActions slug={slug} retainer={retainer} currency={defaultCurrency} />
           </div>
         )}
       </div>
@@ -124,7 +135,7 @@ export default async function RetainerDetailPage({
                   Period Fee
                 </dt>
                 <dd className="mt-0.5 font-medium text-slate-900 dark:text-slate-100">
-                  {formatCurrency(retainer.periodFee, "USD")}
+                  {formatCurrency(retainer.periodFee, defaultCurrency)}
                 </dd>
               </div>
             )}

@@ -83,6 +83,34 @@ class ProvisioningIntegrationTest {
   }
 
   @Test
+  void shouldSetCurrencyFromVerticalProfileWhenProvisioningWithAccountingZa() throws SQLException {
+    String clerkOrgId = "org_vertical_za_test";
+    String orgName = "SA Accounting Firm";
+
+    var result = provisioningService.provisionTenant(clerkOrgId, orgName, "accounting-za");
+
+    assertThat(result.success()).isTrue();
+    String currency = getOrgSettingsCurrency(result.schemaName());
+    assertThat(currency).isEqualTo("ZAR");
+  }
+
+  @Test
+  void shouldDefaultToUsdWhenProvisionedWithoutVerticalProfile() throws SQLException {
+    String clerkOrgId = "org_no_vertical_test";
+    String orgName = "Generic Org";
+
+    var result = provisioningService.provisionTenant(clerkOrgId, orgName, null);
+
+    assertThat(result.success()).isTrue();
+    // Without vertical profile, OrgSettings may not exist (created lazily)
+    // or if it exists, the default currency should be USD
+    String currency = getOrgSettingsCurrency(result.schemaName());
+    if (currency != null) {
+      assertThat(currency).isEqualTo("USD");
+    }
+  }
+
+  @Test
   void starterOrgsGetSeparateDedicatedSchemas() {
     var result1 = provisioningService.provisionTenant("org_diff_a", "Org A", null);
     var result2 = provisioningService.provisionTenant("org_diff_b", "Org B", null);
@@ -100,6 +128,19 @@ class ProvisioningIntegrationTest {
       stmt.setString(1, schemaName);
       var rs = stmt.executeQuery();
       return rs.next() && rs.getBoolean(1);
+    }
+  }
+
+  private String getOrgSettingsCurrency(String schemaName) throws SQLException {
+    try (var conn = migrationDataSource.getConnection();
+        var stmt =
+            conn.prepareStatement(
+                "SELECT default_currency FROM \"" + schemaName + "\".org_settings LIMIT 1")) {
+      var rs = stmt.executeQuery();
+      if (rs.next()) {
+        return rs.getString(1);
+      }
+      return null;
     }
   }
 

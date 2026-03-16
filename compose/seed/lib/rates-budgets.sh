@@ -24,7 +24,7 @@ seed_rates_budgets() {
   if ! _rate_exists "$ALICE_MEMBER_ID"; then
     api_post "/api/billing-rates" "{
       \"memberId\": \"${ALICE_MEMBER_ID}\",
-      \"currency\": \"USD\",
+      \"currency\": \"ZAR\",
       \"hourlyRate\": 150.00,
       \"effectiveFrom\": \"${effective_from}\"
     }" "$jwt" > /dev/null
@@ -36,7 +36,7 @@ seed_rates_budgets() {
   if ! _rate_exists "$BOB_MEMBER_ID"; then
     api_post "/api/billing-rates" "{
       \"memberId\": \"${BOB_MEMBER_ID}\",
-      \"currency\": \"USD\",
+      \"currency\": \"ZAR\",
       \"hourlyRate\": 120.00,
       \"effectiveFrom\": \"${effective_from}\"
     }" "$jwt" > /dev/null
@@ -69,7 +69,7 @@ seed_rates_budgets() {
   _set_budget "$BRAND_GUIDELINES_ID" "Brand Guidelines" '{
     "budgetHours": 40,
     "budgetAmount": 5000.00,
-    "budgetCurrency": "USD",
+    "budgetCurrency": "ZAR",
     "alertThresholdPct": 80,
     "notes": "Fixed scope engagement"
   }'
@@ -77,7 +77,7 @@ seed_rates_budgets() {
   _set_budget "$MOBILE_APP_ID" "Mobile App MVP" '{
     "budgetHours": 120,
     "budgetAmount": 15000.00,
-    "budgetCurrency": "USD",
+    "budgetCurrency": "ZAR",
     "alertThresholdPct": 75,
     "notes": "MVP phase budget"
   }'

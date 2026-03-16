@@ -222,7 +222,7 @@ describe("CherryPickStep", () => {
     });
 
     // Initially subtotal should include both time entries (500 + 300 = 800)
-    expect(screen.getByText("Subtotal: ZAR 800.00")).toBeInTheDocument();
+    expect(screen.getByText("Subtotal: R 800.00")).toBeInTheDocument();
 
     // Uncheck first time entry
     await user.click(
@@ -230,7 +230,7 @@ describe("CherryPickStep", () => {
     );
 
     // Subtotal should now be 300 only
-    expect(screen.getByText("Subtotal: ZAR 300.00")).toBeInTheDocument();
+    expect(screen.getByText("Subtotal: R 300.00")).toBeInTheDocument();
   });
 
   it("exclude customer button updates status", async () => {

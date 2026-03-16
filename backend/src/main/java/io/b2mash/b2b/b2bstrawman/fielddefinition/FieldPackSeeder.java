@@ -123,6 +123,10 @@ public class FieldPackSeeder extends AbstractPackSeeder<FieldPackDefinition> {
         fd.setRequiredForContexts(new ArrayList<>(contexts));
       }
 
+      if (field.visibilityCondition() != null) {
+        fd.setVisibilityCondition(field.visibilityCondition());
+      }
+
       fd = fieldDefinitionRepository.save(fd);
 
       // Create the group membership

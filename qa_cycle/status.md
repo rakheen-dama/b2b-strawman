@@ -2,12 +2,11 @@
 
 ## Current State
 
-- **QA Position**: Day 14 tested — GAP-030 FIXED (attempt 2, PR #692). Awaiting rebuild + re-verification.
+- **QA Position**: Day 14 tested — GAP-030 FIXED (attempt 2, PR #692). Stack rebuilt, ready for re-verification.
 - **Cycle**: 3
-- **E2E Stack**: NEEDS_REBUILD (frontend changed)
+- **E2E Stack**: HEALTHY (rebuilt 2026-03-16T06:00Z)
 - **Branch**: `bugfix_cycle_2026-03-15`
 - **Scenario**: `tasks/phase47-lifecycle-script.md`
-- **NEEDS_REBUILD**: true (PR #692 merged — frontend `log-time-dialog.tsx` + `format.ts` changed)
 
 ## Tracker
 
@@ -81,3 +80,4 @@
 | 2026-03-16T03:10Z | QA | Cycle 3: Day 7 partial re-test. Comment system works (PASS) — posted comment on task, appeared correctly with attribution. All time entry checkpoints remain FAIL (blocked by GAP-030). Day 7 result: 1 PASS, 5 FAIL, 4 NOT TESTED. |
 | 2026-03-16T03:20Z | QA | Cycle 3: Day 14 execution. Completed 3/4 generic onboarding checklist items for Kgosi. Item 4 ("Upload signed engagement letter") blocked — requires document upload. Activation blocked: "Cannot activate customer — one or more onboarding checklists are not yet completed." Notifications page loads (empty, no automation triggers fired — GAP-003/GAP-007 confirmed). Time entry summaries blocked by GAP-030. Day 14 result: 1 PASS, 2 FAIL, 2 NOT TESTED, 1 PARTIAL, 2 CONFIRMED. |
 | 2026-03-16T05:50Z | Dev | GAP-030 FIXED (attempt 2): Full null-safety audit of `log-time-dialog.tsx`. Fixed `formatRateSource()` null crash (null guard + early return). Switched all 3 `formatCurrency` calls to `formatCurrencySafe`. Added `resolvedRate?.hourlyRate != null` guard on computed value. Hardened `formatCurrency` base function with `amount ?? 0`. All 12 related tests pass. PR #692 merged to `bugfix_cycle_2026-03-15`. NEEDS_REBUILD=true (frontend changed). |
+| 2026-03-16T06:00Z | Infra | E2E stack rebuilt after GAP-030 v2 fix (PR #692). All services healthy: frontend (3001), backend (8081), mock-idp (8090) all returning HTTP 200. NEEDS_REBUILD cleared. Stack ready for QA re-verification of GAP-030 and continuation of Day 14+ testing. |

@@ -14,6 +14,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -147,11 +148,23 @@ public class CustomerProjectService {
         .findById(customerId)
         .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
 
+    // Merge projects from both linkage mechanisms:
+    // 1. Join table (customer_projects) — created via "Link Project" dialog
+    // 2. Direct FK (Project.customerId) — set when creating a project "for" a customer
+    // Deduplicate by project ID, preserving insertion order
+    var merged = new LinkedHashMap<UUID, Project>();
+
+    // Source 1: join table links
     var links = customerProjectRepository.findByCustomerId(customerId);
-    var projects =
-        links.stream()
-            .map(link -> projectRepository.findById(link.getProjectId()))
-            .flatMap(java.util.Optional::stream);
+    links.stream()
+        .map(link -> projectRepository.findById(link.getProjectId()))
+        .flatMap(java.util.Optional::stream)
+        .forEach(p -> merged.put(p.getId(), p));
+
+    // Source 2: direct FK on Project entity
+    projectRepository.findByCustomerId(customerId).forEach(p -> merged.putIfAbsent(p.getId(), p));
+
+    var projects = merged.values().stream();
 
     // Owner/Admin can see all linked projects; regular members only see projects they have access
     // to

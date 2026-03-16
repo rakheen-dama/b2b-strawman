@@ -263,6 +263,23 @@ class TimesheetReportQueryTest {
   }
 
   @Test
+  void emptyStringFiltersAreTreatedAsNull() {
+    runInTenant(
+        () -> {
+          var params = dateRangeParams("2025-01-01", "2025-01-31");
+          params.put("groupBy", "member");
+          params.put("projectId", "");
+          params.put("memberId", "");
+
+          var result = timesheetReportQuery.execute(params, PageRequest.of(0, 50));
+
+          // Empty strings should be treated as null (no filter) — all data returned
+          assertThat(result.rows()).hasSize(2);
+          assertThat(((Number) result.summary().get("entryCount")).longValue()).isEqualTo(5L);
+        });
+  }
+
+  @Test
   void emptyDateRangeReturnsNoRows() {
     runInTenant(
         () -> {

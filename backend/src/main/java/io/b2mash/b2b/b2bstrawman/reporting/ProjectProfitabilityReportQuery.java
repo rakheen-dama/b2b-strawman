@@ -168,7 +168,11 @@ public class ProjectProfitabilityReportQuery implements ReportQuery {
     if (value instanceof LocalDate ld) {
       return ld;
     }
-    return LocalDate.parse(value.toString());
+    var str = value.toString().strip();
+    if (str.isEmpty()) {
+      return null;
+    }
+    return LocalDate.parse(str);
   }
 
   private UUID parseUuid(Map<String, Object> params, String key) {
@@ -179,8 +183,12 @@ public class ProjectProfitabilityReportQuery implements ReportQuery {
     if (value instanceof UUID uuid) {
       return uuid;
     }
+    var str = value.toString().strip();
+    if (str.isEmpty()) {
+      return null;
+    }
     try {
-      return UUID.fromString(value.toString());
+      return UUID.fromString(str);
     } catch (IllegalArgumentException e) {
       throw new InvalidStateException(
           "Invalid parameter", "Parameter '%s' is not a valid UUID: %s".formatted(key, value));

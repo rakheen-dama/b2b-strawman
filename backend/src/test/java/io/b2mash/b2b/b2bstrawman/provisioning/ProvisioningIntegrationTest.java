@@ -102,12 +102,9 @@ class ProvisioningIntegrationTest {
     var result = provisioningService.provisionTenant(clerkOrgId, orgName, null);
 
     assertThat(result.success()).isTrue();
-    // Without vertical profile, OrgSettings may not exist (created lazily)
-    // or if it exists, the default currency should be USD
+    // Without vertical profile, the default currency remains USD
     String currency = getOrgSettingsCurrency(result.schemaName());
-    if (currency != null) {
-      assertThat(currency).isEqualTo("USD");
-    }
+    assertThat(currency).isEqualTo("USD");
   }
 
   @Test

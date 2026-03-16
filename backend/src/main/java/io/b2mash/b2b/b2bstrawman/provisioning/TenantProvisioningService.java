@@ -46,6 +46,8 @@ public class TenantProvisioningService {
   private final TenantTransactionHelper tenantTransactionHelper;
   private final OrgSettingsRepository orgSettingsRepository;
 
+  private static final ObjectMapper PROFILE_READER = new ObjectMapper();
+
   public TenantProvisioningService(
       OrganizationRepository organizationRepository,
       OrgSchemaMappingRepository mappingRepository,
@@ -202,7 +204,7 @@ public class TenantProvisioningService {
       return null;
     }
     try (var is = resource.getInputStream()) {
-      JsonNode root = new ObjectMapper().readTree(is);
+      JsonNode root = PROFILE_READER.readTree(is);
       JsonNode currencyNode = root.get("currency");
       if (currencyNode != null && currencyNode.isTextual()) {
         return currencyNode.asText();

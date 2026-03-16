@@ -2,7 +2,7 @@
 
 ## Current State
 
-- **QA Position**: Day 2, Checkpoint 2.1 complete — proceeding to Day 3
+- **QA Position**: Day 3 complete — proceeding to Day 7
 - **Cycle**: 2
 - **E2E Stack**: Running (rebuilt after PRs #687-690)
 - **Branch**: `bugfix_cycle_2026-03-15`
@@ -69,3 +69,5 @@
 | 2026-03-16T00:05Z | QA | Cycle 2 fix verifications complete. 4/4 VERIFIED: GAP-027 (blocker, customer ONBOARDING crash), GAP-026 (FICA checklist seeding), GAP-025 (team API port), GAP-008C (projects page JS error). All customer pages functional post-ONBOARDING transition. FICA checklist (9 items) instantiatable from Manually Add Checklist dialog. Team page shows 3 members. Projects page renders correctly. |
 | 2026-03-16T00:10Z | QA | Day 1 re-execution (cycle 2). Kgosi Construction created and transitioned to ONBOARDING without crash. FICA checklist instantiated (9 items). Requests tab accessible (GAP-020 confirmed — portal contacts required). Generate Document dropdown shows customer-scoped templates only (engagement letters are project-scoped). Day 1 result: 2 PASS, 3 PARTIAL, 3 FAIL, 1 NOT TESTED. No new blockers. |
 | 2026-03-16T00:15Z | QA | Day 2 partial execution (cycle 2). Naledi Hair Studio created as Individual type by Bob Admin. Customer list shows 3 customers. New gap GAP-029 logged (cosmetic React #418 hydration mismatch on all pages). Day 2 result: 1 PASS, 5 NOT TESTED. |
+| 2026-03-16T00:08Z | QA | Day 2 completion (cycle 2). All remaining Day 2 checkpoints executed. Naledi: custom fields populated (Sole Proprietor, FICA Not Started), transitioned to ONBOARDING, FICA KYC checklist (9 items) instantiated, project "Naledi Hair Studio — Tax Advisory 2026" created. Vukani Tech: customer created (Company type), all Pty Ltd custom fields populated (VAT, company reg, SIC code), transitioned to ONBOARDING, FICA KYC checklist instantiated, project "Vukani Tech — Monthly Bookkeeping 2026" created. Day 2 result: 5 PASS, 1 PARTIAL. |
+| 2026-03-16T00:16Z | QA | Day 3 execution (cycle 2). Moroka Family Trust created by Alice (Owner) with Trust type. Customer list: 5 total. Key finding: CustomerLifecycleGuard blocks project creation for PROSPECT customers — error "Cannot create project for customer in PROSPECT lifecycle status". Moroka Trust projects NOT created (would need ONBOARDING transition first). Script sequence issue, not platform bug. Day 3 result: 2 PASS, 1 PARTIAL, 1 FAIL, 2 NOT TESTED. |

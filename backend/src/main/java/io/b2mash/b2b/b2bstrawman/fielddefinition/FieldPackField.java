@@ -14,7 +14,8 @@ public record FieldPackField(
     List<Map<String, String>> options,
     Map<String, Object> validation,
     int sortOrder,
-    List<String> requiredForContexts) {
+    List<String> requiredForContexts,
+    Map<String, Object> visibilityCondition) {
 
   /** Compact canonical constructor that defaults requiredForContexts to empty list when null. */
   public FieldPackField {

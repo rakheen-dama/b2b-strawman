@@ -11,6 +11,8 @@ import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
+import io.b2mash.b2b.b2bstrawman.portal.PortalContactService;
+import io.b2mash.b2b.b2bstrawman.portal.PortalContactSummary;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.setupstatus.AggregatedCompletenessResponse;
 import io.b2mash.b2b.b2bstrawman.setupstatus.CompletenessScore;
@@ -62,6 +64,7 @@ public class CustomerController {
   private final UnbilledTimeSummaryService unbilledTimeSummaryService;
   private final CustomerReadinessService customerReadinessService;
   private final MemberRepository memberRepository;
+  private final PortalContactService portalContactService;
 
   public CustomerController(
       CustomerService customerService,
@@ -72,7 +75,8 @@ public class CustomerController {
       CustomerLifecycleService customerLifecycleService,
       UnbilledTimeSummaryService unbilledTimeSummaryService,
       CustomerReadinessService customerReadinessService,
-      MemberRepository memberRepository) {
+      MemberRepository memberRepository,
+      PortalContactService portalContactService) {
     this.customerService = customerService;
     this.customerProjectService = customerProjectService;
     this.invoiceService = invoiceService;
@@ -82,6 +86,7 @@ public class CustomerController {
     this.unbilledTimeSummaryService = unbilledTimeSummaryService;
     this.customerReadinessService = customerReadinessService;
     this.memberRepository = memberRepository;
+    this.portalContactService = portalContactService;
   }
 
   @GetMapping
@@ -315,6 +320,14 @@ public class CustomerController {
     customerService.getCustomer(id);
     var tags = entityTagService.getEntityTags("CUSTOMER", id);
     return ResponseEntity.ok(tags);
+  }
+
+  // --- Portal contacts endpoint ---
+
+  @GetMapping("/{id}/portal-contacts")
+  @RequiresCapability("CUSTOMER_MANAGEMENT")
+  public ResponseEntity<List<PortalContactSummary>> getPortalContacts(@PathVariable UUID id) {
+    return ResponseEntity.ok(portalContactService.listPortalContactSummaries(id));
   }
 
   // --- Lifecycle endpoints ---

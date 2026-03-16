@@ -7,7 +7,7 @@ import {
   Activity,
   type LucideIcon,
 } from "lucide-react";
-import { formatRelativeDate } from "@/lib/format";
+import { RelativeDate } from "@/components/ui/relative-date";
 import type { ActivityItem as ActivityItemType } from "@/lib/actions/activity";
 
 interface ActivityItemProps {
@@ -58,9 +58,10 @@ export function ActivityItem({ item }: ActivityItemProps) {
             {item.message}
           </p>
         </div>
-        <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-          {formatRelativeDate(item.occurredAt)}
-        </p>
+        <RelativeDate
+          iso={item.occurredAt}
+          className="mt-0.5 text-xs text-slate-500 dark:text-slate-400"
+        />
       </div>
     </div>
   );

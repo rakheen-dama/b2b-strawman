@@ -47,12 +47,25 @@ const UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
 const rtf = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
 
 /**
- * Formats a number as currency (e.g. "$125.00").
+ * Maps currency codes to their natural locale so Intl.NumberFormat
+ * renders the correct symbol (e.g. ZAR → "R", GBP → "£").
+ */
+const currencyLocaleMap: Record<string, string> = {
+  ZAR: "en-ZA",
+  USD: "en-US",
+  GBP: "en-GB",
+  EUR: "de-DE",
+};
+
+/**
+ * Formats a number as currency (e.g. "$125.00" or "R125.00").
  */
 export function formatCurrency(amount: number, currency: string): string {
-  return new Intl.NumberFormat("en-US", {
+  const code = currency || "USD";
+  const locale = currencyLocaleMap[code] ?? "en-US";
+  return new Intl.NumberFormat(locale, {
     style: "currency",
-    currency: currency || "USD",
+    currency: code,
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(amount ?? 0);

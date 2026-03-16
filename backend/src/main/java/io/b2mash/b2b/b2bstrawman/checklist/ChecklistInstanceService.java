@@ -5,6 +5,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceDtos.ChecklistInstanceResponse;
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceDtos.ChecklistProgressDto;
 import io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleService;
+import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
@@ -73,6 +74,11 @@ public class ChecklistInstanceService {
 
   @Transactional
   public ChecklistInstance createFromTemplate(UUID templateId, UUID customerId) {
+    return createFromTemplate(templateId, customerId, null);
+  }
+
+  @Transactional
+  public ChecklistInstance createFromTemplate(UUID templateId, UUID customerId, Customer customer) {
     var template =
         templateRepository
             .findById(templateId)
@@ -86,12 +92,18 @@ public class ChecklistInstanceService {
 
     var templateItems = templateItemRepository.findByTemplateIdOrderBySortOrder(templateId);
 
+    // Resolve the customer's entity type for filtering
+    String entityType = resolveEntityType(customer, customerId);
+
     var instance = new ChecklistInstance(templateId, customerId, Instant.now());
     instance = instanceRepository.save(instance);
 
-    // First pass: create all instance items without dependencies
+    // First pass: create instance items, filtering by entity type
     Map<UUID, UUID> templateItemIdToInstanceItemId = new HashMap<>();
     for (ChecklistTemplateItem templateItem : templateItems) {
+      if (!isItemApplicable(templateItem, entityType)) {
+        continue;
+      }
       var item =
           new ChecklistInstanceItem(
               instance.getId(),
@@ -102,24 +114,28 @@ public class ChecklistInstanceService {
               templateItem.isRequired(),
               templateItem.isRequiresDocument(),
               templateItem.getRequiredDocumentLabel());
+      item.setApplicableEntityTypes(templateItem.getApplicableEntityTypes());
       item = instanceItemRepository.save(item);
       templateItemIdToInstanceItemId.put(templateItem.getId(), item.getId());
     }
 
     // Second pass: resolve dependencies and block dependent items
     for (ChecklistTemplateItem templateItem : templateItems) {
-      if (templateItem.getDependsOnItemId() != null) {
+      if (templateItem.getDependsOnItemId() != null
+          && templateItemIdToInstanceItemId.containsKey(templateItem.getId())) {
         UUID instanceItemId = templateItemIdToInstanceItemId.get(templateItem.getId());
         UUID dependsOnInstanceItemId =
             templateItemIdToInstanceItemId.get(templateItem.getDependsOnItemId());
-        var item =
-            instanceItemRepository
-                .findById(instanceItemId)
-                .orElseThrow(
-                    () -> new ResourceNotFoundException("ChecklistInstanceItem", instanceItemId));
-        item.setDependsOnItemId(dependsOnInstanceItemId);
-        item.block();
-        instanceItemRepository.save(item);
+        if (dependsOnInstanceItemId != null) {
+          var item =
+              instanceItemRepository
+                  .findById(instanceItemId)
+                  .orElseThrow(
+                      () -> new ResourceNotFoundException("ChecklistInstanceItem", instanceItemId));
+          item.setDependsOnItemId(dependsOnInstanceItemId);
+          item.block();
+          instanceItemRepository.save(item);
+        }
       }
     }
 
@@ -140,6 +156,32 @@ public class ChecklistInstanceService {
         template.getName(),
         customerId);
     return instance;
+  }
+
+  private String resolveEntityType(Customer customer, UUID customerId) {
+    if (customer == null) {
+      customer =
+          customerRepository
+              .findById(customerId)
+              .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+    }
+    var customFields = customer.getCustomFields();
+    if (customFields == null) {
+      return null;
+    }
+    Object value = customFields.get("acct_entity_type");
+    return value != null ? value.toString() : null;
+  }
+
+  private boolean isItemApplicable(ChecklistTemplateItem item, String entityType) {
+    var applicableTypes = item.getApplicableEntityTypes();
+    if (applicableTypes == null || applicableTypes.isEmpty()) {
+      return true; // null = applicable to all entity types
+    }
+    if (entityType == null) {
+      return true; // no entity type set = include all items (backwards compatible)
+    }
+    return applicableTypes.contains(entityType);
   }
 
   @Transactional

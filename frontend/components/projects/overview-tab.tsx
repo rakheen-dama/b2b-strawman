@@ -15,7 +15,8 @@ import {
 import { fetchProjectActivity } from "@/lib/actions/activity";
 import { api } from "@/lib/api";
 import { resolveDateRange } from "@/lib/date-utils";
-import { formatCurrency, formatRelativeDate } from "@/lib/format";
+import { formatCurrency } from "@/lib/format";
+import { RelativeDate } from "@/components/ui/relative-date";
 import { cn } from "@/lib/utils";
 import {
   CheckSquare,
@@ -361,9 +362,10 @@ export async function OverviewTab({
                               {item.message}
                             </p>
                           </div>
-                          <span className="text-xs text-slate-500 dark:text-slate-400">
-                            {formatRelativeDate(item.occurredAt)}
-                          </span>
+                          <RelativeDate
+                            iso={item.occurredAt}
+                            className="text-xs text-slate-500 dark:text-slate-400"
+                          />
                         </div>
                       </div>
                     );

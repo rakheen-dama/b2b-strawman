@@ -21,6 +21,7 @@ interface ClosePeriodDialogProps {
   retainerId: string;
   period: PeriodSummary;
   retainer: RetainerResponse;
+  currency: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -30,6 +31,7 @@ export function ClosePeriodDialog({
   retainerId,
   period,
   retainer,
+  currency,
   open,
   onOpenChange,
 }: ClosePeriodDialogProps) {
@@ -147,7 +149,7 @@ export function ClosePeriodDialog({
                     Base fee
                   </span>
                   <span className="font-medium text-slate-900 dark:text-slate-100">
-                    {formatCurrency(baseFeeAmount, "USD")}
+                    {formatCurrency(baseFeeAmount, currency)}
                   </span>
                 </div>
                 {hasOverage && (
@@ -167,8 +169,8 @@ export function ClosePeriodDialog({
                     </span>
                     <span className="text-slate-900 dark:text-slate-100">
                       {hasOverage
-                        ? `${formatCurrency(baseFeeAmount, "USD")}+`
-                        : formatCurrency(baseFeeAmount, "USD")}
+                        ? `${formatCurrency(baseFeeAmount, currency)}+`
+                        : formatCurrency(baseFeeAmount, currency)}
                     </span>
                   </div>
                 </div>

@@ -2,7 +2,7 @@
   "packId": "fica-kyc-za",
   "name": "FICA KYC — SA Accounting",
   "description": "Comprehensive FICA/KYC compliance checklist for South African accounting firms. Covers identity verification, company registration, tax clearance, banking confirmation, beneficial ownership, and source of funds — aligned with FICA Amendment Act requirements.",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "verticalProfile": "accounting-za",
   "jurisdiction": "ZA",
   "customerType": "ALL",
@@ -18,7 +18,8 @@
         "required": true,
         "requiresDocument": true,
         "requiredDocumentLabel": "Certified ID document (certified within last 3 months)",
-        "dependsOnItemKey": null
+        "dependsOnItemKey": null,
+        "applicableEntityTypes": null
       },
       {
         "name": "Proof of Residence",
@@ -27,7 +28,8 @@
         "required": true,
         "requiresDocument": true,
         "requiredDocumentLabel": "Proof of residence (utility bill or bank statement, <3 months)",
-        "dependsOnItemKey": null
+        "dependsOnItemKey": null,
+        "applicableEntityTypes": null
       },
       {
         "name": "Company Registration (CM29/CoR14.3)",
@@ -36,7 +38,8 @@
         "required": true,
         "requiresDocument": true,
         "requiredDocumentLabel": "CIPC company registration certificate",
-        "dependsOnItemKey": null
+        "dependsOnItemKey": null,
+        "applicableEntityTypes": ["PTY_LTD", "CC", "NPC"]
       },
       {
         "name": "Tax Clearance Certificate",
@@ -45,7 +48,8 @@
         "required": true,
         "requiresDocument": true,
         "requiredDocumentLabel": "SARS tax clearance certificate or TCS pin",
-        "dependsOnItemKey": null
+        "dependsOnItemKey": null,
+        "applicableEntityTypes": null
       },
       {
         "name": "Bank Confirmation Letter",
@@ -54,7 +58,8 @@
         "required": true,
         "requiresDocument": true,
         "requiredDocumentLabel": "Bank confirmation letter (original or certified copy)",
-        "dependsOnItemKey": null
+        "dependsOnItemKey": null,
+        "applicableEntityTypes": null
       },
       {
         "name": "Proof of Business Address",
@@ -63,7 +68,8 @@
         "required": false,
         "requiresDocument": true,
         "requiredDocumentLabel": "Proof of business address (lease or utility bill)",
-        "dependsOnItemKey": null
+        "dependsOnItemKey": null,
+        "applicableEntityTypes": null
       },
       {
         "name": "Resolution / Mandate",
@@ -72,7 +78,8 @@
         "required": false,
         "requiresDocument": true,
         "requiredDocumentLabel": "Board resolution or member mandate",
-        "dependsOnItemKey": null
+        "dependsOnItemKey": null,
+        "applicableEntityTypes": ["PTY_LTD", "CC", "NPC", "TRUST"]
       },
       {
         "name": "Beneficial Ownership Declaration",
@@ -81,7 +88,8 @@
         "required": true,
         "requiresDocument": true,
         "requiredDocumentLabel": "Beneficial ownership declaration form",
-        "dependsOnItemKey": null
+        "dependsOnItemKey": null,
+        "applicableEntityTypes": ["PTY_LTD", "CC", "NPC", "TRUST"]
       },
       {
         "name": "Source of Funds Declaration",
@@ -90,7 +98,28 @@
         "required": false,
         "requiresDocument": true,
         "requiredDocumentLabel": "Source of funds declaration",
-        "dependsOnItemKey": null
+        "dependsOnItemKey": null,
+        "applicableEntityTypes": null
+      },
+      {
+        "name": "Letters of Authority (Master's Office)",
+        "description": "Letters of Authority issued by the Master of the High Court, confirming the appointed trustees. Required for all trust entities.",
+        "sortOrder": 10,
+        "required": true,
+        "requiresDocument": true,
+        "requiredDocumentLabel": "Letters of Authority from the Master's Office",
+        "dependsOnItemKey": null,
+        "applicableEntityTypes": ["TRUST"]
+      },
+      {
+        "name": "Trust Deed (Certified Copy)",
+        "description": "Certified copy of the trust deed, confirming the terms of the trust, beneficiaries, and trustees. Required for all trust entities.",
+        "sortOrder": 11,
+        "required": true,
+        "requiresDocument": true,
+        "requiredDocumentLabel": "Certified copy of trust deed",
+        "dependsOnItemKey": null,
+        "applicableEntityTypes": ["TRUST"]
       }
     ]
   },

@@ -51,7 +51,7 @@ public class ChecklistInstantiationService {
             customerId);
         continue;
       }
-      var instance = instanceService.createFromTemplate(template.getId(), customerId);
+      var instance = instanceService.createFromTemplate(template.getId(), customerId, customer);
       created.add(instance);
       log.info("Auto-instantiated checklist '{}' for customer {}", template.getName(), customerId);
     }

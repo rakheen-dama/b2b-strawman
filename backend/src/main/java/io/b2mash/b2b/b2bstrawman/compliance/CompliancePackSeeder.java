@@ -128,11 +128,6 @@ public class CompliancePackSeeder extends AbstractPackSeeder<CompliancePackDefin
     template.setPackId(pack.packId());
     template.setPackTemplateKey(tpl.slug());
 
-    // FICA packs (autoInstantiate=false) should be inactive by default
-    if (!tpl.autoInstantiate()) {
-      template.setActive(false);
-    }
-
     template = checklistTemplateRepository.save(template);
 
     // 2. Create checklist template items (first pass — no dependencies)

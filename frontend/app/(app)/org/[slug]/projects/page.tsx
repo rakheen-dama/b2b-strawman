@@ -146,7 +146,7 @@ export default async function ProjectsPage({
         projects.map((p) => api.get<Customer[]>(`/api/projects/${p.id}/customers`)),
       );
       customerResults.forEach((result, i) => {
-        if (result.status === "fulfilled" && result.value.length > 0) {
+        if (result.status === "fulfilled" && result.value?.length > 0) {
           projectCustomerMap.set(projects[i].id, result.value[0].id);
         }
       });
@@ -269,7 +269,7 @@ export default async function ProjectsPage({
                     {budgetStatus?.overallStatus && (
                       <BudgetStatusDot status={budgetStatus.overallStatus} />
                     )}
-                    {project.status !== "ACTIVE" && (
+                    {project.status && project.status !== "ACTIVE" && PROJECT_STATUS_BADGE[project.status] && (
                       <Badge variant={PROJECT_STATUS_BADGE[project.status].variant} className="shrink-0" data-testid="project-status-badge">
                         {PROJECT_STATUS_BADGE[project.status].label}
                       </Badge>
@@ -324,7 +324,9 @@ export default async function ProjectsPage({
                         {formatLocalDate(project.dueDate)}
                       </span>
                     )}
-                    <span>{formatDate(project.createdAt)}</span>
+                    {project.createdAt && (
+                      <span>{formatDate(project.createdAt)}</span>
+                    )}
                   </div>
 
                   {/* Tag badges */}

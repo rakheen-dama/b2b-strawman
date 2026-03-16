@@ -14,6 +14,10 @@ import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.PrerequisiteNotMetException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
+import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
+import io.b2mash.b2b.b2bstrawman.portal.PortalContactService;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteContext;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
@@ -78,6 +82,8 @@ public class CustomerLifecycleService {
   private final ChecklistInstanceRepository instanceRepository;
   private final TransactionTemplate requiresNewTx;
   private final PrerequisiteService prerequisiteService;
+  private final PortalContactService portalContactService;
+  private final PortalContactRepository portalContactRepository;
 
   public CustomerLifecycleService(
       CustomerRepository customerRepository,
@@ -88,7 +94,9 @@ public class CustomerLifecycleService {
       ChecklistInstantiationService checklistInstantiationService,
       ChecklistInstanceRepository instanceRepository,
       org.springframework.transaction.PlatformTransactionManager transactionManager,
-      PrerequisiteService prerequisiteService) {
+      PrerequisiteService prerequisiteService,
+      PortalContactService portalContactService,
+      PortalContactRepository portalContactRepository) {
     this.customerRepository = customerRepository;
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
@@ -100,6 +108,8 @@ public class CustomerLifecycleService {
     this.requiresNewTx.setPropagationBehavior(
         org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     this.prerequisiteService = prerequisiteService;
+    this.portalContactService = portalContactService;
+    this.portalContactRepository = portalContactRepository;
   }
 
   @Transactional
@@ -145,6 +155,24 @@ public class CustomerLifecycleService {
     if (oldStatus == LifecycleStatus.PROSPECT && target == LifecycleStatus.ONBOARDING) {
       var created = checklistInstantiationService.instantiateForCustomer(customer);
       checklistsInstantiated = created.size();
+
+      // GAP-020: Auto-create portal contact from customer email
+      if (customer.getEmail() != null && !customer.getEmail().isBlank()) {
+        String orgId = RequestScopes.requireOrgId();
+        if (!portalContactRepository.existsByEmailAndCustomerId(
+            customer.getEmail(), customer.getId())) {
+          portalContactService.createContact(
+              orgId,
+              customer.getId(),
+              customer.getEmail(),
+              customer.getName(),
+              PortalContact.ContactRole.PRIMARY);
+          log.info(
+              "Auto-created portal contact for customer {} with email {}",
+              customer.getId(),
+              customer.getEmail());
+        }
+      }
     }
 
     auditService.log(

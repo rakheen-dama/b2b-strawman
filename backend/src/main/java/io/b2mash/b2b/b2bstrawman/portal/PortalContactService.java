@@ -57,6 +57,16 @@ public class PortalContactService {
   }
 
   @Transactional(readOnly = true)
+  public List<PortalContactSummary> listPortalContactSummaries(UUID customerId) {
+    customerRepository
+        .findById(customerId)
+        .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+    return portalContactRepository.findByCustomerId(customerId).stream()
+        .map(PortalContactSummary::from)
+        .toList();
+  }
+
+  @Transactional(readOnly = true)
   public Optional<PortalContact> findByEmailAndOrg(String email, String orgId) {
     return portalContactRepository.findByEmailAndOrgId(email, orgId);
   }

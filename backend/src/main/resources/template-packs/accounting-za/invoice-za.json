@@ -20,6 +20,15 @@
     {
       "type": "paragraph",
       "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "VAT Registration No:" },
+        { "type": "text", "text": " " },
+        { "type": "variable", "attrs": { "key": "org.taxRegistrationNumber" } }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "paragraph",
+      "content": [
         { "type": "text", "marks": [{ "type": "bold" }], "text": "To:" },
         { "type": "text", "text": " " },
         { "type": "variable", "attrs": { "key": "customer.name" } }
@@ -30,7 +39,7 @@
       "content": [
         { "type": "text", "marks": [{ "type": "bold" }], "text": "Client VAT Number:" },
         { "type": "text", "text": " " },
-        { "type": "variable", "attrs": { "key": "customer.customFields.vat_number" } }
+        { "type": "variable", "attrs": { "key": "customerVatNumber" } }
       ]
     },
     { "type": "horizontalRule" },
@@ -65,6 +74,27 @@
         { "type": "text", "text": " " },
         { "type": "variable", "attrs": { "key": "invoice.currency" } }
       ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [
+        { "type": "text", "text": "Line Items" }
+      ]
+    },
+    {
+      "type": "loopTable",
+      "attrs": {
+        "dataSource": "lines",
+        "columns": [
+          { "header": "Description", "key": "description" },
+          { "header": "Qty", "key": "quantity" },
+          { "header": "Unit Price (excl. VAT)", "key": "unitPrice" },
+          { "header": "VAT", "key": "taxAmount" },
+          { "header": "Total (incl. VAT)", "key": "lineTotal" }
+        ]
+      }
     },
     { "type": "horizontalRule" },
     {

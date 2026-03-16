@@ -5,6 +5,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -77,6 +78,12 @@ public class InvoiceContextBuilder implements TemplateContextBuilder {
                   lineMap.put("quantity", line.getQuantity());
                   lineMap.put("unitPrice", line.getUnitPrice());
                   lineMap.put("amount", line.getAmount());
+                  lineMap.put("taxAmount", line.getTaxAmount());
+                  lineMap.put("taxRateName", line.getTaxRateName());
+                  BigDecimal lineTax =
+                      line.getTaxAmount() != null ? line.getTaxAmount() : BigDecimal.ZERO;
+                  BigDecimal lineTotal = line.getAmount().add(lineTax);
+                  lineMap.put("lineTotal", lineTotal);
                   return (Map<String, Object>) lineMap;
                 })
             .toList();
@@ -94,9 +101,21 @@ public class InvoiceContextBuilder implements TemplateContextBuilder {
               customerMap.put(
                   "customFields",
                   customer.getCustomFields() != null ? customer.getCustomFields() : Map.of());
+              customerMap.put("address", invoice.getCustomerAddress());
               context.put("customer", customerMap);
+
+              // Top-level convenience alias for customer VAT number
+              var customFields = customer.getCustomFields();
+              if (customFields != null && customFields.containsKey("vat_number")) {
+                context.put("customerVatNumber", customFields.get("vat_number"));
+              } else {
+                context.put("customerVatNumber", null);
+              }
             },
-            () -> context.put("customer", null));
+            () -> {
+              context.put("customer", null);
+              context.put("customerVatNumber", null);
+            });
 
     // project.* (from first invoice line with a projectId, null-safe)
     lines.stream()

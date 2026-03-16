@@ -19,6 +19,8 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteContext;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateController.ClauseSelection;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateController.TemplateDetailResponse;
 import java.io.ByteArrayInputStream;
@@ -32,6 +34,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,6 +67,7 @@ public class GeneratedDocumentService {
   private final PdfConversionService pdfConversionService;
   private final ProjectAccessService projectAccessService;
   private final List<TemplateContextBuilder> contextBuilders;
+  private final OrgSettingsRepository orgSettingsRepository;
 
   public GeneratedDocumentService(
       GeneratedDocumentRepository generatedDocumentRepository,
@@ -81,7 +85,8 @@ public class GeneratedDocumentService {
       DocxMergeService docxMergeService,
       PdfConversionService pdfConversionService,
       ProjectAccessService projectAccessService,
-      List<TemplateContextBuilder> contextBuilders) {
+      List<TemplateContextBuilder> contextBuilders,
+      OrgSettingsRepository orgSettingsRepository) {
     this.generatedDocumentRepository = generatedDocumentRepository;
     this.documentTemplateRepository = documentTemplateRepository;
     this.memberNameResolver = memberNameResolver;
@@ -98,6 +103,7 @@ public class GeneratedDocumentService {
     this.pdfConversionService = pdfConversionService;
     this.projectAccessService = projectAccessService;
     this.contextBuilders = contextBuilders;
+    this.orgSettingsRepository = orgSettingsRepository;
   }
 
   /**
@@ -288,6 +294,35 @@ public class GeneratedDocumentService {
             .orElseThrow(() -> new ResourceNotFoundException("GeneratedDocument", id));
     generatedDocumentRepository.delete(doc);
     log.info("Deleted generated document: id={}", id);
+  }
+
+  /**
+   * Resolves the default invoice template based on the org's vertical profile. If verticalProfile
+   * is "accounting-za", returns the "invoice-za" pack template if it exists. Otherwise returns the
+   * generic "invoice" pack template if it exists. Falls back gracefully.
+   *
+   * <p>Uses {@code packTemplateKey} (the stable identifier from the template pack definition)
+   * rather than slug (which is auto-generated from the template name).
+   */
+  @Transactional(readOnly = true)
+  public Optional<DocumentTemplate> resolveDefaultInvoiceTemplate() {
+    String verticalProfile =
+        orgSettingsRepository
+            .findForCurrentTenant()
+            .map(OrgSettings::getVerticalProfile)
+            .orElse(null);
+    if ("accounting-za".equals(verticalProfile)) {
+      Optional<DocumentTemplate> preferred =
+          documentTemplateRepository.findByPackIdAndPackTemplateKey("accounting-za", "invoice-za");
+      if (preferred.isPresent()) {
+        return preferred;
+      }
+    }
+    // Fallback: try a generic "invoice" template from any pack
+    var genericCandidates = documentTemplateRepository.findByPackTemplateKey("invoice");
+    return genericCandidates.isEmpty()
+        ? Optional.empty()
+        : Optional.of(genericCandidates.getFirst());
   }
 
   /**

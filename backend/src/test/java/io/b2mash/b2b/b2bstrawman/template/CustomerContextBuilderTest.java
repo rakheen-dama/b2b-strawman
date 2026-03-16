@@ -9,8 +9,11 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -27,6 +30,7 @@ class CustomerContextBuilderTest {
   @Mock private CustomerRepository customerRepository;
   @Mock private CustomerProjectRepository customerProjectRepository;
   @Mock private ProjectRepository projectRepository;
+  @Mock private InvoiceRepository invoiceRepository;
   @Mock private TemplateContextHelper contextHelper;
 
   @InjectMocks private CustomerContextBuilder builder;
@@ -51,6 +55,7 @@ class CustomerContextBuilderTest {
     var project = new Project("Project Alpha", "desc", memberId);
     when(projectRepository.findAllById(List.of(projectId))).thenReturn(List.of(project));
 
+    when(invoiceRepository.findByCustomerId(customerId)).thenReturn(List.of());
     when(contextHelper.buildTagsList("CUSTOMER", customerId)).thenReturn(List.of());
     when(contextHelper.buildOrgContext()).thenReturn(Map.of());
     when(contextHelper.buildGeneratedByMap(memberId))
@@ -77,6 +82,7 @@ class CustomerContextBuilderTest {
     var customer = new Customer("Solo Customer", "solo@example.com", null, null, null, memberId);
     when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
     when(customerProjectRepository.findByCustomerId(customerId)).thenReturn(List.of());
+    when(invoiceRepository.findByCustomerId(customerId)).thenReturn(List.of());
     when(contextHelper.buildTagsList("CUSTOMER", customerId)).thenReturn(List.of());
     when(contextHelper.buildOrgContext()).thenReturn(Map.of());
     when(contextHelper.buildGeneratedByMap(memberId)).thenReturn(Map.of("name", "Unknown"));
@@ -95,6 +101,7 @@ class CustomerContextBuilderTest {
     customer.setCustomFields(Map.of("industry", "Tech", "tier", "Gold"));
     when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
     when(customerProjectRepository.findByCustomerId(customerId)).thenReturn(List.of());
+    when(invoiceRepository.findByCustomerId(customerId)).thenReturn(List.of());
     when(contextHelper.buildTagsList("CUSTOMER", customerId)).thenReturn(List.of());
     when(contextHelper.buildOrgContext()).thenReturn(Map.of());
     when(contextHelper.buildGeneratedByMap(memberId)).thenReturn(Map.of("name", "Unknown"));
@@ -114,6 +121,7 @@ class CustomerContextBuilderTest {
     var customer = new Customer("Tagged Customer", "tag@example.com", null, null, null, memberId);
     when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
     when(customerProjectRepository.findByCustomerId(customerId)).thenReturn(List.of());
+    when(invoiceRepository.findByCustomerId(customerId)).thenReturn(List.of());
 
     when(contextHelper.buildTagsList("CUSTOMER", customerId))
         .thenReturn(List.of(Map.of("name", "VIP", "color", "#gold")));
@@ -133,6 +141,7 @@ class CustomerContextBuilderTest {
     var customer = new Customer("Logo Customer", "logo@example.com", null, null, null, memberId);
     when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
     when(customerProjectRepository.findByCustomerId(customerId)).thenReturn(List.of());
+    when(invoiceRepository.findByCustomerId(customerId)).thenReturn(List.of());
     when(contextHelper.buildTagsList("CUSTOMER", customerId)).thenReturn(List.of());
 
     when(contextHelper.buildOrgContext())
@@ -144,6 +153,74 @@ class CustomerContextBuilderTest {
     @SuppressWarnings("unchecked")
     var orgMap = (Map<String, Object>) context.get("org");
     assertThat(orgMap.get("logoUrl")).isEqualTo("https://s3.example.com/logo.png");
+  }
+
+  @Test
+  void buildContextWithInvoices() {
+    var customer =
+        new Customer("Invoice Customer", "invoice@example.com", null, null, null, memberId);
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
+    when(customerProjectRepository.findByCustomerId(customerId)).thenReturn(List.of());
+
+    // Create a SENT invoice (outstanding) and a PAID invoice
+    var sentInvoice =
+        new Invoice(customerId, "ZAR", "Invoice Customer", null, null, "Org", memberId);
+    sentInvoice.recalculateTotals(new BigDecimal("1000.00"), false, BigDecimal.ZERO, false);
+    sentInvoice.approve("INV-001", memberId);
+    sentInvoice.markSent();
+
+    var paidInvoice =
+        new Invoice(customerId, "ZAR", "Invoice Customer", null, null, "Org", memberId);
+    paidInvoice.recalculateTotals(new BigDecimal("500.00"), false, BigDecimal.ZERO, false);
+    paidInvoice.approve("INV-002", memberId);
+    paidInvoice.markSent();
+    paidInvoice.recordPayment("PAY-001");
+
+    when(invoiceRepository.findByCustomerId(customerId))
+        .thenReturn(List.of(sentInvoice, paidInvoice));
+    when(contextHelper.buildTagsList("CUSTOMER", customerId)).thenReturn(List.of());
+    when(contextHelper.buildOrgContext()).thenReturn(Map.of());
+    when(contextHelper.buildGeneratedByMap(memberId)).thenReturn(Map.of("name", "Unknown"));
+
+    var context = builder.buildContext(customerId, memberId);
+
+    assertThat(context).containsKey("invoices");
+    assertThat(context).containsKey("totalOutstanding");
+
+    @SuppressWarnings("unchecked")
+    var invoices = (List<Map<String, Object>>) context.get("invoices");
+    assertThat(invoices).hasSize(2);
+
+    // First invoice: SENT (outstanding)
+    assertThat(invoices.get(0).get("invoiceNumber")).isEqualTo("INV-001");
+    assertThat(invoices.get(0).get("status")).isEqualTo("SENT");
+    assertThat(invoices.get(0).get("total")).isEqualTo(new BigDecimal("1000.00"));
+    assertThat(invoices.get(0).get("currency")).isEqualTo("ZAR");
+
+    // Second invoice: PAID (not outstanding)
+    assertThat(invoices.get(1).get("invoiceNumber")).isEqualTo("INV-002");
+    assertThat(invoices.get(1).get("status")).isEqualTo("PAID");
+
+    // Total outstanding should only include SENT invoice
+    assertThat(context.get("totalOutstanding")).isEqualTo(new BigDecimal("1000.00"));
+  }
+
+  @Test
+  void buildContextWithNoInvoicesHasEmptyListAndZeroOutstanding() {
+    var customer = new Customer("No Invoice", "no-inv@example.com", null, null, null, memberId);
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
+    when(customerProjectRepository.findByCustomerId(customerId)).thenReturn(List.of());
+    when(invoiceRepository.findByCustomerId(customerId)).thenReturn(List.of());
+    when(contextHelper.buildTagsList("CUSTOMER", customerId)).thenReturn(List.of());
+    when(contextHelper.buildOrgContext()).thenReturn(Map.of());
+    when(contextHelper.buildGeneratedByMap(memberId)).thenReturn(Map.of("name", "Unknown"));
+
+    var context = builder.buildContext(customerId, memberId);
+
+    @SuppressWarnings("unchecked")
+    var invoices = (List<Map<String, Object>>) context.get("invoices");
+    assertThat(invoices).isEmpty();
+    assertThat(context.get("totalOutstanding")).isEqualTo(BigDecimal.ZERO);
   }
 
   @Test

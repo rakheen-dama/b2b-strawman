@@ -78,33 +78,49 @@ function parseCsvLine(line: string): string[] {
   return fields;
 }
 
+export interface ParseCsvResult {
+  rows: ParsedCsvRow[];
+  warnings: string[];
+}
+
 export function parseCsv(
   content: string,
   availableTasks: GridTaskRow[],
-): ParsedCsvRow[] {
+): ParseCsvResult {
   const lines = content
     .split(/\r?\n/)
     .map((l) => l.trim())
     .filter((l) => l.length > 0);
 
-  if (lines.length === 0) return [];
+  if (lines.length === 0) return { rows: [], warnings: [] };
 
   // Validate header row
   const headerLine = lines[0].toLowerCase();
   const headers = parseCsvLine(headerLine);
 
-  // Check that we have expected headers (at least the required ones)
-  const hasDateHeader =
-    headers.includes("date") || headers[0]?.includes("date");
-  if (!hasDateHeader && lines.length > 0) {
-    // Try treating first line as data if it looks like a date
-    // Otherwise skip it as header
-  }
-
   // Determine start index (skip header if present)
   const datePattern = /^\d{4}-\d{2}-\d{2}$/;
   const startIndex =
     headers.length >= 4 && !datePattern.test(headers[0]) ? 1 : 0;
+
+  // Validate expected headers when a header row is present
+  const expectedHeaders = [
+    "date",
+    "task_name",
+    "project_name",
+    "hours",
+    "description",
+    "billable",
+  ];
+  const headerWarnings: string[] = [];
+  if (startIndex === 1) {
+    const unrecognized = headers.filter((h) => !expectedHeaders.includes(h));
+    if (unrecognized.length > 0) {
+      headerWarnings.push(
+        `Unrecognized CSV headers: ${unrecognized.join(", ")}. Expected: ${expectedHeaders.join(", ")}`,
+      );
+    }
+  }
 
   const rows: ParsedCsvRow[] = [];
 
@@ -158,8 +174,16 @@ export function parseCsv(
       errors.push("Hours cannot exceed 24");
     }
 
-    // Parse billable
-    const billable = billableStr !== "false" && billableStr !== "0";
+    // Parse billable — accept common truthy/falsy values, warn on unrecognized
+    const falsyValues = ["false", "0", "no", "n"];
+    const truthyValues = ["true", "1", "yes", "y", ""];
+    const allKnownValues = [...falsyValues, ...truthyValues];
+    const billable = !falsyValues.includes(billableStr);
+    if (!allKnownValues.includes(billableStr)) {
+      errors.push(
+        `Unrecognized billable value "${fields[5]?.trim() ?? ""}" — defaulting to true`,
+      );
+    }
 
     // Match task by name + project (case-insensitive)
     let matchedTask: GridTaskRow | null = null;
@@ -192,7 +216,7 @@ export function parseCsv(
     });
   }
 
-  return rows;
+  return { rows, warnings: headerWarnings };
 }
 
 // --- CSV Import Dialog Component ---
@@ -219,6 +243,7 @@ export function CsvImportDialog({
 }: CsvImportDialogProps) {
   const [open, setOpen] = useState(false);
   const [parsedRows, setParsedRows] = useState<ParsedCsvRow[]>([]);
+  const [parseWarnings, setParseWarnings] = useState<string[]>([]);
   const [fileName, setFileName] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -229,8 +254,9 @@ export function CsvImportDialog({
       reader.onload = (e) => {
         const content = e.target?.result;
         if (typeof content === "string") {
-          const rows = parseCsv(content, availableTasks);
+          const { rows, warnings } = parseCsv(content, availableTasks);
           setParsedRows(rows);
+          setParseWarnings(warnings);
         }
       };
       reader.readAsText(file);
@@ -273,6 +299,7 @@ export function CsvImportDialog({
     onImport(importData);
     setOpen(false);
     setParsedRows([]);
+    setParseWarnings([]);
     setFileName(null);
   }
 
@@ -280,6 +307,7 @@ export function CsvImportDialog({
     setOpen(newOpen);
     if (!newOpen) {
       setParsedRows([]);
+      setParseWarnings([]);
       setFileName(null);
     }
   }
@@ -330,6 +358,15 @@ export function CsvImportDialog({
               </Button>
             </div>
           </div>
+
+          {/* Header warnings */}
+          {parseWarnings.length > 0 && (
+            <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-300">
+              {parseWarnings.map((w, i) => (
+                <p key={i}>{w}</p>
+              ))}
+            </div>
+          )}
 
           {/* Preview table */}
           {parsedRows.length > 0 && (

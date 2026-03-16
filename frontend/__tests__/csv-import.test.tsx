@@ -23,7 +23,7 @@ describe("CSV Import Parser", () => {
 2026-03-16,Design wireframes,Project Alpha,2,Worked on mockups,true
 2026-03-17,Write API docs,Project Beta,3,,true`;
 
-    const rows = parseCsv(csv, availableTasks);
+    const { rows } = parseCsv(csv, availableTasks);
 
     expect(rows).toHaveLength(2);
 
@@ -57,7 +57,7 @@ invalid-date,Design wireframes,Project Alpha,2,,true
 2026-03-16,Nonexistent task,Project Alpha,2,,true
 2026-03-16,Design wireframes,Project Alpha,0,,true`;
 
-    const rows = parseCsv(csv, availableTasks);
+    const { rows } = parseCsv(csv, availableTasks);
 
     expect(rows).toHaveLength(6);
 
@@ -87,13 +87,13 @@ invalid-date,Design wireframes,Project Alpha,2,,true
   });
 
   it("handles empty CSV content", () => {
-    const rows = parseCsv("", availableTasks);
+    const { rows } = parseCsv("", availableTasks);
     expect(rows).toHaveLength(0);
   });
 
   it("handles CSV with only header row", () => {
     const csv = "date,task_name,project_name,hours,description,billable";
-    const rows = parseCsv(csv, availableTasks);
+    const { rows } = parseCsv(csv, availableTasks);
     expect(rows).toHaveLength(0);
   });
 
@@ -101,7 +101,7 @@ invalid-date,Design wireframes,Project Alpha,2,,true
     const csv = `date,task_name,project_name,hours,description,billable
 2026-03-16,DESIGN WIREFRAMES,PROJECT ALPHA,2,,true`;
 
-    const rows = parseCsv(csv, availableTasks);
+    const { rows } = parseCsv(csv, availableTasks);
 
     expect(rows).toHaveLength(1);
     expect(rows[0].valid).toBe(true);
@@ -113,17 +113,53 @@ invalid-date,Design wireframes,Project Alpha,2,,true
 2026-03-16,Design wireframes,Project Alpha,2,,false
 2026-03-17,Write API docs,Project Beta,2,,true`;
 
-    const rows = parseCsv(csv, availableTasks);
+    const { rows } = parseCsv(csv, availableTasks);
 
     expect(rows[0].billable).toBe(false);
     expect(rows[1].billable).toBe(true);
+  });
+
+  it("parses additional falsy billable values (no, n, 0)", () => {
+    const csv = `date,task_name,project_name,hours,description,billable
+2026-03-16,Design wireframes,Project Alpha,2,,no
+2026-03-17,Write API docs,Project Beta,2,,n`;
+
+    const { rows } = parseCsv(csv, availableTasks);
+
+    expect(rows[0].billable).toBe(false);
+    expect(rows[0].errors).toHaveLength(0);
+    expect(rows[1].billable).toBe(false);
+    expect(rows[1].errors).toHaveLength(0);
+  });
+
+  it("warns on unrecognized billable value but defaults to true", () => {
+    const csv = `date,task_name,project_name,hours,description,billable
+2026-03-16,Design wireframes,Project Alpha,2,,maybe`;
+
+    const { rows } = parseCsv(csv, availableTasks);
+
+    expect(rows[0].billable).toBe(true);
+    expect(rows[0].errors.some((e) => e.includes("Unrecognized billable value"))).toBe(true);
+  });
+
+  it("returns warnings for unrecognized CSV headers", () => {
+    const csv = `date,task_name,project_name,hours,notes,is_billable
+2026-03-16,Design wireframes,Project Alpha,2,,true`;
+
+    const { rows, warnings } = parseCsv(csv, availableTasks);
+
+    expect(rows).toHaveLength(1);
+    expect(warnings.length).toBeGreaterThan(0);
+    expect(warnings[0]).toContain("Unrecognized CSV headers");
+    expect(warnings[0]).toContain("notes");
+    expect(warnings[0]).toContain("is_billable");
   });
 
   it("validates hours exceed 24", () => {
     const csv = `date,task_name,project_name,hours,description,billable
 2026-03-16,Design wireframes,Project Alpha,25,,true`;
 
-    const rows = parseCsv(csv, availableTasks);
+    const { rows } = parseCsv(csv, availableTasks);
 
     expect(rows[0].valid).toBe(false);
     expect(rows[0].errors).toContain("Hours cannot exceed 24");

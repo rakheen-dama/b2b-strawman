@@ -369,11 +369,30 @@ export function WeeklyTimeGrid({
   ) {
     if (rows.length === 0) return;
 
+    const totalRows = rows.length;
+
+    // Pre-filter rows to entries within the current week
+    const weekEndMs = addDays(weekStart, 6).getTime();
+    const weekStartMs = weekStart.getTime();
+    const inWeekRows = rows.filter((row) => {
+      const entryMs = parseIsoDate(row.date).getTime();
+      return entryMs >= weekStartMs && entryMs <= weekEndMs;
+    });
+
+    const skippedCount = totalRows - inWeekRows.length;
+
+    if (inWeekRows.length === 0) {
+      toast.warning(
+        `No entries fell within the current week (${totalRows} outside range)`,
+      );
+      return;
+    }
+
     // Add any new task rows
     const currentTaskIds = new Set(taskRows.map((t) => t.id));
     const newTaskRows: GridTaskRow[] = [];
 
-    for (const row of rows) {
+    for (const row of inWeekRows) {
       if (!currentTaskIds.has(row.taskId)) {
         newTaskRows.push(row.task);
         currentTaskIds.add(row.taskId);
@@ -385,7 +404,7 @@ export function WeeklyTimeGrid({
     }
 
     // Convert imported rows to MyWorkTimeEntryItem format for buildCellValuesFromEntries
-    const importedEntries: MyWorkTimeEntryItem[] = rows.map((row) => ({
+    const importedEntries: MyWorkTimeEntryItem[] = inWeekRows.map((row) => ({
       id: "",
       taskId: row.taskId,
       taskTitle: row.task.title,
@@ -406,7 +425,14 @@ export function WeeklyTimeGrid({
     setCellValues((prev) => ({ ...prev, ...importedCellValues }));
     setCellErrors({});
     setDirty(true);
-    toast.success(`Imported ${rows.length} entries from CSV`);
+
+    if (skippedCount > 0) {
+      toast.warning(
+        `Imported ${inWeekRows.length} of ${totalRows} entries (${skippedCount} outside current week)`,
+      );
+    } else {
+      toast.success(`Imported ${inWeekRows.length} entries from CSV`);
+    }
   }
 
   return (

@@ -53,7 +53,7 @@ export function AllocationGrid({
     );
   }
 
-  const weekStarts = members[0]?.weeks.map((w) => w.weekStart) ?? [];
+  const weekStarts = members[0]?.weeks?.map((w) => w.weekStart) ?? [];
 
   function handleMemberClick(member: MemberRow) {
     setSelectedMember(member);
@@ -111,7 +111,7 @@ export function AllocationGrid({
                       />
                     ) : (
                       <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-200 text-xs font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">
-                        {member.memberName
+                        {(member.memberName ?? "?")
                           .split(" ")
                           .map((n) => n[0])
                           .join("")
@@ -124,7 +124,7 @@ export function AllocationGrid({
                     </span>
                   </button>
                 </td>
-                {member.weeks.map((week) => (
+                {(member.weeks ?? []).map((week) => (
                   <td key={week.weekStart} className="px-2 py-2">
                     <AllocationPopover
                       memberId={member.memberId}

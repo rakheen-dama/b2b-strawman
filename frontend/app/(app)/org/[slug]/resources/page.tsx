@@ -40,13 +40,29 @@ export default async function ResourcesPage({
   let projectOptions: { id: string; name: string }[] = [];
 
   try {
-    grid = await getTeamCapacityGrid(weekStart, weekEnd);
+    const raw = await getTeamCapacityGrid(weekStart, weekEnd);
+    grid = {
+      members: (raw.members ?? []).map((m) => ({
+        ...m,
+        memberName: m.memberName ?? "Unknown",
+        weeks: (m.weeks ?? []).map((w) => ({
+          ...w,
+          allocations: w.allocations ?? [],
+        })),
+      })),
+      weekSummaries: raw.weekSummaries ?? [],
+    };
   } catch (err) {
     console.error("Failed to load team capacity grid", err);
   }
 
   try {
-    const projects = await api.get<Project[]>("/api/projects");
+    const raw = await api.get<Project[] | { content: Project[] }>(
+      "/api/projects",
+    );
+    const projects = Array.isArray(raw)
+      ? raw
+      : ((raw as { content: Project[] }).content ?? []);
     projectOptions = projects
       .filter((p) => p.status === "ACTIVE")
       .map((p) => ({ id: p.id, name: p.name }));

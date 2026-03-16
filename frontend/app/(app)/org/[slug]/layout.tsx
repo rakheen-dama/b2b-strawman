@@ -39,26 +39,30 @@ export default async function OrgLayout({
     redirect(`/org/${orgSlug}/dashboard`);
   }
 
+  const [capResult, settingsResult] = await Promise.allSettled([
+    fetchMyCapabilities(),
+    getOrgSettings(),
+  ]);
+
   let capData = {
     capabilities: [] as string[],
     role: "member",
     isAdmin: false,
     isOwner: false,
   };
-  try {
-    capData = await fetchMyCapabilities();
-  } catch (err) {
+  if (capResult.status === "fulfilled") {
+    capData = capResult.value;
+  } else {
     // Capabilities unavailable — degrade gracefully, backend still enforces access control
-    console.error("Failed to fetch capabilities, falling back to empty:", err);
+    console.error("Failed to fetch capabilities, falling back to empty:", capResult.reason);
   }
 
   let verticalProfile: string | null = null;
-  try {
-    const settings = await getOrgSettings();
-    verticalProfile = settings.verticalProfile ?? null;
-  } catch (err) {
+  if (settingsResult.status === "fulfilled") {
+    verticalProfile = settingsResult.value.verticalProfile ?? null;
+  } else {
     // Settings unavailable — fall back to no terminology overrides
-    console.error("Failed to fetch org settings for terminology:", err);
+    console.error("Failed to fetch org settings for terminology:", settingsResult.reason);
   }
 
   return (

@@ -60,3 +60,29 @@ export async function fetchWeekEntries(
     return [];
   }
 }
+
+/**
+ * Fetches time entries for the previous week (weekStart - 7 to weekStart - 1).
+ * Used by Copy Previous Week feature to pre-fill the current week's grid.
+ */
+export async function fetchPreviousWeekEntries(
+  weekStart: string,
+): Promise<import("@/lib/types").MyWorkTimeEntryItem[]> {
+  // weekStart is a Monday (YYYY-MM-DD). Previous week = weekStart-7 to weekStart-1
+  const [y, m, d] = weekStart.split("-").map(Number);
+  const monday = new Date(y, m - 1, d);
+  const prevMonday = new Date(monday);
+  prevMonday.setDate(monday.getDate() - 7);
+  const prevSunday = new Date(monday);
+  prevSunday.setDate(monday.getDate() - 1);
+
+  const from = prevMonday.toLocaleDateString("en-CA");
+  const to = prevSunday.toLocaleDateString("en-CA");
+
+  try {
+    return await api.get(`/api/my-work/time-entries?from=${from}&to=${to}`);
+  } catch (error) {
+    console.error("Failed to fetch previous week entries:", error);
+    return [];
+  }
+}

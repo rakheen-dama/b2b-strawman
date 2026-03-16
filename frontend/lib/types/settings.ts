@@ -39,6 +39,8 @@ export interface OrgSettings {
   defaultBillingRunCurrency?: string | null;
   // project naming
   projectNamingPattern?: string | null;
+  // vertical profile for terminology overrides
+  verticalProfile?: string | null;
 }
 
 export interface UpdateBatchBillingSettingsRequest {

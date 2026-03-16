@@ -97,7 +97,7 @@ export function InvoiceHeaderActions({
                   onClick={onSend}
                   disabled={isPending}
                 >
-                  Mark as Sent
+                  Send Invoice
                 </Button>
                 <Button
                   variant="destructive"

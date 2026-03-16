@@ -24,7 +24,7 @@ Phase 47's QA cycle surfaced 31 gaps; 10 were fixed during the cycle (PRs #687-#
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 359 | Automation Wiring: PROPOSAL_SENT + CUSTOMER_STATUS_CHANGED (GAP-001, GAP-003) | Backend | -- | M | 359A | |
+| 359 | Automation Wiring: PROPOSAL_SENT + CUSTOMER_STATUS_CHANGED (GAP-001, GAP-003) | Backend | -- | M | 359A | **Done** (PR #704) |
 | 360 | Field Date Scanner + FIELD_DATE_APPROACHING Trigger (GAP-002) | Backend | 359 | M | 360A, 360B | |
 | 361 | SA Invoice Template Wiring (GAP-016) | Backend | -- | S | 361A | |
 | 362 | Proposal Summary Backend + Dashboard Frontend (GAP-013) | Both | -- | M | 362A, 362B | |
@@ -79,7 +79,7 @@ AUTOMATION WIRING (sequential)        SA VERTICAL POLISH (parallel)         BULK
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 0a (parallel) | 359 | 359A | `PROPOSAL_SENT` + `CUSTOMER_STATUS_CHANGED` trigger wiring, `CustomerStatusChangedEvent` DomainEvent conversion, `AutomationContext` stubs, automation templates, integration tests (~6). Backend only. | |
+| 0a (parallel) | 359 | 359A | `PROPOSAL_SENT` + `CUSTOMER_STATUS_CHANGED` trigger wiring, `CustomerStatusChangedEvent` DomainEvent conversion, `AutomationContext` stubs, automation templates, integration tests (~6). Backend only. | **Done** (PR #704) |
 | 0b (parallel) | 361 | 361A | `InvoiceContextBuilder` VAT extraction, `invoice-za` template pack wiring, vertical-to-template slug lookup, render integration test (~3). Backend only. | |
 | 0c (parallel) | 362 | 362A | `ProposalService.getProposalSummary()`, `GET /api/proposals/summary` endpoint, DTO records, integration tests (~4). Backend only. | |
 | 0d (parallel) | 365 | 365A | `TimeEntryBatchService`, `POST /api/time-entries/batch` endpoint, partial success logic, rate snapshots, integration tests (~5). Backend only. | |
@@ -125,7 +125,7 @@ AUTOMATION WIRING (sequential)        SA VERTICAL POLISH (parallel)         BULK
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **359A** | 359.1--359.12 | Convert `CustomerStatusChangedEvent` to `DomainEvent` record, add `PROPOSAL_SENT` to `TriggerType`, add trigger mappings, fill in `AutomationContext` builders, update event publishers, seed automation templates in `accounting-za.json` and `common.json`, integration tests (~6). Backend only. | |
+| **359A** | 359.1--359.12 | Convert `CustomerStatusChangedEvent` to `DomainEvent` record, add `PROPOSAL_SENT` to `TriggerType`, add trigger mappings, fill in `AutomationContext` builders, update event publishers, seed automation templates in `accounting-za.json` and `common.json`, integration tests (~6). Backend only. | **Done** (PR #704) |
 
 ### Tasks
 

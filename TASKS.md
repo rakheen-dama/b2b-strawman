@@ -406,7 +406,7 @@
 | 357 | 90-Day Lifecycle Script + Agent Execution | Process | 354, 355, 356 | L | 357A | **Done** (PR #686) |
 | 358 | Founder Walkthrough Guide + Gap Consolidation | Process | 357 | M | 358A | |
 | **Phase 48 — QA Gap Closure (Automation Wiring, SA Invoice, Org Settings, Bulk UX)** | | | | | | See [tasks/phase48-qa-gap-closure.md](tasks/phase48-qa-gap-closure.md) |
-| 359 | Automation Wiring: PROPOSAL_SENT + CUSTOMER_STATUS_CHANGED (GAP-001, GAP-003) | Backend | -- | M | 359A | |
+| 359 | Automation Wiring: PROPOSAL_SENT + CUSTOMER_STATUS_CHANGED (GAP-001, GAP-003) | Backend | -- | M | 359A | **Done** (PR #704) |
 | 360 | Field Date Scanner + FIELD_DATE_APPROACHING Trigger (GAP-002) | Backend | 359 | M | 360A, 360B | |
 | 361 | SA Invoice Template Wiring (GAP-016) | Backend | -- | S | 361A | |
 | 362 | Proposal Summary Backend + Dashboard Frontend (GAP-013) | Both | -- | M | 362A, 362B | |

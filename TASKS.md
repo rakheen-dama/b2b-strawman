@@ -409,7 +409,7 @@
 | 359 | Automation Wiring: PROPOSAL_SENT + CUSTOMER_STATUS_CHANGED (GAP-001, GAP-003) | Backend | -- | M | 359A | **Done** (PR #704) |
 | 360 | Field Date Scanner + FIELD_DATE_APPROACHING Trigger (GAP-002) | Backend | 359 | M | 360A, 360B | **Done** (PRs #705, #706) |
 | 361 | SA Invoice Template Wiring (GAP-016) | Backend | -- | S | 361A | **Done** (PR #707) |
-| 362 | Proposal Summary Backend + Dashboard Frontend (GAP-013) | Both | -- | M | 362A, 362B | |
+| 362 | Proposal Summary Backend + Dashboard Frontend (GAP-013) | Both | -- | M | 362A, 362B | 362A **Done** (PR #708) |
 | 363 | Org Settings Hub Page (GAP-008A) | Frontend | -- | S | 363A | |
 | 364 | Terminology Overrides (GAP-005) | Frontend | -- | M | 364A, 364B | |
 | 365 | Bulk Time Entry Backend (GAP-015) | Backend | -- | M | 365A | |

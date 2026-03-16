@@ -81,7 +81,7 @@ AUTOMATION WIRING (sequential)        SA VERTICAL POLISH (parallel)         BULK
 |-------|------|-------|---------|--------|
 | 0a (parallel) | 359 | 359A | `PROPOSAL_SENT` + `CUSTOMER_STATUS_CHANGED` trigger wiring, `CustomerStatusChangedEvent` DomainEvent conversion, `AutomationContext` stubs, automation templates, integration tests (~6). Backend only. | **Done** (PR #704) |
 | 0b (parallel) | 361 | 361A | `InvoiceContextBuilder` VAT extraction, `invoice-za` template pack wiring, vertical-to-template slug lookup, render integration test (~3). Backend only. | **Done** (PR #707) |
-| 0c (parallel) | 362 | 362A | `ProposalService.getProposalSummary()`, `GET /api/proposals/summary` endpoint, DTO records, integration tests (~4). Backend only. | |
+| 0c (parallel) | 362 | 362A | `ProposalService.getProposalSummary()`, `GET /api/proposals/summary` endpoint, DTO records, integration tests (~4). Backend only. | **Done** (PR #708) |
 | 0d (parallel) | 365 | 365A | `TimeEntryBatchService`, `POST /api/time-entries/batch` endpoint, partial success logic, rate snapshots, integration tests (~5). Backend only. | |
 
 ### Stage 1: Dependent Backend Slices + Independent Frontend Slices (parallel)
@@ -272,7 +272,7 @@ AUTOMATION WIRING (sequential)        SA VERTICAL POLISH (parallel)         BULK
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **362A** | 362.1--362.5 | `ProposalService.getProposalSummary()` method, `ProposalSummaryDto` record, `ProposalController.getSummary()` endpoint, integration tests (~4). Backend only. | |
+| **362A** | 362.1--362.5 | `ProposalService.getProposalSummary()` method, `ProposalSummaryDto` record, `ProposalController.getSummary()` endpoint, integration tests (~4). Backend only. | **Done** (PR #708) |
 | **362B** | 362.6--362.11 | `proposals/page.tsx` dashboard, summary cards component, needs-attention list, proposal table with filters, sidebar nav update, frontend tests (~4). Frontend only. | |
 
 ### Tasks

@@ -29,7 +29,7 @@ Phase 47's QA cycle surfaced 31 gaps; 10 were fixed during the cycle (PRs #687-#
 | 361 | SA Invoice Template Wiring (GAP-016) | Backend | -- | S | 361A | **Done** (PR #707) |
 | 362 | Proposal Summary Backend + Dashboard Frontend (GAP-013) | Both | -- | M | 362A, 362B | **Done** (PRs #708, #709) |
 | 363 | Org Settings Hub Page (GAP-008A) | Frontend | -- | S | 363A | **Done** (PR #710) |
-| 364 | Terminology Overrides (GAP-005) | Frontend | -- | M | 364A, 364B | |
+| 364 | Terminology Overrides (GAP-005) | Frontend | -- | M | 364A, 364B | **Done** (PRs #711, #712) |
 | 365 | Bulk Time Entry Backend (GAP-015) | Backend | -- | M | 365A | |
 | 366 | Bulk Time Entry Frontend -- Weekly Grid (GAP-015) | Frontend | 365 | L | 366A, 366B | |
 
@@ -98,7 +98,7 @@ AUTOMATION WIRING (sequential)        SA VERTICAL POLISH (parallel)         BULK
 |-------|------|-------|---------|--------|
 | 2a | 360 | 360B | `FieldDateScannerJob` with `@Scheduled`, per-tenant iteration, dedup check, `sars-deadline-reminder` automation template, integration tests (~4). Backend only. | **Done** (PR #706) |
 | 2b (parallel) | 362 | 362B | `proposals/page.tsx` dashboard, summary cards, needs-attention list, proposal table, sidebar nav update, frontend tests (~4). Frontend only. | **Done** (PR #709) |
-| 2c (parallel) | 364 | 364B | Apply `t()` to ~30-40 locations: sidebar nav labels, page headings, breadcrumbs, empty states, button labels, frontend tests (~3). Frontend only. | |
+| 2c (parallel) | 364 | 364B | Apply `t()` to ~30-40 locations: sidebar nav labels, page headings, breadcrumbs, empty states, button labels, frontend tests (~3). Frontend only. | **Done** (PR #712) |
 | 2d (parallel) | 366 | 366A | `WeeklyTimeGrid` component, grid state management, editable cells, row/column/grand totals, week navigation, batch save integration, frontend tests (~4). Frontend only. | |
 
 ### Stage 3: Final Dependent Slices
@@ -366,7 +366,7 @@ AUTOMATION WIRING (sequential)        SA VERTICAL POLISH (parallel)         BULK
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **364A** | 364.1--364.5 | `lib/terminology.ts` map, `lib/terminology.tsx` TerminologyProvider + useTerminology hook, wrap app layout with provider, unit tests (~3). Frontend only. | **Done** (PR #711) |
-| **364B** | 364.6--364.10 | Apply `t()` to ~30-40 locations: sidebar nav labels, page headings, breadcrumbs, empty states, major button labels, integration tests (~3). Frontend only. | |
+| **364B** | 364.6--364.10 | Apply `t()` to ~30-40 locations: sidebar nav labels, page headings, breadcrumbs, empty states, major button labels, integration tests (~3). Frontend only. | **Done** (PR #712) |
 
 ### Tasks
 

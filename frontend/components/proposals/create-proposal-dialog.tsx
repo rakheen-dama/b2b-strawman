@@ -189,6 +189,7 @@ export function CreateProposalDialog({
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
+                            type="button"
                             variant="outline"
                             role="combobox"
                             aria-expanded={customerPopoverOpen}

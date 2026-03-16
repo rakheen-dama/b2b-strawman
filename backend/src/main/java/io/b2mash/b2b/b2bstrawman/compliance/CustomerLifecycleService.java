@@ -16,7 +16,6 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
-import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactService;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteContext;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService;
@@ -83,7 +82,6 @@ public class CustomerLifecycleService {
   private final TransactionTemplate requiresNewTx;
   private final PrerequisiteService prerequisiteService;
   private final PortalContactService portalContactService;
-  private final PortalContactRepository portalContactRepository;
 
   public CustomerLifecycleService(
       CustomerRepository customerRepository,
@@ -95,8 +93,7 @@ public class CustomerLifecycleService {
       ChecklistInstanceRepository instanceRepository,
       org.springframework.transaction.PlatformTransactionManager transactionManager,
       PrerequisiteService prerequisiteService,
-      PortalContactService portalContactService,
-      PortalContactRepository portalContactRepository) {
+      PortalContactService portalContactService) {
     this.customerRepository = customerRepository;
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
@@ -109,7 +106,6 @@ public class CustomerLifecycleService {
         org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     this.prerequisiteService = prerequisiteService;
     this.portalContactService = portalContactService;
-    this.portalContactRepository = portalContactRepository;
   }
 
   @Transactional
@@ -159,18 +155,16 @@ public class CustomerLifecycleService {
       // GAP-020: Auto-create portal contact from customer email
       if (customer.getEmail() != null && !customer.getEmail().isBlank()) {
         String orgId = RequestScopes.requireOrgId();
-        if (!portalContactRepository.existsByEmailAndCustomerId(
-            customer.getEmail(), customer.getId())) {
+        try {
           portalContactService.createContact(
               orgId,
               customer.getId(),
               customer.getEmail(),
               customer.getName(),
               PortalContact.ContactRole.PRIMARY);
-          log.info(
-              "Auto-created portal contact for customer {} with email {}",
-              customer.getId(),
-              customer.getEmail());
+          log.info("Auto-created portal contact for customer {}", customer.getId());
+        } catch (io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException e) {
+          log.debug("Portal contact already exists for customer {}", customer.getId());
         }
       }
     }

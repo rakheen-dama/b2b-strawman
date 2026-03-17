@@ -33,3 +33,46 @@ Currency formatting uses `Locale.of("en", "ZA")` with an existing TODO about mul
 The top-level `customerVatNumber` alias reads from `customer.getCustomFields()` (raw storage value) while `customer.customFields` in the context map has been through `resolveDropdownLabels`. Since `vat_number` is a TEXT field (not DROPDOWN), this doesn't cause a bug today, but the inconsistency could bite if field types change.
 
 **Recommendation**: Read the alias from the already-resolved context map instead of from the raw entity.
+
+## 5. Portal acceptance page missing (GAP-P49-005) — Track T6 blocked
+
+**Severity**: Blocker for e-signing workflow
+
+The entire document acceptance / e-signing track (Track 6 — 25 checkpoints) could not be tested because the portal has no acceptance page. The backend is fully implemented, and the firm-side UI exists — only the client-facing portal page is missing.
+
+### What exists (backend)
+
+- `PortalAcceptanceController.java` — REST API at `/api/portal/acceptance/{token}`:
+  - `GET /{token}` — view acceptance request details
+  - `GET /{token}/pdf` — stream the PDF for in-browser viewing
+  - `POST /{token}/accept` — accept with typed name, records IP + timestamp
+- `AcceptanceService.java` — token resolution, accept/view/revoke logic, expiry handling
+- `AcceptanceCertificateService.java` — generates Certificate of Acceptance PDF with SHA-256 document hash
+
+### What exists (firm-side frontend)
+
+- `frontend/components/acceptance/SendForAcceptanceDialog.tsx` — firm user sends doc for acceptance
+- `frontend/components/acceptance/AcceptanceDetailPanel.tsx` — shows acceptance status, metadata, certificate download
+- `frontend/components/acceptance/AcceptanceStatusBadge.tsx` — status indicator
+
+### What's missing (portal frontend)
+
+No page exists at `frontend/app/portal/` for acceptance. The portal only has:
+- `frontend/app/portal/(authenticated)/documents/` — document viewing
+- `frontend/app/portal/(authenticated)/projects/` — project viewing
+- `frontend/app/portal/(authenticated)/requests/` — information request responses
+
+### Recommendation
+
+Create a portal acceptance page, likely at `frontend/app/portal/accept/[token]/page.tsx`. This should be **outside** the `(authenticated)` layout since acceptance uses token-based auth (magic link from email), not session auth. The page needs:
+
+1. Call `GET /api/portal/acceptance/{token}` to load acceptance details
+2. Embed or link the PDF (`GET /api/portal/acceptance/{token}/pdf`)
+3. Acceptance form: full name text input + "I Accept" button
+4. Call `POST /api/portal/acceptance/{token}/accept` with typed name
+5. Confirmation screen after acceptance
+6. Handle expired tokens gracefully (show expiry message)
+
+**Effort**: L (half day) — new page + PDF viewer + form + confirmation + error states.
+
+**Dependencies**: None — all backend APIs exist and are tested. This is purely a frontend build task.

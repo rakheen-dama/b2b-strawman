@@ -48,8 +48,12 @@ export function MockAuthContextProvider({
     }
 
     const payload = decodeJwtPayload(rawToken);
-    const userId = (payload?.sub as string) ?? null;
-    const organization = payload?.organization as string[] | undefined;
+    const userId = typeof payload?.sub === "string" ? payload.sub : null;
+    const organization =
+      Array.isArray(payload?.organization) &&
+      payload.organization.every((v): v is string => typeof v === "string")
+        ? payload.organization
+        : undefined;
 
     setToken(rawToken);
     setOrgSlug(organization?.[0] ?? null);
@@ -61,7 +65,7 @@ export function MockAuthContextProvider({
 
     let cancelled = false;
 
-    fetch(`${MOCK_IDP_URL}/userinfo/${userId}`, {
+    fetch(`${MOCK_IDP_URL}/userinfo/${encodeURIComponent(userId)}`, {
       signal: AbortSignal.timeout(3000),
     })
       .then((res) => (res.ok ? res.json() : null))

@@ -102,7 +102,7 @@ for LEGACY_ID in $LEGACY_IDS; do
   case "$S" in
     204) echo "    [ok] Removed orphaned member: ${LEGACY_ID}"; CLEANED=$((CLEANED + 1)) ;;
     404) ;; # Not found — already clean
-    *) echo "    [warn] Unexpected status for ${LEGACY_ID}: HTTP ${S}" ;;
+    *) echo "    [FAIL] Unexpected status for ${LEGACY_ID}: HTTP ${S}"; exit 1 ;;
   esac
 done
 if [ "$CLEANED" -eq 0 ]; then

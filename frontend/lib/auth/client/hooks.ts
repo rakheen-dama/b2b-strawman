@@ -39,6 +39,7 @@ export function useOrgMembers(): {
       return;
     }
 
+    setIsLoaded(false);
     let cancelled = false;
 
     fetch(`${BACKEND_URL}/api/members`, {

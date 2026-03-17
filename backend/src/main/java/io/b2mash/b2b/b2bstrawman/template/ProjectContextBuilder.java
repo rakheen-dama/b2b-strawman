@@ -56,6 +56,7 @@ public class ProjectContextBuilder implements TemplateContextBuilder {
             .orElseThrow(() -> new ResourceNotFoundException("Project", entityId));
 
     var context = new HashMap<String, Object>();
+    contextHelper.populateLocale(context);
     var fieldDefCache = new EnumMap<EntityType, List<FieldDefinition>>(EntityType.class);
 
     // project.*

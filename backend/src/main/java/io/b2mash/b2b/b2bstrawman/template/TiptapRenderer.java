@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -283,7 +284,8 @@ public class TiptapRenderer {
       if (current == null) return "";
     }
     String typeHint = formatHints != null ? formatHints.get(key) : null;
-    return VariableFormatter.format(current, typeHint);
+    Locale renderLocale = context.get("_locale") instanceof Locale l ? l : null;
+    return VariableFormatter.format(current, typeHint, renderLocale);
   }
 
   @SuppressWarnings("unchecked")
@@ -303,13 +305,14 @@ public class TiptapRenderer {
     sb.append("</tr></thead>");
     sb.append("<tbody>");
     if (rows != null) {
+      Locale renderLocale = context.get("_locale") instanceof Locale l ? l : null;
       for (var row : rows) {
         sb.append("<tr>");
         for (var col : columns) {
           String colKey = (String) col.get("key");
           String colFormat = (String) col.get("format");
           Object val = colKey != null ? row.get(colKey) : null;
-          String cellText = VariableFormatter.format(val, colFormat);
+          String cellText = VariableFormatter.format(val, colFormat, renderLocale);
           sb.append("<td>").append(cellText).append("</td>");
         }
         sb.append("</tr>");

@@ -52,6 +52,7 @@ public class InvoiceContextBuilder implements TemplateContextBuilder {
             .orElseThrow(() -> new ResourceNotFoundException("Invoice", entityId));
 
     var context = new HashMap<String, Object>();
+    contextHelper.populateLocale(context);
     var fieldDefCache = new EnumMap<EntityType, List<FieldDefinition>>(EntityType.class);
 
     // invoice.*

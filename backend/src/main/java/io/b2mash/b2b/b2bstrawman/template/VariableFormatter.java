@@ -20,34 +20,62 @@ public final class VariableFormatter {
 
   private VariableFormatter() {}
 
+  private static final Locale ZA_LOCALE = Locale.of("en", "ZA");
+
   /**
-   * Formats a value based on its type hint.
+   * Formats a value based on its type hint and locale.
+   *
+   * @param value the raw value to format
+   * @param typeHint the type hint ("currency", "date", "number", or null for default)
+   * @param locale the locale for currency/number formatting; falls back to ZA if null
+   * @return HTML-escaped formatted string, or empty string for null values
+   */
+  public static String format(Object value, String typeHint, Locale locale) {
+    if (value == null) return "";
+    if (typeHint == null) return HtmlUtils.htmlEscape(String.valueOf(value));
+
+    Locale effectiveLocale = locale != null ? locale : ZA_LOCALE;
+    return switch (typeHint) {
+      case "currency" -> formatCurrency(value, effectiveLocale);
+      case "date" -> formatDate(value);
+      case "number" -> formatNumber(value, effectiveLocale);
+      default -> HtmlUtils.htmlEscape(String.valueOf(value));
+    };
+  }
+
+  /**
+   * Formats a value based on its type hint using the default ZA locale.
    *
    * @param value the raw value to format
    * @param typeHint the type hint ("currency", "date", "number", or null for default)
    * @return HTML-escaped formatted string, or empty string for null values
    */
   public static String format(Object value, String typeHint) {
-    if (value == null) return "";
-    if (typeHint == null) return HtmlUtils.htmlEscape(String.valueOf(value));
+    return format(value, typeHint, ZA_LOCALE);
+  }
 
-    return switch (typeHint) {
-      case "currency" -> formatCurrency(value);
-      case "date" -> formatDate(value);
-      case "number" -> formatNumber(value);
-      default -> HtmlUtils.htmlEscape(String.valueOf(value));
+  /**
+   * Resolves a currency code to the appropriate locale for formatting.
+   *
+   * @param currencyCode ISO 4217 currency code (e.g., "ZAR", "USD", "GBP", "EUR")
+   * @return the locale for formatting; defaults to en-ZA if code is null or unrecognized
+   */
+  public static Locale resolveLocale(String currencyCode) {
+    if (currencyCode == null) return ZA_LOCALE;
+    return switch (currencyCode) {
+      case "ZAR" -> ZA_LOCALE;
+      case "USD" -> Locale.US;
+      case "GBP" -> Locale.UK;
+      case "EUR" -> Locale.GERMANY;
+      default -> ZA_LOCALE;
     };
   }
 
-  // TODO: Support multi-currency via OrgSettings.defaultCurrency / invoice.currency (ADR-041)
-  private static final Locale ZA_LOCALE = Locale.of("en", "ZA");
-
-  private static String formatCurrency(Object value) {
+  private static String formatCurrency(Object value, Locale locale) {
     try {
       BigDecimal amount = new BigDecimal(String.valueOf(value));
       // NumberFormat is not thread-safe, so create a new instance each time
-      // Default to South African Rand formatting (ZAR / "R" prefix)
-      NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(ZA_LOCALE);
+      NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(locale);
       return HtmlUtils.htmlEscape(currencyFormat.format(amount));
     } catch (NumberFormatException e) {
       return HtmlUtils.htmlEscape(String.valueOf(value));
@@ -70,10 +98,10 @@ public final class VariableFormatter {
     }
   }
 
-  private static String formatNumber(Object value) {
+  private static String formatNumber(Object value, Locale locale) {
     try {
       BigDecimal num = new BigDecimal(String.valueOf(value));
-      return HtmlUtils.htmlEscape(NumberFormat.getInstance(ZA_LOCALE).format(num));
+      return HtmlUtils.htmlEscape(NumberFormat.getInstance(locale).format(num));
     } catch (NumberFormatException e) {
       return HtmlUtils.htmlEscape(String.valueOf(value));
     }

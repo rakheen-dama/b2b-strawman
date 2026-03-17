@@ -54,6 +54,7 @@ public class CustomerContextBuilder implements TemplateContextBuilder {
             .orElseThrow(() -> new ResourceNotFoundException("Customer", entityId));
 
     var context = new HashMap<String, Object>();
+    contextHelper.populateLocale(context);
     var fieldDefCache = new EnumMap<EntityType, List<FieldDefinition>>(EntityType.class);
 
     // customer.*

@@ -10,7 +10,7 @@ import {
   fetchProjectComments,
   createProjectComment,
 } from "@/lib/actions/comments";
-import { formatRelativeDate } from "@/lib/format";
+import { RelativeDate } from "@/components/ui/relative-date";
 
 interface ProjectCommentsSectionProps {
   projectId: string;
@@ -73,7 +73,7 @@ export function ProjectCommentsSection({
                     <Badge variant="outline">Customer</Badge>
                   )}
                   <span className="text-xs text-muted-foreground">
-                    {formatRelativeDate(comment.createdAt)}
+                    <RelativeDate iso={comment.createdAt} />
                   </span>
                 </div>
                 <p className="text-sm whitespace-pre-wrap">{comment.body}</p>

@@ -19,7 +19,7 @@ import {
   deleteRuleAction,
 } from "@/app/(app)/org/[slug]/settings/automations/actions";
 import { toast } from "sonner";
-import { formatRelativeDate } from "@/lib/format";
+import { RelativeDate } from "@/components/ui/relative-date";
 import { Zap, Plus, LayoutGrid, Trash2 } from "lucide-react";
 import type {
   AutomationRuleResponse,
@@ -198,7 +198,7 @@ export function RuleList({ slug, rules, templates, canManage }: RuleListProps) {
                 <TableCell>
                   <span className="text-sm text-slate-600 dark:text-slate-400">
                     {rule.updatedAt
-                      ? formatRelativeDate(rule.updatedAt)
+                      ? <RelativeDate iso={rule.updatedAt} />
                       : "Never"}
                   </span>
                 </TableCell>

@@ -11,7 +11,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { formatRelativeDate } from "@/lib/format";
+import { RelativeDate } from "@/components/ui/relative-date";
 import { markNotificationRead } from "@/lib/actions/notifications";
 import type { Notification } from "@/lib/actions/notifications";
 import { cn } from "@/lib/utils";
@@ -93,7 +93,7 @@ export function NotificationItem({
           {notification.title}
         </p>
         <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-          {formatRelativeDate(notification.createdAt)}
+          <RelativeDate iso={notification.createdAt} />
         </p>
       </div>
 

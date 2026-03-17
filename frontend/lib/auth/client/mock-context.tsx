@@ -16,12 +16,6 @@ interface MockAuthContextValue {
 
 export const MockAuthContext = createContext<MockAuthContextValue | null>(null);
 
-/**
- * Decode the payload segment of a JWT token.
- * The token value is already URL-decoded when read from the cookie via
- * `decodeURIComponent` in `getTokenFromDocumentCookie`, so the input
- * here is a standard dot-separated JWT string.
- */
 function decodeJwtPayload(token: string): Record<string, unknown> | null {
   try {
     const parts = token.split(".");
@@ -33,43 +27,41 @@ function decodeJwtPayload(token: string): Record<string, unknown> | null {
   }
 }
 
-/** Parse cookie synchronously to derive initial state values. */
-function parseInitialState(): {
-  token: string | null;
-  orgSlug: string | null;
-  userId: string | null;
-} {
-  const rawToken = getTokenFromDocumentCookie();
-  if (!rawToken) return { token: null, orgSlug: null, userId: null };
-
-  const payload = decodeJwtPayload(rawToken);
-  const userId = (payload?.sub as string) ?? null;
-  const organization = payload?.organization as string[] | undefined;
-
-  return {
-    token: rawToken,
-    orgSlug: organization?.[0] ?? null,
-    userId,
-  };
-}
-
 export function MockAuthContextProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // Synchronously read cookie on first render — no setState in effect needed
-  const initial = useMemo(() => parseInitialState(), []);
-
+  // All state starts as null/false — identical on server and client.
+  // Cookie is read in useEffect (client-only) to prevent hydration mismatch
+  // since document.cookie is unavailable during SSR.
+  const [token, setToken] = useState<string | null>(null);
+  const [orgSlug, setOrgSlug] = useState<string | null>(null);
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
-  const [isLoaded, setIsLoaded] = useState(!initial.userId);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    if (!initial.userId) return;
+    const rawToken = getTokenFromDocumentCookie();
+    if (!rawToken) {
+      setIsLoaded(true);
+      return;
+    }
+
+    const payload = decodeJwtPayload(rawToken);
+    const userId = (payload?.sub as string) ?? null;
+    const organization = payload?.organization as string[] | undefined;
+
+    setToken(rawToken);
+    setOrgSlug(organization?.[0] ?? null);
+
+    if (!userId) {
+      setIsLoaded(true);
+      return;
+    }
 
     let cancelled = false;
 
-    fetch(`${MOCK_IDP_URL}/userinfo/${initial.userId}`, {
+    fetch(`${MOCK_IDP_URL}/userinfo/${userId}`, {
       signal: AbortSignal.timeout(3000),
     })
       .then((res) => (res.ok ? res.json() : null))
@@ -93,16 +85,11 @@ export function MockAuthContextProvider({
     return () => {
       cancelled = true;
     };
-  }, [initial.userId]);
+  }, []);
 
   const value = useMemo<MockAuthContextValue>(
-    () => ({
-      authUser,
-      isLoaded,
-      orgSlug: initial.orgSlug,
-      token: initial.token,
-    }),
-    [authUser, isLoaded, initial.orgSlug, initial.token],
+    () => ({ authUser, isLoaded, orgSlug, token }),
+    [authUser, isLoaded, orgSlug, token],
   );
 
   return (

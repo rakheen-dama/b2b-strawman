@@ -12,6 +12,7 @@ import io.b2mash.b2b.b2bstrawman.event.ProjectArchivedEvent;
 import io.b2mash.b2b.b2bstrawman.event.ProjectCompletedEvent;
 import io.b2mash.b2b.b2bstrawman.event.ProjectReopenedEvent;
 import io.b2mash.b2b.b2bstrawman.event.ProposalSentEvent;
+import io.b2mash.b2b.b2bstrawman.event.TaskCompletedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskStatusChangedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TimeEntryChangedEvent;
 import java.util.LinkedHashMap;
@@ -46,7 +47,13 @@ public final class AutomationContext {
 
     // Trigger-specific entity sections
     switch (triggerType) {
-      case TASK_STATUS_CHANGED -> buildTaskStatusChanged((TaskStatusChangedEvent) event, context);
+      case TASK_STATUS_CHANGED -> {
+        if (event instanceof TaskCompletedEvent tce) {
+          buildTaskCompleted(tce, context);
+        } else {
+          buildTaskStatusChanged((TaskStatusChangedEvent) event, context);
+        }
+      }
       case PROJECT_STATUS_CHANGED -> buildProjectStatusChanged(event, context);
       case CUSTOMER_STATUS_CHANGED -> buildCustomerStatusChanged(event, context);
       case INVOICE_STATUS_CHANGED -> buildInvoiceStatusChanged(event, context);
@@ -86,6 +93,27 @@ public final class AutomationContext {
     task.put("status", event.newStatus());
     task.put("previousStatus", event.oldStatus());
     task.put("assigneeId", uuidToString(event.assigneeMemberId()));
+    task.put("projectId", uuidToString(event.projectId()));
+    context.put("task", task);
+
+    var project = new LinkedHashMap<String, Object>();
+    project.put("id", uuidToString(event.projectId()));
+    project.put("name", detailValue(event, "project_name"));
+    context.put("project", project);
+
+    var customer = new LinkedHashMap<String, Object>();
+    customer.put("id", detailValue(event, "customer_id"));
+    customer.put("name", detailValue(event, "customer_name"));
+    context.put("customer", customer);
+  }
+
+  private static void buildTaskCompleted(
+      TaskCompletedEvent event, Map<String, Map<String, Object>> context) {
+    var task = new LinkedHashMap<String, Object>();
+    task.put("id", uuidToString(event.entityId()));
+    task.put("name", event.taskTitle());
+    task.put("status", "COMPLETED");
+    task.put("previousStatus", null);
     task.put("projectId", uuidToString(event.projectId()));
     context.put("task", task);
 

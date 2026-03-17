@@ -117,6 +117,20 @@
       ]
     },
     {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [
+        { "type": "text", "text": "Terms and Conditions" }
+      ]
+    },
+    { "type": "clauseBlock", "attrs": { "slug": "accounting-za-limitation-of-liability" } },
+    { "type": "clauseBlock", "attrs": { "slug": "accounting-za-fee-escalation" } },
+    { "type": "clauseBlock", "attrs": { "slug": "accounting-za-termination" } },
+    { "type": "clauseBlock", "attrs": { "slug": "accounting-za-confidentiality" } },
+    { "type": "clauseBlock", "attrs": { "slug": "accounting-za-document-retention" } },
+    { "type": "clauseBlock", "attrs": { "slug": "accounting-za-third-party-reliance" } },
+    { "type": "clauseBlock", "attrs": { "slug": "accounting-za-electronic-consent" } },
+    {
       "type": "paragraph",
       "content": [
         { "type": "text", "text": "Yours faithfully," }

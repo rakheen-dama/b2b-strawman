@@ -504,7 +504,83 @@ class TiptapRendererTest {
   }
 
   @Test
-  void clause_block_with_malformed_uuid_renders_comment() {
+  void clause_block_without_clauseId_falls_back_to_slug() {
+    UUID clauseId = UUID.randomUUID();
+    var clauseBody =
+        Map.<String, Object>of(
+            "type",
+            "doc",
+            "content",
+            List.of(
+                Map.<String, Object>of(
+                    "type",
+                    "paragraph",
+                    "content",
+                    List.of(Map.<String, Object>of("type", "text", "text", "Clause by slug")))));
+    var clause = new Clause("Slug Clause", "my-slug-clause", clauseBody, "Legal");
+
+    // clauseBlock node with slug only — no clauseId
+    var clauseNode = new HashMap<String, Object>();
+    clauseNode.put("type", "clauseBlock");
+    clauseNode.put("attrs", Map.<String, Object>of("slug", "my-slug-clause"));
+
+    var doc = doc(clauseNode);
+
+    // The clause is keyed by its UUID in the map, but the node has no clauseId — slug fallback
+    String html = renderer.render(doc, Map.of(), Map.of(clauseId, clause), null);
+
+    assertThat(html).contains("<div class=\"clause-block\" data-clause-slug=\"my-slug-clause\">");
+    assertThat(html).contains("Clause by slug");
+  }
+
+  @Test
+  void clause_block_with_invalid_clauseId_falls_back_to_slug() {
+    UUID clauseId = UUID.randomUUID();
+    var clauseBody =
+        Map.<String, Object>of(
+            "type",
+            "doc",
+            "content",
+            List.of(
+                Map.<String, Object>of(
+                    "type",
+                    "paragraph",
+                    "content",
+                    List.of(
+                        Map.<String, Object>of(
+                            "type", "text", "text", "Fallback from bad UUID")))));
+    var clause = new Clause("Fallback Clause", "fallback-clause", clauseBody, "Legal");
+
+    // clauseBlock node with malformed clauseId — should fall back to slug
+    var clauseNode = new HashMap<String, Object>();
+    clauseNode.put("type", "clauseBlock");
+    clauseNode.put(
+        "attrs", Map.<String, Object>of("clauseId", "not-a-uuid", "slug", "fallback-clause"));
+
+    var doc = doc(clauseNode);
+
+    String html = renderer.render(doc, Map.of(), Map.of(clauseId, clause), null);
+
+    assertThat(html).contains("<div class=\"clause-block\" data-clause-slug=\"fallback-clause\">");
+    assertThat(html).contains("Fallback from bad UUID");
+  }
+
+  @Test
+  void clause_block_slug_not_found_renders_comment() {
+    // clauseBlock with slug only, but no matching clause in the map
+    var clauseNode = new HashMap<String, Object>();
+    clauseNode.put("type", "clauseBlock");
+    clauseNode.put("attrs", Map.<String, Object>of("slug", "nonexistent-clause"));
+
+    var doc = doc(clauseNode);
+
+    String html = renderer.render(doc, Map.of(), Map.of(), null);
+
+    assertThat(html).contains("<!-- clause not found: nonexistent-clause -->");
+  }
+
+  @Test
+  void clause_block_with_malformed_uuid_and_no_slug_match_renders_not_found_comment() {
     var clauseNode = new HashMap<String, Object>();
     clauseNode.put("type", "clauseBlock");
     clauseNode.put(
@@ -514,7 +590,9 @@ class TiptapRendererTest {
 
     String html = renderer.render(doc, Map.of(), Map.of(), null);
 
-    assertThat(html).contains("<!-- invalid clauseId -->");
+    // With slug fallback, a malformed UUID falls through to slug lookup.
+    // No matching clause in the empty map, so "clause not found" comment is rendered.
+    assertThat(html).contains("<!-- clause not found: some-clause -->");
   }
 
   // --- Format hints tests ---

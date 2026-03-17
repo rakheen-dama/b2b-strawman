@@ -96,6 +96,17 @@
       ]
     },
     {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [
+        { "type": "text", "text": "Terms and Conditions" }
+      ]
+    },
+    { "type": "clauseBlock", "attrs": { "slug": "accounting-za-limitation-of-liability" } },
+    { "type": "clauseBlock", "attrs": { "slug": "accounting-za-termination" } },
+    { "type": "clauseBlock", "attrs": { "slug": "accounting-za-confidentiality" } },
+    { "type": "clauseBlock", "attrs": { "slug": "accounting-za-third-party-reliance" } },
+    {
       "type": "paragraph",
       "content": [
         { "type": "text", "text": "Yours faithfully," }

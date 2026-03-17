@@ -140,18 +140,27 @@ public class TiptapRenderer {
         }
         String clauseIdStr = (String) attrs.get("clauseId");
         String slug = (String) attrs.getOrDefault("slug", "unknown");
-        if (clauseIdStr == null) {
-          sb.append("<!-- clause not found: ").append(HtmlUtils.htmlEscape(slug)).append(" -->");
-          return;
+        Clause clause = null;
+
+        // Primary lookup: by UUID
+        if (clauseIdStr != null) {
+          try {
+            UUID clauseId = UUID.fromString(clauseIdStr);
+            clause = clauses.get(clauseId);
+          } catch (IllegalArgumentException e) {
+            // Fall through to slug-based lookup
+          }
         }
-        UUID clauseId;
-        try {
-          clauseId = UUID.fromString(clauseIdStr);
-        } catch (IllegalArgumentException e) {
-          sb.append("<!-- invalid clauseId -->");
-          return;
+
+        // Fallback: look up by slug when clauseId is absent or not found
+        if (clause == null && slug != null && !"unknown".equals(slug)) {
+          clause =
+              clauses.values().stream()
+                  .filter(c -> slug.equals(c.getSlug()))
+                  .findFirst()
+                  .orElse(null);
         }
-        Clause clause = clauses.get(clauseId);
+
         Map<String, Object> bodyJson = clause != null ? clause.getBody() : null;
         if (bodyJson != null) {
           sb.append("<div class=\"clause-block\" data-clause-slug=\"")

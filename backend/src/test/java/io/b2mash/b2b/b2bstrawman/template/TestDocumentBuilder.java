@@ -72,6 +72,15 @@ public final class TestDocumentBuilder {
     return this;
   }
 
+  /** Adds a clauseBlock node identified by slug only (no clauseId — uses slug-based lookup). */
+  public TestDocumentBuilder clauseBlockBySlug(String slug) {
+    var node = new LinkedHashMap<String, Object>();
+    node.put("type", "clauseBlock");
+    node.put("attrs", Map.of("slug", slug));
+    content.add(node);
+    return this;
+  }
+
   /** Adds a loopTable node with the given data source and column definitions. */
   public TestDocumentBuilder loopTable(String dataSource, List<Map<String, String>> columns) {
     var node = new LinkedHashMap<String, Object>();

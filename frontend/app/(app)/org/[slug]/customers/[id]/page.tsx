@@ -468,6 +468,8 @@ export default async function CustomerDetailPage({
                 entityId={id}
                 entityType="CUSTOMER"
                 slug={slug}
+                customerId={id}
+                isAdmin={isAdmin}
               />
             )}
             {customer.status === "ACTIVE" && (
@@ -660,6 +662,7 @@ export default async function CustomerDetailPage({
             entityId={id}
             slug={slug}
             isAdmin={isAdmin}
+            customerId={id}
           />
         }
         financialsPanel={

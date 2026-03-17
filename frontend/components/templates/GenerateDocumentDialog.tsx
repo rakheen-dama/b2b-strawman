@@ -129,7 +129,7 @@ export function GenerateDocumentDialog({
           setValidationResult(result.validationResult);
         }
       } else {
-        setError(result.error ?? "Failed to generate preview.");
+        setError(result.error || "Failed to generate preview.");
       }
     } catch {
       setError("An unexpected error occurred while loading preview.");
@@ -193,7 +193,7 @@ export function GenerateDocumentDialog({
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
       } else {
-        setError(result.error ?? "Failed to download document.");
+        setError(result.error || "Failed to download document.");
       }
     } catch {
       setError("An unexpected error occurred.");
@@ -232,7 +232,7 @@ export function GenerateDocumentDialog({
           }, 800);
         }
       } else {
-        setError(result.error ?? "Failed to save document.");
+        setError(result.error || "Failed to save document.");
       }
     } catch {
       setError("An unexpected error occurred.");

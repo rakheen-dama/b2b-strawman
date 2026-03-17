@@ -33,7 +33,7 @@
 | GAP-P49-017 | Engagement type renders as raw slug — context builders pass raw dropdown values | minor | VERIFIED | Dev | #732 | T1.1 | "Engagement Type: Monthly Bookkeeping" displays correctly (not raw slug). |
 | GAP-P49-018 | loopTable cells lack formatting — renderLoopTable uses String.valueOf, not VariableFormatter | minor | VERIFIED | Dev | #733 | T1.5/T1.6 | Invoice table shows R5 500,00 / R825,00 / R6 325,00 with R prefix and comma formatting. |
 | GAP-P49-019 | Proposal combobox not accessible via Playwright MCP a11y tree | cosmetic | WONT_FIX | — | — | T3.1 | Combobox works manually but Playwright MCP cannot interact via accessibility snapshot. Agent-only limitation. |
-| GAP-P49-020 | Mailpit empty — no emails delivered by E2E stack | major | OPEN | Infra | — | T3.4/T4.2 | Backend marks items as SENT but no emails arrive in Mailpit. Blocks proposal email and info request portal flow. |
+| GAP-P49-020 | Mailpit empty — SMTP auth mismatch (auth=true but Mailpit has no auth) | major | SPEC_READY | Dev | — | T3.4/T4.2 | `application.yml` sets `mail.smtp.auth: true` but Mailpit doesn't support auth. Fix: add overrides to `application-e2e.yml`. Spec: `qa_cycle/fix-specs/GAP-P49-020.md`. Effort: S. |
 
 ## Status Values
 

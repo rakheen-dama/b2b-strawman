@@ -82,11 +82,13 @@ fi
 
 # ── Part 2: Playwright Tests ─────────────────────────────────────
 if [ "$RUN_UI" = true ]; then
-  echo "=== Running Playwright Tests ==="
+  echo "=== Running Playwright Tests (read-only + interactive) ==="
   echo ""
   cd "${PROJECT_ROOT}/frontend"
   if NODE_OPTIONS="" PLAYWRIGHT_BASE_URL="${FRONTEND_URL}" \
-    /opt/homebrew/bin/pnpm exec playwright test e2e/tests/lifecycle.spec.ts \
+    /opt/homebrew/bin/pnpm exec playwright test \
+      e2e/tests/lifecycle.spec.ts \
+      e2e/tests/lifecycle-interactive.spec.ts \
       --reporter=list --config=e2e/playwright.config.ts; then
     UI_OK=1
     echo ""

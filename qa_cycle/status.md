@@ -2,8 +2,8 @@
 
 ## Current State
 
-- **QA Position**: Day 0, Checkpoint 0.1 (not started)
-- **Cycle**: 0
+- **QA Position**: Day 1, Checkpoint 1.1 (ready to start)
+- **Cycle**: 1
 - **E2E Stack**: HEALTHY (all 6 services up, seed complete)
 - **Branch**: `bugfix_cycle_2026-03-17`
 - **Scenario**: `tasks/phase49-lifecycle-script.md`
@@ -19,7 +19,7 @@
 | GAP-P49-003 | Blank fields produce `________` placeholder instead of hiding the line | minor | WONT_FIX | — | — | T5.6 | Placeholder (`________`) is intentional behavior from `LenientOGNLEvaluator`. Adding conditional blocks to all 7 templates is M effort per template (~3.5h total). QA can observe and document the behavior. The `TemplateValidationService` warns pre-generation. Out of scope for this bugfix cycle; log as future enhancement. |
 | GAP-P49-004 | `generatedAt` rendered as raw ISO in non-Tiptap paths | minor | WONT_FIX | — | — | T1.4/T1.6 | Tiptap rendering applies `VariableFormatter.formatDate()` correctly. Only DOCX path affected (T7 is manual). |
 | GAP-P49-005 | Portal acceptance page missing — Track T6 entirely blocked | blocker | WONT_FIX | — | — | T6 | New frontend page required. Backend + firm-side UI exist. Effort: L (half day). Out of scope for bugfix cycle. |
-| GAP-P49-006 | Project custom field pack `autoApply: false` — fields may not appear on projects | major | FIXED | Dev | #729 | T0.7 | Changed `autoApply` from `false` to `true` in `accounting-za-project.json`. NEEDS_REBUILD. |
+| GAP-P49-006 | Project custom field pack `autoApply: false` — fields may not appear on projects | major | VERIFIED | Dev | #729 | T0.7 | Changed `autoApply` from `false` to `true` in `accounting-za-project.json`. VERIFIED: project custom fields auto-apply to all projects (step 0.69). |
 | GAP-P49-007 | Proposal creation dialog customer combobox broken | major | WONT_FIX | — | — | T3.1 | Already fixed in PR #720 (Phase 48 GAP-P48-012). `type="button"` present at line 192 of `create-proposal-dialog.tsx`. Gap report was based on stale analysis. Verify at runtime during T3.1. |
 | GAP-P49-008 | Proposal send + email delivery needs runtime verification | major | WONT_FIX | — | — | T3.4 | Backend and firm-side UI exist. Needs runtime check, no code change anticipated. |
 | GAP-P49-009 | Info request template pre-population needs runtime verification | major | WONT_FIX | — | — | T4.1 | `create-request-dialog.tsx` and `year-end-info-request-za.json` template exist. Likely works. |
@@ -43,3 +43,4 @@
 | 2026-03-17T14:20Z | Dev | GAP-P49-002 FIXED via PR #728 (squash-merged to bugfix_cycle_2026-03-17). Changed template variable key from `company_registration_number` to `acct_company_registration_number` in `engagement-letter-bookkeeping.json`. Backend resource change — NEEDS_REBUILD before QA verification. |
 | 2026-03-17T14:30Z | Dev | GAP-P49-006 FIXED via PR #729 (squash-merged to bugfix_cycle_2026-03-17). Changed `autoApply` from `false` to `true` in `accounting-za-project.json`. Backend resource change — NEEDS_REBUILD before QA verification. |
 | 2026-03-17T15:00Z | Infra | E2E stack rebuilt and verified. Backend Docker image rebuilt with PR #728 + #729 changes. All services healthy: frontend (200), backend (200), mock-idp (JWKS OK), mailpit (200), seed complete. NEEDS_REBUILD flag cleared. |
+| 2026-03-17T15:30Z | QA | Day 0 complete (Cycle 1). 77 checkpoints: 71 PASS, 6 PARTIAL, 0 FAIL. Custom fields populated for all 4 customers (Kgosi 12 fields, Naledi 7+2 blank, Vukani 10, Moroka 13 incl. 6 trust). Org settings saved (ZAR, footer text, tax reg). Project custom fields set on 2 projects. STOP GATE 0.82 PASSES. GAP-P49-006 VERIFIED (project autoApply fix works). Portal contacts: no firm-side UI (GAP-P49-005 consistent). QA Position advanced to Day 1, Checkpoint 1.1. |

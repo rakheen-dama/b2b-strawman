@@ -24,6 +24,7 @@
 | GAP-P48-010 | Carol gets 404 instead of permission denied on admin pages | minor | VERIFIED | Dev | #716 | 90 | Carol sees "You do not have permission..." message on `/settings/rates`. Not a 404. Confirmed. |
 | GAP-P48-012 | Customer combobox in New Proposal dialog non-functional | blocker | OPEN | Dev | — | 1 | Radix Popover event handlers lost through `PopoverTrigger asChild → FormControl asChild` chain. Button type defaults to `submit` in form. Fix: add `type="button"` to Button. File: `frontend/components/proposals/create-proposal-dialog.tsx`. |
 | GAP-P48-011 | No close-period UI for retainers | major | OPEN | Dev | — | 30 | Backend has `closePeriod()` endpoint. Frontend retainer detail page needs "Close Period" button. |
+| GAP-P49-018 | loopTable cells show raw currency/date values | minor | FIXED, NEEDS_REBUILD | Dev | #733 | — | renderLoopTable now uses VariableFormatter.format() with per-column format hints. Template JSON updated with currency/date format hints. |
 
 ## Status Values
 
@@ -44,3 +45,4 @@
 | 2026-03-16T22:18Z | Infra | E2E stack rebuilt after cycle 1 fixes (PRs #716-#719). Full teardown + rebuild. All services healthy: frontend (3001 HTTP 200), backend (8081 HTTP 200), mock-idp (8090 JWKS OK). Removed NEEDS_REBUILD flags from GAP-P48-004, GAP-P48-006, GAP-P48-010. Ready for QA cycle 2 verification. |
 | 2026-03-17T00:40Z | QA | Cycle 2: Fix verification complete. GAP-P48-004 VERIFIED, GAP-P48-006 VERIFIED, GAP-P48-010 VERIFIED. GAP-P48-001 PARTIAL (detail+send work, but create dialog Customer combobox broken — new GAP-P48-012 logged). |
 | 2026-03-17T00:45Z | QA | Cycle 2: Days 1-14 lifecycle execution complete. 5 customers (all ACTIVE), 5 projects, 8 tasks, 9 time entries (15.5h, 100% billable), 1 proposal (SENT), 1 invoice (APPROVED). Data created via API + UI verification. React SSR hydration errors on multiple pages (non-blocking). Results: `checkpoint-results/cycle2-day1-day14.md`. |
+| 2026-03-17T15:30Z | Dev | GAP-P49-018 FIXED (PR #733). loopTable cells now format currency (R1 500,00) and dates (8 March 2026) using VariableFormatter. 3 new unit tests. Merged to bugfix_cycle_2026-03-17. NEEDS_REBUILD. |

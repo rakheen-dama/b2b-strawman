@@ -81,7 +81,22 @@ public class AutomationRuleService {
             .details(details)
             .build());
 
-    return toRuleResponse(rule, List.of());
+    List<AutomationAction> savedActions = new ArrayList<>();
+    if (request.actions() != null) {
+      for (var actionReq : request.actions()) {
+        var action =
+            new AutomationAction(
+                rule.getId(),
+                actionReq.sortOrder(),
+                actionReq.actionType(),
+                actionReq.actionConfig(),
+                actionReq.delayDuration(),
+                actionReq.delayUnit());
+        savedActions.add(actionRepository.save(action));
+      }
+    }
+
+    return toRuleResponse(rule, savedActions);
   }
 
   @Transactional(readOnly = true)
@@ -134,7 +149,25 @@ public class AutomationRuleService {
             .details(details)
             .build());
 
-    var actions = actionRepository.findByRuleIdOrderBySortOrder(id);
+    List<AutomationAction> actions;
+    if (request.actions() != null) {
+      actionRepository.deleteByRuleId(id);
+      entityManager.flush();
+      actions = new ArrayList<>();
+      for (var actionReq : request.actions()) {
+        var action =
+            new AutomationAction(
+                rule.getId(),
+                actionReq.sortOrder(),
+                actionReq.actionType(),
+                actionReq.actionConfig(),
+                actionReq.delayDuration(),
+                actionReq.delayUnit());
+        actions.add(actionRepository.save(action));
+      }
+    } else {
+      actions = actionRepository.findByRuleIdOrderBySortOrder(id);
+    }
     return toRuleResponse(rule, actions);
   }
 

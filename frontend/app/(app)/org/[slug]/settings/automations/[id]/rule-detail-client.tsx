@@ -122,7 +122,7 @@ export function RuleDetailClient({ slug, rule, initialExecutions }: RuleDetailCl
         conditions: data.conditions.length > 0 ? data.conditions : undefined,
         actions: data.actions?.map((a) => ({
           actionType: a.actionType as ActionType,
-          config: a.actionConfig,
+          actionConfig: a.actionConfig,
           sortOrder: a.sortOrder,
           delayDuration: a.delayDuration,
           delayUnit: a.delayUnit as DelayUnit | null,

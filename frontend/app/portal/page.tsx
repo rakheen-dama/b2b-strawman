@@ -33,7 +33,7 @@ export default function PortalLoginPage() {
       try {
         const result = await portalApi.post<MagicLinkResponse>(
           "/portal/auth/request-link",
-          { email, orgSlug },
+          { email, orgId: orgSlug },
         );
         setMagicLink(result.magicLink ?? null);
         setStep("sent");
@@ -53,19 +53,22 @@ export default function PortalLoginPage() {
 
     startTransition(async () => {
       try {
-        // Extract token from magic link URL or use raw token input
+        // Extract token and orgId from magic link URL or use raw token input
         let tokenValue = token.trim();
+        let exchangeOrgId = orgSlug;
         try {
           const url = new URL(tokenValue);
           const paramToken = url.searchParams.get("token");
+          const paramOrg = url.searchParams.get("orgId");
           if (paramToken) tokenValue = paramToken;
+          if (paramOrg) exchangeOrgId = paramOrg;
         } catch {
           // Not a URL, use as raw token
         }
 
         const result = await portalApi.post<PortalAuthResponse>(
           "/portal/auth/exchange",
-          { token: tokenValue },
+          { token: tokenValue, orgId: exchangeOrgId },
         );
         setPortalToken(result.token);
         setPortalCustomerName(result.customerName);

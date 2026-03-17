@@ -4,7 +4,7 @@
 
 - **QA Position**: Day 0, Checkpoint 0.1 (not started)
 - **Cycle**: 0
-- **E2E Stack**: Not running
+- **E2E Stack**: Not running (NEEDS_REBUILD: GAP-P49-002)
 - **Branch**: `bugfix_cycle_2026-03-17`
 - **Scenario**: `tasks/phase49-lifecycle-script.md`
 - **Test Plan**: `qa/testplan/phase49-document-content-verification.md`
@@ -15,7 +15,7 @@
 | ID | Summary | Severity | Status | Owner | PR | Track | Notes |
 |----|---------|----------|--------|-------|----|-------|-------|
 | GAP-P49-001 | Template pack has 7 templates, not 8 (test plan doc error) | minor | WONT_FIX | — | — | T1 | Documentation error. T1 sub-tracks correctly list 7. No code change needed. |
-| GAP-P49-002 | `company_registration_number` template variable mismatched with field slug `acct_company_registration_number` | blocker | SPEC_READY | Dev | — | T1.1/T5.1 | Fix spec: `qa_cycle/fix-specs/GAP-P49-002.md`. Change template key from `company_registration_number` to `acct_company_registration_number` in `engagement-letter-bookkeeping.json` line 55. Effort: S. |
+| GAP-P49-002 | `company_registration_number` template variable mismatched with field slug `acct_company_registration_number` | blocker | FIXED | Dev | #728 | T1.1/T5.1 | Template key aligned with field pack slug. NEEDS_REBUILD. |
 | GAP-P49-003 | Blank fields produce `________` placeholder instead of hiding the line | minor | WONT_FIX | — | — | T5.6 | Placeholder (`________`) is intentional behavior from `LenientOGNLEvaluator`. Adding conditional blocks to all 7 templates is M effort per template (~3.5h total). QA can observe and document the behavior. The `TemplateValidationService` warns pre-generation. Out of scope for this bugfix cycle; log as future enhancement. |
 | GAP-P49-004 | `generatedAt` rendered as raw ISO in non-Tiptap paths | minor | WONT_FIX | — | — | T1.4/T1.6 | Tiptap rendering applies `VariableFormatter.formatDate()` correctly. Only DOCX path affected (T7 is manual). |
 | GAP-P49-005 | Portal acceptance page missing — Track T6 entirely blocked | blocker | WONT_FIX | — | — | T6 | New frontend page required. Backend + firm-side UI exist. Effort: L (half day). Out of scope for bugfix cycle. |
@@ -40,3 +40,4 @@
 |-----------|-------|--------|
 | 2026-03-17T12:00Z | Setup | Initial status seeded from Phase 49 gap report. 12 gaps: 3 blocker, 5 major, 3 minor, 1 cosmetic. 3 OPEN (actionable), 9 WONT_FIX (new features, observations, manual-only tracks). |
 | 2026-03-17T12:30Z | Product | Triaged 4 OPEN items. GAP-P49-002 (blocker) -> SPEC_READY: template key mismatch, fix is single string change. GAP-P49-006 (major) -> SPEC_READY: project field pack autoApply, single boolean change. GAP-P49-003 (minor) -> WONT_FIX: placeholder behavior is by design, M effort per template, out of scope. GAP-P49-007 (major) -> WONT_FIX: already fixed in PR #720, `type="button"` confirmed in code. 2 fix specs written to `qa_cycle/fix-specs/`. |
+| 2026-03-17T14:20Z | Dev | GAP-P49-002 FIXED via PR #728 (squash-merged to bugfix_cycle_2026-03-17). Changed template variable key from `company_registration_number` to `acct_company_registration_number` in `engagement-letter-bookkeeping.json`. Backend resource change — NEEDS_REBUILD before QA verification. |

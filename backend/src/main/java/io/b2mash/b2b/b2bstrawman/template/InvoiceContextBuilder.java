@@ -111,9 +111,10 @@ public class InvoiceContextBuilder implements TemplateContextBuilder {
               context.put("customer", customerMap);
 
               // Top-level convenience alias for customer VAT number
-              var customFields = customer.getCustomFields();
-              if (customFields != null && customFields.containsKey("vat_number")) {
-                context.put("customerVatNumber", customFields.get("vat_number"));
+              @SuppressWarnings("unchecked")
+              var resolvedCustomFields = (Map<String, Object>) customerMap.get("customFields");
+              if (resolvedCustomFields != null && resolvedCustomFields.containsKey("vat_number")) {
+                context.put("customerVatNumber", resolvedCustomFields.get("vat_number"));
               } else {
                 context.put("customerVatNumber", null);
               }

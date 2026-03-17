@@ -1,3 +1,4 @@
+import React from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -28,6 +29,19 @@ vi.mock("@/lib/actions/prerequisite-actions", () => ({
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
   usePathname: () => "/org/test-org/customers/123",
+}));
+
+// Mock capabilities (RequiresCapability used inside InvoiceDetailClient)
+vi.mock("@/lib/capabilities", () => ({
+  RequiresCapability: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  useCapabilities: () => ({
+    capabilities: new Set(),
+    role: "Admin",
+    isAdmin: true,
+    isOwner: false,
+    isLoading: false,
+    hasCapability: () => true,
+  }),
 }));
 
 // Mock sendInvoice action
@@ -206,6 +220,12 @@ describe("Invoice Generation Validation", () => {
       paymentSessionId: null,
       paymentUrl: null,
       paymentDestination: null,
+      taxBreakdown: [],
+      taxInclusive: false,
+      taxRegistrationNumber: null,
+      taxRegistrationLabel: null,
+      taxLabel: null,
+      hasPerLineTax: false,
     };
 
     render(
@@ -216,8 +236,8 @@ describe("Invoice Generation Validation", () => {
       />,
     );
 
-    // Click Mark as Sent
-    await user.click(screen.getByText("Mark as Sent"));
+    // Click Send Invoice
+    await user.click(screen.getByText("Send Invoice"));
 
     // Wait for override dialog
     await waitFor(() => {

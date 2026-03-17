@@ -164,7 +164,7 @@ describe("InvoiceDetailClient", () => {
     expect(screen.getByText("Approved")).toBeInTheDocument(); // StatusBadge
 
     // Lifecycle buttons
-    expect(screen.getByRole("button", { name: /mark as sent/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /send invoice/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /void/i })).toBeInTheDocument();
 
     // No draft edit form

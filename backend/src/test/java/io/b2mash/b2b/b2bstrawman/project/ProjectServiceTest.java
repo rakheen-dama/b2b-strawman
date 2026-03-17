@@ -12,6 +12,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
@@ -51,6 +53,7 @@ class ProjectServiceTest {
   @Mock private TimeEntryRepository timeEntryRepository;
   @Mock private ProjectFieldService projectFieldService;
   @Mock private ProjectDeletionGuard projectDeletionGuard;
+  @Mock private CustomerProjectRepository customerProjectRepository;
   @InjectMocks private ProjectService service;
 
   @Test
@@ -134,6 +137,40 @@ class ProjectServiceTest {
   }
 
   @Test
+  void createProject_createsCustomerProjectLinkWhenCustomerIdProvided() {
+    var custId = UUID.randomUUID();
+    var project = projectWithId("Customer Project", "With customer", MEMBER_ID);
+    when(repository.save(any(Project.class))).thenReturn(project);
+    when(projectMemberRepository.save(any(ProjectMember.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+    when(customerProjectRepository.save(any(CustomerProject.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+    when(projectFieldService.prepareForCreate(
+            eq("Customer Project"), isNull(), isNull(), eq("Test Customer")))
+        .thenReturn(
+            new ProjectFieldService.CreateFieldResult(Map.of(), "Customer Project", List.of()));
+    when(projectFieldService.resolveCustomerName(custId)).thenReturn("Test Customer");
+
+    service.createProject("Customer Project", "With customer", MEMBER_ID, null, null, custId, null);
+
+    verify(customerProjectRepository).save(any(CustomerProject.class));
+  }
+
+  @Test
+  void createProject_doesNotCreateCustomerProjectLinkWhenNoCustomerId() {
+    var project = projectWithId("Internal Project", "No customer", MEMBER_ID);
+    when(repository.save(any(Project.class))).thenReturn(project);
+    when(projectMemberRepository.save(any(ProjectMember.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+    when(projectFieldService.prepareForCreate(eq("Internal"), isNull(), isNull(), isNull()))
+        .thenReturn(new ProjectFieldService.CreateFieldResult(Map.of(), "Internal", List.of()));
+
+    service.createProject("Internal", "No customer", MEMBER_ID);
+
+    verify(customerProjectRepository, never()).save(any(CustomerProject.class));
+  }
+
+  @Test
   void updateProject_updatesWhenCanEdit() {
     var id = UUID.randomUUID();
     var existing = projectWithId(id, "Old", "Old Desc", MEMBER_ID);
@@ -148,6 +185,52 @@ class ProjectServiceTest {
     assertThat(result.project().getName()).isEqualTo("Updated");
     assertThat(result.project().getDescription()).isEqualTo("New Desc");
     verify(repository).save(existing);
+  }
+
+  @Test
+  void updateProject_createsCustomerProjectLinkWhenCustomerIdAdded() {
+    var id = UUID.randomUUID();
+    var custId = UUID.randomUUID();
+    var existing = projectWithId(id, "No Customer", "Desc", MEMBER_ID);
+    when(repository.findById(id)).thenReturn(Optional.of(existing));
+    when(repository.save(existing)).thenReturn(existing);
+    when(projectAccessService.requireEditAccess(id, new ActorContext(MEMBER_ID, "admin")))
+        .thenReturn(new ProjectAccess(true, true, true, false, null));
+    when(customerProjectRepository.existsByCustomerIdAndProjectId(custId, id)).thenReturn(false);
+    when(customerProjectRepository.save(any(CustomerProject.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+
+    service.updateProject(
+        id,
+        "With Customer",
+        "Desc",
+        new ActorContext(MEMBER_ID, "admin"),
+        null,
+        null,
+        custId,
+        null);
+
+    verify(customerProjectRepository).existsByCustomerIdAndProjectId(custId, id);
+    verify(customerProjectRepository).save(any(CustomerProject.class));
+  }
+
+  @Test
+  void updateProject_doesNotDuplicateCustomerProjectLink() {
+    var id = UUID.randomUUID();
+    var custId = UUID.randomUUID();
+    var existing = projectWithId(id, "Has Customer", "Desc", MEMBER_ID);
+    existing.setCustomerId(custId);
+    when(repository.findById(id)).thenReturn(Optional.of(existing));
+    when(repository.save(existing)).thenReturn(existing);
+    when(projectAccessService.requireEditAccess(id, new ActorContext(MEMBER_ID, "admin")))
+        .thenReturn(new ProjectAccess(true, true, true, false, null));
+    when(customerProjectRepository.existsByCustomerIdAndProjectId(custId, id)).thenReturn(true);
+
+    service.updateProject(
+        id, "Has Customer", "Desc", new ActorContext(MEMBER_ID, "admin"), null, null, custId, null);
+
+    verify(customerProjectRepository).existsByCustomerIdAndProjectId(custId, id);
+    verify(customerProjectRepository, never()).save(any(CustomerProject.class));
   }
 
   @Test

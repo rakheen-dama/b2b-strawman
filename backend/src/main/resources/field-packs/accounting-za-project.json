@@ -7,7 +7,7 @@
     "slug": "accounting_za_engagement",
     "name": "SA Accounting — Engagement Details",
     "description": "South African accounting-specific fields for engagement (project) entities",
-    "autoApply": false
+    "autoApply": true
   },
   "fields": [
     {

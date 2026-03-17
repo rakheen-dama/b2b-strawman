@@ -2,6 +2,8 @@ package io.b2mash.b2b.b2bstrawman.template;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 import io.b2mash.b2b.b2bstrawman.budget.ProjectBudget;
@@ -11,6 +13,7 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberInfo;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import io.b2mash.b2b.b2bstrawman.project.Project;
@@ -21,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -42,6 +46,14 @@ class ProjectContextBuilderTest {
   private final UUID projectId = UUID.randomUUID();
   private final UUID memberId = UUID.randomUUID();
   private final UUID customerId = UUID.randomUUID();
+
+  @BeforeEach
+  void setUp() {
+    // resolveDropdownLabels is called for every custom fields map; pass through by default
+    lenient()
+        .when(contextHelper.resolveDropdownLabels(any(), any(EntityType.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+  }
 
   @Test
   void supportsProjectEntityType() {
@@ -109,6 +121,35 @@ class ProjectContextBuilderTest {
 
     assertThat(context.get("customer")).isNull();
     assertThat(context.get("budget")).isNull();
+  }
+
+  @Test
+  void buildContextFallsBackToProjectCustomerId() {
+    // Project has customerId set directly but no CustomerProject join record
+    var project = new Project("Linked Project", "Has customerId", memberId);
+    project.setCustomerId(customerId);
+    when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+
+    // No join record exists
+    when(customerProjectRepository.findByProjectId(projectId)).thenReturn(List.of());
+
+    // Customer exists and should be resolved via fallback
+    var customer = new Customer("Fallback Customer", "fb@example.com", "456", null, null, memberId);
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
+
+    when(projectMemberRepository.findProjectMembersWithDetails(projectId)).thenReturn(List.of());
+    when(projectBudgetRepository.findByProjectId(projectId)).thenReturn(Optional.empty());
+    when(contextHelper.buildTagsList("PROJECT", projectId)).thenReturn(List.of());
+    when(contextHelper.buildOrgContext()).thenReturn(Map.of());
+    when(contextHelper.buildGeneratedByMap(memberId)).thenReturn(Map.of("name", "Unknown"));
+
+    var context = builder.buildContext(projectId, memberId);
+
+    @SuppressWarnings("unchecked")
+    var customerMap = (Map<String, Object>) context.get("customer");
+    assertThat(customerMap).isNotNull();
+    assertThat(customerMap.get("name")).isEqualTo("Fallback Customer");
+    assertThat(customerMap.get("email")).isEqualTo("fb@example.com");
   }
 
   @Test

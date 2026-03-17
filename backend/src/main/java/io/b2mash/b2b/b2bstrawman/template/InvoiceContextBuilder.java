@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.template;
 
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
@@ -64,7 +65,10 @@ public class InvoiceContextBuilder implements TemplateContextBuilder {
     invoiceMap.put("currency", invoice.getCurrency());
     invoiceMap.put("notes", invoice.getNotes());
     invoiceMap.put(
-        "customFields", invoice.getCustomFields() != null ? invoice.getCustomFields() : Map.of());
+        "customFields",
+        contextHelper.resolveDropdownLabels(
+            invoice.getCustomFields() != null ? invoice.getCustomFields() : Map.of(),
+            EntityType.INVOICE));
     context.put("invoice", invoiceMap);
 
     // lines[]
@@ -100,7 +104,9 @@ public class InvoiceContextBuilder implements TemplateContextBuilder {
               customerMap.put("email", customer.getEmail());
               customerMap.put(
                   "customFields",
-                  customer.getCustomFields() != null ? customer.getCustomFields() : Map.of());
+                  contextHelper.resolveDropdownLabels(
+                      customer.getCustomFields() != null ? customer.getCustomFields() : Map.of(),
+                      EntityType.CUSTOMER));
               customerMap.put("address", invoice.getCustomerAddress());
               context.put("customer", customerMap);
 
@@ -132,9 +138,11 @@ public class InvoiceContextBuilder implements TemplateContextBuilder {
                           projectMap.put("name", project.getName());
                           projectMap.put(
                               "customFields",
-                              project.getCustomFields() != null
-                                  ? project.getCustomFields()
-                                  : Map.of());
+                              contextHelper.resolveDropdownLabels(
+                                  project.getCustomFields() != null
+                                      ? project.getCustomFields()
+                                      : Map.of(),
+                                  EntityType.PROJECT));
                           context.put("project", projectMap);
                         },
                         () -> context.put("project", null)),

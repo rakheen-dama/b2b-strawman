@@ -5,6 +5,7 @@ import io.b2mash.b2b.b2bstrawman.budget.ProjectBudgetRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import java.time.Instant;
@@ -61,15 +62,25 @@ public class ProjectContextBuilder implements TemplateContextBuilder {
     projectMap.put(
         "createdAt", project.getCreatedAt() != null ? project.getCreatedAt().toString() : null);
     projectMap.put(
-        "customFields", project.getCustomFields() != null ? project.getCustomFields() : Map.of());
+        "customFields",
+        contextHelper.resolveDropdownLabels(
+            project.getCustomFields() != null ? project.getCustomFields() : Map.of(),
+            EntityType.PROJECT));
     context.put("project", projectMap);
 
-    // customer.* (via CustomerProject join table — null-safe)
+    // customer.* (via CustomerProject join table, fallback to project.customerId)
     var customerProjects = customerProjectRepository.findByProjectId(entityId);
+    UUID resolvedCustomerId = null;
     if (!customerProjects.isEmpty()) {
-      var firstLink = customerProjects.getFirst();
+      resolvedCustomerId = customerProjects.getFirst().getCustomerId();
+    } else if (project.getCustomerId() != null) {
+      // Fallback: project was created with customerId but no join record
+      resolvedCustomerId = project.getCustomerId();
+    }
+
+    if (resolvedCustomerId != null) {
       customerRepository
-          .findById(firstLink.getCustomerId())
+          .findById(resolvedCustomerId)
           .ifPresentOrElse(
               customer -> {
                 var customerMap = new LinkedHashMap<String, Object>();
@@ -78,7 +89,9 @@ public class ProjectContextBuilder implements TemplateContextBuilder {
                 customerMap.put("email", customer.getEmail());
                 customerMap.put(
                     "customFields",
-                    customer.getCustomFields() != null ? customer.getCustomFields() : Map.of());
+                    contextHelper.resolveDropdownLabels(
+                        customer.getCustomFields() != null ? customer.getCustomFields() : Map.of(),
+                        EntityType.CUSTOMER));
                 context.put("customer", customerMap);
               },
               () -> context.put("customer", null));

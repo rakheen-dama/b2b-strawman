@@ -52,7 +52,7 @@
       "content": [
         { "type": "text", "marks": [{ "type": "bold" }], "text": "Registration Number:" },
         { "type": "text", "text": " " },
-        { "type": "variable", "attrs": { "key": "customer.customFields.company_registration_number" } }
+        { "type": "variable", "attrs": { "key": "customer.customFields.acct_company_registration_number" } }
       ]
     },
     {
@@ -116,6 +116,20 @@
         { "type": "text", "text": "Please confirm your acceptance of the terms set out in this engagement letter by signing and returning a copy to our offices." }
       ]
     },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [
+        { "type": "text", "text": "Terms and Conditions" }
+      ]
+    },
+    { "type": "clauseBlock", "attrs": { "slug": "accounting-za-limitation-of-liability" } },
+    { "type": "clauseBlock", "attrs": { "slug": "accounting-za-fee-escalation" } },
+    { "type": "clauseBlock", "attrs": { "slug": "accounting-za-termination" } },
+    { "type": "clauseBlock", "attrs": { "slug": "accounting-za-confidentiality" } },
+    { "type": "clauseBlock", "attrs": { "slug": "accounting-za-document-retention" } },
+    { "type": "clauseBlock", "attrs": { "slug": "accounting-za-third-party-reliance" } },
+    { "type": "clauseBlock", "attrs": { "slug": "accounting-za-electronic-consent" } },
     {
       "type": "paragraph",
       "content": [

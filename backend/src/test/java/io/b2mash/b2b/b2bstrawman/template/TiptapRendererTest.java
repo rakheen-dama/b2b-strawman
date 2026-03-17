@@ -680,6 +680,113 @@ class TiptapRendererTest {
     assertThat(html).contains("Test Project");
   }
 
+  @Test
+  void loop_table_with_format_hints_formats_currency_and_date_cells() {
+    var context = new HashMap<String, Object>();
+    context.put(
+        "invoice",
+        Map.of(
+            "lines",
+            List.of(
+                Map.of(
+                    "description", "Consulting",
+                    "unitPrice", "1500.00",
+                    "taxAmount", "225.00",
+                    "lineTotal", "1725.00"),
+                Map.of(
+                    "description", "Support",
+                    "unitPrice", "850.00",
+                    "taxAmount", "127.50",
+                    "lineTotal", "977.50"))));
+
+    var loopNode = new HashMap<String, Object>();
+    loopNode.put("type", "loopTable");
+    loopNode.put(
+        "attrs",
+        Map.<String, Object>of(
+            "dataSource",
+            "invoice.lines",
+            "columns",
+            List.of(
+                Map.of("header", "Description", "key", "description"),
+                Map.of("header", "Unit Price", "key", "unitPrice", "format", "currency"),
+                Map.of("header", "VAT", "key", "taxAmount", "format", "currency"),
+                Map.of("header", "Total", "key", "lineTotal", "format", "currency"))));
+
+    var doc = doc(loopNode);
+
+    String html = renderer.render(doc, context, Map.of(), null);
+
+    // Currency values should be formatted with R prefix, not raw numbers
+    assertThat(html).contains("<td>Consulting</td>");
+    assertThat(html).contains("R1&nbsp;500,00");
+    assertThat(html).contains("R225,00");
+    assertThat(html).contains("R1&nbsp;725,00");
+    // Raw numbers should NOT appear
+    assertThat(html).doesNotContain("<td>1500.00</td>");
+    assertThat(html).doesNotContain("<td>225.00</td>");
+  }
+
+  @Test
+  void loop_table_with_date_format_formats_date_cells() {
+    var context = new HashMap<String, Object>();
+    context.put(
+        "invoices",
+        List.of(
+            Map.of(
+                "invoiceNumber", "INV-001",
+                "issueDate", "2026-03-08",
+                "total", "5500.00")));
+
+    var loopNode = new HashMap<String, Object>();
+    loopNode.put("type", "loopTable");
+    loopNode.put(
+        "attrs",
+        Map.<String, Object>of(
+            "dataSource",
+            "invoices",
+            "columns",
+            List.of(
+                Map.of("header", "Invoice #", "key", "invoiceNumber"),
+                Map.of("header", "Date", "key", "issueDate", "format", "date"),
+                Map.of("header", "Amount", "key", "total", "format", "currency"))));
+
+    var doc = doc(loopNode);
+
+    String html = renderer.render(doc, context, Map.of(), null);
+
+    assertThat(html).contains("<td>INV-001</td>");
+    assertThat(html).contains("<td>8 March 2026</td>");
+    assertThat(html).contains("R5&nbsp;500,00");
+    // Raw date should NOT appear
+    assertThat(html).doesNotContain("<td>2026-03-08</td>");
+  }
+
+  @Test
+  void loop_table_without_format_still_renders_raw_values() {
+    var context = new HashMap<String, Object>();
+    context.put("items", List.of(Map.of("name", "Item A", "price", "100.00")));
+
+    var loopNode = new HashMap<String, Object>();
+    loopNode.put("type", "loopTable");
+    loopNode.put(
+        "attrs",
+        Map.<String, Object>of(
+            "dataSource",
+            "items",
+            "columns",
+            List.of(
+                Map.of("header", "Name", "key", "name"),
+                Map.of("header", "Price", "key", "price"))));
+
+    var doc = doc(loopNode);
+
+    String html = renderer.render(doc, context, Map.of(), null);
+
+    // Without format hint, raw value should appear
+    assertThat(html).contains("<td>Item A</td><td>100.00</td>");
+  }
+
   // --- Test helpers ---
 
   private Map<String, Object> doc(Map<String, Object> childNode) {

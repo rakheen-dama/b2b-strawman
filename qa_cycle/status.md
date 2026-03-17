@@ -4,7 +4,7 @@
 
 - **QA Position**: Day 0, Checkpoint 0.1 (not started)
 - **Cycle**: 0
-- **E2E Stack**: Not running (NEEDS_REBUILD: GAP-P49-002, GAP-P49-006)
+- **E2E Stack**: HEALTHY (all 6 services up, seed complete)
 - **Branch**: `bugfix_cycle_2026-03-17`
 - **Scenario**: `tasks/phase49-lifecycle-script.md`
 - **Test Plan**: `qa/testplan/phase49-document-content-verification.md`
@@ -42,3 +42,4 @@
 | 2026-03-17T12:30Z | Product | Triaged 4 OPEN items. GAP-P49-002 (blocker) -> SPEC_READY: template key mismatch, fix is single string change. GAP-P49-006 (major) -> SPEC_READY: project field pack autoApply, single boolean change. GAP-P49-003 (minor) -> WONT_FIX: placeholder behavior is by design, M effort per template, out of scope. GAP-P49-007 (major) -> WONT_FIX: already fixed in PR #720, `type="button"` confirmed in code. 2 fix specs written to `qa_cycle/fix-specs/`. |
 | 2026-03-17T14:20Z | Dev | GAP-P49-002 FIXED via PR #728 (squash-merged to bugfix_cycle_2026-03-17). Changed template variable key from `company_registration_number` to `acct_company_registration_number` in `engagement-letter-bookkeeping.json`. Backend resource change — NEEDS_REBUILD before QA verification. |
 | 2026-03-17T14:30Z | Dev | GAP-P49-006 FIXED via PR #729 (squash-merged to bugfix_cycle_2026-03-17). Changed `autoApply` from `false` to `true` in `accounting-za-project.json`. Backend resource change — NEEDS_REBUILD before QA verification. |
+| 2026-03-17T15:00Z | Infra | E2E stack rebuilt and verified. Backend Docker image rebuilt with PR #728 + #729 changes. All services healthy: frontend (200), backend (200), mock-idp (JWKS OK), mailpit (200), seed complete. NEEDS_REBUILD flag cleared. |

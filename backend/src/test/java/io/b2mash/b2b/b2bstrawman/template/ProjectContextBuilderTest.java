@@ -2,6 +2,8 @@ package io.b2mash.b2b.b2bstrawman.template;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 import io.b2mash.b2b.b2bstrawman.budget.ProjectBudget;
@@ -11,6 +13,7 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberInfo;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import io.b2mash.b2b.b2bstrawman.project.Project;
@@ -21,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -42,6 +46,14 @@ class ProjectContextBuilderTest {
   private final UUID projectId = UUID.randomUUID();
   private final UUID memberId = UUID.randomUUID();
   private final UUID customerId = UUID.randomUUID();
+
+  @BeforeEach
+  void setUp() {
+    // resolveDropdownLabels is called for every custom fields map; pass through by default
+    lenient()
+        .when(contextHelper.resolveDropdownLabels(any(), any(EntityType.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+  }
 
   @Test
   void supportsProjectEntityType() {

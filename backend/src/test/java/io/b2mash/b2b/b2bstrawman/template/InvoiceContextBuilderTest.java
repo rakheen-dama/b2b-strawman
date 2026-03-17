@@ -2,11 +2,14 @@ package io.b2mash.b2b.b2bstrawman.template;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLine;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
@@ -18,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -38,6 +42,13 @@ class InvoiceContextBuilderTest {
   private final UUID invoiceId = UUID.randomUUID();
   private final UUID memberId = UUID.randomUUID();
   private final UUID customerId = UUID.randomUUID();
+
+  @BeforeEach
+  void setUp() {
+    lenient()
+        .when(contextHelper.resolveDropdownLabels(any(), any(EntityType.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+  }
 
   @Test
   void supportsInvoiceEntityType() {

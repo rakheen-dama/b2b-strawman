@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.template;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceStatus;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
@@ -60,7 +61,10 @@ public class CustomerContextBuilder implements TemplateContextBuilder {
     customerMap.put("phone", customer.getPhone());
     customerMap.put("status", customer.getStatus());
     customerMap.put(
-        "customFields", customer.getCustomFields() != null ? customer.getCustomFields() : Map.of());
+        "customFields",
+        contextHelper.resolveDropdownLabels(
+            customer.getCustomFields() != null ? customer.getCustomFields() : Map.of(),
+            EntityType.CUSTOMER));
     context.put("customer", customerMap);
 
     // projects[] (linked via CustomerProject)

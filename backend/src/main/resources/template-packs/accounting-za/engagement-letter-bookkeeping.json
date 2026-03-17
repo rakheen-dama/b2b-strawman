@@ -52,7 +52,7 @@
       "content": [
         { "type": "text", "marks": [{ "type": "bold" }], "text": "Registration Number:" },
         { "type": "text", "text": " " },
-        { "type": "variable", "attrs": { "key": "customer.customFields.company_registration_number" } }
+        { "type": "variable", "attrs": { "key": "customer.customFields.acct_company_registration_number" } }
       ]
     },
     {

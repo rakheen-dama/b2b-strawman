@@ -292,8 +292,9 @@ public class TiptapRenderer {
         sb.append("<tr>");
         for (var col : columns) {
           String colKey = (String) col.get("key");
+          String colFormat = (String) col.get("format");
           Object val = colKey != null ? row.get(colKey) : null;
-          String cellText = val != null ? HtmlUtils.htmlEscape(String.valueOf(val)) : "";
+          String cellText = VariableFormatter.format(val, colFormat);
           sb.append("<td>").append(cellText).append("</td>");
         }
         sb.append("</tr>");

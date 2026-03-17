@@ -89,10 +89,10 @@
         "dataSource": "lines",
         "columns": [
           { "header": "Description", "key": "description" },
-          { "header": "Qty", "key": "quantity" },
-          { "header": "Unit Price (excl. VAT)", "key": "unitPrice" },
-          { "header": "VAT", "key": "taxAmount" },
-          { "header": "Total (incl. VAT)", "key": "lineTotal" }
+          { "header": "Qty", "key": "quantity", "format": "number" },
+          { "header": "Unit Price (excl. VAT)", "key": "unitPrice", "format": "currency" },
+          { "header": "VAT", "key": "taxAmount", "format": "currency" },
+          { "header": "Total (incl. VAT)", "key": "lineTotal", "format": "currency" }
         ]
       }
     },

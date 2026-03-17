@@ -60,12 +60,12 @@
         "dataSource": "invoices",
         "columns": [
           { "header": "Invoice #", "key": "invoiceNumber" },
-          { "header": "Date", "key": "issueDate" },
-          { "header": "Due Date", "key": "dueDate" },
-          { "header": "Amount", "key": "total" },
+          { "header": "Date", "key": "issueDate", "format": "date" },
+          { "header": "Due Date", "key": "dueDate", "format": "date" },
+          { "header": "Amount", "key": "total", "format": "currency" },
           { "header": "Currency", "key": "currency" },
           { "header": "Status", "key": "status" },
-          { "header": "Running Balance", "key": "runningBalance" }
+          { "header": "Running Balance", "key": "runningBalance", "format": "currency" }
         ]
       }
     },

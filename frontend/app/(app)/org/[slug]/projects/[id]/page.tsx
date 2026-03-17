@@ -494,6 +494,8 @@ export default async function ProjectDetailPage({
                 entityId={id}
                 entityType="PROJECT"
                 slug={slug}
+                customerId={customers.length > 0 ? customers[0].id : undefined}
+                isAdmin={isAdmin}
               />
             )}
             {canManage && (
@@ -706,6 +708,7 @@ export default async function ProjectDetailPage({
             entityId={id}
             slug={slug}
             isAdmin={isAdmin}
+            customerId={customers.length > 0 ? customers[0].id : undefined}
           />
         }
         requestsPanel={

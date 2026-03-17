@@ -221,13 +221,32 @@ public class PdfRenderingService {
   public byte[] htmlToPdf(String html) {
     try (var outputStream = new ByteArrayOutputStream()) {
       var builder = new PdfRendererBuilder();
-      builder.withHtmlContent(html, null);
+      builder.withHtmlContent(sanitizeForXhtml(html), null);
       builder.toStream(outputStream);
       builder.run();
       return outputStream.toByteArray();
     } catch (IOException e) {
       throw new PdfGenerationException("Failed to generate PDF from rendered HTML", e);
     }
+  }
+
+  /**
+   * Replaces HTML5 named entities with numeric equivalents for OpenHTMLToPDF's XHTML parser. XML
+   * predefined entities (&amp;, &lt;, &gt;, &quot;, &apos;) are left untouched.
+   */
+  String sanitizeForXhtml(String html) {
+    if (html == null) {
+      return null;
+    }
+    return html.replace("&mdash;", "&#8212;")
+        .replace("&ndash;", "&#8211;")
+        .replace("&nbsp;", "&#160;")
+        .replace("&hellip;", "&#8230;")
+        .replace("&bull;", "&#8226;")
+        .replace("&lsquo;", "&#8216;")
+        .replace("&rsquo;", "&#8217;")
+        .replace("&ldquo;", "&#8220;")
+        .replace("&rdquo;", "&#8221;");
   }
 
   String generateFilename(

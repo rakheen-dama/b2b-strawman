@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   CheckCircle2,
   AlertCircle,
@@ -35,7 +35,9 @@ type PageState =
 
 function formatDate(iso: string | null): string {
   if (!iso) return "";
-  return new Date(iso).toLocaleDateString(undefined, {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "";
+  return d.toLocaleDateString(undefined, {
     year: "numeric",
     month: "long",
     day: "numeric",
@@ -50,6 +52,7 @@ export function AcceptancePageContent({ token }: { token: string }) {
   const [name, setName] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const pdfUrlRef = useRef<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -71,6 +74,10 @@ export function AcceptancePageContent({ token }: { token: string }) {
           setState({ kind: "accepted", data });
           return;
         }
+        if (data.status === "PENDING") {
+          setState({ kind: "not_found" });
+          return;
+        }
 
         // SENT or VIEWED — load PDF
         let pdfUrl: string | null = null;
@@ -78,6 +85,7 @@ export function AcceptancePageContent({ token }: { token: string }) {
           const blob = await getAcceptancePdf(token);
           if (!cancelled) {
             pdfUrl = URL.createObjectURL(blob);
+            pdfUrlRef.current = pdfUrl;
           }
         } catch {
           // PDF load failed — still show page without preview
@@ -91,6 +99,7 @@ export function AcceptancePageContent({ token }: { token: string }) {
         if (err instanceof Error && err.message === "not_found") {
           setState({ kind: "not_found" });
         } else {
+          console.error("Failed to load acceptance page:", err);
           setState({ kind: "not_found" });
         }
       }
@@ -100,6 +109,10 @@ export function AcceptancePageContent({ token }: { token: string }) {
 
     return () => {
       cancelled = true;
+      if (pdfUrlRef.current) {
+        URL.revokeObjectURL(pdfUrlRef.current);
+        pdfUrlRef.current = null;
+      }
     };
   }, [token]);
 
@@ -115,9 +128,9 @@ export function AcceptancePageContent({ token }: { token: string }) {
         const response = await acceptDocument(token, name.trim());
         setState((prev) => {
           if (prev.kind === "ready") {
-            // Revoke the PDF blob URL since we no longer need it
             if (prev.pdfUrl) {
               URL.revokeObjectURL(prev.pdfUrl);
+              pdfUrlRef.current = null;
             }
             return {
               kind: "accepted",

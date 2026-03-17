@@ -2,7 +2,7 @@
 
 ## Current State
 
-- **QA Position**: Day 1, Checkpoint 1.1 (ready to start)
+- **QA Position**: Day 2, Checkpoint 2.1 (ready to start)
 - **Cycle**: 1
 - **E2E Stack**: HEALTHY (all 6 services up, seed complete)
 - **Branch**: `bugfix_cycle_2026-03-17`
@@ -15,7 +15,7 @@
 | ID | Summary | Severity | Status | Owner | PR | Track | Notes |
 |----|---------|----------|--------|-------|----|-------|-------|
 | GAP-P49-001 | Template pack has 7 templates, not 8 (test plan doc error) | minor | WONT_FIX | — | — | T1 | Documentation error. T1 sub-tracks correctly list 7. No code change needed. |
-| GAP-P49-002 | `company_registration_number` template variable mismatched with field slug `acct_company_registration_number` | blocker | FIXED | Dev | #728 | T1.1/T5.1 | Template key aligned with field pack slug. NEEDS_REBUILD. |
+| GAP-P49-002 | `company_registration_number` template variable mismatched with field slug `acct_company_registration_number` | blocker | VERIFIED | Dev | #728 | T1.1/T5.1 | Template key aligned with field pack slug. VERIFIED in Day 1 checkpoint 1.4: "Registration Number: 2019/123456/07" renders correctly. |
 | GAP-P49-003 | Blank fields produce `________` placeholder instead of hiding the line | minor | WONT_FIX | — | — | T5.6 | Placeholder (`________`) is intentional behavior from `LenientOGNLEvaluator`. Adding conditional blocks to all 7 templates is M effort per template (~3.5h total). QA can observe and document the behavior. The `TemplateValidationService` warns pre-generation. Out of scope for this bugfix cycle; log as future enhancement. |
 | GAP-P49-004 | `generatedAt` rendered as raw ISO in non-Tiptap paths | minor | WONT_FIX | — | — | T1.4/T1.6 | Tiptap rendering applies `VariableFormatter.formatDate()` correctly. Only DOCX path affected (T7 is manual). |
 | GAP-P49-005 | Portal acceptance page missing — Track T6 entirely blocked | blocker | WONT_FIX | — | — | T6 | New frontend page required. Backend + firm-side UI exist. Effort: L (half day). Out of scope for bugfix cycle. |
@@ -26,6 +26,9 @@
 | GAP-P49-010 | Info request firm-side accept/reject flow | cosmetic | WONT_FIX | — | — | T4.4 | Feature appears complete per code review. Not a gap. |
 | GAP-P49-011 | `customerVatNumber` mapping confirmed correct in InvoiceContextBuilder | minor | WONT_FIX | — | — | T5.5 | Not a gap. `vat_number` → `customerVatNumber` alias confirmed in code. Observation only. |
 | GAP-P49-012 | DOCX-to-PDF conversion — LibreOffice not in E2E Docker stack | blocker | WONT_FIX | — | — | T7 | Track 7 is manual testing by founder. DOCX merge works; PDF conversion expected to fail gracefully. |
+| GAP-P49-013 | Naledi project not linked to customer — document generation produces broken output | major | OPEN | — | — | T5.6 | "Monthly Bookkeeping -- Naledi" shows as "Internal Project". Engagement letter has blank salutation ("Dear ,"), blank client details. Customer IS linked from customer side but project-to-customer link missing. Likely seed data issue. |
+| GAP-P49-014 | Blank template fields render as label-with-empty-value instead of hiding | minor | WONT_FIX | — | — | T5.6 | "Registration Number:", "Client VAT Number:" labels shown with blank values. Related to GAP-P49-003 but for entity-level (not custom field) blanks. Future enhancement: conditional line hiding. |
+| GAP-P49-015 | org.name resolves to system org name, not trading/display name | cosmetic | WONT_FIX | — | — | T5.1 | `org.name` = "E2E Test Organization" (mock-auth), not "Thornton & Associates" (branding). Footer uses `documentFooterText` correctly. Likely E2E-only issue; production Keycloak org name would match. |
 
 ## Status Values
 
@@ -44,3 +47,4 @@
 | 2026-03-17T14:30Z | Dev | GAP-P49-006 FIXED via PR #729 (squash-merged to bugfix_cycle_2026-03-17). Changed `autoApply` from `false` to `true` in `accounting-za-project.json`. Backend resource change — NEEDS_REBUILD before QA verification. |
 | 2026-03-17T15:00Z | Infra | E2E stack rebuilt and verified. Backend Docker image rebuilt with PR #728 + #729 changes. All services healthy: frontend (200), backend (200), mock-idp (JWKS OK), mailpit (200), seed complete. NEEDS_REBUILD flag cleared. |
 | 2026-03-17T15:30Z | QA | Day 0 complete (Cycle 1). 77 checkpoints: 71 PASS, 6 PARTIAL, 0 FAIL. Custom fields populated for all 4 customers (Kgosi 12 fields, Naledi 7+2 blank, Vukani 10, Moroka 13 incl. 6 trust). Org settings saved (ZAR, footer text, tax reg). Project custom fields set on 2 projects. STOP GATE 0.82 PASSES. GAP-P49-006 VERIFIED (project autoApply fix works). Portal contacts: no firm-side UI (GAP-P49-005 consistent). QA Position advanced to Day 1, Checkpoint 1.1. |
+| 2026-03-17T16:00Z | QA | Day 1 complete (Cycle 1). 26 checkpoints: 18 PASS, 4 PARTIAL, 2 FAIL, 1 N/A, 1 informational. STOP GATE PASSES (1.4+1.5+1.6 all resolve). GAP-P49-002 VERIFIED (registration number renders correctly after PR #728 fix). 3 new GAPs: GAP-P49-013 (major, Naledi project missing customer link), GAP-P49-014 (minor, blank label rendering), GAP-P49-015 (cosmetic, org.name vs trading name). Key findings: (1) Custom field -> document data chain works for Kgosi (all fields resolve), (2) FICA date formats correctly, (3) Trust fields visible for Moroka but not referenced in FICA template, (4) Invoice VAT number resolves for Kgosi, (5) Naledi project generates broken engagement letter due to missing project-to-customer link. QA Position advanced to Day 2, Checkpoint 2.1. |

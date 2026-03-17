@@ -27,8 +27,9 @@ export interface BffMember {
  */
 function normalizeRole(role: string | undefined | null): string {
   if (!role) return "org:member";
-  if (role.startsWith("org:")) return role;
-  return `org:${role}`;
+  const lower = role.toLowerCase();
+  if (lower.startsWith("org:")) return lower;
+  return `org:${lower}`;
 }
 
 async function listMembersBff(): Promise<BffMember[]> {

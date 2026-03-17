@@ -40,21 +40,17 @@ export default async function RatesSettingsPage({
   let billingRates: BillingRate[] = [];
   let costRates: CostRate[] = [];
 
-  try {
-    const [settingsRes, membersRes, billingRatesRes, costRatesRes] =
-      await Promise.all([
-        api.get<OrgSettings>("/api/settings"),
-        api.get<OrgMember[]>("/api/members"),
-        api.get<{ content: BillingRate[] }>("/api/billing-rates"),
-        api.get<{ content: CostRate[] }>("/api/cost-rates"),
-      ]);
-    settings = settingsRes;
-    members = membersRes;
-    billingRates = billingRatesRes?.content ?? [];
-    costRates = costRatesRes?.content ?? [];
-  } catch {
-    // Non-fatal: show empty state with defaults
-  }
+  const [settingsRes, membersRes, billingRatesRes, costRatesRes] =
+    await Promise.allSettled([
+      api.get<OrgSettings>("/api/settings"),
+      api.get<OrgMember[]>("/api/members"),
+      api.get<{ content: BillingRate[] }>("/api/billing-rates"),
+      api.get<{ content: CostRate[] }>("/api/cost-rates"),
+    ]);
+  if (settingsRes.status === "fulfilled") settings = settingsRes.value;
+  if (membersRes.status === "fulfilled") members = membersRes.value;
+  if (billingRatesRes.status === "fulfilled") billingRates = billingRatesRes.value?.content ?? [];
+  if (costRatesRes.status === "fulfilled") costRates = costRatesRes.value?.content ?? [];
 
   return (
     <div className="space-y-8">

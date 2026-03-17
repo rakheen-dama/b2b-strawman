@@ -4,12 +4,14 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceStatus;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -52,6 +54,7 @@ public class CustomerContextBuilder implements TemplateContextBuilder {
             .orElseThrow(() -> new ResourceNotFoundException("Customer", entityId));
 
     var context = new HashMap<String, Object>();
+    var fieldDefCache = new EnumMap<EntityType, List<FieldDefinition>>(EntityType.class);
 
     // customer.*
     var customerMap = new LinkedHashMap<String, Object>();
@@ -64,7 +67,8 @@ public class CustomerContextBuilder implements TemplateContextBuilder {
         "customFields",
         contextHelper.resolveDropdownLabels(
             customer.getCustomFields() != null ? customer.getCustomFields() : Map.of(),
-            EntityType.CUSTOMER));
+            EntityType.CUSTOMER,
+            fieldDefCache));
     context.put("customer", customerMap);
 
     // projects[] (linked via CustomerProject)

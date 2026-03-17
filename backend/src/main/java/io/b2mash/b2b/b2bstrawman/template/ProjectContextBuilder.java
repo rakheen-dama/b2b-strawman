@@ -6,11 +6,14 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import java.time.Instant;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -53,6 +56,7 @@ public class ProjectContextBuilder implements TemplateContextBuilder {
             .orElseThrow(() -> new ResourceNotFoundException("Project", entityId));
 
     var context = new HashMap<String, Object>();
+    var fieldDefCache = new EnumMap<EntityType, List<FieldDefinition>>(EntityType.class);
 
     // project.*
     var projectMap = new LinkedHashMap<String, Object>();
@@ -65,7 +69,8 @@ public class ProjectContextBuilder implements TemplateContextBuilder {
         "customFields",
         contextHelper.resolveDropdownLabels(
             project.getCustomFields() != null ? project.getCustomFields() : Map.of(),
-            EntityType.PROJECT));
+            EntityType.PROJECT,
+            fieldDefCache));
     context.put("project", projectMap);
 
     // customer.* (via CustomerProject join table, fallback to project.customerId)
@@ -91,7 +96,8 @@ public class ProjectContextBuilder implements TemplateContextBuilder {
                     "customFields",
                     contextHelper.resolveDropdownLabels(
                         customer.getCustomFields() != null ? customer.getCustomFields() : Map.of(),
-                        EntityType.CUSTOMER));
+                        EntityType.CUSTOMER,
+                        fieldDefCache));
                 context.put("customer", customerMap);
               },
               () -> context.put("customer", null));

@@ -22,14 +22,16 @@ public final class AutomationDtos {
       String description,
       @NotNull TriggerType triggerType,
       @NotNull Map<String, Object> triggerConfig,
-      List<Map<String, Object>> conditions) {}
+      List<Map<String, Object>> conditions,
+      List<CreateActionRequest> actions) {}
 
   public record UpdateRuleRequest(
       @NotBlank String name,
       String description,
       @NotNull TriggerType triggerType,
       @NotNull Map<String, Object> triggerConfig,
-      List<Map<String, Object>> conditions) {}
+      List<Map<String, Object>> conditions,
+      List<CreateActionRequest> actions) {}
 
   public record CreateActionRequest(
       @NotNull ActionType actionType,

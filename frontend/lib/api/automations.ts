@@ -129,7 +129,7 @@ export interface TemplateDefinitionResponse {
 
 export interface ActionRequest {
   actionType: ActionType;
-  config: Record<string, unknown>;
+  actionConfig: Record<string, unknown>;
   sortOrder: number;
   delayDuration?: number | null;
   delayUnit?: DelayUnit | null;

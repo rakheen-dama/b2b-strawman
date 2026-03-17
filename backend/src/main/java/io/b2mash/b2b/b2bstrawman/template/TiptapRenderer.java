@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Safelist;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,8 +87,13 @@ public class TiptapRenderer {
       Map<UUID, Clause> clauses,
       String templateCss,
       Map<String, String> formatHints) {
+    Map<String, Clause> slugIndex =
+        clauses.values().stream()
+            .filter(c -> c.getSlug() != null)
+            .collect(Collectors.toMap(Clause::getSlug, Function.identity(), (a, b) -> a));
+
     var body = new StringBuilder();
-    renderNode(document, context, clauses, body, 0, formatHints);
+    renderNode(document, context, clauses, slugIndex, body, 0, formatHints);
 
     String safeCss = templateCss != null ? templateCss.replaceAll("(?i)</style>", "") : "";
 
@@ -104,6 +111,7 @@ public class TiptapRenderer {
       Map<String, Object> node,
       Map<String, Object> context,
       Map<UUID, Clause> clauses,
+      Map<String, Clause> slugIndex,
       StringBuilder sb,
       int depth,
       Map<String, String> formatHints) {
@@ -112,17 +120,17 @@ public class TiptapRenderer {
     Map<String, Object> attrs = (Map<String, Object>) node.getOrDefault("attrs", Map.of());
 
     switch (type) {
-      case "doc" -> renderChildren(node, context, clauses, sb, depth, formatHints);
+      case "doc" -> renderChildren(node, context, clauses, slugIndex, sb, depth, formatHints);
       case "heading" -> {
         Object rawLevel = attrs.getOrDefault("level", 1);
         int level = rawLevel instanceof Number n ? n.intValue() : 1;
         sb.append("<h").append(level).append(">");
-        renderChildren(node, context, clauses, sb, depth, formatHints);
+        renderChildren(node, context, clauses, slugIndex, sb, depth, formatHints);
         sb.append("</h").append(level).append(">");
       }
       case "paragraph" -> {
         sb.append("<p>");
-        renderChildren(node, context, clauses, sb, depth, formatHints);
+        renderChildren(node, context, clauses, slugIndex, sb, depth, formatHints);
         sb.append("</p>");
       }
       case "text" -> renderText(node, sb);
@@ -154,11 +162,7 @@ public class TiptapRenderer {
 
         // Fallback: look up by slug when clauseId is absent or not found
         if (clause == null && slug != null && !"unknown".equals(slug)) {
-          clause =
-              clauses.values().stream()
-                  .filter(c -> slug.equals(c.getSlug()))
-                  .findFirst()
-                  .orElse(null);
+          clause = slugIndex.get(slug);
         }
 
         Map<String, Object> bodyJson = clause != null ? clause.getBody() : null;
@@ -166,7 +170,7 @@ public class TiptapRenderer {
           sb.append("<div class=\"clause-block\" data-clause-slug=\"")
               .append(HtmlUtils.htmlEscape(slug))
               .append("\">");
-          renderNode(bodyJson, context, clauses, sb, depth + 1, formatHints);
+          renderNode(bodyJson, context, clauses, slugIndex, sb, depth + 1, formatHints);
           sb.append("</div>");
         } else {
           sb.append("<!-- clause not found: ").append(HtmlUtils.htmlEscape(slug)).append(" -->");
@@ -179,28 +183,29 @@ public class TiptapRenderer {
         Object condValue = attrs.get("value");
         if (fieldKey == null || fieldKey.isBlank()) {
           // Unconfigured — render children unconditionally
-          renderChildren(node, context, clauses, sb, depth, formatHints);
+          renderChildren(node, context, clauses, slugIndex, sb, depth, formatHints);
         } else {
           Object fieldValue = resolveVariableRaw(fieldKey, context);
           if (evaluateCondition(fieldValue, operator, condValue)) {
-            renderChildren(node, context, clauses, sb, depth, formatHints);
+            renderChildren(node, context, clauses, slugIndex, sb, depth, formatHints);
           }
         }
       }
-      case "bulletList" -> wrapTag("ul", node, context, clauses, sb, depth, formatHints);
-      case "orderedList" -> wrapTag("ol", node, context, clauses, sb, depth, formatHints);
-      case "listItem" -> wrapTag("li", node, context, clauses, sb, depth, formatHints);
-      case "table" -> wrapTag("table", node, context, clauses, sb, depth, formatHints);
-      case "tableRow" -> wrapTag("tr", node, context, clauses, sb, depth, formatHints);
+      case "bulletList" -> wrapTag("ul", node, context, clauses, slugIndex, sb, depth, formatHints);
+      case "orderedList" ->
+          wrapTag("ol", node, context, clauses, slugIndex, sb, depth, formatHints);
+      case "listItem" -> wrapTag("li", node, context, clauses, slugIndex, sb, depth, formatHints);
+      case "table" -> wrapTag("table", node, context, clauses, slugIndex, sb, depth, formatHints);
+      case "tableRow" -> wrapTag("tr", node, context, clauses, slugIndex, sb, depth, formatHints);
       case "tableCell" ->
-          renderTableCell("td", attrs, node, context, clauses, sb, depth, formatHints);
+          renderTableCell("td", attrs, node, context, clauses, slugIndex, sb, depth, formatHints);
       case "tableHeader" ->
-          renderTableCell("th", attrs, node, context, clauses, sb, depth, formatHints);
+          renderTableCell("th", attrs, node, context, clauses, slugIndex, sb, depth, formatHints);
       case "horizontalRule" -> sb.append("<hr/>");
       case "hardBreak" -> sb.append("<br/>");
       case "legacyHtml" ->
           sb.append(Jsoup.clean((String) attrs.getOrDefault("html", ""), LEGACY_HTML_SAFELIST));
-      default -> renderChildren(node, context, clauses, sb, depth, formatHints);
+      default -> renderChildren(node, context, clauses, slugIndex, sb, depth, formatHints);
     }
   }
 
@@ -209,13 +214,14 @@ public class TiptapRenderer {
       Map<String, Object> node,
       Map<String, Object> context,
       Map<UUID, Clause> clauses,
+      Map<String, Clause> slugIndex,
       StringBuilder sb,
       int depth,
       Map<String, String> formatHints) {
     var content = (List<Map<String, Object>>) node.get("content");
     if (content == null) return;
     for (var child : content) {
-      renderNode(child, context, clauses, sb, depth, formatHints);
+      renderNode(child, context, clauses, slugIndex, sb, depth, formatHints);
     }
   }
 
@@ -334,11 +340,12 @@ public class TiptapRenderer {
       Map<String, Object> node,
       Map<String, Object> context,
       Map<UUID, Clause> clauses,
+      Map<String, Clause> slugIndex,
       StringBuilder sb,
       int depth,
       Map<String, String> formatHints) {
     sb.append("<").append(tag).append(">");
-    renderChildren(node, context, clauses, sb, depth, formatHints);
+    renderChildren(node, context, clauses, slugIndex, sb, depth, formatHints);
     sb.append("</").append(tag).append(">");
   }
 
@@ -349,6 +356,7 @@ public class TiptapRenderer {
       Map<String, Object> node,
       Map<String, Object> context,
       Map<UUID, Clause> clauses,
+      Map<String, Clause> slugIndex,
       StringBuilder sb,
       int depth,
       Map<String, String> formatHints) {
@@ -362,7 +370,7 @@ public class TiptapRenderer {
       sb.append(" rowspan=\"").append(n.intValue()).append("\"");
     }
     sb.append(">");
-    renderChildren(node, context, clauses, sb, depth, formatHints);
+    renderChildren(node, context, clauses, slugIndex, sb, depth, formatHints);
     sb.append("</").append(tag).append(">");
   }
 

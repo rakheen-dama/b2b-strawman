@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.template;
 
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldType;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
@@ -12,6 +13,7 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.tag.EntityTagRepository;
 import io.b2mash.b2b.b2bstrawman.tag.TagRepository;
 import java.time.Duration;
+import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -132,14 +134,34 @@ public class TemplateContextHelper {
    * Resolves dropdown custom field values to their display labels. For each DROPDOWN field
    * definition that has options, replaces the stored value (e.g., "MONTHLY_BOOKKEEPING") with the
    * human-readable label (e.g., "Monthly Bookkeeping").
+   *
+   * <p>This overload creates a fresh cache per call. For batch rendering where multiple entity
+   * types are resolved in one buildContext() call, prefer the overload that accepts a shared cache
+   * map.
    */
   public Map<String, Object> resolveDropdownLabels(
       Map<String, Object> customFields, EntityType entityType) {
+    return resolveDropdownLabels(customFields, entityType, new EnumMap<>(EntityType.class));
+  }
+
+  /**
+   * Resolves dropdown custom field values to their display labels, using the provided cache to
+   * avoid repeated DB queries for the same entity type within a single render pass.
+   *
+   * @param fieldDefCache per-invocation cache; callers create one {@code EnumMap<EntityType,
+   *     List<FieldDefinition>>} at the top of their buildContext() method and pass it to all calls
+   */
+  public Map<String, Object> resolveDropdownLabels(
+      Map<String, Object> customFields,
+      EntityType entityType,
+      Map<EntityType, List<FieldDefinition>> fieldDefCache) {
     if (customFields == null || customFields.isEmpty()) {
       return customFields;
     }
     var fieldDefs =
-        fieldDefinitionRepository.findByEntityTypeAndActiveTrueOrderBySortOrder(entityType);
+        fieldDefCache.computeIfAbsent(
+            entityType,
+            et -> fieldDefinitionRepository.findByEntityTypeAndActiveTrueOrderBySortOrder(et));
     var dropdownFields =
         fieldDefs.stream()
             .filter(fd -> fd.getFieldType() == FieldType.DROPDOWN && fd.getOptions() != null)

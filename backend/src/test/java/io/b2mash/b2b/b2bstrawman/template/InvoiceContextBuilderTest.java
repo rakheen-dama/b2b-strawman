@@ -46,7 +46,7 @@ class InvoiceContextBuilderTest {
   @BeforeEach
   void setUp() {
     lenient()
-        .when(contextHelper.resolveDropdownLabels(any(), any(EntityType.class)))
+        .when(contextHelper.resolveDropdownLabels(any(), any(EntityType.class), any()))
         .thenAnswer(invocation -> invocation.getArgument(0));
   }
 

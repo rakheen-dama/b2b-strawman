@@ -51,7 +51,7 @@ class ProjectContextBuilderTest {
   void setUp() {
     // resolveDropdownLabels is called for every custom fields map; pass through by default
     lenient()
-        .when(contextHelper.resolveDropdownLabels(any(), any(EntityType.class)))
+        .when(contextHelper.resolveDropdownLabels(any(), any(EntityType.class), any()))
         .thenAnswer(invocation -> invocation.getArgument(0));
   }
 

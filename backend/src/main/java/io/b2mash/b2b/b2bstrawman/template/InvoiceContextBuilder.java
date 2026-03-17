@@ -3,13 +3,16 @@ package io.b2mash.b2b.b2bstrawman.template;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -49,6 +52,7 @@ public class InvoiceContextBuilder implements TemplateContextBuilder {
             .orElseThrow(() -> new ResourceNotFoundException("Invoice", entityId));
 
     var context = new HashMap<String, Object>();
+    var fieldDefCache = new EnumMap<EntityType, List<FieldDefinition>>(EntityType.class);
 
     // invoice.*
     var invoiceMap = new LinkedHashMap<String, Object>();
@@ -68,7 +72,8 @@ public class InvoiceContextBuilder implements TemplateContextBuilder {
         "customFields",
         contextHelper.resolveDropdownLabels(
             invoice.getCustomFields() != null ? invoice.getCustomFields() : Map.of(),
-            EntityType.INVOICE));
+            EntityType.INVOICE,
+            fieldDefCache));
     context.put("invoice", invoiceMap);
 
     // lines[]
@@ -106,7 +111,8 @@ public class InvoiceContextBuilder implements TemplateContextBuilder {
                   "customFields",
                   contextHelper.resolveDropdownLabels(
                       customer.getCustomFields() != null ? customer.getCustomFields() : Map.of(),
-                      EntityType.CUSTOMER));
+                      EntityType.CUSTOMER,
+                      fieldDefCache));
               customerMap.put("address", invoice.getCustomerAddress());
               context.put("customer", customerMap);
 
@@ -143,7 +149,8 @@ public class InvoiceContextBuilder implements TemplateContextBuilder {
                                   project.getCustomFields() != null
                                       ? project.getCustomFields()
                                       : Map.of(),
-                                  EntityType.PROJECT));
+                                  EntityType.PROJECT,
+                                  fieldDefCache));
                           context.put("project", projectMap);
                         },
                         () -> context.put("project", null)),

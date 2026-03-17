@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/empty-state";
 import { ApproveDialog } from "@/components/access-request/approve-dialog";
 import { RejectDialog } from "@/components/access-request/reject-dialog";
-import { formatRelativeDate } from "@/lib/format";
+import { RelativeDate } from "@/components/ui/relative-date";
 import type { AccessRequest } from "@/app/(app)/platform-admin/access-requests/actions";
 
 const tabs = [
@@ -121,7 +121,7 @@ export function AccessRequestsTable({ requests }: AccessRequestsTableProps) {
                   <TableCell>{request.fullName}</TableCell>
                   <TableCell>{request.country}</TableCell>
                   <TableCell>{request.industry}</TableCell>
-                  <TableCell>{formatRelativeDate(request.createdAt)}</TableCell>
+                  <TableCell><RelativeDate iso={request.createdAt} /></TableCell>
                   <TableCell>
                     <Badge variant={statusBadgeVariant[request.status] ?? "neutral"}>
                       {request.status}

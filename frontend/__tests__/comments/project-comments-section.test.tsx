@@ -14,8 +14,8 @@ vi.mock("@/lib/actions/comments", () => ({
     mockCreateProjectComment(...args),
 }));
 
-vi.mock("@/lib/format", () => ({
-  formatRelativeDate: () => "2 hours ago",
+vi.mock("@/components/ui/relative-date", () => ({
+  RelativeDate: ({ iso }: { iso: string }) => <span>{iso}</span>,
 }));
 
 function makeComment(overrides: Partial<Comment> = {}): Comment {

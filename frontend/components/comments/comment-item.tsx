@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { deleteComment } from "@/lib/actions/comments";
 import { EditCommentDialog } from "@/components/comments/edit-comment-dialog";
-import { formatRelativeDate } from "@/lib/format";
+import { RelativeDate } from "@/components/ui/relative-date";
 import type { Comment } from "@/lib/actions/comments";
 
 interface CommentItemProps {
@@ -80,7 +80,7 @@ export function CommentItem({
             {authorName}
           </span>
           <span className="text-xs text-slate-500 dark:text-slate-400">
-            {formatRelativeDate(comment.createdAt)}
+            <RelativeDate iso={comment.createdAt} />
           </span>
           {comment.visibility === "SHARED" && (
             <Badge variant="success">Customer visible</Badge>

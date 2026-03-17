@@ -20,7 +20,8 @@ import { Button } from "@/components/ui/button";
 import { ExecutionStatusBadge } from "@/components/automations/execution-status-badge";
 import { TriggerTypeBadge } from "@/components/automations/trigger-type-badge";
 import { ExecutionDetail } from "@/components/automations/execution-detail";
-import { formatRelativeDate, computeDuration } from "@/lib/format";
+import { computeDuration } from "@/lib/format";
+import { RelativeDate } from "@/components/ui/relative-date";
 import { Check, X, RefreshCw } from "lucide-react";
 import { fetchExecutionsAction } from "@/app/(app)/org/[slug]/settings/automations/actions";
 import type {
@@ -204,7 +205,7 @@ export function ExecutionLog({
                     />
                   </TableCell>
                   <TableCell className="text-sm text-slate-600 dark:text-slate-400">
-                    {formatRelativeDate(execution.startedAt)}
+                    <RelativeDate iso={execution.startedAt} />
                   </TableCell>
                   <TableCell>
                     <ExecutionStatusBadge status={execution.status} />

@@ -25,14 +25,21 @@ export function useOrgMembers(): {
   members: OrgMemberInfo[];
   isLoaded: boolean;
 } {
-  // Read token from context to stay in sync with the provider
-  const { token } = useMockAuthContext();
+  // Read token + isLoaded from context to stay in sync with the provider
+  const { token, isLoaded: contextLoaded } = useMockAuthContext();
   const [members, setMembers] = useState<OrgMemberInfo[]>([]);
-  const [isLoaded, setIsLoaded] = useState(!token);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
-    if (!token) return;
+    // Context hasn't loaded yet — wait for token to be available
+    if (!contextLoaded) return;
+    // Context loaded but no token — no members to fetch
+    if (!token) {
+      setIsLoaded(true);
+      return;
+    }
 
+    setIsLoaded(false);
     let cancelled = false;
 
     fetch(`${BACKEND_URL}/api/members`, {
@@ -54,7 +61,7 @@ export function useOrgMembers(): {
     return () => {
       cancelled = true;
     };
-  }, [token]);
+  }, [token, contextLoaded]);
 
   return { members, isLoaded };
 }

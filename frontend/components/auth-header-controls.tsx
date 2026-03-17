@@ -17,7 +17,8 @@ function getInitials(user: AuthUser | null): string {
 }
 
 function MockOrgSwitcher() {
-  const { orgSlug } = useMockAuthContext();
+  const { orgSlug, isLoaded } = useMockAuthContext();
+  if (!isLoaded) return null;
   return (
     <div className="flex items-center gap-2 rounded-md border border-slate-200 px-3 py-1.5 text-sm text-slate-700 dark:border-slate-700 dark:text-slate-300">
       <span className="truncate font-medium">{orgSlug ?? "No org"}</span>
@@ -26,7 +27,7 @@ function MockOrgSwitcher() {
 }
 
 function MockUserButton() {
-  const { authUser } = useMockAuthContext();
+  const { authUser, isLoaded } = useMockAuthContext();
   const { signOut } = useSignOut();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -41,7 +42,7 @@ function MockUserButton() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [open]);
 
-  const initials = getInitials(authUser);
+  const initials = isLoaded ? getInitials(authUser) : "…";
 
   return (
     <div ref={ref} className="relative">

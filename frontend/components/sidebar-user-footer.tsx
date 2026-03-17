@@ -18,7 +18,8 @@ function getInitials(
 }
 
 function MockUserFooter() {
-  const { user } = useAuthUser();
+  const { user, isLoaded } = useAuthUser();
+  if (!isLoaded) return null;
   const initials = getInitials(
     user?.firstName ?? null,
     user?.lastName ?? null,

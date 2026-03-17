@@ -10,7 +10,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { ExecutionStatusBadge } from "@/components/automations/execution-status-badge";
 import { TriggerTypeBadge } from "@/components/automations/trigger-type-badge";
-import { formatRelativeDate, computeDuration } from "@/lib/format";
+import { computeDuration } from "@/lib/format";
+import { RelativeDate } from "@/components/ui/relative-date";
 import { Check, X, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import type {
@@ -114,7 +115,7 @@ export function ExecutionDetail({
                   Triggered
                 </span>
                 <span className="text-sm text-slate-600 dark:text-slate-400">
-                  {formatRelativeDate(execution.startedAt)}
+                  <RelativeDate iso={execution.startedAt} />
                 </span>
               </div>
             </div>
@@ -193,13 +194,13 @@ export function ExecutionDetail({
                           {action.scheduledFor && (
                             <p>
                               Scheduled:{" "}
-                              {formatRelativeDate(action.scheduledFor)}
+                              <RelativeDate iso={action.scheduledFor} />
                             </p>
                           )}
                           {action.executedAt && (
                             <p>
                               Executed:{" "}
-                              {formatRelativeDate(action.executedAt)}
+                              <RelativeDate iso={action.executedAt} />
                             </p>
                           )}
                           {action.resultData &&

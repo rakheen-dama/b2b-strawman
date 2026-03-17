@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/empty-state";
-import { formatRelativeDate } from "@/lib/format";
+import { RelativeDate } from "@/components/ui/relative-date";
 import type { CrossProjectActivityItem } from "@/lib/dashboard-types";
 
 interface RecentActivityWidgetProps {
@@ -116,7 +116,7 @@ export function RecentActivityWidget({
                     {item.projectName}
                   </span>
                   <span className="text-xs text-slate-500 dark:text-slate-400">
-                    {formatRelativeDate(item.occurredAt)}
+                    <RelativeDate iso={item.occurredAt} />
                   </span>
                 </div>
               </div>

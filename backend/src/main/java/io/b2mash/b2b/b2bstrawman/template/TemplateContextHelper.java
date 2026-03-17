@@ -1,5 +1,8 @@
 package io.b2mash.b2b.b2bstrawman.template;
 
+import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldType;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
@@ -34,6 +37,7 @@ public class TemplateContextHelper {
   private final StorageService storageService;
   private final OrgSchemaMappingRepository orgSchemaMappingRepository;
   private final OrganizationRepository organizationRepository;
+  private final FieldDefinitionRepository fieldDefinitionRepository;
 
   public TemplateContextHelper(
       OrgSettingsRepository orgSettingsRepository,
@@ -42,7 +46,8 @@ public class TemplateContextHelper {
       TagRepository tagRepository,
       StorageService storageService,
       OrgSchemaMappingRepository orgSchemaMappingRepository,
-      OrganizationRepository organizationRepository) {
+      OrganizationRepository organizationRepository,
+      FieldDefinitionRepository fieldDefinitionRepository) {
     this.orgSettingsRepository = orgSettingsRepository;
     this.memberRepository = memberRepository;
     this.entityTagRepository = entityTagRepository;
@@ -50,6 +55,7 @@ public class TemplateContextHelper {
     this.storageService = storageService;
     this.orgSchemaMappingRepository = orgSchemaMappingRepository;
     this.organizationRepository = organizationRepository;
+    this.fieldDefinitionRepository = fieldDefinitionRepository;
   }
 
   /** Builds the org context map from OrgSettings (currency, branding, logo URL) and org name. */
@@ -120,6 +126,39 @@ public class TemplateContextHelper {
               generatedBy.put("email", null);
             });
     return generatedBy;
+  }
+
+  /**
+   * Resolves dropdown custom field values to their display labels. For each DROPDOWN field
+   * definition that has options, replaces the stored value (e.g., "MONTHLY_BOOKKEEPING") with the
+   * human-readable label (e.g., "Monthly Bookkeeping").
+   */
+  public Map<String, Object> resolveDropdownLabels(
+      Map<String, Object> customFields, EntityType entityType) {
+    if (customFields == null || customFields.isEmpty()) {
+      return customFields;
+    }
+    var fieldDefs =
+        fieldDefinitionRepository.findByEntityTypeAndActiveTrueOrderBySortOrder(entityType);
+    var dropdownFields =
+        fieldDefs.stream()
+            .filter(fd -> fd.getFieldType() == FieldType.DROPDOWN && fd.getOptions() != null)
+            .toList();
+    if (dropdownFields.isEmpty()) {
+      return customFields;
+    }
+
+    var resolved = new LinkedHashMap<>(customFields);
+    for (var fd : dropdownFields) {
+      Object rawValue = resolved.get(fd.getSlug());
+      if (rawValue instanceof String strValue) {
+        fd.getOptions().stream()
+            .filter(opt -> strValue.equals(opt.get("value")))
+            .findFirst()
+            .ifPresent(opt -> resolved.put(fd.getSlug(), opt.get("label")));
+      }
+    }
+    return resolved;
   }
 
   /** Builds a list of tag maps for the given entity. */

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 
 interface MockLoginFormProps {
   mockIdpUrl: string;
@@ -21,7 +20,6 @@ const SEED_USERS: SeedUser[] = [
 const DEFAULT_ORG_SLUG = "e2e-test-org";
 
 export function MockLoginForm({ mockIdpUrl }: MockLoginFormProps) {
-  const router = useRouter();
   const [selectedUser, setSelectedUser] = useState(SEED_USERS[0]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -50,7 +48,8 @@ export function MockLoginForm({ mockIdpUrl }: MockLoginFormProps) {
 
       const { access_token } = await response.json();
       document.cookie = `mock-auth-token=${access_token}; path=/; SameSite=Lax`;
-      router.push(`/org/${DEFAULT_ORG_SLUG}/dashboard`);
+      // Full page reload so MockAuthContextProvider remounts and reads the new cookie
+      window.location.href = `/org/${DEFAULT_ORG_SLUG}/dashboard`;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Sign-in failed");
       setLoading(false);

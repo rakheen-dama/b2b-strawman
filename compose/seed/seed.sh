@@ -88,6 +88,27 @@ sync_member "user_e2e_bob" "bob@e2e-test.local" "Bob Admin" \
 sync_member "user_e2e_carol" "carol@e2e-test.local" "Carol Member" \
   "https://api.dicebear.com/7.x/initials/svg?seed=CM" "member"
 
+# -- Step 3b: Clean up orphaned members from earlier seed conventions ------
+echo ""
+echo "==> Step 3b: Remove orphaned members (legacy IDs)"
+# Earlier seed scripts used different naming: alice-id, user_alice, etc.
+# These linger in databases that weren't fully wiped between runs.
+LEGACY_IDS="alice-id user_alice bob-id user_bob carol-id user_carol"
+CLEANED=0
+for LEGACY_ID in $LEGACY_IDS; do
+  S=$(curl -s -o /dev/null -w "%{http_code}" \
+    -X DELETE "${BACKEND_URL}/internal/members/${LEGACY_ID}?clerkOrgId=${ORG_ID}" \
+    -H "X-API-KEY: ${API_KEY}")
+  case "$S" in
+    204) echo "    [ok] Removed orphaned member: ${LEGACY_ID}"; CLEANED=$((CLEANED + 1)) ;;
+    404) ;; # Not found — already clean
+    *) echo "    [warn] Unexpected status for ${LEGACY_ID}: HTTP ${S}" ;;
+  esac
+done
+if [ "$CLEANED" -eq 0 ]; then
+  echo "    [ok] No orphaned members found"
+fi
+
 # -- Step 4: Get Alice's JWT -----------------------------------------------
 echo ""
 echo "==> Step 4: Get Alice's JWT from mock IDP"

@@ -60,6 +60,23 @@ public class TemplateContextHelper {
     this.fieldDefinitionRepository = fieldDefinitionRepository;
   }
 
+  /**
+   * Populates the {@code _locale} key in the rendering context based on the tenant's default
+   * currency from OrgSettings. Used by context builders so that TiptapRenderer can pass it to
+   * VariableFormatter for locale-aware currency/number formatting.
+   */
+  public void populateLocale(Map<String, Object> context) {
+    orgSettingsRepository
+        .findForCurrentTenant()
+        .ifPresent(
+            settings -> {
+              String currencyCode = settings.getDefaultCurrency();
+              if (currencyCode != null) {
+                context.put("_locale", VariableFormatter.resolveLocale(currencyCode));
+              }
+            });
+  }
+
   /** Builds the org context map from OrgSettings (currency, branding, logo URL) and org name. */
   public Map<String, Object> buildOrgContext() {
     var orgMap = new LinkedHashMap<String, Object>();

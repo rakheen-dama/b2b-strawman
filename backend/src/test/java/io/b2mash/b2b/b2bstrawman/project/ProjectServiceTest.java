@@ -12,6 +12,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
@@ -51,6 +53,7 @@ class ProjectServiceTest {
   @Mock private TimeEntryRepository timeEntryRepository;
   @Mock private ProjectFieldService projectFieldService;
   @Mock private ProjectDeletionGuard projectDeletionGuard;
+  @Mock private CustomerProjectRepository customerProjectRepository;
   @InjectMocks private ProjectService service;
 
   @Test
@@ -131,6 +134,40 @@ class ProjectServiceTest {
     assertThat(result.getCreatedBy()).isEqualTo(MEMBER_ID);
     verify(repository, atLeast(1)).save(any(Project.class));
     verify(projectMemberRepository).save(any(ProjectMember.class));
+  }
+
+  @Test
+  void createProject_createsCustomerProjectLinkWhenCustomerIdProvided() {
+    var custId = UUID.randomUUID();
+    var project = projectWithId("Customer Project", "With customer", MEMBER_ID);
+    when(repository.save(any(Project.class))).thenReturn(project);
+    when(projectMemberRepository.save(any(ProjectMember.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+    when(customerProjectRepository.save(any(CustomerProject.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+    when(projectFieldService.prepareForCreate(
+            eq("Customer Project"), isNull(), isNull(), eq("Test Customer")))
+        .thenReturn(
+            new ProjectFieldService.CreateFieldResult(Map.of(), "Customer Project", List.of()));
+    when(projectFieldService.resolveCustomerName(custId)).thenReturn("Test Customer");
+
+    service.createProject("Customer Project", "With customer", MEMBER_ID, null, null, custId, null);
+
+    verify(customerProjectRepository).save(any(CustomerProject.class));
+  }
+
+  @Test
+  void createProject_doesNotCreateCustomerProjectLinkWhenNoCustomerId() {
+    var project = projectWithId("Internal Project", "No customer", MEMBER_ID);
+    when(repository.save(any(Project.class))).thenReturn(project);
+    when(projectMemberRepository.save(any(ProjectMember.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+    when(projectFieldService.prepareForCreate(eq("Internal"), isNull(), isNull(), isNull()))
+        .thenReturn(new ProjectFieldService.CreateFieldResult(Map.of(), "Internal", List.of()));
+
+    service.createProject("Internal", "No customer", MEMBER_ID);
+
+    verify(customerProjectRepository, never()).save(any(CustomerProject.class));
   }
 
   @Test

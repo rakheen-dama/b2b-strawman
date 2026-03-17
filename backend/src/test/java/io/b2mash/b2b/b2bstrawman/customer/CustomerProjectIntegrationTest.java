@@ -210,7 +210,8 @@ class CustomerProjectIntegrationTest {
   void shouldDeduplicateProjectsLinkedViaBothMechanisms() throws Exception {
     var customerId = createCustomer("Dedup Corp", "dedup@test.com");
 
-    // Create a project with customerId set directly
+    // Create a project with customerId set directly — this now auto-creates a CustomerProject
+    // join record in addition to setting the project.customerId FK
     var projectResult =
         mockMvc
             .perform(
@@ -226,11 +227,11 @@ class CustomerProjectIntegrationTest {
             .andReturn();
     var dedupProjectId = extractIdFromLocation(projectResult);
 
-    // Also link the same project via the join table
+    // Attempting to link again via the join table should now return 409 (already linked)
     mockMvc
         .perform(
             post("/api/customers/" + customerId + "/projects/" + dedupProjectId).with(ownerJwt()))
-        .andExpect(status().isCreated());
+        .andExpect(status().isConflict());
 
     // List projects — should contain the project exactly once (no duplicates)
     var result =

@@ -3,6 +3,8 @@ package io.b2mash.b2b.b2bstrawman.project;
 import io.b2mash.b2b.b2bstrawman.audit.AuditDeltaBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.ProjectCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.ProjectUpdatedEvent;
 import io.b2mash.b2b.b2bstrawman.event.ProjectArchivedEvent;
@@ -49,6 +51,7 @@ public class ProjectService {
   private final TimeEntryRepository timeEntryRepository;
   private final ProjectFieldService projectFieldService;
   private final ProjectDeletionGuard projectDeletionGuard;
+  private final CustomerProjectRepository customerProjectRepository;
 
   public ProjectService(
       ProjectRepository repository,
@@ -60,7 +63,8 @@ public class ProjectService {
       TaskRepository taskRepository,
       TimeEntryRepository timeEntryRepository,
       ProjectFieldService projectFieldService,
-      ProjectDeletionGuard projectDeletionGuard) {
+      ProjectDeletionGuard projectDeletionGuard,
+      CustomerProjectRepository customerProjectRepository) {
     this.repository = repository;
     this.projectMemberRepository = projectMemberRepository;
     this.projectAccessService = projectAccessService;
@@ -71,6 +75,7 @@ public class ProjectService {
     this.timeEntryRepository = timeEntryRepository;
     this.projectFieldService = projectFieldService;
     this.projectDeletionGuard = projectDeletionGuard;
+    this.customerProjectRepository = customerProjectRepository;
   }
 
   @Transactional(readOnly = true)
@@ -138,6 +143,12 @@ public class ProjectService {
 
     var lead = new ProjectMember(project.getId(), createdBy, Roles.PROJECT_LEAD, null);
     projectMemberRepository.save(lead);
+
+    // Create CustomerProject join record for consistency with CustomerProjectRepository queries
+    if (customerId != null) {
+      customerProjectRepository.save(new CustomerProject(customerId, project.getId(), createdBy));
+    }
+
     log.info("Created project {} with lead member {}", project.getId(), createdBy);
 
     var auditDetails = new LinkedHashMap<String, Object>();

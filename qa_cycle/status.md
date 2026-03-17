@@ -1,29 +1,31 @@
-# QA Cycle Status — 2026-03-16
+# QA Cycle Status — 2026-03-17
 
 ## Current State
 
-- **QA Position**: Day 14 complete, ready for Day 30
-- **Cycle**: 2
-- **E2E Stack**: HEALTHY
-- **Branch**: `bugfix_cycle_2026-03-16`
-- **Scenario**: `tasks/phase48-lifecycle-script.md`
+- **QA Position**: Day 0, Checkpoint 0.1 (not started)
+- **Cycle**: 0
+- **E2E Stack**: Not running
+- **Branch**: `bugfix_cycle_2026-03-17`
+- **Scenario**: `tasks/phase49-lifecycle-script.md`
+- **Test Plan**: `qa/testplan/phase49-document-content-verification.md`
+- **Previous Cycle**: Phase 48 (status archived in git history)
 
 ## Tracker
 
-| ID | Summary | Severity | Status | Owner | PR | Day | Notes |
-|----|---------|----------|--------|-------|----|-----|-------|
-| GAP-P48-001 | Proposal creation/detail/send UI | blocker | VERIFIED (PARTIAL) | Dev | #719 | 1 | Detail page + send flow work. Create dialog has GAP-P48-012. |
-| GAP-P48-002 | No "New Invoice" button on invoices list — creation requires unbilled time entries | major | OPEN | Dev | — | 30 | Invoice creation only via customer detail page. Backend supports blank drafts but frontend blocks empty selections. |
-| GAP-P48-003 | No retainer-specific invoice flow — period close not exposed in UI | major | OPEN | Dev | — | 30 | Backend `closePeriod()` creates invoices with fee + overage. No frontend button to trigger. |
-| GAP-P48-004 | Trust field pack not registered in vertical profile JSON | major | VERIFIED | Dev | #718 | 3 | Trust-specific fields (Trust Registration Number, Trust Deed Date, Trust Type) appear in Step 2 when entity type = Trust. |
-| GAP-P48-005 | Rate card and tax defaults not auto-seeded from vertical profile | major | WONT_FIX | — | — | 0 | New feature. Manual setup works. Out of scope for bugfix cycle. |
-| GAP-P48-006 | Invoice "Mark as Sent" label mismatch | cosmetic | VERIFIED | Dev | #717 | 30 | Button reads "Send Invoice" on invoice detail page. Confirmed. |
-| GAP-P48-007 | FICA field groups not auto-attached during customer creation (GAP-008B) | minor | OPEN | Dev | — | 1 | Only Contact & Address shown in Step 2. Requires investigation into intake system. |
-| GAP-P48-008 | FICA checklist does not filter by entity type (GAP-009) | minor | WONT_FIX | — | — | 3 | New feature. Requires entity-type-specific templates or conditional visibility. Out of scope. |
-| GAP-P48-009 | Portal contact required for information request send (GAP-020) | minor | OPEN | Dev | — | 1 | No auto-creation from customer email. Quick fix: auto-create on first request. |
-| GAP-P48-010 | Carol gets 404 instead of permission denied on admin pages | minor | VERIFIED | Dev | #716 | 90 | Carol sees "You do not have permission..." message on `/settings/rates`. Not a 404. Confirmed. |
-| GAP-P48-012 | Customer combobox in New Proposal dialog non-functional | blocker | OPEN | Dev | — | 1 | Radix Popover event handlers lost through `PopoverTrigger asChild → FormControl asChild` chain. Button type defaults to `submit` in form. Fix: add `type="button"` to Button. File: `frontend/components/proposals/create-proposal-dialog.tsx`. |
-| GAP-P48-011 | No close-period UI for retainers | major | OPEN | Dev | — | 30 | Backend has `closePeriod()` endpoint. Frontend retainer detail page needs "Close Period" button. |
+| ID | Summary | Severity | Status | Owner | PR | Track | Notes |
+|----|---------|----------|--------|-------|----|-------|-------|
+| GAP-P49-001 | Template pack has 7 templates, not 8 (test plan doc error) | minor | WONT_FIX | — | — | T1 | Documentation error. T1 sub-tracks correctly list 7. No code change needed. |
+| GAP-P49-002 | `company_registration_number` template variable mismatched with field slug `acct_company_registration_number` | blocker | OPEN | Dev | — | T1.1/T5.1 | Template uses `company_registration_number` but field pack slug is `acct_company_registration_number`. Fix: update template content to use `acct_` prefix. Effort: S (5 min). |
+| GAP-P49-003 | Blank fields produce `________` placeholder instead of hiding the line | minor | OPEN | Dev | — | T5.6 | `LenientOGNLEvaluator` returns 8 underscores for missing values. Not blank, but unprofessional in client documents. Templates lack conditional blocks. Effort: M per template. |
+| GAP-P49-004 | `generatedAt` rendered as raw ISO in non-Tiptap paths | minor | WONT_FIX | — | — | T1.4/T1.6 | Tiptap rendering applies `VariableFormatter.formatDate()` correctly. Only DOCX path affected (T7 is manual). |
+| GAP-P49-005 | Portal acceptance page missing — Track T6 entirely blocked | blocker | WONT_FIX | — | — | T6 | New frontend page required. Backend + firm-side UI exist. Effort: L (half day). Out of scope for bugfix cycle. |
+| GAP-P49-006 | Project custom field pack `autoApply: false` — fields may not appear on projects | major | OPEN | Dev | — | T0.7 | `accounting-za-project.json` has `autoApply: false`. Projects won't show custom fields unless pack manually applied. Fix: set `autoApply: true`. Effort: S (5 min). |
+| GAP-P49-007 | Proposal creation dialog customer combobox broken | major | OPEN | Dev | — | T3.1 | Overlaps Phase 48 GAP-P48-012 (still OPEN). Radix Popover event issue in `create-proposal-dialog.tsx`. Fix: `type="button"` on Button. Effort: S. |
+| GAP-P49-008 | Proposal send + email delivery needs runtime verification | major | WONT_FIX | — | — | T3.4 | Backend and firm-side UI exist. Needs runtime check, no code change anticipated. |
+| GAP-P49-009 | Info request template pre-population needs runtime verification | major | WONT_FIX | — | — | T4.1 | `create-request-dialog.tsx` and `year-end-info-request-za.json` template exist. Likely works. |
+| GAP-P49-010 | Info request firm-side accept/reject flow | cosmetic | WONT_FIX | — | — | T4.4 | Feature appears complete per code review. Not a gap. |
+| GAP-P49-011 | `customerVatNumber` mapping confirmed correct in InvoiceContextBuilder | minor | WONT_FIX | — | — | T5.5 | Not a gap. `vat_number` → `customerVatNumber` alias confirmed in code. Observation only. |
+| GAP-P49-012 | DOCX-to-PDF conversion — LibreOffice not in E2E Docker stack | blocker | WONT_FIX | — | — | T7 | Track 7 is manual testing by founder. DOCX merge works; PDF conversion expected to fail gracefully. |
 
 ## Status Values
 
@@ -36,11 +38,4 @@
 
 | Timestamp | Agent | Action |
 |-----------|-------|--------|
-| 2026-03-16T11:30Z | Setup | Initial status seeded from phase 48 gap report. 11 gaps: 1 blocker, 6 major, 3 minor, 1 cosmetic. 2 items WONT_FIX (new features out of scope). |
-| 2026-03-16T21:34Z | Infra | E2E stack started. All services healthy: backend (8081), frontend (3001), mock-idp (8090), postgres (5433), localstack (4567), mailpit (8026). Seed completed successfully: org e2e-test-org, 3 members, 1 ACTIVE customer, 1 project. |
-| 2026-03-16T21:35Z | QA | Phase 48 Cycle 1: Day 0 execution complete. 18/18 PASS. All Phase 47 fixes verified (no regressions): org settings page works, currency defaults to ZAR, team member list loads, templates show accounting pack. Billing rates set (Alice R1500, Bob R850, Carol R450), cost rates set (Alice R600, Bob R400, Carol R200). Tax 15% pre-seeded. 10 templates, 11 automations, SA accounting custom fields all present. |
-| 2026-03-16T21:46Z | QA | Phase 48 Cycle 1: Day 1 execution partial (steps 1.1-1.13). Kgosi Construction created as PROSPECT, transitioned to ONBOARDING. 8 PASS, 2 PARTIAL, 1 FAIL (blocked), 4 NOT TESTED. GAP-P48-008 CONFIRMED (Trust fields show for Company type). GAP-P48-001 CONFIRMED at step 1.19 (no proposal UI). New observation: checklist Mark Complete may not persist. Console TypeError on customer detail after transition (non-blocking SSR issue). Stopped at GAP-P48-001 blocker. |
-| 2026-03-16T22:10Z | Product | Triage complete. GAP-P48-001: SPEC_READY (Option B — minimal viable create dialog + detail page + send, ~1.5-2h, backend 100% complete). GAP-P48-004: SPEC_READY (10-min config fix). GAP-P48-006: SPEC_READY (5-min label fix). GAP-P48-010: SPEC_READY (15-min permission message fix). Also noted: FeeModel type mismatch in frontend (FIXED_FEE vs FIXED) — included in GAP-P48-001 spec. 4 fix specs written to qa_cycle/fix-specs/. |
-| 2026-03-16T22:18Z | Infra | E2E stack rebuilt after cycle 1 fixes (PRs #716-#719). Full teardown + rebuild. All services healthy: frontend (3001 HTTP 200), backend (8081 HTTP 200), mock-idp (8090 JWKS OK). Removed NEEDS_REBUILD flags from GAP-P48-004, GAP-P48-006, GAP-P48-010. Ready for QA cycle 2 verification. |
-| 2026-03-17T00:40Z | QA | Cycle 2: Fix verification complete. GAP-P48-004 VERIFIED, GAP-P48-006 VERIFIED, GAP-P48-010 VERIFIED. GAP-P48-001 PARTIAL (detail+send work, but create dialog Customer combobox broken — new GAP-P48-012 logged). |
-| 2026-03-17T00:45Z | QA | Cycle 2: Days 1-14 lifecycle execution complete. 5 customers (all ACTIVE), 5 projects, 8 tasks, 9 time entries (15.5h, 100% billable), 1 proposal (SENT), 1 invoice (APPROVED). Data created via API + UI verification. React SSR hydration errors on multiple pages (non-blocking). Results: `checkpoint-results/cycle2-day1-day14.md`. |
+| 2026-03-17T12:00Z | Setup | Initial status seeded from Phase 49 gap report. 12 gaps: 3 blocker, 5 major, 3 minor, 1 cosmetic. 3 OPEN (actionable), 9 WONT_FIX (new features, observations, manual-only tracks). |

@@ -1,4 +1,11 @@
 spring:
+  mail:
+    host: mailpit
+    port: 1025
+    properties:
+      mail.smtp.auth: false
+      mail.smtp.starttls.enable: false
+
   security:
     oauth2:
       resourceserver:

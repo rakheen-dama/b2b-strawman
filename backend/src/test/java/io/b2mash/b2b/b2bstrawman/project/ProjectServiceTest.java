@@ -188,6 +188,52 @@ class ProjectServiceTest {
   }
 
   @Test
+  void updateProject_createsCustomerProjectLinkWhenCustomerIdAdded() {
+    var id = UUID.randomUUID();
+    var custId = UUID.randomUUID();
+    var existing = projectWithId(id, "No Customer", "Desc", MEMBER_ID);
+    when(repository.findById(id)).thenReturn(Optional.of(existing));
+    when(repository.save(existing)).thenReturn(existing);
+    when(projectAccessService.requireEditAccess(id, new ActorContext(MEMBER_ID, "admin")))
+        .thenReturn(new ProjectAccess(true, true, true, false, null));
+    when(customerProjectRepository.existsByCustomerIdAndProjectId(custId, id)).thenReturn(false);
+    when(customerProjectRepository.save(any(CustomerProject.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+
+    service.updateProject(
+        id,
+        "With Customer",
+        "Desc",
+        new ActorContext(MEMBER_ID, "admin"),
+        null,
+        null,
+        custId,
+        null);
+
+    verify(customerProjectRepository).existsByCustomerIdAndProjectId(custId, id);
+    verify(customerProjectRepository).save(any(CustomerProject.class));
+  }
+
+  @Test
+  void updateProject_doesNotDuplicateCustomerProjectLink() {
+    var id = UUID.randomUUID();
+    var custId = UUID.randomUUID();
+    var existing = projectWithId(id, "Has Customer", "Desc", MEMBER_ID);
+    existing.setCustomerId(custId);
+    when(repository.findById(id)).thenReturn(Optional.of(existing));
+    when(repository.save(existing)).thenReturn(existing);
+    when(projectAccessService.requireEditAccess(id, new ActorContext(MEMBER_ID, "admin")))
+        .thenReturn(new ProjectAccess(true, true, true, false, null));
+    when(customerProjectRepository.existsByCustomerIdAndProjectId(custId, id)).thenReturn(true);
+
+    service.updateProject(
+        id, "Has Customer", "Desc", new ActorContext(MEMBER_ID, "admin"), null, null, custId, null);
+
+    verify(customerProjectRepository).existsByCustomerIdAndProjectId(custId, id);
+    verify(customerProjectRepository, never()).save(any(CustomerProject.class));
+  }
+
+  @Test
   void updateProject_throwsWhenNotFound() {
     var id = UUID.randomUUID();
     when(repository.findById(id)).thenReturn(Optional.empty());

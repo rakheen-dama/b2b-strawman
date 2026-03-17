@@ -236,8 +236,14 @@ public class ProjectService {
     project.update(name, description, customerId, dueDate);
     project = repository.save(project);
 
-    // Build delta map -- only include changed fields (use actual values from entity)
+    // Create CustomerProject join record if customerId was set/changed and no link exists yet
     UUID newCustomerId = project.getCustomerId();
+    if (newCustomerId != null
+        && !customerProjectRepository.existsByCustomerIdAndProjectId(newCustomerId, id)) {
+      customerProjectRepository.save(new CustomerProject(newCustomerId, id, actor.memberId()));
+    }
+
+    // Build delta map -- only include changed fields (use actual values from entity)
     LocalDate newDueDate = project.getDueDate();
     var details =
         new AuditDeltaBuilder()

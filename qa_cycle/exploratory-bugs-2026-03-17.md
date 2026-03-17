@@ -16,11 +16,11 @@
 | BUG-3 | Settings > Rates & Currency page crashes with 500 error | crash | `/org/{slug}/settings/rates` | **FIXED** (PR #726) — `Promise.allSettled` so one failed endpoint doesn't crash all |
 | BUG-4 | Invoice list "Total Overdue" shows `$0.00` instead of `R 0,00` | broken | `/org/{slug}/invoices` | **FIXED** (PR #726) — default currency from first invoice instead of hardcoded USD |
 | BUG-5 | Invoice detail tax summary row shows "(%) " instead of tax label | cosmetic | `/org/{slug}/invoices/{id}` | **FIXED** (PR #726) — uses `invoice.taxLabel ?? "Tax"` |
-| BUG-6 | Header shows "No org" on initial client-side navigation | cosmetic | All pages (initial load) | OPEN — mock-auth timing issue, not production-affecting |
-| BUG-7 | User identity shows stale data after mock-login switch | cosmetic | All pages (initial navigation) | OPEN — mock-auth specific, not production-affecting |
+| BUG-6 | Header shows "No org" on initial client-side navigation | cosmetic | All pages (initial load) | **FIXED** (PR #727) — header displays org name consistently |
+| BUG-7 | User identity shows stale data after mock-login switch | cosmetic | All pages (initial navigation) | **FIXED** (PR #727) — identity updates immediately on user switch |
 | BUG-8 | Team page Role column is empty for all members | broken | `/org/{slug}/team` | **FIXED** (PR #726) — `normalizeRole()` now lowercases before matching badge keys |
-| BUG-9 | Team page shows 2 "Unknown" orphaned members | broken | `/org/{slug}/team` | OPEN — E2E seed data quality issue, not a code bug |
-| BUG-10 | React hydration error on every page load | broken | All pages | OPEN — systemic SSR/client mismatch, needs deeper investigation |
+| BUG-9 | Team page shows 2 "Unknown" orphaned members | broken | `/org/{slug}/team` | **FIXED** (seed cleanup) — only 3 members shown (Alice, Bob, Carol) |
+| BUG-10 | React hydration error on every page load | broken | All pages | **FIXED** (PR #727) — zero console errors across all pages |
 | BUG-11 | Tasks tab error message says "Unable to load projects" instead of "tasks" | cosmetic | `/org/{slug}/projects/{id}?tab=tasks` | **FIXED** (PR #726) — changed to "Unable to load this page" |
 | BUG-12 | All "Generate" buttons disabled on project Overview document templates | broken | `/org/{slug}/projects/{id}` (Overview tab) | **FIXED** (PR #726) — removed Customer/OrgSettings as structural requirements for PROJECT templates |
 

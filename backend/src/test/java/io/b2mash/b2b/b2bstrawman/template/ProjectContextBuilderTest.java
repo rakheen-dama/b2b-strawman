@@ -112,6 +112,35 @@ class ProjectContextBuilderTest {
   }
 
   @Test
+  void buildContextFallsBackToProjectCustomerId() {
+    // Project has customerId set directly but no CustomerProject join record
+    var project = new Project("Linked Project", "Has customerId", memberId);
+    project.setCustomerId(customerId);
+    when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+
+    // No join record exists
+    when(customerProjectRepository.findByProjectId(projectId)).thenReturn(List.of());
+
+    // Customer exists and should be resolved via fallback
+    var customer = new Customer("Fallback Customer", "fb@example.com", "456", null, null, memberId);
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
+
+    when(projectMemberRepository.findProjectMembersWithDetails(projectId)).thenReturn(List.of());
+    when(projectBudgetRepository.findByProjectId(projectId)).thenReturn(Optional.empty());
+    when(contextHelper.buildTagsList("PROJECT", projectId)).thenReturn(List.of());
+    when(contextHelper.buildOrgContext()).thenReturn(Map.of());
+    when(contextHelper.buildGeneratedByMap(memberId)).thenReturn(Map.of("name", "Unknown"));
+
+    var context = builder.buildContext(projectId, memberId);
+
+    @SuppressWarnings("unchecked")
+    var customerMap = (Map<String, Object>) context.get("customer");
+    assertThat(customerMap).isNotNull();
+    assertThat(customerMap.get("name")).isEqualTo("Fallback Customer");
+    assertThat(customerMap.get("email")).isEqualTo("fb@example.com");
+  }
+
+  @Test
   void buildContextWithCustomFields() {
     var project = new Project("Custom Fields Project", "desc", memberId);
     project.setCustomFields(Map.of("case_number", "CN-001", "priority", "high"));

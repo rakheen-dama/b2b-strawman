@@ -64,12 +64,19 @@ public class ProjectContextBuilder implements TemplateContextBuilder {
         "customFields", project.getCustomFields() != null ? project.getCustomFields() : Map.of());
     context.put("project", projectMap);
 
-    // customer.* (via CustomerProject join table — null-safe)
+    // customer.* (via CustomerProject join table, fallback to project.customerId)
     var customerProjects = customerProjectRepository.findByProjectId(entityId);
+    UUID resolvedCustomerId = null;
     if (!customerProjects.isEmpty()) {
-      var firstLink = customerProjects.getFirst();
+      resolvedCustomerId = customerProjects.getFirst().getCustomerId();
+    } else if (project.getCustomerId() != null) {
+      // Fallback: project was created with customerId but no join record
+      resolvedCustomerId = project.getCustomerId();
+    }
+
+    if (resolvedCustomerId != null) {
       customerRepository
-          .findById(firstLink.getCustomerId())
+          .findById(resolvedCustomerId)
           .ifPresentOrElse(
               customer -> {
                 var customerMap = new LinkedHashMap<String, Object>();

@@ -87,7 +87,10 @@ class DocumentGenerationReadinessServiceTest {
   }
 
   @Test
-  void checkReadiness_projectMissingCustomer_returnsNotReady() {
+  void checkReadiness_projectMissingCustomer_returnsReady() {
+    // Customer is not a structural requirement for PROJECT templates — internal
+    // projects should still be able to generate documents.  Individual templates
+    // can declare "customer.*" in requiredContextFields when needed.
     var template = createProjectTemplate("Engagement Letter", "engagement-letter");
 
     when(documentTemplateRepository.findByPrimaryEntityTypeAndActiveTrueOrderBySortOrder(
@@ -103,8 +106,8 @@ class DocumentGenerationReadinessServiceTest {
     var result = service.checkReadiness(TemplateEntityType.PROJECT, PROJECT_ID);
 
     assertThat(result).hasSize(1);
-    assertThat(result.getFirst().ready()).isFalse();
-    assertThat(result.getFirst().missingFields()).containsExactly("Customer");
+    assertThat(result.getFirst().ready()).isTrue();
+    assertThat(result.getFirst().missingFields()).isEmpty();
   }
 
   @Test

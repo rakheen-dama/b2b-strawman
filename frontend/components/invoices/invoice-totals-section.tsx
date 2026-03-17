@@ -33,7 +33,7 @@ export function InvoiceTotalsSection({ invoice }: InvoiceTotalsSectionProps) {
           ))
         ) : (
           <div className="flex justify-between text-sm text-slate-600 dark:text-slate-400">
-            <span>Tax</span>
+            <span>{invoice.taxLabel ?? "Tax"}</span>
             <span>
               {formatCurrency(invoice.taxAmount, invoice.currency)}
             </span>

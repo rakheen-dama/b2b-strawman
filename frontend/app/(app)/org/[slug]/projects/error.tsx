@@ -11,7 +11,7 @@ export default function ProjectsError({
     <div className="flex flex-col items-center py-24 text-center gap-4">
       <h2 className="font-display text-xl">Something went wrong</h2>
       <p className="text-sm text-slate-600">
-        Unable to load projects. Please try again.
+        Unable to load this page. Please try again.
       </p>
       <button
         onClick={reset}

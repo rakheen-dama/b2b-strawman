@@ -22,6 +22,7 @@ interface AllocationGridProps {
 }
 
 function formatWeekHeader(weekStart: string): string {
+  if (!weekStart) return "—";
   const [y, m, d] = weekStart.split("-").map(Number);
   const date = new Date(y, m - 1, d);
   return date.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
@@ -111,7 +112,7 @@ export function AllocationGrid({
                       />
                     ) : (
                       <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-200 text-xs font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">
-                        {(member.memberName ?? "?")
+                        {(member.memberName || "?")
                           .split(" ")
                           .map((n) => n[0])
                           .join("")

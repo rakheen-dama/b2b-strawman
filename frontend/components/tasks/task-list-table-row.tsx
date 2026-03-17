@@ -56,8 +56,8 @@ export function TaskListTableRow({
   onComplete,
   onReopen,
 }: TaskListTableRowProps) {
-  const priorityBadge = PRIORITY_BADGE[task.priority];
-  const statusBadge = STATUS_BADGE[task.status];
+  const priorityBadge = PRIORITY_BADGE[task.priority] ?? { label: task.priority, variant: "neutral" as const };
+  const statusBadge = STATUS_BADGE[task.status] ?? { label: task.status, variant: "neutral" as const };
   const overdue = isOverdue(task.dueDate, task.status);
   const isTerminal = task.status === "DONE" || task.status === "CANCELLED";
 

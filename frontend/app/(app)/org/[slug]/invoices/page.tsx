@@ -17,12 +17,15 @@ function computeSummary(invoices: InvoiceResponse[]) {
   const todayStr = now.toLocaleDateString("en-CA"); // YYYY-MM-DD
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
+  // Use the first invoice's currency as the default, falling back to USD
+  const defaultCurrency = invoices.length > 0 ? invoices[0].currency : "USD";
+
   let outstanding = 0;
   let overdue = 0;
   let paidThisMonth = 0;
-  let outstandingCurrency = "USD";
-  let overdueCurrency = "USD";
-  let paidCurrency = "USD";
+  let outstandingCurrency = defaultCurrency;
+  let overdueCurrency = defaultCurrency;
+  let paidCurrency = defaultCurrency;
 
   for (const inv of invoices) {
     if (inv.status === "APPROVED" || inv.status === "SENT") {

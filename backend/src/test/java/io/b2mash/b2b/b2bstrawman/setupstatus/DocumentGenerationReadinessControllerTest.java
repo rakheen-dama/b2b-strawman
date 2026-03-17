@@ -163,7 +163,9 @@ class DocumentGenerationReadinessControllerTest {
 
   @Test
   @Order(3)
-  void getReadiness_projectWithoutCustomer_templateNotReady() throws Exception {
+  void getReadiness_projectWithoutCustomer_templateStillReady() throws Exception {
+    // Customer is no longer a structural requirement — internal projects should
+    // still be able to generate documents.
     mockMvc
         .perform(
             get("/api/templates/readiness")
@@ -171,8 +173,8 @@ class DocumentGenerationReadinessControllerTest {
                 .param("entityId", projectNoCustomerId.toString())
                 .with(ownerJwt()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$[0].ready").value(false))
-        .andExpect(jsonPath("$[0].missingFields[0]").value("Customer"));
+        .andExpect(jsonPath("$[0].ready").value(true))
+        .andExpect(jsonPath("$[0].missingFields").isEmpty());
   }
 
   @Test

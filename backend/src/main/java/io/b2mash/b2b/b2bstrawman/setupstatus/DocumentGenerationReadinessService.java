@@ -128,13 +128,10 @@ public class DocumentGenerationReadinessService {
         if (project == null || project.get("name") == null) {
           missing.add("Project Name");
         }
-        if (context.get("customer") == null) {
-          missing.add("Customer");
-        }
-        var org = asMap(context.get("org"));
-        if (org == null) {
-          missing.add("Org Settings");
-        }
+        // Customer is not a structural requirement — internal projects (without
+        // customers) should still be able to generate documents.  Individual
+        // templates can declare "customer.*" in requiredContextFields if they
+        // need customer data.
       }
       case CUSTOMER -> {
         var customer = asMap(context.get("customer"));

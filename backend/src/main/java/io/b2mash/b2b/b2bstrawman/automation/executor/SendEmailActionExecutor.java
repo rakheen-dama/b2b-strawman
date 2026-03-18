@@ -71,6 +71,7 @@ public class SendEmailActionExecutor implements ActionExecutor {
               "No email address resolved for recipient type: ALL_ADMINS", null);
         }
         int sent = 0;
+        int failed = 0;
         for (var admin : admins) {
           var notification =
               notificationService.createNotification(
@@ -81,11 +82,19 @@ public class SendEmailActionExecutor implements ActionExecutor {
                   "AutomationRule",
                   refEntityId,
                   refProjectId);
-          emailChannel.deliver(notification, admin.getEmail());
-          sent++;
+          boolean delivered = emailChannel.deliver(notification, admin.getEmail());
+          if (delivered) {
+            sent++;
+          } else {
+            failed++;
+          }
         }
-        log.debug("Automation sent email to {} admin(s)", sent);
-        return new ActionSuccess(Map.of("emailsSent", sent));
+        if (sent == 0) {
+          return new ActionFailure(
+              "Email delivery failed for all " + admins.size() + " admin recipient(s)", null);
+        }
+        log.debug("Automation sent email to {} admin(s), {} failed", sent, failed);
+        return new ActionSuccess(Map.of("emailsSent", sent, "emailsFailed", failed));
       }
 
       // Single-recipient path
@@ -111,7 +120,10 @@ public class SendEmailActionExecutor implements ActionExecutor {
               refEntityId,
               refProjectId);
 
-      emailChannel.deliver(notification, recipientEmail);
+      boolean delivered = emailChannel.deliver(notification, recipientEmail);
+      if (!delivered) {
+        return new ActionFailure("Email delivery failed for recipient: " + recipientEmail, null);
+      }
 
       log.debug("Automation sent email to recipient");
       return new ActionSuccess(Map.of("emailSentTo", recipientEmail));

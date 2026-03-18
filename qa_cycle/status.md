@@ -4,7 +4,7 @@
 
 - **QA Position**: T2/T3/T4 COMPLETE. T2 triggers verified (3/3 fire correctly). T3.2 SendEmail blocked by BUG-AUTO-01. T4 email content blocked.
 - **Cycle**: 3 (continuation of automation verification with lifecycle seed data)
-- **E2E Stack**: NEEDS_REBUILD (BUG-AUTO-01 fix merged in PR #750 — backend code changed)
+- **E2E Stack**: READY (rebuilt 2026-03-18T08:30Z with PRs #750 + #752)
 - **Branch**: `qa_deep_automation_2026-03-18`
 - **Scenario**: `qa/testplan/automation-notification-verification.md`
 - **Focus**: T2 remaining triggers (invoice, proposal, budget), T4 email content, T3 email actions
@@ -26,7 +26,7 @@
 | ID | Summary | Severity | Status | Owner | PR | Track | Notes |
 |----|---------|----------|--------|-------|----|-------|-------|
 | BUG-AUTO-01 | SendEmail automation action silently fails -- no email template for AUTOMATION_EMAIL | HIGH | FIXED | Dev | #750 | T3.2 | Created `notification-automation.html` template, added `AUTOMATION_EMAIL` mapping in `resolveTemplateName()`, changed `deliver()` to return boolean, `SendEmailActionExecutor` now checks return value and reports `ActionFailure` on delivery failure. Full `mvn clean verify` green. NEEDS_REBUILD before QA verification. |
-| BUG-UI-01 | Proposal dialog customer selector unresponsive | MEDIUM | SPEC_READY | — | — | T2.5 | Root cause confirmed: Radix Popover portal inside modal Dialog — focus trap blocks portal. Fix: `modal={false}` on Popover. Same pattern in retainer + field-group dialogs. Spec: `fix-specs/BUG-UI-01.md` |
+| BUG-UI-01 | Proposal dialog customer selector unresponsive | MEDIUM | FIXED | Dev | #752 | T2.5 | Added `modal={false}` to Popover in CreateProposalDialog, CreateRetainerDialog, and FieldGroupDialog (2 popovers). Frontend build green. NEEDS_REBUILD before verification. |
 
 ## Results Summary
 
@@ -51,3 +51,5 @@
 | 2026-03-18T07:30Z | Product Agent | BUG-AUTO-01 triaged: Two-part root cause confirmed. (1) `EmailNotificationChannel.resolveTemplateName()` has no case for `AUTOMATION_EMAIL` — returns null, delivery silently skipped. (2) `SendEmailActionExecutor` calls `emailChannel.deliver()` (void) and always returns `ActionSuccess` regardless of delivery outcome. Fix spec written to `fix-specs/BUG-AUTO-01-deep.md`: create `notification-automation.html` template, add switch case, change `deliver()` to return boolean, check result in executor. Status: OPEN -> SPEC_READY. |
 | 2026-03-18T07:30Z | Product Agent | BUG-UI-01 triaged: Root cause confirmed as Radix Popover-inside-modal-Dialog focus trap conflict. `PopoverContent` renders via Portal (outside Dialog DOM tree), so Dialog's modal overlay blocks pointer events. `type="button"` already present — not the issue. Fix: add `modal={false}` to Popover. Same pattern found in `create-retainer-dialog.tsx` and `FieldGroupDialog.tsx`. Fix spec written to `fix-specs/BUG-UI-01.md`. Status: OPEN -> SPEC_READY. |
 | 2026-03-18T08:00Z | Dev | BUG-AUTO-01 FIXED via PR #750 (squash-merged to qa_deep_automation_2026-03-18). Three-part fix: (1) Created `notification-automation.html` Thymeleaf template for AUTOMATION_EMAIL type with `th:utext` body for variable-resolved content. (2) Added `"AUTOMATION_EMAIL" -> "notification-automation"` case in `EmailNotificationChannel.resolveTemplateName()`. (3) Changed `NotificationChannel.deliver()` from `void` to `boolean`; `EmailNotificationChannel` returns true/false based on delivery outcome; `SendEmailActionExecutor` now checks return value and reports `ActionFailure` when delivery fails. All tests pass. Full `mvn clean verify` green. Backend code change — NEEDS_REBUILD before QA verification. |
+| 2026-03-18T08:10Z | Dev | BUG-UI-01 FIXED via PR #752 (squash-merged to qa_deep_automation_2026-03-18). Added `modal={false}` to 4 Popover components nested inside modal Dialogs: (1) CreateProposalDialog customer selector, (2) CreateRetainerDialog customer selector, (3) FieldGroupDialog dependencies selector, (4) FieldGroupDialog fields selector. Prevents Radix Dialog focus trap from blocking Popover portal pointer events. Frontend build green. All 1563 tests pass (1 pre-existing portal-login failure unrelated). Frontend code change — NEEDS_REBUILD before QA verification. |
+| 2026-03-18T08:30Z | Infra Agent | E2E stack rebuilt with PRs #750 + #752. All services healthy (frontend 3001, backend 8081, mock-idp 8090, mailpit 8026). Lifecycle seed 24/24 PASS. Mailpit cleared. Stack READY for QA verification of BUG-AUTO-01 and BUG-UI-01 fixes. |

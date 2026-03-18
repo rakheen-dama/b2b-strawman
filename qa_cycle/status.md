@@ -4,7 +4,7 @@
 
 - **QA Position**: T1-T4 COMPLETE (cycle 1) — all 4 tracks executed
 - **Cycle**: 1
-- **E2E Stack**: ALL HEALTHY (frontend:3001, backend:8081, mock-idp:8090, mailpit:8026, postgres:5433, localstack:4567) — NEEDS_REBUILD (GAP-DI-02 + GAP-DI-03 backend fixes merged)
+- **E2E Stack**: READY — ALL HEALTHY (frontend:3001, backend:8081, mock-idp:8090, mailpit:8026, postgres:5433, localstack:4567) — rebuilt 2026-03-18T11:22Z
 - **Branch**: `bugfix_cycle_data_integrity_2026-03-18`
 - **Scenario**: `qa/testplan/data-integrity-financial-accuracy.md`
 - **Focus**: Data integrity verification, financial calculations accuracy
@@ -120,3 +120,4 @@
 | 2026-03-18T11:55Z | Product | Cascading analysis: GAP-DI-02 and GAP-DI-03 are independent bugs with no downstream failures. Neither escalated to blocker. |
 | 2026-03-18T12:20Z | Dev | GAP-DI-02 FIXED via PR #755 (squash-merged). Injected `ProjectLifecycleGuard` into `CommentService`. Added `requireNotReadOnly()` in `createComment()` and `updateComment()`. `deleteComment()` and `listComments()` intentionally left unguarded. 2 integration tests added (create + update on archived project return 400). All 9 comment tests pass. Backend change — NEEDS_REBUILD. |
 | 2026-03-18T12:50Z | Dev | GAP-DI-03 FIXED via PR #756 (squash-merged). Added V74 Flyway migration with `prevent_audit_delete()` function + `BEFORE DELETE` trigger on `audit_events`, mirroring V12's UPDATE trigger pattern. Added `deleteOnAuditEventsRaisesException` integration test. All 6 audit isolation tests pass (3712 total, 0 errors). Backend migration change — NEEDS_REBUILD. |
+| 2026-03-18T11:22Z | Infra | E2E backend rebuilt (`e2e-rebuild.sh backend`). All 6 services healthy. V74 migration applied — `audit_events_no_delete` trigger confirmed on `tenant_7d218705360b.audit_events`. Seed data intact: 1 tenant, 5 customers. Stack status: READY. |

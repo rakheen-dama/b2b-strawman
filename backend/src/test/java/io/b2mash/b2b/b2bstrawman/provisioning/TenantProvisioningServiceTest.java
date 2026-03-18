@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -18,11 +20,17 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldPackSeeder;
 import io.b2mash.b2b.b2bstrawman.informationrequest.RequestPackSeeder;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMapping;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
 import io.b2mash.b2b.b2bstrawman.reporting.StandardReportPackSeeder;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.template.TemplatePackSeeder;
+import io.b2mash.b2b.b2bstrawman.verticals.VerticalProfileRegistry;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.Test;
@@ -51,6 +59,9 @@ class TenantProvisioningServiceTest {
   @Mock private StandardReportPackSeeder standardReportPackSeeder;
   @Mock private RequestPackSeeder requestPackSeeder;
   @Mock private AutomationTemplateSeeder automationTemplateSeeder;
+  @Mock private TenantTransactionHelper tenantTransactionHelper;
+  @Mock private OrgSettingsRepository orgSettingsRepository;
+  @Mock private VerticalProfileRegistry verticalProfileRegistry;
 
   @Spy @InjectMocks private TenantProvisioningService service;
 
@@ -163,5 +174,86 @@ class TenantProvisioningServiceTest {
 
     assertThat(result.success()).isTrue();
     verify(mappingRepository, never()).save(any(OrgSchemaMapping.class));
+  }
+
+  @Test
+  void setVerticalProfile_withLegalZa_setsEnabledModulesAndTerminology() throws SQLException {
+    when(mappingRepository.findByClerkOrgId("org_legal")).thenReturn(Optional.empty());
+    when(organizationRepository.findByClerkOrgId("org_legal")).thenReturn(Optional.empty());
+
+    var org = new Organization("org_legal", "Legal Org");
+    when(organizationRepository.save(any(Organization.class))).thenReturn(org);
+
+    var mockConn = mock(Connection.class);
+    var mockStmt = mock(Statement.class);
+    when(migrationDataSource.getConnection()).thenReturn(mockConn);
+    when(mockConn.createStatement()).thenReturn(mockStmt);
+
+    when(mappingRepository.save(any(OrgSchemaMapping.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+
+    doNothing().when(service).runTenantMigrations(anyString());
+
+    // Mock the registry to return legal-za profile
+    var legalProfile =
+        new VerticalProfileRegistry.ProfileDefinition(
+            "legal-za",
+            "Legal (South Africa)",
+            "SA law firm with trust accounting, court calendar, and conflict check",
+            List.of("trust_accounting", "court_calendar", "conflict_check"),
+            "en-ZA-legal",
+            "ZAR",
+            Map.of());
+    when(verticalProfileRegistry.getProfile("legal-za")).thenReturn(Optional.of(legalProfile));
+
+    // Mock TenantTransactionHelper to execute the lambda directly
+    when(orgSettingsRepository.findForCurrentTenant()).thenReturn(Optional.empty());
+    var settings = new OrgSettings("USD");
+    when(orgSettingsRepository.save(any(OrgSettings.class))).thenReturn(settings);
+
+    // Capture the lambda executed by tenantTransactionHelper
+    doAnswer(
+            invocation -> {
+              var consumer = (java.util.function.Consumer<String>) invocation.getArgument(2);
+              consumer.accept("tenant_id");
+              return null;
+            })
+        .when(tenantTransactionHelper)
+        .executeInTenantTransaction(anyString(), anyString(), any());
+
+    var result = service.provisionTenant("org_legal", "Legal Org", "legal-za");
+
+    assertThat(result.success()).isTrue();
+
+    // Verify that the settings were updated with modules and terminology from registry
+    verify(orgSettingsRepository, atLeastOnce()).save(any(OrgSettings.class));
+    verify(verticalProfileRegistry).getProfile("legal-za");
+  }
+
+  @Test
+  void provisionTenant_withNullProfile_skipsSetVerticalProfile() throws SQLException {
+    when(mappingRepository.findByClerkOrgId("org_null_profile")).thenReturn(Optional.empty());
+    when(organizationRepository.findByClerkOrgId("org_null_profile")).thenReturn(Optional.empty());
+
+    var org = new Organization("org_null_profile", "Null Profile Org");
+    when(organizationRepository.save(any(Organization.class))).thenReturn(org);
+
+    var mockConn = mock(Connection.class);
+    var mockStmt = mock(Statement.class);
+    when(migrationDataSource.getConnection()).thenReturn(mockConn);
+    when(mockConn.createStatement()).thenReturn(mockStmt);
+
+    when(mappingRepository.save(any(OrgSchemaMapping.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+
+    doNothing().when(service).runTenantMigrations(anyString());
+
+    var result = service.provisionTenant("org_null_profile", "Null Profile Org", null);
+
+    assertThat(result.success()).isTrue();
+    // setVerticalProfile should never be called when profile is null
+    verify(tenantTransactionHelper, never())
+        .executeInTenantTransaction(anyString(), anyString(), any());
+    verify(verticalProfileRegistry, never()).getProfile(anyString());
   }
 }

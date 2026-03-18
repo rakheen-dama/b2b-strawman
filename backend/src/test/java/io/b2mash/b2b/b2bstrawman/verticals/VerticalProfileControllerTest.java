@@ -1,9 +1,11 @@
 package io.b2mash.b2b.b2bstrawman.verticals;
 
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -55,6 +57,7 @@ class VerticalProfileControllerTest {
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     syncMember(ORG_ID, "user_vp_owner", "vp_owner@test.com", "VP Owner", "owner");
+    syncMember(ORG_ID, "user_vp_admin", "vp_admin@test.com", "VP Admin", "admin");
     syncMember(ORG_ID, "user_vp_member", "vp_member@test.com", "VP Member", "member");
 
     // Set up enabled_modules for the modules test (inside a transaction)
@@ -105,6 +108,51 @@ class VerticalProfileControllerTest {
     mockMvc.perform(get("/api/modules").with(memberJwt())).andExpect(status().isForbidden());
   }
 
+  @Test
+  void patchVerticalProfile_ownerSwitchesToLegalZa_setsModulesAndTerminology() throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/settings/vertical-profile")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"verticalProfile": "legal-za"}"""))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.verticalProfile").value("legal-za"))
+        .andExpect(
+            jsonPath(
+                "$.enabledModules",
+                containsInAnyOrder("trust_accounting", "court_calendar", "conflict_check")))
+        .andExpect(jsonPath("$.terminologyNamespace").value("en-ZA-legal"));
+  }
+
+  @Test
+  void patchVerticalProfile_invalidProfileId_returns400() throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/settings/vertical-profile")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"verticalProfile": "nonexistent-profile-xyz"}"""))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void patchVerticalProfile_adminCaller_returns403() throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/settings/vertical-profile")
+                .with(adminJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"verticalProfile": "legal-za"}"""))
+        .andExpect(status().isForbidden());
+  }
+
   // --- Helpers ---
 
   private void syncMember(
@@ -133,6 +181,11 @@ class VerticalProfileControllerTest {
   private JwtRequestPostProcessor ownerJwt() {
     return jwt()
         .jwt(j -> j.subject("user_vp_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
+  }
+
+  private JwtRequestPostProcessor adminJwt() {
+    return jwt()
+        .jwt(j -> j.subject("user_vp_admin").claim("o", Map.of("id", ORG_ID, "rol", "admin")));
   }
 
   private JwtRequestPostProcessor memberJwt() {

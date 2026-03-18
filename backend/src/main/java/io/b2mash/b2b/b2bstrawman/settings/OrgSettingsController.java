@@ -182,6 +182,15 @@ public class OrgSettingsController {
             actor));
   }
 
+  @PatchMapping("/vertical-profile")
+  @RequiresCapability("TEAM_OVERSIGHT")
+  public ResponseEntity<SettingsResponse> updateVerticalProfile(
+      @RequestBody UpdateVerticalProfileRequest request) {
+    var actor = ActorContext.fromRequestScopes();
+    return ResponseEntity.ok(
+        orgSettingsService.updateVerticalProfile(request.verticalProfile(), actor));
+  }
+
   // --- DTOs ---
 
   public record SettingsResponse(
@@ -275,4 +284,6 @@ public class OrgSettingsController {
           Integer billingEmailRateLimit,
       @Size(min = 3, max = 3, message = "defaultBillingRunCurrency must be exactly 3 characters")
           String defaultBillingRunCurrency) {}
+
+  public record UpdateVerticalProfileRequest(String verticalProfile) {}
 }

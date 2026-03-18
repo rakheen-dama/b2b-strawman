@@ -1,0 +1,17 @@
+{
+  "profileId": "legal-za",
+  "name": "Legal (South Africa)",
+  "description": "SA law firm with trust accounting, court calendar, and conflict check",
+  "enabledModules": ["trust_accounting", "court_calendar", "conflict_check"],
+  "locale": "en-ZA",
+  "currency": "ZAR",
+  "packs": {
+    "field": ["legal-za-customer", "legal-za-project"],
+    "compliance": ["fica-kyc-za"],
+    "template": ["legal-za"]
+  },
+  "taxDefaults": [
+    { "name": "VAT", "rate": 15.00, "default": true }
+  ],
+  "terminologyOverrides": "en-ZA-legal"
+}

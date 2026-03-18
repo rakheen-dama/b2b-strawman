@@ -11,8 +11,13 @@ public class ModuleNotEnabledException extends ErrorResponseException {
   }
 
   private static ProblemDetail createProblem(String moduleId) {
-    String humanName = moduleId.replace("_", " ");
-    humanName = Character.toUpperCase(humanName.charAt(0)) + humanName.substring(1);
+    String humanName;
+    if (moduleId == null || moduleId.isEmpty()) {
+      humanName = "Unknown";
+    } else {
+      humanName = moduleId.replace("_", " ");
+      humanName = Character.toUpperCase(humanName.charAt(0)) + humanName.substring(1);
+    }
     var problem = ProblemDetail.forStatus(HttpStatus.FORBIDDEN);
     problem.setTitle("Module not enabled");
     problem.setDetail(

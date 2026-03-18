@@ -22,4 +22,24 @@ class ModuleNotEnabledExceptionTest {
     assertThat(problem.getDetail()).contains("Trust accounting");
     assertThat(problem.getDetail()).contains("Contact your administrator");
   }
+
+  @Test
+  void exception_handlesNullModuleId() {
+    var ex = new ModuleNotEnabledException(null);
+    var problem = ex.getBody();
+
+    assertThat(problem.getTitle()).isEqualTo("Module not enabled");
+    assertThat(problem.getDetail()).contains("Unknown");
+    assertThat(problem.getDetail()).contains("Contact your administrator");
+  }
+
+  @Test
+  void exception_handlesEmptyModuleId() {
+    var ex = new ModuleNotEnabledException("");
+    var problem = ex.getBody();
+
+    assertThat(problem.getTitle()).isEqualTo("Module not enabled");
+    assertThat(problem.getDetail()).contains("Unknown");
+    assertThat(problem.getDetail()).contains("Contact your administrator");
+  }
 }

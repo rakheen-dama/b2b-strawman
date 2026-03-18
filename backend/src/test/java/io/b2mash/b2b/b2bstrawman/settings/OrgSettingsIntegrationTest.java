@@ -9,8 +9,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
@@ -26,6 +29,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -41,6 +45,9 @@ class OrgSettingsIntegrationTest {
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private PlanSyncService planSyncService;
+  @Autowired private OrgSettingsRepository orgSettingsRepository;
+  @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
+  @Autowired private TransactionTemplate transactionTemplate;
 
   private String memberIdOwner;
   private String memberIdAdmin;
@@ -599,6 +606,47 @@ class OrgSettingsIntegrationTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.enabledModules").isArray())
         .andExpect(jsonPath("$.enabledModules").isEmpty());
+  }
+
+  @Test
+  @Order(22)
+  void getSettings_returnsPopulatedEnabledModulesAndVerticalFields() throws Exception {
+    String vertOrgId = "org_settings_vert_populated";
+    provisioningService.provisionTenant(vertOrgId, "Vertical Populated Org", null);
+    planSyncService.syncPlan(vertOrgId, "pro-plan");
+
+    syncMember(vertOrgId, "user_vert_pop", "vert_pop@test.com", "Vert Pop Owner", "owner");
+
+    // Resolve tenant schema and directly update OrgSettings via repository
+    String tenantSchema =
+        orgSchemaMappingRepository.findByExternalOrgId(vertOrgId).orElseThrow().getSchemaName();
+
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .run(
+            () ->
+                transactionTemplate.executeWithoutResult(
+                    tx -> {
+                      var settings = orgSettingsRepository.findForCurrentTenant().orElseThrow();
+                      settings.updateVerticalProfile(
+                          "legal", List.of("trust_accounting", "court_calendar"), "legal");
+                      orgSettingsRepository.save(settings);
+                    }));
+
+    var vertJwt =
+        jwt()
+            .jwt(
+                j ->
+                    j.subject("user_vert_pop").claim("o", Map.of("id", vertOrgId, "rol", "owner")));
+
+    mockMvc
+        .perform(get("/api/settings").with(vertJwt))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.verticalProfile").value("legal"))
+        .andExpect(jsonPath("$.enabledModules").isArray())
+        .andExpect(jsonPath("$.enabledModules.length()").value(2))
+        .andExpect(jsonPath("$.enabledModules[0]").value("trust_accounting"))
+        .andExpect(jsonPath("$.enabledModules[1]").value("court_calendar"))
+        .andExpect(jsonPath("$.terminologyNamespace").value("legal"));
   }
 
   // --- Helpers ---

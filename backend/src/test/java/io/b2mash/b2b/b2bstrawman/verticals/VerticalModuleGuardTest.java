@@ -58,4 +58,14 @@ class VerticalModuleGuardTest {
 
     assertThat(modules).containsExactlyInAnyOrder("trust_accounting", "conflict_check");
   }
+
+  @Test
+  void getEnabledModules_handlesDuplicatesWithoutCrashing() {
+    when(orgSettingsService.getEnabledModulesForCurrentTenant())
+        .thenReturn(List.of("trust_accounting", "trust_accounting", "court_calendar"));
+
+    var modules = guard.getEnabledModules();
+
+    assertThat(modules).containsExactlyInAnyOrder("trust_accounting", "court_calendar");
+  }
 }

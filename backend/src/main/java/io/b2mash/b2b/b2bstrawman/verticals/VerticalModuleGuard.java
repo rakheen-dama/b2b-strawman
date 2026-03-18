@@ -2,6 +2,8 @@ package io.b2mash.b2b.b2bstrawman.verticals;
 
 import io.b2mash.b2b.b2bstrawman.exception.ModuleNotEnabledException;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import org.springframework.stereotype.Component;
 
@@ -34,6 +36,7 @@ public class VerticalModuleGuard {
    * OrgSettingsService (Hibernate L1 cache).
    */
   public Set<String> getEnabledModules() {
-    return Set.copyOf(orgSettingsService.getEnabledModulesForCurrentTenant());
+    return Collections.unmodifiableSet(
+        new LinkedHashSet<>(orgSettingsService.getEnabledModulesForCurrentTenant()));
   }
 }

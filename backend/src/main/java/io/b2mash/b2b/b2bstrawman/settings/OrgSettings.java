@@ -637,7 +637,7 @@ public class OrgSettings {
   }
 
   public List<String> getEnabledModules() {
-    return enabledModules != null ? enabledModules : new ArrayList<>();
+    return enabledModules != null ? List.copyOf(enabledModules) : new ArrayList<>();
   }
 
   public void setEnabledModules(List<String> enabledModules) {

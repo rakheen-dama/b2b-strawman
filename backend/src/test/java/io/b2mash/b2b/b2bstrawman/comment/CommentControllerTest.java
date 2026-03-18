@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -223,6 +224,135 @@ class CommentControllerTest {
     mockMvc
         .perform(delete("/api/projects/" + projectId + "/comments/" + commentId).with(member2Jwt()))
         .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void postCommentOnArchivedProjectReturns400() throws Exception {
+    // Create a separate project for archiving (to avoid affecting other tests)
+    var archiveProjectResult =
+        mockMvc
+            .perform(
+                post("/api/projects")
+                    .with(ownerJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"name": "Archive Comment Test Project", "description": "For archive guard test"}
+                        """))
+            .andExpect(status().isCreated())
+            .andReturn();
+    var archiveProjectId = extractIdFromLocation(archiveProjectResult);
+
+    // Create a task on the project before archiving
+    var archiveTaskResult =
+        mockMvc
+            .perform(
+                post("/api/projects/" + archiveProjectId + "/tasks")
+                    .with(ownerJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"title": "Archive Test Task", "priority": "MEDIUM"}
+                        """))
+            .andExpect(status().isCreated())
+            .andReturn();
+    var archiveTaskId = extractIdFromLocation(archiveTaskResult);
+
+    // Archive the project
+    mockMvc
+        .perform(patch("/api/projects/" + archiveProjectId + "/archive").with(ownerJwt()))
+        .andExpect(status().isOk());
+
+    // Attempt to create a comment on the archived project — should be rejected
+    mockMvc
+        .perform(
+            post("/api/projects/" + archiveProjectId + "/comments")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "entityType": "TASK",
+                      "entityId": "%s",
+                      "body": "This should be rejected"
+                    }
+                    """
+                        .formatted(archiveTaskId)))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void putCommentOnArchivedProjectReturns400() throws Exception {
+    // Create a comment on a non-archived project first
+    var commentId = createComment(ownerJwt(), "Comment to test archive update");
+
+    // Create a separate project, add a comment, then archive it
+    var archiveProjectResult =
+        mockMvc
+            .perform(
+                post("/api/projects")
+                    .with(ownerJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"name": "Archive Update Test Project", "description": "For archive update guard test"}
+                        """))
+            .andExpect(status().isCreated())
+            .andReturn();
+    var archiveProjectId = extractIdFromLocation(archiveProjectResult);
+
+    // Create a task on the project
+    var archiveTaskResult =
+        mockMvc
+            .perform(
+                post("/api/projects/" + archiveProjectId + "/tasks")
+                    .with(ownerJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"title": "Archive Update Test Task", "priority": "MEDIUM"}
+                        """))
+            .andExpect(status().isCreated())
+            .andReturn();
+    var archiveTaskId = extractIdFromLocation(archiveTaskResult);
+
+    // Create a comment before archiving
+    var archiveCommentResult =
+        mockMvc
+            .perform(
+                post("/api/projects/" + archiveProjectId + "/comments")
+                    .with(ownerJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "entityType": "TASK",
+                          "entityId": "%s",
+                          "body": "Pre-archive comment"
+                        }
+                        """
+                            .formatted(archiveTaskId)))
+            .andExpect(status().isCreated())
+            .andReturn();
+    var archiveCommentId =
+        JsonPath.read(archiveCommentResult.getResponse().getContentAsString(), "$.id").toString();
+
+    // Archive the project
+    mockMvc
+        .perform(patch("/api/projects/" + archiveProjectId + "/archive").with(ownerJwt()))
+        .andExpect(status().isOk());
+
+    // Attempt to update the comment on the archived project — should be rejected
+    mockMvc
+        .perform(
+            put("/api/projects/" + archiveProjectId + "/comments/" + archiveCommentId)
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"body": "This update should be rejected"}
+                    """))
+        .andExpect(status().isBadRequest());
   }
 
   // --- Helpers ---

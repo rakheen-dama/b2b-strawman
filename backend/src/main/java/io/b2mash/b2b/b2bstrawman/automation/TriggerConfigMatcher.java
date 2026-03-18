@@ -65,7 +65,7 @@ public class TriggerConfigMatcher {
 
   private String deriveNewStatus(DomainEvent event) {
     return switch (event) {
-      case TaskCompletedEvent _ -> "COMPLETED";
+      case TaskCompletedEvent _ -> "DONE";
       case TaskStatusChangedEvent e -> e.newStatus();
       case CustomerStatusChangedEvent _ -> detailOrNull(event.details(), "new_status");
       case ProjectCompletedEvent _ -> "COMPLETED";
@@ -73,7 +73,7 @@ public class TriggerConfigMatcher {
       case ProjectReopenedEvent _ -> "ACTIVE";
       case InvoiceSentEvent _ -> "SENT";
       case InvoicePaidEvent _ -> "PAID";
-      case InvoiceVoidedEvent _ -> "VOIDED";
+      case InvoiceVoidedEvent _ -> "VOID";
       default -> null;
     };
   }

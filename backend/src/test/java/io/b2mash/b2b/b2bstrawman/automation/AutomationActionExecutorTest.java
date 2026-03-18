@@ -178,7 +178,7 @@ class AutomationActionExecutorTest {
               String taskId = ((ActionSuccess) result).resultData().get("createdTaskId").toString();
               var task = taskRepository.findById(UUID.fromString(taskId)).orElseThrow();
               assertThat(task.getTitle()).isEqualTo("Review: Test Task by " + ACTOR_NAME);
-              assertThat(task.getDescription()).isEqualTo("Task COMPLETED");
+              assertThat(task.getDescription()).isEqualTo("Task DONE");
             });
   }
 
@@ -267,7 +267,7 @@ class AutomationActionExecutorTest {
                       rule.getId(),
                       1,
                       ActionType.UPDATE_STATUS,
-                      Map.of("targetStatus", "COMPLETED"),
+                      Map.of("targetStatus", "DONE"),
                       null,
                       null);
               actionRepository.save(action);
@@ -390,7 +390,7 @@ class AutomationActionExecutorTest {
                       Instant.now(),
                       Map.of(),
                       "OPEN",
-                      "COMPLETED",
+                      "DONE",
                       null,
                       "E2E Test Task",
                       null);
@@ -438,7 +438,7 @@ class AutomationActionExecutorTest {
                       Instant.now(),
                       Map.of(),
                       "OPEN",
-                      "COMPLETED",
+                      "DONE",
                       null,
                       "Failed Action Task",
                       null);
@@ -485,7 +485,7 @@ class AutomationActionExecutorTest {
     var task = new LinkedHashMap<String, Object>();
     task.put("id", UUID.randomUUID().toString());
     task.put("name", "Test Task");
-    task.put("status", "COMPLETED");
+    task.put("status", "DONE");
     task.put("previousStatus", "OPEN");
     task.put("projectId", projectId.toString());
     context.put("task", task);

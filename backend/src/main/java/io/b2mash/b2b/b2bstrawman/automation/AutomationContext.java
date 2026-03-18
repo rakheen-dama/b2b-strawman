@@ -112,7 +112,7 @@ public final class AutomationContext {
     var task = new LinkedHashMap<String, Object>();
     task.put("id", uuidToString(event.entityId()));
     task.put("name", event.taskTitle());
-    task.put("status", "COMPLETED");
+    task.put("status", "DONE");
     task.put("previousStatus", null);
     task.put("projectId", uuidToString(event.projectId()));
     context.put("task", task);
@@ -201,7 +201,7 @@ public final class AutomationContext {
       addCustomerContext(context, ipe.customerName());
     } else if (event instanceof InvoiceVoidedEvent ive) {
       invoice.put("invoiceNumber", ive.invoiceNumber());
-      invoice.put("status", "VOIDED");
+      invoice.put("status", "VOID");
       invoice.put("customerId", detailValue(event, "customer_id"));
       addCustomerContext(context, ive.customerName());
     }

@@ -20,11 +20,11 @@ class VariableResolverTest {
 
   @Test
   void resolvesMultipleVariables() {
-    var context = buildContext("task", Map.of("name", "Review PR", "status", "COMPLETED"));
+    var context = buildContext("task", Map.of("name", "Review PR", "status", "DONE"));
     context.put("actor", new LinkedHashMap<>(Map.of("name", "Alice")));
     String result =
         resolver.resolve("{{actor.name}} changed {{task.name}} to {{task.status}}", context);
-    assertThat(result).isEqualTo("Alice changed Review PR to COMPLETED");
+    assertThat(result).isEqualTo("Alice changed Review PR to DONE");
   }
 
   @Test

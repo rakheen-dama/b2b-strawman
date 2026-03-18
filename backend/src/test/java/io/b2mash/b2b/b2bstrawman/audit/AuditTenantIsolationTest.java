@@ -279,6 +279,46 @@ class AuditTenantIsolationTest {
   }
 
   @Test
+  void deleteOnAuditEventsRaisesException() {
+    var entityId = UUID.randomUUID();
+    var eventIdRef = new AtomicReference<UUID>();
+
+    // Use Starter org A's dedicated schema for the delete protection test.
+    ScopedValue.where(RequestScopes.TENANT_ID, starterSchemaA)
+        .run(
+            () -> {
+              auditService.log(
+                  new AuditEventRecord(
+                      "task.delete_test",
+                      "task",
+                      entityId,
+                      null,
+                      "SYSTEM",
+                      "INTERNAL",
+                      null,
+                      null,
+                      null));
+
+              var page =
+                  auditService.findEvents(
+                      new AuditEventFilter(null, entityId, null, null, null, null),
+                      PageRequest.of(0, 1));
+              eventIdRef.set(page.getContent().getFirst().getId());
+            });
+
+    assertThat(eventIdRef.get()).isNotNull();
+
+    // Attempt to DELETE via native SQL — the DB trigger should reject it
+    assertThatThrownBy(
+            () ->
+                jdbcTemplate.update(
+                    "DELETE FROM \"" + starterSchemaA + "\".audit_events WHERE id = ?::uuid",
+                    eventIdRef.get().toString()))
+        .isInstanceOf(DataAccessException.class)
+        .hasMessageContaining("audit_events rows cannot be deleted");
+  }
+
+  @Test
   void auditEventHasNoMutableSetters() {
     // Verify that AuditEvent has no setter methods for mutable fields
     // No setter methods should exist on AuditEvent (immutable entity)

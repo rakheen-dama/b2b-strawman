@@ -185,6 +185,7 @@ export function CreateProposalDialog({
                     <Popover
                       open={customerPopoverOpen}
                       onOpenChange={setCustomerPopoverOpen}
+                      modal={false}
                     >
                       <PopoverTrigger asChild>
                         <FormControl>

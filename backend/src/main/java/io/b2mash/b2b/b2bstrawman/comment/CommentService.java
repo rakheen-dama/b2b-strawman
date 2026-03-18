@@ -14,6 +14,7 @@ import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.project.ProjectLifecycleGuard;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import java.time.Instant;
@@ -39,6 +40,7 @@ public class CommentService {
   private final AuditService auditService;
   private final ApplicationEventPublisher eventPublisher;
   private final MemberNameResolver memberNameResolver;
+  private final ProjectLifecycleGuard projectLifecycleGuard;
 
   public CommentService(
       CommentRepository commentRepository,
@@ -47,7 +49,8 @@ public class CommentService {
       DocumentRepository documentRepository,
       AuditService auditService,
       ApplicationEventPublisher eventPublisher,
-      MemberNameResolver memberNameResolver) {
+      MemberNameResolver memberNameResolver,
+      ProjectLifecycleGuard projectLifecycleGuard) {
     this.commentRepository = commentRepository;
     this.projectAccessService = projectAccessService;
     this.taskRepository = taskRepository;
@@ -55,6 +58,7 @@ public class CommentService {
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
     this.memberNameResolver = memberNameResolver;
+    this.projectLifecycleGuard = projectLifecycleGuard;
   }
 
   @Transactional
@@ -66,6 +70,9 @@ public class CommentService {
       String visibility,
       ActorContext actor) {
     var access = projectAccessService.requireViewAccess(projectId, actor);
+
+    // Check project is not archived
+    projectLifecycleGuard.requireNotReadOnly(projectId);
 
     // Validate entity type
     if ("PROJECT".equals(entityType)) {
@@ -157,6 +164,10 @@ public class CommentService {
     }
 
     var access = projectAccessService.requireViewAccess(projectId, actor);
+
+    // Check project is not archived
+    projectLifecycleGuard.requireNotReadOnly(projectId);
+
     boolean isAuthor = comment.getAuthorMemberId().equals(actor.memberId());
     boolean isOrgAdminOrOwner =
         Roles.ORG_ADMIN.equals(actor.orgRole()) || Roles.ORG_OWNER.equals(actor.orgRole());

@@ -4,7 +4,7 @@
 
 - **QA Position**: T1-T4 COMPLETE (cycle 1) — all 4 tracks executed
 - **Cycle**: 1
-- **E2E Stack**: ALL HEALTHY (frontend:3001, backend:8081, mock-idp:8090, mailpit:8026, postgres:5433, localstack:4567)
+- **E2E Stack**: ALL HEALTHY (frontend:3001, backend:8081, mock-idp:8090, mailpit:8026, postgres:5433, localstack:4567) — NEEDS_REBUILD (GAP-DI-02 backend fix merged)
 - **Branch**: `bugfix_cycle_data_integrity_2026-03-18`
 - **Scenario**: `qa/testplan/data-integrity-financial-accuracy.md`
 - **Focus**: Data integrity verification, financial calculations accuracy
@@ -14,7 +14,7 @@
 | ID | Summary | Severity | Status | Owner | PR | Track | Notes |
 |----|---------|----------|--------|-------|----|-------|-------|
 | GAP-DI-01 | DRAFT invoices cannot be voided (only APPROVED/SENT) | Minor | BY_DESIGN | — | — | T1.2 | Intentional. INV-040 in QA plan confirms DRAFT->VOID rejected. DRAFT invoices can be deleted instead. `voidDraft()` exists for internal billing-run cancellation only. |
-| GAP-DI-02 | Comments can be created on ARCHIVED projects | Minor | SPEC_READY | Dev | — | T1.4 | Bug. CommentService missing `projectLifecycleGuard.requireNotReadOnly()` check. Fix spec: `fix-specs/GAP-DI-02.md`. Effort: S. |
+| GAP-DI-02 | Comments can be created on ARCHIVED projects | Minor | FIXED | Dev | #755 | T1.4 | Fixed. `projectLifecycleGuard.requireNotReadOnly()` added to `createComment()` and `updateComment()`. 2 integration tests added. |
 | GAP-DI-03 | Audit events can be DELETED via direct SQL | Major | SPEC_READY | Dev | — | T4.11 | Bug. V12 migration only has UPDATE trigger. Need V74 migration with DELETE trigger. Fix spec: `fix-specs/GAP-DI-03.md`. Effort: S. |
 
 ## Results Summary
@@ -118,3 +118,4 @@
 | 2026-03-18T11:50Z | Product | GAP-DI-02 -> SPEC_READY. `CommentService.createComment()` missing `projectLifecycleGuard.requireNotReadOnly()` call. All other child-entity services (task, document, time entry) have this guard. Fix spec written to `fix-specs/GAP-DI-02.md`. Effort: S. |
 | 2026-03-18T11:55Z | Product | GAP-DI-03 -> SPEC_READY. V12 migration only creates UPDATE trigger. New V74 migration needed for DELETE trigger. No cascading impact — standalone fix. Fix spec written to `fix-specs/GAP-DI-03.md`. Effort: S. |
 | 2026-03-18T11:55Z | Product | Cascading analysis: GAP-DI-02 and GAP-DI-03 are independent bugs with no downstream failures. Neither escalated to blocker. |
+| 2026-03-18T12:20Z | Dev | GAP-DI-02 FIXED via PR #755 (squash-merged). Injected `ProjectLifecycleGuard` into `CommentService`. Added `requireNotReadOnly()` in `createComment()` and `updateComment()`. `deleteComment()` and `listComments()` intentionally left unguarded. 2 integration tests added (create + update on archived project return 400). All 9 comment tests pass. Backend change — NEEDS_REBUILD. |

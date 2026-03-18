@@ -182,10 +182,11 @@ public class OrgSettingsController {
             actor));
   }
 
+  // Service enforces owner-only; TEAM_OVERSIGHT is the nearest capability
   @PatchMapping("/vertical-profile")
   @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<SettingsResponse> updateVerticalProfile(
-      @RequestBody UpdateVerticalProfileRequest request) {
+      @Valid @RequestBody UpdateVerticalProfileRequest request) {
     var actor = ActorContext.fromRequestScopes();
     return ResponseEntity.ok(
         orgSettingsService.updateVerticalProfile(request.verticalProfile(), actor));
@@ -285,5 +286,7 @@ public class OrgSettingsController {
       @Size(min = 3, max = 3, message = "defaultBillingRunCurrency must be exactly 3 characters")
           String defaultBillingRunCurrency) {}
 
-  public record UpdateVerticalProfileRequest(String verticalProfile) {}
+  public record UpdateVerticalProfileRequest(
+      @Size(max = 50, message = "verticalProfile must be at most 50 characters")
+          String verticalProfile) {}
 }

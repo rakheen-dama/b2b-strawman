@@ -603,7 +603,7 @@ public class OrgSettingsService {
    */
   @Transactional
   public SettingsResponse updateVerticalProfile(String verticalProfile, ActorContext actor) {
-    requireOwner(actor.orgRole());
+    RequestScopes.requireOwner();
 
     List<String> enabledModules;
     String terminologyNamespace;
@@ -655,13 +655,6 @@ public class OrgSettingsService {
             .build());
 
     return toSettingsResponse(settings);
-  }
-
-  private void requireOwner(String orgRole) {
-    if (!Roles.ORG_OWNER.equals(orgRole)) {
-      throw new ForbiddenException(
-          "Insufficient permissions", "Only org owners can change the vertical profile");
-    }
   }
 
   private void requireAdminOrOwner(String orgRole) {

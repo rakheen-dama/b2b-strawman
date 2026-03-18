@@ -28,7 +28,7 @@ public class AccessRequestApprovalService {
   private static final Map<String, String> INDUSTRY_TO_PROFILE =
       Map.of(
           "Accounting", "accounting-za",
-          "Legal", "law-za");
+          "Legal", "legal-za");
 
   private final AccessRequestRepository accessRequestRepository;
   private final KeycloakProvisioningClient keycloakProvisioningClient;

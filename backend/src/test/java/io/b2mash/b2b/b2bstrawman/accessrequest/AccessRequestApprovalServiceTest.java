@@ -47,14 +47,14 @@ class AccessRequestApprovalServiceTest {
 
     when(keycloakProvisioningClient.createOrganization("Acme Corp", "acme-corp"))
         .thenReturn(KC_ORG_ID);
-    when(tenantProvisioningService.provisionTenant("acme-corp", "Acme Corp", "law-za"))
+    when(tenantProvisioningService.provisionTenant("acme-corp", "Acme Corp", "legal-za"))
         .thenReturn(ProvisioningResult.success("tenant_acme"));
 
     var result = approvalService.approve(request.getId(), ADMIN_USER_ID);
 
     assertThat(result.getStatus()).isEqualTo(AccessRequestStatus.APPROVED);
     verify(keycloakProvisioningClient).createOrganization("Acme Corp", "acme-corp");
-    verify(tenantProvisioningService).provisionTenant("acme-corp", "Acme Corp", "law-za");
+    verify(tenantProvisioningService).provisionTenant("acme-corp", "Acme Corp", "legal-za");
     verify(keycloakProvisioningClient).inviteUser(KC_ORG_ID, "approve-happy@acme.com");
   }
 
@@ -64,7 +64,7 @@ class AccessRequestApprovalServiceTest {
 
     when(keycloakProvisioningClient.createOrganization("Fields Corp", "fields-corp"))
         .thenReturn(KC_ORG_ID);
-    when(tenantProvisioningService.provisionTenant("fields-corp", "Fields Corp", "law-za"))
+    when(tenantProvisioningService.provisionTenant("fields-corp", "Fields Corp", "legal-za"))
         .thenReturn(ProvisioningResult.success("tenant_fields"));
 
     var result = approvalService.approve(request.getId(), ADMIN_USER_ID);
@@ -110,7 +110,7 @@ class AccessRequestApprovalServiceTest {
 
     when(keycloakProvisioningClient.createOrganization("Fail Corp", "fail-corp"))
         .thenReturn(KC_ORG_ID);
-    when(tenantProvisioningService.provisionTenant("fail-corp", "Fail Corp", "law-za"))
+    when(tenantProvisioningService.provisionTenant("fail-corp", "Fail Corp", "legal-za"))
         .thenThrow(new RuntimeException("Schema creation failed"));
 
     assertThatThrownBy(() -> approvalService.approve(request.getId(), ADMIN_USER_ID))
@@ -132,7 +132,7 @@ class AccessRequestApprovalServiceTest {
     request.setProvisioningError("Schema creation failed");
     accessRequestRepository.save(request);
 
-    when(tenantProvisioningService.provisionTenant("retry-corp", "Retry Corp", "law-za"))
+    when(tenantProvisioningService.provisionTenant("retry-corp", "Retry Corp", "legal-za"))
         .thenReturn(ProvisioningResult.success("tenant_retry"));
 
     var result = approvalService.approve(request.getId(), ADMIN_USER_ID);
@@ -142,7 +142,7 @@ class AccessRequestApprovalServiceTest {
     assertThat(result.getProvisioningError()).isNull();
     // Should NOT have called createOrganization again
     verify(keycloakProvisioningClient, never()).createOrganization(anyString(), anyString());
-    verify(tenantProvisioningService).provisionTenant("retry-corp", "Retry Corp", "law-za");
+    verify(tenantProvisioningService).provisionTenant("retry-corp", "Retry Corp", "legal-za");
     verify(keycloakProvisioningClient).inviteUser(KC_ORG_ID, "retry@acme.com");
   }
 

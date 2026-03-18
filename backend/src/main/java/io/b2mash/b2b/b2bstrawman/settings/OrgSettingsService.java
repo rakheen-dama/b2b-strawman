@@ -3,11 +3,13 @@ package io.b2mash.b2b.b2bstrawman.settings;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsController.SettingsResponse;
+import io.b2mash.b2b.b2bstrawman.verticals.VerticalProfileRegistry;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -31,14 +33,17 @@ public class OrgSettingsService {
   private final OrgSettingsRepository orgSettingsRepository;
   private final AuditService auditService;
   private final StorageService storageService;
+  private final VerticalProfileRegistry verticalProfileRegistry;
 
   public OrgSettingsService(
       OrgSettingsRepository orgSettingsRepository,
       AuditService auditService,
-      StorageService storageService) {
+      StorageService storageService,
+      VerticalProfileRegistry verticalProfileRegistry) {
     this.orgSettingsRepository = orgSettingsRepository;
     this.auditService = auditService;
     this.storageService = storageService;
+    this.verticalProfileRegistry = verticalProfileRegistry;
   }
 
   /**
@@ -588,6 +593,65 @@ public class OrgSettingsService {
             .entityType("org_settings")
             .entityId(settings.getId())
             .details(auditDetails)
+            .build());
+
+    return toSettingsResponse(settings);
+  }
+
+  /**
+   * Updates the vertical profile, setting enabledModules and terminologyNamespace from registry.
+   */
+  @Transactional
+  public SettingsResponse updateVerticalProfile(String verticalProfile, ActorContext actor) {
+    RequestScopes.requireOwner();
+
+    List<String> enabledModules;
+    String terminologyNamespace;
+
+    if (verticalProfile != null) {
+      var profileDef =
+          verticalProfileRegistry
+              .getProfile(verticalProfile)
+              .orElseThrow(
+                  () ->
+                      new InvalidStateException(
+                          "Invalid profile", "Unknown vertical profile: " + verticalProfile));
+      enabledModules = profileDef.enabledModules();
+      terminologyNamespace = profileDef.terminologyNamespace();
+    } else {
+      enabledModules = List.of();
+      terminologyNamespace = null;
+    }
+
+    var settings =
+        orgSettingsRepository
+            .findForCurrentTenant()
+            .orElseGet(
+                () -> {
+                  var newSettings = new OrgSettings(DEFAULT_CURRENCY);
+                  return orgSettingsRepository.save(newSettings);
+                });
+
+    String oldProfile = settings.getVerticalProfile();
+    settings.updateVerticalProfile(verticalProfile, enabledModules, terminologyNamespace);
+    settings = orgSettingsRepository.save(settings);
+
+    log.info(
+        "Updated vertical profile: {} -> {}, enabledModules={}",
+        oldProfile,
+        verticalProfile,
+        enabledModules);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("org_settings.vertical_profile_changed")
+            .entityType("org_settings")
+            .entityId(settings.getId())
+            .details(
+                Map.of(
+                    "old_profile", oldProfile != null ? oldProfile : "",
+                    "new_profile", verticalProfile != null ? verticalProfile : "",
+                    "enabled_modules", enabledModules))
             .build());
 
     return toSettingsResponse(settings);

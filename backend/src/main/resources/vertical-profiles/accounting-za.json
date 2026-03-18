@@ -1,5 +1,6 @@
 {
   "profileId": "accounting-za",
+  "enabledModules": [],
   "name": "South African Accounting Firm",
   "description": "Complete configuration for a small SA accounting practice: FICA compliance, engagement letter templates, accounting-specific custom fields, automation rules, and request templates.",
   "locale": "en-ZA",

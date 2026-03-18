@@ -206,6 +206,7 @@ public final class AutomationContext {
       addCustomerContext(context, ive.customerName());
     }
 
+    invoice.put("totalAmount", detailValue(event, "total"));
     context.put("invoice", invoice);
   }
 

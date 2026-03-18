@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditDeltaBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.PortalTaskCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.PortalTaskDeletedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.PortalTaskUpdatedEvent;
@@ -60,6 +61,7 @@ public class TaskService {
   private final CustomFieldValidator customFieldValidator;
   private final FieldGroupResolver fieldGroupResolver;
   private final CustomerProjectRepository customerProjectRepository;
+  private final CustomerRepository customerRepository;
   private final FieldGroupService fieldGroupService;
   private final ProjectRepository projectRepository;
   private final TimeEntryRepository timeEntryRepository;
@@ -75,6 +77,7 @@ public class TaskService {
       CustomFieldValidator customFieldValidator,
       FieldGroupResolver fieldGroupResolver,
       CustomerProjectRepository customerProjectRepository,
+      CustomerRepository customerRepository,
       FieldGroupService fieldGroupService,
       ProjectRepository projectRepository,
       TimeEntryRepository timeEntryRepository,
@@ -88,6 +91,7 @@ public class TaskService {
     this.customFieldValidator = customFieldValidator;
     this.fieldGroupResolver = fieldGroupResolver;
     this.customerProjectRepository = customerProjectRepository;
+    this.customerRepository = customerRepository;
     this.fieldGroupService = fieldGroupService;
     this.projectRepository = projectRepository;
     this.timeEntryRepository = timeEntryRepository;
@@ -492,6 +496,16 @@ public class TaskService {
     }
     if (statusChanged) {
       String actorName = resolveActorName(actor.memberId());
+      var statusChangedDetails =
+          buildEnrichedTaskEventDetails(
+              task,
+              Map.of(
+                  "title",
+                  task.getTitle(),
+                  "old_status",
+                  oldStatus.name(),
+                  "new_status",
+                  taskStatus.name()));
       eventPublisher.publishEvent(
           new TaskStatusChangedEvent(
               "task.status_changed",
@@ -503,13 +517,7 @@ public class TaskService {
               tenantId,
               orgId,
               Instant.now(),
-              Map.of(
-                  "title",
-                  task.getTitle(),
-                  "old_status",
-                  oldStatus.name(),
-                  "new_status",
-                  taskStatus.name()),
+              statusChangedDetails,
               oldStatus.name(),
               taskStatus.name(),
               task.getAssigneeId(),
@@ -735,6 +743,8 @@ public class TaskService {
     String actorName = resolveActorName(actor.memberId());
     String tenantId = RequestScopes.requireTenantId();
     String orgId = RequestScopes.requireOrgId();
+    var completedEventDetails =
+        buildEnrichedTaskEventDetails(task, Map.of("title", task.getTitle()));
     eventPublisher.publishEvent(
         new TaskCompletedEvent(
             "task.completed",
@@ -746,7 +756,7 @@ public class TaskService {
             tenantId,
             orgId,
             Instant.now(),
-            Map.of("title", task.getTitle()),
+            completedEventDetails,
             actor.memberId(),
             task.getTitle()));
 
@@ -1015,6 +1025,30 @@ public class TaskService {
 
   private String resolveActorName(UUID memberId) {
     return memberNameResolver.resolveName(memberId);
+  }
+
+  /**
+   * Builds an enriched details map for task events, including project_name and customer info when
+   * available. This ensures AutomationContext can resolve {{project.name}} and {{customer.name}}.
+   */
+  private Map<String, Object> buildEnrichedTaskEventDetails(Task task, Map<String, Object> base) {
+    var details = new LinkedHashMap<>(base);
+    var project = projectRepository.findById(task.getProjectId()).orElse(null);
+    if (project != null) {
+      details.put("project_name", project.getName());
+    }
+    var customerLinks = customerProjectRepository.findByProjectId(task.getProjectId());
+    if (!customerLinks.isEmpty()) {
+      var customerLink = customerLinks.getFirst();
+      customerRepository
+          .findById(customerLink.getCustomerId())
+          .ifPresent(
+              customer -> {
+                details.put("customer_name", customer.getName());
+                details.put("customer_id", customer.getId().toString());
+              });
+    }
+    return details;
   }
 
   private static List<TaskStatus> parseStatuses(String statuses) {

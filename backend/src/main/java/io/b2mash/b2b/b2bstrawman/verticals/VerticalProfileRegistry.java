@@ -45,7 +45,14 @@ public class VerticalProfileRegistry {
       try (var is = resource.getInputStream()) {
         JsonNode root = objectMapper.readTree(is);
 
-        String profileId = root.path("profileId").asText();
+        String profileId = root.path("profileId").asText(null);
+        if (profileId == null || profileId.isBlank()) {
+          log.warn(
+              "Skipping vertical profile file {} — missing or blank profileId",
+              resource.getFilename());
+          continue;
+        }
+
         String name = root.path("name").asText();
         String description = root.path("description").asText();
         String currency = root.path("currency").asText(null);
@@ -82,6 +89,11 @@ public class VerticalProfileRegistry {
         loaded.put(profileId, profile);
 
         log.info("Loaded vertical profile: {}", profileId);
+      } catch (IOException e) {
+        log.warn(
+            "Skipping malformed vertical profile file {} — {}",
+            resource.getFilename(),
+            e.getMessage());
       }
     }
 

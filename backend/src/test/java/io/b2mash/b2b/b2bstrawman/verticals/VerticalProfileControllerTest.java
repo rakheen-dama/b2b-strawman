@@ -27,6 +27,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -43,6 +44,7 @@ class VerticalProfileControllerTest {
   @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private OrgSettingsService orgSettingsService;
+  @Autowired private TransactionTemplate transactionTemplate;
 
   private String tenantSchema;
 
@@ -53,15 +55,18 @@ class VerticalProfileControllerTest {
     planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     syncMember(ORG_ID, "user_vp_owner", "vp_owner@test.com", "VP Owner", "owner");
+    syncMember(ORG_ID, "user_vp_member", "vp_member@test.com", "VP Member", "member");
 
-    // Set up enabled_modules for the modules test
+    // Set up enabled_modules for the modules test (inside a transaction)
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .run(
-            () -> {
-              var settings = orgSettingsService.getOrCreateForCurrentTenant();
-              settings.setEnabledModules(List.of("trust_accounting"));
-              orgSettingsRepository.save(settings);
-            });
+            () ->
+                transactionTemplate.executeWithoutResult(
+                    tx -> {
+                      var settings = orgSettingsService.getOrCreateForCurrentTenant();
+                      settings.setEnabledModules(List.of("trust_accounting"));
+                      orgSettingsRepository.save(settings);
+                    }));
   }
 
   @Test
@@ -88,6 +93,16 @@ class VerticalProfileControllerTest {
         .andExpect(jsonPath("$[?(@.id == 'court_calendar')].enabled").value(false))
         .andExpect(jsonPath("$[?(@.id == 'conflict_check')].enabled").value(false))
         .andExpect(jsonPath("$[0].status").value("stub"));
+  }
+
+  @Test
+  void getProfiles_memberWithoutTeamOversight_returns403() throws Exception {
+    mockMvc.perform(get("/api/profiles").with(memberJwt())).andExpect(status().isForbidden());
+  }
+
+  @Test
+  void getModules_memberWithoutTeamOversight_returns403() throws Exception {
+    mockMvc.perform(get("/api/modules").with(memberJwt())).andExpect(status().isForbidden());
   }
 
   // --- Helpers ---
@@ -118,5 +133,10 @@ class VerticalProfileControllerTest {
   private JwtRequestPostProcessor ownerJwt() {
     return jwt()
         .jwt(j -> j.subject("user_vp_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
+  }
+
+  private JwtRequestPostProcessor memberJwt() {
+    return jwt()
+        .jwt(j -> j.subject("user_vp_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 }

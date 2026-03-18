@@ -91,8 +91,6 @@ public class AutomationTemplateSeeder extends AbstractPackSeeder<AutomationTempl
               RuleSource.TEMPLATE,
               template.slug(),
               SYSTEM_USER_ID);
-      // Constructor sets enabled=true; toggle to false for seeded templates
-      rule.toggle();
       rule = ruleRepository.save(rule);
 
       for (var actionDef : template.actions()) {

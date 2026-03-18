@@ -11,6 +11,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.automation.AutomationRuleRepository;
+import io.b2mash.b2b.b2bstrawman.automation.RuleSource;
+import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.Map;
@@ -40,6 +44,11 @@ class ProjectLifecycleIntegrationTest {
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private PlanSyncService planSyncService;
+  @Autowired private AutomationRuleRepository automationRuleRepository;
+  @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
+
+  @Autowired
+  private org.springframework.transaction.support.TransactionTemplate transactionTemplate;
 
   private String memberIdOwner;
   private String memberIdAdmin;
@@ -49,6 +58,7 @@ class ProjectLifecycleIntegrationTest {
   void provisionTenantAndMembers() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Project Lifecycle Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
+    disableSeededRules();
 
     memberIdOwner =
         syncMember(ORG_ID, "user_plc_owner", "plc_owner@test.com", "PLC Owner", "owner");
@@ -56,6 +66,25 @@ class ProjectLifecycleIntegrationTest {
         syncMember(ORG_ID, "user_plc_admin", "plc_admin@test.com", "PLC Admin", "admin");
     memberIdMember =
         syncMember(ORG_ID, "user_plc_member", "plc_member@test.com", "PLC Member", "member");
+  }
+
+  private void disableSeededRules() {
+    String schemaName =
+        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+    ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .run(
+            () ->
+                transactionTemplate.executeWithoutResult(
+                    tx -> {
+                      automationRuleRepository.findAllByOrderByCreatedAtDesc().stream()
+                          .filter(r -> r.getSource() == RuleSource.TEMPLATE && r.isEnabled())
+                          .forEach(
+                              r -> {
+                                r.toggle();
+                                automationRuleRepository.save(r);
+                              });
+                    }));
   }
 
   @Test

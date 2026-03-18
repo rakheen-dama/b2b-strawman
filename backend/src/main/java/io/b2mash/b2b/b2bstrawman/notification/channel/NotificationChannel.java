@@ -16,8 +16,9 @@ public interface NotificationChannel {
    *
    * @param notification the notification to deliver
    * @param recipientEmail the recipient's email address (for email channels)
+   * @return true if delivery succeeded, false otherwise
    */
-  void deliver(Notification notification, String recipientEmail);
+  boolean deliver(Notification notification, String recipientEmail);
 
   /** Whether this channel is currently enabled/available. */
   boolean isEnabled();

@@ -65,16 +65,16 @@ public class EmailNotificationChannel implements NotificationChannel {
   }
 
   @Override
-  public void deliver(Notification notification, String recipientEmail) {
+  public boolean deliver(Notification notification, String recipientEmail) {
     if (recipientEmail == null || recipientEmail.isBlank()) {
       log.debug("Skipping email for notification {} -- no recipient email", notification.getId());
-      return;
+      return false;
     }
 
     if (!RequestScopes.TENANT_ID.isBound()) {
       log.warn(
           "Skipping email for notification {} -- no tenant context bound", notification.getId());
-      return;
+      return false;
     }
 
     try {
@@ -89,7 +89,7 @@ public class EmailNotificationChannel implements NotificationChannel {
             "Skipping email for notification {} -- unmapped type '{}'",
             notification.getId(),
             notification.getType());
-        return;
+        return false;
       }
 
       // 3. Generate unsubscribe URL
@@ -121,7 +121,7 @@ public class EmailNotificationChannel implements NotificationChannel {
             templateName,
             recipientEmail,
             provider.providerId());
-        return;
+        return false;
       }
 
       // 7. Construct message with tracking metadata and List-Unsubscribe headers
@@ -165,12 +165,14 @@ public class EmailNotificationChannel implements NotificationChannel {
             notification.getId(),
             recipientEmail,
             provider.providerId());
+        return true;
       } else {
         log.warn(
             "Email send failed for notification={} to={}: {}",
             notification.getId(),
             recipientEmail,
             result.errorMessage());
+        return false;
       }
 
     } catch (Exception e) {
@@ -179,6 +181,7 @@ public class EmailNotificationChannel implements NotificationChannel {
           notification.getId(),
           recipientEmail,
           e);
+      return false;
     }
   }
 
@@ -218,6 +221,7 @@ public class EmailNotificationChannel implements NotificationChannel {
           "notification-retainer";
       case "PROPOSAL_SENT", "PROPOSAL_ACCEPTED", "PROPOSAL_EXPIRED", "PROPOSAL_DECLINED" ->
           "notification-proposal";
+      case "AUTOMATION_EMAIL" -> "notification-automation";
       default -> {
         log.warn("No email template mapping for notification type '{}'", notificationType);
         yield null;

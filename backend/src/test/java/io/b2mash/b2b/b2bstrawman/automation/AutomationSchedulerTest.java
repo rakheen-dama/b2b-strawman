@@ -52,10 +52,29 @@ class AutomationSchedulerTest {
     schemaName =
         provisioningService.provisionTenant(ORG_ID, "Scheduler Test Org", null).schemaName();
     planSyncService.syncPlan(ORG_ID, "pro-plan");
+    disableSeededRules(schemaName, ORG_ID);
 
     schemaName2 =
         provisioningService.provisionTenant(ORG_ID_2, "Scheduler Test Org 2", null).schemaName();
     planSyncService.syncPlan(ORG_ID_2, "pro-plan");
+    disableSeededRules(schemaName2, ORG_ID_2);
+  }
+
+  private void disableSeededRules(String schema, String orgId) {
+    ScopedValue.where(RequestScopes.TENANT_ID, schema)
+        .where(RequestScopes.ORG_ID, orgId)
+        .run(
+            () ->
+                transactionTemplate.executeWithoutResult(
+                    tx -> {
+                      ruleRepository.findAllByOrderByCreatedAtDesc().stream()
+                          .filter(r -> r.getSource() == RuleSource.TEMPLATE && r.isEnabled())
+                          .forEach(
+                              r -> {
+                                r.toggle();
+                                ruleRepository.save(r);
+                              });
+                    }));
   }
 
   // --- Scheduler Tests (283.9) ---

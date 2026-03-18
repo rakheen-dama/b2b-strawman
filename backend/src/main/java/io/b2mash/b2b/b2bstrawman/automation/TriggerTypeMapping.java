@@ -13,6 +13,7 @@ import io.b2mash.b2b.b2bstrawman.event.ProjectArchivedEvent;
 import io.b2mash.b2b.b2bstrawman.event.ProjectCompletedEvent;
 import io.b2mash.b2b.b2bstrawman.event.ProjectReopenedEvent;
 import io.b2mash.b2b.b2bstrawman.event.ProposalSentEvent;
+import io.b2mash.b2b.b2bstrawman.event.TaskCompletedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskStatusChangedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TimeEntryChangedEvent;
 import java.util.Map;
@@ -26,6 +27,7 @@ public final class TriggerTypeMapping {
   private static final Map<Class<? extends DomainEvent>, TriggerType> MAPPINGS =
       Map.ofEntries(
           Map.entry(TaskStatusChangedEvent.class, TriggerType.TASK_STATUS_CHANGED),
+          Map.entry(TaskCompletedEvent.class, TriggerType.TASK_STATUS_CHANGED),
           Map.entry(ProjectCompletedEvent.class, TriggerType.PROJECT_STATUS_CHANGED),
           Map.entry(ProjectArchivedEvent.class, TriggerType.PROJECT_STATUS_CHANGED),
           Map.entry(ProjectReopenedEvent.class, TriggerType.PROJECT_STATUS_CHANGED),

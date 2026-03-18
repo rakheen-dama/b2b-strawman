@@ -13,6 +13,7 @@ import io.b2mash.b2b.b2bstrawman.event.InvoiceVoidedEvent;
 import io.b2mash.b2b.b2bstrawman.event.ProjectArchivedEvent;
 import io.b2mash.b2b.b2bstrawman.event.ProjectCompletedEvent;
 import io.b2mash.b2b.b2bstrawman.event.ProjectReopenedEvent;
+import io.b2mash.b2b.b2bstrawman.event.TaskCompletedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskStatusChangedEvent;
 import java.util.Map;
 import org.springframework.stereotype.Component;
@@ -64,6 +65,7 @@ public class TriggerConfigMatcher {
 
   private String deriveNewStatus(DomainEvent event) {
     return switch (event) {
+      case TaskCompletedEvent _ -> "COMPLETED";
       case TaskStatusChangedEvent e -> e.newStatus();
       case CustomerStatusChangedEvent _ -> detailOrNull(event.details(), "new_status");
       case ProjectCompletedEvent _ -> "COMPLETED";
@@ -78,6 +80,7 @@ public class TriggerConfigMatcher {
 
   private String deriveOldStatus(DomainEvent event) {
     return switch (event) {
+      case TaskCompletedEvent _ -> null;
       case TaskStatusChangedEvent e -> e.oldStatus();
       case CustomerStatusChangedEvent _ -> detailOrNull(event.details(), "old_status");
       case ProjectReopenedEvent e -> e.previousStatus();

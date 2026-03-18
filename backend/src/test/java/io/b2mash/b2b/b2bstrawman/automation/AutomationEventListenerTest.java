@@ -47,6 +47,9 @@ class AutomationEventListenerTest {
   @Autowired private PlanSyncService planSyncService;
   @Autowired private ApplicationEventPublisher eventPublisher;
 
+  @Autowired
+  private org.springframework.transaction.support.TransactionTemplate transactionTemplate;
+
   private String schemaName;
 
   @BeforeAll
@@ -56,6 +59,25 @@ class AutomationEventListenerTest {
             .provisionTenant(ORG_ID, "Automation Listener Test Org", null)
             .schemaName();
     planSyncService.syncPlan(ORG_ID, "pro-plan");
+    // Disable seeded template rules so they don't interfere with test-created rules
+    disableSeededRules(schemaName);
+  }
+
+  private void disableSeededRules(String schema) {
+    ScopedValue.where(RequestScopes.TENANT_ID, schema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .run(
+            () ->
+                transactionTemplate.executeWithoutResult(
+                    tx -> {
+                      ruleRepository.findAllByOrderByCreatedAtDesc().stream()
+                          .filter(r -> r.getSource() == RuleSource.TEMPLATE && r.isEnabled())
+                          .forEach(
+                              r -> {
+                                r.toggle();
+                                ruleRepository.save(r);
+                              });
+                    }));
   }
 
   @Test

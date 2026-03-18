@@ -190,14 +190,14 @@ class AutomationTemplateControllerTest {
 
   @Test
   void seederIdempotency_runTwice_noDuplicates() {
-    // The seeder already ran during provisioning. Count rules seeded with enabled=false
+    // The seeder already ran during provisioning. Count seeded template rules (enabled by default)
     long countBefore =
         ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
             .where(RequestScopes.ORG_ID, ORG_ID)
             .call(
                 () ->
                     ruleRepository.findAllByOrderByCreatedAtDesc().stream()
-                        .filter(r -> r.getSource() == RuleSource.TEMPLATE && !r.isEnabled())
+                        .filter(r -> r.getSource() == RuleSource.TEMPLATE && r.isEnabled())
                         .count());
 
     // Run seeder again
@@ -209,7 +209,7 @@ class AutomationTemplateControllerTest {
             .call(
                 () ->
                     ruleRepository.findAllByOrderByCreatedAtDesc().stream()
-                        .filter(r -> r.getSource() == RuleSource.TEMPLATE && !r.isEnabled())
+                        .filter(r -> r.getSource() == RuleSource.TEMPLATE && r.isEnabled())
                         .count());
 
     assertEquals(
@@ -217,8 +217,8 @@ class AutomationTemplateControllerTest {
   }
 
   @Test
-  void seeder_createsRulesWithEnabledFalse() {
-    // Check that the seeder-created rules (from provisioning) are disabled
+  void seeder_createsRulesWithEnabledTrue() {
+    // Check that the seeder-created rules (from provisioning) are enabled by default
     List<AutomationRule> seededRules =
         ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
             .where(RequestScopes.ORG_ID, ORG_ID)
@@ -230,9 +230,9 @@ class AutomationTemplateControllerTest {
                                 r.getSource() == RuleSource.TEMPLATE && r.getTemplateSlug() != null)
                         .toList());
 
-    // At least some should be disabled (seeder-created ones)
-    boolean hasDisabled = seededRules.stream().anyMatch(r -> !r.isEnabled());
-    assertTrue(hasDisabled, "Seeder should create disabled template rules");
+    // All seeded rules should be enabled (best-practice automations work out of the box)
+    boolean allEnabled = seededRules.stream().allMatch(AutomationRule::isEnabled);
+    assertTrue(allEnabled, "Seeder should create enabled template rules");
   }
 
   // --- Capability Tests (added in Epic 315B) ---

@@ -17,9 +17,10 @@ public class InAppNotificationChannel implements NotificationChannel {
   }
 
   @Override
-  public void deliver(Notification notification, String recipientEmail) {
+  public boolean deliver(Notification notification, String recipientEmail) {
     // No-op: the notification row was already created by NotificationService.
     // This channel exists for architectural completeness in NotificationDispatcher.
+    return true;
   }
 
   @Override

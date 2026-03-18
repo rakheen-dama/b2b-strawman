@@ -332,7 +332,7 @@ export function FieldGroupDialog({
           {availableDeps.length > 0 && (
             <div className="space-y-2">
               <Label>Dependencies</Label>
-              <Popover open={depsPopoverOpen} onOpenChange={setDepsPopoverOpen}>
+              <Popover open={depsPopoverOpen} onOpenChange={setDepsPopoverOpen} modal={false}>
                 <PopoverTrigger asChild>
                   <Button
                     type="button"
@@ -412,7 +412,7 @@ export function FieldGroupDialog({
           {/* Field Selection */}
           <div className="space-y-2">
             <Label>Fields</Label>
-            <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+            <Popover open={popoverOpen} onOpenChange={setPopoverOpen} modal={false}>
               <PopoverTrigger asChild>
                 <Button
                   type="button"

@@ -4,7 +4,7 @@
 
 - **QA Position**: ALL_TRACKS_COMPLETE
 - **Cycle**: 2
-- **E2E Stack**: HEALTHY
+- **E2E Stack**: HEALTHY (NEEDS_REBUILD — frontend code changed by PR #748)
 - **Branch**: `bugfix_cycle_automation_2026-03-18`
 - **Scenario**: `qa/testplan/automation-notification-verification.md`
 - **Execution Order**: T1 → T7 → T2 → T3 → T4 → T5 → T6
@@ -16,7 +16,7 @@
 | BUG-AUTO-01 | Actions not persisted when creating/editing automation rules via UI | Critical | VERIFIED | Dev | #746 | T1 | Created rule with SendNotification action via UI. Action persisted and visible on reload. |
 | BUG-AUTO-02 | All 11 seeded automation rules are DISABLED by default | Medium | VERIFIED | Dev | #747 | T1 | All 11 seeded rules show ENABLED toggles on Settings > Automations page. |
 | BUG-AUTO-03 | AutomationEventListener missing trigger type mapping for TaskCompletedEvent | Critical | VERIFIED | Dev | #745 | T7 | Completed task via API. TaskCompletedEvent fired, Task Completion Chain matched and created follow-up task. Execution log shows Completed in 23ms. |
-| BUG-AUTO-04 | Task status dropdown allows invalid transitions and fails silently | Medium | SPEC_READY | Dev | — | T2 | Root cause: `TaskStatusSelect` shows all 4 statuses regardless of allowed transitions; `handleStatusChange` swallows backend 400 errors without toast. Fix: filter dropdown by state machine, add error toast. Frontend-only fix. See `qa_cycle/fix-specs/BUG-AUTO-04.md`. |
+| BUG-AUTO-04 | Task status dropdown allows invalid transitions and fails silently | Medium | FIXED | Dev | #748 | T2 | Filtered `TaskStatusSelect` dropdown to only show valid transitions per backend state machine. Added `toast.error()` on failed status/assignee changes. Frontend-only fix. NEEDS_REBUILD before verification. |
 
 ## Status Values
 
@@ -42,3 +42,4 @@
 | 2026-03-19T00:50Z | QA Agent | **Track 2 complete**: T2.1 CUSTOMER_STATUS_CHANGED PASS (FICA Reminder triggered with 7-day delayed notification). T2.3 TASK_STATUS_CHANGED PASS (verified during BUG-AUTO-03). T2.4 TIME_ENTRY_CREATED PASS (event fires, no rules match — expected). T2.7 Disabled rule negative test PASS (disabled Task Completion Chain excluded from evaluation). T2.2/T2.5/T2.6 NOT_TESTED (no invoices/proposals/budgets in seed data). |
 | 2026-03-19T00:55Z | QA Agent | **Tracks 3-6 complete**: T3 CreateTask action PASS, SendNotification delayed (FICA 7-day). T4 email templates NOT_TESTED (no emails generated — no invoices/proposals/portal contacts in seed). T5 notification page loads, no notifications generated from tested automations. T6 preferences UI PASS (categories, toggles, all In-App enabled by default). Enforcement not tested (no notifications to test against). ALL_TRACKS_COMPLETE. |
 | 2026-03-19T01:00Z | Product Agent | Triaged BUG-AUTO-04. Root cause confirmed: NOT a 405/routing issue. The PUT endpoint exists and routes correctly (`TaskController.java:169`). Actual problem is two-fold: (1) `TaskStatusSelect` dropdown shows all 4 statuses without filtering by the `TaskStatus` state machine (e.g., OPEN cannot reach DONE directly, only IN_PROGRESS or CANCELLED), so users can select invalid transitions. (2) `handleStatusChange` in `task-detail-sheet.tsx` catches the backend 400 `InvalidStateException` and rolls back the optimistic UI update, but never shows a toast — the failure is invisible. Fix is frontend-only (filter dropdown options + add error toast). Estimated effort: S. Status: OPEN -> SPEC_READY. Fix spec: `qa_cycle/fix-specs/BUG-AUTO-04.md`. |
+| 2026-03-19T01:10Z | Dev | BUG-AUTO-04 FIXED via PR #748 (squash-merged to bugfix_cycle_automation_2026-03-18). Two-part fix: (1) `TaskStatusSelect` now filters dropdown options using an `ALLOWED_TRANSITIONS` map mirroring the backend state machine — only the current status and valid target statuses are shown. (2) `task-detail-sheet.tsx` now shows `toast.error()` on failed status or assignee changes instead of silently rolling back. All 78 task component tests pass. Frontend build green. Frontend code change — NEEDS_REBUILD before QA verification. |

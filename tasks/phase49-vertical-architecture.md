@@ -25,7 +25,7 @@ This phase introduces a formal vertical architecture to DocTeams. It creates a `
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 367 | OrgSettings Extension + Module Guard + V75 Migration | Backend | — | S | 367A | **Done** (PR #759) |
-| 368 | Profile Registry, Module Registry, Controllers & Provisioning | Backend | 367 | M | 368A, 368B | |
+| 368 | Profile Registry, Module Registry, Controllers & Provisioning | Backend | 367 | M | 368A, 368B | **Done** (PR #760, #761) |
 | 369 | Legal Module Stub Controllers | Backend | 367 | S | 369A | |
 | 370 | Frontend OrgProfileProvider + ModuleGate + Sidebar | Frontend | 367 | S | 370A | |
 | 371 | Legal Stub Pages + Conditional Sections + Settings Profile Switching | Frontend | 368, 370 | M | 371A, 371B | |
@@ -126,7 +126,7 @@ FRONTEND PAGES      TERMINOLOGY + E2E
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 2a | 368 | 368B | `OrgSettingsService.updateVerticalProfile()`, `PATCH /api/settings/vertical-profile` endpoint, provisioning extension (`setVerticalProfile` sets `enabledModules`+`terminologyNamespace`), profile JSON files (`consulting-generic.json`, `legal-za.json`, extend `accounting-za.json`), fix `INDUSTRY_TO_PROFILE`, integration tests (~8). Backend only. | |
+| 2a | 368 | 368B | `OrgSettingsService.updateVerticalProfile()`, `PATCH /api/settings/vertical-profile` endpoint, provisioning extension (`setVerticalProfile` sets `enabledModules`+`terminologyNamespace`), profile JSON files (`consulting-generic.json`, `legal-za.json`, extend `accounting-za.json`), fix `INDUSTRY_TO_PROFILE`, integration tests (~8). Backend only. | **Done** (PR #761) |
 
 ### Stage 3: Frontend Foundation
 
@@ -214,7 +214,7 @@ FRONTEND PAGES      TERMINOLOGY + E2E
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **368A** | 368.1--368.7 | `VerticalProfileRegistry`, `VerticalModuleRegistry`, `VerticalProfileController` (`GET /api/profiles`, `GET /api/modules`), unit + integration tests (~6). Backend only. | **Done** (PR #760) |
-| **368B** | 368.8--368.16 | `OrgSettingsService.updateVerticalProfile()`, `PATCH /api/settings/vertical-profile` endpoint, provisioning extension, profile JSON files (`consulting-generic.json`, `legal-za.json`), extend `accounting-za.json`, fix `INDUSTRY_TO_PROFILE`, integration tests (~8). Backend only. | |
+| **368B** | 368.8--368.16 | `OrgSettingsService.updateVerticalProfile()`, `PATCH /api/settings/vertical-profile` endpoint, provisioning extension, profile JSON files (`consulting-generic.json`, `legal-za.json`), extend `accounting-za.json`, fix `INDUSTRY_TO_PROFILE`, integration tests (~8). Backend only. | **Done** (PR #761) |
 
 ### Tasks
 

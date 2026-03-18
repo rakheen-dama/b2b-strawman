@@ -567,6 +567,40 @@ class OrgSettingsIntegrationTest {
         .andExpect(status().isForbidden());
   }
 
+  @Test
+  @Order(20)
+  void getSettings_includesVerticalProfileFields_defaultsToNullAndEmptyList() throws Exception {
+    mockMvc
+        .perform(get("/api/settings").with(ownerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.enabledModules").isArray())
+        .andExpect(jsonPath("$.enabledModules").isEmpty());
+  }
+
+  @Test
+  @Order(21)
+  void getSettings_returnsEnabledModulesAfterProvisioning() throws Exception {
+    String verticalOrgId = "org_settings_vertical_test";
+    provisioningService.provisionTenant(verticalOrgId, "Vertical Test Org", null);
+    planSyncService.syncPlan(verticalOrgId, "pro-plan");
+
+    syncMember(verticalOrgId, "user_vert_owner", "vert_owner@test.com", "Vert Owner", "owner");
+
+    var vertJwt =
+        jwt()
+            .jwt(
+                j ->
+                    j.subject("user_vert_owner")
+                        .claim("o", Map.of("id", verticalOrgId, "rol", "owner")));
+
+    // Default state: no modules, no profile
+    mockMvc
+        .perform(get("/api/settings").with(vertJwt))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.enabledModules").isArray())
+        .andExpect(jsonPath("$.enabledModules").isEmpty());
+  }
+
   // --- Helpers ---
 
   private String syncMember(

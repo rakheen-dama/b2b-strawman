@@ -17,6 +17,14 @@ const STATUS_OPTIONS: { value: TaskStatus; label: string; icon: typeof Circle }[
   { value: "CANCELLED", label: "Cancelled", icon: XCircle },
 ];
 
+/** Mirrors the backend TaskStatus state machine (Task.java:251-255). */
+const ALLOWED_TRANSITIONS: Record<TaskStatus, TaskStatus[]> = {
+  OPEN: ["IN_PROGRESS", "CANCELLED"],
+  IN_PROGRESS: ["DONE", "OPEN", "CANCELLED"],
+  DONE: ["OPEN"],
+  CANCELLED: ["OPEN"],
+};
+
 interface TaskStatusSelectProps {
   value: TaskStatus;
   onChange: (status: TaskStatus) => void;
@@ -26,6 +34,9 @@ export function TaskStatusSelect({ value, onChange }: TaskStatusSelectProps) {
   const current = STATUS_OPTIONS.find((o) => o.value === value);
   const CurrentIcon = current?.icon ?? Circle;
 
+  const allowedValues = new Set<TaskStatus>([value, ...(ALLOWED_TRANSITIONS[value] ?? [])]);
+  const filteredOptions = STATUS_OPTIONS.filter((o) => allowedValues.has(o.value));
+
   return (
     <Select value={value} onValueChange={(v) => onChange(v as TaskStatus)}>
       <SelectTrigger className="h-7 w-auto gap-1.5 rounded-full border-slate-200 px-2.5 text-xs font-medium dark:border-slate-700">
@@ -33,7 +44,7 @@ export function TaskStatusSelect({ value, onChange }: TaskStatusSelectProps) {
         <SelectValue />
       </SelectTrigger>
       <SelectContent position="popper" sideOffset={4}>
-        {STATUS_OPTIONS.map((opt) => {
+        {filteredOptions.map((opt) => {
           const Icon = opt.icon;
           return (
             <SelectItem key={opt.value} value={opt.value}>

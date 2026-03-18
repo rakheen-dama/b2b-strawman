@@ -21,6 +21,7 @@ import { CustomFieldSection } from "@/components/field-definitions/CustomFieldSe
 import { TaskDetailHeader } from "@/components/tasks/task-detail-header";
 import { TaskDetailMetadata } from "@/components/tasks/task-detail-metadata";
 import { RecurrenceEditor } from "@/components/tasks/task-recurrence-editor";
+import { toast } from "sonner";
 import {
   fetchTask,
   updateTask,
@@ -180,6 +181,9 @@ export function TaskDetailSheet({
           type: "UPDATE_TASK",
           task: { ...task, assigneeId: prevAssigneeId, assigneeName: prevAssigneeName },
         });
+        toast.error("Failed to update assignee", {
+          description: result.error ?? "An unexpected error occurred.",
+        });
       }
     });
   }
@@ -201,6 +205,9 @@ export function TaskDetailSheet({
       });
       if (!result.success) {
         dispatch({ type: "UPDATE_TASK", task: { ...task, status: prevStatus } });
+        toast.error("Failed to update status", {
+          description: result.error ?? "An unexpected error occurred.",
+        });
       }
     });
   }

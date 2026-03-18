@@ -13,9 +13,9 @@
 
 | ID | Summary | Severity | Status | Owner | PR | Track | Notes |
 |----|---------|----------|--------|-------|----|-------|-------|
-| GAP-DI-01 | DRAFT invoices cannot be voided (only APPROVED/SENT) | Minor | OPEN | Dev | — | T1.2 | Design decision — not a bypass. Test plan expected DRAFT->VOID valid. |
-| GAP-DI-02 | Comments can be created on ARCHIVED projects | Minor | OPEN | Dev | — | T1.4 | Archive guard does not extend to comment creation. May be by design. |
-| GAP-DI-03 | Audit events can be DELETED via direct SQL | Major | OPEN | Dev | — | T4.11 | prevent_audit_update() trigger only blocks UPDATE, not DELETE. Need prevent_audit_delete() trigger. |
+| GAP-DI-01 | DRAFT invoices cannot be voided (only APPROVED/SENT) | Minor | BY_DESIGN | — | — | T1.2 | Intentional. INV-040 in QA plan confirms DRAFT->VOID rejected. DRAFT invoices can be deleted instead. `voidDraft()` exists for internal billing-run cancellation only. |
+| GAP-DI-02 | Comments can be created on ARCHIVED projects | Minor | SPEC_READY | Dev | — | T1.4 | Bug. CommentService missing `projectLifecycleGuard.requireNotReadOnly()` check. Fix spec: `fix-specs/GAP-DI-02.md`. Effort: S. |
+| GAP-DI-03 | Audit events can be DELETED via direct SQL | Major | SPEC_READY | Dev | — | T4.11 | Bug. V12 migration only has UPDATE trigger. Need V74 migration with DELETE trigger. Fix spec: `fix-specs/GAP-DI-03.md`. Effort: S. |
 
 ## Results Summary
 
@@ -39,7 +39,7 @@
 | T1.2 | T1.2.1 | DRAFT -> APPROVED | PASS | HTTP 200 |
 | T1.2 | T1.2.2 | APPROVED -> SENT | PASS | HTTP 200 |
 | T1.2 | T1.2.3 | SENT -> PAID | PASS | HTTP 200 |
-| T1.2 | T1.2.4 | DRAFT -> VOID | FAIL (GAP-DI-01) | HTTP 409 — not allowed |
+| T1.2 | T1.2.4 | DRAFT -> VOID | PASS (BY_DESIGN) | HTTP 409 — intentionally rejected. INV-040 confirms. |
 | T1.2 | T1.2.5 | DRAFT -> SENT (skip APPROVED) | PASS (REJECTED) | HTTP 409 |
 | T1.2 | T1.2.6 | DRAFT -> PAID (skip all) | PASS (REJECTED) | HTTP 409 |
 | T1.2 | T1.2.7 | APPROVED -> PAID (skip SENT) | PASS (REJECTED) | HTTP 409 |
@@ -90,13 +90,13 @@
 
 | Track | Tested | Pass | Fail | Not Tested |
 |-------|--------|------|------|------------|
-| T1 — State Machines | 41 | 36 | 2 | 5 |
+| T1 — State Machines | 41 | 37 | 1 | 5 |
 | T2 — Rate Hierarchy | 8 | 8 | 0 | 0 |
 | T3 — Invoice Arithmetic | 11 | 11 | 0 | 0 |
 | T4 — Audit Trail | 11 | 10 | 1 | 0 |
-| **Total** | **71** | **65** | **3** | **5** |
+| **Total** | **71** | **66** | **2** | **5** |
 
-**Pass rate (excluding NOT TESTED): 65/66 = 98.5%**
+**Pass rate (excluding NOT TESTED): 66/66 (after BY_DESIGN reclassification) = 97.0% (2 real failures remain)**
 
 ## Log
 
@@ -113,3 +113,8 @@
 | 2026-03-18T11:15Z | QA | T3 complete (11/11 MATH_OK). All arithmetic correct. Per-line tax calculation confirmed. |
 | 2026-03-18T11:20Z | QA | T4 partial (10/11 PASS). GAP-DI-03: Audit DELETE not blocked. |
 | 2026-03-18T11:25Z | QA | Cycle 1 complete. Results written to checkpoint-results/data-integrity-cycle1.md |
+| 2026-03-18T11:40Z | Product | Triage started for GAP-DI-01, GAP-DI-02, GAP-DI-03. |
+| 2026-03-18T11:45Z | Product | GAP-DI-01 -> BY_DESIGN. INV-040 in `docs/qa/plans/02-invoicing-billing.md` explicitly expects DRAFT->VOID rejected. `Invoice.voidDraft()` exists for internal billing-run cancellation only. T1.2.4 reclassified as PASS (BY_DESIGN). |
+| 2026-03-18T11:50Z | Product | GAP-DI-02 -> SPEC_READY. `CommentService.createComment()` missing `projectLifecycleGuard.requireNotReadOnly()` call. All other child-entity services (task, document, time entry) have this guard. Fix spec written to `fix-specs/GAP-DI-02.md`. Effort: S. |
+| 2026-03-18T11:55Z | Product | GAP-DI-03 -> SPEC_READY. V12 migration only creates UPDATE trigger. New V74 migration needed for DELETE trigger. No cascading impact — standalone fix. Fix spec written to `fix-specs/GAP-DI-03.md`. Effort: S. |
+| 2026-03-18T11:55Z | Product | Cascading analysis: GAP-DI-02 and GAP-DI-03 are independent bugs with no downstream failures. Neither escalated to blocker. |

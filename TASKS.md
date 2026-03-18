@@ -416,7 +416,7 @@
 | 366 | Bulk Time Entry Frontend — Weekly Grid (GAP-015) | Frontend | 365 | L | 366A, 366B | **Done** (PRs #714, #715) |
 | **Phase 49 — Vertical Architecture: Module Guard, Profile System & First Vertical Profiles** | | | | | | See [tasks/phase49-vertical-architecture.md](tasks/phase49-vertical-architecture.md) |
 | 367 | OrgSettings Extension + Module Guard + V75 Migration | Backend | — | S | 367A | **Done** (PR #759) |
-| 368 | Profile Registry, Module Registry, Controllers & Provisioning | Backend | 367 | M | 368A, 368B | |
+| 368 | Profile Registry, Module Registry, Controllers & Provisioning | Backend | 367 | M | 368A, 368B | 368A **Done** (PR #760) |
 | 369 | Legal Module Stub Controllers | Backend | 367 | S | 369A | |
 | 370 | Frontend OrgProfileProvider + ModuleGate + Sidebar | Frontend | 367 | S | 370A | |
 | 371 | Legal Stub Pages + Conditional Sections + Settings Profile Switching | Frontend | 368, 370 | M | 371A, 371B | |

@@ -119,7 +119,7 @@ FRONTEND PAGES      TERMINOLOGY + E2E
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 1a (parallel) | 368 | 368A | `VerticalProfileRegistry`, `VerticalModuleRegistry`, `VerticalProfileController` (`GET /api/profiles`, `GET /api/modules`), integration tests (~6). Backend only. | |
+| 1a (parallel) | 368 | 368A | `VerticalProfileRegistry`, `VerticalModuleRegistry`, `VerticalProfileController` (`GET /api/profiles`, `GET /api/modules`), integration tests (~6). Backend only. | **Done** (PR #760) |
 | 1b (parallel) | 369 | 369A | 3 stub controllers (`TrustAccountingController`, `CourtCalendarController`, `ConflictCheckController`), guard integration, integration tests (~6). Backend only. | |
 
 ### Stage 2: Backend Profile Switching + Provisioning
@@ -213,7 +213,7 @@ FRONTEND PAGES      TERMINOLOGY + E2E
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **368A** | 368.1--368.7 | `VerticalProfileRegistry`, `VerticalModuleRegistry`, `VerticalProfileController` (`GET /api/profiles`, `GET /api/modules`), unit + integration tests (~6). Backend only. | |
+| **368A** | 368.1--368.7 | `VerticalProfileRegistry`, `VerticalModuleRegistry`, `VerticalProfileController` (`GET /api/profiles`, `GET /api/modules`), unit + integration tests (~6). Backend only. | **Done** (PR #760) |
 | **368B** | 368.8--368.16 | `OrgSettingsService.updateVerticalProfile()`, `PATCH /api/settings/vertical-profile` endpoint, provisioning extension, profile JSON files (`consulting-generic.json`, `legal-za.json`), extend `accounting-za.json`, fix `INDUSTRY_TO_PROFILE`, integration tests (~8). Backend only. | |
 
 ### Tasks

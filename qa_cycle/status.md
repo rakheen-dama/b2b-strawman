@@ -2,8 +2,8 @@
 
 ## Current State
 
-- **QA Position**: T2.1 (start of Track 2 — Trigger Verification)
-- **Cycle**: 1
+- **QA Position**: ALL_TRACKS_COMPLETE
+- **Cycle**: 2
 - **E2E Stack**: HEALTHY
 - **Branch**: `bugfix_cycle_automation_2026-03-18`
 - **Scenario**: `qa/testplan/automation-notification-verification.md`
@@ -13,9 +13,10 @@
 
 | ID | Summary | Severity | Status | Owner | PR | Track | Notes |
 |----|---------|----------|--------|-------|----|-------|-------|
-| BUG-AUTO-01 | Actions not persisted when creating/editing automation rules via UI | Critical | FIXED | Dev | #746 | T1 | **Root cause**: Backend `CreateRuleRequest`/`UpdateRuleRequest` DTOs lack `actions` field — Jackson silently drops the data. Fixed: added `actions` field to both DTOs, `createRule()` persists actions atomically, `updateRule()` syncs actions via delete+recreate. Frontend `config` property renamed to `actionConfig` to match backend. NEEDS_REBUILD before QA verification. |
-| BUG-AUTO-02 | All 11 seeded automation rules are DISABLED by default | Medium | FIXED | Dev | #747 | T1 | **Root cause**: `AutomationTemplateSeeder.applyPack()` explicitly calls `rule.toggle()` after creation. Fixed: removed toggle call so seeded rules default to ENABLED. Updated 4 test files to account for enabled seeded rules. NEEDS_REBUILD before QA verification. |
-| BUG-AUTO-03 | AutomationEventListener missing trigger type mapping for TaskCompletedEvent | Critical | FIXED | Dev | #745 | T7 | Added `TaskCompletedEvent` mapping to `TriggerTypeMapping`, instanceof dispatch in `AutomationContext`, and status derivation in `TriggerConfigMatcher`. All automation tests + full verify green. Backend code change — NEEDS_REBUILD before QA verification. |
+| BUG-AUTO-01 | Actions not persisted when creating/editing automation rules via UI | Critical | VERIFIED | Dev | #746 | T1 | Created rule with SendNotification action via UI. Action persisted and visible on reload. |
+| BUG-AUTO-02 | All 11 seeded automation rules are DISABLED by default | Medium | VERIFIED | Dev | #747 | T1 | All 11 seeded rules show ENABLED toggles on Settings > Automations page. |
+| BUG-AUTO-03 | AutomationEventListener missing trigger type mapping for TaskCompletedEvent | Critical | VERIFIED | Dev | #745 | T7 | Completed task via API. TaskCompletedEvent fired, Task Completion Chain matched and created follow-up task. Execution log shows Completed in 23ms. |
+| BUG-AUTO-04 | Task status dropdown in detail panel fails silently — PUT /api/tasks/{id} not routed correctly for status changes | Medium | OPEN | Dev | — | T2 | `handleStatusChange()` calls `updateTask()` (PUT) but backend returns 405 for some callers or rejects OPEN->DONE transitions. Workaround: use "Mark Done" button (requires IN_PROGRESS first). Non-cascading — API-based completion works. |
 
 ## Status Values
 
@@ -37,3 +38,6 @@
 | 2026-03-18T23:40Z | Dev | BUG-AUTO-01 FIXED via PR #746 (squash-merged to bugfix_cycle_automation_2026-03-18). Four-part fix: (1) Added `List<CreateActionRequest> actions` field to `CreateRuleRequest` and `UpdateRuleRequest` DTOs. (2) `AutomationRuleService.createRule()` now persists actions atomically with the rule. (3) `AutomationRuleService.updateRule()` syncs actions via delete+recreate when provided, falls back to existing actions when null. (4) Frontend `ActionRequest.config` renamed to `actionConfig` in `automations.ts`, `create-rule-client.tsx`, and `rule-detail-client.tsx`. All automation tests pass. Full `mvn clean verify` green (exit 0). Frontend build green. Backend + frontend code change — NEEDS_REBUILD before QA verification. |
 | 2026-03-19T00:00Z | Dev | BUG-AUTO-02 FIXED via PR #747 (squash-merged to bugfix_cycle_automation_2026-03-18). Removed `rule.toggle()` call in `AutomationTemplateSeeder` so seeded rules default to ENABLED. Updated `AutomationTemplateControllerTest` assertions (seeded rules now expected enabled). Added `disableSeededRules()` setup in `AutomationEventListenerTest`, `AutomationSchedulerTest`, and `ProjectLifecycleIntegrationTest` to prevent enabled seeded rules from interfering with test-specific rule logic. Full `mvn clean verify` green (0 failures). Backend seed code change — NEEDS_REBUILD before QA verification. |
 | 2026-03-19T00:10Z | Infra | E2E stack rebuilt after PRs #745, #746, #747. Both backend and frontend Docker images rebuilt. Database reseeded — seed completed successfully (seeded rules now ENABLED by default per BUG-AUTO-02 fix). All services healthy: frontend (3001, HTTP 200), backend (8081, HTTP 200), Mailpit (8026, HTTP 200), Mock IDP (8090, JWKS responding). NEEDS_REBUILD flag cleared. Stack ready for QA verification at T2.1. |
+| 2026-03-19T00:45Z | QA Agent | **Fix verification complete**: BUG-AUTO-01 VERIFIED (action persisted on rule create), BUG-AUTO-02 VERIFIED (all 11 seeded rules ENABLED), BUG-AUTO-03 VERIFIED (TaskCompletedEvent fires Task Completion Chain, creates follow-up task, execution log shows Completed 23ms). New bug discovered: BUG-AUTO-04 (task status dropdown fails silently, PUT returns 405). |
+| 2026-03-19T00:50Z | QA Agent | **Track 2 complete**: T2.1 CUSTOMER_STATUS_CHANGED PASS (FICA Reminder triggered with 7-day delayed notification). T2.3 TASK_STATUS_CHANGED PASS (verified during BUG-AUTO-03). T2.4 TIME_ENTRY_CREATED PASS (event fires, no rules match — expected). T2.7 Disabled rule negative test PASS (disabled Task Completion Chain excluded from evaluation). T2.2/T2.5/T2.6 NOT_TESTED (no invoices/proposals/budgets in seed data). |
+| 2026-03-19T00:55Z | QA Agent | **Tracks 3-6 complete**: T3 CreateTask action PASS, SendNotification delayed (FICA 7-day). T4 email templates NOT_TESTED (no emails generated — no invoices/proposals/portal contacts in seed). T5 notification page loads, no notifications generated from tested automations. T6 preferences UI PASS (categories, toggles, all In-App enabled by default). Enforcement not tested (no notifications to test against). ALL_TRACKS_COMPLETE. |

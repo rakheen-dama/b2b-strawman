@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.customerbackend.controller;
 
 import io.b2mash.b2b.b2bstrawman.customerbackend.service.PortalCommentService;
 import io.b2mash.b2b.b2bstrawman.customerbackend.service.PortalReadModelService;
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import jakarta.validation.Valid;
@@ -63,8 +64,12 @@ public class PortalCommentController {
     UUID customerId = RequestScopes.requireCustomerId();
     String orgId = RequestScopes.requireOrgId();
 
-    // Verify project belongs to customer (throws 404 if not)
-    portalReadModelService.getProjectDetail(projectId, customerId, orgId);
+    // Verify project belongs to customer (throws 404 if not) and is not archived
+    var project = portalReadModelService.getProjectDetail(projectId, customerId, orgId);
+    if ("ARCHIVED".equals(project.status())) {
+      throw new InvalidStateException(
+          "Project is archived", "Project is archived. No modifications allowed.");
+    }
 
     // Resolve contact display name (TENANT_ID already bound by CustomerAuthFilter)
     String authorName = "Portal User";

@@ -58,6 +58,7 @@ class PortalCommentPostIntegrationTest {
 
   private UUID customerId;
   private UUID projectId;
+  private UUID archivedProjectId;
   private String portalToken;
   private String tenantSchema;
 
@@ -118,6 +119,17 @@ class PortalCommentPostIntegrationTest {
     // Seed project in the portal read-model (using the real project ID)
     readModelRepo.upsertPortalProject(
         projectId, customerId, ORG_ID, "Test Project", "ACTIVE", "A test project", Instant.now());
+
+    // Seed an archived project in the portal read-model
+    archivedProjectId = UUID.randomUUID();
+    readModelRepo.upsertPortalProject(
+        archivedProjectId,
+        customerId,
+        ORG_ID,
+        "Archived Project",
+        "ARCHIVED",
+        "An archived project",
+        Instant.now());
 
     // Mock StorageService
     when(storageService.generateDownloadUrl(any(String.class), any()))
@@ -186,6 +198,20 @@ class PortalCommentPostIntegrationTest {
                     {"content": "Should fail"}
                     """))
         .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void post_comment_on_archived_project_returns_400() throws Exception {
+    mockMvc
+        .perform(
+            post("/portal/projects/{projectId}/comments", archivedProjectId)
+                .header("Authorization", "Bearer " + portalToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"content": "Should be blocked"}
+                    """))
+        .andExpect(status().isBadRequest());
   }
 
   @Test

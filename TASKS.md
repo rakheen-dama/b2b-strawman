@@ -417,7 +417,7 @@
 | **Phase 49 — Vertical Architecture: Module Guard, Profile System & First Vertical Profiles** | | | | | | See [tasks/phase49-vertical-architecture.md](tasks/phase49-vertical-architecture.md) |
 | 367 | OrgSettings Extension + Module Guard + V75 Migration | Backend | — | S | 367A | **Done** (PR #759) |
 | 368 | Profile Registry, Module Registry, Controllers & Provisioning | Backend | 367 | M | 368A, 368B | **Done** (PR #760, #761) |
-| 369 | Legal Module Stub Controllers | Backend | 367 | S | 369A | |
+| 369 | Legal Module Stub Controllers | Backend | 367 | S | 369A | **Done** (PR #762) |
 | 370 | Frontend OrgProfileProvider + ModuleGate + Sidebar | Frontend | 367 | S | 370A | |
 | 371 | Legal Stub Pages + Conditional Sections + Settings Profile Switching | Frontend | 368, 370 | M | 371A, 371B | |
 | 372 | Legal Terminology + End-to-End Integration Tests | Backend + Frontend | 368, 369, 370 | S | 372A, 372B | |

@@ -26,7 +26,7 @@ This phase introduces a formal vertical architecture to DocTeams. It creates a `
 |------|------|-------|------|--------|--------|--------|
 | 367 | OrgSettings Extension + Module Guard + V75 Migration | Backend | — | S | 367A | **Done** (PR #759) |
 | 368 | Profile Registry, Module Registry, Controllers & Provisioning | Backend | 367 | M | 368A, 368B | **Done** (PR #760, #761) |
-| 369 | Legal Module Stub Controllers | Backend | 367 | S | 369A | |
+| 369 | Legal Module Stub Controllers | Backend | 367 | S | 369A | **Done** (PR #762) |
 | 370 | Frontend OrgProfileProvider + ModuleGate + Sidebar | Frontend | 367 | S | 370A | |
 | 371 | Legal Stub Pages + Conditional Sections + Settings Profile Switching | Frontend | 368, 370 | M | 371A, 371B | |
 | 372 | Legal Terminology + End-to-End Integration Tests | Backend + Frontend | 368, 369, 370 | S | 372A, 372B | |
@@ -120,7 +120,7 @@ FRONTEND PAGES      TERMINOLOGY + E2E
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 1a (parallel) | 368 | 368A | `VerticalProfileRegistry`, `VerticalModuleRegistry`, `VerticalProfileController` (`GET /api/profiles`, `GET /api/modules`), integration tests (~6). Backend only. | **Done** (PR #760) |
-| 1b (parallel) | 369 | 369A | 3 stub controllers (`TrustAccountingController`, `CourtCalendarController`, `ConflictCheckController`), guard integration, integration tests (~6). Backend only. | |
+| 1b (parallel) | 369 | 369A | 3 stub controllers (`TrustAccountingController`, `CourtCalendarController`, `ConflictCheckController`), guard integration, integration tests (~6). Backend only. | **Done** (PR #762) |
 
 ### Stage 2: Backend Profile Switching + Provisioning
 
@@ -269,7 +269,7 @@ FRONTEND PAGES      TERMINOLOGY + E2E
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **369A** | 369.1--369.5 | 3 stub controllers in `verticals/legal/` sub-packages, guard integration, integration tests (~6). Backend only. | |
+| **369A** | 369.1--369.5 | 3 stub controllers in `verticals/legal/` sub-packages, guard integration, integration tests (~6). Backend only. | **Done** (PR #762) |
 
 ### Tasks
 

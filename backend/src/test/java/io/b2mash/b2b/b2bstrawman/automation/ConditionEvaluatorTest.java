@@ -40,7 +40,7 @@ class ConditionEvaluatorTest {
   @Test
   void notEquals_differentValue_returnsTrue() {
     var context = contextWith("task", "status", "OPEN");
-    var conditions = List.of(condition("task.status", "NOT_EQUALS", "COMPLETED"));
+    var conditions = List.of(condition("task.status", "NOT_EQUALS", "DONE"));
 
     assertThat(evaluator.evaluate(conditions, context)).isTrue();
   }
@@ -56,7 +56,7 @@ class ConditionEvaluatorTest {
 
   @Test
   void notIn_valueNotInList_returnsTrue() {
-    var context = contextWith("task", "status", "COMPLETED");
+    var context = contextWith("task", "status", "DONE");
     var conditions = List.of(condition("task.status", "NOT_IN", List.of("OPEN", "IN_PROGRESS")));
 
     assertThat(evaluator.evaluate(conditions, context)).isTrue();
@@ -158,12 +158,12 @@ class ConditionEvaluatorTest {
   @Test
   void multipleConditions_allTrue_returnsTrue() {
     var context = new LinkedHashMap<String, Map<String, Object>>();
-    context.put("task", Map.of("status", "COMPLETED", "assigneeId", "member-1"));
+    context.put("task", Map.of("status", "DONE", "assigneeId", "member-1"));
     context.put("project", Map.of("status", "ACTIVE"));
 
     var conditions =
         List.of(
-            condition("task.status", "EQUALS", "COMPLETED"),
+            condition("task.status", "EQUALS", "DONE"),
             condition("project.status", "EQUALS", "ACTIVE"),
             condition("task.assigneeId", "IS_NOT_NULL", null));
 
@@ -173,12 +173,12 @@ class ConditionEvaluatorTest {
   @Test
   void multipleConditions_oneFalse_returnsFalse() {
     var context = new LinkedHashMap<String, Map<String, Object>>();
-    context.put("task", Map.of("status", "COMPLETED", "assigneeId", "member-1"));
+    context.put("task", Map.of("status", "DONE", "assigneeId", "member-1"));
     context.put("project", Map.of("status", "ARCHIVED"));
 
     var conditions =
         List.of(
-            condition("task.status", "EQUALS", "COMPLETED"),
+            condition("task.status", "EQUALS", "DONE"),
             condition("project.status", "EQUALS", "ACTIVE")); // This fails
 
     assertThat(evaluator.evaluate(conditions, context)).isFalse();
@@ -211,7 +211,7 @@ class ConditionEvaluatorTest {
             Instant.now(),
             details,
             "OPEN",
-            "COMPLETED",
+            "DONE",
             assigneeId,
             "Fix the widget",
             null);
@@ -223,7 +223,7 @@ class ConditionEvaluatorTest {
     // Verify task section
     assertThat(context.get("task")).containsEntry("id", taskId.toString());
     assertThat(context.get("task")).containsEntry("name", "Fix the widget");
-    assertThat(context.get("task")).containsEntry("status", "COMPLETED");
+    assertThat(context.get("task")).containsEntry("status", "DONE");
     assertThat(context.get("task")).containsEntry("previousStatus", "OPEN");
     assertThat(context.get("task")).containsEntry("assigneeId", assigneeId.toString());
     assertThat(context.get("task")).containsEntry("projectId", projectId.toString());

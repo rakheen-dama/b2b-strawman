@@ -120,7 +120,7 @@ class AutomationEndToEndTest {
                   createRule(
                       "E2E full flow",
                       TriggerType.TASK_STATUS_CHANGED,
-                      Map.of("toStatus", "COMPLETED"),
+                      Map.of("toStatus", "DONE"),
                       null);
               ruleRepository.save(rule);
 
@@ -139,7 +139,7 @@ class AutomationEndToEndTest {
 
               long taskCountBefore = taskRepository.count();
 
-              var event = taskStatusChangedEvent("OPEN", "COMPLETED");
+              var event = taskStatusChangedEvent("OPEN", "DONE");
               eventPublisher.publishEvent(event);
 
               // Verify execution record
@@ -246,7 +246,7 @@ class AutomationEndToEndTest {
   @Test
   void conditionEdgeCases_greaterThanOnNonNumeric() {
     var context = buildMinimalContext();
-    context.get("task").put("status", "COMPLETED");
+    context.get("task").put("status", "DONE");
 
     var conditions =
         List.<Map<String, Object>>of(
@@ -257,7 +257,7 @@ class AutomationEndToEndTest {
   @Test
   void conditionEdgeCases_inWithMatchingValue() {
     var context = buildMinimalContext();
-    context.get("task").put("status", "COMPLETED");
+    context.get("task").put("status", "DONE");
 
     var conditions =
         List.<Map<String, Object>>of(
@@ -267,7 +267,7 @@ class AutomationEndToEndTest {
                 "operator",
                 "IN",
                 "value",
-                List.of("OPEN", "COMPLETED", "CANCELLED")));
+                List.of("OPEN", "DONE", "CANCELLED")));
     assertThat(conditionEvaluator.evaluate(conditions, context)).isTrue();
   }
 
@@ -301,7 +301,7 @@ class AutomationEndToEndTest {
                   createRule(
                       "Cycle detection rule",
                       TriggerType.TASK_STATUS_CHANGED,
-                      Map.of("toStatus", "COMPLETED"),
+                      Map.of("toStatus", "DONE"),
                       null);
               ruleRepository.save(rule);
 
@@ -318,7 +318,7 @@ class AutomationEndToEndTest {
                       null);
               actionRepository.save(action);
 
-              var event = taskStatusChangedEvent("OPEN", "COMPLETED");
+              var event = taskStatusChangedEvent("OPEN", "DONE");
               eventPublisher.publishEvent(event);
 
               // Only 1 execution should exist — CREATE_TASK does not publish
@@ -357,7 +357,7 @@ class AutomationEndToEndTest {
                       DelayUnit.MINUTES);
               actionRepository.save(action);
 
-              var event = taskStatusChangedEvent("OPEN", "COMPLETED");
+              var event = taskStatusChangedEvent("OPEN", "DONE");
               eventPublisher.publishEvent(event);
 
               // Verify execution was created
@@ -426,8 +426,8 @@ class AutomationEndToEndTest {
               UUID ruleId = ruleResponse.id();
               long taskCountBefore = taskRepository.count();
 
-              // Publish matching event (toStatus=COMPLETED)
-              var event = taskStatusChangedEvent("IN_PROGRESS", "COMPLETED");
+              // Publish matching event (toStatus=DONE — matches TaskStatus.DONE enum value)
+              var event = taskStatusChangedEvent("IN_PROGRESS", "DONE");
               eventPublisher.publishEvent(event);
 
               // Verify the rule fired
@@ -491,7 +491,7 @@ class AutomationEndToEndTest {
               actionRepository.save(action1);
               actionRepository.save(action2);
 
-              var event = taskStatusChangedEvent("OPEN", "COMPLETED");
+              var event = taskStatusChangedEvent("OPEN", "DONE");
               eventPublisher.publishEvent(event);
 
               // Overall execution should be ACTIONS_FAILED
@@ -679,7 +679,7 @@ class AutomationEndToEndTest {
               ruleRepository.save(rule);
 
               // Publish event — should trigger again
-              var event2 = taskStatusChangedEvent("IN_PROGRESS", "COMPLETED");
+              var event2 = taskStatusChangedEvent("IN_PROGRESS", "DONE");
               eventPublisher.publishEvent(event2);
 
               var execEnabled = executionRepository.findByRuleIdOrderByStartedAtDesc(rule.getId());
@@ -732,7 +732,7 @@ class AutomationEndToEndTest {
     var task = new LinkedHashMap<String, Object>();
     task.put("id", UUID.randomUUID().toString());
     task.put("name", "Test Task");
-    task.put("status", "COMPLETED");
+    task.put("status", "DONE");
     task.put("previousStatus", "OPEN");
     task.put("projectId", UUID.randomUUID().toString());
     context.put("task", task);

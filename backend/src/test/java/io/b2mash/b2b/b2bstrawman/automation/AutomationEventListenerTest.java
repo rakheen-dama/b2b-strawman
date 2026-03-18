@@ -124,7 +124,7 @@ class AutomationEventListenerTest {
                       RuleSource.CUSTOM);
               ruleRepository.save(rule);
 
-              var event = taskStatusChangedEvent("OPEN", "COMPLETED");
+              var event = taskStatusChangedEvent("OPEN", "DONE");
               eventPublisher.publishEvent(event);
 
               var executions = executionRepository.findByRuleIdOrderByStartedAtDesc(rule.getId());
@@ -145,13 +145,13 @@ class AutomationEventListenerTest {
             () -> {
               var rule =
                   createRule(
-                      "Match COMPLETED",
+                      "Match DONE",
                       TriggerType.TASK_STATUS_CHANGED,
-                      Map.of("toStatus", "COMPLETED"),
+                      Map.of("toStatus", "DONE"),
                       RuleSource.CUSTOM);
               ruleRepository.save(rule);
 
-              var event = taskStatusChangedEvent("OPEN", "COMPLETED");
+              var event = taskStatusChangedEvent("OPEN", "DONE");
               eventPublisher.publishEvent(event);
 
               var executions = executionRepository.findByRuleIdOrderByStartedAtDesc(rule.getId());
@@ -175,8 +175,8 @@ class AutomationEventListenerTest {
                       RuleSource.CUSTOM);
               ruleRepository.save(rule);
 
-              // Event has newStatus=COMPLETED, rule wants IN_PROGRESS — should not match
-              var event = taskStatusChangedEvent("OPEN", "COMPLETED");
+              // Event has newStatus=DONE, rule wants IN_PROGRESS — should not match
+              var event = taskStatusChangedEvent("OPEN", "DONE");
               eventPublisher.publishEvent(event);
 
               var executions = executionRepository.findByRuleIdOrderByStartedAtDesc(rule.getId());
@@ -205,7 +205,7 @@ class AutomationEventListenerTest {
               ruleRepository.save(rule1);
               ruleRepository.save(rule2);
 
-              var event = taskStatusChangedEvent("OPEN", "COMPLETED");
+              var event = taskStatusChangedEvent("OPEN", "DONE");
               eventPublisher.publishEvent(event);
 
               var exec1 = executionRepository.findByRuleIdOrderByStartedAtDesc(rule1.getId());
@@ -230,7 +230,7 @@ class AutomationEventListenerTest {
               rule.toggle(); // disable it
               ruleRepository.save(rule);
 
-              var event = taskStatusChangedEvent("OPEN", "COMPLETED");
+              var event = taskStatusChangedEvent("OPEN", "DONE");
               eventPublisher.publishEvent(event);
 
               var executions = executionRepository.findByRuleIdOrderByStartedAtDesc(rule.getId());
@@ -323,7 +323,7 @@ class AutomationEventListenerTest {
                       Instant.now(),
                       Map.of("key", "value"),
                       "OPEN",
-                      "COMPLETED",
+                      "DONE",
                       null,
                       "Test Task",
                       null);
@@ -481,7 +481,7 @@ class AutomationEventListenerTest {
   @Test
   void triggerTypeMappings_allMappedEventsResolveCorrectly() {
     // TaskStatusChangedEvent -> TASK_STATUS_CHANGED
-    assertThat(TriggerTypeMapping.getTriggerType(taskStatusChangedEvent("OPEN", "COMPLETED")))
+    assertThat(TriggerTypeMapping.getTriggerType(taskStatusChangedEvent("OPEN", "DONE")))
         .isEqualTo(TriggerType.TASK_STATUS_CHANGED);
 
     // ProjectCompletedEvent -> PROJECT_STATUS_CHANGED
@@ -734,7 +734,7 @@ class AutomationEventListenerTest {
                       Instant.now(),
                       details,
                       "OPEN",
-                      "COMPLETED",
+                      "DONE",
                       null,
                       "Cycle Task",
                       null);

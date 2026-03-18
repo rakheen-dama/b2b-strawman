@@ -408,7 +408,7 @@ class AutomationActionExecutorExtendedTest {
                       Instant.now(),
                       Map.of(),
                       "OPEN",
-                      "COMPLETED",
+                      "DONE",
                       null,
                       "Non-Short-Circuit Task",
                       null);
@@ -572,7 +572,7 @@ class AutomationActionExecutorExtendedTest {
                       Instant.now(),
                       Map.of(),
                       "OPEN",
-                      "COMPLETED",
+                      "DONE",
                       null,
                       "Failure Notif Task",
                       null);
@@ -685,7 +685,7 @@ class AutomationActionExecutorExtendedTest {
     var task = new LinkedHashMap<String, Object>();
     task.put("id", UUID.randomUUID().toString());
     task.put("name", "Test Task");
-    task.put("status", "COMPLETED");
+    task.put("status", "DONE");
     task.put("previousStatus", "OPEN");
     task.put("projectId", projectId.toString());
     context.put("task", task);

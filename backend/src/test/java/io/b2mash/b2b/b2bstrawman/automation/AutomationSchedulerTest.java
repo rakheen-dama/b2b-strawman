@@ -612,7 +612,7 @@ class AutomationSchedulerTest {
                       Instant.now(),
                       Map.of(),
                       "OPEN",
-                      "COMPLETED",
+                      "DONE",
                       null,
                       "Cycle Interface Task",
                       automationExecId);
@@ -647,7 +647,7 @@ class AutomationSchedulerTest {
                       Instant.now(),
                       Map.of(),
                       "OPEN",
-                      "COMPLETED",
+                      "DONE",
                       null,
                       "Normal Task",
                       null);
@@ -685,7 +685,7 @@ class AutomationSchedulerTest {
                       Instant.now(),
                       details,
                       "OPEN",
-                      "COMPLETED",
+                      "DONE",
                       null,
                       "Cycle Details Task",
                       null);

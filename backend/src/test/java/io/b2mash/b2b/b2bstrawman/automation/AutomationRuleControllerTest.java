@@ -114,8 +114,8 @@ class AutomationRuleControllerTest {
                       "name": "Test Rule",
                       "description": "A test automation rule",
                       "triggerType": "TASK_STATUS_CHANGED",
-                      "triggerConfig": {"from": "IN_PROGRESS", "to": "COMPLETED"},
-                      "conditions": [{"field": "task.status", "operator": "EQUALS", "value": "COMPLETED"}]
+                      "triggerConfig": {"from": "IN_PROGRESS", "to": "DONE"},
+                      "conditions": [{"field": "task.status", "operator": "EQUALS", "value": "DONE"}]
                     }
                     """))
         .andExpect(status().isCreated())
@@ -560,7 +560,7 @@ class AutomationRuleControllerTest {
                           "name": "Test Conditions Met",
                           "triggerType": "TASK_STATUS_CHANGED",
                           "triggerConfig": {},
-                          "conditions": [{"field": "task.status", "operator": "EQUALS", "value": "COMPLETED"}]
+                          "conditions": [{"field": "task.status", "operator": "EQUALS", "value": "DONE"}]
                         }
                         """))
             .andExpect(status().isCreated())
@@ -574,7 +574,7 @@ class AutomationRuleControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                    {"sampleEventData": {"task": {"status": "COMPLETED"}}}
+                    {"sampleEventData": {"task": {"status": "DONE"}}}
                     """))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.conditionsMet").value(true))
@@ -595,7 +595,7 @@ class AutomationRuleControllerTest {
                           "name": "Test Conditions Not Met",
                           "triggerType": "TASK_STATUS_CHANGED",
                           "triggerConfig": {},
-                          "conditions": [{"field": "task.status", "operator": "EQUALS", "value": "COMPLETED"}]
+                          "conditions": [{"field": "task.status", "operator": "EQUALS", "value": "DONE"}]
                         }
                         """))
             .andExpect(status().isCreated())
@@ -640,7 +640,7 @@ class AutomationRuleControllerTest {
                   new AutomationExecution(
                       UUID.fromString(ruleId),
                       "TASK_STATUS_CHANGED",
-                      Map.of("task", Map.of("status", "COMPLETED")),
+                      Map.of("task", Map.of("status", "DONE")),
                       true,
                       ExecutionStatus.ACTIONS_COMPLETED);
               executionRepository.save(execution);

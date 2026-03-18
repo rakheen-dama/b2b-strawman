@@ -8,7 +8,7 @@
       "description": "Automatically creates a follow-up task when a task is completed",
       "category": "workflow",
       "triggerType": "TASK_STATUS_CHANGED",
-      "triggerConfig": { "toStatus": "COMPLETED" },
+      "triggerConfig": { "toStatus": "DONE" },
       "conditions": [],
       "actions": [
         {

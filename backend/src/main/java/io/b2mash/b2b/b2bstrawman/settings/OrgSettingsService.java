@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalTime;
+import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,7 +86,10 @@ public class OrgSettingsService {
                 50, // billingBatchAsyncThreshold
                 5, // billingEmailRateLimit
                 null, // defaultBillingRunCurrency
-                null)); // projectNamingPattern
+                null, // projectNamingPattern
+                null, // verticalProfile
+                List.of(), // enabledModules
+                null)); // terminologyNamespace
   }
 
   /** Updates settings including branding fields. */
@@ -263,7 +267,10 @@ public class OrgSettingsService {
         settings.getBillingBatchAsyncThreshold(),
         settings.getBillingEmailRateLimit(),
         settings.getDefaultBillingRunCurrency(),
-        settings.getProjectNamingPattern());
+        settings.getProjectNamingPattern(),
+        settings.getVerticalProfile(),
+        settings.getEnabledModules(),
+        settings.getTerminologyNamespace());
   }
 
   /**
@@ -291,6 +298,18 @@ public class OrgSettingsService {
         .findForCurrentTenant()
         .map(OrgSettings::getDefaultCurrency)
         .orElse(DEFAULT_CURRENCY);
+  }
+
+  /**
+   * Returns the enabled module IDs for the current tenant. Returns an empty list if no settings row
+   * exists. Hibernate L1 cache ensures at most one DB read per request.
+   */
+  @Transactional(readOnly = true)
+  public List<String> getEnabledModulesForCurrentTenant() {
+    return orgSettingsRepository
+        .findForCurrentTenant()
+        .map(OrgSettings::getEnabledModules)
+        .orElse(List.of());
   }
 
   /** Updates compliance-related settings (dormancy threshold, data request deadline). */

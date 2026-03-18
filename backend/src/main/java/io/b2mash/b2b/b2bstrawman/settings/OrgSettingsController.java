@@ -210,7 +210,10 @@ public class OrgSettingsController {
       Integer billingBatchAsyncThreshold,
       Integer billingEmailRateLimit,
       String defaultBillingRunCurrency,
-      String projectNamingPattern) {}
+      String projectNamingPattern,
+      String verticalProfile,
+      List<String> enabledModules,
+      String terminologyNamespace) {}
 
   public record UpdateSettingsRequest(
       @NotBlank(message = "defaultCurrency is required")

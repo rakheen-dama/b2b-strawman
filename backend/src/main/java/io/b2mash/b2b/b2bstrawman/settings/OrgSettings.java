@@ -148,6 +148,13 @@ public class OrgSettings {
   @Column(name = "vertical_profile", length = 50)
   private String verticalProfile;
 
+  @JdbcTypeCode(SqlTypes.JSON)
+  @Column(name = "enabled_modules", columnDefinition = "jsonb")
+  private List<String> enabledModules = new ArrayList<>();
+
+  @Column(name = "terminology_namespace", length = 100)
+  private String terminologyNamespace;
+
   protected OrgSettings() {}
 
   public OrgSettings(String defaultCurrency) {
@@ -626,6 +633,34 @@ public class OrgSettings {
 
   public void setVerticalProfile(String verticalProfile) {
     this.verticalProfile = verticalProfile;
+    this.updatedAt = Instant.now();
+  }
+
+  public List<String> getEnabledModules() {
+    return enabledModules != null ? List.copyOf(enabledModules) : new ArrayList<>();
+  }
+
+  public void setEnabledModules(List<String> enabledModules) {
+    this.enabledModules = enabledModules != null ? enabledModules : new ArrayList<>();
+    this.updatedAt = Instant.now();
+  }
+
+  public String getTerminologyNamespace() {
+    return terminologyNamespace;
+  }
+
+  public void setTerminologyNamespace(String terminologyNamespace) {
+    this.terminologyNamespace = terminologyNamespace;
+    this.updatedAt = Instant.now();
+  }
+
+  /** Updates all three vertical profile fields atomically and bumps updatedAt. */
+  public void updateVerticalProfile(
+      String verticalProfile, List<String> enabledModules, String terminologyNamespace) {
+    this.verticalProfile = verticalProfile;
+    this.enabledModules =
+        enabledModules != null ? new ArrayList<>(enabledModules) : new ArrayList<>();
+    this.terminologyNamespace = terminologyNamespace;
     this.updatedAt = Instant.now();
   }
 }

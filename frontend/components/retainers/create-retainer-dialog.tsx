@@ -171,6 +171,7 @@ export function CreateRetainerDialog({
             <Popover
               open={customerPopoverOpen}
               onOpenChange={setCustomerPopoverOpen}
+              modal={false}
             >
               <PopoverTrigger asChild>
                 <Button

@@ -25,8 +25,8 @@
 
 | ID | Summary | Severity | Status | Owner | PR | Track | Notes |
 |----|---------|----------|--------|-------|----|-------|-------|
-| BUG-AUTO-01 | SendEmail automation action silently fails -- no email template for AUTOMATION_EMAIL | HIGH | OPEN | — | — | T3.2 | EmailNotificationChannel skips unmapped type. Executor reports success falsely. |
-| BUG-UI-01 | Proposal dialog customer selector unresponsive | MEDIUM | OPEN | — | — | T2.5 | Radix Popover inside Dialog modal conflict. Clicks do not open popover. |
+| BUG-AUTO-01 | SendEmail automation action silently fails -- no email template for AUTOMATION_EMAIL | HIGH | SPEC_READY | — | — | T3.2 | Root cause confirmed: missing `AUTOMATION_EMAIL` case in `resolveTemplateName()` + `deliver()` is void so executor can't detect failure. Fix: add template + return boolean from deliver(). Spec: `fix-specs/BUG-AUTO-01-deep.md` |
+| BUG-UI-01 | Proposal dialog customer selector unresponsive | MEDIUM | SPEC_READY | — | — | T2.5 | Root cause confirmed: Radix Popover portal inside modal Dialog — focus trap blocks portal. Fix: `modal={false}` on Popover. Same pattern in retainer + field-group dialogs. Spec: `fix-specs/BUG-UI-01.md` |
 
 ## Results Summary
 
@@ -48,3 +48,5 @@
 | 2026-03-18T07:10Z | QA Agent | T2.6 PARTIAL: Logged 1h time on Monthly Bookkeeping Kgosi (75%->85%). BudgetThresholdEvent fired. Action failed: no PROJECT_OWNER recipient. Trigger verified correct. |
 | 2026-03-18T07:10Z | QA Agent | T3.2 FAIL: Created SendEmail rule for TASK_STATUS_CHANGED->COMPLETED. Completed task. Execution reports "Completed" with emailSentTo=alice@e2e-test.local, but Mailpit shows 0 emails. Root cause: EmailNotificationChannel has no template for AUTOMATION_EMAIL type, silently skips. BUG-AUTO-01 logged. |
 | 2026-03-18T07:10Z | QA Agent | T4.1-T4.8 BLOCKED: No emails reach Mailpit. Blocked by BUG-AUTO-01. |
+| 2026-03-18T07:30Z | Product Agent | BUG-AUTO-01 triaged: Two-part root cause confirmed. (1) `EmailNotificationChannel.resolveTemplateName()` has no case for `AUTOMATION_EMAIL` — returns null, delivery silently skipped. (2) `SendEmailActionExecutor` calls `emailChannel.deliver()` (void) and always returns `ActionSuccess` regardless of delivery outcome. Fix spec written to `fix-specs/BUG-AUTO-01-deep.md`: create `notification-automation.html` template, add switch case, change `deliver()` to return boolean, check result in executor. Status: OPEN -> SPEC_READY. |
+| 2026-03-18T07:30Z | Product Agent | BUG-UI-01 triaged: Root cause confirmed as Radix Popover-inside-modal-Dialog focus trap conflict. `PopoverContent` renders via Portal (outside Dialog DOM tree), so Dialog's modal overlay blocks pointer events. `type="button"` already present — not the issue. Fix: add `modal={false}` to Popover. Same pattern found in `create-retainer-dialog.tsx` and `FieldGroupDialog.tsx`. Fix spec written to `fix-specs/BUG-UI-01.md`. Status: OPEN -> SPEC_READY. |

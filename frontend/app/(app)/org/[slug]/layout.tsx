@@ -12,6 +12,7 @@ import { ErrorBoundary } from "@/components/error-boundary";
 import { AuthHeaderControls } from "@/components/auth-header-controls";
 import { CapabilityProvider } from "@/lib/capabilities";
 import { TerminologyProvider } from "@/lib/terminology";
+import { OrgProfileProvider } from "@/lib/org-profile";
 import { CommandPaletteProvider } from "@/components/command-palette-provider";
 import { RecentItemsProvider } from "@/components/recent-items-provider";
 
@@ -58,8 +59,12 @@ export default async function OrgLayout({
   }
 
   let verticalProfile: string | null = null;
+  let enabledModules: string[] = [];
+  let terminologyNamespace: string | null = null;
   if (settingsResult.status === "fulfilled") {
     verticalProfile = settingsResult.value.verticalProfile ?? null;
+    enabledModules = settingsResult.value.enabledModules ?? [];
+    terminologyNamespace = settingsResult.value.terminologyNamespace ?? null;
   } else {
     // Settings unavailable — fall back to no terminology overrides
     console.error("Failed to fetch org settings for terminology:", settingsResult.reason);
@@ -72,6 +77,11 @@ export default async function OrgLayout({
       isAdmin={capData.isAdmin}
       isOwner={capData.isOwner}
     >
+      <OrgProfileProvider
+        verticalProfile={verticalProfile}
+        enabledModules={enabledModules}
+        terminologyNamespace={terminologyNamespace}
+      >
       <TerminologyProvider verticalProfile={verticalProfile}>
       <RecentItemsProvider>
         <CommandPaletteProvider slug={slug}>
@@ -99,6 +109,7 @@ export default async function OrgLayout({
         </CommandPaletteProvider>
       </RecentItemsProvider>
       </TerminologyProvider>
+      </OrgProfileProvider>
     </CapabilityProvider>
   );
 }

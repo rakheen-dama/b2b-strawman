@@ -22,6 +22,7 @@ vi.mock("motion/react", () => ({
 import { usePathname } from "next/navigation";
 import { TerminologyProvider } from "@/lib/terminology";
 import { CapabilityProvider } from "@/lib/capabilities";
+import { OrgProfileProvider } from "@/lib/org-profile";
 import { NavZone } from "@/components/nav-zone";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { TerminologyHeading } from "@/components/terminology-heading";
@@ -55,16 +56,18 @@ describe("364B: terminology in sidebar nav", () => {
     };
 
     render(
-      <CapabilityProvider
-        capabilities={[]}
-        role="owner"
-        isAdmin={false}
-        isOwner={true}
-      >
-        <TerminologyProvider verticalProfile="accounting-za">
-          <NavZone zone={deliveryZone} slug="test-org" />
-        </TerminologyProvider>
-      </CapabilityProvider>,
+      <OrgProfileProvider verticalProfile={null} enabledModules={[]} terminologyNamespace={null}>
+        <CapabilityProvider
+          capabilities={[]}
+          role="owner"
+          isAdmin={false}
+          isOwner={true}
+        >
+          <TerminologyProvider verticalProfile="accounting-za">
+            <NavZone zone={deliveryZone} slug="test-org" />
+          </TerminologyProvider>
+        </CapabilityProvider>
+      </OrgProfileProvider>,
     );
 
     expect(screen.getByText("Engagements")).toBeInTheDocument();

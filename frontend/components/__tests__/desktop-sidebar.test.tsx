@@ -33,6 +33,7 @@ vi.mock("@/components/sidebar-user-footer", () => ({
 import { usePathname } from "next/navigation";
 import { CapabilityProvider } from "@/lib/capabilities";
 import { TerminologyProvider } from "@/lib/terminology";
+import { OrgProfileProvider } from "@/lib/org-profile";
 import { DesktopSidebar } from "@/components/desktop-sidebar";
 import { CommandPaletteProvider } from "@/components/command-palette-provider";
 
@@ -55,18 +56,20 @@ const ALL_CAPABILITIES = [
 
 function renderSidebar() {
   return render(
-    <TerminologyProvider verticalProfile={null}>
-      <CapabilityProvider
-        capabilities={ALL_CAPABILITIES}
-        role="Owner"
-        isAdmin={false}
-        isOwner={true}
-      >
-        <CommandPaletteProvider slug="test-org">
-          <DesktopSidebar slug="test-org" />
-        </CommandPaletteProvider>
-      </CapabilityProvider>
-    </TerminologyProvider>,
+    <OrgProfileProvider verticalProfile={null} enabledModules={[]} terminologyNamespace={null}>
+      <TerminologyProvider verticalProfile={null}>
+        <CapabilityProvider
+          capabilities={ALL_CAPABILITIES}
+          role="Owner"
+          isAdmin={false}
+          isOwner={true}
+        >
+          <CommandPaletteProvider slug="test-org">
+            <DesktopSidebar slug="test-org" />
+          </CommandPaletteProvider>
+        </CapabilityProvider>
+      </TerminologyProvider>
+    </OrgProfileProvider>,
   );
 }
 

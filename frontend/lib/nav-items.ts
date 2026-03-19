@@ -13,6 +13,8 @@ import {
   CalendarClock,
   ShieldCheck,
   Settings,
+  Scale,
+  Gavel,
   type LucideIcon,
 } from "lucide-react";
 import type { CAPABILITIES } from "@/lib/capabilities";
@@ -28,6 +30,8 @@ export interface NavItem {
   exact?: boolean;
   /** If set, sidebar only shows this item when the user has this capability */
   requiredCapability?: CapabilityName;
+  /** If set, sidebar only shows this item when the org has this module enabled */
+  requiredModule?: string;
   /** Optional keywords for future command palette fuzzy search */
   keywords?: string[];
 }
@@ -74,6 +78,14 @@ export const NAV_GROUPS: NavGroup[] = [
         href: (slug) => `/org/${slug}/calendar`,
         icon: CalendarDays,
         exact: true,
+      },
+      {
+        label: "Court Calendar",
+        href: (slug) => `/org/${slug}/court-calendar`,
+        icon: Gavel,
+        exact: true,
+        requiredCapability: "PROJECT_MANAGEMENT",
+        requiredModule: "court_calendar",
       },
     ],
   },
@@ -156,6 +168,14 @@ export const NAV_GROUPS: NavGroup[] = [
         icon: BarChart3,
         exact: true,
         requiredCapability: "FINANCIAL_VISIBILITY",
+      },
+      {
+        label: "Trust Accounting",
+        href: (slug) => `/org/${slug}/trust-accounting`,
+        icon: Scale,
+        exact: true,
+        requiredCapability: "FINANCIAL_VISIBILITY",
+        requiredModule: "trust_accounting",
       },
     ],
   },

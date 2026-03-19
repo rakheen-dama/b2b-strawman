@@ -4,7 +4,7 @@
 
 - **QA Position**: ALL_SECTIONS_COMPLETE — Cycle 2 verification done. BUG-REG-002 VERIFIED. BUG-REG-001 REOPENED (fix not deployed — Docker build cache issue). 11 items remain NOT_TESTED (portal auth limitation, document upload requirement, missing seed data).
 - **Cycle**: 2
-- **E2E Stack**: READY — Frontend rebuilt but BUG-REG-001 fix not compiled into SSR chunks (Docker cache). All 6/6 services healthy.
+- **E2E Stack**: READY — Frontend rebuilt with `--no-cache`. BUG-REG-001 fix confirmed in compiled SSR chunks (`n&&0!==n.length` guard present). All 6/6 services healthy.
 - **Branch**: `bugfix_cycle_regression_2026-03-19`
 - **Scenario**: `qa/testplan/regression-test-suite.md`
 - **Focus**: Full regression test suite across all implemented features
@@ -142,3 +142,4 @@
 | 2026-03-19T21:58Z | QA | BUG-REG-001 REOPENED. Rates page still shows "Something went wrong" with same TypeError. Root cause: Docker `e2e-rebuild.sh` used cached build layers — SSR chunk `components_rates_member-rates-table_tsx_6ae47b6d._.js` still has unfixed `n.length` without `!n` guard. Source files on disk have the fix but compiled output does not. Needs `--no-cache` rebuild. |
 | 2026-03-19T22:00Z | QA | BUG-REG-002 VERIFIED. All 4 role-gated pages tested as Carol: profitability, reports, customers, settings/roles. All show PermissionDenied component ("You don't have access to [Page]") instead of 500. ErrorBoundary fix is working. |
 | 2026-03-19T22:02Z | QA | AUTH-01 scores updated: #4, #5, #8, #10 changed FAIL -> PASS. #1 remains PARTIAL (rates still broken). Scorecard: 75 PASS, 1 FAIL, 2 PARTIAL, 12 NOT_TESTED. Cycle set to 2. |
+| 2026-03-19T22:10Z | Infra | Frontend rebuilt with `docker compose build --no-cache frontend`. Previous `e2e-rebuild.sh` used cached layers so SSR chunks still had unfixed code. No-cache rebuild took ~75s. Verified fix in compiled output: `member-rates-table` chunk now contains `n&&0!==n.length` (null guard). All 6/6 services healthy. Smoke test HTTP 200. Stack status -> READY for Cycle 3 re-verification of BUG-REG-001. |

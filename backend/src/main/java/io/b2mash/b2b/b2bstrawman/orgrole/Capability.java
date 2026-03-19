@@ -11,7 +11,8 @@ public enum Capability {
   TEAM_OVERSIGHT,
   CUSTOMER_MANAGEMENT,
   AUTOMATIONS,
-  RESOURCE_PLANNING;
+  RESOURCE_PLANNING,
+  MANAGE_COMPLIANCE;
 
   public static final Set<String> ALL_NAMES =
       Arrays.stream(values()).map(Enum::name).collect(Collectors.toUnmodifiableSet());

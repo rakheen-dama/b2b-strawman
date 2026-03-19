@@ -218,6 +218,67 @@ public class DataExportService {
         exportId, "COMPLETED", presigned.url(), presigned.expiresAt(), fileCount, zipBytes.length);
   }
 
+  @Transactional(readOnly = true)
+  public List<ExportStatusResponse> listExports() {
+    String tenantId = RequestScopes.requireTenantId();
+    String prefix = "org/" + tenantId + "/exports/";
+    List<String> keys = storageService.listKeys(prefix);
+    return keys.stream()
+        .filter(k -> k.contains("compliance-"))
+        .map(
+            k -> {
+              UUID syntheticId = UUID.nameUUIDFromBytes(k.getBytes(StandardCharsets.UTF_8));
+              var presigned = storageService.generateDownloadUrl(k, Duration.ofHours(24));
+              return new ExportStatusResponse(
+                  syntheticId, "COMPLETED", presigned.url(), presigned.expiresAt(), 0, 0L);
+            })
+        .toList();
+  }
+
+  @Transactional(readOnly = true)
+  public ExportStatusResponse getExportStatus(UUID exportId) {
+    var page =
+        auditEventRepository.findByFilter(
+            "customer",
+            null,
+            null,
+            "data.subject.export.generated",
+            null,
+            null,
+            Pageable.unpaged());
+    var matching =
+        page.getContent().stream()
+            .filter(
+                ae -> {
+                  var details = ae.getDetails();
+                  return details != null && exportId.toString().equals(details.get("exportId"));
+                })
+            .findFirst()
+            .orElseThrow(() -> new ResourceNotFoundException("Export", exportId));
+
+    UUID customerId = matching.getEntityId();
+    String tenantId = RequestScopes.requireTenantId();
+    String prefix = "org/" + tenantId + "/exports/";
+    List<String> keys = storageService.listKeys(prefix);
+    String s3Key =
+        keys.stream()
+            .filter(k -> k.contains("compliance-" + customerId))
+            .findFirst()
+            .orElseThrow(() -> new ResourceNotFoundException("Export", exportId));
+
+    var presigned = storageService.generateDownloadUrl(s3Key, Duration.ofHours(24));
+    var details = matching.getDetails();
+    int fileCount =
+        details.containsKey("fileCount") ? ((Number) details.get("fileCount")).intValue() : 0;
+    long totalSize =
+        details.containsKey("totalSizeBytes")
+            ? ((Number) details.get("totalSizeBytes")).longValue()
+            : 0L;
+
+    return new ExportStatusResponse(
+        exportId, "COMPLETED", presigned.url(), presigned.expiresAt(), fileCount, totalSize);
+  }
+
   private Map<String, Object> collectData(UUID customerId, boolean includeAllTimeEntries) {
     Map<String, Object> data = new LinkedHashMap<>();
 

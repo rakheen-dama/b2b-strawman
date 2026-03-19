@@ -54,13 +54,19 @@ class StorageServiceContractTest {
   }
 
   @Test
-  void interface_has_exactly_six_methods() {
-    // StorageService should declare exactly 6 methods (no more, no less)
+  void interface_declares_listKeys_method() throws NoSuchMethodException {
+    Method method = StorageService.class.getMethod("listKeys", String.class);
+    assertThat(method.getReturnType()).isEqualTo(java.util.List.class);
+  }
+
+  @Test
+  void interface_has_exactly_seven_methods() {
+    // StorageService should declare exactly 7 methods (no more, no less)
     List<Method> declaredMethods =
         Arrays.stream(StorageService.class.getDeclaredMethods())
             .filter(m -> !m.isDefault() && !m.isSynthetic())
             .toList();
-    assertThat(declaredMethods).hasSize(6);
+    assertThat(declaredMethods).hasSize(7);
   }
 
   @Test

@@ -5,6 +5,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import java.net.URI;
 import java.time.Instant;
@@ -83,8 +84,7 @@ public class RetentionController {
   @GetMapping("/api/settings/retention-policies")
   @RequiresCapability("MANAGE_COMPLIANCE")
   public ResponseEntity<List<SettingsPolicyResponse>> listSettingsPolicies() {
-    var policies = policyService.listActive().stream().map(SettingsPolicyResponse::from).toList();
-    return ResponseEntity.ok(policies);
+    return ResponseEntity.ok(policyService.listSettingsPolicies());
   }
 
   @PutMapping("/api/settings/retention-policies/{id}")
@@ -105,8 +105,8 @@ public class RetentionController {
 
   @PostMapping("/api/settings/retention-policies/execute")
   @RequiresCapability("MANAGE_COMPLIANCE")
-  public ResponseEntity<RetentionCheckResult> executeRetention() {
-    return ResponseEntity.ok(retentionService.runCheck());
+  public ResponseEntity<RetentionService.ExecuteResult> executeRetention() {
+    return ResponseEntity.ok(retentionService.executeAllPending());
   }
 
   // DTOs
@@ -172,25 +172,5 @@ public class RetentionController {
   }
 
   public record RetentionPolicyUpdateRequest(
-      Integer retentionDays, String action, Boolean enabled, String description) {}
-
-  public record RetentionEvaluationResult(
-      int totalPoliciesEvaluated,
-      int entitiesApproachingDeadline,
-      int entitiesEligibleForPurge,
-      List<PolicySummary> policySummaries) {
-
-    public static RetentionEvaluationResult from(
-        RetentionCheckResult checkResult, int totalPoliciesEvaluated) {
-      var summaries =
-          checkResult.getFlagged().values().stream()
-              .map(f -> new PolicySummary(f.recordType(), f.triggerEvent(), f.action(), f.count()))
-              .toList();
-      return new RetentionEvaluationResult(
-          totalPoliciesEvaluated, 0, checkResult.getTotalFlagged(), summaries);
-    }
-  }
-
-  public record PolicySummary(
-      String recordType, String triggerEvent, String action, int eligibleCount) {}
+      @Positive Integer retentionDays, String action, Boolean enabled, String description) {}
 }

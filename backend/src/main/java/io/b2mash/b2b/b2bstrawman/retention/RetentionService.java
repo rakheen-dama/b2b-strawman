@@ -214,11 +214,33 @@ public class RetentionService {
    * suitable for the settings UI.
    */
   @Transactional(readOnly = true)
-  public RetentionController.RetentionEvaluationResult evaluateForPreview() {
+  public RetentionEvaluationResult evaluateForPreview() {
     List<RetentionPolicy> policies = policyRepository.findByActive(true);
     RetentionCheckResult checkResult = previewPurge();
-    return RetentionController.RetentionEvaluationResult.from(checkResult, policies.size());
+    return RetentionEvaluationResult.from(checkResult, policies.size());
   }
+
+  /**
+   * Executes retention purge for all eligible records across all active policies. First evaluates
+   * which records are eligible, then purges each group by record type.
+   */
+  @Transactional
+  public ExecuteResult executeAllPending() {
+    RetentionCheckResult checkResult = runCheck();
+    int totalPurged = 0;
+    int totalFailed = 0;
+
+    for (var entry : checkResult.getFlagged().values()) {
+      if (!entry.recordIds().isEmpty()) {
+        PurgeResult purgeResult = executePurge(entry.recordType(), entry.recordIds());
+        totalPurged += purgeResult.purged();
+        totalFailed += purgeResult.failed();
+      }
+    }
+    return new ExecuteResult(totalPurged, totalFailed, checkResult.getCheckedAt());
+  }
+
+  public record ExecuteResult(int totalPurged, int totalFailed, java.time.Instant executedAt) {}
 
   /** Dry-run evaluation that returns flagged records without executing any purge actions. */
   @Transactional(readOnly = true)

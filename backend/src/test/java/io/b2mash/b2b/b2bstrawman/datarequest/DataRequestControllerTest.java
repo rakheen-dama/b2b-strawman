@@ -205,6 +205,29 @@ class DataRequestControllerTest {
         .andExpect(status().isForbidden());
   }
 
+  @Test
+  void getListRequests_includesDeadlineStatus_onTrackForFreshRequest() throws Exception {
+    // Create a request
+    mockMvc
+        .perform(
+            post("/api/data-requests")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"customerId":"%s","requestType":"ACCESS","description":"Deadline status test"}
+                    """
+                        .formatted(customerId)))
+        .andExpect(status().isCreated());
+
+    // List and verify deadlineStatus is present and ON_TRACK for a fresh request
+    mockMvc
+        .perform(get("/api/data-requests").with(ownerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].deadlineStatus").exists())
+        .andExpect(jsonPath("$[0].deadlineStatus").value("ON_TRACK"));
+  }
+
   private JwtRequestPostProcessor ownerJwt() {
     return jwt()
         .jwt(j -> j.subject("user_dsr_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));

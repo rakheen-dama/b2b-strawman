@@ -6,9 +6,13 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
+import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -34,18 +38,21 @@ public class DataSubjectRequestService {
   private final OrgSettingsRepository orgSettingsRepository;
   private final AuditService auditService;
   private final MemberNameResolver memberNameResolver;
+  private final NotificationService notificationService;
 
   public DataSubjectRequestService(
       DataSubjectRequestRepository requestRepository,
       CustomerRepository customerRepository,
       OrgSettingsRepository orgSettingsRepository,
       AuditService auditService,
-      MemberNameResolver memberNameResolver) {
+      MemberNameResolver memberNameResolver,
+      NotificationService notificationService) {
     this.requestRepository = requestRepository;
     this.customerRepository = customerRepository;
     this.orgSettingsRepository = orgSettingsRepository;
     this.auditService = auditService;
     this.memberNameResolver = memberNameResolver;
+    this.notificationService = notificationService;
   }
 
   @Transactional
@@ -60,18 +67,17 @@ public class DataSubjectRequestService {
         .findById(customerId)
         .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
 
+    var orgSettings = orgSettingsRepository.findForCurrentTenant().orElse(null);
     int deadlineDays =
-        orgSettingsRepository
-            .findForCurrentTenant()
-            .map(s -> s.getDataRequestDeadlineDays())
-            .orElse(DEFAULT_DEADLINE_DAYS);
-    if (deadlineDays <= 0) {
-      deadlineDays = DEFAULT_DEADLINE_DAYS;
-    }
+        orgSettings != null ? resolveDeadlineDays(orgSettings) : DEFAULT_DEADLINE_DAYS;
 
     LocalDate deadline = LocalDate.now().plusDays(deadlineDays);
 
     var request = new DataSubjectRequest(customerId, requestType, description, actorId, deadline);
+    if (orgSettings != null) {
+      request.setJurisdiction(orgSettings.getDataProtectionJurisdiction());
+      request.setDeadlineDaysOverride(orgSettings.getDataRequestDeadlineDays());
+    }
     request = requestRepository.save(request);
 
     auditService.log(
@@ -241,32 +247,55 @@ public class DataSubjectRequestService {
     return memberNameResolver.resolveNames(ids);
   }
 
-  /** Build a response DTO from a data subject request, resolving customer and member names. */
-  public DataRequestResponse toResponse(DataSubjectRequest request) {
-    var memberNames = resolveMemberNames(List.of(request));
-    var customerNames = resolveCustomerNames(List.of(request));
-    return DataRequestResponse.from(
-        request, customerNames.getOrDefault(request.getCustomerId(), "Unknown"), memberNames);
+  private int resolveDeadlineDays(OrgSettings settings) {
+    Integer tenantOverride = settings.getDataRequestDeadlineDays();
+    String jurisdiction = settings.getDataProtectionJurisdiction();
+    if (tenantOverride != null && tenantOverride > 0) {
+      return Math.min(tenantOverride, JurisdictionDefaults.getMaxDeadlineDays(jurisdiction));
+    }
+    return JurisdictionDefaults.getDefaultDeadlineDays(jurisdiction);
   }
 
-  /**
-   * Build response DTOs from a list of data subject requests, resolving customer and member names
-   * in batch.
-   */
-  public List<DataRequestResponse> toResponses(List<DataSubjectRequest> requests) {
-    var memberNames = resolveMemberNames(requests);
-    var customerNames = resolveCustomerNames(requests);
-    return requests.stream()
-        .map(
-            req ->
-                DataRequestResponse.from(
-                    req, customerNames.getOrDefault(req.getCustomerId(), "Unknown"), memberNames))
-        .toList();
+  @Transactional
+  public int sendDeadlineWarnings() {
+    LocalDate today = LocalDate.now();
+    LocalDate sevenDaysOut = today.plusDays(7);
+
+    var requests =
+        requestRepository.findByStatusInAndDeadlineBetween(
+            List.of("RECEIVED", "IN_PROGRESS"), today, sevenDaysOut);
+
+    int notified = 0;
+    LocalDate twoDaysOut = today.plusDays(2);
+    for (var request : requests) {
+      boolean isTwoDayWarning = !request.getDeadline().isAfter(twoDaysOut);
+      String title =
+          isTwoDayWarning
+              ? "DSAR deadline in 2 days: request #" + request.getId().toString().substring(0, 8)
+              : "DSAR deadline in 7 days: request #" + request.getId().toString().substring(0, 8);
+
+      notificationService.notifyAdminsAndOwners(
+          "DSAR_DEADLINE_WARNING",
+          title,
+          "A data subject request is approaching its deadline on " + request.getDeadline(),
+          "data_subject_request",
+          request.getId());
+      notified++;
+    }
+
+    log.info("DSAR deadline warnings sent for {} requests", notified);
+    return notified;
   }
 
-  // --- Response DTO (owned by service, used by controller) ---
+  // --- Summary projection ---
 
-  public record DataRequestResponse(
+  public enum DeadlineStatus {
+    ON_TRACK,
+    DUE_SOON,
+    OVERDUE
+  }
+
+  public record DataSubjectRequestSummary(
       UUID id,
       UUID customerId,
       String customerName,
@@ -275,6 +304,9 @@ public class DataSubjectRequestService {
       String description,
       String rejectionReason,
       LocalDate deadline,
+      String jurisdiction,
+      Integer effectiveDeadlineDays,
+      DeadlineStatus deadlineStatus,
       Instant requestedAt,
       UUID requestedBy,
       String requestedByName,
@@ -285,9 +317,30 @@ public class DataSubjectRequestService {
       String notes,
       Instant createdAt) {
 
-    public static DataRequestResponse from(
+    public static DataSubjectRequestSummary from(
         DataSubjectRequest req, String customerName, Map<UUID, String> memberNames) {
-      return new DataRequestResponse(
+      LocalDate today = LocalDate.now();
+      DeadlineStatus deadlineStatus;
+      if (req.getDeadline() == null) {
+        deadlineStatus = DeadlineStatus.ON_TRACK;
+      } else if (req.getDeadline().isBefore(today)) {
+        deadlineStatus = DeadlineStatus.OVERDUE;
+      } else if (!req.getDeadline().isAfter(today.plusDays(7))) {
+        deadlineStatus = DeadlineStatus.DUE_SOON;
+      } else {
+        deadlineStatus = DeadlineStatus.ON_TRACK;
+      }
+
+      // Compute effective days from the stored dates rather than the raw override,
+      // which may exceed the jurisdiction cap.
+      Integer effectiveDeadlineDays =
+          (req.getDeadline() != null && req.getRequestedAt() != null)
+              ? (int)
+                  ChronoUnit.DAYS.between(
+                      req.getRequestedAt().atZone(ZoneOffset.UTC).toLocalDate(), req.getDeadline())
+              : req.getDeadlineDaysOverride();
+
+      return new DataSubjectRequestSummary(
           req.getId(),
           req.getCustomerId(),
           customerName,
@@ -296,6 +349,9 @@ public class DataSubjectRequestService {
           req.getDescription(),
           req.getRejectionReason(),
           req.getDeadline(),
+          req.getJurisdiction(),
+          effectiveDeadlineDays,
+          deadlineStatus,
           req.getRequestedAt(),
           req.getRequestedBy(),
           req.getRequestedBy() != null ? memberNames.get(req.getRequestedBy()) : null,
@@ -306,5 +362,23 @@ public class DataSubjectRequestService {
           req.getNotes(),
           req.getCreatedAt());
     }
+  }
+
+  public DataSubjectRequestSummary toSummary(DataSubjectRequest request) {
+    var memberNames = resolveMemberNames(List.of(request));
+    var customerNames = resolveCustomerNames(List.of(request));
+    return DataSubjectRequestSummary.from(
+        request, customerNames.getOrDefault(request.getCustomerId(), "Unknown"), memberNames);
+  }
+
+  public List<DataSubjectRequestSummary> toSummaries(List<DataSubjectRequest> requests) {
+    var memberNames = resolveMemberNames(requests);
+    var customerNames = resolveCustomerNames(requests);
+    return requests.stream()
+        .map(
+            req ->
+                DataSubjectRequestSummary.from(
+                    req, customerNames.getOrDefault(req.getCustomerId(), "Unknown"), memberNames))
+        .toList();
   }
 }

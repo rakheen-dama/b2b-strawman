@@ -55,6 +55,12 @@ public class DataSubjectRequest {
   @Column(name = "notes", columnDefinition = "TEXT")
   private String notes;
 
+  @Column(name = "jurisdiction", length = 10)
+  private String jurisdiction;
+
+  @Column(name = "deadline_days_override")
+  private Integer deadlineDaysOverride;
+
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
@@ -177,6 +183,24 @@ public class DataSubjectRequest {
     return updatedAt;
   }
 
+  public String getJurisdiction() {
+    return jurisdiction;
+  }
+
+  public void setJurisdiction(String jurisdiction) {
+    this.jurisdiction = jurisdiction;
+    this.updatedAt = Instant.now();
+  }
+
+  public Integer getDeadlineDaysOverride() {
+    return deadlineDaysOverride;
+  }
+
+  public void setDeadlineDaysOverride(Integer deadlineDaysOverride) {
+    this.deadlineDaysOverride = deadlineDaysOverride;
+    this.updatedAt = Instant.now();
+  }
+
   public void setExportFileKey(String exportFileKey) {
     this.exportFileKey = exportFileKey;
     this.updatedAt = Instant.now();
@@ -185,5 +209,10 @@ public class DataSubjectRequest {
   public void setNotes(String notes) {
     this.notes = notes;
     this.updatedAt = Instant.now();
+  }
+
+  // Package-private — test use only
+  void setDeadlineForTest(LocalDate deadline) {
+    this.deadline = deadline;
   }
 }

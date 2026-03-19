@@ -45,39 +45,39 @@ public class DataRequestController {
 
   @GetMapping
   @RequiresCapability("CUSTOMER_MANAGEMENT")
-  public ResponseEntity<List<DataSubjectRequestService.DataRequestResponse>> listRequests(
+  public ResponseEntity<List<DataSubjectRequestService.DataSubjectRequestSummary>> listRequests(
       @RequestParam(required = false) String status) {
     var requests =
         status != null && !status.isBlank()
             ? dataSubjectRequestService.listByStatus(status)
             : dataSubjectRequestService.listAll();
-    return ResponseEntity.ok(dataSubjectRequestService.toResponses(requests));
+    return ResponseEntity.ok(dataSubjectRequestService.toSummaries(requests));
   }
 
   @GetMapping("/{id}")
   @RequiresCapability("CUSTOMER_MANAGEMENT")
-  public ResponseEntity<DataSubjectRequestService.DataRequestResponse> getRequest(
+  public ResponseEntity<DataSubjectRequestService.DataSubjectRequestSummary> getRequest(
       @PathVariable UUID id) {
     var request = dataSubjectRequestService.getById(id);
-    return ResponseEntity.ok(dataSubjectRequestService.toResponse(request));
+    return ResponseEntity.ok(dataSubjectRequestService.toSummary(request));
   }
 
   @PostMapping
   @RequiresCapability("CUSTOMER_MANAGEMENT")
-  public ResponseEntity<DataSubjectRequestService.DataRequestResponse> createRequest(
+  public ResponseEntity<DataSubjectRequestService.DataSubjectRequestSummary> createRequest(
       @Valid @RequestBody CreateDataRequestBody body) {
     var actorId = RequestScopes.requireMemberId();
     var request =
         dataSubjectRequestService.createRequest(
             body.customerId(), body.requestType(), body.description(), actorId);
-    var response = dataSubjectRequestService.toResponse(request);
+    var response = dataSubjectRequestService.toSummary(request);
     return ResponseEntity.created(URI.create("/api/data-requests/" + request.getId()))
         .body(response);
   }
 
   @PutMapping("/{id}/status")
   @RequiresCapability("CUSTOMER_MANAGEMENT")
-  public ResponseEntity<DataSubjectRequestService.DataRequestResponse> updateStatus(
+  public ResponseEntity<DataSubjectRequestService.DataSubjectRequestSummary> updateStatus(
       @PathVariable UUID id, @Valid @RequestBody StatusTransitionBody body) {
     var actorId = RequestScopes.requireMemberId();
     DataSubjectRequest request =
@@ -89,7 +89,7 @@ public class DataRequestController {
               throw new InvalidStateException(
                   "Unknown action", "Action must be START_PROCESSING, COMPLETE, or REJECT");
         };
-    return ResponseEntity.ok(dataSubjectRequestService.toResponse(request));
+    return ResponseEntity.ok(dataSubjectRequestService.toSummary(request));
   }
 
   @PostMapping("/{id}/export")

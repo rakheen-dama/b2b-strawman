@@ -11,6 +11,7 @@ import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.member.MemberSyncService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.notification.NotificationRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
@@ -50,6 +51,7 @@ class DataSubjectRequestServiceTest {
   @Autowired private MemberSyncService memberSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
+  @Autowired private NotificationRepository notificationRepository;
 
   private String tenantSchema;
   private UUID memberId;
@@ -228,6 +230,134 @@ class DataSubjectRequestServiceTest {
           assertThat(page.getContent()).isNotEmpty();
           assertThat(page.getContent().getFirst().getEventType()).isEqualTo("data.request.created");
         });
+  }
+
+  @Test
+  void createRequest_usesJurisdictionDefault_whenNoTenantOverride() {
+    runInTenant(
+        () -> {
+          var settings =
+              orgSettingsRepository.findForCurrentTenant().orElseGet(() -> new OrgSettings("USD"));
+          settings.setDataProtectionJurisdiction("ZA");
+          settings.setDataRequestDeadlineDays(null);
+          orgSettingsRepository.save(settings);
+        });
+
+    var request =
+        runInTenant(
+            () ->
+                dataSubjectRequestService.createRequest(
+                    customerId, "ACCESS", "Need my data", memberId));
+
+    // ZA default = 30 days
+    assertThat(request.getDeadline()).isEqualTo(LocalDate.now().plusDays(30));
+    assertThat(request.getJurisdiction()).isEqualTo("ZA");
+  }
+
+  @Test
+  void createRequest_usesTenantOverride_whenLessThanJurisdictionMax() {
+    // ZA max = 30, tenant override = 14 (14 < 30) -> use 14
+    runInTenant(
+        () -> {
+          var settings =
+              orgSettingsRepository.findForCurrentTenant().orElseGet(() -> new OrgSettings("USD"));
+          settings.setDataProtectionJurisdiction("ZA");
+          settings.setDataRequestDeadlineDays(14);
+          orgSettingsRepository.save(settings);
+        });
+
+    var request =
+        runInTenant(
+            () ->
+                dataSubjectRequestService.createRequest(
+                    customerId, "DELETION", "Delete my data", memberId));
+
+    assertThat(request.getDeadline()).isEqualTo(LocalDate.now().plusDays(14));
+    assertThat(request.getJurisdiction()).isEqualTo("ZA");
+  }
+
+  @Test
+  void createRequest_capsOverrideAtJurisdictionMax() {
+    // ZA max = 30, tenant override = 45 -> capped to 30
+    runInTenant(
+        () -> {
+          var settings =
+              orgSettingsRepository.findForCurrentTenant().orElseGet(() -> new OrgSettings("USD"));
+          settings.setDataProtectionJurisdiction("ZA");
+          settings.setDataRequestDeadlineDays(45);
+          orgSettingsRepository.save(settings);
+        });
+
+    var request =
+        runInTenant(
+            () ->
+                dataSubjectRequestService.createRequest(
+                    customerId, "ACCESS", "Access request", memberId));
+
+    // 45 capped to ZA max 30
+    assertThat(request.getDeadline()).isEqualTo(LocalDate.now().plusDays(30));
+  }
+
+  @Test
+  void createRequest_snapshotsJurisdiction() {
+    // Set jurisdiction to ZA
+    runInTenant(
+        () -> {
+          var settings =
+              orgSettingsRepository.findForCurrentTenant().orElseGet(() -> new OrgSettings("USD"));
+          settings.setDataProtectionJurisdiction("ZA");
+          settings.setDataRequestDeadlineDays(null);
+          orgSettingsRepository.save(settings);
+        });
+
+    var request =
+        runInTenant(
+            () ->
+                dataSubjectRequestService.createRequest(
+                    customerId, "PORTABILITY", "Port my data", memberId));
+
+    // Change jurisdiction to EU after creation
+    runInTenant(
+        () -> {
+          var settings = orgSettingsRepository.findForCurrentTenant().orElseThrow();
+          settings.setDataProtectionJurisdiction("EU");
+          orgSettingsRepository.save(settings);
+        });
+
+    // Reload request — jurisdiction should still be ZA (snapshotted)
+    var reloaded = runInTenant(() -> dataSubjectRequestService.getById(request.getId()));
+    assertThat(reloaded.getJurisdiction()).isEqualTo("ZA");
+  }
+
+  @Test
+  void sendDeadlineWarnings_sendsNotificationForRequestDueWithin7Days() {
+    // Create request
+    var request =
+        runInTenant(
+            () ->
+                dataSubjectRequestService.createRequest(
+                    customerId, "ACCESS", "Warning test", memberId));
+
+    // Patch deadline to 5 days out (within warning window)
+    runInTenant(
+        () -> {
+          var saved = requestRepository.findById(request.getId()).orElseThrow();
+          saved.setDeadlineForTest(LocalDate.now().plusDays(5));
+          requestRepository.save(saved);
+        });
+
+    // Call sendDeadlineWarnings — should send at least 1 notification
+    int notified = runInTenant(() -> dataSubjectRequestService.sendDeadlineWarnings());
+
+    assertThat(notified).isGreaterThanOrEqualTo(1);
+
+    // Verify a notification was persisted with the correct type
+    boolean exists =
+        runInTenant(
+            () ->
+                notificationRepository.existsByTypeAndReferenceEntityId(
+                    "DSAR_DEADLINE_WARNING", request.getId()));
+    assertThat(exists).isTrue();
   }
 
   @AfterEach

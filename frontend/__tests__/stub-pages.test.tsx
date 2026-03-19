@@ -135,12 +135,13 @@ describe("Conditional conflict check section", () => {
   });
 });
 
-// ---- 372.8: Trust accounting stub page with legal terminology ----
+// ---- 372.8: Trust balance card renders correctly under legal-za profile ----
 
-describe("372B: trust accounting stub page with legal-za terminology", () => {
-  it("shows 'client' terminology in trust accounting description when legal-za profile is active", () => {
-    // The TrustBalanceCard description contains "client" — verify legal-za terminology
-    // (both TerminologyProvider and OrgProfileProvider set for legal-za context)
+describe("372B: trust balance card under legal-za profile context", () => {
+  it("renders trust balance card correctly within legal-za profile providers", () => {
+    // Wraps TrustBalanceCard in legal-za providers to verify it renders
+    // in the expected runtime context. Note: the card currently hardcodes
+    // its text rather than using useTerminology().
     render(
       <OrgProfileProvider
         verticalProfile="legal-za"
@@ -153,9 +154,7 @@ describe("372B: trust accounting stub page with legal-za terminology", () => {
       </OrgProfileProvider>,
     );
 
-    // The TrustBalanceCard description text contains "client" (lowercase)
-    // This verifies the card uses terminology consistent with legal-za
-    expect(screen.getByText(/client/i)).toBeInTheDocument();
     expect(screen.getByText("Trust Balance")).toBeInTheDocument();
+    expect(screen.getByText(/client/i)).toBeInTheDocument();
   });
 });

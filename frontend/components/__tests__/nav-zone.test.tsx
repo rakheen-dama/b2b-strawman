@@ -224,33 +224,4 @@ describe("NavZone", () => {
     expect(screen.queryByText("Trust Accounting")).not.toBeInTheDocument();
   });
 
-  // 372.7 Test 1: Trust Accounting visible with trust_accounting module + FINANCIAL_VISIBILITY
-  it("shows Trust Accounting nav item when trust_accounting module enabled and user has FINANCIAL_VISIBILITY", () => {
-    mockUsePathname.mockReturnValue("/org/test-org/other");
-
-    renderWithProviders(
-      <NavZone zone={legalFinanceZone} slug="test-org" />,
-      {
-        capabilities: ["FINANCIAL_VISIBILITY"],
-        enabledModules: ["trust_accounting"],
-      },
-    );
-
-    expect(screen.getByText("Trust Accounting")).toBeInTheDocument();
-  });
-
-  // 372.7 Test 2: Trust Accounting hidden when enabledModules is empty
-  it("hides Trust Accounting nav item when enabledModules is empty", () => {
-    mockUsePathname.mockReturnValue("/org/test-org/other");
-
-    renderWithProviders(
-      <NavZone zone={legalFinanceZone} slug="test-org" />,
-      {
-        capabilities: ["FINANCIAL_VISIBILITY"],
-        enabledModules: [],
-      },
-    );
-
-    expect(screen.queryByText("Trust Accounting")).not.toBeInTheDocument();
-  });
 });

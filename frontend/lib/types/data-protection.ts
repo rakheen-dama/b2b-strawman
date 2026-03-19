@@ -60,3 +60,29 @@ export interface CreateProcessingActivityRequest {
   retentionPeriod: string;
   recipients?: string;
 }
+
+export interface RetentionEvaluationResult {
+  totalPoliciesEvaluated: number;
+  entitiesEligibleForPurge: number;
+  policySummaries: PolicySummary[];
+}
+
+export interface PolicySummary {
+  recordType: string;
+  triggerEvent: string;
+  action: string;
+  eligibleCount: number;
+}
+
+export interface RetentionExecuteResult {
+  totalPurged: number;
+  totalFailed: number;
+  executedAt: string;
+}
+
+export interface PaiaGenerateResponse {
+  id: string;
+  fileName: string;
+  fileSize: number;
+  generatedAt: string;
+}

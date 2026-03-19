@@ -4,7 +4,18 @@ import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api } from "@/lib/api";
 import { JurisdictionSelectorSection } from "@/components/settings/jurisdiction-selector";
 import { InformationOfficerSection } from "@/components/settings/information-officer-section";
+import { RetentionPoliciesTable } from "@/components/data-protection/retention-policies-table";
+import { ProcessingRegisterTable } from "@/components/data-protection/processing-register-table";
+import { PaiaManualSection } from "@/components/data-protection/paia-manual-section";
+import {
+  fetchRetentionPolicies,
+  fetchProcessingActivities,
+} from "@/app/(app)/org/[slug]/settings/data-protection/actions";
 import type { OrgSettings } from "@/lib/types";
+import type {
+  RetentionPolicyExtended,
+  ProcessingActivity,
+} from "@/lib/types/data-protection";
 
 export default async function DataProtectionSettingsPage({
   params,
@@ -36,12 +47,24 @@ export default async function DataProtectionSettingsPage({
   }
 
   let settings: OrgSettings = { defaultCurrency: "USD" };
+  let retentionPolicies: RetentionPolicyExtended[] = [];
+  let processingActivities: ProcessingActivity[] = [];
 
-  const settingsResult = await Promise.allSettled([
-    api.get<OrgSettings>("/api/settings"),
-  ]);
-  if (settingsResult[0].status === "fulfilled") {
-    settings = settingsResult[0].value;
+  const [settingsResult, retentionResult, processingResult] =
+    await Promise.allSettled([
+      api.get<OrgSettings>("/api/settings"),
+      fetchRetentionPolicies(slug),
+      fetchProcessingActivities(slug),
+    ]);
+
+  if (settingsResult.status === "fulfilled") {
+    settings = settingsResult.value;
+  }
+  if (retentionResult.status === "fulfilled") {
+    retentionPolicies = retentionResult.value;
+  }
+  if (processingResult.status === "fulfilled") {
+    processingActivities = processingResult.value;
   }
 
   return (
@@ -77,7 +100,7 @@ export default async function DataProtectionSettingsPage({
         initialEmail={settings.informationOfficerEmail ?? null}
       />
 
-      {/* Section 3: DSAR Requests (stub) */}
+      {/* Section 3: DSAR Requests */}
       <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
         <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
           Data Subject Access Requests
@@ -96,47 +119,21 @@ export default async function DataProtectionSettingsPage({
         </div>
       </div>
 
-      {/* Section 4: Retention Policies (stub — expanded in 379C) */}
-      <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-        <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-          Retention Policies
-        </h2>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Configure how long different types of data are retained before
-          automatic anonymisation or deletion.
-        </p>
-        <p className="mt-3 text-sm text-slate-500 dark:text-slate-500">
-          Retention policy management coming soon.
-        </p>
-      </div>
+      {/* Section 4: Retention Policies */}
+      <RetentionPoliciesTable
+        policies={retentionPolicies}
+        slug={slug}
+        financialRetentionMonths={settings.financialRetentionMonths}
+      />
 
-      {/* Section 5: Processing Register (stub — expanded in 379C) */}
-      <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-        <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-          Processing Register
-        </h2>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Maintain a register of all personal data processing activities
-          as required by your jurisdiction.
-        </p>
-        <p className="mt-3 text-sm text-slate-500 dark:text-slate-500">
-          Processing register management coming soon.
-        </p>
-      </div>
+      {/* Section 5: Processing Register */}
+      <ProcessingRegisterTable activities={processingActivities} slug={slug} />
 
-      {/* Section 6: PAIA Manual (stub — expanded in 379C) */}
-      <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-        <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-          PAIA Manual
-        </h2>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Generate and manage your PAIA (Promotion of Access to Information Act)
-          manual for South African compliance.
-        </p>
-        <p className="mt-3 text-sm text-slate-500 dark:text-slate-500">
-          PAIA manual management coming soon.
-        </p>
-      </div>
+      {/* Section 6: PAIA Manual */}
+      <PaiaManualSection
+        slug={slug}
+        jurisdiction={settings.dataProtectionJurisdiction ?? null}
+      />
     </div>
   );
 }

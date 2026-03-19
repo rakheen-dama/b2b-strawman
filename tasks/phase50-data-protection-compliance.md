@@ -28,7 +28,7 @@ The next Flyway tenant migration is **V76**. The next epic number starts at **37
 |------|------|-------|------|--------|--------|--------|
 | 373 | Foundation: V76 Migration, OrgSettings Extension, JurisdictionDefaults | Backend | — | S | 373A | **Done** (PR #768) |
 | 374 | Data Export Extension | Backend | 373 | M | 374A, 374B | **Done** (PRs #769, #770) |
-| 375 | Anonymization Extension | Backend | 373, 374 | M | 375A, 375B | 375A **Done** (PR #771) |
+| 375 | Anonymization Extension | Backend | 373, 374 | M | 375A, 375B | **Done** (PRs #771, #772) |
 | 376 | Retention Extension | Backend | 373 | M | 376A, 376B | |
 | 377 | DSAR Extension | Backend | 373 | S | 377A | |
 | 378 | Processing Activity CRUD + PAIA Manual Generation | Backend | 373 | M | 378A, 378B | |
@@ -150,7 +150,7 @@ FRONTEND (requires all backend epics 373–378)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 3a | 375 | 375B | `AnonymizationController` (POST anonymize, GET preview) + `DataRequestController` extension. Integration tests (~5). Backend only. | |
+| 3a | 375 | 375B | `AnonymizationController` (POST anonymize, GET preview) + `DataRequestController` extension. Integration tests (~5). Backend only. | **Done** (PR #772) |
 
 ### Stage 4: Frontend Pages (parallel tracks)
 
@@ -282,7 +282,7 @@ FRONTEND (requires all backend epics 373–378)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **375A** | 375.1–375.7 | Extend `DataAnonymizationService`: `ANONYMIZED` status enforcement, `notes`/`customFields` clearing, pre-anonymization export (S3 key stored in audit event details), `previewAnonymization()` returning `AnonymizationPreview`, rejection logic for already-anonymized customers, `DATA_SUBJECT_ANONYMIZED` audit event. Integration tests (~6). Backend only. | **Done** (PR #771) |
-| **375B** | 375.8–375.12 | New `AnonymizationController` (POST `/{customerId}/anonymize`, GET `/{customerId}/anonymize/preview`), `AnonymizationRequest` record, OWNER-only authorization, extend `DataRequestController` to delegate anonymization to the new service. Integration tests (~5). Backend only. | |
+| **375B** | 375.8–375.12 | New `AnonymizationController` (POST `/{customerId}/anonymize`, GET `/{customerId}/anonymize/preview`), `AnonymizationRequest` record, OWNER-only authorization, extend `DataRequestController` to delegate anonymization to the new service. Integration tests (~5). Backend only. | **Done** (PR #772) |
 
 ### Tasks
 

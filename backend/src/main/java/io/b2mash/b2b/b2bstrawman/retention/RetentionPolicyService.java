@@ -77,11 +77,69 @@ public class RetentionPolicyService {
   }
 
   @Transactional
+  public RetentionPolicy updateFromRequest(
+      UUID id, Integer retentionDays, String action, Boolean enabled, String description) {
+    var policy =
+        policyRepository
+            .findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("RetentionPolicy", id));
+    if (retentionDays != null) {
+      if (retentionDays < 0) {
+        throw new IllegalArgumentException("retentionDays must not be negative");
+      }
+      validateFinancialMinimumWithJurisdiction(policy.getRecordType(), retentionDays);
+      policy.update(retentionDays, policy.getAction());
+    }
+    if (action != null) {
+      if (action.isBlank()) {
+        throw new IllegalArgumentException("action must not be blank");
+      }
+      policy.update(policy.getRetentionDays(), action);
+    }
+    if (enabled != null) {
+      if (enabled) {
+        policy.activate();
+      } else {
+        policy.deactivate();
+      }
+    }
+    if (description != null) {
+      policy.setDescription(description);
+    }
+    return policyRepository.save(policy);
+  }
+
+  @Transactional
   public void delete(UUID id) {
     if (!policyRepository.existsById(id)) {
       throw new ResourceNotFoundException("RetentionPolicy", id);
     }
     policyRepository.deleteById(id);
+  }
+
+  private void validateFinancialMinimumWithJurisdiction(String recordType, int retentionDays) {
+    if (!FINANCIAL_RECORD_TYPES.contains(recordType)) {
+      return;
+    }
+    var settings = orgSettingsRepository.findForCurrentTenant().orElse(null);
+    int financialRetentionMonths =
+        (settings != null && settings.getFinancialRetentionMonths() != null)
+            ? settings.getFinancialRetentionMonths()
+            : 60;
+    String jurisdiction = settings != null ? settings.getDataProtectionJurisdiction() : null;
+    int minMonths = JurisdictionDefaults.getMinFinancialRetentionMonths(jurisdiction);
+    int effectiveMinMonths = Math.max(financialRetentionMonths, minMonths);
+    int minDays = effectiveMinMonths * 30;
+    if (retentionDays < minDays) {
+      String jurisdictionLabel = jurisdiction != null ? jurisdiction : "default";
+      throw new InvalidStateException(
+          "Retention period too short",
+          "Retention period for financial records cannot be less than "
+              + effectiveMinMonths
+              + " months (jurisdiction: "
+              + jurisdictionLabel
+              + ").");
+    }
   }
 
   private void validateFinancialMinimum(String recordType, int retentionDays) {

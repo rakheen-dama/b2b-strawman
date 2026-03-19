@@ -402,6 +402,86 @@ class RetentionControllerTest {
         .andExpect(status().isForbidden());
   }
 
+  // --- Settings endpoints at /api/settings/retention-policies (added in Epic 376B) ---
+
+  @Test
+  void getSettingsList_returnsActivePoliciesWithLastEvaluatedAt() throws Exception {
+    mockMvc
+        .perform(get("/api/settings/retention-policies").with(ownerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$").isArray())
+        .andExpect(jsonPath("$[0].recordType").exists())
+        .andExpect(jsonPath("$[0].retentionDays").exists())
+        .andExpect(jsonPath("$[0].description").hasJsonPath())
+        .andExpect(jsonPath("$[0].lastEvaluatedAt").hasJsonPath());
+  }
+
+  @Test
+  void putSettingsUpdate_updatesRetentionPeriodAndDescription() throws Exception {
+    // Get an existing policy ID from the settings list
+    var listResult =
+        mockMvc
+            .perform(get("/api/settings/retention-policies").with(ownerJwt()))
+            .andExpect(status().isOk())
+            .andReturn();
+    String policyId = JsonPath.read(listResult.getResponse().getContentAsString(), "$[0].id");
+
+    // Update retentionDays and description
+    mockMvc
+        .perform(
+            put("/api/settings/retention-policies/" + policyId)
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"retentionDays":2000,"description":"Updated retention description"}
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.retentionDays").value(2000))
+        .andExpect(jsonPath("$.description").value("Updated retention description"));
+  }
+
+  @Test
+  void putSettingsUpdate_belowFinancialMinimum_returns400() throws Exception {
+    // Create a CUSTOMER policy for this test (financial record type)
+    var createResult =
+        mockMvc
+            .perform(
+                post("/api/retention-policies")
+                    .with(ownerJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"recordType":"CUSTOMER","retentionDays":1800,"triggerEvent":"CUSTOMER_DEACTIVATED","action":"anonymize"}
+                        """))
+            .andExpect(status().isCreated())
+            .andReturn();
+    String policyId = JsonPath.read(createResult.getResponse().getContentAsString(), "$.id");
+
+    // Try to update below the financial minimum (ZA default = 60 months = 1800 days)
+    mockMvc
+        .perform(
+            put("/api/settings/retention-policies/" + policyId)
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"retentionDays":30}
+                    """))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void postEvaluate_returnsPreviewWithoutExecuting() throws Exception {
+    mockMvc
+        .perform(post("/api/settings/retention-policies/evaluate").with(ownerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.totalPoliciesEvaluated").isNumber())
+        .andExpect(jsonPath("$.entitiesApproachingDeadline").isNumber())
+        .andExpect(jsonPath("$.entitiesEligibleForPurge").isNumber())
+        .andExpect(jsonPath("$.policySummaries").isArray());
+  }
+
   private JwtRequestPostProcessor ownerJwt() {
     return jwt()
         .jwt(j -> j.subject("user_retctrl_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));

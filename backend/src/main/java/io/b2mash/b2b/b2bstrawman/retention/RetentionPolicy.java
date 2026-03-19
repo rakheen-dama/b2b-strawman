@@ -68,6 +68,11 @@ public class RetentionPolicy {
     this.updatedAt = Instant.now();
   }
 
+  public void activate() {
+    this.active = true;
+    this.updatedAt = Instant.now();
+  }
+
   public UUID getId() {
     return id;
   }

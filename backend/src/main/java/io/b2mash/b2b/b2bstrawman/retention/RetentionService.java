@@ -209,6 +209,17 @@ public class RetentionService {
     return List.of();
   }
 
+  /**
+   * Evaluates retention policies for preview (no side effects). Returns a structured result
+   * suitable for the settings UI.
+   */
+  @Transactional(readOnly = true)
+  public RetentionController.RetentionEvaluationResult evaluateForPreview() {
+    List<RetentionPolicy> policies = policyRepository.findByActive(true);
+    RetentionCheckResult checkResult = previewPurge();
+    return RetentionController.RetentionEvaluationResult.from(checkResult, policies.size());
+  }
+
   /** Dry-run evaluation that returns flagged records without executing any purge actions. */
   @Transactional(readOnly = true)
   public RetentionCheckResult previewPurge() {

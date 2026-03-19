@@ -29,7 +29,7 @@ This phase introduces a formal vertical architecture to DocTeams. It creates a `
 | 369 | Legal Module Stub Controllers | Backend | 367 | S | 369A | **Done** (PR #762) |
 | 370 | Frontend OrgProfileProvider + ModuleGate + Sidebar | Frontend | 367 | S | 370A | **Done** (PR #763) |
 | 371 | Legal Stub Pages + Conditional Sections + Settings Profile Switching | Frontend | 368, 370 | M | 371A, 371B | **Done** (PRs #764, #765) |
-| 372 | Legal Terminology + End-to-End Integration Tests | Backend + Frontend | 368, 369, 370 | S | 372A, 372B | |
+| 372 | Legal Terminology + End-to-End Integration Tests | Backend + Frontend | 368, 369, 370 | S | 372A, 372B | **Done** (PRs #766, #767) |
 
 ---
 
@@ -146,7 +146,7 @@ FRONTEND PAGES      TERMINOLOGY + E2E
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 5a (parallel) | 372 | 372A | Backend integration tests: full profile switching flow, provisioning with legal-za, guard + module status E2E, (~6 tests). Backend only. | **Done** (PR #766) |
-| 5b (parallel) | 372 | 372B | Frontend: legal terminology map + integration tests for sidebar gating, stub page rendering, terminology overrides (~6 tests). Frontend only. | |
+| 5b (parallel) | 372 | 372B | Frontend: legal terminology map + integration tests for sidebar gating, stub page rendering, terminology overrides (~6 tests). Frontend only. | **Done** (PR #767) |
 
 ---
 
@@ -408,7 +408,7 @@ FRONTEND PAGES      TERMINOLOGY + E2E
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **372A** | 372.1--372.4 | Backend integration tests: full profile switching flow, provisioning with legal-za profile, guard + module status cross-verification (~6 tests). Backend only. | **Done** (PR #766) |
-| **372B** | 372.5--372.9 | Frontend: legal terminology map, integration tests for sidebar gating, terminology overrides, stub page rendering (~6 tests). Frontend only. | |
+| **372B** | 372.5--372.9 | Frontend: legal terminology map, integration tests for sidebar gating, terminology overrides, stub page rendering (~6 tests). Frontend only. | **Done** (PR #767) |
 
 ### Tasks
 

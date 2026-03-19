@@ -22,9 +22,10 @@ vi.mock("motion/react", () => ({
 import { usePathname } from "next/navigation";
 import { CapabilityProvider } from "@/lib/capabilities";
 import { TerminologyProvider } from "@/lib/terminology";
+import { OrgProfileProvider } from "@/lib/org-profile";
 import { NavZone } from "@/components/nav-zone";
 import type { NavGroup } from "@/lib/nav-items";
-import { LayoutDashboard, FolderOpen, Receipt } from "lucide-react";
+import { LayoutDashboard, FolderOpen, Receipt, Scale } from "lucide-react";
 
 const mockUsePathname = vi.mocked(usePathname);
 
@@ -67,25 +68,53 @@ const financeZone: NavGroup = {
   ],
 };
 
-function renderWithCapabilities(
+const legalFinanceZone: NavGroup = {
+  id: "finance",
+  label: "Finance",
+  defaultExpanded: true,
+  items: [
+    {
+      label: "Trust Accounting",
+      href: (slug) => `/org/${slug}/trust-accounting`,
+      icon: Scale,
+      exact: true,
+      requiredCapability: "FINANCIAL_VISIBILITY",
+      requiredModule: "trust_accounting",
+    },
+  ],
+};
+
+function renderWithProviders(
   ui: React.ReactElement,
   {
     capabilities = [],
     isAdmin = false,
     isOwner = false,
-  }: { capabilities?: string[]; isAdmin?: boolean; isOwner?: boolean } = {},
+    enabledModules = [],
+  }: {
+    capabilities?: string[];
+    isAdmin?: boolean;
+    isOwner?: boolean;
+    enabledModules?: string[];
+  } = {},
 ) {
   return render(
-    <TerminologyProvider verticalProfile={null}>
-      <CapabilityProvider
-        capabilities={capabilities}
-        role="Member"
-        isAdmin={isAdmin}
-        isOwner={isOwner}
-      >
-        {ui}
-      </CapabilityProvider>
-    </TerminologyProvider>,
+    <OrgProfileProvider
+      verticalProfile={null}
+      enabledModules={enabledModules}
+      terminologyNamespace={null}
+    >
+      <TerminologyProvider verticalProfile={null}>
+        <CapabilityProvider
+          capabilities={capabilities}
+          role="Member"
+          isAdmin={isAdmin}
+          isOwner={isOwner}
+        >
+          {ui}
+        </CapabilityProvider>
+      </TerminologyProvider>
+    </OrgProfileProvider>,
   );
 }
 
@@ -95,7 +124,7 @@ describe("NavZone", () => {
   it("renders zone label", () => {
     mockUsePathname.mockReturnValue("/org/test-org/other");
 
-    renderWithCapabilities(
+    renderWithProviders(
       <NavZone zone={workZone} slug="test-org" />,
     );
 
@@ -105,7 +134,7 @@ describe("NavZone", () => {
   it("renders items when expanded", () => {
     mockUsePathname.mockReturnValue("/org/test-org/other");
 
-    renderWithCapabilities(
+    renderWithProviders(
       <NavZone zone={workZone} slug="test-org" />,
     );
 
@@ -117,7 +146,7 @@ describe("NavZone", () => {
     const user = userEvent.setup();
     mockUsePathname.mockReturnValue("/org/test-org/other");
 
-    renderWithCapabilities(
+    renderWithProviders(
       <NavZone zone={workZone} slug="test-org" />,
     );
 
@@ -136,7 +165,7 @@ describe("NavZone", () => {
   it("hides zone entirely when all items are capability-gated and user lacks capability", () => {
     mockUsePathname.mockReturnValue("/org/test-org/other");
 
-    renderWithCapabilities(
+    renderWithProviders(
       <NavZone zone={financeZone} slug="test-org" />,
       { capabilities: [], isAdmin: false, isOwner: false },
     );
@@ -150,7 +179,7 @@ describe("NavZone", () => {
   it("shows active indicator on current path", () => {
     mockUsePathname.mockReturnValue("/org/test-org/dashboard");
 
-    renderWithCapabilities(
+    renderWithProviders(
       <NavZone zone={workZone} slug="test-org" />,
     );
 
@@ -163,5 +192,35 @@ describe("NavZone", () => {
     const projectsLink = screen.getByRole("link", { name: /projects/i });
     expect(projectsLink).toHaveClass("text-white/60");
     expect(projectsLink).not.toHaveClass("bg-white/5");
+  });
+
+  // 370.8 Test 1: module-gated item visible when module enabled
+  it("shows nav item with requiredModule when module is enabled", () => {
+    mockUsePathname.mockReturnValue("/org/test-org/other");
+
+    renderWithProviders(
+      <NavZone zone={legalFinanceZone} slug="test-org" />,
+      {
+        capabilities: ["FINANCIAL_VISIBILITY"],
+        enabledModules: ["trust_accounting"],
+      },
+    );
+
+    expect(screen.getByText("Trust Accounting")).toBeInTheDocument();
+  });
+
+  // 370.8 Test 2: module-gated item hidden when module not enabled
+  it("hides nav item with requiredModule when module is not enabled", () => {
+    mockUsePathname.mockReturnValue("/org/test-org/other");
+
+    renderWithProviders(
+      <NavZone zone={legalFinanceZone} slug="test-org" />,
+      {
+        capabilities: ["FINANCIAL_VISIBILITY"],
+        enabledModules: [],
+      },
+    );
+
+    expect(screen.queryByText("Trust Accounting")).not.toBeInTheDocument();
   });
 });

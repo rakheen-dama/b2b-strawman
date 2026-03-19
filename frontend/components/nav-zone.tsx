@@ -8,6 +8,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { useCapabilities } from "@/lib/capabilities";
 import { useTerminology } from "@/lib/terminology";
+import { useOrgProfile } from "@/lib/org-profile";
 import type { NavGroup } from "@/lib/nav-items";
 
 export interface NavZoneProps {
@@ -21,9 +22,12 @@ export function NavZone({ zone, slug, onNavItemClick }: NavZoneProps) {
   const pathname = usePathname();
   const { hasCapability } = useCapabilities();
   const { t } = useTerminology();
+  const { isModuleEnabled } = useOrgProfile();
 
   const visibleItems = zone.items.filter(
-    (item) => !item.requiredCapability || hasCapability(item.requiredCapability),
+    (item) =>
+      (!item.requiredCapability || hasCapability(item.requiredCapability)) &&
+      (!item.requiredModule || isModuleEnabled(item.requiredModule)),
   );
 
   if (visibleItems.length === 0) return null;

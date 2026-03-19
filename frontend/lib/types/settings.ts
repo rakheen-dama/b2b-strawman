@@ -41,6 +41,9 @@ export interface OrgSettings {
   projectNamingPattern?: string | null;
   // vertical profile for terminology overrides
   verticalProfile?: string | null;
+  // vertical architecture: module gating + i18n namespace
+  enabledModules?: string[];
+  terminologyNamespace?: string | null;
 }
 
 export interface UpdateBatchBillingSettingsRequest {

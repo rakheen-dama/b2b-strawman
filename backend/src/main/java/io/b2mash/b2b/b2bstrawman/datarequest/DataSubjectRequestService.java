@@ -6,6 +6,8 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
+import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -34,18 +36,21 @@ public class DataSubjectRequestService {
   private final OrgSettingsRepository orgSettingsRepository;
   private final AuditService auditService;
   private final MemberNameResolver memberNameResolver;
+  private final NotificationService notificationService;
 
   public DataSubjectRequestService(
       DataSubjectRequestRepository requestRepository,
       CustomerRepository customerRepository,
       OrgSettingsRepository orgSettingsRepository,
       AuditService auditService,
-      MemberNameResolver memberNameResolver) {
+      MemberNameResolver memberNameResolver,
+      NotificationService notificationService) {
     this.requestRepository = requestRepository;
     this.customerRepository = customerRepository;
     this.orgSettingsRepository = orgSettingsRepository;
     this.auditService = auditService;
     this.memberNameResolver = memberNameResolver;
+    this.notificationService = notificationService;
   }
 
   @Transactional
@@ -60,18 +65,17 @@ public class DataSubjectRequestService {
         .findById(customerId)
         .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
 
+    var orgSettings = orgSettingsRepository.findForCurrentTenant().orElse(null);
     int deadlineDays =
-        orgSettingsRepository
-            .findForCurrentTenant()
-            .map(s -> s.getDataRequestDeadlineDays())
-            .orElse(DEFAULT_DEADLINE_DAYS);
-    if (deadlineDays <= 0) {
-      deadlineDays = DEFAULT_DEADLINE_DAYS;
-    }
+        orgSettings != null ? resolveDeadlineDays(orgSettings) : DEFAULT_DEADLINE_DAYS;
 
     LocalDate deadline = LocalDate.now().plusDays(deadlineDays);
 
     var request = new DataSubjectRequest(customerId, requestType, description, actorId, deadline);
+    if (orgSettings != null) {
+      request.setJurisdiction(orgSettings.getDataProtectionJurisdiction());
+      request.setDeadlineDaysOverride(orgSettings.getDataRequestDeadlineDays());
+    }
     request = requestRepository.save(request);
 
     auditService.log(
@@ -260,6 +264,132 @@ public class DataSubjectRequestService {
         .map(
             req ->
                 DataRequestResponse.from(
+                    req, customerNames.getOrDefault(req.getCustomerId(), "Unknown"), memberNames))
+        .toList();
+  }
+
+  private int resolveDeadlineDays(OrgSettings settings) {
+    Integer tenantOverride = settings.getDataRequestDeadlineDays();
+    String jurisdiction = settings.getDataProtectionJurisdiction();
+    if (tenantOverride != null && tenantOverride > 0) {
+      return Math.min(tenantOverride, JurisdictionDefaults.getMaxDeadlineDays(jurisdiction));
+    }
+    return JurisdictionDefaults.getDefaultDeadlineDays(jurisdiction);
+  }
+
+  @Transactional
+  public int sendDeadlineWarnings() {
+    LocalDate today = LocalDate.now();
+    LocalDate sevenDaysOut = today.plusDays(7);
+
+    var requests =
+        requestRepository.findByStatusInAndDeadlineBetween(
+            List.of("RECEIVED", "IN_PROGRESS"), today, sevenDaysOut);
+
+    int notified = 0;
+    for (var request : requests) {
+      LocalDate twoDaysOut = today.plusDays(2);
+      boolean isTwoDayWarning = !request.getDeadline().isAfter(twoDaysOut);
+      String title =
+          isTwoDayWarning
+              ? "DSAR deadline in 2 days: request #" + request.getId().toString().substring(0, 8)
+              : "DSAR deadline in 7 days: request #" + request.getId().toString().substring(0, 8);
+
+      notificationService.notifyAdminsAndOwners(
+          "RETENTION_PURGE_WARNING",
+          title,
+          "A data subject request is approaching its deadline on " + request.getDeadline(),
+          "data_subject_request",
+          request.getId());
+      notified++;
+    }
+
+    log.info("DSAR deadline warnings sent for {} requests", notified);
+    return notified;
+  }
+
+  // --- Summary projection ---
+
+  public enum DeadlineStatus {
+    ON_TRACK,
+    DUE_SOON,
+    OVERDUE
+  }
+
+  public record DataSubjectRequestSummary(
+      UUID id,
+      UUID customerId,
+      String customerName,
+      String requestType,
+      String status,
+      String description,
+      String rejectionReason,
+      LocalDate deadline,
+      String jurisdiction,
+      Integer effectiveDeadlineDays,
+      DeadlineStatus deadlineStatus,
+      Instant requestedAt,
+      UUID requestedBy,
+      String requestedByName,
+      Instant completedAt,
+      UUID completedBy,
+      String completedByName,
+      boolean hasExport,
+      String notes,
+      Instant createdAt) {
+
+    public static DataSubjectRequestSummary from(
+        DataSubjectRequest req, String customerName, Map<UUID, String> memberNames) {
+      LocalDate today = LocalDate.now();
+      DeadlineStatus deadlineStatus;
+      if (req.getDeadline().isBefore(today)) {
+        deadlineStatus = DeadlineStatus.OVERDUE;
+      } else if (!req.getDeadline().isAfter(today.plusDays(7))) {
+        deadlineStatus = DeadlineStatus.DUE_SOON;
+      } else {
+        deadlineStatus = DeadlineStatus.ON_TRACK;
+      }
+
+      Integer effectiveDeadlineDays = req.getDeadlineDaysOverride();
+
+      return new DataSubjectRequestSummary(
+          req.getId(),
+          req.getCustomerId(),
+          customerName,
+          req.getRequestType(),
+          req.getStatus(),
+          req.getDescription(),
+          req.getRejectionReason(),
+          req.getDeadline(),
+          req.getJurisdiction(),
+          effectiveDeadlineDays,
+          deadlineStatus,
+          req.getRequestedAt(),
+          req.getRequestedBy(),
+          req.getRequestedBy() != null ? memberNames.get(req.getRequestedBy()) : null,
+          req.getCompletedAt(),
+          req.getCompletedBy(),
+          req.getCompletedBy() != null ? memberNames.get(req.getCompletedBy()) : null,
+          req.getExportFileKey() != null,
+          req.getNotes(),
+          req.getCreatedAt());
+    }
+  }
+
+  public DataSubjectRequestSummary toSummary(DataSubjectRequest request) {
+    var memberNames = resolveMemberNames(List.of(request));
+    var customerNames = resolveCustomerNames(List.of(request));
+    return DataSubjectRequestSummary.from(
+        request, customerNames.getOrDefault(request.getCustomerId(), "Unknown"), memberNames);
+  }
+
+  public List<DataSubjectRequestSummary> toSummaries(List<DataSubjectRequest> requests) {
+    var memberNames = resolveMemberNames(requests);
+    var customerNames = resolveCustomerNames(requests);
+    return requests.stream()
+        .map(
+            req ->
+                DataSubjectRequestSummary.from(
                     req, customerNames.getOrDefault(req.getCustomerId(), "Unknown"), memberNames))
         .toList();
   }

@@ -38,6 +38,12 @@ public class RetentionPolicy {
   @Column(name = "updated_at", nullable = false)
   private Instant updatedAt;
 
+  @Column(name = "description", columnDefinition = "TEXT")
+  private String description;
+
+  @Column(name = "last_evaluated_at")
+  private Instant lastEvaluatedAt;
+
   protected RetentionPolicy() {}
 
   public RetentionPolicy(String recordType, int retentionDays, String triggerEvent, String action) {
@@ -92,5 +98,21 @@ public class RetentionPolicy {
 
   public Instant getUpdatedAt() {
     return updatedAt;
+  }
+
+  public String getDescription() {
+    return description;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
+  public Instant getLastEvaluatedAt() {
+    return lastEvaluatedAt;
+  }
+
+  public void setLastEvaluatedAt(Instant lastEvaluatedAt) {
+    this.lastEvaluatedAt = lastEvaluatedAt;
   }
 }

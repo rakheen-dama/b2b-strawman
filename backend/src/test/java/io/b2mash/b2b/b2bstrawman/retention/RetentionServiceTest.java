@@ -7,14 +7,23 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.member.MemberSyncService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.notification.NotificationRepository;
+import io.b2mash.b2b.b2bstrawman.project.Project;
+import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.task.Task;
+import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
+import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
+import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.UUID;
@@ -49,9 +58,14 @@ class RetentionServiceTest {
   @Autowired private MemberSyncService memberSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
+  @Autowired private TimeEntryRepository timeEntryRepository;
+  @Autowired private ProjectRepository projectRepository;
+  @Autowired private TaskRepository taskRepository;
+  @Autowired private NotificationRepository notificationRepository;
 
   private String tenantSchema;
   private UUID memberId;
+  private UUID testTaskId;
 
   @BeforeAll
   void setup() {
@@ -68,6 +82,32 @@ class RetentionServiceTest {
             null,
             "owner");
     memberId = syncResult.memberId();
+
+    // Create a project and task for time entry tests
+    testTaskId =
+        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+            .where(RequestScopes.ORG_ID, ORG_ID)
+            .where(RequestScopes.MEMBER_ID, memberId)
+            .call(
+                () ->
+                    transactionTemplate.execute(
+                        tx -> {
+                          var project =
+                              new Project(
+                                  "Retention Test Project", "For time entry tests", memberId);
+                          project = projectRepository.save(project);
+                          var task =
+                              new Task(
+                                  project.getId(),
+                                  "Retention Test Task",
+                                  null,
+                                  "MEDIUM",
+                                  "TASK",
+                                  null,
+                                  memberId);
+                          task = taskRepository.save(task);
+                          return task.getId();
+                        }));
   }
 
   @AfterEach
@@ -107,8 +147,12 @@ class RetentionServiceTest {
               return customer.getId();
             });
 
-    // Create a 30-day retention policy for CUSTOMER
-    runInTenant(() -> retentionPolicyService.create("CUSTOMER", 30, "CUSTOMER_OFFBOARDED", "FLAG"));
+    // Create a 30-day retention policy for CUSTOMER (bypass financial minimum via raw save)
+    runInTenant(
+        () -> {
+          var policy = new RetentionPolicy("CUSTOMER", 30, "CUSTOMER_OFFBOARDED", "FLAG");
+          policyRepository.save(policy);
+        });
 
     RetentionCheckResult result = runInTenant(() -> retentionService.runCheck());
 
@@ -139,7 +183,12 @@ class RetentionServiceTest {
           customerRepository.save(customer);
         });
 
-    runInTenant(() -> retentionPolicyService.create("CUSTOMER", 30, "CUSTOMER_OFFBOARDED", "FLAG"));
+    // Bypass financial minimum via raw save (we're testing retention check logic, not creation)
+    runInTenant(
+        () -> {
+          var policy = new RetentionPolicy("CUSTOMER", 30, "CUSTOMER_OFFBOARDED", "FLAG");
+          policyRepository.save(policy);
+        });
 
     RetentionCheckResult result = runInTenant(() -> retentionService.runCheck());
 
@@ -221,7 +270,12 @@ class RetentionServiceTest {
             });
 
     // 30-day retention — customer offboarded 10 days ago should NOT be flagged
-    runInTenant(() -> retentionPolicyService.create("CUSTOMER", 30, "CUSTOMER_OFFBOARDED", "FLAG"));
+    // Bypass financial minimum via raw save (testing cutoff logic)
+    runInTenant(
+        () -> {
+          var policy = new RetentionPolicy("CUSTOMER", 30, "CUSTOMER_OFFBOARDED", "FLAG");
+          policyRepository.save(policy);
+        });
 
     RetentionCheckResult result = runInTenant(() -> retentionService.runCheck());
 
@@ -267,14 +321,14 @@ class RetentionServiceTest {
     // Clean up
     runInTenant(() -> policyRepository.deleteAll());
 
-    runInTenant(() -> retentionPolicyService.create("TIME_ENTRY", 90, "RECORD_CREATED", "FLAG"));
+    runInTenant(() -> retentionPolicyService.create("TIME_ENTRY", 1800, "RECORD_CREATED", "FLAG"));
 
     assertThatThrownBy(
             () ->
                 runInTenant(
                     () ->
                         retentionPolicyService.create(
-                            "TIME_ENTRY", 180, "RECORD_CREATED", "ANONYMIZE")))
+                            "TIME_ENTRY", 1800, "RECORD_CREATED", "ANONYMIZE")))
         .isInstanceOf(ResourceConflictException.class);
   }
 
@@ -335,6 +389,199 @@ class RetentionServiceTest {
                     () -> retentionPolicyService.create("  ", 30, "RECORD_CREATED", "FLAG")))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("recordType");
+  }
+
+  // --- Epic 376A: New test methods ---
+
+  @Test
+  void runCheck_timeEntryPolicy_flagsPastRetention() {
+    runInTenant(
+        () -> {
+          policyRepository.deleteAll();
+          timeEntryRepository.deleteAll();
+        });
+
+    // Create a time entry 60 days old
+    UUID timeEntryId =
+        runInTenant(
+            () -> {
+              var te =
+                  new TimeEntry(
+                      testTaskId,
+                      memberId,
+                      LocalDate.now().minusDays(60),
+                      120,
+                      true,
+                      null,
+                      "Old work");
+              te = timeEntryRepository.save(te);
+              return te.getId();
+            });
+
+    // Create a 30-day retention policy for TIME_ENTRY (bypass financial minimum via raw save)
+    runInTenant(
+        () -> {
+          var policy = new RetentionPolicy("TIME_ENTRY", 30, "RECORD_CREATED", "delete");
+          policyRepository.save(policy);
+        });
+
+    RetentionCheckResult result = runInTenant(() -> retentionService.runCheck());
+
+    assertThat(result.getFlagged()).containsKey("TIME_ENTRY:RECORD_CREATED");
+    assertThat(result.getFlagged().get("TIME_ENTRY:RECORD_CREATED").recordIds())
+        .contains(timeEntryId);
+  }
+
+  @Test
+  void runCheck_warningNotificationSent_forApproachingDeadline() {
+    runInTenant(
+        () -> {
+          policyRepository.deleteAll();
+          timeEntryRepository.deleteAll();
+        });
+
+    // Create a time entry 45 days old — with a 60-day policy, this is past the warn cutoff
+    // (60 - 30 = 30 days) but not past the expired cutoff (60 days)
+    runInTenant(
+        () -> {
+          var te =
+              new TimeEntry(
+                  testTaskId,
+                  memberId,
+                  LocalDate.now().minusDays(45),
+                  60,
+                  false,
+                  null,
+                  "Approaching retention");
+          timeEntryRepository.save(te);
+        });
+
+    // Create a policy directly with 60-day retention (bypassing financial minimum validation)
+    runInTenant(
+        () -> {
+          var policy = new RetentionPolicy("TIME_ENTRY", 60, "RECORD_CREATED", "delete");
+          policyRepository.save(policy);
+        });
+
+    // Count notifications before
+    long notifBefore =
+        runInTenant(
+            () ->
+                notificationRepository.existsByTypeAndReferenceEntityId(
+                        "RETENTION_PURGE_WARNING", UUID.randomUUID())
+                    ? 1L
+                    : 0L);
+
+    runInTenant(() -> retentionService.runCheck());
+
+    // Verify a RETENTION_PURGE_WARNING notification was created for the owner
+    boolean warningExists =
+        runInTenant(
+            () ->
+                notificationRepository.existsByTypeAndRecipientMemberIdAndCreatedAtAfter(
+                    "RETENTION_PURGE_WARNING",
+                    memberId,
+                    Instant.now().minus(10, ChronoUnit.SECONDS)));
+
+    assertThat(warningExists).isTrue();
+  }
+
+  @Test
+  void financialMinimumCheck_throwsForPolicyBelowMinimum() {
+    runInTenant(() -> policyRepository.deleteAll());
+
+    // Attempt to create a CUSTOMER policy with only 100 days (below 1800-day minimum)
+    assertThatThrownBy(
+            () ->
+                runInTenant(
+                    () ->
+                        retentionPolicyService.create(
+                            "CUSTOMER", 100, "RECORD_CREATED", "anonymize")))
+        .isInstanceOf(InvalidStateException.class);
+
+    // Also verify update path: create with valid days, then try to update below minimum
+    runInTenant(() -> policyRepository.deleteAll());
+    RetentionPolicy created =
+        runInTenant(
+            () -> retentionPolicyService.create("TIME_ENTRY", 1800, "RECORD_CREATED", "delete"));
+
+    assertThatThrownBy(
+            () -> runInTenant(() -> retentionPolicyService.update(created.getId(), 100, "delete")))
+        .isInstanceOf(InvalidStateException.class);
+  }
+
+  @Test
+  void runCheck_lastEvaluatedAt_isUpdatedAfterEvaluation() {
+    runInTenant(() -> policyRepository.deleteAll());
+
+    // Create any active policy
+    RetentionPolicy created =
+        runInTenant(
+            () -> {
+              var policy = new RetentionPolicy("COMMENT", 90, "RECORD_CREATED", "delete");
+              return policyRepository.save(policy);
+            });
+
+    assertThat(created.getLastEvaluatedAt()).isNull();
+
+    // Run check
+    runInTenant(() -> retentionService.runCheck());
+
+    // Reload the policy and verify lastEvaluatedAt is set
+    RetentionPolicy reloaded =
+        runInTenant(() -> policyRepository.findById(created.getId()).orElseThrow());
+
+    assertThat(reloaded.getLastEvaluatedAt()).isNotNull();
+    assertThat(reloaded.getLastEvaluatedAt()).isAfter(Instant.now().minus(5, ChronoUnit.SECONDS));
+  }
+
+  @Test
+  void seedJurisdictionDefaults_createsAndIsIdempotent() {
+    runInTenant(() -> policyRepository.deleteAll());
+
+    // Seed ZA defaults
+    runInTenant(() -> retentionService.seedJurisdictionDefaults("ZA"));
+
+    long count = runInTenant(() -> policyRepository.findAll().size());
+    assertThat(count).isEqualTo(5);
+
+    // Verify specific policies exist
+    assertThat(
+            runInTenant(
+                () ->
+                    policyRepository.existsByRecordTypeAndTriggerEvent(
+                        "CUSTOMER", "RECORD_CREATED")))
+        .isTrue();
+    assertThat(
+            runInTenant(
+                () ->
+                    policyRepository.existsByRecordTypeAndTriggerEvent(
+                        "TIME_ENTRY", "RECORD_CREATED")))
+        .isTrue();
+    assertThat(
+            runInTenant(
+                () ->
+                    policyRepository.existsByRecordTypeAndTriggerEvent(
+                        "DOCUMENT", "RECORD_CREATED")))
+        .isTrue();
+    assertThat(
+            runInTenant(
+                () ->
+                    policyRepository.existsByRecordTypeAndTriggerEvent(
+                        "COMMENT", "RECORD_CREATED")))
+        .isTrue();
+    assertThat(
+            runInTenant(
+                () ->
+                    policyRepository.existsByRecordTypeAndTriggerEvent(
+                        "AUDIT_EVENT", "RECORD_CREATED")))
+        .isTrue();
+
+    // Call again — should be idempotent
+    runInTenant(() -> retentionService.seedJurisdictionDefaults("ZA"));
+
+    long countAfter = runInTenant(() -> policyRepository.findAll().size());
+    assertThat(countAfter).isEqualTo(5);
   }
 
   private <T> T runInTenant(Callable<T> callable) {

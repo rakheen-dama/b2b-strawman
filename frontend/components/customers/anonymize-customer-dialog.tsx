@@ -40,6 +40,7 @@ export function AnonymizeCustomerDialog({
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<Step>("preview");
   const [confirmInput, setConfirmInput] = useState("");
+  const [reason, setReason] = useState("Data subject request");
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<StandaloneAnonymizationResult | null>(null);
@@ -55,12 +56,13 @@ export function AnonymizeCustomerDialog({
   );
 
   const preview = previewResult?.data;
-  const isConfirmed = confirmInput === customerName;
+  const isConfirmed = confirmInput === customerName && reason.trim().length > 0;
 
   function handleOpenChange(newOpen: boolean) {
     if (!newOpen) {
       setStep("preview");
       setConfirmInput("");
+      setReason("Data subject request");
       setError(null);
       setResult(null);
       setIsPending(false);
@@ -74,7 +76,7 @@ export function AnonymizeCustomerDialog({
     setIsPending(true);
 
     try {
-      const res = await executeAnonymization(slug, customerId, confirmInput, "Data subject request");
+      const res = await executeAnonymization(slug, customerId, confirmInput, reason);
       if (res.success && res.data) {
         setResult(res.data);
         setStep("result");
@@ -143,6 +145,7 @@ export function AnonymizeCustomerDialog({
                     <li>Time entries: {preview.affectedEntities.timeEntries}</li>
                     <li>Invoices: {preview.affectedEntities.invoices}</li>
                     <li>Comments: {preview.affectedEntities.comments}</li>
+                    <li>Custom field values: {preview.affectedEntities.customFieldValues}</li>
                   </ul>
                 </div>
 
@@ -199,6 +202,23 @@ export function AnonymizeCustomerDialog({
                 <li>Financial records (invoices) will be preserved</li>
                 <li>Customer will be marked as Anonymized</li>
               </ul>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                Reason for anonymization <span className="text-destructive">*</span>
+              </label>
+              <select
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              >
+                <option value="Data subject request">Data subject request</option>
+                <option value="Regulatory compliance">Regulatory compliance</option>
+                <option value="Contract termination">Contract termination</option>
+                <option value="Customer request">Customer request</option>
+                <option value="Other">Other</option>
+              </select>
             </div>
 
             <div className="space-y-2">

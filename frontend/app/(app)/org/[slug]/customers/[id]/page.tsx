@@ -477,7 +477,7 @@ export default async function CustomerDetailPage({
               />
             )}
             {customer.lifecycleStatus !== "ANONYMIZED" && (
-              <DataExportDialog slug={slug} customerId={customer.id}>
+              <DataExportDialog customerId={customer.id}>
                 <Button variant="outline" size="sm">
                   <Download className="mr-1.5 size-4" />
                   Export Data

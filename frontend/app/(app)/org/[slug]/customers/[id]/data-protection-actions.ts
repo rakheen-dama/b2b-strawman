@@ -12,7 +12,6 @@ interface ActionResult<T = undefined> {
 }
 
 export async function triggerDataExport(
-  slug: string,
   customerId: string,
 ): Promise<ActionResult<StandaloneExportResult>> {
   const caps = await fetchMyCapabilities();

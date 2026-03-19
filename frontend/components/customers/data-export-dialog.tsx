@@ -18,7 +18,6 @@ import { Download, Loader2, FileDown } from "lucide-react";
 type Step = "confirm" | "processing" | "download" | "error";
 
 interface DataExportDialogProps {
-  slug: string;
   customerId: string;
   children: React.ReactNode;
 }
@@ -31,7 +30,7 @@ function formatBytes(bytes: number): string {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
 }
 
-export function DataExportDialog({ slug, customerId, children }: DataExportDialogProps) {
+export function DataExportDialog({ customerId, children }: DataExportDialogProps) {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<Step>("confirm");
   const [exportResult, setExportResult] = useState<StandaloneExportResult | null>(null);
@@ -52,7 +51,7 @@ export function DataExportDialog({ slug, customerId, children }: DataExportDialo
     setError(null);
 
     try {
-      const result = await triggerDataExport(slug, customerId);
+      const result = await triggerDataExport(customerId);
       if (result.success && result.data) {
         setExportResult(result.data);
         setStep("download");

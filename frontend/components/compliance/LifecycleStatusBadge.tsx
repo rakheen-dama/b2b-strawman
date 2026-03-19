@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { LifecycleStatus } from "@/lib/types";
 
-type BadgeVariant = "success" | "warning" | "destructive" | "neutral";
+type BadgeVariant = "success" | "warning" | "destructive" | "neutral" | "anonymized";
 
 interface StatusConfig {
   label: string;
@@ -23,8 +23,7 @@ const STATUS_CONFIG: Record<LifecycleStatus, StatusConfig> = {
   OFFBOARDED: { label: "Offboarded", variant: "destructive" },
   ANONYMIZED: {
     label: "Anonymized",
-    variant: "neutral" as BadgeVariant,
-    className: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 border border-slate-300 dark:border-slate-600",
+    variant: "anonymized",
   },
 };
 

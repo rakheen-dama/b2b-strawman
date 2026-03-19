@@ -41,7 +41,7 @@ describe("DataExportDialog", () => {
     const user = userEvent.setup();
 
     render(
-      <DataExportDialog slug="acme" customerId="c1">
+      <DataExportDialog customerId="c1">
         <button>Export Trigger</button>
       </DataExportDialog>,
     );
@@ -68,7 +68,7 @@ describe("DataExportDialog", () => {
     const user = userEvent.setup();
 
     render(
-      <DataExportDialog slug="acme" customerId="c1">
+      <DataExportDialog customerId="c1">
         <button>Export Trigger</button>
       </DataExportDialog>,
     );
@@ -93,7 +93,7 @@ describe("DataExportDialog", () => {
     const user = userEvent.setup();
 
     render(
-      <DataExportDialog slug="acme" customerId="c1">
+      <DataExportDialog customerId="c1">
         <button>Export Trigger</button>
       </DataExportDialog>,
     );
@@ -179,5 +179,67 @@ describe("AnonymizeCustomerDialog", () => {
 
     const confirmButton = screen.getByRole("button", { name: /execute anonymization/i });
     expect(confirmButton).toBeDisabled();
+  });
+
+  it("executes anonymization successfully when name matches and reason is provided", async () => {
+    mockExecuteAnonymization.mockResolvedValue({
+      success: true,
+      data: {
+        status: "COMPLETED",
+        referenceId: "REF-abc123",
+        preExportKey: "org/tenant/customer-exports/uuid/pre-anonymization.zip",
+        summary: {
+          customerAnonymized: true,
+          documentsDeleted: 12,
+          commentsRedacted: 23,
+          portalContactsAnonymized: 2,
+          invoicesPreserved: 8,
+          customFieldsCleared: 6,
+        },
+      },
+    });
+    const user = userEvent.setup();
+
+    render(
+      <AnonymizeCustomerDialog slug="acme" customerId="c1" customerName="Acme Corp">
+        <button>Anonymize Trigger</button>
+      </AnonymizeCustomerDialog>,
+    );
+
+    await user.click(screen.getByText("Anonymize Trigger"));
+
+    // Wait for preview to load, then move to confirm step
+    await waitFor(() => {
+      expect(screen.getByText("Continue")).toBeInTheDocument();
+    });
+    await user.click(screen.getByText("Continue"));
+
+    // Type the correct customer name
+    const input = screen.getByPlaceholderText("Acme Corp");
+    await user.type(input, "Acme Corp");
+
+    // Button should now be enabled (reason has a default value)
+    const confirmButton = screen.getByRole("button", { name: /execute anonymization/i });
+    expect(confirmButton).not.toBeDisabled();
+
+    // Click execute
+    await user.click(confirmButton);
+
+    // Verify success step is shown
+    await waitFor(() => {
+      expect(screen.getByText("Anonymization Complete")).toBeInTheDocument();
+    });
+
+    expect(screen.getByText(/Documents deleted: 12/)).toBeInTheDocument();
+    expect(screen.getByText(/Comments redacted: 23/)).toBeInTheDocument();
+    expect(screen.getByText(/Invoices preserved: 8/)).toBeInTheDocument();
+
+    // Verify the server action was called with correct args (including default reason)
+    expect(mockExecuteAnonymization).toHaveBeenCalledWith(
+      "acme",
+      "c1",
+      "Acme Corp",
+      "Data subject request",
+    );
   });
 });

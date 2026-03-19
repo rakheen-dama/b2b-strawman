@@ -145,7 +145,7 @@ FRONTEND PAGES      TERMINOLOGY + E2E
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 5a (parallel) | 372 | 372A | Backend integration tests: full profile switching flow, provisioning with legal-za, guard + module status E2E, (~6 tests). Backend only. | |
+| 5a (parallel) | 372 | 372A | Backend integration tests: full profile switching flow, provisioning with legal-za, guard + module status E2E, (~6 tests). Backend only. | **Done** (PR #766) |
 | 5b (parallel) | 372 | 372B | Frontend: legal terminology map + integration tests for sidebar gating, stub page rendering, terminology overrides (~6 tests). Frontend only. | |
 
 ---
@@ -407,7 +407,7 @@ FRONTEND PAGES      TERMINOLOGY + E2E
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **372A** | 372.1--372.4 | Backend integration tests: full profile switching flow, provisioning with legal-za profile, guard + module status cross-verification (~6 tests). Backend only. | |
+| **372A** | 372.1--372.4 | Backend integration tests: full profile switching flow, provisioning with legal-za profile, guard + module status cross-verification (~6 tests). Backend only. | **Done** (PR #766) |
 | **372B** | 372.5--372.9 | Frontend: legal terminology map, integration tests for sidebar gating, terminology overrides, stub page rendering (~6 tests). Frontend only. | |
 
 ### Tasks

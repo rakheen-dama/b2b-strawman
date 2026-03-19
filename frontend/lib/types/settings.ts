@@ -44,6 +44,13 @@ export interface OrgSettings {
   // vertical architecture: module gating + i18n namespace
   enabledModules?: string[];
   terminologyNamespace?: string | null;
+  // data protection settings (Phase 50 — Epic 379A)
+  dataProtectionJurisdiction?: string | null;
+  retentionPolicyEnabled?: boolean;
+  defaultRetentionMonths?: number | null;
+  financialRetentionMonths?: number;
+  informationOfficerName?: string | null;
+  informationOfficerEmail?: string | null;
 }
 
 export interface UpdateBatchBillingSettingsRequest {

@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { CreateProjectDialog } from "@/components/projects/create-project-dialog";
 import { ProjectStatusFilter } from "@/components/projects/project-status-filter";
 import { TerminologyProvider } from "@/lib/terminology";
+import { OrgProfileProvider } from "@/lib/org-profile";
 import type { Customer } from "@/lib/types";
 
 // --- Mocks ---
@@ -105,7 +106,7 @@ describe("CreateProjectDialog", () => {
 
   it("renders due date picker when dialog is opened", async () => {
     const user = userEvent.setup();
-    render(<TerminologyProvider verticalProfile={null}><CreateProjectDialog slug="acme" /></TerminologyProvider>);
+    render(<OrgProfileProvider verticalProfile={null} enabledModules={[]} terminologyNamespace={null}><TerminologyProvider verticalProfile={null}><CreateProjectDialog slug="acme" /></TerminologyProvider></OrgProfileProvider>);
     await user.click(screen.getByText("New Project"));
     await waitFor(() => {
       expect(screen.getByLabelText(/due date/i)).toBeInTheDocument();
@@ -116,7 +117,7 @@ describe("CreateProjectDialog", () => {
 
   it("renders customer dropdown when dialog is opened", async () => {
     const user = userEvent.setup();
-    render(<TerminologyProvider verticalProfile={null}><CreateProjectDialog slug="acme" /></TerminologyProvider>);
+    render(<OrgProfileProvider verticalProfile={null} enabledModules={[]} terminologyNamespace={null}><TerminologyProvider verticalProfile={null}><CreateProjectDialog slug="acme" /></TerminologyProvider></OrgProfileProvider>);
     await user.click(screen.getByText("New Project"));
     await waitFor(() => {
       expect(screen.getByLabelText(/customer/i)).toBeInTheDocument();
@@ -131,7 +132,7 @@ describe("CreateProjectDialog", () => {
 
   it("fetches active customers on dialog open", async () => {
     const user = userEvent.setup();
-    render(<TerminologyProvider verticalProfile={null}><CreateProjectDialog slug="acme" /></TerminologyProvider>);
+    render(<OrgProfileProvider verticalProfile={null} enabledModules={[]} terminologyNamespace={null}><TerminologyProvider verticalProfile={null}><CreateProjectDialog slug="acme" /></TerminologyProvider></OrgProfileProvider>);
     await user.click(screen.getByText("New Project"));
     await waitFor(() => {
       expect(mockFetchActiveCustomers).toHaveBeenCalledOnce();

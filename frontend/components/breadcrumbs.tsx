@@ -42,6 +42,10 @@ const SEGMENT_LABELS: Record<string, string> = {
   "my-work": "My Work",
   schedules: "Recurring Schedules",
   retainers: "Retainers",
+  // Vertical module pages
+  "trust-accounting": "Trust Accounting",
+  "court-calendar": "Court Calendar",
+  "conflict-check": "Conflict Check",
 };
 
 /** Segments that contain dynamic child routes (e.g. /projects/[id]) */

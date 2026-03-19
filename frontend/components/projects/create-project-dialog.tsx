@@ -25,10 +25,12 @@ import {
 } from "@/components/ui/form";
 import { createProject, fetchActiveCustomers } from "@/app/(app)/org/[slug]/projects/actions";
 import type { Customer } from "@/lib/types";
-import { Plus } from "lucide-react";
+import { Plus, ShieldAlert } from "lucide-react";
 import { createMessages } from "@/lib/messages";
 import { scrollToFirstError } from "@/lib/error-handler";
 import { useTerminology } from "@/lib/terminology";
+import { ModuleGate } from "@/components/module-gate";
+import { Badge } from "@/components/ui/badge";
 import {
   createProjectSchema,
   type CreateProjectFormData,
@@ -194,6 +196,29 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
               )}
             />
             {error && <p className="text-destructive text-sm">{error}</p>}
+            <ModuleGate module="conflict_check">
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900">
+                <div className="flex items-center gap-2">
+                  <ShieldAlert className="size-4 text-slate-500" />
+                  <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    Conflict Check
+                  </p>
+                  <Badge variant="neutral">Coming Soon</Badge>
+                </div>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Run a conflict of interest check before creating this {t("project")}.
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled
+                  className="mt-3"
+                >
+                  Run Conflict Check
+                </Button>
+              </div>
+            </ModuleGate>
             <DialogFooter>
               <Button
                 type="button"

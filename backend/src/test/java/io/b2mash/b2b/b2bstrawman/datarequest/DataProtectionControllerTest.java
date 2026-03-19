@@ -40,6 +40,7 @@ class DataProtectionControllerTest {
     provisioningService.provisionTenant(ORG_ID, "Data Protection Controller Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     syncMember(ORG_ID, "user_dp_owner", "dp_owner@test.com", "DP Owner", "owner");
+    syncMember(ORG_ID, "user_dp_member", "dp_member@test.com", "DP Member", "member");
   }
 
   @Test
@@ -72,9 +73,21 @@ class DataProtectionControllerTest {
         .andExpect(jsonPath("$.generatedAt").isNotEmpty());
   }
 
+  @Test
+  void generatePaiaManual_memberRole_returns403() throws Exception {
+    mockMvc
+        .perform(post("/api/settings/paia-manual/generate").with(memberJwt()))
+        .andExpect(status().isForbidden());
+  }
+
   private JwtRequestPostProcessor ownerJwt() {
     return jwt()
         .jwt(j -> j.subject("user_dp_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
+  }
+
+  private JwtRequestPostProcessor memberJwt() {
+    return jwt()
+        .jwt(j -> j.subject("user_dp_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 
   private String syncMember(

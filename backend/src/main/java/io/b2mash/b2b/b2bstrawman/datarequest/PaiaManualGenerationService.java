@@ -85,7 +85,8 @@ public class PaiaManualGenerationService {
         template.getContent() != null
             ? template.getContent()
             : Map.<String, Object>of("type", "doc");
-    String html = tiptapRenderer.render(content, context, Map.of(), template.getCss());
+    String css = template.getCss() != null ? template.getCss() : "";
+    String html = tiptapRenderer.render(content, context, Map.of(), css);
 
     // 4. Convert to PDF
     byte[] pdfBytes = pdfRenderingService.htmlToPdf(html);
@@ -93,7 +94,8 @@ public class PaiaManualGenerationService {
     // 5. Upload to S3
     String tenantId = RequestScopes.requireTenantId();
     String date = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
-    String fileName = PAIA_TEMPLATE_SLUG + "-" + date + ".pdf";
+    String uniqueId = UUID.randomUUID().toString().substring(0, 8);
+    String fileName = PAIA_TEMPLATE_SLUG + "-" + date + "-" + uniqueId + ".pdf";
     String s3Key = "org/" + tenantId + "/generated/" + fileName;
 
     try {

@@ -1,6 +1,7 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { OrgProfileProvider } from "@/lib/org-profile";
+import { TerminologyProvider } from "@/lib/terminology";
 import { ModuleGate } from "@/components/module-gate";
 import { TrustBalanceCard } from "@/components/customers/trust-balance-card";
 import { Badge } from "@/components/ui/badge";
@@ -131,5 +132,29 @@ describe("Conditional conflict check section", () => {
 
     expect(screen.queryByText("Conflict Check")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Run Conflict Check" })).not.toBeInTheDocument();
+  });
+});
+
+// ---- 372.8: Trust balance card renders correctly under legal-za profile ----
+
+describe("372B: trust balance card under legal-za profile context", () => {
+  it("renders trust balance card correctly within legal-za profile providers", () => {
+    // Wraps TrustBalanceCard in legal-za providers to verify it renders
+    // in the expected runtime context. Note: the card currently hardcodes
+    // its text rather than using useTerminology().
+    render(
+      <OrgProfileProvider
+        verticalProfile="legal-za"
+        enabledModules={["trust_accounting"]}
+        terminologyNamespace="en-ZA-legal"
+      >
+        <TerminologyProvider verticalProfile="legal-za">
+          <TrustBalanceCard />
+        </TerminologyProvider>
+      </OrgProfileProvider>,
+    );
+
+    expect(screen.getByText("Trust Balance")).toBeInTheDocument();
+    expect(screen.getByText(/client/i)).toBeInTheDocument();
   });
 });

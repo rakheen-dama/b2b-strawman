@@ -20,7 +20,7 @@ vi.mock("motion/react", () => ({
 }));
 
 import { usePathname } from "next/navigation";
-import { TerminologyProvider } from "@/lib/terminology";
+import { TerminologyProvider, useTerminology } from "@/lib/terminology";
 import { CapabilityProvider } from "@/lib/capabilities";
 import { OrgProfileProvider } from "@/lib/org-profile";
 import { NavZone } from "@/components/nav-zone";
@@ -199,5 +199,54 @@ describe("364B: terminology text template replacement", () => {
     );
 
     expect(screen.getByText("No proposals yet")).toBeInTheDocument();
+  });
+});
+
+// ---- 372.6: Legal terminology overrides ----
+
+describe("372B: legal-za terminology overrides", () => {
+  it("t('Project') returns 'Matter' for legal-za profile", () => {
+    function TestConsumer() {
+      const { t } = useTerminology();
+      return <span data-testid="result">{t("Project")}</span>;
+    }
+
+    render(
+      <TerminologyProvider verticalProfile="legal-za">
+        <TestConsumer />
+      </TerminologyProvider>,
+    );
+
+    expect(screen.getByTestId("result").textContent).toBe("Matter");
+  });
+
+  it("t('Customer') returns 'Client' for legal-za profile", () => {
+    function TestConsumer() {
+      const { t } = useTerminology();
+      return <span data-testid="result">{t("Customer")}</span>;
+    }
+
+    render(
+      <TerminologyProvider verticalProfile="legal-za">
+        <TestConsumer />
+      </TerminologyProvider>,
+    );
+
+    expect(screen.getByTestId("result").textContent).toBe("Client");
+  });
+
+  it("t('Document') returns 'Pleading' for legal-za profile", () => {
+    function TestConsumer() {
+      const { t } = useTerminology();
+      return <span data-testid="result">{t("Document")}</span>;
+    }
+
+    render(
+      <TerminologyProvider verticalProfile="legal-za">
+        <TestConsumer />
+      </TerminologyProvider>,
+    );
+
+    expect(screen.getByTestId("result").textContent).toBe("Pleading");
   });
 });

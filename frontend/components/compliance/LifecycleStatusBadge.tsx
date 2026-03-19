@@ -2,7 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { LifecycleStatus } from "@/lib/types";
 
-type BadgeVariant = "success" | "warning" | "destructive" | "neutral";
+type BadgeVariant = "success" | "warning" | "destructive" | "neutral" | "anonymized";
 
 interface StatusConfig {
   label: string;
@@ -21,6 +21,10 @@ const STATUS_CONFIG: Record<LifecycleStatus, StatusConfig> = {
   DORMANT: { label: "Dormant", variant: "warning" },
   OFFBOARDING: { label: "Offboarding", variant: "warning" },
   OFFBOARDED: { label: "Offboarded", variant: "destructive" },
+  ANONYMIZED: {
+    label: "Anonymized",
+    variant: "anonymized",
+  },
 };
 
 interface LifecycleStatusBadgeProps {

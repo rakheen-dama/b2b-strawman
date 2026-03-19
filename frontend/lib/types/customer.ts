@@ -10,7 +10,8 @@ export type LifecycleStatus =
   | "ACTIVE"
   | "DORMANT"
   | "OFFBOARDING"
-  | "OFFBOARDED";
+  | "OFFBOARDED"
+  | "ANONYMIZED";
 
 export type CustomerType = "INDIVIDUAL" | "COMPANY" | "TRUST";
 

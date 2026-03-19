@@ -24,6 +24,15 @@ public interface TimeEntryRepository extends JpaRepository<TimeEntry, UUID> {
   List<TimeEntry> findBillableByProjectIdIn(@Param("projectIds") List<UUID> projectIds);
 
   @Query(
+      """
+      SELECT te FROM TimeEntry te, Task t
+      WHERE te.taskId = t.id
+        AND t.projectId IN :projectIds
+      ORDER BY te.date DESC, te.createdAt DESC
+      """)
+  List<TimeEntry> findByProjectIdIn(@Param("projectIds") List<UUID> projectIds);
+
+  @Query(
       "SELECT te FROM TimeEntry te WHERE te.taskId = :taskId ORDER BY te.date DESC, te.createdAt"
           + " DESC")
   List<TimeEntry> findByTaskId(@Param("taskId") UUID taskId);

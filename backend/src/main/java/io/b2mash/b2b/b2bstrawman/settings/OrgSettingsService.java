@@ -737,7 +737,11 @@ public class OrgSettingsService {
                         ? settings.getDataProtectionJurisdiction()
                         : "",
                     "retention_enabled",
-                    settings.isRetentionPolicyEnabled()))
+                    settings.isRetentionPolicyEnabled(),
+                    "member_id",
+                    actor.memberId().toString(),
+                    "org_role",
+                    actor.orgRole()))
             .build());
 
     return toSettingsResponse(settings);

@@ -20,7 +20,8 @@ public enum LifecycleStatus {
           ACTIVE, Set.of(DORMANT, OFFBOARDING),
           DORMANT, Set.of(ACTIVE, OFFBOARDING),
           OFFBOARDING, Set.of(OFFBOARDED),
-          OFFBOARDED, Set.of(ACTIVE));
+          OFFBOARDED, Set.of(ACTIVE, ANONYMIZED),
+          ANONYMIZED, Set.of());
 
   /** Returns true if transitioning from this status to the target is allowed. */
   public boolean canTransitionTo(LifecycleStatus target) {

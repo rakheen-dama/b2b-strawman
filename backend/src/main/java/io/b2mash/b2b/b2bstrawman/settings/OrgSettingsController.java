@@ -182,6 +182,7 @@ public class OrgSettingsController {
             actor));
   }
 
+  // Service enforces owner-only; TEAM_OVERSIGHT is the nearest capability
   @PatchMapping("/data-protection")
   @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<SettingsResponse> updateDataProtectionSettings(

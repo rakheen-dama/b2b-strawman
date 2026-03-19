@@ -699,6 +699,36 @@ class OrgSettingsIntegrationTest {
 
   @Test
   @Order(26)
+  void patchDataProtectionSettings_rejectsFinancialRetentionBelowJurisdictionMinimum()
+      throws Exception {
+    // First set jurisdiction to ZA (minimum 60 months)
+    mockMvc
+        .perform(
+            patch("/api/settings/data-protection")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"dataProtectionJurisdiction": "ZA"}
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.dataProtectionJurisdiction").value("ZA"));
+
+    // Then try to set financialRetentionMonths below ZA's 60-month minimum
+    mockMvc
+        .perform(
+            patch("/api/settings/data-protection")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"financialRetentionMonths": 12}
+                    """))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  @Order(27)
   void patchDataProtectionSettings_rejectsInvalidEmail() throws Exception {
     mockMvc
         .perform(

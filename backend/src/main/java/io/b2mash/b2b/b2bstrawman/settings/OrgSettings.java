@@ -166,7 +166,7 @@ public class OrgSettings {
   private Integer defaultRetentionMonths;
 
   @Column(name = "financial_retention_months")
-  private Integer financialRetentionMonths;
+  private Integer financialRetentionMonths = 60;
 
   @Column(name = "information_officer_name", length = 255)
   private String informationOfficerName;

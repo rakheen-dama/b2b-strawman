@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import java.io.InputStream;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,7 +16,9 @@ import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Object;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
@@ -108,6 +111,12 @@ public class S3StorageAdapter implements StorageService {
 
     var presigned = s3Presigner.presignGetObject(presignRequest);
     return new PresignedUrl(presigned.url().toExternalForm(), Instant.now().plus(expiry));
+  }
+
+  @Override
+  public List<String> listKeys(String prefix) {
+    var request = ListObjectsV2Request.builder().bucket(bucketName).prefix(prefix).build();
+    return s3Client.listObjectsV2Paginator(request).contents().stream().map(S3Object::key).toList();
   }
 
   private static void validateKey(String key) {

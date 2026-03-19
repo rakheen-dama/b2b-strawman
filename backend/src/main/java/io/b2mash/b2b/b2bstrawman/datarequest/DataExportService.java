@@ -158,6 +158,13 @@ public class DataExportService {
     return s3Key;
   }
 
+  /** Triggers a compliance data export and returns the export result for the controller. */
+  @Transactional
+  public ExportResult triggerCustomerExport(UUID customerId, UUID actorId) {
+    var response = exportCustomerData(customerId, actorId);
+    return new ExportResult(response.exportId(), response.status(), response.fileCount());
+  }
+
   @Transactional
   public ExportStatusResponse exportCustomerData(UUID customerId, UUID actorId) {
     customerRepository
@@ -173,6 +180,9 @@ public class DataExportService {
     // Count files (non-directory ZIP entries)
     int fileCount = countZipEntries(zipBytes);
 
+    // Generate exportId upfront so it can be embedded in the S3 key
+    UUID exportId = UUID.randomUUID();
+
     // Upload to S3 — use exports segment (matches existing S3_KEY_PATTERN)
     String timestamp = String.valueOf(Instant.now().toEpochMilli());
     String s3Key =
@@ -181,15 +191,14 @@ public class DataExportService {
             + "/exports/compliance-"
             + customerId
             + "-"
+            + exportId
+            + "-"
             + timestamp
             + ".zip";
     storageService.upload(s3Key, zipBytes, "application/zip");
 
     // Generate 24-hour presigned download URL
     var presigned = storageService.generateDownloadUrl(s3Key, Duration.ofHours(24));
-
-    // Audit event
-    UUID exportId = UUID.randomUUID();
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("data.subject.export.generated")
@@ -216,6 +225,96 @@ public class DataExportService {
 
     return new ExportStatusResponse(
         exportId, "COMPLETED", presigned.url(), presigned.expiresAt(), fileCount, zipBytes.length);
+  }
+
+  private static final int MAX_EXPORT_LIST_SIZE = 100;
+
+  /**
+   * Lists compliance exports from S3. Returns up to {@link #MAX_EXPORT_LIST_SIZE} entries.
+   * Presigned download URLs are NOT eagerly generated; callers should use {@link
+   * #getExportStatus(UUID)} to obtain a download URL for a specific export.
+   */
+  public List<ExportStatusResponse> listExports() {
+    String tenantId = RequestScopes.requireTenantId();
+    String prefix = "org/" + tenantId + "/exports/";
+    List<String> keys = storageService.listKeys(prefix);
+    return keys.stream()
+        .filter(k -> k.contains("/compliance-"))
+        .limit(MAX_EXPORT_LIST_SIZE)
+        .map(
+            k -> {
+              UUID extractedId = extractExportIdFromKey(k);
+              return new ExportStatusResponse(extractedId, "COMPLETED", null, null, 0, 0L);
+            })
+        .toList();
+  }
+
+  @Transactional(readOnly = true)
+  public ExportStatusResponse getExportStatus(UUID exportId) {
+    var matching =
+        auditEventRepository
+            .findByExportId("data.subject.export.generated", exportId.toString())
+            .orElseThrow(() -> new ResourceNotFoundException("Export", exportId));
+
+    UUID customerId = matching.getEntityId();
+    String tenantId = RequestScopes.requireTenantId();
+    String prefix = "org/" + tenantId + "/exports/";
+    List<String> keys = storageService.listKeys(prefix);
+    // Match precisely: key must contain the exportId segment
+    String exportIdStr = exportId.toString();
+    String s3Key =
+        keys.stream()
+            .filter(
+                k ->
+                    k.contains("/compliance-" + customerId + "-" + exportIdStr + "-")
+                        || k.contains("/compliance-" + customerId + "-" + exportIdStr + "."))
+            .findFirst()
+            .orElseThrow(() -> new ResourceNotFoundException("Export", exportId));
+
+    var presigned = storageService.generateDownloadUrl(s3Key, Duration.ofHours(24));
+    var details = matching.getDetails();
+    int fileCount =
+        details != null && details.containsKey("fileCount")
+            ? ((Number) details.get("fileCount")).intValue()
+            : 0;
+    long totalSize =
+        details != null && details.containsKey("totalSizeBytes")
+            ? ((Number) details.get("totalSizeBytes")).longValue()
+            : 0L;
+
+    return new ExportStatusResponse(
+        exportId, "COMPLETED", presigned.url(), presigned.expiresAt(), fileCount, totalSize);
+  }
+
+  /**
+   * Extracts the exportId UUID from an S3 key following the pattern: {@code
+   * org/{tenantId}/exports/compliance-{customerId}-{exportId}-{timestamp}.zip}. Falls back to a
+   * deterministic UUID derived from the key bytes for legacy keys that predate the exportId
+   * encoding.
+   */
+  static UUID extractExportIdFromKey(String key) {
+    // Expected filename: compliance-{customerId}-{exportId}-{timestamp}.zip
+    String filename = key.substring(key.lastIndexOf('/') + 1);
+    // Strip ".zip" suffix
+    if (filename.endsWith(".zip")) {
+      filename = filename.substring(0, filename.length() - 4);
+    }
+    // Split: compliance, {customerId}, {exportId}, {timestamp}
+    // UUID is 36 chars with dashes; customerId is also a UUID (36 chars)
+    // Pattern: "compliance-" prefix, then 36-char customerId, "-", 36-char exportId, "-", timestamp
+    String afterPrefix = filename.startsWith("compliance-") ? filename.substring(11) : filename;
+    // afterPrefix = "{customerId}-{exportId}-{timestamp}"
+    // customerId is 36 chars (UUID), then dash, then exportId is 36 chars
+    if (afterPrefix.length() > 73) { // 36 (customerId) + 1 (-) + 36 (exportId)
+      String exportIdStr = afterPrefix.substring(37, 73);
+      try {
+        return UUID.fromString(exportIdStr);
+      } catch (IllegalArgumentException e) {
+        // Fall through to deterministic UUID
+      }
+    }
+    // Fallback for legacy keys without embedded exportId
+    return UUID.nameUUIDFromBytes(key.getBytes(StandardCharsets.UTF_8));
   }
 
   private Map<String, Object> collectData(UUID customerId, boolean includeAllTimeEntries) {

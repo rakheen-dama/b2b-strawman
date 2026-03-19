@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.integration.storage;
 
 import java.io.InputStream;
 import java.time.Duration;
+import java.util.List;
 
 /**
  * Abstraction for object storage operations. Domain services inject this interface instead of
@@ -28,4 +29,7 @@ public interface StorageService {
 
   /** Generate a presigned download URL (time-limited). */
   PresignedUrl generateDownloadUrl(String key, Duration expiry);
+
+  /** List all object keys under the given prefix. Returns empty list if none found. */
+  List<String> listKeys(String prefix);
 }

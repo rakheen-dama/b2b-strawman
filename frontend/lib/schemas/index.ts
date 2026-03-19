@@ -13,5 +13,5 @@ export type { CreateProposalFormData } from "./proposal";
 export { informationOfficerSchema } from "./data-protection";
 export type { InformationOfficerFormData } from "./data-protection";
 
-export { logDsarRequestSchema, dsarStatusTransitionSchema } from "./data-protection";
-export type { LogDsarRequestFormData, DsarStatusTransitionFormData } from "./data-protection";
+export { logDsarRequestSchema, dsarStatusTransitionSchema, processingActivitySchema } from "./data-protection";
+export type { LogDsarRequestFormData, DsarStatusTransitionFormData, ProcessingActivityFormData } from "./data-protection";

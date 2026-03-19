@@ -39,3 +39,16 @@ export const dsarStatusTransitionSchema = z.object({
 export type DsarStatusTransitionFormData = z.infer<
   typeof dsarStatusTransitionSchema
 >;
+
+export const processingActivitySchema = z.object({
+  category: z.string().min(1, "Category is required").max(255),
+  description: z.string().min(1, "Description is required").max(2000),
+  legalBasis: z.string().min(1, "Legal basis is required").max(255),
+  dataSubjects: z.string().min(1, "Data subjects is required").max(255),
+  retentionPeriod: z.string().min(1, "Retention period is required").max(255),
+  recipients: z.string().max(500).optional().or(z.literal("")),
+});
+
+export type ProcessingActivityFormData = z.infer<
+  typeof processingActivitySchema
+>;

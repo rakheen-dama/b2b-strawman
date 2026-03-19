@@ -463,15 +463,6 @@ class RetentionServiceTest {
           policyRepository.save(policy);
         });
 
-    // Count notifications before
-    long notifBefore =
-        runInTenant(
-            () ->
-                notificationRepository.existsByTypeAndReferenceEntityId(
-                        "RETENTION_PURGE_WARNING", UUID.randomUUID())
-                    ? 1L
-                    : 0L);
-
     runInTenant(() -> retentionService.runCheck());
 
     // Verify a RETENTION_PURGE_WARNING notification was created for the owner
@@ -550,7 +541,7 @@ class RetentionServiceTest {
             runInTenant(
                 () ->
                     policyRepository.existsByRecordTypeAndTriggerEvent(
-                        "CUSTOMER", "RECORD_CREATED")))
+                        "CUSTOMER", "CUSTOMER_OFFBOARDED")))
         .isTrue();
     assertThat(
             runInTenant(

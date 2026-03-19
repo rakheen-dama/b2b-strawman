@@ -13,6 +13,7 @@ import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -64,28 +65,39 @@ public class RetentionService {
     Instant now = Instant.now();
 
     for (RetentionPolicy policy : policies) {
-      Instant cutoff = now.minus(policy.getRetentionDays(), ChronoUnit.DAYS);
-      List<UUID> flaggedIds =
-          switch (policy.getRecordType()) {
-            case "CUSTOMER" -> findExpiredCustomers(policy.getTriggerEvent(), cutoff);
-            case "AUDIT_EVENT" -> findExpiredAuditEvents(policy.getTriggerEvent(), cutoff);
-            case "DOCUMENT" -> findExpiredDocuments(policy.getTriggerEvent(), cutoff);
-            case "TIME_ENTRY" ->
-                findExpiredTimeEntries(
-                    policy.getTriggerEvent(), LocalDate.now().minusDays(policy.getRetentionDays()));
-            default -> List.of();
-          };
-      if (!flaggedIds.isEmpty()) {
-        result.addFlagged(
-            policy.getRecordType(), policy.getTriggerEvent(), policy.getAction(), flaggedIds);
+      try {
+        Instant cutoff = now.minus(policy.getRetentionDays(), ChronoUnit.DAYS);
+        List<UUID> flaggedIds =
+            switch (policy.getRecordType()) {
+              case "CUSTOMER" -> findExpiredCustomers(policy.getTriggerEvent(), cutoff);
+              case "AUDIT_EVENT" -> findExpiredAuditEvents(policy.getTriggerEvent(), cutoff);
+              case "DOCUMENT" -> findExpiredDocuments(policy.getTriggerEvent(), cutoff);
+              case "TIME_ENTRY" ->
+                  findExpiredTimeEntries(
+                      policy.getTriggerEvent(),
+                      LocalDate.now().minusDays(policy.getRetentionDays()));
+              default -> List.of();
+            };
+        if (!flaggedIds.isEmpty()) {
+          result.addFlagged(
+              policy.getRecordType(), policy.getTriggerEvent(), policy.getAction(), flaggedIds);
+        }
+
+        // 30-day warning notifications for approaching records
+        evaluateWarnings(policy, now);
+
+        // Update lastEvaluatedAt after evaluating each policy
+        policy.setLastEvaluatedAt(Instant.now());
+        policyRepository.save(policy);
+      } catch (Exception e) {
+        log.error(
+            "Error evaluating retention policy {} ({}:{}): {}",
+            policy.getId(),
+            policy.getRecordType(),
+            policy.getTriggerEvent(),
+            e.getMessage(),
+            e);
       }
-
-      // 30-day warning notifications for approaching records
-      evaluateWarnings(policy, now);
-
-      // Update lastEvaluatedAt after evaluating each policy
-      policy.setLastEvaluatedAt(Instant.now());
-      policyRepository.save(policy);
     }
 
     UUID checkId = UUID.randomUUID();
@@ -158,10 +170,11 @@ public class RetentionService {
       List<UUID> allBeforeWarn =
           customerRepository.findIdsByLifecycleStatusAndOffboardedAtBefore(
               LifecycleStatus.OFFBOARDED, warnCutoff);
-      List<UUID> alreadyExpired =
-          customerRepository.findIdsByLifecycleStatusAndOffboardedAtBefore(
-              LifecycleStatus.OFFBOARDED, expiredCutoff);
-      return allBeforeWarn.stream().filter(id -> !alreadyExpired.contains(id)).toList();
+      var expiredSet =
+          new HashSet<>(
+              customerRepository.findIdsByLifecycleStatusAndOffboardedAtBefore(
+                  LifecycleStatus.OFFBOARDED, expiredCutoff));
+      return allBeforeWarn.stream().filter(id -> !expiredSet.contains(id)).toList();
     }
     return List.of();
   }
@@ -170,8 +183,8 @@ public class RetentionService {
       String triggerEvent, Instant warnCutoff, Instant expiredCutoff) {
     if ("RECORD_CREATED".equals(triggerEvent)) {
       List<UUID> allBeforeWarn = auditEventRepository.findIdsByOccurredAtBefore(warnCutoff);
-      List<UUID> alreadyExpired = auditEventRepository.findIdsByOccurredAtBefore(expiredCutoff);
-      return allBeforeWarn.stream().filter(id -> !alreadyExpired.contains(id)).toList();
+      var expiredSet = new HashSet<>(auditEventRepository.findIdsByOccurredAtBefore(expiredCutoff));
+      return allBeforeWarn.stream().filter(id -> !expiredSet.contains(id)).toList();
     }
     return List.of();
   }
@@ -180,8 +193,8 @@ public class RetentionService {
       String triggerEvent, Instant warnCutoff, Instant expiredCutoff) {
     if ("RECORD_CREATED".equals(triggerEvent)) {
       List<UUID> allBeforeWarn = documentRepository.findIdsByCreatedAtBefore(warnCutoff);
-      List<UUID> alreadyExpired = documentRepository.findIdsByCreatedAtBefore(expiredCutoff);
-      return allBeforeWarn.stream().filter(id -> !alreadyExpired.contains(id)).toList();
+      var expiredSet = new HashSet<>(documentRepository.findIdsByCreatedAtBefore(expiredCutoff));
+      return allBeforeWarn.stream().filter(id -> !expiredSet.contains(id)).toList();
     }
     return List.of();
   }
@@ -190,8 +203,8 @@ public class RetentionService {
       String triggerEvent, LocalDate warnCutoff, LocalDate expiredCutoff) {
     if ("RECORD_CREATED".equals(triggerEvent)) {
       List<UUID> allBeforeWarn = timeEntryRepository.findIdsByDateBefore(warnCutoff);
-      List<UUID> alreadyExpired = timeEntryRepository.findIdsByDateBefore(expiredCutoff);
-      return allBeforeWarn.stream().filter(id -> !alreadyExpired.contains(id)).toList();
+      var expiredSet = new HashSet<>(timeEntryRepository.findIdsByDateBefore(expiredCutoff));
+      return allBeforeWarn.stream().filter(id -> !expiredSet.contains(id)).toList();
     }
     return List.of();
   }
@@ -235,7 +248,7 @@ public class RetentionService {
     seedIfAbsent(
         "CUSTOMER",
         1800,
-        "RECORD_CREATED",
+        "CUSTOMER_OFFBOARDED",
         "anonymize",
         "Client personal information (POPIA: 5 years)");
     seedIfAbsent(

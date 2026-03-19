@@ -156,7 +156,7 @@ FRONTEND (requires all backend epics 373–378)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 4a (parallel) | 379 | 379A | Data Protection settings tab layout, jurisdiction selector, information officer fields, types, actions, frontend tests (~4). Frontend only. | |
+| 4a (parallel) | 379 | 379A | Data Protection settings tab layout, jurisdiction selector, information officer fields, types, actions, frontend tests (~4). Frontend only. | **Done** (PR #778) |
 | 4b (parallel) | 379 | 379B | DSAR management page (list, log new request dialog, status transitions, deadline badges). Actions + components + frontend tests (~5). Frontend only. | |
 | 4c (parallel) | 379 | 379C | Retention policies table (inline edit, validation), processing register table (CRUD), PAIA manual generate button + preview. Frontend tests (~5). Frontend only. | |
 
@@ -477,7 +477,7 @@ FRONTEND (requires all backend epics 373–378)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **379A** | 379.1–379.6 | New route `/settings/data-protection/page.tsx`, jurisdiction selector component, information officer fields, `PATCH /api/settings/data-protection` action, types for data protection settings, layout in settings nav. Frontend tests (~4). Frontend only. | |
+| **379A** | 379.1–379.6 | New route `/settings/data-protection/page.tsx`, jurisdiction selector component, information officer fields, `PATCH /api/settings/data-protection` action, types for data protection settings, layout in settings nav. Frontend tests (~4). Frontend only. | **Done** (PR #778) |
 | **379B** | 379.7–379.12 | DSAR management page (`/settings/data-protection/requests/`), DSAR list table with deadline badges, `LogDsarRequestDialog`, status transition actions, `fetchDsarRequests` + `createDsarRequest` + `updateDsarStatus` server actions. Frontend tests (~5). Frontend only. | |
 | **379C** | 379.13–379.18 | Retention policies table (inline editing, financial minimum validation), processing register table (CRUD), PAIA manual generate button + preview dialog, export register button. Frontend tests (~5). Frontend only. | |
 

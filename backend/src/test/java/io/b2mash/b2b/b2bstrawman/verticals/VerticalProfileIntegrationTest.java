@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.verticals;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -17,8 +18,11 @@ import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -38,6 +42,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @Import(TestcontainersConfiguration.class)
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class VerticalProfileIntegrationTest {
 
   private static final String API_KEY = "test-api-key";
@@ -81,6 +86,7 @@ class VerticalProfileIntegrationTest {
   // --- Task 372.1: Profile Switching Lifecycle ---
 
   @Test
+  @Order(1)
   void switchFromNullToLegalZa_setsModulesTerminologyAndLogsAuditEvent() throws Exception {
     // Switch from null to legal-za
     mockMvc
@@ -124,6 +130,7 @@ class VerticalProfileIntegrationTest {
   }
 
   @Test
+  @Order(2)
   void switchFromLegalZaToConsultingGeneric_clearsModulesAndTerminology() throws Exception {
     // First ensure we are on legal-za
     mockMvc
@@ -148,12 +155,13 @@ class VerticalProfileIntegrationTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.verticalProfile").value("consulting-generic"))
         .andExpect(jsonPath("$.enabledModules").isEmpty())
-        .andExpect(jsonPath("$.terminologyNamespace").doesNotExist());
+        .andExpect(jsonPath("$.terminologyNamespace").value(nullValue()));
   }
 
   // --- Task 372.3: Guard Denies Unprovisioned Module Access ---
 
   @Test
+  @Order(3)
   void guardDeniesAccessThenAllowsAfterProfileSwitch() throws Exception {
     // Guard tenant was provisioned with consulting-generic (no modules)
     // Trust accounting should be denied (403)

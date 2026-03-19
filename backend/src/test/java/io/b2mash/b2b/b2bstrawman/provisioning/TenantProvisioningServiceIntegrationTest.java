@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.Set;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -38,6 +39,8 @@ class TenantProvisioningServiceIntegrationTest {
 
   private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_tpsi_legal_za";
+  private static final Set<String> ALLOWED_COLUMNS =
+      Set.of("enabled_modules", "terminology_namespace", "default_currency", "vertical_profile");
 
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private PlanSyncService planSyncService;
@@ -90,6 +93,9 @@ class TenantProvisioningServiceIntegrationTest {
   // --- Helpers ---
 
   private String getOrgSettingsColumn(String schemaName, String columnName) throws SQLException {
+    if (!ALLOWED_COLUMNS.contains(columnName)) {
+      throw new IllegalArgumentException("Invalid column: " + columnName);
+    }
     try (var conn = migrationDataSource.getConnection();
         var stmt =
             conn.prepareStatement(

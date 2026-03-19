@@ -33,7 +33,7 @@ The next Flyway tenant migration is **V76**. The next epic number starts at **37
 | 377 | DSAR Extension | Backend | 373 | S | 377A | **Done** (PR #775) |
 | 378 | Processing Activity CRUD + PAIA Manual Generation | Backend | 373 | M | 378A, 378B | **Done** (PRs #776, #777) |
 | 379 | Frontend: Data Protection Settings Tab + DSAR Page | Frontend | 373–378 | L | 379A, 379B, 379C | **Done** (PRs #778, #779, #780) |
-| 380 | Frontend: Customer Data Protection Actions | Frontend | 374, 375, 379 | M | 380A | |
+| 380 | Frontend: Customer Data Protection Actions | Frontend | 374, 375, 379 | M | 380A | **Done** (PR #781) |
 
 ---
 
@@ -164,7 +164,7 @@ FRONTEND (requires all backend epics 373–378)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 5a | 380 | 380A | Customer detail export button + confirmation dialog, anonymize button + two-step confirm dialog (preview → type-to-confirm), anonymized state display (badge + disabled fields). Frontend tests (~5). Frontend only. | |
+| 5a | 380 | 380A | Customer detail export button + confirmation dialog, anonymize button + two-step confirm dialog (preview → type-to-confirm), anonymized state display (badge + disabled fields). Frontend tests (~5). Frontend only. | **Done** (PR #781) |
 
 ---
 
@@ -536,7 +536,7 @@ FRONTEND (requires all backend epics 373–378)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **380A** | 380.1–380.8 | Export confirmation dialog + progress + download link, anonymize preview dialog + financial warning + type-to-confirm, anonymized state display (badge, disabled fields), customer data protection server actions, frontend tests (~5). Frontend only. | |
+| **380A** | 380.1–380.8 | Export confirmation dialog + progress + download link, anonymize preview dialog + financial warning + type-to-confirm, anonymized state display (badge, disabled fields), customer data protection server actions, frontend tests (~5). Frontend only. | **Done** (PR #781) |
 
 ### Tasks
 

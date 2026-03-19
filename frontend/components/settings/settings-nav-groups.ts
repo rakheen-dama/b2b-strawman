@@ -62,6 +62,7 @@ export const SETTINGS_NAV_GROUPS: SettingsNavGroup[] = [
       { label: "Request Templates", href: "request-templates" },
       { label: "Request Settings", href: "request-settings" },
       { label: "Compliance", href: "compliance" },
+      { label: "Data Protection", href: "data-protection", adminOnly: true },
     ],
   },
   {

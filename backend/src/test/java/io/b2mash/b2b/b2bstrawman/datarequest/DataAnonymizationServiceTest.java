@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
@@ -16,6 +17,7 @@ import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
+import io.b2mash.b2b.b2bstrawman.integration.storage.PresignedUrl;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
@@ -33,8 +35,10 @@ import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Collections;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import org.junit.jupiter.api.AfterEach;
@@ -329,6 +333,211 @@ class DataAnonymizationServiceTest {
           assertThat(details).containsKey("documentsDeleted");
           assertThat(details).containsKey("commentsRedacted");
           assertThat(details).containsKey("portalContactsAnonymized");
+        });
+  }
+
+  // --- Tests for standalone anonymizeCustomer() (Epic 375A) ---
+
+  @Test
+  void anonymizeCustomer_setsAnonymizedStatus() {
+    mockStorageForExport();
+    UUID customerId = createTestCustomer("Anon Status Customer", "anon-status@test.com");
+
+    runInTenant(
+        () ->
+            dataAnonymizationService.anonymizeCustomer(
+                customerId, "Anon Status Customer", "Test reason", memberId));
+
+    runInTenant(
+        () -> {
+          var customer = customerRepository.findById(customerId).orElseThrow();
+          assertThat(customer.getLifecycleStatus()).isEqualTo(LifecycleStatus.ANONYMIZED);
+        });
+  }
+
+  @Test
+  void anonymizeCustomer_clearsNotesAndCustomFields() {
+    mockStorageForExport();
+    UUID customerId =
+        runInTenant(
+            () -> {
+              var customer =
+                  TestCustomerFactory.createActiveCustomer(
+                      "Notes Fields Customer", "notes-fields@test.com", memberId);
+              customer.setNotes("Sensitive notes here");
+              customer.setCustomFields(Map.of("industry", "Tech", "size", "Large"));
+              return customerRepository.save(customer).getId();
+            });
+
+    runInTenant(
+        () ->
+            dataAnonymizationService.anonymizeCustomer(
+                customerId, "Notes Fields Customer", null, memberId));
+
+    runInTenant(
+        () -> {
+          var customer = customerRepository.findById(customerId).orElseThrow();
+          assertThat(customer.getNotes()).isNull();
+          assertThat(customer.getCustomFields()).isNull();
+        });
+  }
+
+  @Test
+  void anonymizeCustomer_auditEventContainsPreAnonymizationExportKey() {
+    mockStorageForExport();
+    UUID customerId = createTestCustomer("Audit Export Customer", "audit-export@test.com");
+
+    runInTenant(
+        () ->
+            dataAnonymizationService.anonymizeCustomer(
+                customerId, "Audit Export Customer", "GDPR request", memberId));
+
+    runInTenant(
+        () -> {
+          var page =
+              auditEventRepository.findByFilter(
+                  "customer",
+                  customerId,
+                  null,
+                  "data.subject.anonymized",
+                  null,
+                  null,
+                  Pageable.ofSize(10));
+          assertThat(page.getContent()).isNotEmpty();
+          var auditEvent = page.getContent().getFirst();
+          assertThat(auditEvent.getEventType()).isEqualTo("data.subject.anonymized");
+          assertThat(auditEvent.getDetails()).containsKey("preAnonymizationExportKey");
+          assertThat((String) auditEvent.getDetails().get("preAnonymizationExportKey"))
+              .contains("exports/compliance-");
+        });
+  }
+
+  @Test
+  void previewAnonymization_returnsCorrectEntityCounts() {
+    UUID customerId =
+        runInTenant(
+            () -> {
+              var customer =
+                  TestCustomerFactory.createActiveCustomer(
+                      "Preview Customer", "preview@test.com", memberId);
+              customer.setCustomFields(Map.of("field1", "val1", "field2", "val2"));
+              return customerRepository.save(customer).getId();
+            });
+
+    var preview = runInTenant(() -> dataAnonymizationService.previewAnonymization(customerId));
+
+    assertThat(preview.customerId()).isEqualTo(customerId);
+    assertThat(preview.customerName()).isEqualTo("Preview Customer");
+    assertThat(preview.customFieldValues()).isEqualTo(2);
+    assertThat(preview.portalContacts()).isZero();
+    assertThat(preview.projects()).isZero();
+    assertThat(preview.documents()).isZero();
+    assertThat(preview.timeEntries()).isZero();
+    assertThat(preview.invoices()).isZero();
+    assertThat(preview.comments()).isZero();
+    assertThat(preview.financialRecordsRetained()).isZero();
+    assertThat(preview.financialRetentionExpiresAt()).isNull();
+  }
+
+  @Test
+  void anonymizeCustomer_rejectedIfConfirmationNameDoesNotMatch() {
+    mockStorageForExport();
+    UUID customerId = createTestCustomer("Mismatch Anon Customer", "mismatch-anon@test.com");
+
+    assertThatThrownBy(
+            () ->
+                runInTenant(
+                    () ->
+                        dataAnonymizationService.anonymizeCustomer(
+                            customerId, "Wrong Name", null, memberId)))
+        .isInstanceOf(InvalidStateException.class)
+        .hasMessageContaining("Confirmation name does not match customer name");
+  }
+
+  @Test
+  void anonymizeCustomer_rejectedIfAlreadyAnonymized() {
+    mockStorageForExport();
+    UUID customerId = createTestCustomer("Already Anon Customer", "already-anon@test.com");
+
+    // First anonymization should succeed
+    runInTenant(
+        () ->
+            dataAnonymizationService.anonymizeCustomer(
+                customerId, "Already Anon Customer", null, memberId));
+
+    // Second anonymization should fail
+    String hash = customerId.toString().substring(0, 6);
+    String anonymizedName = "Anonymized Customer " + hash;
+
+    assertThatThrownBy(
+            () ->
+                runInTenant(
+                    () ->
+                        dataAnonymizationService.anonymizeCustomer(
+                            customerId, anonymizedName, null, memberId)))
+        .isInstanceOf(ResourceConflictException.class)
+        .hasMessageContaining("already anonymized");
+  }
+
+  @Test
+  void anonymizeCustomer_preservesInvoiceFinancialFieldsAndUpdatesCustomerReference() {
+    mockStorageForExport();
+    UUID customerId = createTestCustomer("Invoice Preserve Customer", "invoice-preserve@test.com");
+
+    UUID invoiceId =
+        runInTenant(
+            () -> {
+              var invoice =
+                  new Invoice(
+                      customerId,
+                      "ZAR",
+                      "Invoice Preserve Customer",
+                      "invoice-preserve@test.com",
+                      "123 Test St, Test City",
+                      "Test Org",
+                      memberId);
+              return invoiceRepository.save(invoice).getId();
+            });
+
+    runInTenant(
+        () ->
+            dataAnonymizationService.anonymizeCustomer(
+                customerId, "Invoice Preserve Customer", null, memberId));
+
+    runInTenant(
+        () -> {
+          var invoice = invoiceRepository.findById(invoiceId).orElseThrow();
+
+          // Financial fields preserved
+          assertThat(invoice.getCurrency()).isEqualTo("ZAR");
+          assertThat(invoice.getSubtotal()).isNotNull();
+          assertThat(invoice.getTaxAmount()).isNotNull();
+          assertThat(invoice.getTotal()).isNotNull();
+          assertThat(invoice.getStatus()).isNotNull();
+
+          // Customer reference updated to REF-{shortId}
+          String hash = customerId.toString().substring(0, 6);
+          assertThat(invoice.getCustomerName()).isEqualTo("REF-" + hash);
+          assertThat(invoice.getCustomerEmail()).isNull();
+          assertThat(invoice.getCustomerAddress()).isNull();
+        });
+  }
+
+  // --- Helpers for standalone anonymization tests ---
+
+  private void mockStorageForExport() {
+    when(storageService.upload(any(String.class), any(byte[].class), any(String.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+    when(storageService.generateDownloadUrl(any(), any()))
+        .thenReturn(
+            new PresignedUrl("https://example.com/download", Instant.now().plusSeconds(3600)));
+  }
+
+  private UUID createTestCustomer(String name, String email) {
+    return runInTenant(
+        () -> {
+          var customer = TestCustomerFactory.createActiveCustomer(name, email, memberId);
+          return customerRepository.save(customer).getId();
         });
   }
 

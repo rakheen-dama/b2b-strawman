@@ -4,7 +4,7 @@
 
 - **QA Position**: ALL_SECTIONS_COMPLETE — All 12 sections tested. 11 items remain NOT_TESTED (portal auth limitation, document upload requirement, missing seed data).
 - **Cycle**: 1
-- **E2E Stack**: NEEDS_REBUILD (frontend) — BUG-REG-001 fix merged (PR #782)
+- **E2E Stack**: NEEDS_REBUILD (frontend) — BUG-REG-001 fix merged (PR #782), BUG-REG-002 fix merged (PR #783)
 - **Branch**: `bugfix_cycle_regression_2026-03-19`
 - **Scenario**: `qa/testplan/regression-test-suite.md`
 - **Focus**: Full regression test suite across all implemented features
@@ -14,7 +14,7 @@
 | ID | Summary | Severity | Status | Owner | PR | Track | Notes |
 |----|---------|----------|--------|-------|----|-------|-------|
 | BUG-REG-001 | Settings > Rates & Currency 500 for all users | HIGH | FIXED | Dev | #782 | AUTH-01, SET-02 | `TypeError: Cannot read properties of null (reading 'length')`. Fixed: null coalescing on Promise.allSettled values + defensive guard in MemberRatesTable + defaultCurrency fallback. Frontend change — NEEDS_REBUILD. |
-| BUG-REG-002 | Carol (Member) gets 500 on role-gated pages | HIGH | SPEC_READY | Dev | — | AUTH-01 | Custom `ErrorBoundary` in org layout catches Next.js `notFound()` internal errors, rendering "Something went wrong" instead of 404. Cascading: affects 14+ pages using `notFound()` for RBAC. Fix spec: `fix-specs/BUG-REG-002.md`. Effort: S. |
+| BUG-REG-002 | Carol (Member) gets 500 on role-gated pages | HIGH | FIXED | Dev | #783 | AUTH-01 | Fixed ErrorBoundary to re-throw `NEXT_NOT_FOUND`/`NEXT_REDIRECT` errors. Replaced `notFound()` with `<PermissionDenied>` component on 4 pages (profitability, reports, customers, settings/roles). Frontend change — NEEDS_REBUILD. |
 | BUG-REG-003 | Customer list has no free-text search input | LOW | WONT_FIX | Dev | — | CUST-01 | Missing feature, not a regression. Customer search was never implemented (no backend search endpoint, no frontend input). Out of scope for bugfix cycle. Spec written for future reference: `fix-specs/BUG-REG-003.md`. |
 
 ## Results Summary
@@ -136,3 +136,4 @@
 | 2026-03-19T22:50Z | Product | BUG-REG-002 -> SPEC_READY (escalated MEDIUM -> HIGH). Root cause: custom `ErrorBoundary` in `org/[slug]/layout.tsx` (line 102) catches ALL errors including Next.js `NEXT_NOT_FOUND` from `notFound()`. Cascading: affects 14+ pages that use `notFound()` for RBAC gating. Fix: re-throw errors with `NEXT_NOT_FOUND`/`NEXT_REDIRECT` digest in ErrorBoundary. Effort: S. |
 | 2026-03-19T22:55Z | Product | BUG-REG-003 -> WONT_FIX. Customer search is a missing feature, not a regression. Neither backend (no search param in `CustomerController.listCustomers()`) nor frontend (no search input in customers page) implements it. Out of scope for bugfix cycle. Spec written for future backlog. |
 | 2026-03-19T21:30Z | Dev | BUG-REG-001 FIXED via PR #782 (squash-merged). Added null coalescing on `settingsRes.value` and `Array.isArray()` guard on `membersRes.value` in `settings/rates/page.tsx`. Added `!members` defensive guard in `MemberRatesTable` before `.length` check. Added `settings?.defaultCurrency ?? "USD"` fallback. Build passes. 263/264 test files pass (1 pre-existing failure in portal-login.test.tsx). Frontend change — NEEDS_REBUILD. |
+| 2026-03-19T21:37Z | Dev | BUG-REG-002 FIXED via PR #783 (squash-merged). Fixed `ErrorBoundary.getDerivedStateFromError` to detect and re-throw errors with `NEXT_NOT_FOUND`/`NEXT_REDIRECT` digest. Replaced `notFound()` RBAC gates with `<PermissionDenied>` component on profitability, reports, customers, and settings/roles pages. Build passes. 263/264 test files pass (1 pre-existing failure in portal-login.test.tsx). Frontend change — NEEDS_REBUILD. |

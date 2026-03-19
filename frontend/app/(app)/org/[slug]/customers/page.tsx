@@ -1,5 +1,4 @@
 import { Suspense } from "react";
-import { notFound } from "next/navigation";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api, handleApiError, getFieldDefinitions, getViews, getTags } from "@/lib/api";
 import { RequiresCapability } from "@/lib/capabilities";
@@ -17,6 +16,7 @@ import Link from "next/link";
 import { EmptyState } from "@/components/empty-state";
 import { TerminologyHeading } from "@/components/terminology-heading";
 import { createMessages } from "@/lib/messages";
+import { PermissionDenied } from "@/components/permission-denied";
 
 const VALID_LIFECYCLE_STATUSES: ReadonlySet<LifecycleStatus> = new Set([
   "PROSPECT",
@@ -78,7 +78,7 @@ export default async function CustomersPage({
   const capData = await fetchMyCapabilities();
 
   if (!capData.isAdmin && !capData.isOwner && !capData.capabilities.includes("CUSTOMER_MANAGEMENT")) {
-    notFound();
+    return <PermissionDenied featureName="Customers" dashboardHref={`/org/${slug}/dashboard`} />;
   }
 
   const isAdmin = capData.isAdmin || capData.isOwner;

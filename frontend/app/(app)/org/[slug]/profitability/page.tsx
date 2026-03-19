@@ -1,9 +1,9 @@
 import { TrendingUp } from "lucide-react";
-import { notFound } from "next/navigation";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api } from "@/lib/api";
 import { createMessages } from "@/lib/messages";
 import { EmptyState } from "@/components/empty-state";
+import { PermissionDenied } from "@/components/permission-denied";
 import type {
   UtilizationResponse,
   OrgProfitabilityResponse,
@@ -30,7 +30,7 @@ export default async function ProfitabilityPage({
   const { t } = createMessages("empty-states");
 
   if (!capData.isAdmin && !capData.isOwner && !capData.capabilities.includes("FINANCIAL_VISIBILITY")) {
-    notFound();
+    return <PermissionDenied featureName="Profitability" dashboardHref={`/org/${slug}/dashboard`} />;
   }
 
   const { from, to } = getCurrentMonthRange();

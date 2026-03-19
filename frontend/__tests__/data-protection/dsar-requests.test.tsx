@@ -4,8 +4,9 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 // Mock next/navigation
+const mockRefresh = vi.fn();
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }),
+  useRouter: () => ({ refresh: mockRefresh, push: vi.fn() }),
   usePathname: () => "/org/acme/settings/data-protection/requests",
 }));
 

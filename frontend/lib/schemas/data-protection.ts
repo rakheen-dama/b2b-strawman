@@ -22,7 +22,7 @@ export const logDsarRequestSchema = z.object({
     .max(255)
     .optional()
     .or(z.literal("")),
-  requestType: z.enum(["ACCESS", "CORRECTION", "DELETION", "OBJECTION"]),
+  requestType: z.enum(["ACCESS", "CORRECTION", "DELETION", "OBJECTION", "PORTABILITY"]),
   customerId: z.string().uuid("Invalid customer ID"),
   receivedDate: z.string().min(1, "Received date is required"),
 });

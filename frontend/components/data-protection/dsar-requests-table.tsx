@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -66,8 +67,8 @@ function DeadlineCell({
   }
 
   const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const deadlineDate = new Date(deadline + "T00:00:00");
+  today.setUTCHours(0, 0, 0, 0);
+  const deadlineDate = new Date(deadline + "T00:00:00Z");
   const diffDays = Math.ceil(
     (deadlineDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
   );
@@ -191,13 +192,12 @@ interface RowActionsProps {
 }
 
 function RowActions({ request, slug, onActionComplete }: RowActionsProps) {
-  const [, startTransition] = useTransition();
+  const [isPending, startTransition] = useTransition();
   const [actionError, setActionError] = useState<string | null>(null);
   const [resolutionDialogOpen, setResolutionDialogOpen] = useState(false);
   const [pendingAction, setPendingAction] = useState<
     "COMPLETE" | "REJECT" | null
   >(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   function handleSimpleAction(action: "START_PROCESSING") {
     setActionError(null);
@@ -216,11 +216,10 @@ function RowActions({ request, slug, onActionComplete }: RowActionsProps) {
     setResolutionDialogOpen(true);
   }
 
-  async function handleResolutionConfirm(notes: string) {
+  function handleResolutionConfirm(notes: string) {
     if (!pendingAction) return;
-    setIsSubmitting(true);
     setActionError(null);
-    try {
+    startTransition(async () => {
       const result = await updateDsarStatus(
         slug,
         request.id,
@@ -234,9 +233,7 @@ function RowActions({ request, slug, onActionComplete }: RowActionsProps) {
         setPendingAction(null);
         onActionComplete();
       }
-    } finally {
-      setIsSubmitting(false);
-    }
+    });
   }
 
   const { status } = request;
@@ -253,6 +250,7 @@ function RowActions({ request, slug, onActionComplete }: RowActionsProps) {
           size="sm"
           variant="outline"
           onClick={() => handleSimpleAction("START_PROCESSING")}
+          disabled={isPending}
           aria-label="Mark as processing"
         >
           Mark Processing
@@ -264,6 +262,7 @@ function RowActions({ request, slug, onActionComplete }: RowActionsProps) {
             size="sm"
             variant="soft"
             onClick={() => openResolutionDialog("COMPLETE")}
+            disabled={isPending}
             aria-label="Complete request"
           >
             Complete
@@ -272,6 +271,7 @@ function RowActions({ request, slug, onActionComplete }: RowActionsProps) {
             size="sm"
             variant="outline"
             onClick={() => openResolutionDialog("REJECT")}
+            disabled={isPending}
             aria-label="Deny request"
           >
             Deny
@@ -293,7 +293,7 @@ function RowActions({ request, slug, onActionComplete }: RowActionsProps) {
           setPendingAction(null);
         }}
         onConfirm={handleResolutionConfirm}
-        isSubmitting={isSubmitting}
+        isSubmitting={isPending}
       />
     </div>
   );
@@ -310,6 +310,12 @@ export function DsarRequestsTable({
   requests,
   slug,
 }: DsarRequestsTableProps) {
+  const router = useRouter();
+
+  function onActionComplete() {
+    router.refresh();
+  }
+
   if (requests.length === 0) {
     return (
       <div className="rounded-lg border border-slate-200 bg-white p-8 text-center dark:border-slate-800 dark:bg-slate-950">
@@ -429,9 +435,7 @@ export function DsarRequestsTable({
                     <RowActions
                       request={req}
                       slug={slug}
-                      onActionComplete={() => {
-                        // revalidatePath in server action handles refresh
-                      }}
+                      onActionComplete={onActionComplete}
                     />
                   </td>
                 </tr>

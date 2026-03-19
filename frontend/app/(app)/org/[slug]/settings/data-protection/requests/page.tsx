@@ -35,10 +35,13 @@ export default async function DsarRequestsPage({
   }
 
   let requests: Awaited<ReturnType<typeof fetchDsarRequests>> = [];
+  let fetchError: string | null = null;
   try {
     requests = await fetchDsarRequests(slug);
-  } catch {
-    // Leave as empty — table will show empty state
+  } catch (error) {
+    console.error("Failed to fetch DSAR requests:", error);
+    fetchError =
+      error instanceof Error ? error.message : "Failed to load DSAR requests.";
   }
 
   return (
@@ -62,6 +65,14 @@ export default async function DsarRequestsPage({
         </div>
         <LogDsarRequestDialog slug={slug} />
       </div>
+
+      {fetchError && (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950">
+          <p className="text-sm text-red-700 dark:text-red-300">
+            {fetchError}
+          </p>
+        </div>
+      )}
 
       <DsarRequestsTable requests={requests} slug={slug} />
     </div>

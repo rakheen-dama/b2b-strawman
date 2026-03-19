@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,7 +37,8 @@ public class ProcessingActivityController {
   @RequiresCapability("MANAGE_COMPLIANCE")
   public ResponseEntity<ProcessingActivity> create(
       @Valid @RequestBody ProcessingActivityRequest request) {
-    return ResponseEntity.status(201).body(processingActivityService.create(request));
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .body(processingActivityService.create(request));
   }
 
   @PutMapping("/{id}")
@@ -55,9 +57,9 @@ public class ProcessingActivityController {
 
   public record ProcessingActivityRequest(
       @NotBlank String category,
-      String description,
-      String legalBasis,
-      String dataSubjects,
-      String retentionPeriod,
+      @NotBlank String description,
+      @NotBlank String legalBasis,
+      @NotBlank String dataSubjects,
+      @NotBlank String retentionPeriod,
       String recipients) {}
 }

@@ -54,6 +54,13 @@ class ProcessingActivityControllerTest {
   }
 
   @Test
+  void list_memberRole_returns403() throws Exception {
+    mockMvc
+        .perform(get("/api/settings/processing-activities").with(memberJwt()))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
   void post_createsActivity_returns201() throws Exception {
     mockMvc
         .perform(
@@ -129,10 +136,11 @@ class ProcessingActivityControllerTest {
         .perform(delete("/api/settings/processing-activities/" + id).with(ownerJwt()))
         .andExpect(status().isNoContent());
 
-    // Verify gone
+    // Verify gone — the deleted ID should not appear in the list
     mockMvc
         .perform(get("/api/settings/processing-activities").with(ownerJwt()))
-        .andExpect(status().isOk());
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content[?(@.id == '%s')]".formatted(id)).doesNotExist());
   }
 
   @Test
@@ -182,6 +190,11 @@ class ProcessingActivityControllerTest {
   private JwtRequestPostProcessor ownerJwt() {
     return jwt()
         .jwt(j -> j.subject("user_pa_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
+  }
+
+  private JwtRequestPostProcessor memberJwt() {
+    return jwt()
+        .jwt(j -> j.subject("user_pa_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 
   private String syncMember(

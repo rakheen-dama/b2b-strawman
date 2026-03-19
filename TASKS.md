@@ -422,7 +422,7 @@
 | 371 | Legal Stub Pages + Conditional Sections + Settings Profile Switching | Frontend | 368, 370 | M | 371A, 371B | **Done** (PRs #764, #765) |
 | 372 | Legal Terminology + End-to-End Integration Tests | Backend + Frontend | 368, 369, 370 | S | 372A, 372B | **Done** (PRs #766, #767) |
 | **Phase 50 — Data Protection Compliance** | | | | | | See [tasks/phase50-data-protection-compliance.md](tasks/phase50-data-protection-compliance.md) |
-| 373 | Foundation: V76 Migration, OrgSettings Extension, JurisdictionDefaults | Backend | — | S | 373A | |
+| 373 | Foundation: V76 Migration, OrgSettings Extension, JurisdictionDefaults | Backend | — | S | 373A | **Done** (PR #768) |
 | 374 | Data Export Extension | Backend | 373 | M | 374A, 374B | |
 | 375 | Anonymization Extension | Backend | 373, 374 | M | 375A, 375B | |
 | 376 | Retention Extension | Backend | 373 | M | 376A, 376B | |

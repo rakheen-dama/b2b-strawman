@@ -426,7 +426,7 @@
 | 374 | Data Export Extension | Backend | 373 | M | 374A, 374B | **Done** (PRs #769, #770) |
 | 375 | Anonymization Extension | Backend | 373, 374 | M | 375A, 375B | **Done** (PRs #771, #772) |
 | 376 | Retention Extension | Backend | 373 | M | 376A, 376B | **Done** (PRs #773, #774) |
-| 377 | DSAR Extension | Backend | 373 | S | 377A | |
+| 377 | DSAR Extension | Backend | 373 | S | 377A | **Done** (PR #775) |
 | 378 | Processing Activity CRUD + PAIA Manual Generation | Backend | 373 | M | 378A, 378B | |
 | 379 | Frontend: Data Protection Settings Tab + DSAR Page | Frontend | 373–378 | L | 379A, 379B, 379C | |
 | 380 | Frontend: Customer Data Protection Actions | Frontend | 374, 375, 379 | M | 380A | |

@@ -133,7 +133,7 @@ FRONTEND (requires all backend epics 373–378)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 1a (parallel) | 374 | 374A | Extend `DataExportService` (all time entries, custom fields, audit events, portal contacts, structured ZIP). Integration tests (~5). Backend only. | **Done** (PR #769) |
-| 1b (parallel) | 376 | 376A | Extend `RetentionService` (TIME_ENTRY support, notification warnings, financial minimum enforcement, `lastEvaluatedAt` updates). Integration tests (~5). Backend only. | |
+| 1b (parallel) | 376 | 376A | Extend `RetentionService` (TIME_ENTRY support, notification warnings, financial minimum enforcement, `lastEvaluatedAt` updates). Integration tests (~5). Backend only. | **Done** (PR #773) |
 | 1c (parallel) | 377 | 377A | Extend `DataSubjectRequestService` (jurisdiction-aware deadline, new fields, deadline warning notifications) + endpoint changes. Integration tests (~5). Backend only. | |
 | 1d (parallel) | 378 | 378A | `ProcessingActivity` entity + `ProcessingActivityRepository` + `ProcessingActivityService` (CRUD + jurisdiction seeding). Integration tests (~5). Backend only. | |
 
@@ -332,7 +332,7 @@ FRONTEND (requires all backend epics 373–378)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **376A** | 376.1–376.7 | Extend `RetentionPolicy` entity (+2 new fields), extend `RetentionService.runCheck()` with TIME_ENTRY support + 30-day warning notifications + `lastEvaluatedAt` updates + financial minimum check, add `RetentionService.previewPurge()`, add jurisdiction-seeding method. Integration tests (~5). Backend only. | |
+| **376A** | 376.1–376.7 | Extend `RetentionPolicy` entity (+2 new fields), extend `RetentionService.runCheck()` with TIME_ENTRY support + 30-day warning notifications + `lastEvaluatedAt` updates + financial minimum check, add `RetentionService.previewPurge()`, add jurisdiction-seeding method. Integration tests (~5). Backend only. | **Done** (PR #773) |
 | **376B** | 376.8–376.12 | Extend `RetentionController` with updated endpoints (GET list, PUT update with validation, POST evaluate preview, POST execute), `RetentionPolicyUpdateRequest` record, `RetentionEvaluationResult` record, authorization checks. Integration tests (~4). Backend only. | |
 
 ### Tasks

@@ -302,12 +302,27 @@ public class Invoice {
     return customerName;
   }
 
+  public void setCustomerName(String customerName) {
+    this.customerName = customerName;
+    this.updatedAt = Instant.now();
+  }
+
   public String getCustomerEmail() {
     return customerEmail;
   }
 
+  public void setCustomerEmail(String customerEmail) {
+    this.customerEmail = customerEmail;
+    this.updatedAt = Instant.now();
+  }
+
   public String getCustomerAddress() {
     return customerAddress;
+  }
+
+  public void setCustomerAddress(String customerAddress) {
+    this.customerAddress = customerAddress;
+    this.updatedAt = Instant.now();
   }
 
   public String getOrgName() {

@@ -451,6 +451,18 @@ public interface TimeEntryRepository extends JpaRepository<TimeEntry, UUID> {
   @Query("SELECT COUNT(te) FROM TimeEntry te WHERE te.taskId = :taskId")
   long countByTaskId(@Param("taskId") UUID taskId);
 
+  /** Counts time entries across multiple projects. Used by anonymization preview. */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+      SELECT COUNT(te.id)
+      FROM time_entries te
+      JOIN tasks t ON te.task_id = t.id
+      WHERE t.project_id IN (:projectIds)
+      """)
+  long countByProjectIdIn(@Param("projectIds") List<UUID> projectIds);
+
   // --- Time reminder scheduler query (Epic 226B) ---
 
   /**

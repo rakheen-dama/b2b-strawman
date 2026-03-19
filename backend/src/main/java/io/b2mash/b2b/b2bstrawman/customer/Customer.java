@@ -195,6 +195,11 @@ public class Customer {
     return notes;
   }
 
+  public void setNotes(String notes) {
+    this.notes = notes;
+    this.updatedAt = Instant.now();
+  }
+
   public UUID getCreatedBy() {
     return createdBy;
   }

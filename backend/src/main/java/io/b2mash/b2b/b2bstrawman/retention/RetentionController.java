@@ -5,7 +5,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import java.net.URI;
 import java.time.Instant;
@@ -143,34 +142,4 @@ public class RetentionController {
           p.getUpdatedAt());
     }
   }
-
-  public record SettingsPolicyResponse(
-      UUID id,
-      String recordType,
-      int retentionDays,
-      String triggerEvent,
-      String action,
-      boolean active,
-      String description,
-      Instant lastEvaluatedAt,
-      Instant createdAt,
-      Instant updatedAt) {
-
-    public static SettingsPolicyResponse from(RetentionPolicy p) {
-      return new SettingsPolicyResponse(
-          p.getId(),
-          p.getRecordType(),
-          p.getRetentionDays(),
-          p.getTriggerEvent(),
-          p.getAction(),
-          p.isActive(),
-          p.getDescription(),
-          p.getLastEvaluatedAt(),
-          p.getCreatedAt(),
-          p.getUpdatedAt());
-    }
-  }
-
-  public record RetentionPolicyUpdateRequest(
-      @Positive Integer retentionDays, String action, Boolean enabled, String description) {}
 }

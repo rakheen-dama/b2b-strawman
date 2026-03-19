@@ -77,10 +77,8 @@ public class RetentionPolicyService {
   }
 
   @Transactional(readOnly = true)
-  public List<RetentionController.SettingsPolicyResponse> listSettingsPolicies() {
-    return policyRepository.findByActive(true).stream()
-        .map(RetentionController.SettingsPolicyResponse::from)
-        .toList();
+  public List<SettingsPolicyResponse> listSettingsPolicies() {
+    return policyRepository.findByActive(true).stream().map(SettingsPolicyResponse::from).toList();
   }
 
   @Transactional
@@ -90,18 +88,19 @@ public class RetentionPolicyService {
         policyRepository
             .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("RetentionPolicy", id));
-    if (retentionDays != null) {
-      if (retentionDays < 0) {
-        throw new IllegalArgumentException("retentionDays must not be negative");
-      }
-      validateFinancialMinimum(policy.getRecordType(), retentionDays);
-      policy.update(retentionDays, policy.getAction());
+    if (retentionDays != null && retentionDays < 0) {
+      throw new IllegalArgumentException("retentionDays must not be negative");
     }
-    if (action != null) {
-      if (action.isBlank()) {
-        throw new IllegalArgumentException("action must not be blank");
-      }
-      policy.update(policy.getRetentionDays(), action);
+    if (action != null && action.isBlank()) {
+      throw new IllegalArgumentException("action must not be blank");
+    }
+    int effectiveDays = retentionDays != null ? retentionDays : policy.getRetentionDays();
+    String effectiveAction = action != null ? action : policy.getAction();
+    if (retentionDays != null) {
+      validateFinancialMinimum(policy.getRecordType(), effectiveDays);
+    }
+    if (retentionDays != null || action != null) {
+      policy.update(effectiveDays, effectiveAction);
     }
     if (enabled != null) {
       if (enabled) {

@@ -76,6 +76,45 @@ public class RetentionPolicyService {
     return policyRepository.save(policy);
   }
 
+  @Transactional(readOnly = true)
+  public List<SettingsPolicyResponse> listSettingsPolicies() {
+    return policyRepository.findByActive(true).stream().map(SettingsPolicyResponse::from).toList();
+  }
+
+  @Transactional
+  public RetentionPolicy updateFromRequest(
+      UUID id, Integer retentionDays, String action, Boolean enabled, String description) {
+    var policy =
+        policyRepository
+            .findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("RetentionPolicy", id));
+    if (retentionDays != null && retentionDays < 0) {
+      throw new IllegalArgumentException("retentionDays must not be negative");
+    }
+    if (action != null && action.isBlank()) {
+      throw new IllegalArgumentException("action must not be blank");
+    }
+    int effectiveDays = retentionDays != null ? retentionDays : policy.getRetentionDays();
+    String effectiveAction = action != null ? action : policy.getAction();
+    if (retentionDays != null) {
+      validateFinancialMinimum(policy.getRecordType(), effectiveDays);
+    }
+    if (retentionDays != null || action != null) {
+      policy.update(effectiveDays, effectiveAction);
+    }
+    if (enabled != null) {
+      if (enabled) {
+        policy.activate();
+      } else {
+        policy.deactivate();
+      }
+    }
+    if (description != null) {
+      policy.setDescription(description);
+    }
+    return policyRepository.save(policy);
+  }
+
   @Transactional
   public void delete(UUID id) {
     if (!policyRepository.existsById(id)) {
@@ -98,13 +137,14 @@ public class RetentionPolicyService {
     int effectiveMinMonths = Math.max(financialRetentionMonths, minMonths);
     int minDays = effectiveMinMonths * 30;
     if (retentionDays < minDays) {
+      String jurisdictionLabel = jurisdiction != null ? jurisdiction : "default";
       throw new InvalidStateException(
           "Retention period too short",
-          "Financial record types require at least "
-              + minDays
-              + " days retention (configured financial minimum: "
+          "Retention period for financial records cannot be less than "
               + effectiveMinMonths
-              + " months)");
+              + " months (jurisdiction: "
+              + jurisdictionLabel
+              + ").");
     }
   }
 }

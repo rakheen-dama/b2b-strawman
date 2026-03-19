@@ -17,11 +17,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/retention-policies")
 public class RetentionController {
 
   private final RetentionPolicyService policyService;
@@ -33,14 +31,14 @@ public class RetentionController {
     this.retentionService = retentionService;
   }
 
-  @GetMapping
+  @GetMapping("/api/retention-policies")
   @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<List<PolicyResponse>> listPolicies() {
     var policies = policyService.listActive().stream().map(PolicyResponse::from).toList();
     return ResponseEntity.ok(policies);
   }
 
-  @PostMapping
+  @PostMapping("/api/retention-policies")
   @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<PolicyResponse> createPolicy(@Valid @RequestBody CreatePolicyRequest body) {
     var policy =
@@ -50,7 +48,7 @@ public class RetentionController {
         .body(PolicyResponse.from(policy));
   }
 
-  @PutMapping("/{id}")
+  @PutMapping("/api/retention-policies/{id}")
   @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<PolicyResponse> updatePolicy(
       @PathVariable UUID id, @Valid @RequestBody UpdatePolicyRequest body) {
@@ -58,26 +56,56 @@ public class RetentionController {
     return ResponseEntity.ok(PolicyResponse.from(policy));
   }
 
-  @DeleteMapping("/{id}")
+  @DeleteMapping("/api/retention-policies/{id}")
   @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<Void> deletePolicy(@PathVariable UUID id) {
     policyService.delete(id);
     return ResponseEntity.noContent().build();
   }
 
-  @PostMapping("/check")
+  @PostMapping("/api/retention-policies/check")
   @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<RetentionCheckResult> runCheck() {
     var result = retentionService.runCheck();
     return ResponseEntity.ok(result);
   }
 
-  @PostMapping("/purge")
+  @PostMapping("/api/retention-policies/purge")
   @RequiresCapability("CUSTOMER_MANAGEMENT")
   public ResponseEntity<RetentionService.PurgeResult> executePurge(
       @Valid @RequestBody PurgeRequest body) {
     var result = retentionService.executePurge(body.recordType(), body.recordIds());
     return ResponseEntity.ok(result);
+  }
+
+  // --- Settings endpoints at /api/settings/retention-policies ---
+
+  @GetMapping("/api/settings/retention-policies")
+  @RequiresCapability("MANAGE_COMPLIANCE")
+  public ResponseEntity<List<SettingsPolicyResponse>> listSettingsPolicies() {
+    return ResponseEntity.ok(policyService.listSettingsPolicies());
+  }
+
+  @PutMapping("/api/settings/retention-policies/{id}")
+  @RequiresCapability("MANAGE_COMPLIANCE")
+  public ResponseEntity<SettingsPolicyResponse> updateSettingsPolicy(
+      @PathVariable UUID id, @Valid @RequestBody RetentionPolicyUpdateRequest body) {
+    var policy =
+        policyService.updateFromRequest(
+            id, body.retentionDays(), body.action(), body.enabled(), body.description());
+    return ResponseEntity.ok(SettingsPolicyResponse.from(policy));
+  }
+
+  @PostMapping("/api/settings/retention-policies/evaluate")
+  @RequiresCapability("MANAGE_COMPLIANCE")
+  public ResponseEntity<RetentionEvaluationResult> evaluatePolicies() {
+    return ResponseEntity.ok(retentionService.evaluateForPreview());
+  }
+
+  @PostMapping("/api/settings/retention-policies/execute")
+  @RequiresCapability("MANAGE_COMPLIANCE")
+  public ResponseEntity<RetentionService.ExecuteResult> executeRetention() {
+    return ResponseEntity.ok(retentionService.executeAllPending());
   }
 
   // DTOs

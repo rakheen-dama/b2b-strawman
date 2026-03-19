@@ -224,7 +224,13 @@ public class DataExportService {
         fileCount);
 
     return new ExportStatusResponse(
-        exportId, "COMPLETED", presigned.url(), presigned.expiresAt(), fileCount, zipBytes.length);
+        exportId,
+        "COMPLETED",
+        presigned.url(),
+        presigned.expiresAt(),
+        fileCount,
+        zipBytes.length,
+        s3Key);
   }
 
   private static final int MAX_EXPORT_LIST_SIZE = 100;
@@ -244,7 +250,7 @@ public class DataExportService {
         .map(
             k -> {
               UUID extractedId = extractExportIdFromKey(k);
-              return new ExportStatusResponse(extractedId, "COMPLETED", null, null, 0, 0L);
+              return new ExportStatusResponse(extractedId, "COMPLETED", null, null, 0, 0L, k);
             })
         .toList();
   }
@@ -283,7 +289,7 @@ public class DataExportService {
             : 0L;
 
     return new ExportStatusResponse(
-        exportId, "COMPLETED", presigned.url(), presigned.expiresAt(), fileCount, totalSize);
+        exportId, "COMPLETED", presigned.url(), presigned.expiresAt(), fileCount, totalSize, s3Key);
   }
 
   /**

@@ -15,6 +15,10 @@ public interface PortalContactRepository extends JpaRepository<PortalContact, UU
   @Query("SELECT pc FROM PortalContact pc WHERE pc.customerId = :customerId")
   List<PortalContact> findByCustomerId(@Param("customerId") UUID customerId);
 
+  /** Counts portal contacts for a customer. Used by anonymization preview. */
+  @Query("SELECT COUNT(pc) FROM PortalContact pc WHERE pc.customerId = :customerId")
+  long countByCustomerId(@Param("customerId") UUID customerId);
+
   boolean existsByEmailAndCustomerId(String email, UUID customerId);
 
   @Query("SELECT pc FROM PortalContact pc WHERE pc.customerId = :customerId AND pc.orgId = :orgId")

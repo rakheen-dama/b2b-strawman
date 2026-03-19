@@ -10,4 +10,5 @@ public record ExportStatusResponse(
     String downloadUrl,
     Instant expiresAt,
     int fileCount,
-    long totalSizeBytes) {}
+    long totalSizeBytes,
+    String s3Key) {}

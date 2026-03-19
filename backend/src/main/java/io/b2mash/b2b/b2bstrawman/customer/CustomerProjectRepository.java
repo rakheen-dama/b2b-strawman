@@ -16,6 +16,9 @@ public interface CustomerProjectRepository extends JpaRepository<CustomerProject
 
   List<CustomerProject> findByProjectId(UUID projectId);
 
+  /** Counts projects linked to a customer. Used by anonymization preview. */
+  long countByCustomerId(UUID customerId);
+
   boolean existsByCustomerIdAndProjectId(UUID customerId, UUID projectId);
 
   @Modifying

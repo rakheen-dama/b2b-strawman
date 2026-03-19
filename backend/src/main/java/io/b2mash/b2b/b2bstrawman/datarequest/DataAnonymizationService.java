@@ -15,7 +15,6 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
-import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
@@ -229,7 +228,10 @@ public class DataAnonymizationService {
           "The provided confirmation name does not match the customer name");
     }
 
-    // Step 0: Pre-anonymization export (BEFORE any modification)
+    // Step 0: Pre-anonymization export (BEFORE any modification).
+    // Export runs in a nested transaction; if anonymization fails after this point,
+    // the S3 export may be orphaned but customer data is preserved — acceptable
+    // tradeoff for data protection compliance where the export is a safety net.
     var exportResult = dataExportService.exportCustomerData(customerId, actorId);
 
     // Step 1: Anonymize customer PII (existing method)
@@ -281,8 +283,7 @@ public class DataAnonymizationService {
     }
     int invoicesPreserved = invoices.size();
 
-    // Step 8: Audit event with pre-anonymization export key
-    String tenantId = RequestScopes.requireTenantId();
+    // Step 8: Audit event with pre-anonymization export key (actual S3 key from export)
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("data.subject.anonymized")
@@ -296,14 +297,7 @@ public class DataAnonymizationService {
                     "commentsRedacted", commentsRedacted,
                     "portalContactsAnonymized", contactsAnonymized,
                     "invoicesPreserved", invoicesPreserved,
-                    "preAnonymizationExportKey",
-                        "org/"
-                            + tenantId
-                            + "/exports/compliance-"
-                            + customerId
-                            + "-"
-                            + exportResult.exportId()
-                            + "-export.zip",
+                    "preAnonymizationExportKey", exportResult.s3Key(),
                     "reason", reason != null ? reason : ""))
             .build());
 
@@ -334,20 +328,21 @@ public class DataAnonymizationService {
             .findById(customerId)
             .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
 
-    // Count related entities
-    int portalContacts = portalContactRepository.findByCustomerId(customerId).size();
+    // Count related entities using count queries (avoid loading full entity lists)
+    int portalContacts = (int) portalContactRepository.countByCustomerId(customerId);
     var customerProjects = customerProjectRepository.findByCustomerId(customerId);
-    int projects = customerProjects.size();
-    int documents = documentRepository.findByCustomerId(customerId).size();
+    int projects = (int) customerProjectRepository.countByCustomerId(customerId);
+    int documents = (int) documentRepository.countByCustomerId(customerId);
 
     // Time entries via customer's projects
     List<UUID> projectIds = customerProjects.stream().map(CustomerProject::getProjectId).toList();
     int timeEntries =
-        projectIds.isEmpty() ? 0 : timeEntryRepository.findByProjectIdIn(projectIds).size();
+        projectIds.isEmpty() ? 0 : (int) timeEntryRepository.countByProjectIdIn(projectIds);
 
+    // Invoices: use count for the total, but load list for retention date calculation
     var invoices = invoiceRepository.findByCustomerId(customerId);
-    int invoiceCount = invoices.size();
-    int comments = commentRepository.findPortalVisibleByCustomerId(customerId).size();
+    int invoiceCount = (int) invoiceRepository.countByCustomerId(customerId);
+    int comments = (int) commentRepository.countPortalVisibleByCustomerId(customerId);
 
     // Custom field values count
     int customFieldValues =

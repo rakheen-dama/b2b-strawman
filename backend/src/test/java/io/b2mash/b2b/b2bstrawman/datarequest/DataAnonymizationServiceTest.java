@@ -339,9 +339,18 @@ class DataAnonymizationServiceTest {
   // --- Tests for standalone anonymizeCustomer() (Epic 375A) ---
 
   @Test
-  void anonymizeCustomer_setsAnonymizedStatus() {
+  void anonymizeCustomer_setsAnonymizedStatusAndAnonymizesPii() {
     mockStorageForExport();
-    UUID customerId = createTestCustomer("Anon Status Customer", "anon-status@test.com");
+    UUID customerId =
+        runInTenant(
+            () -> {
+              var customer =
+                  TestCustomerFactory.createActiveCustomer(
+                      "Anon Status Customer", "anon-status@test.com", memberId);
+              customer.setNotes("Some sensitive notes");
+              customer.setCustomFields(Map.of("tax_id", "123-456"));
+              return customerRepository.save(customer).getId();
+            });
 
     runInTenant(
         () ->
@@ -351,7 +360,16 @@ class DataAnonymizationServiceTest {
     runInTenant(
         () -> {
           var customer = customerRepository.findById(customerId).orElseThrow();
+          // Lifecycle status
           assertThat(customer.getLifecycleStatus()).isEqualTo(LifecycleStatus.ANONYMIZED);
+          // PII anonymized
+          assertThat(customer.getName()).startsWith("Anonymized Customer ");
+          assertThat(customer.getEmail()).contains("@anonymized.invalid");
+          assertThat(customer.getPhone()).isNull();
+          assertThat(customer.getIdNumber()).isNull();
+          // Notes and custom fields cleared
+          assertThat(customer.getNotes()).isNull();
+          assertThat(customer.getCustomFields()).isNull();
         });
   }
 

@@ -28,6 +28,10 @@ public interface DocumentRepository extends JpaRepository<Document, UUID> {
   List<Document> findByScopeAndCustomerId(
       @Param("scope") String scope, @Param("customerId") UUID customerId);
 
+  /** Counts all documents for a customer. Used by anonymization preview. */
+  @Query("SELECT COUNT(d) FROM Document d WHERE d.customerId = :customerId")
+  long countByCustomerId(@Param("customerId") UUID customerId);
+
   /** Counts all documents for a project. Used by delete protection guard. */
   @Query("SELECT COUNT(d) FROM Document d WHERE d.projectId = :projectId")
   long countByProjectId(@Param("projectId") UUID projectId);

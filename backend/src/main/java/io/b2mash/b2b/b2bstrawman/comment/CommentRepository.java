@@ -56,4 +56,14 @@ public interface CommentRepository extends JpaRepository<Comment, UUID> {
       ORDER BY c.createdAt ASC
       """)
   List<Comment> findPortalVisibleByCustomerId(@Param("customerId") UUID customerId);
+
+  /** Counts portal-visible (SHARED) comments for a customer. Used by anonymization preview. */
+  @Query(
+      """
+      SELECT COUNT(c) FROM Comment c
+      JOIN Document d ON c.entityId = d.id AND c.entityType = 'DOCUMENT'
+      WHERE d.customerId = :customerId
+        AND c.visibility = 'SHARED'
+      """)
+  long countPortalVisibleByCustomerId(@Param("customerId") UUID customerId);
 }

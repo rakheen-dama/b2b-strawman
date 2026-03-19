@@ -2,9 +2,9 @@
 
 ## Current State
 
-- **QA Position**: ALL_SECTIONS_COMPLETE — Cycle 3 verification done. BUG-REG-002 VERIFIED. BUG-REG-001 STILL FAILING (PR #782 fix is deployed but incomplete — wrong root cause). 11 items remain NOT_TESTED (portal auth limitation, document upload requirement, missing seed data).
+- **QA Position**: ALL_SECTIONS_COMPLETE — Cycle 3 verification done. BUG-REG-002 VERIFIED. BUG-REG-001 FIXED (attempt 2, PR #785). 11 items remain NOT_TESTED (portal auth limitation, document upload requirement, missing seed data).
 - **Cycle**: 3
-- **E2E Stack**: READY — Frontend rebuilt with `--no-cache`. PR #782 fix confirmed deployed in compiled SSR chunks. Bug persists due to different root cause (AvatarCircle null name). All 6/6 services healthy.
+- **E2E Stack**: NEEDS_REBUILD — Frontend change merged (PR #785: AvatarCircle null name guard). Rebuild required before QA re-verification.
 - **Branch**: `bugfix_cycle_regression_2026-03-19`
 - **Scenario**: `qa/testplan/regression-test-suite.md`
 - **Focus**: Full regression test suite across all implemented features
@@ -13,7 +13,7 @@
 
 | ID | Summary | Severity | Status | Owner | PR | Track | Notes |
 |----|---------|----------|--------|-------|----|-------|-------|
-| BUG-REG-001 | Settings > Rates & Currency 500 for all users | HIGH | REOPENED | Dev | #782 | AUTH-01, SET-02 | PR #782 fix IS deployed (verified in compiled chunks after --no-cache rebuild). Bug persists because fix addressed wrong root cause. Actual crash: `AvatarCircle` component receives `member.name=null` from `/api/members` response. `null.length` throws in AvatarCircle hash function. Fix needed: null-guard in AvatarCircle or filter members with null names. |
+| BUG-REG-001 | Settings > Rates & Currency 500 for all users | HIGH | FIXED | Dev | #782, #785 | AUTH-01, SET-02 | Attempt 1 (PR #782): fixed members array null guard — wrong root cause. Attempt 2 (PR #785): fixed actual root cause — `AvatarCircle` component `name.length` crash when `member.name=null`. Added `name ?? ""` null-coalescing guard inside AvatarCircle. NEEDS_REBUILD + QA re-verification. |
 | BUG-REG-002 | Carol (Member) gets 500 on role-gated pages | HIGH | VERIFIED | QA | #783 | AUTH-01 | All 4 pages (profitability, reports, customers, settings/roles) show "You don't have access to [Page]" with PermissionDenied component. No 500 errors. |
 | BUG-REG-003 | Customer list has no free-text search input | LOW | WONT_FIX | Dev | — | CUST-01 | Missing feature, not a regression. Customer search was never implemented (no backend search endpoint, no frontend input). Out of scope for bugfix cycle. Spec written for future reference: `fix-specs/BUG-REG-003.md`. |
 
@@ -148,3 +148,4 @@
 | 2026-03-19T22:20Z | QA | Root cause analysis: PR #782 fix IS deployed (confirmed `Array.isArray` guard in server chunk, `n&&0!==n.length` in client chunk). Crash is NOT in `MemberRatesTable.members.length` check. Crash is in `AvatarCircle` component at `name.length` where `name` prop is null. AvatarCircle computes a hash of the name string for avatar color — `null.length` throws. The `members` array passes all guards (not null, not empty) but contains entries where `member.name` is null. PR #782 fixed the wrong root cause. |
 | 2026-03-19T22:22Z | QA | BUG-REG-001 remains REOPENED. New fix needed: either (1) AvatarCircle should guard `name ?? ""`, or (2) MemberRatesTable should filter `members.filter(m => m?.name)`, or (3) server component should filter before passing to client. AUTH-01 #1 remains PARTIAL. Scorecard unchanged. Cycle set to 3. Bob testing skipped (page crashes before content renders). |
 | 2026-03-20T00:00Z | Product | BUG-REG-001 fix spec REWRITTEN. Previous spec (PR #782) fixed wrong root cause (members array null/empty). Actual root cause: `AvatarCircle` component at `frontend/components/ui/avatar-circle.tsx` line 11 — `name.length` in `hashName()` crashes when `member.name` is null. Fix: guard `name ?? ""` inside AvatarCircle (protects all 7 call sites across 5 files). Spec at `qa_cycle/fix-specs/BUG-REG-001.md`. BUG-REG-001 remains REOPENED for Dev. |
+| 2026-03-20T00:07Z | Dev | BUG-REG-001 FIXED (attempt 2) via PR #785 (squash-merged). Added `const safeName = name ?? ""` inside `AvatarCircle` component and updated props type to `string | null | undefined`. Uses `safeName` in `hashName()` and `getInitials()` calls. Single file change: `frontend/components/ui/avatar-circle.tsx`. Build passes. 263/264 test files pass (1 pre-existing failure in portal-login.test.tsx). Frontend change — NEEDS_REBUILD. |

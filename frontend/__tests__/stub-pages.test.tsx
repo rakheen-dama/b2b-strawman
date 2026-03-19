@@ -1,6 +1,7 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { OrgProfileProvider } from "@/lib/org-profile";
+import { TerminologyProvider } from "@/lib/terminology";
 import { ModuleGate } from "@/components/module-gate";
 import { TrustBalanceCard } from "@/components/customers/trust-balance-card";
 import { Badge } from "@/components/ui/badge";
@@ -131,5 +132,30 @@ describe("Conditional conflict check section", () => {
 
     expect(screen.queryByText("Conflict Check")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Run Conflict Check" })).not.toBeInTheDocument();
+  });
+});
+
+// ---- 372.8: Trust accounting stub page with legal terminology ----
+
+describe("372B: trust accounting stub page with legal-za terminology", () => {
+  it("shows 'client' terminology in trust accounting description when legal-za profile is active", () => {
+    // The TrustBalanceCard description contains "client" — verify legal-za terminology
+    // (both TerminologyProvider and OrgProfileProvider set for legal-za context)
+    render(
+      <OrgProfileProvider
+        verticalProfile="legal-za"
+        enabledModules={["trust_accounting"]}
+        terminologyNamespace="en-ZA-legal"
+      >
+        <TerminologyProvider verticalProfile="legal-za">
+          <TrustBalanceCard />
+        </TerminologyProvider>
+      </OrgProfileProvider>,
+    );
+
+    // The TrustBalanceCard description text contains "client" (lowercase)
+    // This verifies the card uses terminology consistent with legal-za
+    expect(screen.getByText(/client/i)).toBeInTheDocument();
+    expect(screen.getByText("Trust Balance")).toBeInTheDocument();
   });
 });

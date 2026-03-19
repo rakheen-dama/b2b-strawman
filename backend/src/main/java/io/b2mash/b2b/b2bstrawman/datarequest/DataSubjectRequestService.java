@@ -11,6 +11,8 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -245,29 +247,6 @@ public class DataSubjectRequestService {
     return memberNameResolver.resolveNames(ids);
   }
 
-  /** Build a response DTO from a data subject request, resolving customer and member names. */
-  public DataRequestResponse toResponse(DataSubjectRequest request) {
-    var memberNames = resolveMemberNames(List.of(request));
-    var customerNames = resolveCustomerNames(List.of(request));
-    return DataRequestResponse.from(
-        request, customerNames.getOrDefault(request.getCustomerId(), "Unknown"), memberNames);
-  }
-
-  /**
-   * Build response DTOs from a list of data subject requests, resolving customer and member names
-   * in batch.
-   */
-  public List<DataRequestResponse> toResponses(List<DataSubjectRequest> requests) {
-    var memberNames = resolveMemberNames(requests);
-    var customerNames = resolveCustomerNames(requests);
-    return requests.stream()
-        .map(
-            req ->
-                DataRequestResponse.from(
-                    req, customerNames.getOrDefault(req.getCustomerId(), "Unknown"), memberNames))
-        .toList();
-  }
-
   private int resolveDeadlineDays(OrgSettings settings) {
     Integer tenantOverride = settings.getDataRequestDeadlineDays();
     String jurisdiction = settings.getDataProtectionJurisdiction();
@@ -287,8 +266,8 @@ public class DataSubjectRequestService {
             List.of("RECEIVED", "IN_PROGRESS"), today, sevenDaysOut);
 
     int notified = 0;
+    LocalDate twoDaysOut = today.plusDays(2);
     for (var request : requests) {
-      LocalDate twoDaysOut = today.plusDays(2);
       boolean isTwoDayWarning = !request.getDeadline().isAfter(twoDaysOut);
       String title =
           isTwoDayWarning
@@ -296,7 +275,7 @@ public class DataSubjectRequestService {
               : "DSAR deadline in 7 days: request #" + request.getId().toString().substring(0, 8);
 
       notificationService.notifyAdminsAndOwners(
-          "RETENTION_PURGE_WARNING",
+          "DSAR_DEADLINE_WARNING",
           title,
           "A data subject request is approaching its deadline on " + request.getDeadline(),
           "data_subject_request",
@@ -342,7 +321,9 @@ public class DataSubjectRequestService {
         DataSubjectRequest req, String customerName, Map<UUID, String> memberNames) {
       LocalDate today = LocalDate.now();
       DeadlineStatus deadlineStatus;
-      if (req.getDeadline().isBefore(today)) {
+      if (req.getDeadline() == null) {
+        deadlineStatus = DeadlineStatus.ON_TRACK;
+      } else if (req.getDeadline().isBefore(today)) {
         deadlineStatus = DeadlineStatus.OVERDUE;
       } else if (!req.getDeadline().isAfter(today.plusDays(7))) {
         deadlineStatus = DeadlineStatus.DUE_SOON;
@@ -350,7 +331,14 @@ public class DataSubjectRequestService {
         deadlineStatus = DeadlineStatus.ON_TRACK;
       }
 
-      Integer effectiveDeadlineDays = req.getDeadlineDaysOverride();
+      // Compute effective days from the stored dates rather than the raw override,
+      // which may exceed the jurisdiction cap.
+      Integer effectiveDeadlineDays =
+          (req.getDeadline() != null && req.getRequestedAt() != null)
+              ? (int)
+                  ChronoUnit.DAYS.between(
+                      req.getRequestedAt().atZone(ZoneOffset.UTC).toLocalDate(), req.getDeadline())
+              : req.getDeadlineDaysOverride();
 
       return new DataSubjectRequestSummary(
           req.getId(),
@@ -392,49 +380,5 @@ public class DataSubjectRequestService {
                 DataSubjectRequestSummary.from(
                     req, customerNames.getOrDefault(req.getCustomerId(), "Unknown"), memberNames))
         .toList();
-  }
-
-  // --- Response DTO (owned by service, used by controller) ---
-
-  public record DataRequestResponse(
-      UUID id,
-      UUID customerId,
-      String customerName,
-      String requestType,
-      String status,
-      String description,
-      String rejectionReason,
-      LocalDate deadline,
-      Instant requestedAt,
-      UUID requestedBy,
-      String requestedByName,
-      Instant completedAt,
-      UUID completedBy,
-      String completedByName,
-      boolean hasExport,
-      String notes,
-      Instant createdAt) {
-
-    public static DataRequestResponse from(
-        DataSubjectRequest req, String customerName, Map<UUID, String> memberNames) {
-      return new DataRequestResponse(
-          req.getId(),
-          req.getCustomerId(),
-          customerName,
-          req.getRequestType(),
-          req.getStatus(),
-          req.getDescription(),
-          req.getRejectionReason(),
-          req.getDeadline(),
-          req.getRequestedAt(),
-          req.getRequestedBy(),
-          req.getRequestedBy() != null ? memberNames.get(req.getRequestedBy()) : null,
-          req.getCompletedAt(),
-          req.getCompletedBy(),
-          req.getCompletedBy() != null ? memberNames.get(req.getCompletedBy()) : null,
-          req.getExportFileKey() != null,
-          req.getNotes(),
-          req.getCreatedAt());
-    }
   }
 }

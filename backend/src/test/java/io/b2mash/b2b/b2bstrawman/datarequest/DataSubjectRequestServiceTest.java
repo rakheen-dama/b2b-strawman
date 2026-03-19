@@ -11,6 +11,7 @@ import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.member.MemberSyncService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.notification.NotificationRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
@@ -50,6 +51,7 @@ class DataSubjectRequestServiceTest {
   @Autowired private MemberSyncService memberSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
+  @Autowired private NotificationRepository notificationRepository;
 
   private String tenantSchema;
   private UUID memberId;
@@ -348,6 +350,14 @@ class DataSubjectRequestServiceTest {
     int notified = runInTenant(() -> dataSubjectRequestService.sendDeadlineWarnings());
 
     assertThat(notified).isGreaterThanOrEqualTo(1);
+
+    // Verify a notification was persisted with the correct type
+    boolean exists =
+        runInTenant(
+            () ->
+                notificationRepository.existsByTypeAndReferenceEntityId(
+                    "DSAR_DEADLINE_WARNING", request.getId()));
+    assertThat(exists).isTrue();
   }
 
   @AfterEach

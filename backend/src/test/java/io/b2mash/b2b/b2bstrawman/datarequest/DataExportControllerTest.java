@@ -2,7 +2,6 @@ package io.b2mash.b2b.b2bstrawman.datarequest;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -107,16 +106,21 @@ class DataExportControllerTest {
             .andReturn();
     String exportId = JsonPath.read(postResult.getResponse().getContentAsString(), "$.exportId");
 
-    // Set up listKeys to return a key matching this customer's compliance export
+    // Set up listKeys to return a key matching this customer's compliance export (includes
+    // exportId)
     String fakeS3Key =
-        "org/tenant_placeholder/exports/compliance-" + customerId + "-1234567890.zip";
+        "org/tenant_placeholder/exports/compliance-"
+            + customerId
+            + "-"
+            + exportId
+            + "-1234567890.zip";
     Mockito.when(storageService.listKeys(Mockito.any())).thenReturn(List.of(fakeS3Key));
 
     mockMvc
         .perform(get("/api/data-exports/" + exportId).with(ownerJwt()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.exportId").exists())
-        .andExpect(jsonPath("$.status").exists());
+        .andExpect(jsonPath("$.exportId").value(exportId))
+        .andExpect(jsonPath("$.status").value("COMPLETED"));
   }
 
   @Test
@@ -142,13 +146,15 @@ class DataExportControllerTest {
   }
 
   @Test
-  void patchDataProtectionSettings_memberRole_returns403() throws Exception {
+  void listExports_memberRole_returns403() throws Exception {
+    // Verifies MANAGE_COMPLIANCE capability enforcement on data export endpoints
+    mockMvc.perform(get("/api/data-exports").with(memberJwt())).andExpect(status().isForbidden());
+  }
+
+  @Test
+  void getExportStatus_memberRole_returns403() throws Exception {
     mockMvc
-        .perform(
-            patch("/api/settings/data-protection")
-                .with(memberJwt())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{}"))
+        .perform(get("/api/data-exports/" + UUID.randomUUID()).with(memberJwt()))
         .andExpect(status().isForbidden());
   }
 

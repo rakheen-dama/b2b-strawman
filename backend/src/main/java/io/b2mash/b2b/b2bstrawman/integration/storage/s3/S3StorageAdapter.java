@@ -116,8 +116,7 @@ public class S3StorageAdapter implements StorageService {
   @Override
   public List<String> listKeys(String prefix) {
     var request = ListObjectsV2Request.builder().bucket(bucketName).prefix(prefix).build();
-    var response = s3Client.listObjectsV2(request);
-    return response.contents().stream().map(S3Object::key).toList();
+    return s3Client.listObjectsV2Paginator(request).contents().stream().map(S3Object::key).toList();
   }
 
   private static void validateKey(String key) {

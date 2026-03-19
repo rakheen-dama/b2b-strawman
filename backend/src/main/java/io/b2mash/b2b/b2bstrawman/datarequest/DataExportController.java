@@ -22,9 +22,8 @@ public class DataExportController {
   @PostMapping("/api/customers/{customerId}/data-export")
   @RequiresCapability("MANAGE_COMPLIANCE")
   public ResponseEntity<ExportResult> triggerExport(@PathVariable UUID customerId) {
-    var result = dataExportService.exportCustomerData(customerId, RequestScopes.requireMemberId());
     return ResponseEntity.accepted()
-        .body(new ExportResult(result.exportId(), result.status(), result.fileCount()));
+        .body(dataExportService.triggerCustomerExport(customerId, RequestScopes.requireMemberId()));
   }
 
   @GetMapping("/api/data-exports/{exportId}")

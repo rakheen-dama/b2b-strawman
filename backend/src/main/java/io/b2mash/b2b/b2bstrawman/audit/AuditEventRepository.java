@@ -152,4 +152,21 @@ public interface AuditEventRepository extends JpaRepository<AuditEvent, UUID> {
 
   @Query("SELECT e.id FROM AuditEvent e WHERE e.occurredAt < :before")
   List<UUID> findIdsByOccurredAtBefore(@Param("before") Instant before);
+
+  /**
+   * Finds a single audit event by exportId stored in the JSONB details column. Used by
+   * DataExportService.getExportStatus() to look up a specific compliance export.
+   */
+  @Query(
+      value =
+          """
+          SELECT * FROM audit_events
+          WHERE event_type = :eventType
+            AND (details->>'exportId') = :exportId
+          ORDER BY occurred_at DESC
+          LIMIT 1
+          """,
+      nativeQuery = true)
+  Optional<AuditEvent> findByExportId(
+      @Param("eventType") String eventType, @Param("exportId") String exportId);
 }

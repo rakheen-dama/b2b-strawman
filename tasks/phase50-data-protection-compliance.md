@@ -31,7 +31,7 @@ The next Flyway tenant migration is **V76**. The next epic number starts at **37
 | 375 | Anonymization Extension | Backend | 373, 374 | M | 375A, 375B | **Done** (PRs #771, #772) |
 | 376 | Retention Extension | Backend | 373 | M | 376A, 376B | **Done** (PRs #773, #774) |
 | 377 | DSAR Extension | Backend | 373 | S | 377A | **Done** (PR #775) |
-| 378 | Processing Activity CRUD + PAIA Manual Generation | Backend | 373 | M | 378A, 378B | |
+| 378 | Processing Activity CRUD + PAIA Manual Generation | Backend | 373 | M | 378A, 378B | 378A **Done** (PR #776) |
 | 379 | Frontend: Data Protection Settings Tab + DSAR Page | Frontend | 373–378 | L | 379A, 379B, 379C | |
 | 380 | Frontend: Customer Data Protection Actions | Frontend | 374, 375, 379 | M | 380A | |
 
@@ -135,7 +135,7 @@ FRONTEND (requires all backend epics 373–378)
 | 1a (parallel) | 374 | 374A | Extend `DataExportService` (all time entries, custom fields, audit events, portal contacts, structured ZIP). Integration tests (~5). Backend only. | **Done** (PR #769) |
 | 1b (parallel) | 376 | 376A | Extend `RetentionService` (TIME_ENTRY support, notification warnings, financial minimum enforcement, `lastEvaluatedAt` updates). Integration tests (~5). Backend only. | **Done** (PR #773) |
 | 1c (parallel) | 377 | 377A | Extend `DataSubjectRequestService` (jurisdiction-aware deadline, new fields, deadline warning notifications) + endpoint changes. Integration tests (~5). Backend only. | **Done** (PR #775) |
-| 1d (parallel) | 378 | 378A | `ProcessingActivity` entity + `ProcessingActivityRepository` + `ProcessingActivityService` (CRUD + jurisdiction seeding). Integration tests (~5). Backend only. | |
+| 1d (parallel) | 378 | 378A | `ProcessingActivity` entity + `ProcessingActivityRepository` + `ProcessingActivityService` (CRUD + jurisdiction seeding). Integration tests (~5). Backend only. | **Done** (PR #776) |
 
 ### Stage 2: Backend Controllers + Extended Services (parallel tracks)
 
@@ -426,7 +426,7 @@ FRONTEND (requires all backend epics 373–378)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **378A** | 378.1–378.7 | `ProcessingActivity` entity, `ProcessingActivityRepository`, `ProcessingActivityService` (CRUD + jurisdiction seeding), `ProcessingActivityController` (4 endpoints), integration tests (~5). Backend only. | |
+| **378A** | 378.1–378.7 | `ProcessingActivity` entity, `ProcessingActivityRepository`, `ProcessingActivityService` (CRUD + jurisdiction seeding), `ProcessingActivityController` (4 endpoints), integration tests (~5). Backend only. | **Done** (PR #776) |
 | **378B** | 378.8–378.12 | `PaiaManualContextBuilder` implementing `TemplateContextBuilder`, compliance template pack seeder (one template: PAIA Section 51 manual, jurisdiction ZA), `POST /api/settings/paia-manual/generate` endpoint, integration tests (~4). Backend only. | |
 
 ### Tasks

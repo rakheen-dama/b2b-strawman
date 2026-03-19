@@ -4,7 +4,7 @@
 
 - **QA Position**: ALL_SECTIONS_COMPLETE — All 12 sections tested. 11 items remain NOT_TESTED (portal auth limitation, document upload requirement, missing seed data).
 - **Cycle**: 1
-- **E2E Stack**: NEEDS_REBUILD (frontend) — BUG-REG-001 fix merged (PR #782), BUG-REG-002 fix merged (PR #783)
+- **E2E Stack**: READY — Rebuilt frontend with BUG-REG-001 (PR #782) and BUG-REG-002 (PR #783) fixes. All 6/6 services healthy.
 - **Branch**: `bugfix_cycle_regression_2026-03-19`
 - **Scenario**: `qa/testplan/regression-test-suite.md`
 - **Focus**: Full regression test suite across all implemented features
@@ -137,3 +137,4 @@
 | 2026-03-19T22:55Z | Product | BUG-REG-003 -> WONT_FIX. Customer search is a missing feature, not a regression. Neither backend (no search param in `CustomerController.listCustomers()`) nor frontend (no search input in customers page) implements it. Out of scope for bugfix cycle. Spec written for future backlog. |
 | 2026-03-19T21:30Z | Dev | BUG-REG-001 FIXED via PR #782 (squash-merged). Added null coalescing on `settingsRes.value` and `Array.isArray()` guard on `membersRes.value` in `settings/rates/page.tsx`. Added `!members` defensive guard in `MemberRatesTable` before `.length` check. Added `settings?.defaultCurrency ?? "USD"` fallback. Build passes. 263/264 test files pass (1 pre-existing failure in portal-login.test.tsx). Frontend change — NEEDS_REBUILD. |
 | 2026-03-19T21:37Z | Dev | BUG-REG-002 FIXED via PR #783 (squash-merged). Fixed `ErrorBoundary.getDerivedStateFromError` to detect and re-throw errors with `NEXT_NOT_FOUND`/`NEXT_REDIRECT` digest. Replaced `notFound()` RBAC gates with `<PermissionDenied>` component on profitability, reports, customers, and settings/roles pages. Build passes. 263/264 test files pass (1 pre-existing failure in portal-login.test.tsx). Frontend change — NEEDS_REBUILD. |
+| 2026-03-19T21:41Z | Infra | E2E frontend rebuilt via `e2e-rebuild.sh frontend`. Next.js build succeeded (45s). All 6/6 services healthy. Smoke test: HTTP 200 on http://localhost:3001. Stack status -> READY for QA re-verification of BUG-REG-001 and BUG-REG-002 fixes. |

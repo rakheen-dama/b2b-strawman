@@ -132,7 +132,7 @@ FRONTEND (requires all backend epics 373–378)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 1a (parallel) | 374 | 374A | Extend `DataExportService` (all time entries, custom fields, audit events, portal contacts, structured ZIP). Integration tests (~5). Backend only. | |
+| 1a (parallel) | 374 | 374A | Extend `DataExportService` (all time entries, custom fields, audit events, portal contacts, structured ZIP). Integration tests (~5). Backend only. | **Done** (PR #769) |
 | 1b (parallel) | 376 | 376A | Extend `RetentionService` (TIME_ENTRY support, notification warnings, financial minimum enforcement, `lastEvaluatedAt` updates). Integration tests (~5). Backend only. | |
 | 1c (parallel) | 377 | 377A | Extend `DataSubjectRequestService` (jurisdiction-aware deadline, new fields, deadline warning notifications) + endpoint changes. Integration tests (~5). Backend only. | |
 | 1d (parallel) | 378 | 378A | `ProcessingActivity` entity + `ProcessingActivityRepository` + `ProcessingActivityService` (CRUD + jurisdiction seeding). Integration tests (~5). Backend only. | |
@@ -231,7 +231,7 @@ FRONTEND (requires all backend epics 373–378)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **374A** | 374.1–374.6 | Extend `DataExportService.exportCustomerData()`: collect ALL time entries, custom field values, audit events (filtered by customer entity reference), portal contacts; produce structured ZIP with directory layout; upload to S3 with `compliance-exports/` prefix; create `DATA_SUBJECT_EXPORT` audit event; return `ExportResult` record. Integration tests (~5). Backend only. | |
+| **374A** | 374.1–374.6 | Extend `DataExportService.exportCustomerData()`: collect ALL time entries, custom field values, audit events (filtered by customer entity reference), portal contacts; produce structured ZIP with directory layout; upload to S3 with `compliance-exports/` prefix; create `DATA_SUBJECT_EXPORT` audit event; return `ExportResult` record. Integration tests (~5). Backend only. | **Done** (PR #769) |
 | **374B** | 374.7–374.12 | New `DataExportController`: `POST /api/customers/{customerId}/data-export`, `GET /api/data-exports/{exportId}`, `GET /api/data-exports`; `ExportStatusResponse` record; authorization checks (OWNER/ADMIN only); integration tests (~5). Backend only. | |
 
 ### Tasks

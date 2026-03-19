@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { updateDataProtectionSettings } from "@/app/(app)/org/[slug]/settings/data-protection/actions";
+import { informationOfficerSchema } from "@/lib/schemas/data-protection";
 
 interface InformationOfficerSectionProps {
   slug: string;
@@ -23,6 +24,7 @@ export function InformationOfficerSection({
   const [email, setEmail] = useState(initialEmail ?? "");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [saved, setSaved] = useState(false);
 
   const hasChanges =
@@ -30,7 +32,23 @@ export function InformationOfficerSection({
 
   async function handleSave() {
     setError(null);
+    setFieldErrors({});
     setSaved(false);
+
+    const parsed = informationOfficerSchema.safeParse({
+      informationOfficerName: name,
+      informationOfficerEmail: email,
+    });
+    if (!parsed.success) {
+      const errors: Record<string, string> = {};
+      for (const issue of parsed.error.issues) {
+        const key = issue.path[0] as string;
+        if (!errors[key]) errors[key] = issue.message;
+      }
+      setFieldErrors(errors);
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const result = await updateDataProtectionSettings(slug, {
@@ -69,10 +87,21 @@ export function InformationOfficerSection({
             onChange={(e) => {
               setName(e.target.value);
               setSaved(false);
+              setFieldErrors((prev) => {
+                if (!prev.informationOfficerName) return prev;
+                const next = { ...prev };
+                delete next.informationOfficerName;
+                return next;
+              });
             }}
             placeholder="e.g. Jane Smith"
             disabled={isSubmitting}
           />
+          {fieldErrors.informationOfficerName && (
+            <p className="text-sm text-destructive">
+              {fieldErrors.informationOfficerName}
+            </p>
+          )}
         </div>
         <div className="space-y-2">
           <Label htmlFor="officer-email">Email</Label>
@@ -83,10 +112,21 @@ export function InformationOfficerSection({
             onChange={(e) => {
               setEmail(e.target.value);
               setSaved(false);
+              setFieldErrors((prev) => {
+                if (!prev.informationOfficerEmail) return prev;
+                const next = { ...prev };
+                delete next.informationOfficerEmail;
+                return next;
+              });
             }}
             placeholder="e.g. privacy@company.com"
             disabled={isSubmitting}
           />
+          {fieldErrors.informationOfficerEmail && (
+            <p className="text-sm text-destructive">
+              {fieldErrors.informationOfficerEmail}
+            </p>
+          )}
         </div>
       </div>
 

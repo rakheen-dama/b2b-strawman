@@ -2,24 +2,11 @@
 
 import { api, ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
-import type { OrgSettings, UpdateDataProtectionSettingsRequest } from "@/lib/types";
+import type { UpdateDataProtectionSettingsRequest } from "@/lib/types";
 
 interface ActionResult {
   success: boolean;
   error?: string;
-}
-
-export async function fetchDataProtectionSettings(
-  slug: string,
-): Promise<OrgSettings | null> {
-  try {
-    return await api.get<OrgSettings>("/api/settings");
-  } catch (error) {
-    if (error instanceof ApiError) {
-      return null;
-    }
-    return null;
-  }
 }
 
 export async function updateDataProtectionSettings(

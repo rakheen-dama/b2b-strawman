@@ -1,12 +1,3 @@
-export interface DataProtectionSettings {
-  dataProtectionJurisdiction: string | null;
-  retentionPolicyEnabled: boolean;
-  defaultRetentionMonths: number | null;
-  financialRetentionMonths: number;
-  informationOfficerName: string | null;
-  informationOfficerEmail: string | null;
-}
-
 export interface UpdateDataProtectionSettingsRequest {
   dataProtectionJurisdiction?: string | null;
   retentionPolicyEnabled?: boolean;

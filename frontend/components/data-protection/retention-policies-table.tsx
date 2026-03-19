@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Save, Loader2, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -79,6 +79,11 @@ export function RetentionPoliciesTable({
 }: RetentionPoliciesTableProps) {
   const [rows, setRows] = useState<EditableRow[]>(policies.map(toEditableRow));
   const [isEvaluating, setIsEvaluating] = useState(false);
+
+  // Sync local rows when the policies prop changes (e.g. after evaluate/purge triggers a server refresh)
+  useEffect(() => {
+    setRows(policies.map(toEditableRow));
+  }, [policies]);
   const [evaluateMessage, setEvaluateMessage] = useState<string | null>(null);
   const [evaluateError, setEvaluateError] = useState<string | null>(null);
 

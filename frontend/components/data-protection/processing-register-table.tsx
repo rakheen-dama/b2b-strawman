@@ -426,6 +426,7 @@ export function ProcessingRegisterTable({
       </div>
 
       <ProcessingActivityDialog
+        key={editingActivity?.id ?? "new"}
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         slug={slug}

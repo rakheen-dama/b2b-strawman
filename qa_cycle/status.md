@@ -13,9 +13,9 @@
 
 | ID | Summary | Severity | Status | Owner | PR | Track | Notes |
 |----|---------|----------|--------|-------|----|-------|-------|
-| BUG-REG-001 | Settings > Rates & Currency 500 for all users | HIGH | OPEN | Dev | — | AUTH-01, SET-02 | `TypeError: Cannot read properties of null (reading 'length')`. Blocks rate card testing. Screenshot: `regression-auth01-rates-500.png` |
-| BUG-REG-002 | Carol (Member) gets 500 on role-gated pages | MEDIUM | OPEN | Dev | — | AUTH-01 | Profitability, Reports, Customers, Roles pages crash with 500 instead of showing permission denied. Sidebar correctly hides links but direct URL access crashes. |
-| BUG-REG-003 | Customer list has no free-text search input | LOW | OPEN | Dev | — | CUST-01 | Only lifecycle status filtering available. No name/email/phone search. |
+| BUG-REG-001 | Settings > Rates & Currency 500 for all users | HIGH | SPEC_READY | Dev | — | AUTH-01, SET-02 | `TypeError: Cannot read properties of null (reading 'length')`. Blocks rate card testing. Root cause: null-safety gap in page data fetch + `MemberRatesTable` component. Fix spec: `fix-specs/BUG-REG-001.md`. Effort: S. |
+| BUG-REG-002 | Carol (Member) gets 500 on role-gated pages | HIGH | SPEC_READY | Dev | — | AUTH-01 | Custom `ErrorBoundary` in org layout catches Next.js `notFound()` internal errors, rendering "Something went wrong" instead of 404. Cascading: affects 14+ pages using `notFound()` for RBAC. Fix spec: `fix-specs/BUG-REG-002.md`. Effort: S. |
+| BUG-REG-003 | Customer list has no free-text search input | LOW | WONT_FIX | Dev | — | CUST-01 | Missing feature, not a regression. Customer search was never implemented (no backend search endpoint, no frontend input). Out of scope for bugfix cycle. Spec written for future reference: `fix-specs/BUG-REG-003.md`. |
 
 ## Results Summary
 
@@ -131,3 +131,7 @@
 | 2026-03-19T21:48Z | QA | INV-01 remaining: 4 additional PASS. Invoice CRUD via API: create draft (customerId+currency required), add 2 lines (unitPrice as BigDecimal, not cents), edit line (totals recalculate), delete line (204, totals update). |
 | 2026-03-19T21:50Z | QA | INV-03 remaining: 3 additional PASS. Single line math verified (3*450=1350). Rounding: 1.5*333.33=500.00 (rounds to nearest cent). Zero quantity rejected (400, @Positive validation -- correct behavior). |
 | 2026-03-19T21:55Z | QA | ALL_SECTIONS_COMPLETE. 71 PASS, 5 FAIL, 2 PARTIAL, 12 NOT_TESTED. 3 bugs (unchanged). Results committed and pushed. |
+| 2026-03-19T22:30Z | Product | Triage started for 3 OPEN bugs. Investigated codebase for root causes. |
+| 2026-03-19T22:45Z | Product | BUG-REG-001 -> SPEC_READY. Root cause: null-safety gap in `settings/rates/page.tsx` data fetch — `membersRes.value` can be null/undefined, passed to `MemberRatesTable` which calls `.length` on it. Fix: add null coalescing on Promise.allSettled value assignments + defensive guard in component. Effort: S. |
+| 2026-03-19T22:50Z | Product | BUG-REG-002 -> SPEC_READY (escalated MEDIUM -> HIGH). Root cause: custom `ErrorBoundary` in `org/[slug]/layout.tsx` (line 102) catches ALL errors including Next.js `NEXT_NOT_FOUND` from `notFound()`. Cascading: affects 14+ pages that use `notFound()` for RBAC gating. Fix: re-throw errors with `NEXT_NOT_FOUND`/`NEXT_REDIRECT` digest in ErrorBoundary. Effort: S. |
+| 2026-03-19T22:55Z | Product | BUG-REG-003 -> WONT_FIX. Customer search is a missing feature, not a regression. Neither backend (no search param in `CustomerController.listCustomers()`) nor frontend (no search input in customers page) implements it. Out of scope for bugfix cycle. Spec written for future backlog. |

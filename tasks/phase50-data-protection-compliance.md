@@ -29,7 +29,7 @@ The next Flyway tenant migration is **V76**. The next epic number starts at **37
 | 373 | Foundation: V76 Migration, OrgSettings Extension, JurisdictionDefaults | Backend | — | S | 373A | **Done** (PR #768) |
 | 374 | Data Export Extension | Backend | 373 | M | 374A, 374B | **Done** (PRs #769, #770) |
 | 375 | Anonymization Extension | Backend | 373, 374 | M | 375A, 375B | **Done** (PRs #771, #772) |
-| 376 | Retention Extension | Backend | 373 | M | 376A, 376B | |
+| 376 | Retention Extension | Backend | 373 | M | 376A, 376B | **Done** (PRs #773, #774) |
 | 377 | DSAR Extension | Backend | 373 | S | 377A | |
 | 378 | Processing Activity CRUD + PAIA Manual Generation | Backend | 373 | M | 378A, 378B | |
 | 379 | Frontend: Data Protection Settings Tab + DSAR Page | Frontend | 373–378 | L | 379A, 379B, 379C | |
@@ -143,7 +143,7 @@ FRONTEND (requires all backend epics 373–378)
 |-------|------|-------|---------|--------|
 | 2a (parallel) | 374 | 374B | `DataExportController` (POST trigger, GET status, GET list), integration tests (~5). Backend only. | **Done** (PR #770) |
 | 2b (parallel) | 375 | 375A | Extend `DataAnonymizationService` (ANONYMIZED enforcement, notes/customFields clearing, pre-anonymization export, `previewAnonymization()`). Integration tests (~6). Backend only. | **Done** (PR #771) |
-| 2c (parallel) | 376 | 376B | `RetentionController` extension (GET list, PUT update, POST evaluate, POST execute). Integration tests (~4). Backend only. | |
+| 2c (parallel) | 376 | 376B | `RetentionController` extension (GET list, PUT update, POST evaluate, POST execute). Integration tests (~4). Backend only. | **Done** (PR #774) |
 | 2d (parallel) | 378 | 378B | `ProcessingActivityController` (CRUD endpoints) + `PaiaManualContextBuilder` + compliance template pack seeder + generate endpoint. Integration tests (~5). Backend only. | |
 
 ### Stage 3: Anonymization Endpoint
@@ -333,7 +333,7 @@ FRONTEND (requires all backend epics 373–378)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **376A** | 376.1–376.7 | Extend `RetentionPolicy` entity (+2 new fields), extend `RetentionService.runCheck()` with TIME_ENTRY support + 30-day warning notifications + `lastEvaluatedAt` updates + financial minimum check, add `RetentionService.previewPurge()`, add jurisdiction-seeding method. Integration tests (~5). Backend only. | **Done** (PR #773) |
-| **376B** | 376.8–376.12 | Extend `RetentionController` with updated endpoints (GET list, PUT update with validation, POST evaluate preview, POST execute), `RetentionPolicyUpdateRequest` record, `RetentionEvaluationResult` record, authorization checks. Integration tests (~4). Backend only. | |
+| **376B** | 376.8–376.12 | Extend `RetentionController` with updated endpoints (GET list, PUT update with validation, POST evaluate preview, POST execute), `RetentionPolicyUpdateRequest` record, `RetentionEvaluationResult` record, authorization checks. Integration tests (~4). Backend only. | **Done** (PR #774) |
 
 ### Tasks
 

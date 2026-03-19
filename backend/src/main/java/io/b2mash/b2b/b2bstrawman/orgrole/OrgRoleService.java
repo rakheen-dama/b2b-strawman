@@ -65,8 +65,14 @@ public class OrgRoleService {
       return Collections.emptySet();
     }
 
-    if (role.isSystem() && ("owner".equals(role.getSlug()) || "admin".equals(role.getSlug()))) {
+    if (role.isSystem() && "owner".equals(role.getSlug())) {
       return Set.copyOf(Capability.ALL_NAMES);
+    }
+    if (role.isSystem() && "admin".equals(role.getSlug())) {
+      // Admin gets all capabilities EXCEPT owner-only ones (e.g., destructive compliance actions)
+      var adminCaps = new HashSet<>(Capability.ALL_NAMES);
+      adminCaps.removeAll(Capability.OWNER_ONLY);
+      return Set.copyOf(adminCaps);
     }
 
     Set<String> effective =

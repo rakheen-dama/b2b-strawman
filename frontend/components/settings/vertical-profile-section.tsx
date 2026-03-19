@@ -133,7 +133,10 @@ export function VerticalProfileSection({
             disabled={
               pendingProfile === currentProfile || isSubmitting || isLoading
             }
-            onClick={() => setDialogOpen(true)}
+            onClick={() => {
+              setError(null);
+              setDialogOpen(true);
+            }}
           >
             Apply Profile
           </Button>

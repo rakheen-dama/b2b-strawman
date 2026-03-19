@@ -24,6 +24,18 @@ vi.mock(
   }),
 );
 
+vi.mock("motion/react", () => ({
+  motion: {
+    div: ({
+      children,
+      ...props
+    }: React.PropsWithChildren<Record<string, unknown>>) => {
+      const { initial, animate, transition, ...rest } = props;
+      return <div {...rest}>{children}</div>;
+    },
+  },
+}));
+
 import useSWR from "swr";
 import { VerticalProfileSection } from "@/components/settings/vertical-profile-section";
 
@@ -146,5 +158,36 @@ describe("VerticalProfileSection — confirmation dialog", () => {
     await user.click(screen.getByRole("button", { name: /Cancel/i }));
 
     expect(mockUpdateVerticalProfile).not.toHaveBeenCalled();
+  });
+
+  it("calls updateVerticalProfile on confirm", async () => {
+    const user = userEvent.setup();
+    mockSWRLoaded();
+    mockUpdateVerticalProfile.mockResolvedValue({ success: true });
+    render(
+      <VerticalProfileSection
+        slug="acme"
+        currentProfile={null}
+        isOwner={true}
+      />,
+    );
+
+    // Select a profile from the dropdown
+    const combobox = screen.getByRole("combobox");
+    await user.click(combobox);
+    await user.click(screen.getByText("Legal (ZA)"));
+
+    // Click Apply Profile to open dialog
+    await user.click(
+      screen.getByRole("button", { name: /Apply Profile/i }),
+    );
+
+    // Click Confirm in the dialog
+    await user.click(screen.getByRole("button", { name: /Confirm/i }));
+
+    expect(mockUpdateVerticalProfile).toHaveBeenCalledWith(
+      "acme",
+      "legal-za",
+    );
   });
 });

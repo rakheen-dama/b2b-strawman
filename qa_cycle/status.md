@@ -2,9 +2,9 @@
 
 ## Current State
 
-- **QA Position**: ALL_SECTIONS_COMPLETE — Cycle 3 verification done. BUG-REG-002 VERIFIED. BUG-REG-001 FIXED (attempt 2, PR #785). 11 items remain NOT_TESTED (portal auth limitation, document upload requirement, missing seed data).
-- **Cycle**: 3
-- **E2E Stack**: READY — No-cache rebuild of frontend completed (PR #785: AvatarCircle null name guard). Fix verified in compiled output: `h=a??""` (minified `safeName = name ?? ""`). Ready for QA re-verification of BUG-REG-001.
+- **QA Position**: ALL_DAYS_COMPLETE — Both bugs VERIFIED. BUG-REG-001 (PR #785, AvatarCircle null name guard) and BUG-REG-002 (PR #783, ErrorBoundary + PermissionDenied) confirmed fixed. 76 PASS, 0 FAIL. 11 items NOT_TESTED (portal auth limitation, document upload requirement, missing seed data). 1 WONT_FIX (missing feature). 2 PARTIAL (test environment limitation).
+- **Cycle**: 4
+- **E2E Stack**: READY — No-cache rebuild of frontend completed (PR #785: AvatarCircle null name guard). Verified working in Cycle 4.
 - **Branch**: `bugfix_cycle_regression_2026-03-19`
 - **Scenario**: `qa/testplan/regression-test-suite.md`
 - **Focus**: Full regression test suite across all implemented features
@@ -13,7 +13,7 @@
 
 | ID | Summary | Severity | Status | Owner | PR | Track | Notes |
 |----|---------|----------|--------|-------|----|-------|-------|
-| BUG-REG-001 | Settings > Rates & Currency 500 for all users | HIGH | FIXED | Dev | #782, #785 | AUTH-01, SET-02 | Attempt 1 (PR #782): fixed members array null guard — wrong root cause. Attempt 2 (PR #785): fixed actual root cause — `AvatarCircle` component `name.length` crash when `member.name=null`. Added `name ?? ""` null-coalescing guard inside AvatarCircle. NEEDS_REBUILD + QA re-verification. |
+| BUG-REG-001 | Settings > Rates & Currency 500 for all users | HIGH | VERIFIED | QA | #782, #785 | AUTH-01, SET-02 | Attempt 1 (PR #782): fixed members array null guard — wrong root cause. Attempt 2 (PR #785): fixed actual root cause — `AvatarCircle` component `name.length` crash when `member.name=null`. Added `name ?? ""` null-coalescing guard inside AvatarCircle. Verified Cycle 4: Alice (Owner) and Bob (Admin) both load rates page without error. |
 | BUG-REG-002 | Carol (Member) gets 500 on role-gated pages | HIGH | VERIFIED | QA | #783 | AUTH-01 | All 4 pages (profitability, reports, customers, settings/roles) show "You don't have access to [Page]" with PermissionDenied component. No 500 errors. |
 | BUG-REG-003 | Customer list has no free-text search input | LOW | WONT_FIX | Dev | — | CUST-01 | Missing feature, not a regression. Customer search was never implemented (no backend search endpoint, no frontend input). Out of scope for bugfix cycle. Spec written for future reference: `fix-specs/BUG-REG-003.md`. |
 
@@ -21,7 +21,7 @@
 
 | Track | ID | Test | Result | Evidence |
 |-------|-----|------|--------|----------|
-| AUTH-01 | 1 | Owner can access all settings | PARTIAL | Rates 500, all others load |
+| AUTH-01 | 1 | Owner can access all settings | PASS | All settings pages load including Rates & Currency (Cycle 4 verified, PR #785) |
 | AUTH-01 | 2 | Admin can access most settings | PASS | General loads with full form |
 | AUTH-01 | 3 | Member blocked from rate cards | PASS | Permission denied message shown |
 | AUTH-01 | 4 | Member blocked from profitability | PASS | "You don't have access to Profitability" — PermissionDenied component (Cycle 2 verified) |
@@ -90,7 +90,7 @@
 
 | Track | Tested | Pass | Fail | Partial | Not Tested |
 |-------|--------|------|------|---------|------------|
-| AUTH-01 | 10 | 9 | 0 | 1 | 0 |
+| AUTH-01 | 10 | 10 | 0 | 0 | 0 |
 | NAV-01 | 16 | 16 | 0 | 0 | 0 |
 | CUST-01 | 5 | 3 | 1 | 0 | 1 |
 | CUST-02 | 10 | 8 | 0 | 1 | 1 |
@@ -102,7 +102,7 @@
 | INV-03 | 6 | 5 | 0 | 0 | 1 |
 | PORTAL-01 | 5 | 0 | 0 | 0 | 5 |
 | PORTAL-02 | 4 | 1 | 0 | 0 | 3 |
-| **Total** | **90** | **75** | **1** | **2** | **12** |
+| **Total** | **90** | **76** | **1** | **1** | **12** |
 
 ## Log
 
@@ -150,3 +150,7 @@
 | 2026-03-20T00:00Z | Product | BUG-REG-001 fix spec REWRITTEN. Previous spec (PR #782) fixed wrong root cause (members array null/empty). Actual root cause: `AvatarCircle` component at `frontend/components/ui/avatar-circle.tsx` line 11 — `name.length` in `hashName()` crashes when `member.name` is null. Fix: guard `name ?? ""` inside AvatarCircle (protects all 7 call sites across 5 files). Spec at `qa_cycle/fix-specs/BUG-REG-001.md`. BUG-REG-001 remains REOPENED for Dev. |
 | 2026-03-20T00:07Z | Dev | BUG-REG-001 FIXED (attempt 2) via PR #785 (squash-merged). Added `const safeName = name ?? ""` inside `AvatarCircle` component and updated props type to `string | null | undefined`. Uses `safeName` in `hashName()` and `getInitials()` calls. Single file change: `frontend/components/ui/avatar-circle.tsx`. Build passes. 263/264 test files pass (1 pre-existing failure in portal-login.test.tsx). Frontend change — NEEDS_REBUILD. |
 | 2026-03-20T00:15Z | Infra | Frontend rebuilt with `docker compose build --no-cache frontend` (fresh build, no cached layers). Fix verified in compiled SSR chunk `_e63b3b77._.js`: AvatarCircle function contains `h=a??""` (minified null-coalescing guard). All 6/6 services healthy. Smoke test HTTP 200 on http://localhost:3001. Stack status -> READY for Cycle 4 re-verification of BUG-REG-001. |
+| 2026-03-20T00:30Z | QA | Cycle 4 started. Authenticated as Alice (Owner). Navigated to `/org/e2e-test-org/settings/rates`. |
+| 2026-03-20T00:31Z | QA | BUG-REG-001 VERIFIED. Rates & Currency page loads fully for Alice (Owner): heading, default currency (ZAR), billing rates table with 6 members. Members with null names render with "?" avatar and email-only display. 0 console errors. Screenshot: `qa_cycle/screenshots/bug-reg-001-cycle4-alice-PASS.png`. |
+| 2026-03-20T00:33Z | QA | Authenticated as Bob (Admin). Navigated to `/org/e2e-test-org/settings/rates`. Page loads identically — full rate table, all 6 members, null-name members display correctly. 0 console errors. Screenshot: `qa_cycle/screenshots/bug-reg-001-cycle4-bob-PASS.png`. |
+| 2026-03-20T00:35Z | QA | BUG-REG-001 status: FIXED -> VERIFIED. AUTH-01 #1: PARTIAL -> PASS. Scorecard: 76 PASS, 1 FAIL (WONT_FIX), 1 PARTIAL, 12 NOT_TESTED. Both bugs now VERIFIED. QA Position -> ALL_DAYS_COMPLETE. Cycle set to 4. Results written to `qa_cycle/checkpoint-results/regression-cycle4-verification.md`. |

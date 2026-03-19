@@ -4,7 +4,7 @@
 
 - **QA Position**: ALL_SECTIONS_COMPLETE — Cycle 3 verification done. BUG-REG-002 VERIFIED. BUG-REG-001 FIXED (attempt 2, PR #785). 11 items remain NOT_TESTED (portal auth limitation, document upload requirement, missing seed data).
 - **Cycle**: 3
-- **E2E Stack**: NEEDS_REBUILD — Frontend change merged (PR #785: AvatarCircle null name guard). Rebuild required before QA re-verification.
+- **E2E Stack**: READY — No-cache rebuild of frontend completed (PR #785: AvatarCircle null name guard). Fix verified in compiled output: `h=a??""` (minified `safeName = name ?? ""`). Ready for QA re-verification of BUG-REG-001.
 - **Branch**: `bugfix_cycle_regression_2026-03-19`
 - **Scenario**: `qa/testplan/regression-test-suite.md`
 - **Focus**: Full regression test suite across all implemented features
@@ -149,3 +149,4 @@
 | 2026-03-19T22:22Z | QA | BUG-REG-001 remains REOPENED. New fix needed: either (1) AvatarCircle should guard `name ?? ""`, or (2) MemberRatesTable should filter `members.filter(m => m?.name)`, or (3) server component should filter before passing to client. AUTH-01 #1 remains PARTIAL. Scorecard unchanged. Cycle set to 3. Bob testing skipped (page crashes before content renders). |
 | 2026-03-20T00:00Z | Product | BUG-REG-001 fix spec REWRITTEN. Previous spec (PR #782) fixed wrong root cause (members array null/empty). Actual root cause: `AvatarCircle` component at `frontend/components/ui/avatar-circle.tsx` line 11 — `name.length` in `hashName()` crashes when `member.name` is null. Fix: guard `name ?? ""` inside AvatarCircle (protects all 7 call sites across 5 files). Spec at `qa_cycle/fix-specs/BUG-REG-001.md`. BUG-REG-001 remains REOPENED for Dev. |
 | 2026-03-20T00:07Z | Dev | BUG-REG-001 FIXED (attempt 2) via PR #785 (squash-merged). Added `const safeName = name ?? ""` inside `AvatarCircle` component and updated props type to `string | null | undefined`. Uses `safeName` in `hashName()` and `getInitials()` calls. Single file change: `frontend/components/ui/avatar-circle.tsx`. Build passes. 263/264 test files pass (1 pre-existing failure in portal-login.test.tsx). Frontend change — NEEDS_REBUILD. |
+| 2026-03-20T00:15Z | Infra | Frontend rebuilt with `docker compose build --no-cache frontend` (fresh build, no cached layers). Fix verified in compiled SSR chunk `_e63b3b77._.js`: AvatarCircle function contains `h=a??""` (minified null-coalescing guard). All 6/6 services healthy. Smoke test HTTP 200 on http://localhost:3001. Stack status -> READY for Cycle 4 re-verification of BUG-REG-001. |

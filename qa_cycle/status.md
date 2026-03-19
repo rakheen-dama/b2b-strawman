@@ -2,9 +2,9 @@
 
 ## Current State
 
-- **QA Position**: ALL_SECTIONS_COMPLETE — All 12 sections tested. 11 items remain NOT_TESTED (portal auth limitation, document upload requirement, missing seed data).
-- **Cycle**: 1
-- **E2E Stack**: READY — Rebuilt frontend with BUG-REG-001 (PR #782) and BUG-REG-002 (PR #783) fixes. All 6/6 services healthy.
+- **QA Position**: ALL_SECTIONS_COMPLETE — Cycle 2 verification done. BUG-REG-002 VERIFIED. BUG-REG-001 REOPENED (fix not deployed — Docker build cache issue). 11 items remain NOT_TESTED (portal auth limitation, document upload requirement, missing seed data).
+- **Cycle**: 2
+- **E2E Stack**: READY — Frontend rebuilt but BUG-REG-001 fix not compiled into SSR chunks (Docker cache). All 6/6 services healthy.
 - **Branch**: `bugfix_cycle_regression_2026-03-19`
 - **Scenario**: `qa/testplan/regression-test-suite.md`
 - **Focus**: Full regression test suite across all implemented features
@@ -13,8 +13,8 @@
 
 | ID | Summary | Severity | Status | Owner | PR | Track | Notes |
 |----|---------|----------|--------|-------|----|-------|-------|
-| BUG-REG-001 | Settings > Rates & Currency 500 for all users | HIGH | FIXED | Dev | #782 | AUTH-01, SET-02 | `TypeError: Cannot read properties of null (reading 'length')`. Fixed: null coalescing on Promise.allSettled values + defensive guard in MemberRatesTable + defaultCurrency fallback. Frontend change — NEEDS_REBUILD. |
-| BUG-REG-002 | Carol (Member) gets 500 on role-gated pages | HIGH | FIXED | Dev | #783 | AUTH-01 | Fixed ErrorBoundary to re-throw `NEXT_NOT_FOUND`/`NEXT_REDIRECT` errors. Replaced `notFound()` with `<PermissionDenied>` component on 4 pages (profitability, reports, customers, settings/roles). Frontend change — NEEDS_REBUILD. |
+| BUG-REG-001 | Settings > Rates & Currency 500 for all users | HIGH | REOPENED | Dev | #782 | AUTH-01, SET-02 | Source fix correct but NOT deployed. Docker `e2e-rebuild.sh` used cached layers — SSR chunks still contain unfixed code. Needs `--no-cache` rebuild. Still crashes with same `TypeError: Cannot read properties of null (reading 'length')`. |
+| BUG-REG-002 | Carol (Member) gets 500 on role-gated pages | HIGH | VERIFIED | QA | #783 | AUTH-01 | All 4 pages (profitability, reports, customers, settings/roles) show "You don't have access to [Page]" with PermissionDenied component. No 500 errors. |
 | BUG-REG-003 | Customer list has no free-text search input | LOW | WONT_FIX | Dev | — | CUST-01 | Missing feature, not a regression. Customer search was never implemented (no backend search endpoint, no frontend input). Out of scope for bugfix cycle. Spec written for future reference: `fix-specs/BUG-REG-003.md`. |
 
 ## Results Summary
@@ -24,13 +24,13 @@
 | AUTH-01 | 1 | Owner can access all settings | PARTIAL | Rates 500, all others load |
 | AUTH-01 | 2 | Admin can access most settings | PASS | General loads with full form |
 | AUTH-01 | 3 | Member blocked from rate cards | PASS | Permission denied message shown |
-| AUTH-01 | 4 | Member blocked from profitability | FAIL | 500 error instead of permission denial |
-| AUTH-01 | 5 | Member blocked from reports | FAIL | 500 error instead of permission denial |
+| AUTH-01 | 4 | Member blocked from profitability | PASS | "You don't have access to Profitability" — PermissionDenied component (Cycle 2 verified) |
+| AUTH-01 | 5 | Member blocked from reports | PASS | "You don't have access to Reports" — PermissionDenied component (Cycle 2 verified) |
 | AUTH-01 | 6 | Member can access My Work | PASS | Page loads with tasks and time data |
 | AUTH-01 | 7 | Member can access Projects | PASS | Page loads with project list |
-| AUTH-01 | 8 | Member blocked from customers | FAIL | 500 error instead of read-only/denial |
+| AUTH-01 | 8 | Member blocked from customers | PASS | "You don't have access to Customers" — PermissionDenied component (Cycle 2 verified) |
 | AUTH-01 | 9 | Admin can manage team | PASS | Team page with invite form loads |
-| AUTH-01 | 10 | Member blocked from roles settings | FAIL | 500 blank page on direct URL |
+| AUTH-01 | 10 | Member blocked from roles settings | PASS | "You don't have access to Roles & Permissions" — PermissionDenied component (Cycle 2 verified) |
 | NAV-01 | 1-16 | All sidebar nav items | PASS | All 16 pages load correctly for Alice |
 | CUST-01 | 1 | Create customer with required fields | PASS | "REG-Test Customer Corp" created |
 | CUST-01 | 3 | Edit customer name | PASS | Name changed, persisted after reload |
@@ -90,7 +90,7 @@
 
 | Track | Tested | Pass | Fail | Partial | Not Tested |
 |-------|--------|------|------|---------|------------|
-| AUTH-01 | 10 | 5 | 4 | 1 | 0 |
+| AUTH-01 | 10 | 9 | 0 | 1 | 0 |
 | NAV-01 | 16 | 16 | 0 | 0 | 0 |
 | CUST-01 | 5 | 3 | 1 | 0 | 1 |
 | CUST-02 | 10 | 8 | 0 | 1 | 1 |
@@ -102,7 +102,7 @@
 | INV-03 | 6 | 5 | 0 | 0 | 1 |
 | PORTAL-01 | 5 | 0 | 0 | 0 | 5 |
 | PORTAL-02 | 4 | 1 | 0 | 0 | 3 |
-| **Total** | **90** | **71** | **5** | **2** | **12** |
+| **Total** | **90** | **75** | **1** | **2** | **12** |
 
 ## Log
 
@@ -138,3 +138,7 @@
 | 2026-03-19T21:30Z | Dev | BUG-REG-001 FIXED via PR #782 (squash-merged). Added null coalescing on `settingsRes.value` and `Array.isArray()` guard on `membersRes.value` in `settings/rates/page.tsx`. Added `!members` defensive guard in `MemberRatesTable` before `.length` check. Added `settings?.defaultCurrency ?? "USD"` fallback. Build passes. 263/264 test files pass (1 pre-existing failure in portal-login.test.tsx). Frontend change — NEEDS_REBUILD. |
 | 2026-03-19T21:37Z | Dev | BUG-REG-002 FIXED via PR #783 (squash-merged). Fixed `ErrorBoundary.getDerivedStateFromError` to detect and re-throw errors with `NEXT_NOT_FOUND`/`NEXT_REDIRECT` digest. Replaced `notFound()` RBAC gates with `<PermissionDenied>` component on profitability, reports, customers, and settings/roles pages. Build passes. 263/264 test files pass (1 pre-existing failure in portal-login.test.tsx). Frontend change — NEEDS_REBUILD. |
 | 2026-03-19T21:41Z | Infra | E2E frontend rebuilt via `e2e-rebuild.sh frontend`. Next.js build succeeded (45s). All 6/6 services healthy. Smoke test: HTTP 200 on http://localhost:3001. Stack status -> READY for QA re-verification of BUG-REG-001 and BUG-REG-002 fixes. |
+| 2026-03-19T21:55Z | QA | Cycle 2 verification started. Authenticated as Alice (Owner) for BUG-REG-001, then Carol (Member) for BUG-REG-002. |
+| 2026-03-19T21:58Z | QA | BUG-REG-001 REOPENED. Rates page still shows "Something went wrong" with same TypeError. Root cause: Docker `e2e-rebuild.sh` used cached build layers — SSR chunk `components_rates_member-rates-table_tsx_6ae47b6d._.js` still has unfixed `n.length` without `!n` guard. Source files on disk have the fix but compiled output does not. Needs `--no-cache` rebuild. |
+| 2026-03-19T22:00Z | QA | BUG-REG-002 VERIFIED. All 4 role-gated pages tested as Carol: profitability, reports, customers, settings/roles. All show PermissionDenied component ("You don't have access to [Page]") instead of 500. ErrorBoundary fix is working. |
+| 2026-03-19T22:02Z | QA | AUTH-01 scores updated: #4, #5, #8, #10 changed FAIL -> PASS. #1 remains PARTIAL (rates still broken). Scorecard: 75 PASS, 1 FAIL, 2 PARTIAL, 12 NOT_TESTED. Cycle set to 2. |

@@ -28,6 +28,8 @@ const badgeVariants = cva(
         // Backward-compatible aliases
         default: "bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-200",
         secondary: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400",
+        anonymized:
+          "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 border border-slate-300 dark:border-slate-600",
       },
     },
     defaultVariants: {

@@ -21,6 +21,11 @@ const STATUS_CONFIG: Record<LifecycleStatus, StatusConfig> = {
   DORMANT: { label: "Dormant", variant: "warning" },
   OFFBOARDING: { label: "Offboarding", variant: "warning" },
   OFFBOARDED: { label: "Offboarded", variant: "destructive" },
+  ANONYMIZED: {
+    label: "Anonymized",
+    variant: "neutral" as BadgeVariant,
+    className: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300 border border-slate-300 dark:border-slate-600",
+  },
 };
 
 interface LifecycleStatusBadgeProps {

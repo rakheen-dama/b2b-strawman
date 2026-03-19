@@ -86,3 +86,44 @@ export interface PaiaGenerateResponse {
   fileSize: number;
   generatedAt: string;
 }
+
+// ---- Standalone Customer Data Protection (Epic 380A) ----
+
+export interface AnonymizationPreview {
+  customerId: string;
+  customerName: string;
+  affectedEntities: {
+    portalContacts: number;
+    projects: number;
+    documents: number;
+    timeEntries: number;
+    invoices: number;
+    comments: number;
+    customFieldValues: number;
+  };
+  financialRecordsRetained: number;
+  financialRetentionExpiresAt: string | null;
+}
+
+export interface StandaloneExportResult {
+  exportId: string;
+  status: string;
+  downloadUrl: string;
+  expiresAt: string;
+  fileCount: number;
+  totalSizeBytes: number;
+}
+
+export interface StandaloneAnonymizationResult {
+  status: "COMPLETED";
+  referenceId: string;
+  preExportKey: string;
+  summary: {
+    customerAnonymized: boolean;
+    documentsDeleted: number;
+    commentsRedacted: number;
+    portalContactsAnonymized: number;
+    invoicesPreserved: number;
+    customFieldsCleared: number;
+  };
+}

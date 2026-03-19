@@ -27,6 +27,7 @@ const ALLOWED_TRANSITIONS: Record<LifecycleStatus, LifecycleStatus[]> = {
   DORMANT: ["ACTIVE", "OFFBOARDING"],
   OFFBOARDING: ["OFFBOARDED"],
   OFFBOARDED: ["ACTIVE"],
+  ANONYMIZED: [],
 };
 
 // Human-readable labels for each target (context-aware)

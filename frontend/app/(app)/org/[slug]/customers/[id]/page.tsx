@@ -29,6 +29,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EditCustomerDialog } from "@/components/customers/edit-customer-dialog";
 import { ArchiveCustomerDialog } from "@/components/customers/archive-customer-dialog";
+import { DataExportDialog } from "@/components/customers/data-export-dialog";
+import { AnonymizeCustomerDialog } from "@/components/customers/anonymize-customer-dialog";
 import { CustomerProjectsPanel } from "@/components/customers/customer-projects-panel";
 import { CustomerDocumentsPanel } from "@/components/documents/customer-documents-panel";
 import { CustomerTabs } from "@/components/customers/customer-tabs";
@@ -65,7 +67,7 @@ import { TrustBalanceCard } from "@/components/customers/trust-balance-card";
 import { checkPrerequisites } from "@/lib/prerequisites";
 import type { PrerequisiteCheck } from "@/components/prerequisite/types";
 import { formatDate, formatCurrencySafe } from "@/lib/format";
-import { ArrowLeft, Pencil, Archive, Clock, UserCheck, ArrowRight } from "lucide-react";
+import { ArrowLeft, Pencil, Archive, Clock, UserCheck, ArrowRight, Download, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 
 const STATUS_BADGE: Record<CustomerStatus, { label: string; variant: "success" | "neutral" }> = {
@@ -82,6 +84,7 @@ export default async function CustomerDetailPage({
   const caps = await fetchMyCapabilities();
 
   const isAdmin = caps.isAdmin || caps.isOwner;
+  const isOwner = caps.isOwner;
 
   let customer: Customer;
   try {
@@ -456,14 +459,14 @@ export default async function CustomerDetailPage({
 
         {isAdmin && (
           <div id="lifecycle-transition" className="flex shrink-0 gap-2">
-            {customer.status === "ACTIVE" && customer.lifecycleStatus && (
+            {customer.status === "ACTIVE" && customer.lifecycleStatus && customer.lifecycleStatus !== "ANONYMIZED" && (
               <LifecycleTransitionDropdown
                 currentStatus={customer.lifecycleStatus}
                 customerId={id}
                 slug={slug}
               />
             )}
-            {customerTemplates.length > 0 && (
+            {customerTemplates.length > 0 && customer.lifecycleStatus !== "ANONYMIZED" && (
               <GenerateDocumentDropdown
                 templates={customerTemplates}
                 entityId={id}
@@ -473,7 +476,31 @@ export default async function CustomerDetailPage({
                 isAdmin={isAdmin}
               />
             )}
-            {customer.status === "ACTIVE" && (
+            {customer.lifecycleStatus !== "ANONYMIZED" && (
+              <DataExportDialog slug={slug} customerId={customer.id}>
+                <Button variant="outline" size="sm">
+                  <Download className="mr-1.5 size-4" />
+                  Export Data
+                </Button>
+              </DataExportDialog>
+            )}
+            {isOwner && customer.lifecycleStatus !== "ANONYMIZED" && (
+              <AnonymizeCustomerDialog
+                slug={slug}
+                customerId={customer.id}
+                customerName={customer.name}
+              >
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950 dark:hover:text-red-300"
+                >
+                  <ShieldCheck className="mr-1.5 size-4" />
+                  Anonymize
+                </Button>
+              </AnonymizeCustomerDialog>
+            )}
+            {customer.status === "ACTIVE" && customer.lifecycleStatus !== "ANONYMIZED" && (
               <>
                 <EditCustomerDialog customer={customer} slug={slug}>
                   <Button variant="outline" size="sm">
@@ -496,6 +523,19 @@ export default async function CustomerDetailPage({
           </div>
         )}
       </div>
+
+      {/* Anonymized Info Banner */}
+      {customer.lifecycleStatus === "ANONYMIZED" && (
+        <div className="flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-900">
+          <ShieldCheck className="mt-0.5 size-5 shrink-0 text-slate-500 dark:text-slate-400" />
+          <div className="text-sm text-slate-700 dark:text-slate-300">
+            <p className="font-medium">Customer data anonymized</p>
+            <p className="mt-0.5 text-slate-500 dark:text-slate-400">
+              This customer&apos;s personal data has been anonymized. All identifying information has been removed.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Custom Fields */}
       <FieldGroupSelector

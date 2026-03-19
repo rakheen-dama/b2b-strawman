@@ -28,7 +28,7 @@ This phase introduces a formal vertical architecture to DocTeams. It creates a `
 | 368 | Profile Registry, Module Registry, Controllers & Provisioning | Backend | 367 | M | 368A, 368B | **Done** (PR #760, #761) |
 | 369 | Legal Module Stub Controllers | Backend | 367 | S | 369A | **Done** (PR #762) |
 | 370 | Frontend OrgProfileProvider + ModuleGate + Sidebar | Frontend | 367 | S | 370A | **Done** (PR #763) |
-| 371 | Legal Stub Pages + Conditional Sections + Settings Profile Switching | Frontend | 368, 370 | M | 371A, 371B | |
+| 371 | Legal Stub Pages + Conditional Sections + Settings Profile Switching | Frontend | 368, 370 | M | 371A, 371B | **Done** (PRs #764, #765) |
 | 372 | Legal Terminology + End-to-End Integration Tests | Backend + Frontend | 368, 369, 370 | S | 372A, 372B | |
 
 ---
@@ -139,7 +139,7 @@ FRONTEND PAGES      TERMINOLOGY + E2E
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 4a (parallel) | 371 | 371A | 3 stub pages (`trust-accounting`, `court-calendar`, `conflict-check`), conditional trust balance card on customer detail, conditional conflict check section on new project dialog, frontend tests (~6). Frontend only. | **Done** (PR #764) |
-| 4b (parallel) | 371 | 371B | Settings profile switching UI: profile dropdown, confirmation dialog, `PATCH` call, re-fetch, frontend tests (~4). Frontend only. | |
+| 4b (parallel) | 371 | 371B | Settings profile switching UI: profile dropdown, confirmation dialog, `PATCH` call, re-fetch, frontend tests (~4). Frontend only. | **Done** (PR #765) |
 
 ### Stage 5: Terminology + Integration Tests
 
@@ -358,7 +358,7 @@ FRONTEND PAGES      TERMINOLOGY + E2E
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **371A** | 371.1--371.6 | 3 stub pages, conditional trust balance card on customer detail, conditional conflict check section on new project dialog, frontend tests (~6). Frontend only. | **Done** (PR #764) |
-| **371B** | 371.7--371.11 | Settings profile switching: profile dropdown, confirmation dialog, `PATCH` call, re-fetch, frontend tests (~4). Frontend only. | |
+| **371B** | 371.7--371.11 | Settings profile switching: profile dropdown, confirmation dialog, `PATCH` call, re-fetch, frontend tests (~4). Frontend only. | **Done** (PR #765) |
 
 ### Tasks
 

@@ -419,7 +419,7 @@
 | 368 | Profile Registry, Module Registry, Controllers & Provisioning | Backend | 367 | M | 368A, 368B | **Done** (PR #760, #761) |
 | 369 | Legal Module Stub Controllers | Backend | 367 | S | 369A | **Done** (PR #762) |
 | 370 | Frontend OrgProfileProvider + ModuleGate + Sidebar | Frontend | 367 | S | 370A | **Done** (PR #763) |
-| 371 | Legal Stub Pages + Conditional Sections + Settings Profile Switching | Frontend | 368, 370 | M | 371A, 371B | 371A **Done** (PR #764) |
+| 371 | Legal Stub Pages + Conditional Sections + Settings Profile Switching | Frontend | 368, 370 | M | 371A, 371B | **Done** (PRs #764, #765) |
 | 372 | Legal Terminology + End-to-End Integration Tests | Backend + Frontend | 368, 369, 370 | S | 372A, 372B | |
 
 ---

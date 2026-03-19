@@ -27,7 +27,7 @@ The next Flyway tenant migration is **V76**. The next epic number starts at **37
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 373 | Foundation: V76 Migration, OrgSettings Extension, JurisdictionDefaults | Backend | — | S | 373A | **Done** (PR #768) |
-| 374 | Data Export Extension | Backend | 373 | M | 374A, 374B | |
+| 374 | Data Export Extension | Backend | 373 | M | 374A, 374B | **Done** (PRs #769, #770) |
 | 375 | Anonymization Extension | Backend | 373, 374 | M | 375A, 375B | |
 | 376 | Retention Extension | Backend | 373 | M | 376A, 376B | |
 | 377 | DSAR Extension | Backend | 373 | S | 377A | |
@@ -141,7 +141,7 @@ FRONTEND (requires all backend epics 373–378)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 2a (parallel) | 374 | 374B | `DataExportController` (POST trigger, GET status, GET list), integration tests (~5). Backend only. | |
+| 2a (parallel) | 374 | 374B | `DataExportController` (POST trigger, GET status, GET list), integration tests (~5). Backend only. | **Done** (PR #770) |
 | 2b (parallel) | 375 | 375A | Extend `DataAnonymizationService` (ANONYMIZED enforcement, notes/customFields clearing, pre-anonymization export, `previewAnonymization()`). Integration tests (~6). Backend only. | |
 | 2c (parallel) | 376 | 376B | `RetentionController` extension (GET list, PUT update, POST evaluate, POST execute). Integration tests (~4). Backend only. | |
 | 2d (parallel) | 378 | 378B | `ProcessingActivityController` (CRUD endpoints) + `PaiaManualContextBuilder` + compliance template pack seeder + generate endpoint. Integration tests (~5). Backend only. | |
@@ -232,7 +232,7 @@ FRONTEND (requires all backend epics 373–378)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **374A** | 374.1–374.6 | Extend `DataExportService.exportCustomerData()`: collect ALL time entries, custom field values, audit events (filtered by customer entity reference), portal contacts; produce structured ZIP with directory layout; upload to S3 with `compliance-exports/` prefix; create `DATA_SUBJECT_EXPORT` audit event; return `ExportResult` record. Integration tests (~5). Backend only. | **Done** (PR #769) |
-| **374B** | 374.7–374.12 | New `DataExportController`: `POST /api/customers/{customerId}/data-export`, `GET /api/data-exports/{exportId}`, `GET /api/data-exports`; `ExportStatusResponse` record; authorization checks (OWNER/ADMIN only); integration tests (~5). Backend only. | |
+| **374B** | 374.7–374.12 | New `DataExportController`: `POST /api/customers/{customerId}/data-export`, `GET /api/data-exports/{exportId}`, `GET /api/data-exports`; `ExportStatusResponse` record; authorization checks (OWNER/ADMIN only); integration tests (~5). Backend only. | **Done** (PR #770) |
 
 ### Tasks
 

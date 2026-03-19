@@ -151,7 +151,9 @@ class CapabilityEndpointTest {
         .andExpect(jsonPath("$.isAdmin").value(true))
         .andExpect(jsonPath("$.isOwner").value(false))
         .andExpect(jsonPath("$.capabilities").isArray())
-        .andExpect(jsonPath("$.capabilities.length()").value(Capability.ALL_NAMES.size()));
+        .andExpect(
+            jsonPath("$.capabilities.length()")
+                .value(Capability.ALL_NAMES.size() - Capability.OWNER_ONLY.size()));
   }
 
   @Test

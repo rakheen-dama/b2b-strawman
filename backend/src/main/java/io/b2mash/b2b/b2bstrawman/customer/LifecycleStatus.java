@@ -10,7 +10,8 @@ public enum LifecycleStatus {
   ACTIVE,
   DORMANT,
   OFFBOARDING,
-  OFFBOARDED;
+  OFFBOARDED,
+  ANONYMIZED;
 
   private static final Map<LifecycleStatus, Set<LifecycleStatus>> ALLOWED_TRANSITIONS =
       Map.of(
@@ -19,7 +20,8 @@ public enum LifecycleStatus {
           ACTIVE, Set.of(DORMANT, OFFBOARDING),
           DORMANT, Set.of(ACTIVE, OFFBOARDING),
           OFFBOARDING, Set.of(OFFBOARDED),
-          OFFBOARDED, Set.of(ACTIVE));
+          OFFBOARDED, Set.of(ACTIVE, ANONYMIZED),
+          ANONYMIZED, Set.of());
 
   /** Returns true if transitioning from this status to the target is allowed. */
   public boolean canTransitionTo(LifecycleStatus target) {
@@ -38,7 +40,7 @@ public enum LifecycleStatus {
       throw new IllegalArgumentException(
           "Invalid lifecycle status: '"
               + value
-              + "'. Valid values: PROSPECT, ONBOARDING, ACTIVE, DORMANT, OFFBOARDING, OFFBOARDED");
+              + "'. Valid values: PROSPECT, ONBOARDING, ACTIVE, DORMANT, OFFBOARDING, OFFBOARDED, ANONYMIZED");
     }
   }
 }

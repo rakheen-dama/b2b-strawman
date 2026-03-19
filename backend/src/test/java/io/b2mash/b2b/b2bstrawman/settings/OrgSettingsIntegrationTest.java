@@ -649,6 +649,99 @@ class OrgSettingsIntegrationTest {
         .andExpect(jsonPath("$.terminologyNamespace").value("legal"));
   }
 
+  @Test
+  @Order(23)
+  void patchDataProtectionSettings_ownerCanSetJurisdiction() throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/settings/data-protection")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "dataProtectionJurisdiction": "ZA",
+                      "retentionPolicyEnabled": true,
+                      "financialRetentionMonths": 60
+                    }
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.dataProtectionJurisdiction").value("ZA"))
+        .andExpect(jsonPath("$.retentionPolicyEnabled").value(true))
+        .andExpect(jsonPath("$.financialRetentionMonths").value(60));
+  }
+
+  @Test
+  @Order(24)
+  void getSettings_includesDataProtectionFields() throws Exception {
+    mockMvc
+        .perform(get("/api/settings").with(ownerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.dataProtectionJurisdiction").value("ZA"))
+        .andExpect(jsonPath("$.retentionPolicyEnabled").value(true))
+        .andExpect(jsonPath("$.financialRetentionMonths").value(60));
+  }
+
+  @Test
+  @Order(25)
+  void patchDataProtectionSettings_memberGetsForbidden() throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/settings/data-protection")
+                .with(memberJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"dataProtectionJurisdiction": "ZA"}
+                    """))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  @Order(26)
+  void patchDataProtectionSettings_rejectsFinancialRetentionBelowJurisdictionMinimum()
+      throws Exception {
+    // First set jurisdiction to ZA (minimum 60 months)
+    mockMvc
+        .perform(
+            patch("/api/settings/data-protection")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"dataProtectionJurisdiction": "ZA"}
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.dataProtectionJurisdiction").value("ZA"));
+
+    // Then try to set financialRetentionMonths below ZA's 60-month minimum
+    mockMvc
+        .perform(
+            patch("/api/settings/data-protection")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"financialRetentionMonths": 12}
+                    """))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  @Order(27)
+  void patchDataProtectionSettings_rejectsInvalidEmail() throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/settings/data-protection")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"informationOfficerEmail": "not-an-email"}
+                    """))
+        .andExpect(status().isBadRequest());
+  }
+
   // --- Helpers ---
 
   private String syncMember(

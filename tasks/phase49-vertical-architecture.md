@@ -138,7 +138,7 @@ FRONTEND PAGES      TERMINOLOGY + E2E
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 4a (parallel) | 371 | 371A | 3 stub pages (`trust-accounting`, `court-calendar`, `conflict-check`), conditional trust balance card on customer detail, conditional conflict check section on new project dialog, frontend tests (~6). Frontend only. | |
+| 4a (parallel) | 371 | 371A | 3 stub pages (`trust-accounting`, `court-calendar`, `conflict-check`), conditional trust balance card on customer detail, conditional conflict check section on new project dialog, frontend tests (~6). Frontend only. | **Done** (PR #764) |
 | 4b (parallel) | 371 | 371B | Settings profile switching UI: profile dropdown, confirmation dialog, `PATCH` call, re-fetch, frontend tests (~4). Frontend only. | |
 
 ### Stage 5: Terminology + Integration Tests
@@ -357,7 +357,7 @@ FRONTEND PAGES      TERMINOLOGY + E2E
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **371A** | 371.1--371.6 | 3 stub pages, conditional trust balance card on customer detail, conditional conflict check section on new project dialog, frontend tests (~6). Frontend only. | |
+| **371A** | 371.1--371.6 | 3 stub pages, conditional trust balance card on customer detail, conditional conflict check section on new project dialog, frontend tests (~6). Frontend only. | **Done** (PR #764) |
 | **371B** | 371.7--371.11 | Settings profile switching: profile dropdown, confirmation dialog, `PATCH` call, re-fetch, frontend tests (~4). Frontend only. | |
 
 ### Tasks

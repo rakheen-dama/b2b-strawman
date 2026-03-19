@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.settings;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.datarequest.JurisdictionDefaults;
+import io.b2mash.b2b.b2bstrawman.datarequest.ProcessingActivityService;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
@@ -38,18 +39,21 @@ public class OrgSettingsService {
   private final StorageService storageService;
   private final VerticalProfileRegistry verticalProfileRegistry;
   private final RetentionService retentionService;
+  private final ProcessingActivityService processingActivityService;
 
   public OrgSettingsService(
       OrgSettingsRepository orgSettingsRepository,
       AuditService auditService,
       StorageService storageService,
       VerticalProfileRegistry verticalProfileRegistry,
-      RetentionService retentionService) {
+      RetentionService retentionService,
+      ProcessingActivityService processingActivityService) {
     this.orgSettingsRepository = orgSettingsRepository;
     this.auditService = auditService;
     this.storageService = storageService;
     this.verticalProfileRegistry = verticalProfileRegistry;
     this.retentionService = retentionService;
+    this.processingActivityService = processingActivityService;
   }
 
   /**
@@ -731,6 +735,7 @@ public class OrgSettingsService {
     String newJurisdiction = settings.getDataProtectionJurisdiction();
     if (oldJurisdiction == null && newJurisdiction != null) {
       retentionService.seedJurisdictionDefaults(newJurisdiction);
+      processingActivityService.seedJurisdictionDefaults(newJurisdiction);
     }
 
     log.info(

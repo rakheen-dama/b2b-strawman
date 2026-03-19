@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.datarequest;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
+import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.comment.CommentRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
@@ -11,11 +12,14 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.LinkedHashMap;
@@ -23,9 +27,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.core.JacksonException;
@@ -43,6 +49,8 @@ public class DataExportService {
   private final InvoiceRepository invoiceRepository;
   private final TimeEntryRepository timeEntryRepository;
   private final CommentRepository commentRepository;
+  private final AuditEventRepository auditEventRepository;
+  private final PortalContactRepository portalContactRepository;
   private final StorageService storageService;
   private final ObjectMapper objectMapper;
   private final AuditService auditService;
@@ -55,6 +63,8 @@ public class DataExportService {
       InvoiceRepository invoiceRepository,
       TimeEntryRepository timeEntryRepository,
       CommentRepository commentRepository,
+      AuditEventRepository auditEventRepository,
+      PortalContactRepository portalContactRepository,
       StorageService storageService,
       ObjectMapper objectMapper,
       AuditService auditService) {
@@ -65,6 +75,8 @@ public class DataExportService {
     this.invoiceRepository = invoiceRepository;
     this.timeEntryRepository = timeEntryRepository;
     this.commentRepository = commentRepository;
+    this.auditEventRepository = auditEventRepository;
+    this.portalContactRepository = portalContactRepository;
     this.storageService = storageService;
     this.objectMapper = objectMapper;
     this.auditService = auditService;
@@ -86,6 +98,12 @@ public class DataExportService {
       UUID id, LocalDate date, int durationMinutes, String description, boolean billable) {}
 
   private record ExportCommentData(UUID id, String body, String visibility, Instant createdAt) {}
+
+  private record ExportAuditEventData(
+      UUID id, String eventType, String entityType, UUID actorId, Instant occurredAt) {}
+
+  private record ExportPortalContactData(
+      UUID id, String email, String displayName, String role, String status) {}
 
   @Transactional
   public String generateExport(UUID requestId, UUID actorId) {
@@ -137,6 +155,66 @@ public class DataExportService {
         zipBytes.length);
 
     return s3Key;
+  }
+
+  @Transactional
+  public ExportStatusResponse exportCustomerData(UUID customerId, UUID actorId) {
+    customerRepository
+        .findById(customerId)
+        .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+
+    // Collect all data
+    Map<String, Object> data = collectData(customerId);
+
+    // Generate structured ZIP
+    byte[] zipBytes = generateStructuredZip(customerId, data);
+
+    // Count files (non-directory ZIP entries)
+    int fileCount = countZipEntries(zipBytes);
+
+    // Upload to S3 — use exports segment (matches existing S3_KEY_PATTERN)
+    String timestamp = String.valueOf(Instant.now().toEpochMilli());
+    String s3Key =
+        "org/"
+            + RequestScopes.TENANT_ID.get()
+            + "/exports/compliance-"
+            + customerId
+            + "-"
+            + timestamp
+            + ".zip";
+    storageService.upload(s3Key, zipBytes, "application/zip");
+
+    // Generate 24-hour presigned download URL
+    var presigned = storageService.generateDownloadUrl(s3Key, Duration.ofHours(24));
+
+    // Audit event
+    UUID exportId = UUID.randomUUID();
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("data.subject.export.generated")
+            .entityType("customer")
+            .entityId(customerId)
+            .details(
+                Map.of(
+                    "exportId",
+                    exportId.toString(),
+                    "fileCount",
+                    fileCount,
+                    "totalSizeBytes",
+                    (long) zipBytes.length,
+                    "actorId",
+                    actorId.toString()))
+            .build());
+
+    log.info(
+        "Compliance export generated for customer {} — s3Key={}, size={} bytes, files={}",
+        customerId,
+        s3Key,
+        zipBytes.length,
+        fileCount);
+
+    return new ExportStatusResponse(
+        exportId, "COMPLETED", presigned.url(), presigned.expiresAt(), fileCount, zipBytes.length);
   }
 
   private Map<String, Object> collectData(UUID customerId) {
@@ -194,13 +272,13 @@ public class DataExportService {
                         i.getCurrency()))
             .toList());
 
-    // Time entries (billable, via customer's projects) — single batch query
+    // Time entries (ALL, via customer's projects) — single batch query
     List<UUID> projectIds = customerProjects.stream().map(CustomerProject::getProjectId).toList();
     List<ExportTimeEntryData> timeEntryDtos;
     if (projectIds.isEmpty()) {
       timeEntryDtos = List.of();
     } else {
-      var timeEntries = timeEntryRepository.findBillableByProjectIdIn(projectIds);
+      var timeEntries = timeEntryRepository.findByProjectIdIn(projectIds);
       timeEntryDtos =
           timeEntries.stream()
               .map(
@@ -226,7 +304,128 @@ public class DataExportService {
                         c.getId(), c.getBody(), c.getVisibility(), c.getCreatedAt()))
             .toList());
 
+    // Custom fields — stored as JSONB on the customer entity (no separate table)
+    data.put("customFields", customer != null ? customer.getCustomFields() : Map.of());
+
+    // Audit events referencing the customer entity
+    var auditPage =
+        auditEventRepository.findByFilter(
+            "customer", customerId, null, null, null, null, Pageable.unpaged());
+    data.put(
+        "auditEvents",
+        auditPage.getContent().stream()
+            .map(
+                ae ->
+                    new ExportAuditEventData(
+                        ae.getId(),
+                        ae.getEventType(),
+                        ae.getEntityType(),
+                        ae.getActorId(),
+                        ae.getOccurredAt()))
+            .toList());
+
+    // Portal contacts
+    var portalContacts = portalContactRepository.findByCustomerId(customerId);
+    data.put(
+        "portalContacts",
+        portalContacts.stream()
+            .map(
+                pc ->
+                    new ExportPortalContactData(
+                        pc.getId(),
+                        pc.getEmail(),
+                        pc.getDisplayName(),
+                        pc.getRole() != null ? pc.getRole().name() : null,
+                        pc.getStatus() != null ? pc.getStatus().name() : null))
+            .toList());
+
     return data;
+  }
+
+  private byte[] generateStructuredZip(UUID customerId, Map<String, Object> data) {
+    String prefix = "customer-export-" + customerId + "/";
+    try (var baos = new ByteArrayOutputStream();
+        var zos = new ZipOutputStream(baos)) {
+
+      // Directory entries
+      zos.putNextEntry(new ZipEntry(prefix));
+      zos.closeEntry();
+      zos.putNextEntry(new ZipEntry(prefix + "projects/"));
+      zos.closeEntry();
+
+      // customer.json
+      writeZipEntry(zos, prefix + "customer.json", data.get("customer"));
+
+      // portal-contacts.json
+      writeZipEntry(zos, prefix + "portal-contacts.json", data.get("portalContacts"));
+
+      // projects/project-{id}.json — one per project
+      if (data.get("projects") instanceof List<?> projects) {
+        for (var project : projects) {
+          String projectId = extractProjectId(project);
+          writeZipEntry(zos, prefix + "projects/project-" + projectId + ".json", project);
+        }
+      }
+
+      // Flat files
+      writeZipEntry(zos, prefix + "time-entries.json", data.get("timeEntries"));
+      writeZipEntry(zos, prefix + "invoices.json", data.get("invoices"));
+      writeZipEntry(zos, prefix + "comments.json", data.get("comments"));
+      writeZipEntry(zos, prefix + "custom-fields.json", data.get("customFields"));
+      writeZipEntry(zos, prefix + "audit-events.json", data.get("auditEvents"));
+
+      // export-metadata.json
+      var metadata =
+          Map.of(
+              "exportedAt",
+              Instant.now().toString(),
+              "tenantSchema",
+              RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : "unknown",
+              "scope",
+              "FULL_CUSTOMER_DATA",
+              "customerId",
+              customerId.toString());
+      writeZipEntry(zos, prefix + "export-metadata.json", metadata);
+
+      zos.finish();
+      return baos.toByteArray();
+    } catch (IOException e) {
+      throw new RuntimeException("Failed to generate export ZIP", e);
+    }
+  }
+
+  private void writeZipEntry(ZipOutputStream zos, String name, Object content) throws IOException {
+    zos.putNextEntry(new ZipEntry(name));
+    try {
+      zos.write(objectMapper.writeValueAsBytes(content != null ? content : List.of()));
+    } catch (JacksonException e) {
+      zos.write("[]".getBytes(StandardCharsets.UTF_8));
+    }
+    zos.closeEntry();
+  }
+
+  private String extractProjectId(Object project) {
+    if (project instanceof ExportProjectData epd) {
+      return epd.projectId().toString();
+    }
+    return UUID.randomUUID().toString();
+  }
+
+  private int countZipEntries(byte[] zipBytes) {
+    try (var bais = new ByteArrayInputStream(zipBytes);
+        var zis = new ZipInputStream(bais)) {
+      int count = 0;
+      ZipEntry entry;
+      while ((entry = zis.getNextEntry()) != null) {
+        if (!entry.isDirectory()) {
+          count++;
+        }
+        zis.closeEntry();
+      }
+      return count;
+    } catch (IOException e) {
+      return 0;
+    }
   }
 
   private byte[] generateSummaryCsv(Map<String, Object> data) {

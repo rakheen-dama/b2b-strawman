@@ -19,8 +19,11 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -36,6 +39,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 @Import(TestcontainersConfiguration.class)
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class VerticalProfileControllerTest {
 
   private static final String API_KEY = "test-api-key";
@@ -73,6 +77,7 @@ class VerticalProfileControllerTest {
   }
 
   @Test
+  @Order(1)
   void getProfiles_returnsProfilesWithCorrectStructure() throws Exception {
     mockMvc
         .perform(get("/api/profiles").with(ownerJwt()))
@@ -86,6 +91,7 @@ class VerticalProfileControllerTest {
   }
 
   @Test
+  @Order(2)
   void getModules_returnsModulesWithEnabledStatus() throws Exception {
     mockMvc
         .perform(get("/api/modules").with(ownerJwt()))
@@ -99,16 +105,19 @@ class VerticalProfileControllerTest {
   }
 
   @Test
+  @Order(3)
   void getProfiles_memberWithoutTeamOversight_returns403() throws Exception {
     mockMvc.perform(get("/api/profiles").with(memberJwt())).andExpect(status().isForbidden());
   }
 
   @Test
+  @Order(4)
   void getModules_memberWithoutTeamOversight_returns403() throws Exception {
     mockMvc.perform(get("/api/modules").with(memberJwt())).andExpect(status().isForbidden());
   }
 
   @Test
+  @Order(5)
   void patchVerticalProfile_ownerSwitchesToLegalZa_setsModulesAndTerminology() throws Exception {
     mockMvc
         .perform(
@@ -128,6 +137,7 @@ class VerticalProfileControllerTest {
   }
 
   @Test
+  @Order(6)
   void patchVerticalProfile_invalidProfileId_returns400() throws Exception {
     mockMvc
         .perform(
@@ -141,6 +151,49 @@ class VerticalProfileControllerTest {
   }
 
   @Test
+  @Order(7)
+  void getModules_reflectsProfileChanges() throws Exception {
+    // Switch to consulting-generic — all modules should be disabled
+    mockMvc
+        .perform(
+            patch("/api/settings/vertical-profile")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"verticalProfile": "consulting-generic"}"""))
+        .andExpect(status().isOk());
+
+    mockMvc
+        .perform(get("/api/modules").with(ownerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$", hasSize(3)))
+        .andExpect(jsonPath("$[?(@.id == 'trust_accounting')].enabled").value(false))
+        .andExpect(jsonPath("$[?(@.id == 'court_calendar')].enabled").value(false))
+        .andExpect(jsonPath("$[?(@.id == 'conflict_check')].enabled").value(false));
+
+    // Switch to legal-za — all modules should be enabled
+    mockMvc
+        .perform(
+            patch("/api/settings/vertical-profile")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"verticalProfile": "legal-za"}"""))
+        .andExpect(status().isOk());
+
+    mockMvc
+        .perform(get("/api/modules").with(ownerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$", hasSize(3)))
+        .andExpect(jsonPath("$[?(@.id == 'trust_accounting')].enabled").value(true))
+        .andExpect(jsonPath("$[?(@.id == 'court_calendar')].enabled").value(true))
+        .andExpect(jsonPath("$[?(@.id == 'conflict_check')].enabled").value(true));
+  }
+
+  @Test
+  @Order(8)
   void patchVerticalProfile_adminCaller_returns403() throws Exception {
     mockMvc
         .perform(

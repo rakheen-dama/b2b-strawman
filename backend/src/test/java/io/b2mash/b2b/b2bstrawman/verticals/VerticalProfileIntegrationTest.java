@@ -1,0 +1,231 @@
+package io.b2mash.b2b.b2bstrawman.verticals;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.nullValue;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.audit.AuditEventFilter;
+import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
+import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import java.util.Map;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+
+/**
+ * Integration tests for the vertical profile switching lifecycle and module guard chain. Covers
+ * tasks 372.1 (profile switching) and 372.3 (guard denies unprovisioned module access).
+ */
+@SpringBootTest
+@AutoConfigureMockMvc
+@Import(TestcontainersConfiguration.class)
+@ActiveProfiles("test")
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+class VerticalProfileIntegrationTest {
+
+  private static final String API_KEY = "test-api-key";
+
+  // Separate org IDs per test group to ensure independence
+  private static final String LIFECYCLE_ORG_ID = "org_vpi_lifecycle";
+  private static final String GUARD_ORG_ID = "org_vpi_guard";
+
+  @Autowired private MockMvc mockMvc;
+  @Autowired private TenantProvisioningService provisioningService;
+  @Autowired private PlanSyncService planSyncService;
+  @Autowired private AuditService auditService;
+
+  private String lifecycleTenantSchema;
+  private String guardTenantSchema;
+
+  @BeforeAll
+  void provisionTenantsAndSeedData() throws Exception {
+    // Provision lifecycle tenant (null profile — no vertical profile initially)
+    lifecycleTenantSchema =
+        provisioningService
+            .provisionTenant(LIFECYCLE_ORG_ID, "Lifecycle Test Org", null)
+            .schemaName();
+    planSyncService.syncPlan(LIFECYCLE_ORG_ID, "pro-plan");
+    syncMember(
+        LIFECYCLE_ORG_ID,
+        "user_vpi_lifecycle_owner",
+        "vpi_lifecycle@test.com",
+        "VPI Owner",
+        "owner");
+
+    // Provision guard tenant with consulting-generic (no modules enabled)
+    guardTenantSchema =
+        provisioningService
+            .provisionTenant(GUARD_ORG_ID, "Guard Test Org", "consulting-generic")
+            .schemaName();
+    planSyncService.syncPlan(GUARD_ORG_ID, "pro-plan");
+    syncMember(GUARD_ORG_ID, "user_vpi_guard_owner", "vpi_guard@test.com", "Guard Owner", "owner");
+  }
+
+  // --- Task 372.1: Profile Switching Lifecycle ---
+
+  @Test
+  @Order(1)
+  void switchFromNullToLegalZa_setsModulesTerminologyAndLogsAuditEvent() throws Exception {
+    // Switch from null to legal-za
+    mockMvc
+        .perform(
+            patch("/api/settings/vertical-profile")
+                .with(lifecycleOwnerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"verticalProfile": "legal-za"}"""))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.verticalProfile").value("legal-za"))
+        .andExpect(
+            jsonPath(
+                "$.enabledModules",
+                containsInAnyOrder("trust_accounting", "court_calendar", "conflict_check")))
+        .andExpect(jsonPath("$.terminologyNamespace").value("en-ZA-legal"));
+
+    // Verify audit event was logged
+    ScopedValue.where(RequestScopes.TENANT_ID, lifecycleTenantSchema)
+        .run(
+            () -> {
+              var page =
+                  auditService.findEvents(
+                      new AuditEventFilter(
+                          "org_settings",
+                          null,
+                          null,
+                          "org_settings.vertical_profile_changed",
+                          null,
+                          null),
+                      PageRequest.of(0, 10));
+              assertThat(page.getTotalElements()).isGreaterThanOrEqualTo(1);
+              var event = page.getContent().getFirst();
+              assertThat(event.getEventType()).isEqualTo("org_settings.vertical_profile_changed");
+              assertThat(event.getEntityType()).isEqualTo("org_settings");
+              assertThat(event.getDetails()).containsKey("old_profile");
+              assertThat(event.getDetails()).containsKey("new_profile");
+              assertThat(event.getDetails()).containsKey("enabled_modules");
+            });
+  }
+
+  @Test
+  @Order(2)
+  void switchFromLegalZaToConsultingGeneric_clearsModulesAndTerminology() throws Exception {
+    // First ensure we are on legal-za
+    mockMvc
+        .perform(
+            patch("/api/settings/vertical-profile")
+                .with(lifecycleOwnerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"verticalProfile": "legal-za"}"""))
+        .andExpect(status().isOk());
+
+    // Switch to consulting-generic
+    mockMvc
+        .perform(
+            patch("/api/settings/vertical-profile")
+                .with(lifecycleOwnerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"verticalProfile": "consulting-generic"}"""))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.verticalProfile").value("consulting-generic"))
+        .andExpect(jsonPath("$.enabledModules").isEmpty())
+        .andExpect(jsonPath("$.terminologyNamespace").value(nullValue()));
+  }
+
+  // --- Task 372.3: Guard Denies Unprovisioned Module Access ---
+
+  @Test
+  @Order(3)
+  void guardDeniesAccessThenAllowsAfterProfileSwitch() throws Exception {
+    // Guard tenant was provisioned with consulting-generic (no modules)
+    // Trust accounting should be denied (403)
+    mockMvc
+        .perform(get("/api/trust-accounting/status").with(guardOwnerJwt()))
+        .andExpect(status().isForbidden());
+
+    // Switch guard tenant to legal-za
+    mockMvc
+        .perform(
+            patch("/api/settings/vertical-profile")
+                .with(guardOwnerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"verticalProfile": "legal-za"}"""))
+        .andExpect(status().isOk());
+
+    // Now trust accounting should be allowed (200)
+    mockMvc
+        .perform(get("/api/trust-accounting/status").with(guardOwnerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.module").value("trust_accounting"))
+        .andExpect(jsonPath("$.status").value("stub"));
+  }
+
+  // --- Helpers ---
+
+  private void syncMember(
+      String orgId, String clerkUserId, String email, String name, String orgRole)
+      throws Exception {
+    mockMvc
+        .perform(
+            post("/internal/members/sync")
+                .header("X-API-KEY", API_KEY)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "clerkOrgId": "%s",
+                      "clerkUserId": "%s",
+                      "email": "%s",
+                      "name": "%s",
+                      "avatarUrl": null,
+                      "orgRole": "%s"
+                    }
+                    """
+                        .formatted(orgId, clerkUserId, email, name, orgRole)))
+        .andExpect(status().isCreated());
+  }
+
+  private JwtRequestPostProcessor lifecycleOwnerJwt() {
+    return jwt()
+        .jwt(
+            j ->
+                j.subject("user_vpi_lifecycle_owner")
+                    .claim("o", Map.of("id", LIFECYCLE_ORG_ID, "rol", "owner")));
+  }
+
+  private JwtRequestPostProcessor guardOwnerJwt() {
+    return jwt()
+        .jwt(
+            j ->
+                j.subject("user_vpi_guard_owner")
+                    .claim("o", Map.of("id", GUARD_ORG_ID, "rol", "owner")));
+  }
+}

@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.retention.RetentionService;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsController.DataProtectionSettingsRequest;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsController.SettingsResponse;
@@ -36,16 +37,19 @@ public class OrgSettingsService {
   private final AuditService auditService;
   private final StorageService storageService;
   private final VerticalProfileRegistry verticalProfileRegistry;
+  private final RetentionService retentionService;
 
   public OrgSettingsService(
       OrgSettingsRepository orgSettingsRepository,
       AuditService auditService,
       StorageService storageService,
-      VerticalProfileRegistry verticalProfileRegistry) {
+      VerticalProfileRegistry verticalProfileRegistry,
+      RetentionService retentionService) {
     this.orgSettingsRepository = orgSettingsRepository;
     this.auditService = auditService;
     this.storageService = storageService;
     this.verticalProfileRegistry = verticalProfileRegistry;
+    this.retentionService = retentionService;
   }
 
   /**
@@ -682,6 +686,9 @@ public class OrgSettingsService {
 
     var settings = getOrCreateForCurrentTenant();
 
+    // Capture old jurisdiction before updating
+    String oldJurisdiction = settings.getDataProtectionJurisdiction();
+
     // Validate financial retention minimum against jurisdiction
     String jurisdiction =
         request.dataProtectionJurisdiction() != null
@@ -719,6 +726,12 @@ public class OrgSettingsService {
             ? request.informationOfficerEmail()
             : settings.getInformationOfficerEmail());
     settings = orgSettingsRepository.save(settings);
+
+    // Seed jurisdiction defaults when jurisdiction is first set
+    String newJurisdiction = settings.getDataProtectionJurisdiction();
+    if (oldJurisdiction == null && newJurisdiction != null) {
+      retentionService.seedJurisdictionDefaults(newJurisdiction);
+    }
 
     log.info(
         "Updated data protection settings: jurisdiction={}, retentionEnabled={}",

@@ -1,8 +1,12 @@
 package io.b2mash.b2b.b2bstrawman.retention;
 
+import io.b2mash.b2b.b2bstrawman.datarequest.JurisdictionDefaults;
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,10 +14,15 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class RetentionPolicyService {
 
-  private final RetentionPolicyRepository policyRepository;
+  private static final Set<String> FINANCIAL_RECORD_TYPES = Set.of("CUSTOMER", "TIME_ENTRY");
 
-  public RetentionPolicyService(RetentionPolicyRepository policyRepository) {
+  private final RetentionPolicyRepository policyRepository;
+  private final OrgSettingsRepository orgSettingsRepository;
+
+  public RetentionPolicyService(
+      RetentionPolicyRepository policyRepository, OrgSettingsRepository orgSettingsRepository) {
     this.policyRepository = policyRepository;
+    this.orgSettingsRepository = orgSettingsRepository;
   }
 
   @Transactional(readOnly = true)
@@ -36,6 +45,7 @@ public class RetentionPolicyService {
     if (retentionDays < 0) {
       throw new IllegalArgumentException("retentionDays must not be negative");
     }
+    validateFinancialMinimum(recordType, retentionDays);
     if (policyRepository.existsByRecordTypeAndTriggerEvent(recordType, triggerEvent)) {
       throw new ResourceConflictException(
           "Policy already exists",
@@ -61,6 +71,7 @@ public class RetentionPolicyService {
         policyRepository
             .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("RetentionPolicy", id));
+    validateFinancialMinimum(policy.getRecordType(), retentionDays);
     policy.update(retentionDays, action);
     return policyRepository.save(policy);
   }
@@ -71,5 +82,29 @@ public class RetentionPolicyService {
       throw new ResourceNotFoundException("RetentionPolicy", id);
     }
     policyRepository.deleteById(id);
+  }
+
+  private void validateFinancialMinimum(String recordType, int retentionDays) {
+    if (!FINANCIAL_RECORD_TYPES.contains(recordType)) {
+      return;
+    }
+    var settings = orgSettingsRepository.findForCurrentTenant().orElse(null);
+    int financialRetentionMonths =
+        (settings != null && settings.getFinancialRetentionMonths() != null)
+            ? settings.getFinancialRetentionMonths()
+            : 60;
+    String jurisdiction = settings != null ? settings.getDataProtectionJurisdiction() : null;
+    int minMonths = JurisdictionDefaults.getMinFinancialRetentionMonths(jurisdiction);
+    int effectiveMinMonths = Math.max(financialRetentionMonths, minMonths);
+    int minDays = effectiveMinMonths * 30;
+    if (retentionDays < minDays) {
+      throw new InvalidStateException(
+          "Retention period too short",
+          "Financial record types require at least "
+              + minDays
+              + " days retention (configured financial minimum: "
+              + effectiveMinMonths
+              + " months)");
+    }
   }
 }

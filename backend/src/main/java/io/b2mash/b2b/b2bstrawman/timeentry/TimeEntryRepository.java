@@ -9,6 +9,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface TimeEntryRepository extends JpaRepository<TimeEntry, UUID> {
+
+  @Query("SELECT te.id FROM TimeEntry te WHERE te.date < :cutoffDate")
+  List<UUID> findIdsByDateBefore(@Param("cutoffDate") LocalDate cutoffDate);
+
   @Modifying(clearAutomatically = true)
   @Query("UPDATE TimeEntry t SET t.invoiceId = NULL WHERE t.invoiceId = :invoiceId")
   void unbillByInvoiceId(@Param("invoiceId") UUID invoiceId);

@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
@@ -114,8 +115,8 @@ public class DataExportService {
 
     UUID customerId = request.getCustomerId();
 
-    // Collect all data sections
-    Map<String, Object> data = collectData(customerId);
+    // Collect all data sections (DSAR export: billable time entries only)
+    Map<String, Object> data = collectData(customerId, false);
 
     // Serialize to JSON
     byte[] jsonBytes;
@@ -163,8 +164,8 @@ public class DataExportService {
         .findById(customerId)
         .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
 
-    // Collect all data
-    Map<String, Object> data = collectData(customerId);
+    // Collect all data (compliance export: ALL time entries, not just billable)
+    Map<String, Object> data = collectData(customerId, true);
 
     // Generate structured ZIP
     byte[] zipBytes = generateStructuredZip(customerId, data);
@@ -217,7 +218,7 @@ public class DataExportService {
         exportId, "COMPLETED", presigned.url(), presigned.expiresAt(), fileCount, zipBytes.length);
   }
 
-  private Map<String, Object> collectData(UUID customerId) {
+  private Map<String, Object> collectData(UUID customerId, boolean includeAllTimeEntries) {
     Map<String, Object> data = new LinkedHashMap<>();
 
     // Customer
@@ -272,13 +273,18 @@ public class DataExportService {
                         i.getCurrency()))
             .toList());
 
-    // Time entries (ALL, via customer's projects) — single batch query
+    // Time entries (via customer's projects) — single batch query
+    // includeAllTimeEntries=true uses findByProjectIdIn (compliance export),
+    // includeAllTimeEntries=false uses findBillableByProjectIdIn (DSAR export)
     List<UUID> projectIds = customerProjects.stream().map(CustomerProject::getProjectId).toList();
     List<ExportTimeEntryData> timeEntryDtos;
     if (projectIds.isEmpty()) {
       timeEntryDtos = List.of();
     } else {
-      var timeEntries = timeEntryRepository.findByProjectIdIn(projectIds);
+      var timeEntries =
+          includeAllTimeEntries
+              ? timeEntryRepository.findByProjectIdIn(projectIds)
+              : timeEntryRepository.findBillableByProjectIdIn(projectIds);
       timeEntryDtos =
           timeEntries.stream()
               .map(
@@ -305,7 +311,12 @@ public class DataExportService {
             .toList());
 
     // Custom fields — stored as JSONB on the customer entity (no separate table)
-    data.put("customFields", customer != null ? customer.getCustomFields() : Map.of());
+    // getCustomFields() can return null for JSONB columns with no value
+    var customFields =
+        customer != null && customer.getCustomFields() != null
+            ? customer.getCustomFields()
+            : Map.of();
+    data.put("customFields", customFields);
 
     // Audit events referencing the customer entity
     var auditPage =
@@ -374,13 +385,13 @@ public class DataExportService {
       writeZipEntry(zos, prefix + "custom-fields.json", data.get("customFields"));
       writeZipEntry(zos, prefix + "audit-events.json", data.get("auditEvents"));
 
-      // export-metadata.json
+      // export-metadata.json — do NOT include tenantSchema (internal infrastructure detail)
       var metadata =
           Map.of(
               "exportedAt",
               Instant.now().toString(),
-              "tenantSchema",
-              RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : "unknown",
+              "orgId",
+              RequestScopes.ORG_ID.isBound() ? RequestScopes.ORG_ID.get() : "unknown",
               "scope",
               "FULL_CUSTOMER_DATA",
               "customerId",
@@ -390,7 +401,9 @@ public class DataExportService {
       zos.finish();
       return baos.toByteArray();
     } catch (IOException e) {
-      throw new RuntimeException("Failed to generate export ZIP", e);
+      throw new InvalidStateException(
+          "Export generation failed",
+          "Failed to generate structured export ZIP for customer " + customerId);
     }
   }
 
@@ -408,7 +421,10 @@ public class DataExportService {
     if (project instanceof ExportProjectData epd) {
       return epd.projectId().toString();
     }
-    return UUID.randomUUID().toString();
+    log.warn(
+        "Unable to extract project ID from object of type {}, using fallback name",
+        project.getClass().getSimpleName());
+    return "unknown-project";
   }
 
   private int countZipEntries(byte[] zipBytes) {
@@ -424,6 +440,7 @@ public class DataExportService {
       }
       return count;
     } catch (IOException e) {
+      log.warn("Failed to count ZIP entries, returning 0", e);
       return 0;
     }
   }

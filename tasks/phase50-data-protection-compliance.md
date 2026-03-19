@@ -32,7 +32,7 @@ The next Flyway tenant migration is **V76**. The next epic number starts at **37
 | 376 | Retention Extension | Backend | 373 | M | 376A, 376B | **Done** (PRs #773, #774) |
 | 377 | DSAR Extension | Backend | 373 | S | 377A | **Done** (PR #775) |
 | 378 | Processing Activity CRUD + PAIA Manual Generation | Backend | 373 | M | 378A, 378B | **Done** (PRs #776, #777) |
-| 379 | Frontend: Data Protection Settings Tab + DSAR Page | Frontend | 373–378 | L | 379A, 379B, 379C | |
+| 379 | Frontend: Data Protection Settings Tab + DSAR Page | Frontend | 373–378 | L | 379A, 379B, 379C | 379A **Done** (PR #778), 379B **Done** (PR #779) |
 | 380 | Frontend: Customer Data Protection Actions | Frontend | 374, 375, 379 | M | 380A | |
 
 ---
@@ -157,7 +157,7 @@ FRONTEND (requires all backend epics 373–378)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 4a (parallel) | 379 | 379A | Data Protection settings tab layout, jurisdiction selector, information officer fields, types, actions, frontend tests (~4). Frontend only. | **Done** (PR #778) |
-| 4b (parallel) | 379 | 379B | DSAR management page (list, log new request dialog, status transitions, deadline badges). Actions + components + frontend tests (~5). Frontend only. | |
+| 4b (parallel) | 379 | 379B | DSAR management page (list, log new request dialog, status transitions, deadline badges). Actions + components + frontend tests (~5). Frontend only. | **Done** (PR #779) |
 | 4c (parallel) | 379 | 379C | Retention policies table (inline edit, validation), processing register table (CRUD), PAIA manual generate button + preview. Frontend tests (~5). Frontend only. | |
 
 ### Stage 5: Customer Data Protection Actions

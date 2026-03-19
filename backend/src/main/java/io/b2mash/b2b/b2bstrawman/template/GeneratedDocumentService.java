@@ -647,6 +647,9 @@ public class GeneratedDocumentService {
                   pdfResult.pdfBytes().length,
                   memberId,
                   Document.Visibility.INTERNAL);
+          case ORGANIZATION ->
+              throw new IllegalStateException(
+                  "Document linking not supported for ORGANIZATION entity type");
         };
     document.assignS3Key(s3Key);
     document.confirmUpload();
@@ -657,7 +660,7 @@ public class GeneratedDocumentService {
     var entityType = TemplateEntityType.valueOf(template.primaryEntityType());
     return switch (entityType) {
       case PROJECT -> entityId;
-      case CUSTOMER, INVOICE -> null;
+      case CUSTOMER, INVOICE, ORGANIZATION -> null;
     };
   }
 
@@ -673,6 +676,7 @@ public class GeneratedDocumentService {
         }
       }
       case INVOICE -> null; // Invoice prerequisite checks not yet supported
+      case ORGANIZATION -> null;
     };
   }
 
@@ -767,6 +771,7 @@ public class GeneratedDocumentService {
             ? (String) invoice.get("invoiceNumber")
             : "document";
       }
+      case ORGANIZATION -> (String) context.getOrDefault("orgName", "paia-manual");
     };
   }
 

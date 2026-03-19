@@ -1,0 +1,19 @@
+{
+  "packId": "compliance-za",
+  "version": 1,
+  "verticalProfile": null,
+  "name": "South Africa Compliance Templates",
+  "description": "Compliance document templates for POPIA and PAIA compliance",
+  "templates": [
+    {
+      "templateKey": "paia-section-51-manual",
+      "name": "PAIA Section 51 Manual",
+      "category": "COMPLIANCE",
+      "primaryEntityType": "ORGANIZATION",
+      "contentFile": "paia-section-51-manual.json",
+      "cssFile": null,
+      "description": "PAIA Section 51 manual required for South African private bodies",
+      "sortOrder": 1
+    }
+  ]
+}

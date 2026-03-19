@@ -1,0 +1,103 @@
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "heading",
+      "attrs": { "level": 1 },
+      "content": [
+        { "type": "variable", "attrs": { "key": "orgName" } },
+        { "type": "text", "text": " — PAIA Section 51 Manual" }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "As required by Section 51 of the Promotion of Access to Information Act 2 of 2000 (PAIA)." }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 2 },
+      "content": [{ "type": "text", "text": "Part I — Introduction" }]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "This manual has been compiled in accordance with Section 51 of PAIA. It describes the information held by " },
+        { "type": "variable", "attrs": { "key": "orgName" } },
+        { "type": "text", "text": " and the procedure for requesting access to such information." }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 2 },
+      "content": [{ "type": "text", "text": "Part II — Contact Details of Information Officer" }]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{"type": "bold"}], "text": "Information Officer: " },
+        { "type": "variable", "attrs": { "key": "informationOfficerName" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{"type": "bold"}], "text": "Email: " },
+        { "type": "variable", "attrs": { "key": "informationOfficerEmail" } }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 2 },
+      "content": [{ "type": "text", "text": "Part III — Processing Activities Register" }]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "The following categories of personal information are processed:" }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 2 },
+      "content": [{ "type": "text", "text": "Part IV — Records Available Without Request" }]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "The following records are available without submitting a formal PAIA request: publicly available information on our website and published communications." }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 2 },
+      "content": [{ "type": "text", "text": "Part V — Retention and Disposal of Records" }]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "Records are retained in accordance with applicable legislation. The retention periods for each record type are documented in our data retention register." }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 2 },
+      "content": [{ "type": "text", "text": "Part VI — How to Request Access" }]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "Requests for access to records must be submitted to the Information Officer in writing. The request must be submitted on the prescribed form (Form C) and accompanied by the prescribed fee. Contact: " },
+        { "type": "variable", "attrs": { "key": "informationOfficerEmail" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "Generated: " },
+        { "type": "variable", "attrs": { "key": "generatedDate" } }
+      ]
+    }
+  ]
+}

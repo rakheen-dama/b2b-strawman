@@ -961,6 +961,10 @@ public class AcceptanceService {
               .map(invoice -> invoice.getCustomerId())
               .orElseThrow(
                   () -> new ResourceNotFoundException("Invoice", doc.getPrimaryEntityId()));
+      case ORGANIZATION ->
+          throw new InvalidStateException(
+              "Unsupported entity type",
+              "Acceptance is not supported for organization-level documents");
     };
   }
 

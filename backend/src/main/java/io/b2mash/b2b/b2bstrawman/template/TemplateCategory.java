@@ -8,5 +8,6 @@ public enum TemplateCategory {
   NDA,
   PROPOSAL,
   REPORT,
+  COMPLIANCE,
   OTHER
 }

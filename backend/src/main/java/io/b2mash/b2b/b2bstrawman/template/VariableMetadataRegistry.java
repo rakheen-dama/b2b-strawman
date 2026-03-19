@@ -69,6 +69,9 @@ public class VariableMetadataRegistry {
         addCustomFieldGroup(groups, EntityType.CUSTOMER, "customer", "Customer Custom Fields");
         addCustomFieldGroup(groups, EntityType.PROJECT, "project", "Project Custom Fields");
       }
+      case ORGANIZATION -> {
+        // No custom fields for organization-level templates
+      }
     }
   }
 

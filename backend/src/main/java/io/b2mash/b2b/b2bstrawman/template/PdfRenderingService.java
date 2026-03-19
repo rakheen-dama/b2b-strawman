@@ -274,6 +274,7 @@ public class PdfRenderingService {
             ? (String) invoice.get("invoiceNumber")
             : "document";
       }
+      case ORGANIZATION -> (String) context.getOrDefault("orgName", "paia-manual");
     };
   }
 

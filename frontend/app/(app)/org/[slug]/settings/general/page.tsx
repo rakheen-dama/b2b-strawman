@@ -3,6 +3,7 @@ import { ChevronLeft } from "lucide-react";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api } from "@/lib/api";
 import { GeneralSettingsForm } from "@/components/settings/general-settings-form";
+import { VerticalProfileSection } from "@/components/settings/vertical-profile-section";
 import type { OrgSettings } from "@/lib/types";
 
 export default async function GeneralSettingsPage({
@@ -62,6 +63,12 @@ export default async function GeneralSettingsPage({
           branding.
         </p>
       </div>
+
+      <VerticalProfileSection
+        slug={slug}
+        currentProfile={settings.verticalProfile ?? null}
+        isOwner={caps.isOwner}
+      />
 
       <GeneralSettingsForm
         slug={slug}

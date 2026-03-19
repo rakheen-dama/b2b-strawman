@@ -2,9 +2,9 @@
 
 ## Current State
 
-- **QA Position**: ALL_SECTIONS_COMPLETE — Cycle 2 verification done. BUG-REG-002 VERIFIED. BUG-REG-001 REOPENED (fix not deployed — Docker build cache issue). 11 items remain NOT_TESTED (portal auth limitation, document upload requirement, missing seed data).
-- **Cycle**: 2
-- **E2E Stack**: READY — Frontend rebuilt with `--no-cache`. BUG-REG-001 fix confirmed in compiled SSR chunks (`n&&0!==n.length` guard present). All 6/6 services healthy.
+- **QA Position**: ALL_SECTIONS_COMPLETE — Cycle 3 verification done. BUG-REG-002 VERIFIED. BUG-REG-001 STILL FAILING (PR #782 fix is deployed but incomplete — wrong root cause). 11 items remain NOT_TESTED (portal auth limitation, document upload requirement, missing seed data).
+- **Cycle**: 3
+- **E2E Stack**: READY — Frontend rebuilt with `--no-cache`. PR #782 fix confirmed deployed in compiled SSR chunks. Bug persists due to different root cause (AvatarCircle null name). All 6/6 services healthy.
 - **Branch**: `bugfix_cycle_regression_2026-03-19`
 - **Scenario**: `qa/testplan/regression-test-suite.md`
 - **Focus**: Full regression test suite across all implemented features
@@ -13,7 +13,7 @@
 
 | ID | Summary | Severity | Status | Owner | PR | Track | Notes |
 |----|---------|----------|--------|-------|----|-------|-------|
-| BUG-REG-001 | Settings > Rates & Currency 500 for all users | HIGH | REOPENED | Dev | #782 | AUTH-01, SET-02 | Source fix correct but NOT deployed. Docker `e2e-rebuild.sh` used cached layers — SSR chunks still contain unfixed code. Needs `--no-cache` rebuild. Still crashes with same `TypeError: Cannot read properties of null (reading 'length')`. |
+| BUG-REG-001 | Settings > Rates & Currency 500 for all users | HIGH | REOPENED | Dev | #782 | AUTH-01, SET-02 | PR #782 fix IS deployed (verified in compiled chunks after --no-cache rebuild). Bug persists because fix addressed wrong root cause. Actual crash: `AvatarCircle` component receives `member.name=null` from `/api/members` response. `null.length` throws in AvatarCircle hash function. Fix needed: null-guard in AvatarCircle or filter members with null names. |
 | BUG-REG-002 | Carol (Member) gets 500 on role-gated pages | HIGH | VERIFIED | QA | #783 | AUTH-01 | All 4 pages (profitability, reports, customers, settings/roles) show "You don't have access to [Page]" with PermissionDenied component. No 500 errors. |
 | BUG-REG-003 | Customer list has no free-text search input | LOW | WONT_FIX | Dev | — | CUST-01 | Missing feature, not a regression. Customer search was never implemented (no backend search endpoint, no frontend input). Out of scope for bugfix cycle. Spec written for future reference: `fix-specs/BUG-REG-003.md`. |
 
@@ -143,3 +143,7 @@
 | 2026-03-19T22:00Z | QA | BUG-REG-002 VERIFIED. All 4 role-gated pages tested as Carol: profitability, reports, customers, settings/roles. All show PermissionDenied component ("You don't have access to [Page]") instead of 500. ErrorBoundary fix is working. |
 | 2026-03-19T22:02Z | QA | AUTH-01 scores updated: #4, #5, #8, #10 changed FAIL -> PASS. #1 remains PARTIAL (rates still broken). Scorecard: 75 PASS, 1 FAIL, 2 PARTIAL, 12 NOT_TESTED. Cycle set to 2. |
 | 2026-03-19T22:10Z | Infra | Frontend rebuilt with `docker compose build --no-cache frontend`. Previous `e2e-rebuild.sh` used cached layers so SSR chunks still had unfixed code. No-cache rebuild took ~75s. Verified fix in compiled output: `member-rates-table` chunk now contains `n&&0!==n.length` (null guard). All 6/6 services healthy. Smoke test HTTP 200. Stack status -> READY for Cycle 3 re-verification of BUG-REG-001. |
+| 2026-03-19T22:15Z | QA | Cycle 3 started. Authenticated as Alice (Owner). Navigated to `/org/e2e-test-org/settings/rates`. |
+| 2026-03-19T22:16Z | QA | BUG-REG-001 STILL FAILING. Same "Something went wrong" error, HTTP 500. Console: `TypeError: Cannot read properties of null (reading 'length')` at `39d93f5aac721830.js:7:4858`. Server log: crash at `_86c21c83._.js:7:4589`. |
+| 2026-03-19T22:20Z | QA | Root cause analysis: PR #782 fix IS deployed (confirmed `Array.isArray` guard in server chunk, `n&&0!==n.length` in client chunk). Crash is NOT in `MemberRatesTable.members.length` check. Crash is in `AvatarCircle` component at `name.length` where `name` prop is null. AvatarCircle computes a hash of the name string for avatar color — `null.length` throws. The `members` array passes all guards (not null, not empty) but contains entries where `member.name` is null. PR #782 fixed the wrong root cause. |
+| 2026-03-19T22:22Z | QA | BUG-REG-001 remains REOPENED. New fix needed: either (1) AvatarCircle should guard `name ?? ""`, or (2) MemberRatesTable should filter `members.filter(m => m?.name)`, or (3) server component should filter before passing to client. AUTH-01 #1 remains PARTIAL. Scorecard unchanged. Cycle set to 3. Bob testing skipped (page crashes before content renders). |

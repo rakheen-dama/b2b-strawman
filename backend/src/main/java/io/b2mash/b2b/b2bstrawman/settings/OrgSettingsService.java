@@ -2,12 +2,14 @@ package io.b2mash.b2b.b2bstrawman.settings;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.datarequest.JurisdictionDefaults;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsController.DataProtectionSettingsRequest;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsController.SettingsResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalProfileRegistry;
 import java.io.IOException;
@@ -94,7 +96,13 @@ public class OrgSettingsService {
                 null, // projectNamingPattern
                 null, // verticalProfile
                 List.of(), // enabledModules
-                null)); // terminologyNamespace
+                null, // terminologyNamespace
+                null, // dataProtectionJurisdiction
+                false, // retentionPolicyEnabled
+                null, // defaultRetentionMonths
+                null, // financialRetentionMonths
+                null, // informationOfficerName
+                null)); // informationOfficerEmail
   }
 
   /** Updates settings including branding fields. */
@@ -275,7 +283,13 @@ public class OrgSettingsService {
         settings.getProjectNamingPattern(),
         settings.getVerticalProfile(),
         settings.getEnabledModules(),
-        settings.getTerminologyNamespace());
+        settings.getTerminologyNamespace(),
+        settings.getDataProtectionJurisdiction(),
+        settings.isRetentionPolicyEnabled(),
+        settings.getDefaultRetentionMonths(),
+        settings.getFinancialRetentionMonths(),
+        settings.getInformationOfficerName(),
+        settings.getInformationOfficerEmail());
   }
 
   /**
@@ -655,6 +669,99 @@ public class OrgSettingsService {
             .build());
 
     return toSettingsResponse(settings);
+  }
+
+  /**
+   * Updates data protection settings (jurisdiction, retention config, information officer).
+   * OWNER-only — validates financial retention minimum against jurisdiction statutory minimum.
+   */
+  @Transactional
+  public SettingsResponse updateDataProtectionSettings(
+      DataProtectionSettingsRequest request, ActorContext actor) {
+    RequestScopes.requireOwner();
+
+    var settings = getOrCreateForCurrentTenant();
+
+    // Validate financial retention minimum against jurisdiction
+    String jurisdiction =
+        request.dataProtectionJurisdiction() != null
+            ? request.dataProtectionJurisdiction()
+            : settings.getDataProtectionJurisdiction();
+    if (request.financialRetentionMonths() != null) {
+      int minMonths = JurisdictionDefaults.getMinFinancialRetentionMonths(jurisdiction);
+      if (request.financialRetentionMonths() < minMonths) {
+        throw new InvalidStateException(
+            "Financial retention too short",
+            "financialRetentionMonths must be at least "
+                + minMonths
+                + " months for jurisdiction "
+                + jurisdiction);
+      }
+    }
+
+    settings.updateDataProtectionSettings(
+        request.dataProtectionJurisdiction() != null
+            ? request.dataProtectionJurisdiction()
+            : settings.getDataProtectionJurisdiction(),
+        request.retentionPolicyEnabled() != null
+            ? request.retentionPolicyEnabled()
+            : settings.isRetentionPolicyEnabled(),
+        request.defaultRetentionMonths() != null
+            ? request.defaultRetentionMonths()
+            : settings.getDefaultRetentionMonths(),
+        request.financialRetentionMonths() != null
+            ? request.financialRetentionMonths()
+            : settings.getFinancialRetentionMonths(),
+        request.informationOfficerName() != null
+            ? request.informationOfficerName()
+            : settings.getInformationOfficerName(),
+        request.informationOfficerEmail() != null
+            ? request.informationOfficerEmail()
+            : settings.getInformationOfficerEmail());
+    settings = orgSettingsRepository.save(settings);
+
+    log.info(
+        "Updated data protection settings: jurisdiction={}, retentionEnabled={}",
+        settings.getDataProtectionJurisdiction(),
+        settings.isRetentionPolicyEnabled());
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("data.protection.settings.updated")
+            .entityType("org_settings")
+            .entityId(settings.getId())
+            .details(
+                Map.of(
+                    "jurisdiction",
+                    settings.getDataProtectionJurisdiction() != null
+                        ? settings.getDataProtectionJurisdiction()
+                        : "",
+                    "retention_enabled",
+                    settings.isRetentionPolicyEnabled()))
+            .build());
+
+    return toSettingsResponse(settings);
+  }
+
+  /**
+   * Returns effective DSAR deadline days. If tenant override is set, caps it at the jurisdiction
+   * maximum. Otherwise uses the jurisdiction default. See ADR-195.
+   */
+  @Transactional(readOnly = true)
+  public int getEffectiveDsarDeadlineDays() {
+    return orgSettingsRepository
+        .findForCurrentTenant()
+        .map(this::resolveDeadlineDays)
+        .orElse(JurisdictionDefaults.getDefaultDeadlineDays(null));
+  }
+
+  private int resolveDeadlineDays(OrgSettings settings) {
+    Integer tenantOverride = settings.getDataRequestDeadlineDays();
+    String jurisdiction = settings.getDataProtectionJurisdiction();
+    if (tenantOverride != null && tenantOverride > 0) {
+      return Math.min(tenantOverride, JurisdictionDefaults.getMaxDeadlineDays(jurisdiction));
+    }
+    return JurisdictionDefaults.getDefaultDeadlineDays(jurisdiction);
   }
 
   private void requireAdminOrOwner(String orgRole) {

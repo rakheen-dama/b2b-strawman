@@ -182,6 +182,14 @@ public class OrgSettingsController {
             actor));
   }
 
+  @PatchMapping("/data-protection")
+  @RequiresCapability("TEAM_OVERSIGHT")
+  public ResponseEntity<SettingsResponse> updateDataProtectionSettings(
+      @Valid @RequestBody DataProtectionSettingsRequest request) {
+    var actor = ActorContext.fromRequestScopes();
+    return ResponseEntity.ok(orgSettingsService.updateDataProtectionSettings(request, actor));
+  }
+
   // Service enforces owner-only; TEAM_OVERSIGHT is the nearest capability
   @PatchMapping("/vertical-profile")
   @RequiresCapability("TEAM_OVERSIGHT")
@@ -223,7 +231,14 @@ public class OrgSettingsController {
       String projectNamingPattern,
       String verticalProfile,
       List<String> enabledModules,
-      String terminologyNamespace) {}
+      String terminologyNamespace,
+      // Phase 50: Data protection fields
+      String dataProtectionJurisdiction,
+      Boolean retentionPolicyEnabled,
+      Integer defaultRetentionMonths,
+      Integer financialRetentionMonths,
+      String informationOfficerName,
+      String informationOfficerEmail) {}
 
   public record UpdateSettingsRequest(
       @NotBlank(message = "defaultCurrency is required")
@@ -289,4 +304,19 @@ public class OrgSettingsController {
   public record UpdateVerticalProfileRequest(
       @Size(max = 50, message = "verticalProfile must be at most 50 characters")
           String verticalProfile) {}
+
+  public record DataProtectionSettingsRequest(
+      @Size(max = 10, message = "dataProtectionJurisdiction must be at most 10 characters")
+          String dataProtectionJurisdiction,
+      Boolean retentionPolicyEnabled,
+      @Min(value = 1, message = "defaultRetentionMonths must be positive")
+          Integer defaultRetentionMonths,
+      @Min(value = 12, message = "financialRetentionMonths must be at least 12")
+          Integer financialRetentionMonths,
+      @Size(max = 255, message = "informationOfficerName must be at most 255 characters")
+          String informationOfficerName,
+      @jakarta.validation.constraints.Email(
+              message = "informationOfficerEmail must be a valid email")
+          @Size(max = 255, message = "informationOfficerEmail must be at most 255 characters")
+          String informationOfficerEmail) {}
 }

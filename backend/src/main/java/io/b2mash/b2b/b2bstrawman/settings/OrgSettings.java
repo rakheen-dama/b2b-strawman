@@ -155,6 +155,25 @@ public class OrgSettings {
   @Column(name = "terminology_namespace", length = 100)
   private String terminologyNamespace;
 
+  // --- Phase 50: Data Protection ---
+  @Column(name = "data_protection_jurisdiction", length = 10)
+  private String dataProtectionJurisdiction;
+
+  @Column(name = "retention_policy_enabled", nullable = false)
+  private boolean retentionPolicyEnabled;
+
+  @Column(name = "default_retention_months")
+  private Integer defaultRetentionMonths;
+
+  @Column(name = "financial_retention_months")
+  private Integer financialRetentionMonths;
+
+  @Column(name = "information_officer_name", length = 255)
+  private String informationOfficerName;
+
+  @Column(name = "information_officer_email", length = 255)
+  private String informationOfficerEmail;
+
   protected OrgSettings() {}
 
   public OrgSettings(String defaultCurrency) {
@@ -166,6 +185,7 @@ public class OrgSettings {
     this.documentSigningEnabled = false;
     this.taxInclusive = false;
     this.timeReminderEnabled = false;
+    this.retentionPolicyEnabled = false;
     this.billingBatchAsyncThreshold = 50;
     this.billingEmailRateLimit = 5;
   }
@@ -661,6 +681,79 @@ public class OrgSettings {
     this.enabledModules =
         enabledModules != null ? new ArrayList<>(enabledModules) : new ArrayList<>();
     this.terminologyNamespace = terminologyNamespace;
+    this.updatedAt = Instant.now();
+  }
+
+  // --- Data Protection getters/setters ---
+
+  public String getDataProtectionJurisdiction() {
+    return dataProtectionJurisdiction;
+  }
+
+  public void setDataProtectionJurisdiction(String dataProtectionJurisdiction) {
+    this.dataProtectionJurisdiction = dataProtectionJurisdiction;
+    this.updatedAt = Instant.now();
+  }
+
+  public boolean isRetentionPolicyEnabled() {
+    return retentionPolicyEnabled;
+  }
+
+  public void setRetentionPolicyEnabled(boolean retentionPolicyEnabled) {
+    this.retentionPolicyEnabled = retentionPolicyEnabled;
+    this.updatedAt = Instant.now();
+  }
+
+  public Integer getDefaultRetentionMonths() {
+    return defaultRetentionMonths;
+  }
+
+  public void setDefaultRetentionMonths(Integer defaultRetentionMonths) {
+    this.defaultRetentionMonths = defaultRetentionMonths;
+    this.updatedAt = Instant.now();
+  }
+
+  public Integer getFinancialRetentionMonths() {
+    return financialRetentionMonths;
+  }
+
+  public void setFinancialRetentionMonths(Integer financialRetentionMonths) {
+    this.financialRetentionMonths = financialRetentionMonths;
+    this.updatedAt = Instant.now();
+  }
+
+  public String getInformationOfficerName() {
+    return informationOfficerName;
+  }
+
+  public void setInformationOfficerName(String informationOfficerName) {
+    this.informationOfficerName = informationOfficerName;
+    this.updatedAt = Instant.now();
+  }
+
+  public String getInformationOfficerEmail() {
+    return informationOfficerEmail;
+  }
+
+  public void setInformationOfficerEmail(String informationOfficerEmail) {
+    this.informationOfficerEmail = informationOfficerEmail;
+    this.updatedAt = Instant.now();
+  }
+
+  /** Updates all data protection settings atomically and bumps updatedAt. */
+  public void updateDataProtectionSettings(
+      String jurisdiction,
+      boolean retentionEnabled,
+      Integer defaultRetentionMonths,
+      Integer financialRetentionMonths,
+      String officerName,
+      String officerEmail) {
+    this.dataProtectionJurisdiction = jurisdiction;
+    this.retentionPolicyEnabled = retentionEnabled;
+    this.defaultRetentionMonths = defaultRetentionMonths;
+    this.financialRetentionMonths = financialRetentionMonths;
+    this.informationOfficerName = officerName;
+    this.informationOfficerEmail = officerEmail;
     this.updatedAt = Instant.now();
   }
 }

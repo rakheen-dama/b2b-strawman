@@ -10,7 +10,8 @@ public enum LifecycleStatus {
   ACTIVE,
   DORMANT,
   OFFBOARDING,
-  OFFBOARDED;
+  OFFBOARDED,
+  ANONYMIZED;
 
   private static final Map<LifecycleStatus, Set<LifecycleStatus>> ALLOWED_TRANSITIONS =
       Map.of(
@@ -38,7 +39,7 @@ public enum LifecycleStatus {
       throw new IllegalArgumentException(
           "Invalid lifecycle status: '"
               + value
-              + "'. Valid values: PROSPECT, ONBOARDING, ACTIVE, DORMANT, OFFBOARDING, OFFBOARDED");
+              + "'. Valid values: PROSPECT, ONBOARDING, ACTIVE, DORMANT, OFFBOARDING, OFFBOARDED, ANONYMIZED");
     }
   }
 }

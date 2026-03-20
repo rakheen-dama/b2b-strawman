@@ -1,0 +1,325 @@
+package io.b2mash.b2b.b2bstrawman.deadline;
+
+import static io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.createActiveCustomer;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
+import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.support.TransactionTemplate;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+@Import(TestcontainersConfiguration.class)
+@ActiveProfiles("test")
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+class DeadlineControllerTest {
+
+  private static final String API_KEY = "test-api-key";
+  private static final String ENABLED_ORG_ID = "org_deadline_ctrl_enabled";
+  private static final String DISABLED_ORG_ID = "org_deadline_ctrl_disabled";
+
+  @Autowired private MockMvc mockMvc;
+  @Autowired private TenantProvisioningService provisioningService;
+  @Autowired private PlanSyncService planSyncService;
+  @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
+  @Autowired private OrgSettingsRepository orgSettingsRepository;
+  @Autowired private OrgSettingsService orgSettingsService;
+  @Autowired private CustomerRepository customerRepository;
+  @Autowired private TransactionTemplate transactionTemplate;
+
+  private String enabledTenantSchema;
+  private UUID memberId;
+  private UUID customerId;
+
+  @BeforeAll
+  void setup() throws Exception {
+    // Provision tenant with regulatory_deadlines module enabled
+    enabledTenantSchema =
+        provisioningService
+            .provisionTenant(ENABLED_ORG_ID, "Deadline Ctrl Enabled Org", null)
+            .schemaName();
+    planSyncService.syncPlan(ENABLED_ORG_ID, "pro-plan");
+    memberId =
+        UUID.fromString(
+            syncMember(
+                ENABLED_ORG_ID,
+                "user_dctrl_owner",
+                "dctrl_owner@test.com",
+                "DCtrl Owner",
+                "owner"));
+    syncMember(ENABLED_ORG_ID, "user_dctrl_admin", "dctrl_admin@test.com", "DCtrl Admin", "admin");
+    syncMember(
+        ENABLED_ORG_ID, "user_dctrl_member", "dctrl_member@test.com", "DCtrl Member", "member");
+
+    // Enable the regulatory_deadlines module
+    ScopedValue.where(RequestScopes.TENANT_ID, enabledTenantSchema)
+        .run(
+            () ->
+                transactionTemplate.executeWithoutResult(
+                    tx -> {
+                      var settings = orgSettingsService.getOrCreateForCurrentTenant();
+                      settings.setEnabledModules(List.of("regulatory_deadlines"));
+                      orgSettingsRepository.save(settings);
+                    }));
+
+    // Create a customer with FYE so deadlines can be calculated
+    ScopedValue.where(RequestScopes.TENANT_ID, enabledTenantSchema)
+        .where(RequestScopes.MEMBER_ID, memberId)
+        .where(RequestScopes.ORG_ID, ENABLED_ORG_ID)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () ->
+                transactionTemplate.executeWithoutResult(
+                    tx -> {
+                      var customer =
+                          createActiveCustomer(
+                              "Deadline Test Corp", "deadline-test@test.com", memberId);
+                      customer.setCustomFields(Map.of("financial_year_end", "2025-02-28"));
+                      customer = customerRepository.saveAndFlush(customer);
+                      customerId = customer.getId();
+                    }));
+
+    // Provision tenant with no modules enabled (default empty list)
+    provisioningService.provisionTenant(DISABLED_ORG_ID, "Deadline Ctrl Disabled Org", null);
+    planSyncService.syncPlan(DISABLED_ORG_ID, "pro-plan");
+    syncMember(
+        DISABLED_ORG_ID, "user_dctrl_dis_owner", "dctrl_dis@test.com", "DCtrl Dis Owner", "owner");
+  }
+
+  @Test
+  void getDeadlines_returns200WithCalculatedDeadlines() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/deadlines")
+                .param("from", "2026-01-01")
+                .param("to", "2026-12-31")
+                .with(enabledOwnerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$").isArray())
+        .andExpect(jsonPath("$[0].customerId").exists())
+        .andExpect(jsonPath("$[0].deadlineTypeSlug").exists())
+        .andExpect(jsonPath("$[0].dueDate").exists())
+        .andExpect(jsonPath("$[0].status").exists());
+  }
+
+  @Test
+  void getDeadlineSummary_returns200WithAggregatedCounts() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/deadlines/summary")
+                .param("from", "2026-01-01")
+                .param("to", "2026-12-31")
+                .with(enabledOwnerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$").isArray())
+        .andExpect(jsonPath("$[0].month").exists())
+        .andExpect(jsonPath("$[0].category").exists())
+        .andExpect(jsonPath("$[0].total").exists());
+  }
+
+  @Test
+  void getCustomerDeadlines_returns200ForSpecificCustomer() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/customers/{id}/deadlines", customerId)
+                .param("from", "2026-01-01")
+                .param("to", "2026-12-31")
+                .with(enabledOwnerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$").isArray())
+        .andExpect(jsonPath("$[0].customerId").value(customerId.toString()));
+  }
+
+  @Test
+  void putFilingStatus_adminRole_returns200() throws Exception {
+    mockMvc
+        .perform(
+            put("/api/deadlines/filing-status")
+                .with(enabledAdminJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "items": [
+                        {
+                          "customerId": "%s",
+                          "deadlineTypeSlug": "sars_provisional_1",
+                          "periodKey": "2026",
+                          "status": "filed",
+                          "notes": "Filed via test",
+                          "linkedProjectId": null
+                        }
+                      ]
+                    }
+                    """
+                        .formatted(customerId)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$").isArray())
+        .andExpect(jsonPath("$[0].status").value("filed"))
+        .andExpect(jsonPath("$[0].deadlineTypeSlug").value("sars_provisional_1"));
+  }
+
+  @Test
+  void listFilingStatuses_returns200WithCreatedStatus() throws Exception {
+    // First, create a filing status via PUT
+    mockMvc
+        .perform(
+            put("/api/deadlines/filing-status")
+                .with(enabledAdminJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "items": [
+                        {
+                          "customerId": "%s",
+                          "deadlineTypeSlug": "sars_annual_return",
+                          "periodKey": "2026",
+                          "status": "filed",
+                          "notes": "Created for GET test",
+                          "linkedProjectId": null
+                        }
+                      ]
+                    }
+                    """
+                        .formatted(customerId)))
+        .andExpect(status().isOk());
+
+    // Then, list filing statuses via GET and verify the created one is present
+    mockMvc
+        .perform(
+            get("/api/filing-statuses")
+                .param("customerId", customerId.toString())
+                .param("deadlineTypeSlug", "sars_annual_return")
+                .with(enabledOwnerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$").isArray())
+        .andExpect(jsonPath("$[0].customerId").value(customerId.toString()))
+        .andExpect(jsonPath("$[0].deadlineTypeSlug").value("sars_annual_return"))
+        .andExpect(jsonPath("$[0].status").value("filed"))
+        .andExpect(jsonPath("$[0].periodKey").value("2026"));
+  }
+
+  @Test
+  void putFilingStatus_memberRole_returns403() throws Exception {
+    mockMvc
+        .perform(
+            put("/api/deadlines/filing-status")
+                .with(enabledMemberJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "items": [
+                        {
+                          "customerId": "%s",
+                          "deadlineTypeSlug": "sars_provisional_1",
+                          "periodKey": "2026",
+                          "status": "filed",
+                          "notes": "Should fail",
+                          "linkedProjectId": null
+                        }
+                      ]
+                    }
+                    """
+                        .formatted(customerId)))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void getDeadlines_returns403_whenModuleDisabled() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/deadlines")
+                .param("from", "2026-01-01")
+                .param("to", "2026-12-31")
+                .with(disabledOwnerJwt()))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void getDeadlines_returns400_whenMissingRequiredParams() throws Exception {
+    mockMvc
+        .perform(get("/api/deadlines").with(enabledOwnerJwt()))
+        .andExpect(status().isBadRequest());
+  }
+
+  // --- Helper methods ---
+
+  private String syncMember(
+      String orgId, String clerkUserId, String email, String name, String orgRole)
+      throws Exception {
+    var result =
+        mockMvc
+            .perform(
+                post("/internal/members/sync")
+                    .header("X-API-KEY", API_KEY)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"clerkOrgId":"%s","clerkUserId":"%s","email":"%s","name":"%s","avatarUrl":null,"orgRole":"%s"}
+                        """
+                            .formatted(orgId, clerkUserId, email, name, orgRole)))
+            .andExpect(status().isCreated())
+            .andReturn();
+    return com.jayway.jsonpath.JsonPath.read(
+        result.getResponse().getContentAsString(), "$.memberId");
+  }
+
+  private JwtRequestPostProcessor enabledOwnerJwt() {
+    return jwt()
+        .jwt(
+            j ->
+                j.subject("user_dctrl_owner")
+                    .claim("o", Map.of("id", ENABLED_ORG_ID, "rol", "owner")));
+  }
+
+  private JwtRequestPostProcessor enabledAdminJwt() {
+    return jwt()
+        .jwt(
+            j ->
+                j.subject("user_dctrl_admin")
+                    .claim("o", Map.of("id", ENABLED_ORG_ID, "rol", "admin")));
+  }
+
+  private JwtRequestPostProcessor enabledMemberJwt() {
+    return jwt()
+        .jwt(
+            j ->
+                j.subject("user_dctrl_member")
+                    .claim("o", Map.of("id", ENABLED_ORG_ID, "rol", "member")));
+  }
+
+  private JwtRequestPostProcessor disabledOwnerJwt() {
+    return jwt()
+        .jwt(
+            j ->
+                j.subject("user_dctrl_dis_owner")
+                    .claim("o", Map.of("id", DISABLED_ORG_ID, "rol", "owner")));
+  }
+}

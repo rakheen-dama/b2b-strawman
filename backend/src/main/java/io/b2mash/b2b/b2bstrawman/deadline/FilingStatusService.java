@@ -2,6 +2,10 @@ package io.b2mash.b2b.b2bstrawman.deadline;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -21,14 +25,14 @@ public class FilingStatusService {
   }
 
   public record CreateFilingStatusRequest(
-      UUID customerId,
-      String deadlineTypeSlug,
-      String periodKey,
-      String status,
+      @NotNull UUID customerId,
+      @NotBlank String deadlineTypeSlug,
+      @NotBlank String periodKey,
+      @NotBlank String status,
       String notes,
       UUID linkedProjectId) {}
 
-  public record BatchUpdateRequest(List<CreateFilingStatusRequest> items) {}
+  public record BatchUpdateRequest(@NotEmpty List<@Valid CreateFilingStatusRequest> items) {}
 
   public record FilingStatusResponse(
       UUID id,

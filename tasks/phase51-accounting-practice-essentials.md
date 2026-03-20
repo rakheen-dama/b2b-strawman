@@ -109,7 +109,7 @@ FRONTEND (requires backend epics 381-384)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 0a | 381 | 381A | V81 migration (`filing_statuses` table, `recurring_schedules.post_create_actions` column, `org_settings.rate_pack_status` + `schedule_pack_status` columns), `DeadlineTypeRegistry` static utility with 8 ZA deadline types and calculation rules, unit tests (~8). Backend only. | |
+| 0a | 381 | 381A | V81 migration (`filing_statuses` table, `recurring_schedules.post_create_actions` column, `org_settings.rate_pack_status` + `schedule_pack_status` columns), `DeadlineTypeRegistry` static utility with 8 ZA deadline types and calculation rules, unit tests (~8). Backend only. | **Done** (PR #790) |
 | 0b | 381 | 381B | `FilingStatus` entity + `FilingStatusRepository` (with custom batch lookup query) + `FilingStatusService` (upsert, batch upsert, list) + register `regulatory_deadlines` in `VerticalModuleRegistry` + add `ratePackStatus`/`schedulePackStatus` fields to `OrgSettings` entity + integration tests (~6). Backend only. | |
 
 ### Stage 1: Backend Domain Services (parallel tracks)
@@ -160,7 +160,7 @@ FRONTEND (requires backend epics 381-384)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **381A** | 381.1--381.6 | V81 migration (`filing_statuses` table with unique constraint + indexes, `recurring_schedules.post_create_actions` JSONB column, `org_settings.rate_pack_status` + `schedule_pack_status` JSONB columns), `DeadlineTypeRegistry` static utility (8 ZA deadline types with calculation rules and applicability predicates), `DeadlineTypeRegistryTest` unit tests (~8). Backend only. | |
+| **381A** | 381.1--381.6 | V81 migration (`filing_statuses` table with unique constraint + indexes, `recurring_schedules.post_create_actions` JSONB column, `org_settings.rate_pack_status` + `schedule_pack_status` JSONB columns), `DeadlineTypeRegistry` static utility (8 ZA deadline types with calculation rules and applicability predicates), `DeadlineTypeRegistryTest` unit tests (~8). Backend only. | **Done** (PR #790) |
 | **381B** | 381.7--381.14 | `FilingStatus` entity + `FilingStatusRepository` (custom batch lookup query) + `FilingStatusService` (upsert, batch upsert, list) + register `regulatory_deadlines` module in `VerticalModuleRegistry` + add `ratePackStatus`/`schedulePackStatus` JSONB fields to `OrgSettings` entity with `recordRatePackApplication()`/`recordSchedulePackApplication()`/`isRatePackApplied()`/`isSchedulePackApplied()` methods + `FilingStatusServiceTest` integration tests (~6). Backend only. | |
 
 ### Tasks

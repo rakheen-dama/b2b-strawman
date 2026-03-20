@@ -28,7 +28,7 @@ vi.mock("@/app/(app)/org/[slug]/deadlines/actions", () => ({
 }));
 
 import useSWR from "swr";
-import { DeadlineWidget } from "@/components/dashboard/DeadlineWidget";
+import { DeadlineWidget } from "@/components/dashboard/deadline-widget";
 import { OrgProfileProvider } from "@/lib/org-profile";
 import { ModuleGate } from "@/components/module-gate";
 import type { DeadlineSummary } from "@/lib/types";

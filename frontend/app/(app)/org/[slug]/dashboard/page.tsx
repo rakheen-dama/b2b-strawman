@@ -13,7 +13,7 @@ import { InformationRequestsWidget } from "@/components/dashboard/information-re
 import { AutomationsWidget } from "@/components/automations/automations-widget";
 import { TeamCapacityWidget } from "@/components/dashboard/team-capacity-widget";
 import { MyScheduleWidget } from "@/components/dashboard/my-schedule-widget";
-import { DeadlineWidget } from "@/components/dashboard/DeadlineWidget";
+import { DeadlineWidget } from "@/components/dashboard/deadline-widget";
 import { ModuleGate } from "@/components/module-gate";
 import {
   fetchDashboardKpis,

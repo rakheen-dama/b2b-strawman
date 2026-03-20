@@ -43,11 +43,25 @@ function aggregateSummaries(summaries: DeadlineSummary[]) {
   );
 }
 
+function DeadlineCardShell({ children }: { children: React.ReactNode }) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-base">
+          <CalendarClock className="size-4" />
+          Upcoming Deadlines
+        </CardTitle>
+      </CardHeader>
+      {children}
+    </Card>
+  );
+}
+
 export function DeadlineWidget({ orgSlug }: DeadlineWidgetProps) {
   const { from, to } = getCurrentMonthRange();
 
   const { data, error, isLoading } = useSWR(
-    "deadline-summary-widget",
+    `deadline-summary-${orgSlug}`,
     () => fetchDeadlineSummary(from, to),
     {
       refreshInterval: REFRESH_INTERVAL_MS,
@@ -58,37 +72,25 @@ export function DeadlineWidget({ orgSlug }: DeadlineWidgetProps) {
 
   if (isLoading) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <CalendarClock className="size-4" />
-            Upcoming Deadlines
-          </CardTitle>
-        </CardHeader>
+      <DeadlineCardShell>
         <CardContent>
           <p className="text-sm italic text-muted-foreground">
             Loading deadline data&hellip;
           </p>
         </CardContent>
-      </Card>
+      </DeadlineCardShell>
     );
   }
 
   if (error || !data) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <CalendarClock className="size-4" />
-            Upcoming Deadlines
-          </CardTitle>
-        </CardHeader>
+      <DeadlineCardShell>
         <CardContent>
           <p className="text-sm italic text-muted-foreground">
             Unable to load deadline data.
           </p>
         </CardContent>
-      </Card>
+      </DeadlineCardShell>
     );
   }
 
@@ -96,30 +98,18 @@ export function DeadlineWidget({ orgSlug }: DeadlineWidgetProps) {
 
   if (totals.total === 0) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <CalendarClock className="size-4" />
-            Upcoming Deadlines
-          </CardTitle>
-        </CardHeader>
+      <DeadlineCardShell>
         <CardContent>
           <p className="text-sm italic text-muted-foreground">
             No deadlines this month.
           </p>
         </CardContent>
-      </Card>
+      </DeadlineCardShell>
     );
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base">
-          <CalendarClock className="size-4" />
-          Upcoming Deadlines
-        </CardTitle>
-      </CardHeader>
+    <DeadlineCardShell>
       <CardContent className="space-y-3">
         <div className="flex items-baseline gap-4">
           <div className="text-center">
@@ -166,6 +156,6 @@ export function DeadlineWidget({ orgSlug }: DeadlineWidgetProps) {
           View All &rarr;
         </Link>
       </div>
-    </Card>
+    </DeadlineCardShell>
   );
 }

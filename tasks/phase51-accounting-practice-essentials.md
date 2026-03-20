@@ -30,7 +30,7 @@ The next Flyway tenant migration is **V81** (V80 is taken by `V80__add_complianc
 | 381 | Foundation: V81 Migration, DeadlineTypeRegistry, FilingStatus Entity, Module Registration | Backend | -- | M | 381A, 381B | **Done** (PRs #790, #791) |
 | 382 | Deadline Calculation Service + Controller | Backend | 381 | M | 382A, 382B | **Done** (PRs #792, #793) |
 | 383 | Post-Schedule Actions (Engagement Kickoff) | Backend | 381 (migration only) | M | 383A, 383B | **Done** (PRs #794, #795) |
-| 384 | Profile Pack Seeders (Rate + Schedule) | Backend | 381 (migration only) | M | 384A, 384B | |
+| 384 | Profile Pack Seeders (Rate + Schedule) | Backend | 381 (migration only) | M | 384A, 384B | **Done** (PRs #796, #797) |
 | 385 | Frontend: Deadline Calendar Page | Frontend | 382 | L | 385A, 385B | |
 | 386 | Frontend: Schedule Actions UI + Seeding Feedback + Dashboard Widget | Frontend | 383, 384, 385 | M | 386A, 386B | |
 
@@ -126,7 +126,7 @@ FRONTEND (requires backend epics 381-384)
 |-------|------|-------|---------|--------|
 | 2a (parallel) | 382 | 382B | `DeadlineController` with 5 endpoints (GET deadlines, GET summary, GET customer deadlines, PUT filing-status, GET filing-statuses), `VerticalModuleGuard.requireModule("regulatory_deadlines")` integration, authorization checks. Integration tests (~6). Backend only. | **Done** (PR #793) |
 | 2b (parallel) | 383 | 383B | Extend `CreateScheduleRequest`, `UpdateScheduleRequest`, `ScheduleResponse` DTOs with `postCreateActions` field, verify `RecurringScheduleController` passes the field through. Integration tests (~4). Backend only. | **Done** (PR #795) |
-| 2c (parallel) | 384 | 384B | Integrate `RatePackSeeder` + `SchedulePackSeeder` into `TenantProvisioningService` and `PackReconciliationRunner`, integrate with `VerticalProfileService.switchProfile()`. Integration tests (~4). Backend only. | |
+| 2c (parallel) | 384 | 384B | Integrate `RatePackSeeder` + `SchedulePackSeeder` into `TenantProvisioningService` and `PackReconciliationRunner`, integrate with `VerticalProfileService.switchProfile()`. Integration tests (~4). Backend only. | **Done** (PR #797) |
 
 ### Stage 3: Frontend — Deadline Calendar (sequential)
 
@@ -315,7 +315,7 @@ FRONTEND (requires backend epics 381-384)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **384A** | 384.1--384.8 | `RatePackSeeder` extending `AbstractPackSeeder<RatePackDefinition>` + `RatePackDefinition` record + `SchedulePackSeeder` extending `AbstractPackSeeder<SchedulePackDefinition>` + `SchedulePackDefinition` record + `rate-packs/accounting-za.json` and `schedule-packs/accounting-za.json` classpath resources + `OrgSettings` pack tracking delegation. Integration tests (~5). Backend only. | **Done** (PR #796) |
-| **384B** | 384.9--384.13 | Integrate `RatePackSeeder` and `SchedulePackSeeder` into `TenantProvisioningService` and `PackReconciliationRunner`. Wire seeding feedback (return value or notification with seed counts). Integration tests (~4). Backend only. | |
+| **384B** | 384.9--384.13 | Integrate `RatePackSeeder` and `SchedulePackSeeder` into `TenantProvisioningService` and `PackReconciliationRunner`. Wire seeding feedback (return value or notification with seed counts). Integration tests (~4). Backend only. | **Done** (PR #797) |
 
 ### Tasks
 

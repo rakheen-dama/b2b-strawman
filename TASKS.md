@@ -434,7 +434,7 @@
 | 381 | Foundation: V81 Migration, DeadlineTypeRegistry, FilingStatus, Module Registration | Backend | -- | M | 381A, 381B | **Done** (PRs #790, #791) |
 | 382 | Deadline Calculation Service + Controller | Backend | 381 | M | 382A, 382B | **Done** (PRs #792, #793) |
 | 383 | Post-Schedule Actions (Engagement Kickoff) | Backend | 381 | M | 383A, 383B | **Done** (PRs #794, #795) |
-| 384 | Profile Pack Seeders (Rate + Schedule) | Backend | 381 | M | 384A, 384B | 384A **Done** (PR #796) |
+| 384 | Profile Pack Seeders (Rate + Schedule) | Backend | 381 | M | 384A, 384B | **Done** (PRs #796, #797) |
 | 385 | Frontend: Deadline Calendar Page | Frontend | 382 | L | 385A, 385B | |
 | 386 | Frontend: Schedule Actions UI + Seeding Feedback + Dashboard Widget | Frontend | 383, 384, 385 | M | 386A, 386B | |
 

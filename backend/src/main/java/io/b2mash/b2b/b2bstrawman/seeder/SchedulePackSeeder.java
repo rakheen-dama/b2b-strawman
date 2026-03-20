@@ -30,9 +30,10 @@ public class SchedulePackSeeder extends AbstractPackSeeder<SchedulePackDefinitio
 
   /**
    * Sentinel UUID used as createdBy for seeder-created recurring schedules. Distinguishable from
-   * real member IDs.
+   * real member IDs. Public so tests outside this package can reference it directly.
    */
-  static final UUID SEEDER_CREATED_BY = UUID.fromString("00000000-0000-0000-0000-000000000001");
+  public static final UUID SEEDER_CREATED_BY =
+      UUID.fromString("00000000-0000-0000-0000-000000000001");
 
   private final RecurringScheduleRepository recurringScheduleRepository;
   private final ProjectTemplateRepository projectTemplateRepository;

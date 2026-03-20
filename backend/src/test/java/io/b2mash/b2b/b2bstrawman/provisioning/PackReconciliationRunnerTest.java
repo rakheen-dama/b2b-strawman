@@ -9,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.checklist.ChecklistTemplateRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.schedule.RecurringScheduleRepository;
+import io.b2mash.b2b.b2bstrawman.seeder.SchedulePackSeeder;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -27,10 +28,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 class PackReconciliationRunnerTest {
 
   private static final String ORG_ID = "org_pack_reconciliation_test";
-
-  /** Sentinel UUID used by SchedulePackSeeder for seeder-created schedules. */
-  private static final UUID SEEDER_CREATED_BY =
-      UUID.fromString("00000000-0000-0000-0000-000000000001");
 
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private PlanSyncService planSyncService;
@@ -127,7 +124,8 @@ class PackReconciliationRunnerTest {
                   // Count seeder-created schedules (sentinel UUID)
                   initialCounts[1] =
                       recurringScheduleRepository.findAll().stream()
-                          .filter(s -> SEEDER_CREATED_BY.equals(s.getCreatedBy()))
+                          .filter(
+                              s -> SchedulePackSeeder.SEEDER_CREATED_BY.equals(s.getCreatedBy()))
                           .count();
                 }));
 
@@ -148,7 +146,8 @@ class PackReconciliationRunnerTest {
                           .count();
                   long scheduleCount =
                       recurringScheduleRepository.findAll().stream()
-                          .filter(s -> SEEDER_CREATED_BY.equals(s.getCreatedBy()))
+                          .filter(
+                              s -> SchedulePackSeeder.SEEDER_CREATED_BY.equals(s.getCreatedBy()))
                           .count();
                   assertThat(rateCount)
                       .as("Seeded rate count should not increase after reconciliation")

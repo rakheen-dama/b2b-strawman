@@ -26,6 +26,7 @@ import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -88,6 +89,54 @@ public class InformationRequestService {
 
   // ========== Create Operations ==========
 
+  private static final int DEFAULT_SCHEDULER_REMINDER_INTERVAL_DAYS = 7;
+
+  /**
+   * Creates an information request from a template identified by slug (packId). Used by post-create
+   * actions in recurring schedule execution. Finds the primary portal contact for the customer
+   * automatically. Accepts an explicit memberId so the scheduler can call this without MEMBER_ID
+   * being bound in RequestScopes.
+   *
+   * <p>Intentionally NOT annotated with @Transactional — this method participates in the caller's
+   * existing transaction (executeSingleSchedule's REQUIRES_NEW). This avoids two problems: (1)
+   * REQUIRES_NEW would create a separate transaction that can't see the uncommitted project (FK
+   * violation), and (2) @Transactional(REQUIRED) would cause Spring's TX interceptor to mark the
+   * outer transaction as rollback-only on exceptions, defeating the caller's try-catch.
+   */
+  public InformationRequestResponse createFromTemplateSlug(
+      String templateSlug, UUID customerId, UUID projectId, UUID memberId) {
+    var templates = templateRepository.findByPackId(templateSlug);
+    // Sort by createdAt descending to ensure deterministic selection when multiple active templates
+    // exist for the same packId
+    var template =
+        templates.stream()
+            .filter(RequestTemplate::isActive)
+            .sorted(Comparator.comparing(RequestTemplate::getCreatedAt).reversed())
+            .findFirst()
+            .orElseThrow(
+                () -> new ResourceNotFoundException("RequestTemplate", "slug=" + templateSlug));
+
+    var portalContact =
+        portalContactRepository
+            .findFirstByCustomerIdAndRoleAndStatusActive(
+                customerId, PortalContact.ContactRole.PRIMARY)
+            .or(() -> portalContactRepository.findByCustomerId(customerId).stream().findFirst())
+            .orElseThrow(
+                () -> new ResourceNotFoundException("PortalContact", "customerId=" + customerId));
+
+    // dueDays controls how long the customer has to respond; reminderIntervalDays controls
+    // how often reminders are sent. Use a sensible default for reminders.
+    var request =
+        new CreateInformationRequestRequest(
+            template.getId(),
+            customerId,
+            projectId,
+            portalContact.getId(),
+            DEFAULT_SCHEDULER_REMINDER_INTERVAL_DAYS,
+            null);
+    return createFromTemplateWithMemberId(request, memberId);
+  }
+
   @Transactional
   public InformationRequestResponse create(CreateInformationRequestRequest request) {
     if (request.requestTemplateId() != null) {
@@ -106,12 +155,50 @@ public class InformationRequestService {
         request.items());
   }
 
+  /**
+   * Creates an information request from a template using an explicit memberId. Used by the
+   * scheduler path where MEMBER_ID is not bound in RequestScopes.
+   */
+  private InformationRequestResponse createFromTemplateWithMemberId(
+      CreateInformationRequestRequest request, UUID memberId) {
+    return doCreateFromTemplate(
+        request.requestTemplateId(),
+        request.customerId(),
+        request.projectId(),
+        request.portalContactId(),
+        request.reminderIntervalDays(),
+        memberId,
+        true);
+  }
+
   private InformationRequestResponse createFromTemplate(
       UUID templateId,
       UUID customerId,
       UUID projectId,
       UUID portalContactId,
       Integer reminderIntervalDays) {
+    return doCreateFromTemplate(
+        templateId,
+        customerId,
+        projectId,
+        portalContactId,
+        reminderIntervalDays,
+        RequestScopes.requireMemberId(),
+        false);
+  }
+
+  /**
+   * Shared implementation for template-based information request creation. Both the interactive
+   * (RequestScopes-based) and scheduler (explicit memberId) paths delegate here.
+   */
+  private InformationRequestResponse doCreateFromTemplate(
+      UUID templateId,
+      UUID customerId,
+      UUID projectId,
+      UUID portalContactId,
+      Integer reminderIntervalDays,
+      UUID memberId,
+      boolean createdByScheduler) {
     customerRepository
         .findById(customerId)
         .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
@@ -126,13 +213,12 @@ public class InformationRequestService {
             .findById(templateId)
             .orElseThrow(() -> new ResourceNotFoundException("RequestTemplate", templateId));
 
-    UUID memberId = RequestScopes.requireMemberId();
     String requestNumber = requestNumberService.allocateNumber();
-    var request = new InformationRequest(requestNumber, customerId, portalContactId, memberId);
-    request.setRequestTemplateId(templateId);
-    request.setProjectId(projectId);
-    request.setReminderIntervalDays(reminderIntervalDays);
-    var saved = requestRepository.save(request);
+    var infoRequest = new InformationRequest(requestNumber, customerId, portalContactId, memberId);
+    infoRequest.setRequestTemplateId(templateId);
+    infoRequest.setProjectId(projectId);
+    infoRequest.setReminderIntervalDays(reminderIntervalDays);
+    var saved = requestRepository.save(infoRequest);
 
     // Copy template items
     var templateItems = templateItemRepository.findByTemplateIdOrderBySortOrder(templateId);
@@ -154,6 +240,9 @@ public class InformationRequestService {
     createAuditDetails.put("request_number", requestNumber);
     createAuditDetails.put("customer_id", customerId.toString());
     createAuditDetails.put("template_id", templateId.toString());
+    if (createdByScheduler) {
+      createAuditDetails.put("created_by_scheduler", "true");
+    }
     if (projectId != null) {
       createAuditDetails.put("project_id", projectId.toString());
     }
@@ -165,11 +254,12 @@ public class InformationRequestService {
             .details(createAuditDetails)
             .build());
     log.info(
-        "Created information request {} ({}) from template {} for customer {}",
+        "Created information request {} ({}) from template {} for customer {}{}",
         saved.getId(),
         requestNumber,
         template.getName(),
-        customerId);
+        customerId,
+        createdByScheduler ? " (scheduler)" : "");
 
     return toResponse(saved);
   }

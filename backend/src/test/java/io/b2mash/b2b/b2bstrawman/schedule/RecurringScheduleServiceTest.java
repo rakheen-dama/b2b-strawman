@@ -11,15 +11,31 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.informationrequest.InformationRequestRepository;
+import io.b2mash.b2b.b2bstrawman.informationrequest.RequestTemplate;
+import io.b2mash.b2b.b2bstrawman.informationrequest.RequestTemplateRepository;
+import io.b2mash.b2b.b2bstrawman.informationrequest.TemplateSource;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.notification.NotificationRepository;
+import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
+import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
+import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.ProjectTemplate;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.ProjectTemplateRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.schedule.dto.CreateScheduleRequest;
 import io.b2mash.b2b.b2bstrawman.schedule.dto.UpdateScheduleRequest;
+import io.b2mash.b2b.b2bstrawman.template.DocumentTemplate;
+import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateRepository;
+import io.b2mash.b2b.b2bstrawman.template.GeneratedDocumentRepository;
+import io.b2mash.b2b.b2bstrawman.template.TemplateCategory;
+import io.b2mash.b2b.b2bstrawman.template.TemplateEntityType;
+import io.b2mash.b2b.b2bstrawman.template.TestDocumentBuilder;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -28,6 +44,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -50,8 +67,16 @@ class RecurringScheduleServiceTest {
   @Autowired private TransactionTemplate transactionTemplate;
   @Autowired private RecurringScheduleService scheduleService;
   @Autowired private RecurringScheduleRepository scheduleRepository;
+  @Autowired private ScheduleExecutionRepository executionRepository;
   @Autowired private ProjectTemplateRepository templateRepository;
   @Autowired private CustomerRepository customerRepository;
+  @Autowired private ProjectRepository projectRepository;
+  @Autowired private NotificationRepository notificationRepository;
+  @Autowired private InformationRequestRepository informationRequestRepository;
+  @Autowired private RequestTemplateRepository requestTemplateRepository;
+  @Autowired private PortalContactRepository portalContactRepository;
+  @Autowired private DocumentTemplateRepository documentTemplateRepository;
+  @Autowired private GeneratedDocumentRepository generatedDocumentRepository;
 
   private String tenantSchema;
   private UUID memberId;
@@ -454,6 +479,521 @@ class RecurringScheduleServiceTest {
           // Clean up
           scheduleService.pause(created.id());
           scheduleService.delete(created.id());
+        });
+  }
+
+  // --- Post-Create Action Tests (Tasks 383.6, 383.7) ---
+
+  /**
+   * Creates a unique customer for post-create action tests to avoid unique constraint collisions on
+   * (template_id, customer_id, frequency).
+   */
+  private UUID createUniquePostCreateCustomer(String suffix) {
+    var result = new UUID[1];
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var c =
+                      customerRepository.saveAndFlush(
+                          createActiveCustomer(
+                              "PostCreate " + suffix, "pc-" + suffix + "@test.com", memberId));
+                  result[0] = c.getId();
+                }));
+    return result[0];
+  }
+
+  @Test
+  void executeSingleSchedule_withNullPostCreateActions_createsProjectNormally() {
+    var cid = createUniquePostCreateCustomer("null-actions");
+    runInTenant(
+        () -> {
+          var schedule =
+              transactionTemplate.execute(
+                  tx -> {
+                    var s =
+                        new RecurringSchedule(
+                            templateId,
+                            cid,
+                            null,
+                            "MONTHLY",
+                            LocalDate.now(),
+                            null,
+                            0,
+                            memberId,
+                            memberId);
+                    s.setNextExecutionDate(LocalDate.now());
+                    // postCreateActions is null by default — regression test
+                    return scheduleRepository.saveAndFlush(s);
+                  });
+
+          boolean result = scheduleService.executeSingleSchedule(schedule);
+
+          assertThat(result).isTrue();
+
+          transactionTemplate.executeWithoutResult(
+              tx -> {
+                var executions =
+                    executionRepository.findByScheduleIdOrderByPeriodStartDesc(
+                        schedule.getId(), PageRequest.of(0, 10));
+                assertThat(executions.getContent()).hasSize(1);
+
+                var updated = scheduleRepository.findById(schedule.getId()).orElseThrow();
+                assertThat(updated.getExecutionCount()).isEqualTo(1);
+                assertThat(updated.getPostCreateActions()).isNull();
+              });
+        });
+  }
+
+  @Test
+  void executeSingleSchedule_withDocGenerateAction_failsGracefullyForMissingTemplate() {
+    var cid = createUniquePostCreateCustomer("doc-fail");
+    runInTenant(
+        () -> {
+          var schedule =
+              transactionTemplate.execute(
+                  tx -> {
+                    var s =
+                        new RecurringSchedule(
+                            templateId,
+                            cid,
+                            null,
+                            "MONTHLY",
+                            LocalDate.now(),
+                            null,
+                            0,
+                            memberId,
+                            memberId);
+                    s.setNextExecutionDate(LocalDate.now());
+                    s.setPostCreateActions(
+                        Map.of(
+                            "generateDocument", Map.of("templateSlug", "non-existent-slug-383a")));
+                    return scheduleRepository.saveAndFlush(s);
+                  });
+
+          // Execution should succeed — project is still created despite action failure
+          boolean result = scheduleService.executeSingleSchedule(schedule);
+          assertThat(result).isTrue();
+
+          transactionTemplate.executeWithoutResult(
+              tx -> {
+                // Verify project was created
+                var executions =
+                    executionRepository.findByScheduleIdOrderByPeriodStartDesc(
+                        schedule.getId(), PageRequest.of(0, 10));
+                assertThat(executions.getContent()).hasSize(1);
+
+                var projectId = executions.getContent().getFirst().getProjectId();
+                assertThat(projectId).isNotNull();
+                var project = projectRepository.findById(projectId);
+                assertThat(project).isPresent();
+              });
+        });
+  }
+
+  @Test
+  void executeSingleSchedule_withDocGenerateActionFailure_sendsNotification() {
+    var cid = createUniquePostCreateCustomer("doc-notif");
+    Instant beforeTest = Instant.now();
+
+    runInTenant(
+        () -> {
+          var schedule =
+              transactionTemplate.execute(
+                  tx -> {
+                    var s =
+                        new RecurringSchedule(
+                            templateId,
+                            cid,
+                            null,
+                            "MONTHLY",
+                            LocalDate.now(),
+                            null,
+                            0,
+                            memberId,
+                            memberId);
+                    s.setNextExecutionDate(LocalDate.now());
+                    s.setPostCreateActions(
+                        Map.of(
+                            "generateDocument",
+                            Map.of("templateSlug", "missing-template-383a-notif")));
+                    return scheduleRepository.saveAndFlush(s);
+                  });
+
+          scheduleService.executeSingleSchedule(schedule);
+
+          // Verify POST_CREATE_ACTION_FAILED notification was sent
+          transactionTemplate.executeWithoutResult(
+              tx -> {
+                var notifications =
+                    notificationRepository.findByRecipientMemberId(memberId, PageRequest.of(0, 50));
+                var failureNotifications =
+                    notifications.getContent().stream()
+                        .filter(n -> "POST_CREATE_ACTION_FAILED".equals(n.getType()))
+                        .filter(n -> n.getCreatedAt().isAfter(beforeTest))
+                        .toList();
+                assertThat(failureNotifications).isNotEmpty();
+                assertThat(failureNotifications.getFirst().getTitle())
+                    .contains("document generation");
+              });
+        });
+  }
+
+  @Test
+  void executeSingleSchedule_withInfoRequestAction_failsGracefullyForMissingTemplate() {
+    var cid = createUniquePostCreateCustomer("info-fail");
+    runInTenant(
+        () -> {
+          var schedule =
+              transactionTemplate.execute(
+                  tx -> {
+                    var s =
+                        new RecurringSchedule(
+                            templateId,
+                            cid,
+                            null,
+                            "MONTHLY",
+                            LocalDate.now(),
+                            null,
+                            0,
+                            memberId,
+                            memberId);
+                    s.setNextExecutionDate(LocalDate.now());
+                    s.setPostCreateActions(
+                        Map.of(
+                            "sendInfoRequest",
+                            Map.of(
+                                "requestTemplateSlug", "non-existent-pack-383a", "dueDays", 14)));
+                    return scheduleRepository.saveAndFlush(s);
+                  });
+
+          // Execution should succeed — project is still created despite action failure
+          boolean result = scheduleService.executeSingleSchedule(schedule);
+          assertThat(result).isTrue();
+
+          transactionTemplate.executeWithoutResult(
+              tx -> {
+                var executions =
+                    executionRepository.findByScheduleIdOrderByPeriodStartDesc(
+                        schedule.getId(), PageRequest.of(0, 10));
+                assertThat(executions.getContent()).hasSize(1);
+
+                var projectId = executions.getContent().getFirst().getProjectId();
+                assertThat(projectId).isNotNull();
+                var project = projectRepository.findById(projectId);
+                assertThat(project).isPresent();
+              });
+        });
+  }
+
+  @Test
+  void executeSingleSchedule_withBothActions_bothFailGracefully() {
+    var cid = createUniquePostCreateCustomer("both-fail");
+    runInTenant(
+        () -> {
+          var schedule =
+              transactionTemplate.execute(
+                  tx -> {
+                    var s =
+                        new RecurringSchedule(
+                            templateId,
+                            cid,
+                            null,
+                            "MONTHLY",
+                            LocalDate.now(),
+                            null,
+                            0,
+                            memberId,
+                            memberId);
+                    s.setNextExecutionDate(LocalDate.now());
+                    s.setPostCreateActions(
+                        Map.of(
+                            "generateDocument",
+                            Map.of("templateSlug", "missing-doc-383a"),
+                            "sendInfoRequest",
+                            Map.of("requestTemplateSlug", "missing-req-383a", "dueDays", 7)));
+                    return scheduleRepository.saveAndFlush(s);
+                  });
+
+          boolean result = scheduleService.executeSingleSchedule(schedule);
+          assertThat(result).isTrue();
+
+          transactionTemplate.executeWithoutResult(
+              tx -> {
+                // Project was still created
+                var executions =
+                    executionRepository.findByScheduleIdOrderByPeriodStartDesc(
+                        schedule.getId(), PageRequest.of(0, 10));
+                assertThat(executions.getContent()).hasSize(1);
+
+                var updated = scheduleRepository.findById(schedule.getId()).orElseThrow();
+                assertThat(updated.getExecutionCount()).isEqualTo(1);
+              });
+        });
+  }
+
+  // --- Happy-Path Integration Tests (Review Fix: prove the feature works) ---
+
+  @Test
+  void executeSingleSchedule_withSendInfoRequestAction_createsInformationRequest() {
+    var cid = createUniquePostCreateCustomer("info-happy");
+    runInTenant(
+        () -> {
+          // Set up: create a RequestTemplate with a known packId and a PortalContact
+          var reqTemplateId = new UUID[1];
+          var portalContactId = new UUID[1];
+          transactionTemplate.executeWithoutResult(
+              tx -> {
+                var rt =
+                    new RequestTemplate(
+                        "Happy Path Template", "For testing", TemplateSource.CUSTOM);
+                rt.setPackId("happy-path-pack-383a");
+                rt = requestTemplateRepository.saveAndFlush(rt);
+                reqTemplateId[0] = rt.getId();
+
+                var pc =
+                    new PortalContact(
+                        ORG_ID,
+                        cid,
+                        "happy-contact@test.com",
+                        "Happy Contact",
+                        PortalContact.ContactRole.PRIMARY);
+                pc = portalContactRepository.saveAndFlush(pc);
+                portalContactId[0] = pc.getId();
+              });
+
+          var schedule =
+              transactionTemplate.execute(
+                  tx -> {
+                    var s =
+                        new RecurringSchedule(
+                            templateId,
+                            cid,
+                            null,
+                            "MONTHLY",
+                            LocalDate.now(),
+                            null,
+                            0,
+                            memberId,
+                            memberId);
+                    s.setNextExecutionDate(LocalDate.now());
+                    s.setPostCreateActions(
+                        Map.of(
+                            "sendInfoRequest",
+                            Map.of("requestTemplateSlug", "happy-path-pack-383a", "dueDays", 14)));
+                    return scheduleRepository.saveAndFlush(s);
+                  });
+
+          boolean result = scheduleService.executeSingleSchedule(schedule);
+          assertThat(result).isTrue();
+
+          transactionTemplate.executeWithoutResult(
+              tx -> {
+                // Verify project was created
+                var executions =
+                    executionRepository.findByScheduleIdOrderByPeriodStartDesc(
+                        schedule.getId(), PageRequest.of(0, 10));
+                assertThat(executions.getContent()).hasSize(1);
+                var projectId = executions.getContent().getFirst().getProjectId();
+                assertThat(projectId).isNotNull();
+
+                // Verify information request was created for the customer
+                var infoRequests = informationRequestRepository.findByCustomerId(cid);
+                assertThat(infoRequests).isNotEmpty();
+                var infoRequest = infoRequests.getFirst();
+                assertThat(infoRequest.getCustomerId()).isEqualTo(cid);
+                assertThat(infoRequest.getProjectId()).isEqualTo(projectId);
+                assertThat(infoRequest.getRequestTemplateId()).isEqualTo(reqTemplateId[0]);
+                assertThat(infoRequest.getPortalContactId()).isEqualTo(portalContactId[0]);
+                // Verify reminderIntervalDays is the default (7), not dueDays (14)
+                assertThat(infoRequest.getReminderIntervalDays()).isEqualTo(7);
+              });
+        });
+  }
+
+  @Test
+  void executeSingleSchedule_withBothActions_infoRequestSucceedsDocGenerationFailsGracefully() {
+    var cid = createUniquePostCreateCustomer("both-happy");
+    runInTenant(
+        () -> {
+          // Set up: create a RequestTemplate + PortalContact for the info request action
+          transactionTemplate.executeWithoutResult(
+              tx -> {
+                var rt =
+                    new RequestTemplate(
+                        "Both Actions Template", "For testing both actions", TemplateSource.CUSTOM);
+                rt.setPackId("both-actions-pack-383a");
+                requestTemplateRepository.saveAndFlush(rt);
+
+                var pc =
+                    new PortalContact(
+                        ORG_ID,
+                        cid,
+                        "both-contact@test.com",
+                        "Both Contact",
+                        PortalContact.ContactRole.PRIMARY);
+                portalContactRepository.saveAndFlush(pc);
+              });
+
+          var schedule =
+              transactionTemplate.execute(
+                  tx -> {
+                    var s =
+                        new RecurringSchedule(
+                            templateId,
+                            cid,
+                            null,
+                            "MONTHLY",
+                            LocalDate.now(),
+                            null,
+                            0,
+                            memberId,
+                            memberId);
+                    s.setNextExecutionDate(LocalDate.now());
+                    s.setPostCreateActions(
+                        Map.of(
+                            "generateDocument",
+                            Map.of("templateSlug", "non-existent-doc-both-383a"),
+                            "sendInfoRequest",
+                            Map.of("requestTemplateSlug", "both-actions-pack-383a", "dueDays", 7)));
+                    return scheduleRepository.saveAndFlush(s);
+                  });
+
+          boolean result = scheduleService.executeSingleSchedule(schedule);
+          assertThat(result).isTrue();
+
+          transactionTemplate.executeWithoutResult(
+              tx -> {
+                // Project was created despite doc generation failure
+                var executions =
+                    executionRepository.findByScheduleIdOrderByPeriodStartDesc(
+                        schedule.getId(), PageRequest.of(0, 10));
+                assertThat(executions.getContent()).hasSize(1);
+                var projectId = executions.getContent().getFirst().getProjectId();
+                assertThat(projectId).isNotNull();
+
+                // Info request was still created (independent of doc generation failure)
+                var infoRequests = informationRequestRepository.findByCustomerId(cid);
+                assertThat(infoRequests).isNotEmpty();
+                assertThat(infoRequests.getFirst().getProjectId()).isEqualTo(projectId);
+              });
+        });
+  }
+
+  @Test
+  void executeSingleSchedule_withInvalidJsonbConfig_skipsActionGracefully() {
+    var cid = createUniquePostCreateCustomer("invalid-jsonb");
+    runInTenant(
+        () -> {
+          var schedule =
+              transactionTemplate.execute(
+                  tx -> {
+                    var s =
+                        new RecurringSchedule(
+                            templateId,
+                            cid,
+                            null,
+                            "MONTHLY",
+                            LocalDate.now(),
+                            null,
+                            0,
+                            memberId,
+                            memberId);
+                    s.setNextExecutionDate(LocalDate.now());
+                    // Missing required keys in the JSONB config
+                    s.setPostCreateActions(
+                        Map.of(
+                            "generateDocument", Map.of("wrongKey", "value"),
+                            "sendInfoRequest", Map.of("wrongKey", "value")));
+                    return scheduleRepository.saveAndFlush(s);
+                  });
+
+          // Should still succeed — invalid config is skipped with a warning, not an exception
+          boolean result = scheduleService.executeSingleSchedule(schedule);
+          assertThat(result).isTrue();
+
+          transactionTemplate.executeWithoutResult(
+              tx -> {
+                var executions =
+                    executionRepository.findByScheduleIdOrderByPeriodStartDesc(
+                        schedule.getId(), PageRequest.of(0, 10));
+                assertThat(executions.getContent()).hasSize(1);
+
+                var updated = scheduleRepository.findById(schedule.getId()).orElseThrow();
+                assertThat(updated.getExecutionCount()).isEqualTo(1);
+              });
+        });
+  }
+
+  @Test
+  void executeSingleSchedule_withDocGenerateAction_generatesDocumentSuccessfully() {
+    var cid = createUniquePostCreateCustomer("doc-happy");
+    runInTenant(
+        () -> {
+          // Seed a DocumentTemplate with a known slug and PROJECT entity type
+          var docTemplateSlug = "sched-doc-happy-383a";
+          transactionTemplate.executeWithoutResult(
+              tx -> {
+                var content =
+                    TestDocumentBuilder.doc()
+                        .heading(1, "Project Report")
+                        .variable("project.name")
+                        .paragraph("Auto-generated project report.")
+                        .build();
+                var dt =
+                    new DocumentTemplate(
+                        TemplateEntityType.PROJECT,
+                        "Schedule Doc Happy Template",
+                        docTemplateSlug,
+                        TemplateCategory.ENGAGEMENT_LETTER,
+                        content);
+                documentTemplateRepository.saveAndFlush(dt);
+              });
+
+          var schedule =
+              transactionTemplate.execute(
+                  tx -> {
+                    var s =
+                        new RecurringSchedule(
+                            templateId,
+                            cid,
+                            null,
+                            "MONTHLY",
+                            LocalDate.now(),
+                            null,
+                            0,
+                            memberId,
+                            memberId);
+                    s.setNextExecutionDate(LocalDate.now());
+                    s.setPostCreateActions(
+                        Map.of("generateDocument", Map.of("templateSlug", docTemplateSlug)));
+                    return scheduleRepository.saveAndFlush(s);
+                  });
+
+          boolean result = scheduleService.executeSingleSchedule(schedule);
+          assertThat(result).isTrue();
+
+          transactionTemplate.executeWithoutResult(
+              tx -> {
+                // Verify project was created
+                var executions =
+                    executionRepository.findByScheduleIdOrderByPeriodStartDesc(
+                        schedule.getId(), PageRequest.of(0, 10));
+                assertThat(executions.getContent()).hasSize(1);
+                var projectId = executions.getContent().getFirst().getProjectId();
+                assertThat(projectId).isNotNull();
+
+                // Verify generated document was created for the project
+                var generatedDocs =
+                    generatedDocumentRepository
+                        .findByPrimaryEntityTypeAndPrimaryEntityIdOrderByGeneratedAtDesc(
+                            TemplateEntityType.PROJECT, projectId);
+                assertThat(generatedDocs).isNotEmpty();
+                var generatedDoc = generatedDocs.getFirst();
+                assertThat(generatedDoc.getPrimaryEntityId()).isEqualTo(projectId);
+                assertThat(generatedDoc.getFileName()).isNotBlank();
+                assertThat(generatedDoc.getFileSize()).isGreaterThan(0);
+              });
         });
   }
 

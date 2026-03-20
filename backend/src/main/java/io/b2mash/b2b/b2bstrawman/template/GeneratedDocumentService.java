@@ -259,6 +259,25 @@ public class GeneratedDocumentService {
   }
 
   /**
+   * Generates a document for a project using a template identified by slug. Used by post-create
+   * actions in recurring schedule execution.
+   *
+   * <p>Intentionally NOT annotated with @Transactional — this method participates in the caller's
+   * existing transaction (executeSingleSchedule's REQUIRES_NEW). Using REQUIRES_NEW here would open
+   * a separate transaction that cannot see the uncommitted project, causing
+   * ResourceNotFoundException when the context builder tries to load it.
+   */
+  public GenerationResult generateForProject(
+      UUID projectId, String templateSlug, UUID actingMemberId) {
+    var template =
+        documentTemplateRepository
+            .findBySlug(templateSlug)
+            .orElseThrow(
+                () -> new ResourceNotFoundException("DocumentTemplate", "slug=" + templateSlug));
+    return generateDocument(template.getId(), projectId, true, true, List.of(), actingMemberId);
+  }
+
+  /**
    * Previews a document with optional clause resolution. Resolves clauses via ClauseResolver before
    * delegating to PdfRenderingService.
    */

@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.informationrequest.InformationRequestService;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -27,6 +28,7 @@ import io.b2mash.b2b.b2bstrawman.schedule.event.RecurringProjectCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.schedule.event.ScheduleCompletedEvent;
 import io.b2mash.b2b.b2bstrawman.schedule.event.SchedulePausedEvent;
 import io.b2mash.b2b.b2bstrawman.schedule.event.ScheduleSkippedEvent;
+import io.b2mash.b2b.b2bstrawman.template.GeneratedDocumentService;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
@@ -63,6 +65,8 @@ public class RecurringScheduleService {
   private final NameTokenResolver nameTokenResolver;
   private final PrerequisiteService prerequisiteService;
   private final NotificationService notificationService;
+  private final GeneratedDocumentService generatedDocumentService;
+  private final InformationRequestService informationRequestService;
 
   public RecurringScheduleService(
       RecurringScheduleRepository scheduleRepository,
@@ -78,7 +82,9 @@ public class RecurringScheduleService {
       ProjectTemplateService projectTemplateService,
       NameTokenResolver nameTokenResolver,
       PrerequisiteService prerequisiteService,
-      NotificationService notificationService) {
+      NotificationService notificationService,
+      GeneratedDocumentService generatedDocumentService,
+      InformationRequestService informationRequestService) {
     this.scheduleRepository = scheduleRepository;
     this.templateRepository = templateRepository;
     this.customerRepository = customerRepository;
@@ -93,6 +99,8 @@ public class RecurringScheduleService {
     this.nameTokenResolver = nameTokenResolver;
     this.prerequisiteService = prerequisiteService;
     this.notificationService = notificationService;
+    this.generatedDocumentService = generatedDocumentService;
+    this.informationRequestService = informationRequestService;
   }
 
   @Transactional
@@ -537,6 +545,11 @@ public class RecurringScheduleService {
     // 8. Auto-completion check
     checkAutoCompletion(schedule, templateName, customerName);
 
+    // 8a. Execute post-create actions (best-effort)
+    if (schedule.getPostCreateActions() != null && !schedule.getPostCreateActions().isEmpty()) {
+      executePostCreateActions(schedule, project, customer);
+    }
+
     // 9. Audit log
     auditService.log(
         AuditEventBuilder.builder()
@@ -556,6 +569,117 @@ public class RecurringScheduleService {
     publishRecurringProjectCreatedEvent(schedule, project, projectName, customerName, templateName);
 
     return true;
+  }
+
+  private void executePostCreateActions(
+      RecurringSchedule schedule, Project project, Customer customer) {
+    Map<String, Object> actions = schedule.getPostCreateActions();
+
+    // 1. Generate document
+    if (actions.containsKey("generateDocument")) {
+      try {
+        var rawDocConfig = actions.get("generateDocument");
+        if (!(rawDocConfig instanceof Map<?, ?>)) {
+          log.warn(
+              "Post-create: generateDocument config is not a Map for schedule {}, skipping",
+              schedule.getId());
+        } else {
+          @SuppressWarnings("unchecked")
+          var docConfig = (Map<String, Object>) rawDocConfig;
+          var templateSlugObj = docConfig.get("templateSlug");
+          if (templateSlugObj == null
+              || !(templateSlugObj instanceof String templateSlug)
+              || templateSlug.isBlank()) {
+            log.warn(
+                "Post-create: generateDocument missing or blank 'templateSlug' for schedule {},"
+                    + " skipping",
+                schedule.getId());
+          } else {
+            generatedDocumentService.generateForProject(
+                project.getId(), templateSlug, schedule.getCreatedBy());
+            log.info(
+                "Post-create: generated document from template '{}' for project {}",
+                templateSlug,
+                project.getId());
+          }
+        }
+      } catch (Exception e) {
+        log.error(
+            "Post-create document generation failed for schedule {}: {}",
+            schedule.getId(),
+            e.getMessage(),
+            e);
+        notifyPostCreateFailure(schedule, project, "document generation", e.getMessage());
+      }
+    }
+
+    // 2. Send information request
+    if (actions.containsKey("sendInfoRequest")) {
+      try {
+        var rawReqConfig = actions.get("sendInfoRequest");
+        if (!(rawReqConfig instanceof Map<?, ?>)) {
+          log.warn(
+              "Post-create: sendInfoRequest config is not a Map for schedule {}, skipping",
+              schedule.getId());
+        } else {
+          @SuppressWarnings("unchecked")
+          var reqConfig = (Map<String, Object>) rawReqConfig;
+          var requestTemplateSlugObj = reqConfig.get("requestTemplateSlug");
+          if (requestTemplateSlugObj == null
+              || !(requestTemplateSlugObj instanceof String requestTemplateSlug)
+              || requestTemplateSlug.isBlank()) {
+            log.warn(
+                "Post-create: sendInfoRequest missing or blank 'requestTemplateSlug' for schedule"
+                    + " {}, skipping",
+                schedule.getId());
+          } else {
+            informationRequestService.createFromTemplateSlug(
+                requestTemplateSlug, customer.getId(), project.getId(), schedule.getCreatedBy());
+            log.info(
+                "Post-create: sent info request from template '{}' for customer {}",
+                requestTemplateSlug,
+                customer.getId());
+          }
+        }
+      } catch (Exception e) {
+        log.error(
+            "Post-create info request failed for schedule {}: {}",
+            schedule.getId(),
+            e.getMessage(),
+            e);
+        notifyPostCreateFailure(schedule, project, "information request", e.getMessage());
+      }
+    }
+  }
+
+  private void notifyPostCreateFailure(
+      RecurringSchedule schedule, Project project, String actionType, String errorMessage) {
+    try {
+      notificationService.createNotification(
+          schedule.getCreatedBy(),
+          "POST_CREATE_ACTION_FAILED",
+          "Automatic " + actionType + " failed for project " + project.getName(),
+          errorMessage,
+          "PROJECT",
+          project.getId(),
+          project.getId());
+      auditService.log(
+          AuditEventBuilder.builder()
+              .eventType("post_create_action.failed")
+              .entityType("recurring_schedule")
+              .entityId(schedule.getId())
+              .details(
+                  Map.of(
+                      "project_id",
+                      project.getId().toString(),
+                      "action_type",
+                      actionType,
+                      "error",
+                      errorMessage != null ? errorMessage : "unknown"))
+              .build());
+    } catch (Exception notifEx) {
+      log.warn("Failed to send post-create failure notification: {}", notifEx.getMessage());
+    }
   }
 
   private boolean isInactiveLifecycle(Customer customer) {

@@ -8,7 +8,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Map;
 import java.util.UUID;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "recurring_schedules")
@@ -64,6 +67,10 @@ public class RecurringSchedule {
 
   @Column(name = "updated_at", nullable = false)
   private Instant updatedAt;
+
+  @JdbcTypeCode(SqlTypes.JSON)
+  @Column(name = "post_create_actions", columnDefinition = "jsonb")
+  private Map<String, Object> postCreateActions;
 
   protected RecurringSchedule() {}
 
@@ -183,5 +190,14 @@ public class RecurringSchedule {
 
   public Instant getUpdatedAt() {
     return updatedAt;
+  }
+
+  public Map<String, Object> getPostCreateActions() {
+    return postCreateActions;
+  }
+
+  public void setPostCreateActions(Map<String, Object> postCreateActions) {
+    this.postCreateActions = postCreateActions;
+    this.updatedAt = Instant.now();
   }
 }

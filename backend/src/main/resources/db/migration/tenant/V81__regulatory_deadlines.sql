@@ -8,18 +8,20 @@
 
 CREATE TABLE IF NOT EXISTS filing_statuses (
     id                   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    customer_id          UUID         NOT NULL,
+    customer_id          UUID         NOT NULL REFERENCES customers(id),
     deadline_type_slug   VARCHAR(50)  NOT NULL,
     period_key           VARCHAR(20)  NOT NULL,
     status               VARCHAR(20)  NOT NULL,
     filed_at             TIMESTAMP WITH TIME ZONE,
     filed_by             UUID,
     notes                TEXT,
-    linked_project_id    UUID,
+    linked_project_id    UUID REFERENCES projects(id) ON DELETE SET NULL,
     created_at           TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at           TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     CONSTRAINT uq_filing_status_customer_deadline_period
         UNIQUE (customer_id, deadline_type_slug, period_key),
+    -- Per ADR-199 lazy creation: absence of a row means "pending/due".
+    -- Records are only created when a user explicitly marks a deadline as filed or not applicable.
     CONSTRAINT chk_filing_status_status
         CHECK (status IN ('filed', 'not_applicable'))
 );

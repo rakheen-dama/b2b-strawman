@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 /**
  * Static registry of regulatory deadline types by jurisdiction. Not a Spring bean — no injection,
@@ -117,9 +116,7 @@ public final class DeadlineTypeRegistry {
     if (jurisdiction == null) {
       return List.of();
     }
-    return ALL_TYPES.stream()
-        .filter(t -> t.jurisdiction().equals(jurisdiction))
-        .collect(Collectors.toList());
+    return ALL_TYPES.stream().filter(t -> t.jurisdiction().equals(jurisdiction)).toList();
   }
 
   /**
@@ -135,9 +132,6 @@ public final class DeadlineTypeRegistry {
 
   /** Returns the distinct category values for the given jurisdiction. */
   public static List<String> getCategories(String jurisdiction) {
-    return getDeadlineTypes(jurisdiction).stream()
-        .map(DeadlineType::category)
-        .distinct()
-        .collect(Collectors.toList());
+    return getDeadlineTypes(jurisdiction).stream().map(DeadlineType::category).distinct().toList();
   }
 }

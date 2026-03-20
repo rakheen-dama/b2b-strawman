@@ -79,6 +79,18 @@ class DeadlineTypeRegistryTest {
   }
 
   @Test
+  void getDeadlineType_null_returnsEmpty() {
+    assertThat(DeadlineTypeRegistry.getDeadlineType(null)).isEmpty();
+  }
+
+  @Test
+  void getCategories_za_returnsFourCategories() {
+    var categories = DeadlineTypeRegistry.getCategories("ZA");
+
+    assertThat(categories).containsExactly("tax", "vat", "corporate", "payroll");
+  }
+
+  @Test
   void getDeadlineType_bySlug_returnsCorrectType() {
     var type = DeadlineTypeRegistry.getDeadlineType("sars_provisional_1");
 

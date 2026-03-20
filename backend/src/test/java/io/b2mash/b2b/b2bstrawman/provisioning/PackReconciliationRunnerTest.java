@@ -4,9 +4,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.billingrate.BillingRateRepository;
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistTemplateRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.schedule.RecurringScheduleRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -26,12 +28,18 @@ class PackReconciliationRunnerTest {
 
   private static final String ORG_ID = "org_pack_reconciliation_test";
 
+  /** Sentinel UUID used by SchedulePackSeeder for seeder-created schedules. */
+  private static final UUID SEEDER_CREATED_BY =
+      UUID.fromString("00000000-0000-0000-0000-000000000001");
+
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private PackReconciliationRunner reconciliationRunner;
   @Autowired private ChecklistTemplateRepository templateRepository;
   @Autowired private OrgSettingsRepository orgSettingsRepository;
+  @Autowired private BillingRateRepository billingRateRepository;
+  @Autowired private RecurringScheduleRepository recurringScheduleRepository;
   @Autowired private TransactionTemplate transactionTemplate;
 
   private String tenantSchema;
@@ -93,9 +101,71 @@ class PackReconciliationRunnerTest {
     assertThatCode(() -> reconciliationRunner.run(null)).doesNotThrowAnyException();
   }
 
+  @Test
+  void reconciliationRunnerIdempotentWithRateAndSchedulePacks() {
+    // Provision a tenant with accounting-za profile to trigger rate/schedule seeding
+    String acctOrgId = "org_pack_reconciliation_acct_test";
+    provisioningService.provisionTenant(
+        acctOrgId, "Accounting Reconciliation Test Org", "accounting-za");
+    planSyncService.syncPlan(acctOrgId, "pro-plan");
+    String acctSchema =
+        orgSchemaMappingRepository.findByClerkOrgId(acctOrgId).orElseThrow().getSchemaName();
+
+    // Count rates and schedules after initial provisioning
+    long[] initialCounts = new long[2];
+    runInTenant(
+        acctSchema,
+        acctOrgId,
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  // Count seeded rates (null memberId = org-level seeded rates)
+                  initialCounts[0] =
+                      billingRateRepository.findAll().stream()
+                          .filter(r -> r.getMemberId() == null)
+                          .count();
+                  // Count seeder-created schedules (sentinel UUID)
+                  initialCounts[1] =
+                      recurringScheduleRepository.findAll().stream()
+                          .filter(s -> SEEDER_CREATED_BY.equals(s.getCreatedBy()))
+                          .count();
+                }));
+
+    // Run reconciliation twice
+    reconciliationRunner.run(null);
+    reconciliationRunner.run(null);
+
+    // Verify counts have not increased
+    runInTenant(
+        acctSchema,
+        acctOrgId,
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  long rateCount =
+                      billingRateRepository.findAll().stream()
+                          .filter(r -> r.getMemberId() == null)
+                          .count();
+                  long scheduleCount =
+                      recurringScheduleRepository.findAll().stream()
+                          .filter(s -> SEEDER_CREATED_BY.equals(s.getCreatedBy()))
+                          .count();
+                  assertThat(rateCount)
+                      .as("Seeded rate count should not increase after reconciliation")
+                      .isEqualTo(initialCounts[0]);
+                  assertThat(scheduleCount)
+                      .as("Seeder-created schedule count should not increase after reconciliation")
+                      .isEqualTo(initialCounts[1]);
+                }));
+  }
+
   private void runInTenant(String schema, Runnable action) {
+    runInTenant(schema, ORG_ID, action);
+  }
+
+  private void runInTenant(String schema, String orgId, Runnable action) {
     ScopedValue.where(RequestScopes.TENANT_ID, schema)
-        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.ORG_ID, orgId)
         .where(RequestScopes.MEMBER_ID, UUID.randomUUID())
         .where(RequestScopes.ORG_ROLE, "owner")
         .run(action);

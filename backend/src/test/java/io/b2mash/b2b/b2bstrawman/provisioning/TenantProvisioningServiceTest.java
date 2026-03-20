@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
@@ -22,6 +23,8 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMapping;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
 import io.b2mash.b2b.b2bstrawman.reporting.StandardReportPackSeeder;
+import io.b2mash.b2b.b2bstrawman.seeder.RatePackSeeder;
+import io.b2mash.b2b.b2bstrawman.seeder.SchedulePackSeeder;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.template.TemplatePackSeeder;
@@ -59,6 +62,8 @@ class TenantProvisioningServiceTest {
   @Mock private StandardReportPackSeeder standardReportPackSeeder;
   @Mock private RequestPackSeeder requestPackSeeder;
   @Mock private AutomationTemplateSeeder automationTemplateSeeder;
+  @Mock private RatePackSeeder ratePackSeeder;
+  @Mock private SchedulePackSeeder schedulePackSeeder;
   @Mock private TenantTransactionHelper tenantTransactionHelper;
   @Mock private OrgSettingsRepository orgSettingsRepository;
   @Mock private VerticalProfileRegistry verticalProfileRegistry;
@@ -255,5 +260,55 @@ class TenantProvisioningServiceTest {
     verify(tenantTransactionHelper, never())
         .executeInTenantTransaction(anyString(), anyString(), any());
     verify(verticalProfileRegistry, never()).getProfile(anyString());
+  }
+
+  @Test
+  void provisionTenant_callsRateAndScheduleSeeders() throws SQLException {
+    when(mappingRepository.findByClerkOrgId("org_acct")).thenReturn(Optional.empty());
+    when(organizationRepository.findByClerkOrgId("org_acct")).thenReturn(Optional.empty());
+
+    var org = new Organization("org_acct", "Accounting Org");
+    when(organizationRepository.save(any(Organization.class))).thenReturn(org);
+
+    var mockConn = mock(Connection.class);
+    var mockStmt = mock(Statement.class);
+    when(migrationDataSource.getConnection()).thenReturn(mockConn);
+    when(mockConn.createStatement()).thenReturn(mockStmt);
+
+    when(mappingRepository.save(any(OrgSchemaMapping.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+
+    doNothing().when(service).runTenantMigrations(anyString());
+
+    service.provisionTenant("org_acct", "Accounting Org", null);
+
+    verify(ratePackSeeder).seedPacksForTenant(anyString(), eq("org_acct"));
+    verify(schedulePackSeeder).seedPacksForTenant(anyString(), eq("org_acct"));
+  }
+
+  @Test
+  void provisionTenant_withNullProfile_stillCallsRateAndScheduleSeeders() throws SQLException {
+    when(mappingRepository.findByClerkOrgId("org_no_profile")).thenReturn(Optional.empty());
+    when(organizationRepository.findByClerkOrgId("org_no_profile")).thenReturn(Optional.empty());
+
+    var org = new Organization("org_no_profile", "No Profile Org");
+    when(organizationRepository.save(any(Organization.class))).thenReturn(org);
+
+    var mockConn = mock(Connection.class);
+    var mockStmt = mock(Statement.class);
+    when(migrationDataSource.getConnection()).thenReturn(mockConn);
+    when(mockConn.createStatement()).thenReturn(mockStmt);
+
+    when(mappingRepository.save(any(OrgSchemaMapping.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+
+    doNothing().when(service).runTenantMigrations(anyString());
+
+    service.provisionTenant("org_no_profile", "No Profile Org", null);
+
+    // Seeders are called regardless of profile — the seeder's vertical filter logic
+    // handles profile mismatch internally (no-op if no matching pack)
+    verify(ratePackSeeder).seedPacksForTenant(anyString(), eq("org_no_profile"));
+    verify(schedulePackSeeder).seedPacksForTenant(anyString(), eq("org_no_profile"));
   }
 }

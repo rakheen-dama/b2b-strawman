@@ -7,6 +7,8 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldPackSeeder;
 import io.b2mash.b2b.b2bstrawman.informationrequest.RequestPackSeeder;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.reporting.StandardReportPackSeeder;
+import io.b2mash.b2b.b2bstrawman.seeder.RatePackSeeder;
+import io.b2mash.b2b.b2bstrawman.seeder.SchedulePackSeeder;
 import io.b2mash.b2b.b2bstrawman.template.TemplatePackSeeder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +39,8 @@ public class PackReconciliationRunner implements ApplicationRunner {
   private final StandardReportPackSeeder standardReportPackSeeder;
   private final RequestPackSeeder requestPackSeeder;
   private final AutomationTemplateSeeder automationTemplateSeeder;
+  private final RatePackSeeder ratePackSeeder;
+  private final SchedulePackSeeder schedulePackSeeder;
 
   public PackReconciliationRunner(
       OrgSchemaMappingRepository mappingRepository,
@@ -46,7 +50,9 @@ public class PackReconciliationRunner implements ApplicationRunner {
       CompliancePackSeeder compliancePackSeeder,
       StandardReportPackSeeder standardReportPackSeeder,
       RequestPackSeeder requestPackSeeder,
-      AutomationTemplateSeeder automationTemplateSeeder) {
+      AutomationTemplateSeeder automationTemplateSeeder,
+      RatePackSeeder ratePackSeeder,
+      SchedulePackSeeder schedulePackSeeder) {
     this.mappingRepository = mappingRepository;
     this.fieldPackSeeder = fieldPackSeeder;
     this.templatePackSeeder = templatePackSeeder;
@@ -55,6 +61,8 @@ public class PackReconciliationRunner implements ApplicationRunner {
     this.standardReportPackSeeder = standardReportPackSeeder;
     this.requestPackSeeder = requestPackSeeder;
     this.automationTemplateSeeder = automationTemplateSeeder;
+    this.ratePackSeeder = ratePackSeeder;
+    this.schedulePackSeeder = schedulePackSeeder;
   }
 
   @Override
@@ -81,6 +89,8 @@ public class PackReconciliationRunner implements ApplicationRunner {
         standardReportPackSeeder.seedForTenant(schemaName, clerkOrgId);
         requestPackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
         automationTemplateSeeder.seedPacksForTenant(schemaName, clerkOrgId);
+        ratePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
+        schedulePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
 
         succeeded++;
       } catch (Exception e) {

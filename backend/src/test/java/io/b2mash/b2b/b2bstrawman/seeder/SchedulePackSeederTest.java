@@ -46,12 +46,16 @@ class SchedulePackSeederTest {
 
   @BeforeAll
   void setup() {
-    provisioningService.provisionTenant(ORG_ID, "Schedule Pack Seeder Test Org", "accounting-za");
+    // Provision with null profile so the schedule pack (targeting accounting-za) is NOT applied
+    // during provisioning. This allows us to create project templates first, then set the profile
+    // and call the seeder explicitly in the test.
+    provisioningService.provisionTenant(ORG_ID, "Schedule Pack Seeder Test Org", null);
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
 
-    // Create project templates that match schedule pack entries so seeder finds them
+    // Create project templates that match schedule pack entries so seeder finds them,
+    // and set the vertical profile to accounting-za so the pack will match.
     UUID seederMemberId = SchedulePackSeeder.SEEDER_CREATED_BY;
     runInTenant(
         tenantSchema,
@@ -76,6 +80,10 @@ class SchedulePackSeederTest {
                           "MANUAL",
                           null,
                           seederMemberId));
+                  // Set vertical profile so the accounting-za schedule pack matches
+                  var settings = orgSettingsRepository.findForCurrentTenant().orElseThrow();
+                  settings.setVerticalProfile("accounting-za");
+                  orgSettingsRepository.save(settings);
                 }));
   }
 

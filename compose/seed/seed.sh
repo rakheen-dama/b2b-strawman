@@ -216,6 +216,14 @@ STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
   }")
 check_status "Create project" "$STATUS"
 
+# -- Step 8: Sync portal read model -----------------------------------------
+echo ""
+echo "==> Step 8: Sync portal read model"
+STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+  -X POST "${BACKEND_URL}/internal/portal/resync/${ORG_ID}" \
+  -H "X-API-KEY: ${API_KEY}")
+check_status "Portal resync" "$STATUS"
+
 echo ""
 echo "============================================"
 echo "  E2E Boot-Seed Complete!"

@@ -174,7 +174,8 @@ public class NotificationService {
           "BILLING_RUN_FAILURES",
           "ROLE_PERMISSIONS_CHANGED",
           "RETENTION_PURGE_WARNING",
-          "DSAR_DEADLINE_WARNING");
+          "DSAR_DEADLINE_WARNING",
+          "POST_CREATE_ACTION_FAILED");
 
   // --- Preference methods ---
 

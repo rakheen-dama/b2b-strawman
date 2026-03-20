@@ -259,6 +259,22 @@ public class GeneratedDocumentService {
   }
 
   /**
+   * Generates a document for a project using a template identified by slug. Used by post-create
+   * actions in recurring schedule execution. Runs in its own transaction to isolate failures from
+   * the caller's transaction (ADR-198: best-effort post-create actions).
+   */
+  @Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)
+  public GenerationResult generateForProject(
+      UUID projectId, String templateSlug, UUID actingMemberId) {
+    var template =
+        documentTemplateRepository
+            .findBySlug(templateSlug)
+            .orElseThrow(
+                () -> new ResourceNotFoundException("DocumentTemplate", "slug=" + templateSlug));
+    return generateDocument(template.getId(), projectId, true, true, List.of(), actingMemberId);
+  }
+
+  /**
    * Previews a document with optional clause resolution. Resolves clauses via ClauseResolver before
    * delegating to PdfRenderingService.
    */

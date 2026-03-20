@@ -88,6 +88,37 @@ public class InformationRequestService {
 
   // ========== Create Operations ==========
 
+  /**
+   * Creates an information request from a template identified by slug (packId). Used by post-create
+   * actions in recurring schedule execution. Finds the primary portal contact for the customer
+   * automatically. Runs in its own transaction to isolate failures from the caller's transaction
+   * (ADR-198: best-effort post-create actions).
+   */
+  @Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)
+  public InformationRequestResponse createFromTemplateSlug(
+      String templateSlug, UUID customerId, UUID projectId, int dueDays) {
+    var templates = templateRepository.findByPackId(templateSlug);
+    var template =
+        templates.stream()
+            .filter(RequestTemplate::isActive)
+            .findFirst()
+            .orElseThrow(
+                () -> new ResourceNotFoundException("RequestTemplate", "slug=" + templateSlug));
+
+    var portalContact =
+        portalContactRepository
+            .findFirstByCustomerIdAndRoleAndStatusActive(
+                customerId, PortalContact.ContactRole.PRIMARY)
+            .or(() -> portalContactRepository.findByCustomerId(customerId).stream().findFirst())
+            .orElseThrow(
+                () -> new ResourceNotFoundException("PortalContact", "customerId=" + customerId));
+
+    var request =
+        new CreateInformationRequestRequest(
+            template.getId(), customerId, projectId, portalContact.getId(), dueDays, null);
+    return create(request);
+  }
+
   @Transactional
   public InformationRequestResponse create(CreateInformationRequestRequest request) {
     if (request.requestTemplateId() != null) {

@@ -419,8 +419,11 @@ public class OrgSettings {
     return ratePackStatus;
   }
 
-  /** Records a rate pack application. Idempotent by design -- does not check for duplicates. */
+  /** Records a rate pack application. Idempotent -- skips if already applied. */
   public void recordRatePackApplication(String packId, int version) {
+    if (isRatePackApplied(packId, version)) {
+      return;
+    }
     if (this.ratePackStatus == null) {
       this.ratePackStatus = new ArrayList<>();
     }
@@ -448,8 +451,11 @@ public class OrgSettings {
     return schedulePackStatus;
   }
 
-  /** Records a schedule pack application. */
+  /** Records a schedule pack application. Idempotent -- skips if already applied. */
   public void recordSchedulePackApplication(String packId, int version) {
+    if (isSchedulePackApplied(packId, version)) {
+      return;
+    }
     if (this.schedulePackStatus == null) {
       this.schedulePackStatus = new ArrayList<>();
     }

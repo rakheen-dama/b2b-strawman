@@ -230,6 +230,8 @@ class FilingStatusServiceTest {
     // Call again -- idempotent (isRatePackApplied still returns true)
     settings.recordRatePackApplication("rate-pack-accounting-za", 1);
     assertThat(settings.isRatePackApplied("rate-pack-accounting-za", 1)).isTrue();
+    // Verify true idempotency: list still has exactly 1 entry, not 2
+    assertThat(settings.getRatePackStatus()).hasSize(1);
     // Different version is not applied
     assertThat(settings.isRatePackApplied("rate-pack-accounting-za", 2)).isFalse();
   }

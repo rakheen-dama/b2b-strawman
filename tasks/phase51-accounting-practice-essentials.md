@@ -118,7 +118,7 @@ FRONTEND (requires backend epics 381-384)
 |-------|------|-------|---------|--------|
 | 1a (parallel) | 382 | 382A | `DeadlineCalculationService` with `calculateDeadlines()`, `calculateDeadlinesForCustomer()`, `calculateSummary()` — loads customers with FYE, applies calculation/applicability rules, overlays filing status, cross-references projects. Integration tests (~7). Backend only. | **Done** (PR #792) |
 | 1b (parallel) | 383 | 383A | Extend `RecurringSchedule` entity with `postCreateActions` JSONB field, extend `RecurringScheduleService.executeSingleSchedule()` with `executePostCreateActions()` and `notifyPostCreateFailure()` private methods, inject `GeneratedDocumentService` + `InformationRequestService`. Integration tests (~5). Backend only. | **Done** (PR #794) |
-| 1c (parallel) | 384 | 384A | `RatePackSeeder` + `RatePackDefinition`, `SchedulePackSeeder` + `SchedulePackDefinition`, `rate-packs/accounting-za.json` and `schedule-packs/accounting-za.json` resources, `OrgSettings` methods (`recordRatePackApplication`, `isRatePackApplied`, `recordSchedulePackApplication`, `isSchedulePackApplied`). Integration tests (~5). Backend only. | |
+| 1c (parallel) | 384 | 384A | `RatePackSeeder` + `RatePackDefinition`, `SchedulePackSeeder` + `SchedulePackDefinition`, `rate-packs/accounting-za.json` and `schedule-packs/accounting-za.json` resources, `OrgSettings` methods (`recordRatePackApplication`, `isRatePackApplied`, `recordSchedulePackApplication`, `isSchedulePackApplied`). Integration tests (~5). Backend only. | **Done** (PR #796) |
 
 ### Stage 2: Backend Controllers + Integration (parallel tracks)
 
@@ -314,7 +314,7 @@ FRONTEND (requires backend epics 381-384)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **384A** | 384.1--384.8 | `RatePackSeeder` extending `AbstractPackSeeder<RatePackDefinition>` + `RatePackDefinition` record + `SchedulePackSeeder` extending `AbstractPackSeeder<SchedulePackDefinition>` + `SchedulePackDefinition` record + `rate-packs/accounting-za.json` and `schedule-packs/accounting-za.json` classpath resources + `OrgSettings` pack tracking delegation. Integration tests (~5). Backend only. | |
+| **384A** | 384.1--384.8 | `RatePackSeeder` extending `AbstractPackSeeder<RatePackDefinition>` + `RatePackDefinition` record + `SchedulePackSeeder` extending `AbstractPackSeeder<SchedulePackDefinition>` + `SchedulePackDefinition` record + `rate-packs/accounting-za.json` and `schedule-packs/accounting-za.json` classpath resources + `OrgSettings` pack tracking delegation. Integration tests (~5). Backend only. | **Done** (PR #796) |
 | **384B** | 384.9--384.13 | Integrate `RatePackSeeder` and `SchedulePackSeeder` into `TenantProvisioningService` and `PackReconciliationRunner`. Wire seeding feedback (return value or notification with seed counts). Integration tests (~4). Backend only. | |
 
 ### Tasks

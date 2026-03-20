@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.project;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -71,4 +72,8 @@ public interface ProjectRepository extends JpaRepository<Project, UUID> {
    * JPQL-based batch find by IDs. JPQL queries run against the current tenant schema (search_path
    * isolation), unlike JpaRepository.findAllById which uses EntityManager.find directly.
    */
+
+  /** Batch-loads projects for multiple customers in a single query. */
+  @Query("SELECT p FROM Project p WHERE p.customerId IN :customerIds ORDER BY p.createdAt DESC")
+  List<Project> findByCustomerIdIn(@Param("customerIds") Collection<UUID> customerIds);
 }

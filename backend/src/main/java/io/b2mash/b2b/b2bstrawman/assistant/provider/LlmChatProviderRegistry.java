@@ -20,9 +20,9 @@ public class LlmChatProviderRegistry {
   private final Map<String, LlmChatProvider> providers;
 
   public LlmChatProviderRegistry(List<LlmChatProvider> chatProviders) {
-    this.providers = new HashMap<>();
+    var mutable = new HashMap<String, LlmChatProvider>();
     for (var provider : chatProviders) {
-      var existing = providers.putIfAbsent(provider.providerId(), provider);
+      var existing = mutable.putIfAbsent(provider.providerId(), provider);
       if (existing != null) {
         throw new IllegalStateException(
             "Duplicate LlmChatProvider providerId: \""
@@ -33,6 +33,7 @@ public class LlmChatProviderRegistry {
                 + provider.getClass().getName());
       }
     }
+    this.providers = Map.copyOf(mutable);
   }
 
   /**

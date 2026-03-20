@@ -8,4 +8,18 @@ public record ChatRequest(
     String model,
     String systemPrompt,
     List<ChatMessage> messages,
-    List<ToolDefinition> tools) {}
+    List<ToolDefinition> tools) {
+
+  @Override
+  public String toString() {
+    return "ChatRequest[apiKey=REDACTED, model="
+        + model
+        + ", systemPrompt="
+        + systemPrompt
+        + ", messages="
+        + messages
+        + ", tools="
+        + tools
+        + "]";
+  }
+}

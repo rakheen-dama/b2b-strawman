@@ -136,6 +136,13 @@ export const NAV_GROUPS: NavGroup[] = [
         icon: ShieldCheck,
         requiredCapability: "CUSTOMER_MANAGEMENT",
       },
+      {
+        label: "Deadlines",
+        href: (slug) => `/org/${slug}/deadlines`,
+        icon: CalendarClock,
+        exact: true,
+        requiredModule: "regulatory_deadlines",
+      },
     ],
   },
   {

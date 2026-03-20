@@ -104,7 +104,7 @@ public class InformationRequestService {
    * outer transaction as rollback-only on exceptions, defeating the caller's try-catch.
    */
   public InformationRequestResponse createFromTemplateSlug(
-      String templateSlug, UUID customerId, UUID projectId, int dueDays, UUID memberId) {
+      String templateSlug, UUID customerId, UUID projectId, UUID memberId) {
     var templates = templateRepository.findByPackId(templateSlug);
     // Sort by createdAt descending to ensure deterministic selection when multiple active templates
     // exist for the same packId
@@ -161,71 +161,14 @@ public class InformationRequestService {
    */
   private InformationRequestResponse createFromTemplateWithMemberId(
       CreateInformationRequestRequest request, UUID memberId) {
-    customerRepository
-        .findById(request.customerId())
-        .orElseThrow(() -> new ResourceNotFoundException("Customer", request.customerId()));
-    validatePortalContact(request.portalContactId(), request.customerId());
-    if (request.projectId() != null) {
-      projectRepository
-          .findById(request.projectId())
-          .orElseThrow(() -> new ResourceNotFoundException("Project", request.projectId()));
-    }
-    var template =
-        templateRepository
-            .findById(request.requestTemplateId())
-            .orElseThrow(
-                () ->
-                    new ResourceNotFoundException("RequestTemplate", request.requestTemplateId()));
-
-    String requestNumber = requestNumberService.allocateNumber();
-    var infoRequest =
-        new InformationRequest(
-            requestNumber, request.customerId(), request.portalContactId(), memberId);
-    infoRequest.setRequestTemplateId(request.requestTemplateId());
-    infoRequest.setProjectId(request.projectId());
-    infoRequest.setReminderIntervalDays(request.reminderIntervalDays());
-    var saved = requestRepository.save(infoRequest);
-
-    // Copy template items
-    var templateItems =
-        templateItemRepository.findByTemplateIdOrderBySortOrder(request.requestTemplateId());
-    for (var ti : templateItems) {
-      var item =
-          new RequestItem(
-              saved.getId(),
-              ti.getName(),
-              ti.getDescription(),
-              ti.getResponseType(),
-              ti.isRequired(),
-              ti.getFileTypeHints(),
-              ti.getSortOrder());
-      item.setTemplateItemId(ti.getId());
-      itemRepository.save(item);
-    }
-
-    var createAuditDetails = new HashMap<String, Object>();
-    createAuditDetails.put("request_number", requestNumber);
-    createAuditDetails.put("customer_id", request.customerId().toString());
-    createAuditDetails.put("template_id", request.requestTemplateId().toString());
-    createAuditDetails.put("created_by_scheduler", "true");
-    if (request.projectId() != null) {
-      createAuditDetails.put("project_id", request.projectId().toString());
-    }
-    auditService.log(
-        AuditEventBuilder.builder()
-            .eventType("information_request.created")
-            .entityType("information_request")
-            .entityId(saved.getId())
-            .details(createAuditDetails)
-            .build());
-    log.info(
-        "Created information request {} ({}) from template {} for customer {} (scheduler)",
-        saved.getId(),
-        requestNumber,
-        template.getName(),
-        request.customerId());
-
-    return toResponse(saved);
+    return doCreateFromTemplate(
+        request.requestTemplateId(),
+        request.customerId(),
+        request.projectId(),
+        request.portalContactId(),
+        request.reminderIntervalDays(),
+        memberId,
+        true);
   }
 
   private InformationRequestResponse createFromTemplate(
@@ -234,6 +177,28 @@ public class InformationRequestService {
       UUID projectId,
       UUID portalContactId,
       Integer reminderIntervalDays) {
+    return doCreateFromTemplate(
+        templateId,
+        customerId,
+        projectId,
+        portalContactId,
+        reminderIntervalDays,
+        RequestScopes.requireMemberId(),
+        false);
+  }
+
+  /**
+   * Shared implementation for template-based information request creation. Both the interactive
+   * (RequestScopes-based) and scheduler (explicit memberId) paths delegate here.
+   */
+  private InformationRequestResponse doCreateFromTemplate(
+      UUID templateId,
+      UUID customerId,
+      UUID projectId,
+      UUID portalContactId,
+      Integer reminderIntervalDays,
+      UUID memberId,
+      boolean createdByScheduler) {
     customerRepository
         .findById(customerId)
         .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
@@ -248,13 +213,12 @@ public class InformationRequestService {
             .findById(templateId)
             .orElseThrow(() -> new ResourceNotFoundException("RequestTemplate", templateId));
 
-    UUID memberId = RequestScopes.requireMemberId();
     String requestNumber = requestNumberService.allocateNumber();
-    var request = new InformationRequest(requestNumber, customerId, portalContactId, memberId);
-    request.setRequestTemplateId(templateId);
-    request.setProjectId(projectId);
-    request.setReminderIntervalDays(reminderIntervalDays);
-    var saved = requestRepository.save(request);
+    var infoRequest = new InformationRequest(requestNumber, customerId, portalContactId, memberId);
+    infoRequest.setRequestTemplateId(templateId);
+    infoRequest.setProjectId(projectId);
+    infoRequest.setReminderIntervalDays(reminderIntervalDays);
+    var saved = requestRepository.save(infoRequest);
 
     // Copy template items
     var templateItems = templateItemRepository.findByTemplateIdOrderBySortOrder(templateId);
@@ -276,6 +240,9 @@ public class InformationRequestService {
     createAuditDetails.put("request_number", requestNumber);
     createAuditDetails.put("customer_id", customerId.toString());
     createAuditDetails.put("template_id", templateId.toString());
+    if (createdByScheduler) {
+      createAuditDetails.put("created_by_scheduler", "true");
+    }
     if (projectId != null) {
       createAuditDetails.put("project_id", projectId.toString());
     }
@@ -287,11 +254,12 @@ public class InformationRequestService {
             .details(createAuditDetails)
             .build());
     log.info(
-        "Created information request {} ({}) from template {} for customer {}",
+        "Created information request {} ({}) from template {} for customer {}{}",
         saved.getId(),
         requestNumber,
         template.getName(),
-        customerId);
+        customerId,
+        createdByScheduler ? " (scheduler)" : "");
 
     return toResponse(saved);
   }

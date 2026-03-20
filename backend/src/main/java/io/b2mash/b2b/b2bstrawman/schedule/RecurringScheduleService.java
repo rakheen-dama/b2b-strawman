@@ -633,14 +633,8 @@ public class RecurringScheduleService {
                     + " {}, skipping",
                 schedule.getId());
           } else {
-            var dueDaysObj = reqConfig.get("dueDays");
-            int dueDays = (dueDaysObj instanceof Number n) ? n.intValue() : 14;
             informationRequestService.createFromTemplateSlug(
-                requestTemplateSlug,
-                customer.getId(),
-                project.getId(),
-                dueDays,
-                schedule.getCreatedBy());
+                requestTemplateSlug, customer.getId(), project.getId(), schedule.getCreatedBy());
             log.info(
                 "Post-create: sent info request from template '{}' for customer {}",
                 requestTemplateSlug,

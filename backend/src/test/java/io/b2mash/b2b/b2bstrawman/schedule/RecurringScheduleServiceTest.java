@@ -27,6 +27,12 @@ import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.schedule.dto.CreateScheduleRequest;
 import io.b2mash.b2b.b2bstrawman.schedule.dto.UpdateScheduleRequest;
+import io.b2mash.b2b.b2bstrawman.template.DocumentTemplate;
+import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateRepository;
+import io.b2mash.b2b.b2bstrawman.template.GeneratedDocumentRepository;
+import io.b2mash.b2b.b2bstrawman.template.TemplateCategory;
+import io.b2mash.b2b.b2bstrawman.template.TemplateEntityType;
+import io.b2mash.b2b.b2bstrawman.template.TestDocumentBuilder;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Map;
@@ -69,6 +75,8 @@ class RecurringScheduleServiceTest {
   @Autowired private InformationRequestRepository informationRequestRepository;
   @Autowired private RequestTemplateRepository requestTemplateRepository;
   @Autowired private PortalContactRepository portalContactRepository;
+  @Autowired private DocumentTemplateRepository documentTemplateRepository;
+  @Autowired private GeneratedDocumentRepository generatedDocumentRepository;
 
   private String tenantSchema;
   private UUID memberId;
@@ -913,6 +921,78 @@ class RecurringScheduleServiceTest {
 
                 var updated = scheduleRepository.findById(schedule.getId()).orElseThrow();
                 assertThat(updated.getExecutionCount()).isEqualTo(1);
+              });
+        });
+  }
+
+  @Test
+  void executeSingleSchedule_withDocGenerateAction_generatesDocumentSuccessfully() {
+    var cid = createUniquePostCreateCustomer("doc-happy");
+    runInTenant(
+        () -> {
+          // Seed a DocumentTemplate with a known slug and PROJECT entity type
+          var docTemplateSlug = "sched-doc-happy-383a";
+          transactionTemplate.executeWithoutResult(
+              tx -> {
+                var content =
+                    TestDocumentBuilder.doc()
+                        .heading(1, "Project Report")
+                        .variable("project.name")
+                        .paragraph("Auto-generated project report.")
+                        .build();
+                var dt =
+                    new DocumentTemplate(
+                        TemplateEntityType.PROJECT,
+                        "Schedule Doc Happy Template",
+                        docTemplateSlug,
+                        TemplateCategory.ENGAGEMENT_LETTER,
+                        content);
+                documentTemplateRepository.saveAndFlush(dt);
+              });
+
+          var schedule =
+              transactionTemplate.execute(
+                  tx -> {
+                    var s =
+                        new RecurringSchedule(
+                            templateId,
+                            cid,
+                            null,
+                            "MONTHLY",
+                            LocalDate.now(),
+                            null,
+                            0,
+                            memberId,
+                            memberId);
+                    s.setNextExecutionDate(LocalDate.now());
+                    s.setPostCreateActions(
+                        Map.of("generateDocument", Map.of("templateSlug", docTemplateSlug)));
+                    return scheduleRepository.saveAndFlush(s);
+                  });
+
+          boolean result = scheduleService.executeSingleSchedule(schedule);
+          assertThat(result).isTrue();
+
+          transactionTemplate.executeWithoutResult(
+              tx -> {
+                // Verify project was created
+                var executions =
+                    executionRepository.findByScheduleIdOrderByPeriodStartDesc(
+                        schedule.getId(), PageRequest.of(0, 10));
+                assertThat(executions.getContent()).hasSize(1);
+                var projectId = executions.getContent().getFirst().getProjectId();
+                assertThat(projectId).isNotNull();
+
+                // Verify generated document was created for the project
+                var generatedDocs =
+                    generatedDocumentRepository
+                        .findByPrimaryEntityTypeAndPrimaryEntityIdOrderByGeneratedAtDesc(
+                            TemplateEntityType.PROJECT, projectId);
+                assertThat(generatedDocs).isNotEmpty();
+                var generatedDoc = generatedDocs.getFirst();
+                assertThat(generatedDoc.getPrimaryEntityId()).isEqualTo(projectId);
+                assertThat(generatedDoc.getFileName()).isNotBlank();
+                assertThat(generatedDoc.getFileSize()).isGreaterThan(0);
               });
         });
   }

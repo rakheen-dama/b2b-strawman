@@ -8,6 +8,17 @@ export { FREQUENCY_LABELS } from "@/lib/schedule-constants";
 
 import type { ScheduleStatus, RecurrenceFrequency } from "@/lib/schedule-constants";
 
+export interface PostCreateActions {
+  generateDocument?: {
+    templateSlug: string;
+    autoSend: boolean;
+  };
+  sendInfoRequest?: {
+    requestTemplateSlug: string;
+    dueDays: number;
+  };
+}
+
 export interface ScheduleResponse {
   id: string;
   templateId: string;
@@ -29,6 +40,7 @@ export interface ScheduleResponse {
   createdByName: string | null;
   createdAt: string;
   updatedAt: string;
+  postCreateActions: PostCreateActions | null;
 }
 
 export interface CreateScheduleRequest {
@@ -40,6 +52,7 @@ export interface CreateScheduleRequest {
   leadTimeDays: number;
   projectLeadMemberId?: string;
   nameOverride?: string;
+  postCreateActions?: PostCreateActions | null;
 }
 
 export interface UpdateScheduleRequest {
@@ -47,6 +60,7 @@ export interface UpdateScheduleRequest {
   endDate?: string;
   leadTimeDays: number;
   projectLeadMemberId?: string;
+  postCreateActions?: PostCreateActions | null;
 }
 
 export interface ScheduleExecutionResponse {

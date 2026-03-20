@@ -40,6 +40,7 @@ const SCHEDULE: ScheduleResponse = {
   createdByName: null,
   createdAt: "2026-01-01T00:00:00Z",
   updatedAt: "2026-02-01T10:00:00Z",
+  postCreateActions: null,
 };
 
 const MEMBERS: OrgMember[] = [
@@ -64,7 +65,7 @@ describe("ScheduleEditDialog", () => {
   it("renders pre-filled nameOverride field", async () => {
     const user = userEvent.setup();
     render(
-      <ScheduleEditDialog slug="acme" schedule={SCHEDULE} orgMembers={MEMBERS}>
+      <ScheduleEditDialog slug="acme" schedule={SCHEDULE} orgMembers={MEMBERS} documentTemplates={[]} requestTemplates={[]}>
         <button>Edit Schedule Trigger</button>
       </ScheduleEditDialog>,
     );
@@ -76,7 +77,7 @@ describe("ScheduleEditDialog", () => {
   it("displays read-only template and customer name", async () => {
     const user = userEvent.setup();
     render(
-      <ScheduleEditDialog slug="acme" schedule={SCHEDULE} orgMembers={MEMBERS}>
+      <ScheduleEditDialog slug="acme" schedule={SCHEDULE} orgMembers={MEMBERS} documentTemplates={[]} requestTemplates={[]}>
         <button>Edit Schedule RO Trigger</button>
       </ScheduleEditDialog>,
     );
@@ -88,7 +89,7 @@ describe("ScheduleEditDialog", () => {
   it("leadTimeDays accepts number input", async () => {
     const user = userEvent.setup();
     render(
-      <ScheduleEditDialog slug="acme" schedule={SCHEDULE} orgMembers={MEMBERS}>
+      <ScheduleEditDialog slug="acme" schedule={SCHEDULE} orgMembers={MEMBERS} documentTemplates={[]} requestTemplates={[]}>
         <button>Edit Schedule LT Trigger</button>
       </ScheduleEditDialog>,
     );
@@ -102,7 +103,7 @@ describe("ScheduleEditDialog", () => {
     mockUpdateSchedule.mockResolvedValue({ success: true });
     const user = userEvent.setup();
     render(
-      <ScheduleEditDialog slug="acme" schedule={SCHEDULE} orgMembers={MEMBERS}>
+      <ScheduleEditDialog slug="acme" schedule={SCHEDULE} orgMembers={MEMBERS} documentTemplates={[]} requestTemplates={[]}>
         <button>Edit Schedule Submit Trigger</button>
       </ScheduleEditDialog>,
     );

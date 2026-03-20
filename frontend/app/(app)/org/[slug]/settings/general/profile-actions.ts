@@ -3,9 +3,15 @@
 import { api, ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
 
+interface SeedingSummary {
+  rateCardsTiersSeeded?: number;
+  scheduleTemplatesSeeded?: number;
+}
+
 interface ActionResult {
   success: boolean;
   error?: string;
+  seedingSummary?: SeedingSummary;
 }
 
 export interface ProfileSummary {
@@ -20,7 +26,12 @@ export async function updateVerticalProfile(
   verticalProfile: string | null,
 ): Promise<ActionResult> {
   try {
-    await api.patch("/api/settings/vertical-profile", { verticalProfile });
+    const response = await api.patch<SeedingSummary | null>(
+      "/api/settings/vertical-profile",
+      { verticalProfile },
+    );
+    revalidatePath(`/org/${slug}/settings/general`);
+    return { success: true, seedingSummary: response ?? undefined };
   } catch (error) {
     if (error instanceof ApiError) {
       if (error.status === 403) {
@@ -33,8 +44,6 @@ export async function updateVerticalProfile(
     }
     return { success: false, error: "An unexpected error occurred." };
   }
-  revalidatePath(`/org/${slug}/settings/general`);
-  return { success: true };
 }
 
 export async function fetchProfiles(): Promise<ProfileSummary[]> {

@@ -17,11 +17,21 @@ import { updateScheduleAction } from "@/app/(app)/org/[slug]/schedules/actions";
 import { FREQUENCY_LABELS } from "@/lib/schedule-constants";
 import type { ScheduleResponse, UpdateScheduleRequest } from "@/lib/api/schedules";
 import type { OrgMember } from "@/lib/types";
+import {
+  PostCreateActionsSection,
+} from "@/components/schedules/PostCreateActionsSection";
+import type {
+  DocumentTemplateOption,
+  RequestTemplateOption,
+} from "@/components/schedules/PostCreateActionsSection";
+import type { PostCreateActions } from "@/lib/api/schedules";
 
 interface ScheduleEditDialogProps {
   slug: string;
   schedule: ScheduleResponse;
   orgMembers: OrgMember[];
+  documentTemplates: DocumentTemplateOption[];
+  requestTemplates: RequestTemplateOption[];
   children: React.ReactNode;
 }
 
@@ -32,6 +42,8 @@ export function ScheduleEditDialog({
   slug,
   schedule,
   orgMembers,
+  documentTemplates,
+  requestTemplates,
   children,
 }: ScheduleEditDialogProps) {
   const [open, setOpen] = useState(false);
@@ -44,6 +56,8 @@ export function ScheduleEditDialog({
   const [projectLeadMemberId, setProjectLeadMemberId] = useState(
     schedule.projectLeadMemberId ?? "",
   );
+  const [postCreateActions, setPostCreateActions] =
+    useState<PostCreateActions | null>(schedule.postCreateActions ?? null);
 
   function handleOpenChange(newOpen: boolean) {
     if (isSubmitting) return;
@@ -52,6 +66,7 @@ export function ScheduleEditDialog({
       setEndDate(schedule.endDate ?? "");
       setLeadTimeDays(schedule.leadTimeDays);
       setProjectLeadMemberId(schedule.projectLeadMemberId ?? "");
+      setPostCreateActions(schedule.postCreateActions ?? null);
       setError(null);
     }
     setOpen(newOpen);
@@ -67,6 +82,7 @@ export function ScheduleEditDialog({
         nameOverride: nameOverride.trim() || undefined,
         endDate: endDate || undefined,
         projectLeadMemberId: projectLeadMemberId || undefined,
+        postCreateActions,
       };
       const result = await updateScheduleAction(slug, schedule.id, data);
       if (result.success) {
@@ -189,6 +205,13 @@ export function ScheduleEditDialog({
               </select>
             </div>
           )}
+
+          <PostCreateActionsSection
+            documentTemplates={documentTemplates}
+            requestTemplates={requestTemplates}
+            value={postCreateActions}
+            onChange={setPostCreateActions}
+          />
 
           {error && <p className="text-sm text-destructive">{error}</p>}
         </div>

@@ -431,7 +431,7 @@
 | 379 | Frontend: Data Protection Settings Tab + DSAR Page | Frontend | 373–378 | L | 379A, 379B, 379C | **Done** (PRs #778, #779, #780) |
 | 380 | Frontend: Customer Data Protection Actions | Frontend | 374, 375, 379 | M | 380A | **Done** (PR #781) |
 | **Phase 51 — Accounting Practice Management Essentials** | | | | | | See [tasks/phase51-accounting-practice-essentials.md](tasks/phase51-accounting-practice-essentials.md) |
-| 381 | Foundation: V81 Migration, DeadlineTypeRegistry, FilingStatus, Module Registration | Backend | -- | M | 381A, 381B | 381A **Done** (PR #790) |
+| 381 | Foundation: V81 Migration, DeadlineTypeRegistry, FilingStatus, Module Registration | Backend | -- | M | 381A, 381B | **Done** (PRs #790, #791) |
 | 382 | Deadline Calculation Service + Controller | Backend | 381 | M | 382A, 382B | |
 | 383 | Post-Schedule Actions (Engagement Kickoff) | Backend | 381 | M | 383A, 383B | |
 | 384 | Profile Pack Seeders (Rate + Schedule) | Backend | 381 | M | 384A, 384B | |

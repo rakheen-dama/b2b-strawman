@@ -84,6 +84,14 @@ public class OrgSettings {
   @Column(name = "automation_pack_status", columnDefinition = "jsonb")
   private List<Map<String, Object>> automationPackStatus;
 
+  @JdbcTypeCode(SqlTypes.JSON)
+  @Column(name = "rate_pack_status", columnDefinition = "jsonb")
+  private List<Map<String, Object>> ratePackStatus;
+
+  @JdbcTypeCode(SqlTypes.JSON)
+  @Column(name = "schedule_pack_status", columnDefinition = "jsonb")
+  private List<Map<String, Object>> schedulePackStatus;
+
   @Column(name = "default_request_reminder_days")
   private Integer defaultRequestReminderDays;
 
@@ -405,6 +413,64 @@ public class OrgSettings {
       return false;
     }
     return this.automationPackStatus.stream().anyMatch(entry -> packId.equals(entry.get("packId")));
+  }
+
+  public List<Map<String, Object>> getRatePackStatus() {
+    return ratePackStatus;
+  }
+
+  /** Records a rate pack application. Idempotent by design -- does not check for duplicates. */
+  public void recordRatePackApplication(String packId, int version) {
+    if (this.ratePackStatus == null) {
+      this.ratePackStatus = new ArrayList<>();
+    }
+    var entry = new HashMap<String, Object>();
+    entry.put("packId", packId);
+    entry.put("version", version);
+    entry.put("appliedAt", Instant.now().toString());
+    this.ratePackStatus.add(entry);
+    this.updatedAt = Instant.now();
+  }
+
+  /** Returns true if the given rate pack (specific version) has been applied. */
+  public boolean isRatePackApplied(String packId, int version) {
+    if (this.ratePackStatus == null) {
+      return false;
+    }
+    return this.ratePackStatus.stream()
+        .anyMatch(
+            entry ->
+                packId.equals(entry.get("packId"))
+                    && ((Number) entry.get("version")).intValue() == version);
+  }
+
+  public List<Map<String, Object>> getSchedulePackStatus() {
+    return schedulePackStatus;
+  }
+
+  /** Records a schedule pack application. */
+  public void recordSchedulePackApplication(String packId, int version) {
+    if (this.schedulePackStatus == null) {
+      this.schedulePackStatus = new ArrayList<>();
+    }
+    var entry = new HashMap<String, Object>();
+    entry.put("packId", packId);
+    entry.put("version", version);
+    entry.put("appliedAt", Instant.now().toString());
+    this.schedulePackStatus.add(entry);
+    this.updatedAt = Instant.now();
+  }
+
+  /** Returns true if the given schedule pack (specific version) has been applied. */
+  public boolean isSchedulePackApplied(String packId, int version) {
+    if (this.schedulePackStatus == null) {
+      return false;
+    }
+    return this.schedulePackStatus.stream()
+        .anyMatch(
+            entry ->
+                packId.equals(entry.get("packId"))
+                    && ((Number) entry.get("version")).intValue() == version);
   }
 
   public Integer getDefaultRequestReminderDays() {

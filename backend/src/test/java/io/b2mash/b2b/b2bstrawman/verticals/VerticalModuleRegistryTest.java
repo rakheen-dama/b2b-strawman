@@ -18,10 +18,11 @@ class VerticalModuleRegistryTest {
   void getAllModules_returnsThreeModulesWithCorrectIds() {
     var modules = registry.getAllModules();
 
-    assertThat(modules).hasSize(3);
+    assertThat(modules).hasSize(4);
     assertThat(modules)
         .extracting(VerticalModuleRegistry.ModuleDefinition::id)
-        .containsExactlyInAnyOrder("trust_accounting", "court_calendar", "conflict_check");
+        .containsExactlyInAnyOrder(
+            "trust_accounting", "court_calendar", "conflict_check", "regulatory_deadlines");
   }
 
   @Test

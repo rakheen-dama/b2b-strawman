@@ -11,9 +11,15 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.informationrequest.InformationRequestRepository;
+import io.b2mash.b2b.b2bstrawman.informationrequest.RequestTemplate;
+import io.b2mash.b2b.b2bstrawman.informationrequest.RequestTemplateRepository;
+import io.b2mash.b2b.b2bstrawman.informationrequest.TemplateSource;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationRepository;
+import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
+import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.ProjectTemplate;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.ProjectTemplateRepository;
@@ -60,6 +66,9 @@ class RecurringScheduleServiceTest {
   @Autowired private CustomerRepository customerRepository;
   @Autowired private ProjectRepository projectRepository;
   @Autowired private NotificationRepository notificationRepository;
+  @Autowired private InformationRequestRepository informationRequestRepository;
+  @Autowired private RequestTemplateRepository requestTemplateRepository;
+  @Autowired private PortalContactRepository portalContactRepository;
 
   private String tenantSchema;
   private UUID memberId;
@@ -704,6 +713,199 @@ class RecurringScheduleServiceTest {
           transactionTemplate.executeWithoutResult(
               tx -> {
                 // Project was still created
+                var executions =
+                    executionRepository.findByScheduleIdOrderByPeriodStartDesc(
+                        schedule.getId(), PageRequest.of(0, 10));
+                assertThat(executions.getContent()).hasSize(1);
+
+                var updated = scheduleRepository.findById(schedule.getId()).orElseThrow();
+                assertThat(updated.getExecutionCount()).isEqualTo(1);
+              });
+        });
+  }
+
+  // --- Happy-Path Integration Tests (Review Fix: prove the feature works) ---
+
+  @Test
+  void executeSingleSchedule_withSendInfoRequestAction_createsInformationRequest() {
+    var cid = createUniquePostCreateCustomer("info-happy");
+    runInTenant(
+        () -> {
+          // Set up: create a RequestTemplate with a known packId and a PortalContact
+          var reqTemplateId = new UUID[1];
+          var portalContactId = new UUID[1];
+          transactionTemplate.executeWithoutResult(
+              tx -> {
+                var rt =
+                    new RequestTemplate(
+                        "Happy Path Template", "For testing", TemplateSource.CUSTOM);
+                rt.setPackId("happy-path-pack-383a");
+                rt = requestTemplateRepository.saveAndFlush(rt);
+                reqTemplateId[0] = rt.getId();
+
+                var pc =
+                    new PortalContact(
+                        ORG_ID,
+                        cid,
+                        "happy-contact@test.com",
+                        "Happy Contact",
+                        PortalContact.ContactRole.PRIMARY);
+                pc = portalContactRepository.saveAndFlush(pc);
+                portalContactId[0] = pc.getId();
+              });
+
+          var schedule =
+              transactionTemplate.execute(
+                  tx -> {
+                    var s =
+                        new RecurringSchedule(
+                            templateId,
+                            cid,
+                            null,
+                            "MONTHLY",
+                            LocalDate.now(),
+                            null,
+                            0,
+                            memberId,
+                            memberId);
+                    s.setNextExecutionDate(LocalDate.now());
+                    s.setPostCreateActions(
+                        Map.of(
+                            "sendInfoRequest",
+                            Map.of("requestTemplateSlug", "happy-path-pack-383a", "dueDays", 14)));
+                    return scheduleRepository.saveAndFlush(s);
+                  });
+
+          boolean result = scheduleService.executeSingleSchedule(schedule);
+          assertThat(result).isTrue();
+
+          transactionTemplate.executeWithoutResult(
+              tx -> {
+                // Verify project was created
+                var executions =
+                    executionRepository.findByScheduleIdOrderByPeriodStartDesc(
+                        schedule.getId(), PageRequest.of(0, 10));
+                assertThat(executions.getContent()).hasSize(1);
+                var projectId = executions.getContent().getFirst().getProjectId();
+                assertThat(projectId).isNotNull();
+
+                // Verify information request was created for the customer
+                var infoRequests = informationRequestRepository.findByCustomerId(cid);
+                assertThat(infoRequests).isNotEmpty();
+                var infoRequest = infoRequests.getFirst();
+                assertThat(infoRequest.getCustomerId()).isEqualTo(cid);
+                assertThat(infoRequest.getProjectId()).isEqualTo(projectId);
+                assertThat(infoRequest.getRequestTemplateId()).isEqualTo(reqTemplateId[0]);
+                assertThat(infoRequest.getPortalContactId()).isEqualTo(portalContactId[0]);
+                // Verify reminderIntervalDays is the default (7), not dueDays (14)
+                assertThat(infoRequest.getReminderIntervalDays()).isEqualTo(7);
+              });
+        });
+  }
+
+  @Test
+  void executeSingleSchedule_withBothActions_infoRequestSucceedsDocGenerationFailsGracefully() {
+    var cid = createUniquePostCreateCustomer("both-happy");
+    runInTenant(
+        () -> {
+          // Set up: create a RequestTemplate + PortalContact for the info request action
+          transactionTemplate.executeWithoutResult(
+              tx -> {
+                var rt =
+                    new RequestTemplate(
+                        "Both Actions Template", "For testing both actions", TemplateSource.CUSTOM);
+                rt.setPackId("both-actions-pack-383a");
+                requestTemplateRepository.saveAndFlush(rt);
+
+                var pc =
+                    new PortalContact(
+                        ORG_ID,
+                        cid,
+                        "both-contact@test.com",
+                        "Both Contact",
+                        PortalContact.ContactRole.PRIMARY);
+                portalContactRepository.saveAndFlush(pc);
+              });
+
+          var schedule =
+              transactionTemplate.execute(
+                  tx -> {
+                    var s =
+                        new RecurringSchedule(
+                            templateId,
+                            cid,
+                            null,
+                            "MONTHLY",
+                            LocalDate.now(),
+                            null,
+                            0,
+                            memberId,
+                            memberId);
+                    s.setNextExecutionDate(LocalDate.now());
+                    s.setPostCreateActions(
+                        Map.of(
+                            "generateDocument",
+                            Map.of("templateSlug", "non-existent-doc-both-383a"),
+                            "sendInfoRequest",
+                            Map.of("requestTemplateSlug", "both-actions-pack-383a", "dueDays", 7)));
+                    return scheduleRepository.saveAndFlush(s);
+                  });
+
+          boolean result = scheduleService.executeSingleSchedule(schedule);
+          assertThat(result).isTrue();
+
+          transactionTemplate.executeWithoutResult(
+              tx -> {
+                // Project was created despite doc generation failure
+                var executions =
+                    executionRepository.findByScheduleIdOrderByPeriodStartDesc(
+                        schedule.getId(), PageRequest.of(0, 10));
+                assertThat(executions.getContent()).hasSize(1);
+                var projectId = executions.getContent().getFirst().getProjectId();
+                assertThat(projectId).isNotNull();
+
+                // Info request was still created (independent of doc generation failure)
+                var infoRequests = informationRequestRepository.findByCustomerId(cid);
+                assertThat(infoRequests).isNotEmpty();
+                assertThat(infoRequests.getFirst().getProjectId()).isEqualTo(projectId);
+              });
+        });
+  }
+
+  @Test
+  void executeSingleSchedule_withInvalidJsonbConfig_skipsActionGracefully() {
+    var cid = createUniquePostCreateCustomer("invalid-jsonb");
+    runInTenant(
+        () -> {
+          var schedule =
+              transactionTemplate.execute(
+                  tx -> {
+                    var s =
+                        new RecurringSchedule(
+                            templateId,
+                            cid,
+                            null,
+                            "MONTHLY",
+                            LocalDate.now(),
+                            null,
+                            0,
+                            memberId,
+                            memberId);
+                    s.setNextExecutionDate(LocalDate.now());
+                    // Missing required keys in the JSONB config
+                    s.setPostCreateActions(
+                        Map.of(
+                            "generateDocument", Map.of("wrongKey", "value"),
+                            "sendInfoRequest", Map.of("wrongKey", "value")));
+                    return scheduleRepository.saveAndFlush(s);
+                  });
+
+          // Should still succeed — invalid config is skipped with a warning, not an exception
+          boolean result = scheduleService.executeSingleSchedule(schedule);
+          assertThat(result).isTrue();
+
+          transactionTemplate.executeWithoutResult(
+              tx -> {
                 var executions =
                     executionRepository.findByScheduleIdOrderByPeriodStartDesc(
                         schedule.getId(), PageRequest.of(0, 10));

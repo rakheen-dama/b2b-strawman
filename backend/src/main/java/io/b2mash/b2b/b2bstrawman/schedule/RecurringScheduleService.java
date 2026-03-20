@@ -578,15 +578,31 @@ public class RecurringScheduleService {
     // 1. Generate document
     if (actions.containsKey("generateDocument")) {
       try {
-        @SuppressWarnings("unchecked")
-        var docConfig = (Map<String, Object>) actions.get("generateDocument");
-        String templateSlug = (String) docConfig.get("templateSlug");
-        generatedDocumentService.generateForProject(
-            project.getId(), templateSlug, schedule.getCreatedBy());
-        log.info(
-            "Post-create: generated document from template '{}' for project {}",
-            templateSlug,
-            project.getId());
+        var rawDocConfig = actions.get("generateDocument");
+        if (!(rawDocConfig instanceof Map<?, ?>)) {
+          log.warn(
+              "Post-create: generateDocument config is not a Map for schedule {}, skipping",
+              schedule.getId());
+        } else {
+          @SuppressWarnings("unchecked")
+          var docConfig = (Map<String, Object>) rawDocConfig;
+          var templateSlugObj = docConfig.get("templateSlug");
+          if (templateSlugObj == null
+              || !(templateSlugObj instanceof String templateSlug)
+              || templateSlug.isBlank()) {
+            log.warn(
+                "Post-create: generateDocument missing or blank 'templateSlug' for schedule {},"
+                    + " skipping",
+                schedule.getId());
+          } else {
+            generatedDocumentService.generateForProject(
+                project.getId(), templateSlug, schedule.getCreatedBy());
+            log.info(
+                "Post-create: generated document from template '{}' for project {}",
+                templateSlug,
+                project.getId());
+          }
+        }
       } catch (Exception e) {
         log.error(
             "Post-create document generation failed for schedule {}: {}",
@@ -600,16 +616,37 @@ public class RecurringScheduleService {
     // 2. Send information request
     if (actions.containsKey("sendInfoRequest")) {
       try {
-        @SuppressWarnings("unchecked")
-        var reqConfig = (Map<String, Object>) actions.get("sendInfoRequest");
-        String requestTemplateSlug = (String) reqConfig.get("requestTemplateSlug");
-        int dueDays = ((Number) reqConfig.get("dueDays")).intValue();
-        informationRequestService.createFromTemplateSlug(
-            requestTemplateSlug, customer.getId(), project.getId(), dueDays);
-        log.info(
-            "Post-create: sent info request from template '{}' for customer {}",
-            requestTemplateSlug,
-            customer.getId());
+        var rawReqConfig = actions.get("sendInfoRequest");
+        if (!(rawReqConfig instanceof Map<?, ?>)) {
+          log.warn(
+              "Post-create: sendInfoRequest config is not a Map for schedule {}, skipping",
+              schedule.getId());
+        } else {
+          @SuppressWarnings("unchecked")
+          var reqConfig = (Map<String, Object>) rawReqConfig;
+          var requestTemplateSlugObj = reqConfig.get("requestTemplateSlug");
+          if (requestTemplateSlugObj == null
+              || !(requestTemplateSlugObj instanceof String requestTemplateSlug)
+              || requestTemplateSlug.isBlank()) {
+            log.warn(
+                "Post-create: sendInfoRequest missing or blank 'requestTemplateSlug' for schedule"
+                    + " {}, skipping",
+                schedule.getId());
+          } else {
+            var dueDaysObj = reqConfig.get("dueDays");
+            int dueDays = (dueDaysObj instanceof Number n) ? n.intValue() : 14;
+            informationRequestService.createFromTemplateSlug(
+                requestTemplateSlug,
+                customer.getId(),
+                project.getId(),
+                dueDays,
+                schedule.getCreatedBy());
+            log.info(
+                "Post-create: sent info request from template '{}' for customer {}",
+                requestTemplateSlug,
+                customer.getId());
+          }
+        }
       } catch (Exception e) {
         log.error(
             "Post-create info request failed for schedule {}: {}",

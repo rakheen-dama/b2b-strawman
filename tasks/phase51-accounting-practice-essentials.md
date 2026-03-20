@@ -32,7 +32,7 @@ The next Flyway tenant migration is **V81** (V80 is taken by `V80__add_complianc
 | 383 | Post-Schedule Actions (Engagement Kickoff) | Backend | 381 (migration only) | M | 383A, 383B | **Done** (PRs #794, #795) |
 | 384 | Profile Pack Seeders (Rate + Schedule) | Backend | 381 (migration only) | M | 384A, 384B | **Done** (PRs #796, #797) |
 | 385 | Frontend: Deadline Calendar Page | Frontend | 382 | L | 385A, 385B | **Done** (PRs #798, #799) |
-| 386 | Frontend: Schedule Actions UI + Seeding Feedback + Dashboard Widget | Frontend | 383, 384, 385 | M | 386A, 386B | |
+| 386 | Frontend: Schedule Actions UI + Seeding Feedback + Dashboard Widget | Frontend | 383, 384, 385 | M | 386A, 386B | **Done** (PRs #800, #801) |
 
 ---
 
@@ -140,7 +140,7 @@ FRONTEND (requires backend epics 381-384)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 4a (parallel) | 386 | 386A | `PostCreateActionsSection` component (toggles + template selector dropdowns + due days input), integrate into schedule create/edit dialogs, seeding feedback toast after profile switch. Frontend tests (~4). Frontend only. | **Done** (PR #800) |
-| 4b (parallel) | 386 | 386B | `DeadlineWidget` dashboard component (compact "Upcoming deadlines this month"), module-gated rendering on dashboard page. Frontend tests (~3). Frontend only. | |
+| 4b (parallel) | 386 | 386B | `DeadlineWidget` dashboard component (compact "Upcoming deadlines this month"), module-gated rendering on dashboard page. Frontend tests (~3). Frontend only. | **Done** (PR #801) |
 
 ---
 
@@ -418,7 +418,7 @@ FRONTEND (requires backend epics 381-384)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **386A** | 386.1--386.5 | `PostCreateActionsSection` component (toggle + document template selector + info request template selector + due days input), integrate into schedule create/edit dialogs, seeding feedback toast/banner after profile switch showing "Seeded: 4 rate card tiers, 2 schedule templates (inactive)". Frontend tests (~4). Frontend only. | **Done** (PR #800) |
-| **386B** | 386.6--386.9 | `DeadlineWidget` dashboard component showing "Upcoming deadlines this month" as a compact card. Module-gated -- hidden when `regulatory_deadlines` is not enabled. Integrate into dashboard page. Frontend tests (~3). Frontend only. | |
+| **386B** | 386.6--386.9 | `DeadlineWidget` dashboard component showing "Upcoming deadlines this month" as a compact card. Module-gated -- hidden when `regulatory_deadlines` is not enabled. Integrate into dashboard page. Frontend tests (~3). Frontend only. | **Done** (PR #801) |
 
 ### Tasks
 

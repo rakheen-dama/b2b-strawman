@@ -436,7 +436,7 @@
 | 383 | Post-Schedule Actions (Engagement Kickoff) | Backend | 381 | M | 383A, 383B | **Done** (PRs #794, #795) |
 | 384 | Profile Pack Seeders (Rate + Schedule) | Backend | 381 | M | 384A, 384B | **Done** (PRs #796, #797) |
 | 385 | Frontend: Deadline Calendar Page | Frontend | 382 | L | 385A, 385B | **Done** (PRs #798, #799) |
-| 386 | Frontend: Schedule Actions UI + Seeding Feedback + Dashboard Widget | Frontend | 383, 384, 385 | M | 386A, 386B | 386A **Done** (PR #800) |
+| 386 | Frontend: Schedule Actions UI + Seeding Feedback + Dashboard Widget | Frontend | 383, 384, 385 | M | 386A, 386B | **Done** (PRs #800, #801) |
 
 ---
 

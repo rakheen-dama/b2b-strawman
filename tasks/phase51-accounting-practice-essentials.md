@@ -28,7 +28,7 @@ The next Flyway tenant migration is **V81** (V80 is taken by `V80__add_complianc
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 381 | Foundation: V81 Migration, DeadlineTypeRegistry, FilingStatus Entity, Module Registration | Backend | -- | M | 381A, 381B | **Done** (PRs #790, #791) |
-| 382 | Deadline Calculation Service + Controller | Backend | 381 | M | 382A, 382B | |
+| 382 | Deadline Calculation Service + Controller | Backend | 381 | M | 382A, 382B | **Done** (PRs #792, #793) |
 | 383 | Post-Schedule Actions (Engagement Kickoff) | Backend | 381 (migration only) | M | 383A, 383B | |
 | 384 | Profile Pack Seeders (Rate + Schedule) | Backend | 381 (migration only) | M | 384A, 384B | |
 | 385 | Frontend: Deadline Calendar Page | Frontend | 382 | L | 385A, 385B | |
@@ -124,7 +124,7 @@ FRONTEND (requires backend epics 381-384)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 2a (parallel) | 382 | 382B | `DeadlineController` with 5 endpoints (GET deadlines, GET summary, GET customer deadlines, PUT filing-status, GET filing-statuses), `VerticalModuleGuard.requireModule("regulatory_deadlines")` integration, authorization checks. Integration tests (~6). Backend only. | |
+| 2a (parallel) | 382 | 382B | `DeadlineController` with 5 endpoints (GET deadlines, GET summary, GET customer deadlines, PUT filing-status, GET filing-statuses), `VerticalModuleGuard.requireModule("regulatory_deadlines")` integration, authorization checks. Integration tests (~6). Backend only. | **Done** (PR #793) |
 | 2b (parallel) | 383 | 383B | Extend `CreateScheduleRequest`, `UpdateScheduleRequest`, `ScheduleResponse` DTOs with `postCreateActions` field, verify `RecurringScheduleController` passes the field through. Integration tests (~4). Backend only. | |
 | 2c (parallel) | 384 | 384B | Integrate `RatePackSeeder` + `SchedulePackSeeder` into `TenantProvisioningService` and `PackReconciliationRunner`, integrate with `VerticalProfileService.switchProfile()`. Integration tests (~4). Backend only. | |
 
@@ -214,7 +214,7 @@ FRONTEND (requires backend epics 381-384)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **382A** | 382.1--382.6 | `DeadlineCalculationService` with `calculateDeadlines(from, to, filters)`, `calculateDeadlinesForCustomer(customerId, from, to)`, `calculateSummary(from, to, filters)`. Loads active customers with FYE, applies calculation/applicability rules, batch-loads filing statuses for overlay, cross-references linked projects. Records: `CalculatedDeadline`, `DeadlineFilters`, `DeadlineSummary`. Integration tests (~7). Backend only. | **Done** (PR #792) |
-| **382B** | 382.7--382.13 | `DeadlineController` with 5 endpoints: GET `/api/deadlines`, GET `/api/deadlines/summary`, GET `/api/customers/{id}/deadlines`, PUT `/api/deadlines/filing-status`, GET `/api/filing-statuses`. Module guard via `VerticalModuleGuard.requireModule("regulatory_deadlines")`. Authorization: MEMBER+ for reads, ADMIN+ for filing status writes. Integration tests (~6). Backend only. | |
+| **382B** | 382.7--382.13 | `DeadlineController` with 5 endpoints: GET `/api/deadlines`, GET `/api/deadlines/summary`, GET `/api/customers/{id}/deadlines`, PUT `/api/deadlines/filing-status`, GET `/api/filing-statuses`. Module guard via `VerticalModuleGuard.requireModule("regulatory_deadlines")`. Authorization: MEMBER+ for reads, ADMIN+ for filing status writes. Integration tests (~6). Backend only. | **Done** (PR #793) |
 
 ### Tasks
 

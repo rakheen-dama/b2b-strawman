@@ -2,8 +2,8 @@
 
 ## Current State
 
-- **QA Position**: ALL_DAYS_COMPLETE — Full coverage achieved. Both bugs VERIFIED. All 12 previously NOT_TESTED items resolved in Cycle 5 via Mailpit/API portal auth flow. 88 PASS, 1 FAIL (WONT_FIX, CUST-01 #4 search), 1 PARTIAL (PORTAL-02 #3 portal invoice page not implemented). 0 NOT_TESTED.
-- **Cycle**: 5
+- **QA Position**: CYCLE_6_COMPLETE — Portal gap verification done. 5 PASS, 3 PARTIAL (read model not synced), 1 FAIL (branding URL param). Regression suite: 88 PASS, 1 FAIL (WONT_FIX), 1 PARTIAL. 0 NOT_TESTED.
+- **Cycle**: 6
 - **E2E Stack**: READY — No-cache rebuild of both frontend AND backend completed for portal gap fixes (GAP-PORTAL-01 through 09, commit c331c388). All 6/6 services healthy.
 - **Branch**: `bugfix_cycle_regression_2026-03-19`
 - **Scenario**: `qa/testplan/regression-test-suite.md`
@@ -16,15 +16,15 @@
 | BUG-REG-001 | Settings > Rates & Currency 500 for all users | HIGH | VERIFIED | QA | #782, #785 | AUTH-01, SET-02 | Attempt 1 (PR #782): fixed members array null guard — wrong root cause. Attempt 2 (PR #785): fixed actual root cause — `AvatarCircle` component `name.length` crash when `member.name=null`. Added `name ?? ""` null-coalescing guard inside AvatarCircle. Verified Cycle 4: Alice (Owner) and Bob (Admin) both load rates page without error. |
 | BUG-REG-002 | Carol (Member) gets 500 on role-gated pages | HIGH | VERIFIED | QA | #783 | AUTH-01 | All 4 pages (profitability, reports, customers, settings/roles) show "You don't have access to [Page]" with PermissionDenied component. No 500 errors. |
 | BUG-REG-003 | Customer list has no free-text search input | LOW | WONT_FIX | Dev | — | CUST-01 | Missing feature, not a regression. Customer search was never implemented (no backend search endpoint, no frontend input). Out of scope for bugfix cycle. Spec written for future reference: `fix-specs/BUG-REG-003.md`. |
-| GAP-PORTAL-01 | Proposal workflow — 4 backend endpoints, 0 frontend | HIGH | DEPLOYED | Dev | c331c388 | PORTAL | Frontend pages built. Rebuilt E2E stack. Awaiting QA verification. |
-| GAP-PORTAL-02 | Project comments — 2 backend endpoints, 0 frontend | HIGH | DEPLOYED | Dev | c331c388 | PORTAL | Frontend pages built. Rebuilt E2E stack. Awaiting QA verification. |
-| GAP-PORTAL-03 | Project tasks — 1 backend endpoint, 0 frontend | MEDIUM | DEPLOYED | Dev | c331c388 | PORTAL | Frontend pages built. Rebuilt E2E stack. Awaiting QA verification. |
-| GAP-PORTAL-04 | Project summary/time tracking — 1 backend endpoint, 0 frontend | MEDIUM | DEPLOYED | Dev | c331c388 | PORTAL | Frontend pages built. Rebuilt E2E stack. Awaiting QA verification. |
-| GAP-PORTAL-05 | Pending acceptance requests list — 1 backend endpoint, 0 frontend | MEDIUM | DEPLOYED | Dev | c331c388 | PORTAL | Frontend pages built. Rebuilt E2E stack. Awaiting QA verification. |
-| GAP-PORTAL-06 | Portal profile page — 1 backend endpoint, 0 frontend | LOW | DEPLOYED | Dev | c331c388 | PORTAL | Frontend pages built. Rebuilt E2E stack. Awaiting QA verification. |
-| GAP-PORTAL-07 | Org branding on portal login page — 1 backend endpoint, 0 frontend | LOW | DEPLOYED | Dev | c331c388 | PORTAL | Frontend pages built. Rebuilt E2E stack. Awaiting QA verification. |
-| GAP-PORTAL-08 | PortalProject frontend type missing fields | LOW | DEPLOYED | Dev | c331c388 | PORTAL | Types updated, detail endpoint used. Rebuilt E2E stack. Awaiting QA verification. |
-| GAP-PORTAL-09 | PortalDocument missing project context | LOW | DEPLOYED | Dev | c331c388 | PORTAL | Backend returns projectId/projectName. Rebuilt E2E stack. Awaiting QA verification. |
+| GAP-PORTAL-01 | Proposal workflow — 4 backend endpoints, 0 frontend | HIGH | VERIFIED | QA | c331c388 | PORTAL | Proposals list + detail page functional. Accept returns 409 (correct business rule). Decline button present. 0 console errors. |
+| GAP-PORTAL-02 | Project comments — 2 backend endpoints, 0 frontend | HIGH | REOPENED | QA | c331c388 | PORTAL | Frontend code complete (PortalCommentSection with list+post). BLOCKED: portal read model empty — project detail returns 404. Needs portal resync or seed fix. |
+| GAP-PORTAL-03 | Project tasks — 1 backend endpoint, 0 frontend | MEDIUM | REOPENED | QA | c331c388 | PORTAL | Frontend code complete (PortalTaskList component). BLOCKED: portal read model empty — tasks endpoint returns 404. Needs portal resync or seed fix. |
+| GAP-PORTAL-04 | Project summary/time tracking — 1 backend endpoint, 0 frontend | MEDIUM | REOPENED | QA | c331c388 | PORTAL | Frontend code complete (3 summary cards). BLOCKED: portal read model empty — summary endpoint returns 404. Needs portal resync or seed fix. |
+| GAP-PORTAL-05 | Pending acceptance requests list — 1 backend endpoint, 0 frontend | MEDIUM | VERIFIED | QA | c331c388 | PORTAL | Acceptances page loads. Empty state: "No pending acceptances". API returns []. 0 console errors. |
+| GAP-PORTAL-06 | Portal profile page — 1 backend endpoint, 0 frontend | LOW | VERIFIED | QA | c331c388 | PORTAL | Profile shows email, customer name, display name, role. All fields correct. 0 console errors. |
+| GAP-PORTAL-07 | Org branding on portal login page — 1 backend endpoint, 0 frontend | LOW | REOPENED | QA | c331c388 | PORTAL | Branding API works. Branding applied after magic link request (org name, brand color stripe, button color). BUT: `?orgId` URL param not consumed — org field not pre-populated, branding not auto-fetched on page load. Missing `useSearchParams` initialization. |
+| GAP-PORTAL-08 | PortalProject frontend type missing fields | LOW | VERIFIED | QA | c331c388 | PORTAL | Type updated: status?, commentCount?, createdAt. Detail uses dedicated endpoint. List returns createdAt. Code renders all fields correctly. |
+| GAP-PORTAL-09 | PortalDocument missing project context | LOW | VERIFIED | QA | c331c388 | PORTAL | Backend PortalDocumentResponse includes projectId+projectName. Frontend type updated. Document table renders Project column with showProject prop. |
 
 ## Results Summary
 
@@ -184,3 +184,13 @@
 | 2026-03-20T22:43Z | QA | CUST-02 #3 upgraded PARTIAL -> PASS: Uploaded document via S3 presigned URL (upload-init -> PUT S3 -> confirm). Completed 4th checklist item "Upload signed engagement letter" with documentId. Checklist status=COMPLETED. Customer auto-transitioned ONBOARDING -> ACTIVE. |
 | 2026-03-20T22:45Z | QA | ALL_DAYS_COMPLETE with full coverage. 88 PASS, 1 FAIL (WONT_FIX), 1 PARTIAL, 0 NOT_TESTED. Cycle set to 5. Results written to `qa_cycle/checkpoint-results/regression-cycle5-remaining.md`. |
 | 2026-03-20T23:00Z | Infra | Full no-cache rebuild of both frontend AND backend for portal gap fixes (GAP-PORTAL-01 through 09, commit c331c388). Stopped+removed old containers, built with `--no-cache`, restarted. All 6/6 services healthy. Smoke tests: HTTP 200 on localhost:3001 (frontend) and localhost:8081/actuator/health (backend). Database reseeded. Stack status -> READY for portal gap verification. |
+| 2026-03-20T23:15Z | QA | Cycle 6 started. Portal gap verification. Authenticated as Kgosi portal contact (thabo@kgosiconstruction.co.za) via magic link flow. |
+| 2026-03-20T23:16Z | QA | Discovered portal read model (`portal.*` schema) is empty. All portal_projects, portal_documents, portal_comments, portal_tasks, portal_project_summaries tables have 0 rows. Portal resync endpoint returns 401 (API key auth issue). Root cause: DB reseeded but portal read model never re-synced. |
+| 2026-03-20T23:20Z | QA | GAP-PORTAL-01 VERIFIED. Proposals list shows PROP-0001 (Retainer, R5,500, Pending). Detail page shows full info + Accept/Decline buttons. Accept returns 409 (correct business rule). 0 console errors. |
+| 2026-03-20T23:22Z | QA | GAP-PORTAL-02/03/04 REOPENED. Frontend code complete (comments section, task list, summary cards all implemented). BLOCKED by empty portal read model — project detail/comments/tasks/summary endpoints return 404 "No project found". Project list works (uses PortalQueryService, not read model). |
+| 2026-03-20T23:24Z | QA | GAP-PORTAL-05 VERIFIED. Acceptances page loads with "No pending acceptances" empty state. API returns []. 0 console errors. |
+| 2026-03-20T23:25Z | QA | GAP-PORTAL-06 VERIFIED. Profile page shows email (thabo@kgosiconstruction.co.za), customer (Kgosi Construction), role (primary). 0 console errors. |
+| 2026-03-20T23:27Z | QA | GAP-PORTAL-07 REOPENED. Branding API works (returns orgName, brandColor #1B5E20). Branding applied AFTER magic link request (heading changes, brand color stripe, button styled). BUT `?orgId=e2e-test-org` URL param not consumed — orgSlug state initialized to empty, useSearchParams not used. |
+| 2026-03-20T23:28Z | QA | GAP-PORTAL-08 VERIFIED. PortalProject type has status?, commentCount?, createdAt. Detail endpoint uses /portal/projects/{id} (not searching list). Code renders status badge, createdAt date, commentCount in tab. |
+| 2026-03-20T23:29Z | QA | GAP-PORTAL-09 VERIFIED. Backend PortalDocumentResponse has projectId+projectName. Frontend type updated. Documents page passes showProject to table. Project column renders doc.projectName. |
+| 2026-03-20T23:30Z | QA | Cycle 6 complete. 5 VERIFIED (01, 05, 06, 08, 09), 3 REOPENED (02, 03, 04 — read model sync), 1 REOPENED (07 — URL param). Results written to `qa_cycle/checkpoint-results/regression-cycle6-portal-gaps.md`. |

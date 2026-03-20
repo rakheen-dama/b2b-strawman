@@ -1,0 +1,26 @@
+{
+  "packId": "schedule-pack-accounting-za",
+  "verticalProfile": "accounting-za",
+  "version": 1,
+  "schedules": [
+    {
+      "name": "Annual Tax Return",
+      "projectTemplateName": "Annual Tax Return",
+      "recurrence": "ANNUALLY",
+      "description": "Annual income tax return preparation and submission",
+      "postCreateActions": {
+        "generateDocument": {
+          "templateSlug": "engagement-letter-tax-return",
+          "autoSend": false
+        }
+      }
+    },
+    {
+      "name": "Monthly Bookkeeping",
+      "projectTemplateName": "Monthly Bookkeeping",
+      "recurrence": "MONTHLY",
+      "description": "Monthly bookkeeping and management accounts",
+      "postCreateActions": null
+    }
+  ]
+}

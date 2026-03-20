@@ -19,7 +19,7 @@ public class BillingRate {
   @GeneratedValue(strategy = GenerationType.UUID)
   private UUID id;
 
-  @Column(name = "member_id", nullable = false)
+  @Column(name = "member_id")
   private UUID memberId;
 
   @Column(name = "project_id")

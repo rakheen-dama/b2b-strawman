@@ -24,7 +24,7 @@ public class RecurringSchedule {
   @Column(name = "template_id", nullable = false)
   private UUID templateId;
 
-  @Column(name = "customer_id", nullable = false)
+  @Column(name = "customer_id")
   private UUID customerId;
 
   @Column(name = "name_override", length = 300)

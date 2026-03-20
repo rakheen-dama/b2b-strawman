@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, usePathname } from "next/navigation";
-import { LogOut, FolderOpen, FileText, Inbox } from "lucide-react";
+import { LogOut, FolderOpen, FileText, Inbox, ClipboardCheck, FileSignature, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { clearPortalAuth, getPortalCustomerName } from "@/lib/portal-api";
 import { cn } from "@/lib/utils";
@@ -9,8 +9,11 @@ import Link from "next/link";
 
 const NAV_ITEMS = [
   { label: "Projects", href: "/portal/projects", icon: FolderOpen },
+  { label: "Proposals", href: "/portal/proposals", icon: FileSignature },
   { label: "Requests", href: "/portal/requests", icon: Inbox },
+  { label: "Acceptances", href: "/portal/acceptances", icon: ClipboardCheck },
   { label: "Documents", href: "/portal/documents", icon: FileText },
+  { label: "Profile", href: "/portal/profile", icon: User },
 ];
 
 export function PortalHeader() {

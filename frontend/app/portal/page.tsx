@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Mail, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,13 @@ import type { MagicLinkResponse, PortalAuthResponse } from "@/lib/types";
 
 type LoginStep = "email" | "sent" | "token";
 
+interface BrandingData {
+  orgName: string | null;
+  logoUrl: string | null;
+  brandColor: string | null;
+  footerText: string | null;
+}
+
 export default function PortalLoginPage() {
   const router = useRouter();
   const [step, setStep] = useState<LoginStep>("email");
@@ -24,6 +31,45 @@ export default function PortalLoginPage() {
   const [token, setToken] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [branding, setBranding] = useState<BrandingData | null>(null);
+  const [brandingLoading, setBrandingLoading] = useState(false);
+  const lastFetchedOrg = useRef<string>("");
+
+  const fetchBranding = useCallback(async (orgId: string) => {
+    if (!orgId.trim() || orgId.trim() === lastFetchedOrg.current) return;
+    const trimmed = orgId.trim();
+    lastFetchedOrg.current = trimmed;
+    setBrandingLoading(true);
+
+    try {
+      const backendUrl =
+        process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
+      const response = await fetch(
+        `${backendUrl}/portal/branding?orgId=${encodeURIComponent(trimmed)}`,
+      );
+      if (response.ok) {
+        const data: BrandingData = await response.json();
+        setBranding(data);
+      } else {
+        // Org not found or error — clear branding, fall back to generic
+        setBranding(null);
+      }
+    } catch {
+      // Network error — non-fatal, fall back to generic
+      setBranding(null);
+    } finally {
+      setBrandingLoading(false);
+    }
+  }, []);
+
+  // Re-fetch branding when orgSlug changes (debounced via onBlur) or on initial mount
+  // if orgSlug was pre-populated
+  useEffect(() => {
+    if (orgSlug.trim() && lastFetchedOrg.current !== orgSlug.trim()) {
+      const timer = setTimeout(() => fetchBranding(orgSlug), 500);
+      return () => clearTimeout(timer);
+    }
+  }, [orgSlug, fetchBranding]);
 
   const handleRequestLink = (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,10 +132,22 @@ export default function PortalLoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-950">
       <div className="w-full max-w-md space-y-8 px-6">
-        {/* Header */}
+        {/* Header with branding */}
         <div className="text-center">
+          {brandingLoading && (
+            <div className="mx-auto mb-4 h-12 w-32 animate-pulse rounded bg-slate-200 dark:bg-slate-700" />
+          )}
+          {!brandingLoading && branding?.logoUrl && (
+            <img
+              src={branding.logoUrl}
+              alt={branding.orgName ?? "Organization logo"}
+              className="mx-auto mb-4 h-12"
+            />
+          )}
           <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-            DocTeams Portal
+            {branding?.orgName
+              ? `${branding.orgName} Portal`
+              : "DocTeams Portal"}
           </h1>
           <p className="mt-2 text-slate-600 dark:text-slate-400">
             Access your shared documents and projects
@@ -97,7 +155,15 @@ export default function PortalLoginPage() {
         </div>
 
         {/* Login Card */}
-        <div className="rounded-xl border border-slate-200 bg-white p-8 dark:border-slate-800 dark:bg-slate-900">
+        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+          {/* Brand color stripe */}
+          {branding?.brandColor && (
+            <div
+              className="h-1"
+              style={{ backgroundColor: branding.brandColor }}
+            />
+          )}
+          <div className="p-8">
           {step === "email" && (
             <form onSubmit={handleRequestLink} className="space-y-4">
               <div className="space-y-2">
@@ -141,7 +207,20 @@ export default function PortalLoginPage() {
                 </div>
               )}
 
-              <Button type="submit" className="w-full" disabled={isPending}>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={isPending}
+                style={
+                  branding?.brandColor
+                    ? {
+                        backgroundColor: branding.brandColor,
+                        borderColor: branding.brandColor,
+                      }
+                    : undefined
+                }
+                variant={branding?.brandColor ? "default" : "accent"}
+              >
                 {isPending ? (
                   <Loader2 className="size-4 animate-spin" />
                 ) : (
@@ -213,6 +292,15 @@ export default function PortalLoginPage() {
                 type="submit"
                 className="w-full"
                 disabled={isPending || !token.trim()}
+                style={
+                  branding?.brandColor
+                    ? {
+                        backgroundColor: branding.brandColor,
+                        borderColor: branding.brandColor,
+                      }
+                    : undefined
+                }
+                variant={branding?.brandColor ? "default" : "accent"}
               >
                 {isPending ? (
                   <Loader2 className="size-4 animate-spin" />
@@ -260,7 +348,20 @@ export default function PortalLoginPage() {
                 </div>
               )}
 
-              <Button type="submit" className="w-full" disabled={isPending}>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={isPending}
+                style={
+                  branding?.brandColor
+                    ? {
+                        backgroundColor: branding.brandColor,
+                        borderColor: branding.brandColor,
+                      }
+                    : undefined
+                }
+                variant={branding?.brandColor ? "default" : "accent"}
+              >
                 {isPending ? (
                   <Loader2 className="size-4 animate-spin" />
                 ) : null}
@@ -280,7 +381,15 @@ export default function PortalLoginPage() {
               </button>
             </form>
           )}
+          </div>
         </div>
+
+        {/* Footer text from branding */}
+        {branding?.footerText && (
+          <p className="text-center text-xs text-slate-500 dark:text-slate-400">
+            {branding.footerText}
+          </p>
+        )}
       </div>
     </div>
   );

@@ -336,6 +336,12 @@ public class RecurringScheduleService {
           "Schedule must be PAUSED to resume. Current status: " + schedule.getStatus());
     }
 
+    if (schedule.getCustomerId() == null) {
+      throw new InvalidStateException(
+          "Customer required",
+          "A customer must be assigned to the schedule before it can be resumed.");
+    }
+
     schedule.setStatus("ACTIVE");
     periodCalculator.recalculateNextExecutionOnResume(schedule);
     schedule = scheduleRepository.save(schedule);

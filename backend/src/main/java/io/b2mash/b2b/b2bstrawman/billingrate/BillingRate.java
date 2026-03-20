@@ -80,7 +80,8 @@ public class BillingRate {
    * Returns the scope level of this billing rate based on which optional fields are set.
    *
    * @return "PROJECT_OVERRIDE" if projectId is set, "CUSTOMER_OVERRIDE" if customerId is set,
-   *     "MEMBER_DEFAULT" otherwise
+   *     "MEMBER_DEFAULT" if memberId is set, "ORG_DEFAULT" if no scoping fields are set (seeded
+   *     rates)
    */
   public String getScope() {
     if (projectId != null) {
@@ -89,7 +90,10 @@ public class BillingRate {
     if (customerId != null) {
       return "CUSTOMER_OVERRIDE";
     }
-    return "MEMBER_DEFAULT";
+    if (memberId != null) {
+      return "MEMBER_DEFAULT";
+    }
+    return "ORG_DEFAULT";
   }
 
   public UUID getId() {

@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.projecttemplate.ProjectTemplate;
+import io.b2mash.b2b.b2bstrawman.projecttemplate.ProjectTemplateRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.schedule.RecurringScheduleRepository;
@@ -36,6 +38,7 @@ class SchedulePackSeederTest {
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private RecurringScheduleRepository recurringScheduleRepository;
+  @Autowired private ProjectTemplateRepository projectTemplateRepository;
   @Autowired private SchedulePackSeeder schedulePackSeeder;
   @Autowired private TransactionTemplate transactionTemplate;
 
@@ -47,6 +50,33 @@ class SchedulePackSeederTest {
     planSyncService.syncPlan(ORG_ID, "pro-plan");
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+
+    // Create project templates that match schedule pack entries so seeder finds them
+    UUID seederMemberId = SchedulePackSeeder.SEEDER_CREATED_BY;
+    runInTenant(
+        tenantSchema,
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  projectTemplateRepository.save(
+                      new ProjectTemplate(
+                          "Annual Tax Return",
+                          "{customer} Tax Return {year}",
+                          "Annual tax return",
+                          true,
+                          "MANUAL",
+                          null,
+                          seederMemberId));
+                  projectTemplateRepository.save(
+                      new ProjectTemplate(
+                          "Monthly Bookkeeping",
+                          "{customer} Bookkeeping {month} {year}",
+                          "Monthly bookkeeping",
+                          true,
+                          "MANUAL",
+                          null,
+                          seederMemberId));
+                }));
   }
 
   @Test
@@ -68,6 +98,8 @@ class SchedulePackSeederTest {
                               s -> SchedulePackSeeder.SEEDER_CREATED_BY.equals(s.getCreatedBy()))
                           .toList();
                   // Schedules are only created if matching project templates exist.
+                  // Verify at least one was created (non-vacuous check).
+                  assertThat(seederSchedules).isNotEmpty();
                   // All created schedules must be PAUSED with null customerId.
                   assertThat(seederSchedules)
                       .allSatisfy(

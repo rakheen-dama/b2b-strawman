@@ -8,8 +8,11 @@ import io.b2mash.b2b.b2bstrawman.schedule.RecurringScheduleRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import java.time.LocalDate;
-import java.util.Optional;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.stereotype.Service;
@@ -90,11 +93,29 @@ public class SchedulePackSeeder extends AbstractPackSeeder<SchedulePackDefinitio
     settings.recordSchedulePackApplication(pack.packId(), pack.version());
   }
 
+  private static final Set<String> VALID_FREQUENCIES =
+      Set.of("WEEKLY", "FORTNIGHTLY", "MONTHLY", "QUARTERLY", "SEMI_ANNUALLY", "ANNUALLY");
+
   @Override
   protected void applyPack(SchedulePackDefinition pack, Resource packResource, String tenantId) {
+    // Load all templates once for O(1) lookup per entry
+    Map<String, ProjectTemplate> templatesByName =
+        projectTemplateRepository.findAllByOrderByNameAsc().stream()
+            .collect(Collectors.toMap(ProjectTemplate::getName, Function.identity(), (a, b) -> a));
+
     for (SchedulePackDefinition.ScheduleEntry entry : pack.schedules()) {
-      Optional<ProjectTemplate> templateOpt = findTemplateByName(entry.projectTemplateName());
-      if (templateOpt.isEmpty()) {
+      // Validate recurrence value
+      if (!VALID_FREQUENCIES.contains(entry.recurrence())) {
+        log.warn(
+            "Invalid recurrence '{}' for schedule '{}' in pack {} — skipping entry",
+            entry.recurrence(),
+            entry.name(),
+            pack.packId());
+        continue;
+      }
+
+      var template = templatesByName.get(entry.projectTemplateName());
+      if (template == null) {
         log.warn(
             "Project template '{}' not found for schedule '{}' in pack {} — skipping entry",
             entry.projectTemplateName(),
@@ -103,7 +124,6 @@ public class SchedulePackSeeder extends AbstractPackSeeder<SchedulePackDefinitio
         continue;
       }
 
-      var template = templateOpt.get();
       var schedule =
           new RecurringSchedule(
               template.getId(),
@@ -127,11 +147,5 @@ public class SchedulePackSeeder extends AbstractPackSeeder<SchedulePackDefinitio
           entry.recurrence(),
           tenantId);
     }
-  }
-
-  private Optional<ProjectTemplate> findTemplateByName(String name) {
-    return projectTemplateRepository.findAllByOrderByNameAsc().stream()
-        .filter(t -> name.equals(t.getName()))
-        .findFirst();
   }
 }

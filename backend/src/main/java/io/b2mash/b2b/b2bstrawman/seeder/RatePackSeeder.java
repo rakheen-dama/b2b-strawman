@@ -5,7 +5,6 @@ import io.b2mash.b2b.b2bstrawman.billingrate.BillingRateRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.ResourcePatternResolver;
@@ -87,7 +86,7 @@ public class RatePackSeeder extends AbstractPackSeeder<RatePackDefinition> {
               null, // projectId — org-level
               null, // customerId — org-level
               entry.currency(),
-              BigDecimal.valueOf(entry.hourlyRate()),
+              entry.hourlyRate(),
               LocalDate.now(),
               null); // effectiveTo — open-ended
       billingRateRepository.save(rate);

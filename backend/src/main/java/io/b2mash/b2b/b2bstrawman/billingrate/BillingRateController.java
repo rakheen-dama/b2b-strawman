@@ -214,7 +214,7 @@ public class BillingRateController {
       return new BillingRateResponse(
           rate.getId(),
           rate.getMemberId(),
-          names.members().getOrDefault(rate.getMemberId(), ""),
+          rate.getMemberId() != null ? names.members().getOrDefault(rate.getMemberId(), "") : null,
           rate.getProjectId(),
           rate.getProjectId() != null ? names.projects().get(rate.getProjectId()) : null,
           rate.getCustomerId(),

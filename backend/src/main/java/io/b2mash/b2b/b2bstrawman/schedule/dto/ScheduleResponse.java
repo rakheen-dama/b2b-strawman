@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.schedule.dto;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Map;
 import java.util.UUID;
 
 public record ScheduleResponse(
@@ -24,4 +25,5 @@ public record ScheduleResponse(
     UUID createdBy,
     String createdByName,
     Instant createdAt,
-    Instant updatedAt) {}
+    Instant updatedAt,
+    Map<String, Object> postCreateActions) {}

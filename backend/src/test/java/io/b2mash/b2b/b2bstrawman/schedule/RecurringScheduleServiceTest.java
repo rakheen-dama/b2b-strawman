@@ -130,7 +130,8 @@ class RecurringScheduleServiceTest {
                   LocalDate.of(2027, 3, 1),
                   5,
                   memberId,
-                  "Override Name");
+                  "Override Name",
+                  null);
 
           var response = scheduleService.create(request, memberId);
 
@@ -186,6 +187,7 @@ class RecurringScheduleServiceTest {
                   null,
                   0,
                   null,
+                  null,
                   null);
 
           assertThatThrownBy(() -> scheduleService.create(request, memberId))
@@ -206,6 +208,7 @@ class RecurringScheduleServiceTest {
                   null,
                   0,
                   null,
+                  null,
                   null);
 
           assertThatThrownBy(() -> scheduleService.create(request, memberId))
@@ -219,7 +222,15 @@ class RecurringScheduleServiceTest {
         () -> {
           var request =
               new CreateScheduleRequest(
-                  templateId, customerId, "WEEKLY", LocalDate.of(2026, 4, 1), null, 0, null, null);
+                  templateId,
+                  customerId,
+                  "WEEKLY",
+                  LocalDate.of(2026, 4, 1),
+                  null,
+                  0,
+                  null,
+                  null,
+                  null);
 
           var first = scheduleService.create(request, memberId);
 
@@ -250,11 +261,13 @@ class RecurringScheduleServiceTest {
                   null,
                   0,
                   null,
+                  null,
                   null);
           var created = scheduleService.create(createRequest, memberId);
 
           var updateRequest =
-              new UpdateScheduleRequest("Updated Name", LocalDate.of(2027, 12, 31), 10, memberId);
+              new UpdateScheduleRequest(
+                  "Updated Name", LocalDate.of(2027, 12, 31), 10, memberId, null);
 
           var updated = scheduleService.update(created.id(), updateRequest);
 
@@ -287,6 +300,7 @@ class RecurringScheduleServiceTest {
                   null,
                   3,
                   memberId,
+                  null,
                   null);
           var created = scheduleService.create(request, memberId);
 
@@ -321,6 +335,7 @@ class RecurringScheduleServiceTest {
                   null,
                   0,
                   null,
+                  null,
                   null);
           var created1 = scheduleService.create(request1, memberId);
 
@@ -353,6 +368,7 @@ class RecurringScheduleServiceTest {
                   null,
                   2,
                   null,
+                  null,
                   null);
           var created = scheduleService.create(request, memberId);
 
@@ -380,7 +396,8 @@ class RecurringScheduleServiceTest {
                   null,
                   0,
                   null,
-                  "Resume Test");
+                  "Resume Test",
+                  null);
           var created = scheduleService.create(request, memberId);
 
           // Pause first
@@ -417,7 +434,8 @@ class RecurringScheduleServiceTest {
                   null,
                   0,
                   null,
-                  "Complete Test");
+                  "Complete Test",
+                  null);
           var created = scheduleService.create(request, memberId);
 
           var completed = scheduleService.complete(created.id());
@@ -446,7 +464,8 @@ class RecurringScheduleServiceTest {
                   null,
                   0,
                   null,
-                  "Delete Paused Test");
+                  "Delete Paused Test",
+                  null);
           var created = scheduleService.create(request, memberId);
 
           scheduleService.pause(created.id());
@@ -470,7 +489,8 @@ class RecurringScheduleServiceTest {
                   null,
                   0,
                   null,
-                  "Delete Active Test");
+                  "Delete Active Test",
+                  null);
           var created = scheduleService.create(request, memberId);
 
           assertThatThrownBy(() -> scheduleService.delete(created.id()))

@@ -144,6 +144,7 @@ public class RecurringScheduleService {
     LocalDate nextExecution =
         periodCalculator.calculateNextExecutionDate(period.start(), request.leadTimeDays());
     schedule.setNextExecutionDate(nextExecution);
+    schedule.setPostCreateActions(request.postCreateActions());
 
     try {
       schedule = scheduleRepository.saveAndFlush(schedule);
@@ -197,6 +198,7 @@ public class RecurringScheduleService {
         request.endDate(),
         request.leadTimeDays(),
         request.projectLeadMemberId());
+    schedule.setPostCreateActions(request.postCreateActions());
 
     schedule = scheduleRepository.save(schedule);
 
@@ -799,7 +801,8 @@ public class RecurringScheduleService {
         schedule.getCreatedBy(),
         createdByName,
         schedule.getCreatedAt(),
-        schedule.getUpdatedAt());
+        schedule.getUpdatedAt(),
+        schedule.getPostCreateActions());
   }
 
   private ScheduleResponse buildResponse(
@@ -831,7 +834,8 @@ public class RecurringScheduleService {
             ? memberNames.getOrDefault(schedule.getCreatedBy(), "")
             : null,
         schedule.getCreatedAt(),
-        schedule.getUpdatedAt());
+        schedule.getUpdatedAt(),
+        schedule.getPostCreateActions());
   }
 
   private Map<UUID, String> resolveTemplateNames(List<RecurringSchedule> schedules) {

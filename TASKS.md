@@ -437,6 +437,13 @@
 | 384 | Profile Pack Seeders (Rate + Schedule) | Backend | 381 | M | 384A, 384B | **Done** (PRs #796, #797) |
 | 385 | Frontend: Deadline Calendar Page | Frontend | 382 | L | 385A, 385B | **Done** (PRs #798, #799) |
 | 386 | Frontend: Schedule Actions UI + Seeding Feedback + Dashboard Widget | Frontend | 383, 384, 385 | M | 386A, 386B | **Done** (PRs #800, #801) |
+| **Phase 52 — In-App AI Assistant (BYOAK)** | | | | | | See [tasks/phase52-in-app-ai-assistant.md](tasks/phase52-in-app-ai-assistant.md) |
+| 387 | LLM Provider Abstraction: Interface, Records, Registry, Anthropic Adapter | Backend | -- | M | 387A, 387B | 387A **Done** (PR #802) |
+| 388 | Tool Framework + Read Tools (Batch 1: Core Entities) | Backend | 387A | M | 388A, 388B | |
+| 389 | Read Tools (Batch 2: Financial + Search) + System Guide | Backend | 388A | M | 389A | |
+| 390 | Assistant Service + Chat API + Confirmation Flow | Backend | 387, 388, 389 | L | 390A, 390B | |
+| 391 | Frontend Chat UI: Provider, Panel, Trigger, SSE Hook | Frontend | 390 | L | 391A, 391B | |
+| 392 | Write Tools + Settings Enhancement | Both | 390, 391 | M | 392A, 392B | |
 
 ---
 

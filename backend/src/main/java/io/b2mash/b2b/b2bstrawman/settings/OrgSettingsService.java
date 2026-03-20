@@ -12,6 +12,8 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.retention.RetentionService;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
+import io.b2mash.b2b.b2bstrawman.seeder.RatePackSeeder;
+import io.b2mash.b2b.b2bstrawman.seeder.SchedulePackSeeder;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsController.DataProtectionSettingsRequest;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsController.SettingsResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalProfileRegistry;
@@ -42,6 +44,8 @@ public class OrgSettingsService {
   private final RetentionService retentionService;
   private final ProcessingActivityService processingActivityService;
   private final ComplianceTemplatePackSeeder complianceTemplatePackSeeder;
+  private final RatePackSeeder ratePackSeeder;
+  private final SchedulePackSeeder schedulePackSeeder;
 
   public OrgSettingsService(
       OrgSettingsRepository orgSettingsRepository,
@@ -50,7 +54,9 @@ public class OrgSettingsService {
       VerticalProfileRegistry verticalProfileRegistry,
       RetentionService retentionService,
       ProcessingActivityService processingActivityService,
-      ComplianceTemplatePackSeeder complianceTemplatePackSeeder) {
+      ComplianceTemplatePackSeeder complianceTemplatePackSeeder,
+      RatePackSeeder ratePackSeeder,
+      SchedulePackSeeder schedulePackSeeder) {
     this.orgSettingsRepository = orgSettingsRepository;
     this.auditService = auditService;
     this.storageService = storageService;
@@ -58,6 +64,8 @@ public class OrgSettingsService {
     this.retentionService = retentionService;
     this.processingActivityService = processingActivityService;
     this.complianceTemplatePackSeeder = complianceTemplatePackSeeder;
+    this.ratePackSeeder = ratePackSeeder;
+    this.schedulePackSeeder = schedulePackSeeder;
   }
 
   /**
@@ -626,6 +634,8 @@ public class OrgSettingsService {
 
   /**
    * Updates the vertical profile, setting enabledModules and terminologyNamespace from registry.
+   * After saving, triggers rate and schedule pack seeders for the new profile. Seeding is
+   * idempotent — switching to the same profile multiple times is safe.
    */
   @Transactional
   public SettingsResponse updateVerticalProfile(String verticalProfile, ActorContext actor) {
@@ -679,6 +689,14 @@ public class OrgSettingsService {
                     "new_profile", verticalProfile != null ? verticalProfile : "",
                     "enabled_modules", enabledModules))
             .build());
+
+    // Trigger rate and schedule pack seeding for the new profile (idempotent).
+    // The seeders use TenantTransactionHelper which joins the current transaction
+    // and reads the updated OrgSettings from Hibernate's L1 cache.
+    String tenantId = RequestScopes.TENANT_ID.get();
+    String orgId = RequestScopes.ORG_ID.get();
+    ratePackSeeder.seedPacksForTenant(tenantId, orgId);
+    schedulePackSeeder.seedPacksForTenant(tenantId, orgId);
 
     return toSettingsResponse(settings);
   }

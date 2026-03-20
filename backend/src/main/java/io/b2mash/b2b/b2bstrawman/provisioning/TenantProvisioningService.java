@@ -10,6 +10,8 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMapping;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
 import io.b2mash.b2b.b2bstrawman.reporting.StandardReportPackSeeder;
+import io.b2mash.b2b.b2bstrawman.seeder.RatePackSeeder;
+import io.b2mash.b2b.b2bstrawman.seeder.SchedulePackSeeder;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.template.TemplatePackSeeder;
@@ -40,6 +42,8 @@ public class TenantProvisioningService {
   private final StandardReportPackSeeder standardReportPackSeeder;
   private final RequestPackSeeder requestPackSeeder;
   private final AutomationTemplateSeeder automationTemplateSeeder;
+  private final RatePackSeeder ratePackSeeder;
+  private final SchedulePackSeeder schedulePackSeeder;
   private final TenantTransactionHelper tenantTransactionHelper;
   private final OrgSettingsRepository orgSettingsRepository;
   private final VerticalProfileRegistry verticalProfileRegistry;
@@ -56,6 +60,8 @@ public class TenantProvisioningService {
       StandardReportPackSeeder standardReportPackSeeder,
       RequestPackSeeder requestPackSeeder,
       AutomationTemplateSeeder automationTemplateSeeder,
+      RatePackSeeder ratePackSeeder,
+      SchedulePackSeeder schedulePackSeeder,
       TenantTransactionHelper tenantTransactionHelper,
       OrgSettingsRepository orgSettingsRepository,
       VerticalProfileRegistry verticalProfileRegistry) {
@@ -70,6 +76,8 @@ public class TenantProvisioningService {
     this.standardReportPackSeeder = standardReportPackSeeder;
     this.requestPackSeeder = requestPackSeeder;
     this.automationTemplateSeeder = automationTemplateSeeder;
+    this.ratePackSeeder = ratePackSeeder;
+    this.schedulePackSeeder = schedulePackSeeder;
     this.tenantTransactionHelper = tenantTransactionHelper;
     this.orgSettingsRepository = orgSettingsRepository;
     this.verticalProfileRegistry = verticalProfileRegistry;
@@ -118,6 +126,8 @@ public class TenantProvisioningService {
       standardReportPackSeeder.seedForTenant(schemaName, clerkOrgId);
       requestPackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
       automationTemplateSeeder.seedPacksForTenant(schemaName, clerkOrgId);
+      ratePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
+      schedulePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
       createMapping(clerkOrgId, schemaName);
       String planSlug = org.getPlanSlug() != null ? org.getPlanSlug() : "starter";
       subscriptionService.createSubscription(org.getId(), planSlug);

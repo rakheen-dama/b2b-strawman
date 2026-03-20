@@ -185,6 +185,47 @@ class DeadlineControllerTest {
   }
 
   @Test
+  void listFilingStatuses_returns200WithCreatedStatus() throws Exception {
+    // First, create a filing status via PUT
+    mockMvc
+        .perform(
+            put("/api/deadlines/filing-status")
+                .with(enabledAdminJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "items": [
+                        {
+                          "customerId": "%s",
+                          "deadlineTypeSlug": "sars_annual_return",
+                          "periodKey": "2026",
+                          "status": "filed",
+                          "notes": "Created for GET test",
+                          "linkedProjectId": null
+                        }
+                      ]
+                    }
+                    """
+                        .formatted(customerId)))
+        .andExpect(status().isOk());
+
+    // Then, list filing statuses via GET and verify the created one is present
+    mockMvc
+        .perform(
+            get("/api/filing-statuses")
+                .param("customerId", customerId.toString())
+                .param("deadlineTypeSlug", "sars_annual_return")
+                .with(enabledOwnerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$").isArray())
+        .andExpect(jsonPath("$[0].customerId").value(customerId.toString()))
+        .andExpect(jsonPath("$[0].deadlineTypeSlug").value("sars_annual_return"))
+        .andExpect(jsonPath("$[0].status").value("filed"))
+        .andExpect(jsonPath("$[0].periodKey").value("2026"));
+  }
+
+  @Test
   void putFilingStatus_memberRole_returns403() throws Exception {
     mockMvc
         .perform(

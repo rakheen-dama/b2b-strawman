@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.deadline.FilingStatusService.FilingStatusRespon
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
+import jakarta.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -76,7 +77,7 @@ public class DeadlineController {
   @PutMapping("/api/deadlines/filing-status")
   @RequiresCapability("MANAGE_COMPLIANCE")
   public ResponseEntity<List<FilingStatusResponse>> updateFilingStatus(
-      @RequestBody BatchUpdateRequest request) {
+      @Valid @RequestBody BatchUpdateRequest request) {
     moduleGuard.requireModule("regulatory_deadlines");
     return ResponseEntity.ok(
         filingStatusService.batchUpsert(request, RequestScopes.requireMemberId()));

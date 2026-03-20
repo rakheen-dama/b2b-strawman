@@ -1,0 +1,11 @@
+{
+  "packId": "rate-pack-accounting-za",
+  "verticalProfile": "accounting-za",
+  "version": 1,
+  "rates": [
+    { "description": "Partner", "hourlyRate": 2500.0, "currency": "ZAR" },
+    { "description": "Manager", "hourlyRate": 1800.0, "currency": "ZAR" },
+    { "description": "Senior Accountant", "hourlyRate": 1200.0, "currency": "ZAR" },
+    { "description": "Clerk / Trainee", "hourlyRate": 650.0, "currency": "ZAR" }
+  ]
+}

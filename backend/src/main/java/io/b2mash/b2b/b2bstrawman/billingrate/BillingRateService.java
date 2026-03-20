@@ -164,10 +164,14 @@ public class BillingRateService {
             .entityId(rate.getId())
             .details(
                 Map.of(
-                    "member_id", memberId.toString(),
-                    "scope", rate.getScope(),
-                    "currency", currency,
-                    "hourly_rate", hourlyRate.toString()))
+                    "member_id",
+                    memberId != null ? memberId.toString() : "null",
+                    "scope",
+                    rate.getScope(),
+                    "currency",
+                    currency,
+                    "hourly_rate",
+                    hourlyRate.toString()))
             .build());
 
     return rate;
@@ -263,8 +267,10 @@ public class BillingRateService {
             .entityId(id)
             .details(
                 Map.of(
-                    "member_id", rate.getMemberId().toString(),
-                    "scope", rate.getScope()))
+                    "member_id",
+                    rate.getMemberId() != null ? rate.getMemberId().toString() : "null",
+                    "scope",
+                    rate.getScope()))
             .build());
   }
 

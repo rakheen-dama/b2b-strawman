@@ -29,7 +29,7 @@ The next Flyway tenant migration is **V81** (V80 is taken by `V80__add_complianc
 |------|------|-------|------|--------|--------|--------|
 | 381 | Foundation: V81 Migration, DeadlineTypeRegistry, FilingStatus Entity, Module Registration | Backend | -- | M | 381A, 381B | **Done** (PRs #790, #791) |
 | 382 | Deadline Calculation Service + Controller | Backend | 381 | M | 382A, 382B | **Done** (PRs #792, #793) |
-| 383 | Post-Schedule Actions (Engagement Kickoff) | Backend | 381 (migration only) | M | 383A, 383B | 383A **Done** (PR #794) |
+| 383 | Post-Schedule Actions (Engagement Kickoff) | Backend | 381 (migration only) | M | 383A, 383B | **Done** (PRs #794, #795) |
 | 384 | Profile Pack Seeders (Rate + Schedule) | Backend | 381 (migration only) | M | 384A, 384B | |
 | 385 | Frontend: Deadline Calendar Page | Frontend | 382 | L | 385A, 385B | |
 | 386 | Frontend: Schedule Actions UI + Seeding Feedback + Dashboard Widget | Frontend | 383, 384, 385 | M | 386A, 386B | |
@@ -125,7 +125,7 @@ FRONTEND (requires backend epics 381-384)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 2a (parallel) | 382 | 382B | `DeadlineController` with 5 endpoints (GET deadlines, GET summary, GET customer deadlines, PUT filing-status, GET filing-statuses), `VerticalModuleGuard.requireModule("regulatory_deadlines")` integration, authorization checks. Integration tests (~6). Backend only. | **Done** (PR #793) |
-| 2b (parallel) | 383 | 383B | Extend `CreateScheduleRequest`, `UpdateScheduleRequest`, `ScheduleResponse` DTOs with `postCreateActions` field, verify `RecurringScheduleController` passes the field through. Integration tests (~4). Backend only. | |
+| 2b (parallel) | 383 | 383B | Extend `CreateScheduleRequest`, `UpdateScheduleRequest`, `ScheduleResponse` DTOs with `postCreateActions` field, verify `RecurringScheduleController` passes the field through. Integration tests (~4). Backend only. | **Done** (PR #795) |
 | 2c (parallel) | 384 | 384B | Integrate `RatePackSeeder` + `SchedulePackSeeder` into `TenantProvisioningService` and `PackReconciliationRunner`, integrate with `VerticalProfileService.switchProfile()`. Integration tests (~4). Backend only. | |
 
 ### Stage 3: Frontend — Deadline Calendar (sequential)
@@ -265,7 +265,7 @@ FRONTEND (requires backend epics 381-384)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **383A** | 383.1--383.7 | Extend `RecurringSchedule` entity with `postCreateActions` JSONB field + getter/setter. Extend `RecurringScheduleService.executeSingleSchedule()` with `executePostCreateActions()` and `notifyPostCreateFailure()` private methods. Inject `GeneratedDocumentService` and `InformationRequestService`. Integration tests (~5). Backend only. | **Done** (PR #794) |
-| **383B** | 383.8--383.12 | Extend `CreateScheduleRequest`, `UpdateScheduleRequest`, `ScheduleResponse` DTOs with `postCreateActions` field. Verify controller passes field through on create/update/get. Integration tests (~4). Backend only. | |
+| **383B** | 383.8--383.12 | Extend `CreateScheduleRequest`, `UpdateScheduleRequest`, `ScheduleResponse` DTOs with `postCreateActions` field. Verify controller passes field through on create/update/get. Integration tests (~4). Backend only. | **Done** (PR #795) |
 
 ### Tasks
 

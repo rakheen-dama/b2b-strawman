@@ -17,6 +17,7 @@ vi.mock("next/navigation", () => ({
     forward: vi.fn(),
     prefetch: vi.fn(),
   }),
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 const mockPost = vi.fn();
@@ -73,7 +74,7 @@ describe("PortalLoginPage", () => {
     await waitFor(() => {
       expect(mockPost).toHaveBeenCalledWith("/portal/auth/request-link", {
         email: "customer@example.com",
-        orgSlug: "acme",
+        orgId: "acme",
       });
     });
 

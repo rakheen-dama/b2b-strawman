@@ -97,11 +97,11 @@ class VerticalProfileControllerTest {
         .perform(get("/api/modules").with(ownerJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
-        .andExpect(jsonPath("$", hasSize(3)))
+        .andExpect(jsonPath("$", hasSize(4)))
         .andExpect(jsonPath("$[?(@.id == 'trust_accounting')].enabled").value(true))
         .andExpect(jsonPath("$[?(@.id == 'court_calendar')].enabled").value(false))
         .andExpect(jsonPath("$[?(@.id == 'conflict_check')].enabled").value(false))
-        .andExpect(jsonPath("$[0].status").value("stub"));
+        .andExpect(jsonPath("$[?(@.id == 'trust_accounting')].status").value("stub"));
   }
 
   @Test
@@ -167,12 +167,12 @@ class VerticalProfileControllerTest {
     mockMvc
         .perform(get("/api/modules").with(ownerJwt()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$", hasSize(3)))
+        .andExpect(jsonPath("$", hasSize(4)))
         .andExpect(jsonPath("$[?(@.id == 'trust_accounting')].enabled").value(false))
         .andExpect(jsonPath("$[?(@.id == 'court_calendar')].enabled").value(false))
         .andExpect(jsonPath("$[?(@.id == 'conflict_check')].enabled").value(false));
 
-    // Switch to legal-za — all modules should be enabled
+    // Switch to legal-za — all legal modules should be enabled
     mockMvc
         .perform(
             patch("/api/settings/vertical-profile")
@@ -186,7 +186,7 @@ class VerticalProfileControllerTest {
     mockMvc
         .perform(get("/api/modules").with(ownerJwt()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$", hasSize(3)))
+        .andExpect(jsonPath("$", hasSize(4)))
         .andExpect(jsonPath("$[?(@.id == 'trust_accounting')].enabled").value(true))
         .andExpect(jsonPath("$[?(@.id == 'court_calendar')].enabled").value(true))
         .andExpect(jsonPath("$[?(@.id == 'conflict_check')].enabled").value(true));

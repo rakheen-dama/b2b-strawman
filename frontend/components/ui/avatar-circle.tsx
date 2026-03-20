@@ -24,14 +24,15 @@ function getInitials(name: string): string {
 }
 
 interface AvatarCircleProps {
-  name: string;
+  name: string | null | undefined;
   size?: number;
   className?: string;
 }
 
 export function AvatarCircle({ name, size = 32, className }: AvatarCircleProps) {
-  const palette = PALETTES[hashName(name) % PALETTES.length];
-  const initials = getInitials(name);
+  const safeName = name ?? "";
+  const palette = PALETTES[hashName(safeName) % PALETTES.length];
+  const initials = getInitials(safeName);
   const fontSize = Math.round(size * 0.4);
 
   return (

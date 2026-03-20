@@ -12,8 +12,11 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -109,6 +112,24 @@ public class PortalQueryService {
     }
 
     return result;
+  }
+
+  /**
+   * Resolves project names for a list of documents. Returns a map of projectId to project name.
+   * Documents without a projectId are skipped.
+   */
+  @Transactional(readOnly = true)
+  public Map<UUID, String> resolveProjectNames(List<Document> documents) {
+    Set<UUID> projectIds =
+        documents.stream()
+            .map(Document::getProjectId)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet());
+    if (projectIds.isEmpty()) {
+      return Map.of();
+    }
+    return projectRepository.findAllById(projectIds).stream()
+        .collect(Collectors.toMap(Project::getId, Project::getName));
   }
 
   /**

@@ -66,6 +66,11 @@ export class ErrorBoundary extends Component<
   }
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    // Let Next.js handle its own internal errors (notFound, redirect)
+    const digest = (error as { digest?: string }).digest;
+    if (digest === "NEXT_NOT_FOUND" || digest?.startsWith("NEXT_REDIRECT")) {
+      throw error;
+    }
     return { hasError: true, error };
   }
 

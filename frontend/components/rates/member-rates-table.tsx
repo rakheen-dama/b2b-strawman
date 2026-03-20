@@ -97,7 +97,7 @@ export function MemberRatesTable({
 
   const { t } = createMessages("empty-states");
 
-  if (members.length === 0) {
+  if (!members || members.length === 0) {
     return (
       <EmptyState
         icon={DollarSign}

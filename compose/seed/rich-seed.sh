@@ -111,6 +111,17 @@ if should_run "proposals"; then
   seed_proposals
 fi
 
+# ── Portal resync (always runs — idempotent) ───────────────────────
+echo ""
+echo "==> Portal resync"
+STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+  -X POST "${BACKEND_URL}/internal/portal/resync/${ORG_ID}" \
+  -H "X-API-KEY: ${API_KEY}")
+case "$STATUS" in
+  2[0-9][0-9]) echo "    [ok] Portal resync (HTTP ${STATUS})" ;;
+  *) echo "    [WARN] Portal resync failed (HTTP ${STATUS}) — non-fatal" ;;
+esac
+
 # ── Summary ──────────────────────────────────────────────────────────
 echo ""
 echo "============================================"

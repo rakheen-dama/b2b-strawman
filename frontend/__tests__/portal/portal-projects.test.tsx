@@ -42,12 +42,14 @@ const sampleProjects: PortalProject[] = [
     name: "Website Redesign",
     description: "Complete overhaul of the company website",
     documentCount: 5,
+    createdAt: "2026-01-15T10:00:00Z",
   },
   {
     id: "p2",
     name: "Brand Guidelines",
     description: null,
     documentCount: 0,
+    createdAt: "2026-02-01T14:30:00Z",
   },
 ];
 

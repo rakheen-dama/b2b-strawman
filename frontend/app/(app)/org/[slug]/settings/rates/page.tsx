@@ -47,8 +47,8 @@ export default async function RatesSettingsPage({
       api.get<{ content: BillingRate[] }>("/api/billing-rates"),
       api.get<{ content: CostRate[] }>("/api/cost-rates"),
     ]);
-  if (settingsRes.status === "fulfilled") settings = settingsRes.value;
-  if (membersRes.status === "fulfilled") members = membersRes.value;
+  if (settingsRes.status === "fulfilled" && settingsRes.value) settings = settingsRes.value;
+  if (membersRes.status === "fulfilled" && Array.isArray(membersRes.value)) members = membersRes.value;
   if (billingRatesRes.status === "fulfilled") billingRates = billingRatesRes.value?.content ?? [];
   if (costRatesRes.status === "fulfilled") costRates = costRatesRes.value?.content ?? [];
 
@@ -78,7 +78,7 @@ export default async function RatesSettingsPage({
         members={members}
         billingRates={billingRates}
         costRates={costRates}
-        defaultCurrency={settings.defaultCurrency}
+        defaultCurrency={settings?.defaultCurrency ?? "USD"}
       />
     </div>
   );

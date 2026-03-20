@@ -116,7 +116,7 @@ FRONTEND (requires backend epics 381-384)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 1a (parallel) | 382 | 382A | `DeadlineCalculationService` with `calculateDeadlines()`, `calculateDeadlinesForCustomer()`, `calculateSummary()` — loads customers with FYE, applies calculation/applicability rules, overlays filing status, cross-references projects. Integration tests (~7). Backend only. | |
+| 1a (parallel) | 382 | 382A | `DeadlineCalculationService` with `calculateDeadlines()`, `calculateDeadlinesForCustomer()`, `calculateSummary()` — loads customers with FYE, applies calculation/applicability rules, overlays filing status, cross-references projects. Integration tests (~7). Backend only. | **Done** (PR #792) |
 | 1b (parallel) | 383 | 383A | Extend `RecurringSchedule` entity with `postCreateActions` JSONB field, extend `RecurringScheduleService.executeSingleSchedule()` with `executePostCreateActions()` and `notifyPostCreateFailure()` private methods, inject `GeneratedDocumentService` + `InformationRequestService`. Integration tests (~5). Backend only. | |
 | 1c (parallel) | 384 | 384A | `RatePackSeeder` + `RatePackDefinition`, `SchedulePackSeeder` + `SchedulePackDefinition`, `rate-packs/accounting-za.json` and `schedule-packs/accounting-za.json` resources, `OrgSettings` methods (`recordRatePackApplication`, `isRatePackApplied`, `recordSchedulePackApplication`, `isSchedulePackApplied`). Integration tests (~5). Backend only. | |
 
@@ -213,7 +213,7 @@ FRONTEND (requires backend epics 381-384)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **382A** | 382.1--382.6 | `DeadlineCalculationService` with `calculateDeadlines(from, to, filters)`, `calculateDeadlinesForCustomer(customerId, from, to)`, `calculateSummary(from, to, filters)`. Loads active customers with FYE, applies calculation/applicability rules, batch-loads filing statuses for overlay, cross-references linked projects. Records: `CalculatedDeadline`, `DeadlineFilters`, `DeadlineSummary`. Integration tests (~7). Backend only. | |
+| **382A** | 382.1--382.6 | `DeadlineCalculationService` with `calculateDeadlines(from, to, filters)`, `calculateDeadlinesForCustomer(customerId, from, to)`, `calculateSummary(from, to, filters)`. Loads active customers with FYE, applies calculation/applicability rules, batch-loads filing statuses for overlay, cross-references linked projects. Records: `CalculatedDeadline`, `DeadlineFilters`, `DeadlineSummary`. Integration tests (~7). Backend only. | **Done** (PR #792) |
 | **382B** | 382.7--382.13 | `DeadlineController` with 5 endpoints: GET `/api/deadlines`, GET `/api/deadlines/summary`, GET `/api/customers/{id}/deadlines`, PUT `/api/deadlines/filing-status`, GET `/api/filing-statuses`. Module guard via `VerticalModuleGuard.requireModule("regulatory_deadlines")`. Authorization: MEMBER+ for reads, ADMIN+ for filing status writes. Integration tests (~6). Backend only. | |
 
 ### Tasks

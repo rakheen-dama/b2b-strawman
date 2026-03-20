@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useCallback, useEffect, useRef, useState, useTransition } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Mail, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,11 +22,12 @@ interface BrandingData {
   footerText: string | null;
 }
 
-export default function PortalLoginPage() {
+function PortalLoginContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [step, setStep] = useState<LoginStep>("email");
   const [email, setEmail] = useState("");
-  const [orgSlug, setOrgSlug] = useState("");
+  const [orgSlug, setOrgSlug] = useState(() => searchParams.get("orgId") ?? "");
   const [magicLink, setMagicLink] = useState<string | null>(null);
   const [token, setToken] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -392,5 +393,13 @@ export default function PortalLoginPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function PortalLoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <PortalLoginContent />
+    </Suspense>
   );
 }

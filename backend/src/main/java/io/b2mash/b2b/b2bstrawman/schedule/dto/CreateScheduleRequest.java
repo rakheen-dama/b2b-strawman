@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.PositiveOrZero;
 import java.time.LocalDate;
+import java.util.Map;
 import java.util.UUID;
 
 public record CreateScheduleRequest(
@@ -15,4 +16,5 @@ public record CreateScheduleRequest(
     LocalDate endDate,
     @PositiveOrZero int leadTimeDays,
     UUID projectLeadMemberId,
-    String nameOverride) {}
+    String nameOverride,
+    Map<String, Object> postCreateActions) {}

@@ -74,6 +74,7 @@ class RecurringScheduleControllerTest {
   private UUID activeScheduleId;
   private UUID customRoleMemberId;
   private UUID noCapMemberId;
+  private String scheduleWithActionsId;
 
   @BeforeAll
   void setup() throws Exception {
@@ -471,6 +472,122 @@ class RecurringScheduleControllerTest {
                     """
                         .formatted(templateId, customerId)))
         .andExpect(status().isForbidden());
+  }
+
+  // --- postCreateActions Tests ---
+
+  @Test
+  @Order(30)
+  void shouldCreateScheduleWithPostCreateActions() throws Exception {
+    var result =
+        mockMvc
+            .perform(
+                post("/api/schedules")
+                    .with(ownerJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "templateId": "%s",
+                          "customerId": "%s",
+                          "frequency": "SEMI_ANNUALLY",
+                          "startDate": "2026-07-01",
+                          "leadTimeDays": 3,
+                          "postCreateActions": {
+                            "generateDocument": {
+                              "templateSlug": "engagement-letter-tax-return",
+                              "autoSend": false
+                            },
+                            "sendInfoRequest": {
+                              "requestTemplateSlug": "year-end-info-request-za",
+                              "dueDays": 14
+                            }
+                          }
+                        }
+                        """
+                            .formatted(templateId, customerId)))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.id").isNotEmpty())
+            .andExpect(
+                jsonPath("$.postCreateActions.generateDocument.templateSlug")
+                    .value("engagement-letter-tax-return"))
+            .andExpect(jsonPath("$.postCreateActions.generateDocument.autoSend").value(false))
+            .andExpect(
+                jsonPath("$.postCreateActions.sendInfoRequest.requestTemplateSlug")
+                    .value("year-end-info-request-za"))
+            .andExpect(jsonPath("$.postCreateActions.sendInfoRequest.dueDays").value(14))
+            .andReturn();
+
+    scheduleWithActionsId = JsonPath.read(result.getResponse().getContentAsString(), "$.id");
+  }
+
+  @Test
+  @Order(31)
+  void shouldGetScheduleWithPostCreateActions() throws Exception {
+    mockMvc
+        .perform(get("/api/schedules/" + scheduleWithActionsId).with(ownerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value(scheduleWithActionsId))
+        .andExpect(
+            jsonPath("$.postCreateActions.generateDocument.templateSlug")
+                .value("engagement-letter-tax-return"))
+        .andExpect(jsonPath("$.postCreateActions.generateDocument.autoSend").value(false))
+        .andExpect(
+            jsonPath("$.postCreateActions.sendInfoRequest.requestTemplateSlug")
+                .value("year-end-info-request-za"))
+        .andExpect(jsonPath("$.postCreateActions.sendInfoRequest.dueDays").value(14));
+  }
+
+  @Test
+  @Order(32)
+  void shouldUpdatePostCreateActions() throws Exception {
+    mockMvc
+        .perform(
+            put("/api/schedules/" + scheduleWithActionsId)
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "leadTimeDays": 5,
+                      "postCreateActions": {
+                        "generateDocument": {
+                          "templateSlug": "updated-template",
+                          "autoSend": true
+                        }
+                      }
+                    }
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value(scheduleWithActionsId))
+        .andExpect(
+            jsonPath("$.postCreateActions.generateDocument.templateSlug").value("updated-template"))
+        .andExpect(jsonPath("$.postCreateActions.generateDocument.autoSend").value(true))
+        .andExpect(jsonPath("$.postCreateActions.sendInfoRequest").doesNotExist());
+  }
+
+  @Test
+  @Order(33)
+  void shouldCreateScheduleWithoutPostCreateActions() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/schedules")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "templateId": "%s",
+                      "customerId": "%s",
+                      "frequency": "ANNUALLY",
+                      "startDate": "2026-08-01",
+                      "leadTimeDays": 0
+                    }
+                    """
+                        .formatted(templateId, customerId)))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.id").isNotEmpty())
+        .andExpect(jsonPath("$.postCreateActions").doesNotExist());
   }
 
   // --- Helper methods ---

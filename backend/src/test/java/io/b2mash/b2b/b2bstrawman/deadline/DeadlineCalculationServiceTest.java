@@ -10,6 +10,7 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.deadline.DeadlineCalculationService.DeadlineFilters;
+import io.b2mash.b2b.b2bstrawman.deadline.DeadlineCalculationService.DeadlineSummary;
 import io.b2mash.b2b.b2bstrawman.deadline.FilingStatusService.CreateFilingStatusRequest;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -307,6 +308,120 @@ class DeadlineCalculationServiceTest {
                   new DeadlineFilters(null, null, null));
 
           assertThat(allDeadlines).noneMatch(d -> d.customerId().equals(prospectCustomerWithFye));
+        });
+  }
+
+  @Test
+  void calculateSummary_groupsByMonthAndCategory_withCorrectCounts() {
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  // Mark one tax deadline as filed so we get a mix of statuses
+                  filingStatusService.upsert(
+                      new CreateFilingStatusRequest(
+                          activeCustomerWithFye,
+                          "sars_provisional_2",
+                          "2026",
+                          "filed",
+                          "Filed prov2",
+                          null),
+                      memberId);
+
+                  // Calculate summary for all customers in a future range (all pending/filed)
+                  var summaries =
+                      deadlineCalculationService.calculateSummary(
+                          LocalDate.of(2026, 1, 1),
+                          LocalDate.of(2026, 12, 31),
+                          new DeadlineFilters(null, null, activeCustomerWithFye));
+
+                  assertThat(summaries).isNotEmpty();
+
+                  // Each summary should have consistent counts
+                  for (DeadlineSummary s : summaries) {
+                    assertThat(s.total()).isEqualTo(s.filed() + s.pending() + s.overdue());
+                    assertThat(s.month()).matches("\\d{4}-\\d{2}");
+                    assertThat(s.category()).isNotBlank();
+                  }
+
+                  // Verify the filed deadline shows up in the correct month
+                  // sars_provisional_2 for 2026: FYE 2026-02-28 end of month = 2026-02-28
+                  var febTax =
+                      summaries.stream()
+                          .filter(s -> "2026-02".equals(s.month()) && "tax".equals(s.category()))
+                          .findFirst();
+                  assertThat(febTax).isPresent();
+                  assertThat(febTax.get().filed()).isGreaterThanOrEqualTo(1);
+                }));
+  }
+
+  @Test
+  void categoryFilter_returnOnlyMatchingCategory() {
+    runInTenant(
+        () -> {
+          // Filter to "tax" category only
+          var taxDeadlines =
+              deadlineCalculationService.calculateDeadlines(
+                  LocalDate.of(2026, 1, 1),
+                  LocalDate.of(2026, 12, 31),
+                  new DeadlineFilters("tax", null, activeCustomerWithFye));
+
+          assertThat(taxDeadlines).isNotEmpty();
+          assertThat(taxDeadlines).allMatch(d -> "tax".equals(d.category()));
+
+          // Filter to "payroll" category
+          var payrollDeadlines =
+              deadlineCalculationService.calculateDeadlines(
+                  LocalDate.of(2026, 1, 1),
+                  LocalDate.of(2026, 12, 31),
+                  new DeadlineFilters("payroll", null, activeCustomerWithFye));
+
+          assertThat(payrollDeadlines).isNotEmpty();
+          assertThat(payrollDeadlines).allMatch(d -> "payroll".equals(d.category()));
+
+          // "vat" category should return nothing for a non-VAT customer
+          var vatDeadlines =
+              deadlineCalculationService.calculateDeadlines(
+                  LocalDate.of(2026, 1, 1),
+                  LocalDate.of(2026, 12, 31),
+                  new DeadlineFilters("vat", null, activeCustomerWithFye));
+
+          assertThat(vatDeadlines).isEmpty();
+        });
+  }
+
+  @Test
+  void statusFilter_returnsOnlyMatchingStatus() {
+    runInTenant(
+        () -> {
+          // All deadlines in 2024 for activeCustomerWithFye should be overdue (past)
+          // Filter for "overdue" only
+          var overdueOnly =
+              deadlineCalculationService.calculateDeadlines(
+                  LocalDate.of(2024, 1, 1),
+                  LocalDate.of(2024, 12, 31),
+                  new DeadlineFilters(null, "overdue", activeCustomerWithFye));
+
+          assertThat(overdueOnly).isNotEmpty();
+          assertThat(overdueOnly).allMatch(d -> "overdue".equals(d.status()));
+
+          // Filter for "pending" -- sars_provisional_3 (voluntary) should show up as pending
+          var pendingOnly =
+              deadlineCalculationService.calculateDeadlines(
+                  LocalDate.of(2024, 1, 1),
+                  LocalDate.of(2024, 12, 31),
+                  new DeadlineFilters(null, "pending", activeCustomerWithFye));
+
+          assertThat(pendingOnly).allMatch(d -> "pending".equals(d.status()));
+
+          // Filter for "filed" in a range where nothing is filed -- should be empty
+          var filedOnly =
+              deadlineCalculationService.calculateDeadlines(
+                  LocalDate.of(2028, 1, 1),
+                  LocalDate.of(2028, 12, 31),
+                  new DeadlineFilters(null, "filed", activeCustomerWithFye));
+
+          assertThat(filedOnly).isEmpty();
         });
   }
 

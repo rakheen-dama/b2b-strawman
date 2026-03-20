@@ -6,15 +6,20 @@ import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.deadline.DeadlineTypeRegistry.DeadlineType;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -74,20 +79,25 @@ public class DeadlineCalculationService {
   public record DeadlineSummary(
       String month, String category, int total, int filed, int pending, int overdue) {}
 
+  private static final Logger log = LoggerFactory.getLogger(DeadlineCalculationService.class);
+
   private static final Set<String> MONTHLY_SLUGS = Set.of("sars_vat_return", "sars_paye_monthly");
   private static final Set<Integer> VAT_BIMONTHLY_MONTHS = Set.of(1, 3, 5, 7, 9, 11);
 
   private final CustomerRepository customerRepository;
   private final FilingStatusRepository filingStatusRepository;
   private final ProjectRepository projectRepository;
+  private final Clock clock;
 
   public DeadlineCalculationService(
       CustomerRepository customerRepository,
       FilingStatusRepository filingStatusRepository,
-      ProjectRepository projectRepository) {
+      ProjectRepository projectRepository,
+      Clock clock) {
     this.customerRepository = customerRepository;
     this.filingStatusRepository = filingStatusRepository;
     this.projectRepository = projectRepository;
+    this.clock = clock;
   }
 
   /**
@@ -112,11 +122,21 @@ public class DeadlineCalculationService {
     List<RawDeadline> rawDeadlines = new ArrayList<>();
     for (Customer customer : customers) {
       Map<String, Object> customFields = customer.getCustomFields();
+      if (customFields == null) {
+        continue;
+      }
       Object fyeValue = customFields.get("financial_year_end");
       if (fyeValue == null) {
         continue;
       }
-      LocalDate fye = LocalDate.parse(fyeValue.toString());
+      LocalDate fye;
+      try {
+        fye = LocalDate.parse(fyeValue.toString());
+      } catch (DateTimeParseException e) {
+        log.warn(
+            "Skipping customer {} — malformed financial_year_end: {}", customer.getId(), fyeValue);
+        continue;
+      }
 
       for (DeadlineType dt : deadlineTypes) {
         if (!dt.applicabilityRule().test(customFields)) {
@@ -160,14 +180,13 @@ public class DeadlineCalculationService {
       filingStatusMap.put(key, fs);
     }
 
-    // 5. Load projects for cross-referencing (grouped by customer)
-    Map<UUID, List<Project>> projectsByCustomer = new HashMap<>();
-    for (UUID cid : customerIds) {
-      projectsByCustomer.put(cid, projectRepository.findByCustomerId(cid));
-    }
+    // 5. Batch-load projects for cross-referencing, grouped by customer
+    Map<UUID, List<Project>> projectsByCustomer =
+        projectRepository.findByCustomerIdIn(customerIds).stream()
+            .collect(Collectors.groupingBy(Project::getCustomerId));
 
     // 6. Build final deadlines with status overlay and project cross-reference
-    LocalDate today = LocalDate.now();
+    LocalDate today = LocalDate.now(clock);
     List<CalculatedDeadline> result = new ArrayList<>();
 
     for (RawDeadline raw : rawDeadlines) {
@@ -211,7 +230,7 @@ public class DeadlineCalculationService {
     }
 
     // 8. Sort by due date ascending
-    return result.stream().sorted((a, b) -> a.dueDate().compareTo(b.dueDate())).toList();
+    return result.stream().sorted(Comparator.comparing(CalculatedDeadline::dueDate)).toList();
   }
 
   /** Convenience method: calculates deadlines for a single customer. */

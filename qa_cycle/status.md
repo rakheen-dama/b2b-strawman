@@ -4,7 +4,7 @@
 
 - **QA Position**: CYCLE_6_COMPLETE — Portal gap verification done. 5 PASS, 3 PARTIAL (read model not synced), 1 FAIL (branding URL param). Regression suite: 88 PASS, 1 FAIL (WONT_FIX), 1 PARTIAL. 0 NOT_TESTED.
 - **Cycle**: 6
-- **E2E Stack**: NEEDS_REBUILD — Seed script change (portal resync added) + frontend change (GAP-PORTAL-07 URL param fix). Rebuild seed container and frontend.
+- **E2E Stack**: READY — Full tear-down + rebuild completed (e2e-down.sh + e2e-up.sh). All 6/6 services healthy. Frontend rebuilt with PR #789 (portal login URL param fix). Seed rebuilt with PR #787 (portal resync step). Fresh database seeded with portal resync.
 - **Branch**: `bugfix_cycle_regression_2026-03-19`
 - **Scenario**: `qa/testplan/regression-test-suite.md`
 - **Focus**: Full regression test suite across all implemented features
@@ -198,3 +198,4 @@
 | 2026-03-20T23:50Z | Product | GAP-PORTAL-07 triaged. Root cause confirmed: `frontend/app/portal/page.tsx` line 29 initializes `orgSlug` state to `""` and never reads `useSearchParams()`. Existing `useEffect` on line 67 already auto-fetches branding when `orgSlug` is non-empty, so fix is just initializing state from URL param. Spec: `fix-specs/GAP-PORTAL-07.md`. -> SPEC_READY. Effort: XS. |
 | 2026-03-20T07:38Z | Dev | GAP-PORTAL-02/03/04 FIXED via PR #787 (squash-merged to bugfix_cycle_regression_2026-03-19). Added portal resync curl call (`POST /internal/portal/resync/{orgId}` with X-API-KEY header) as Step 8 in `compose/seed/seed.sh` (fatal on failure) and as final step in `compose/seed/rich-seed.sh` (non-fatal warning). Seed/infra change — NEEDS_REBUILD (reseed required to pick up script changes). |
 | 2026-03-20T07:43Z | Dev | GAP-PORTAL-07 FIXED via PR #789 (squash-merged). Imported `useSearchParams` from `next/navigation`, initialized `orgSlug` state from `searchParams.get("orgId")`. Extracted component body into `PortalLoginContent` and wrapped in `<Suspense>` (Next.js requirement for `useSearchParams`). Fixed pre-existing test: added `useSearchParams` mock, corrected assertion key `orgSlug` -> `orgId`. Build passes. 264/264 test files pass (1607 tests). Frontend change — NEEDS_REBUILD. |
+| 2026-03-20T07:50Z | Infra | Full E2E stack tear-down + rebuild (e2e-down.sh + e2e-up.sh). All 6/6 services healthy. Frontend rebuilt with PR #789 fix. Seed rebuilt with PR #787 portal resync. Portal read model populated: 11 tables in `portal` schema — portal_projects: 1 row, all others: 0 rows (expected for base seed data). Seed log confirms "Step 8: Sync portal read model — [ok] Portal resync (HTTP 200)". Smoke tests: HTTP 200 on localhost:3001 (frontend) and localhost:8081/actuator/health (backend). Stack status -> READY for Cycle 7 re-verification of GAP-PORTAL-02/03/04 and GAP-PORTAL-07. |

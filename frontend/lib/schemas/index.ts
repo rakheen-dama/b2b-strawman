@@ -15,3 +15,6 @@ export type { InformationOfficerFormData } from "./data-protection";
 
 export { logDsarRequestSchema, dsarStatusTransitionSchema, processingActivitySchema } from "./data-protection";
 export type { LogDsarRequestFormData, DsarStatusTransitionFormData, ProcessingActivityFormData } from "./data-protection";
+
+export { filingStatusSchema } from "./deadline";
+export type { FilingStatusFormData } from "./deadline";

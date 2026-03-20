@@ -3,9 +3,9 @@ export interface CalculatedDeadline {
   customerName: string;
   deadlineTypeSlug: string;
   deadlineTypeName: string;
-  category: string; // "tax" | "corporate" | "vat" | "payroll"
+  category: "tax" | "corporate" | "vat" | "payroll";
   dueDate: string; // ISO date "2026-08-31"
-  status: string; // "pending" | "filed" | "overdue" | "not_applicable"
+  status: "pending" | "filed" | "overdue" | "not_applicable";
   linkedProjectId: string | null;
   filingStatusId: string | null;
 }

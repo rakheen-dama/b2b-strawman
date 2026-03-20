@@ -141,6 +141,7 @@ export const NAV_GROUPS: NavGroup[] = [
         href: (slug) => `/org/${slug}/deadlines`,
         icon: CalendarClock,
         exact: true,
+        requiredCapability: "CUSTOMER_MANAGEMENT",
         requiredModule: "regulatory_deadlines",
       },
     ],

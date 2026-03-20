@@ -6,6 +6,8 @@ import { ScheduleList } from "@/components/schedules/ScheduleList";
 import { ScheduleCreateDialog } from "@/components/schedules/ScheduleCreateDialog";
 import { getSchedules } from "@/lib/api/schedules";
 import { getProjectTemplates } from "@/lib/api/templates";
+import { getTemplates } from "@/lib/api/document-templates";
+import { listRequestTemplates } from "@/lib/api/information-requests";
 import { api } from "@/lib/api";
 import type { ScheduleResponse } from "@/lib/api/schedules";
 import type { ProjectTemplateResponse } from "@/lib/api/templates";
@@ -29,6 +31,8 @@ export default async function SchedulesPage({
   let activeTemplates: ProjectTemplateResponse[] = [];
   let orgMembers: OrgMember[] = [];
   let customers: Customer[] = [];
+  let documentTemplates: Array<{ slug: string; name: string }> = [];
+  let requestTemplateOptions: Array<{ slug: string; name: string }> = [];
 
   try {
     schedules = await getSchedules();
@@ -50,6 +54,25 @@ export default async function SchedulesPage({
     ]);
     if (membersResult.status === "fulfilled") orgMembers = membersResult.value;
     if (customersResult.status === "fulfilled") customers = customersResult.value;
+
+    try {
+      const allDocTemplates = await getTemplates(undefined, "PROJECT");
+      documentTemplates = allDocTemplates
+        .filter((t) => t.active)
+        .map((t) => ({ slug: t.slug, name: t.name }));
+    } catch (e) {
+      console.error("Failed to fetch document templates", e);
+    }
+
+    try {
+      const allRequestTemplates = await listRequestTemplates(true);
+      requestTemplateOptions = allRequestTemplates.map((t) => ({
+        slug: t.id,
+        name: t.name,
+      }));
+    } catch (e) {
+      console.error("Failed to fetch request templates", e);
+    }
   }
 
   return (
@@ -70,6 +93,8 @@ export default async function SchedulesPage({
             templates={activeTemplates}
             customers={customers}
             orgMembers={orgMembers}
+            documentTemplates={documentTemplates}
+            requestTemplates={requestTemplateOptions}
           >
             <Button size="sm">
               <Plus className="mr-1.5 size-4" />

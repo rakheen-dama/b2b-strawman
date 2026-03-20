@@ -20,12 +20,22 @@ import { FREQUENCY_OPTIONS } from "@/lib/schedule-constants";
 import type { RecurrenceFrequency } from "@/lib/schedule-constants";
 import type { ProjectTemplateResponse } from "@/lib/api/templates";
 import type { OrgMember, Customer } from "@/lib/types";
+import {
+  PostCreateActionsSection,
+} from "@/components/schedules/PostCreateActionsSection";
+import type {
+  PostCreateActions,
+  DocumentTemplateOption,
+  RequestTemplateOption,
+} from "@/components/schedules/PostCreateActionsSection";
 
 interface ScheduleCreateDialogProps {
   slug: string;
   templates: ProjectTemplateResponse[];
   customers: Customer[];
   orgMembers: OrgMember[];
+  documentTemplates: DocumentTemplateOption[];
+  requestTemplates: RequestTemplateOption[];
   children: React.ReactNode;
 }
 
@@ -37,6 +47,8 @@ export function ScheduleCreateDialog({
   templates,
   customers,
   orgMembers,
+  documentTemplates,
+  requestTemplates,
   children,
 }: ScheduleCreateDialogProps) {
   const [open, setOpen] = useState(false);
@@ -51,6 +63,8 @@ export function ScheduleCreateDialog({
   const [leadTimeDays, setLeadTimeDays] = useState(0);
   const [projectLeadMemberId, setProjectLeadMemberId] = useState("");
   const [nameOverride, setNameOverride] = useState("");
+  const [postCreateActions, setPostCreateActions] =
+    useState<PostCreateActions | null>(null);
 
   const selectedTemplate = templates.find((t) => t.id === selectedTemplateId) ?? null;
   const selectedCustomerName = customers.find((c) => c.id === customerId)?.name;
@@ -73,6 +87,7 @@ export function ScheduleCreateDialog({
       setLeadTimeDays(0);
       setProjectLeadMemberId("");
       setNameOverride("");
+      setPostCreateActions(null);
       setError(null);
     }
     setOpen(newOpen);
@@ -94,6 +109,7 @@ export function ScheduleCreateDialog({
         leadTimeDays,
         projectLeadMemberId: projectLeadMemberId || undefined,
         nameOverride: nameOverride.trim() || undefined,
+        postCreateActions,
       });
 
       if (result.success) {
@@ -254,6 +270,13 @@ export function ScheduleCreateDialog({
               </p>
             )}
           </div>
+
+          <PostCreateActionsSection
+            documentTemplates={documentTemplates}
+            requestTemplates={requestTemplates}
+            value={postCreateActions}
+            onChange={setPostCreateActions}
+          />
 
           {error && <p className="text-sm text-destructive">{error}</p>}
         </div>

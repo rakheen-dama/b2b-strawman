@@ -1,6 +1,8 @@
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api, handleApiError } from "@/lib/api";
 import { getSchedule, getExecutions } from "@/lib/api/schedules";
+import { getTemplates } from "@/lib/api/document-templates";
+import { listRequestTemplates } from "@/lib/api/information-requests";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScheduleEditDialog } from "@/components/schedules/ScheduleEditDialog";
@@ -49,11 +51,32 @@ export default async function ScheduleDetailPage({
   }
 
   let orgMembers: OrgMember[] = [];
+  let documentTemplates: Array<{ slug: string; name: string }> = [];
+  let requestTemplateOptions: Array<{ slug: string; name: string }> = [];
   if (isAdmin) {
     try {
       orgMembers = await api.get<OrgMember[]>("/api/members");
     } catch {
       // Non-fatal: edit dialog won't show member picker
+    }
+
+    try {
+      const allDocTemplates = await getTemplates(undefined, "PROJECT");
+      documentTemplates = allDocTemplates
+        .filter((t) => t.active)
+        .map((t) => ({ slug: t.slug, name: t.name }));
+    } catch {
+      // Non-fatal: edit dialog won't show doc template picker
+    }
+
+    try {
+      const allRequestTemplates = await listRequestTemplates(true);
+      requestTemplateOptions = allRequestTemplates.map((t) => ({
+        slug: t.id,
+        name: t.name,
+      }));
+    } catch {
+      // Non-fatal: edit dialog won't show request template picker
     }
   }
 
@@ -114,7 +137,13 @@ export default async function ScheduleDetailPage({
 
         {isAdmin && schedule.status !== "COMPLETED" && (
           <div className="flex shrink-0 gap-2">
-            <ScheduleEditDialog slug={slug} schedule={schedule} orgMembers={orgMembers}>
+            <ScheduleEditDialog
+              slug={slug}
+              schedule={schedule}
+              orgMembers={orgMembers}
+              documentTemplates={documentTemplates}
+              requestTemplates={requestTemplateOptions}
+            >
               <Button variant="outline" size="sm">
                 <Pencil className="mr-1.5 size-4" />
                 Edit

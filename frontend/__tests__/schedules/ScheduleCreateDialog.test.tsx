@@ -79,6 +79,8 @@ describe("ScheduleCreateDialog", () => {
         templates={TEMPLATES}
         customers={CUSTOMERS}
         orgMembers={MEMBERS}
+        documentTemplates={[]}
+        requestTemplates={[]}
       >
         <button>Create Schedule trigger</button>
       </ScheduleCreateDialog>,
@@ -95,6 +97,8 @@ describe("ScheduleCreateDialog", () => {
         templates={TEMPLATES}
         customers={CUSTOMERS}
         orgMembers={MEMBERS}
+        documentTemplates={[]}
+        requestTemplates={[]}
       >
         <button>Create Schedule trigger freq</button>
       </ScheduleCreateDialog>,
@@ -119,6 +123,8 @@ describe("ScheduleCreateDialog", () => {
         templates={TEMPLATES}
         customers={CUSTOMERS}
         orgMembers={MEMBERS}
+        documentTemplates={[]}
+        requestTemplates={[]}
       >
         <button>Create Schedule trigger date</button>
       </ScheduleCreateDialog>,
@@ -138,6 +144,8 @@ describe("ScheduleCreateDialog", () => {
         templates={TEMPLATES}
         customers={CUSTOMERS}
         orgMembers={MEMBERS}
+        documentTemplates={[]}
+        requestTemplates={[]}
       >
         <button>Create Schedule trigger preview</button>
       </ScheduleCreateDialog>,
@@ -162,6 +170,8 @@ describe("ScheduleCreateDialog", () => {
         templates={TEMPLATES}
         customers={CUSTOMERS}
         orgMembers={MEMBERS}
+        documentTemplates={[]}
+        requestTemplates={[]}
       >
         <button>Create Schedule trigger submit</button>
       </ScheduleCreateDialog>,

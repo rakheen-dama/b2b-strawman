@@ -87,16 +87,20 @@ export function DeadlineSummaryCards({ summaries }: DeadlineSummaryCardsProps) {
                   Pending
                 </p>
               </div>
-              {totals.overdue > 0 && (
-                <div className="text-center">
-                  <p className="font-mono text-2xl font-semibold tabular-nums text-red-600 dark:text-red-400">
-                    {totals.overdue}
-                  </p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Overdue
-                  </p>
-                </div>
-              )}
+              <div className="text-center">
+                <p
+                  className={`font-mono text-2xl font-semibold tabular-nums ${
+                    totals.overdue > 0
+                      ? "text-red-600 dark:text-red-400"
+                      : "text-slate-300 dark:text-slate-600"
+                  }`}
+                >
+                  {totals.overdue}
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Overdue
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>

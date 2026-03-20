@@ -4,11 +4,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FilingStatusDialog } from "@/components/deadlines/FilingStatusDialog";
 import { updateFilingStatus } from "@/app/(app)/org/[slug]/deadlines/actions";
+import { derivePeriodKey } from "@/lib/deadline-utils";
 import type { CalculatedDeadline } from "@/lib/types";
-
-function derivePeriodKey(dueDate: string): string {
-  return dueDate.substring(0, 4);
-}
 
 interface BatchFilingActionsProps {
   selectedIds: Set<string>;
@@ -27,6 +24,7 @@ export function BatchFilingActions({
 }: BatchFilingActionsProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isMarkingNA, setIsMarkingNA] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (selectedIds.size === 0) return null;
 
@@ -36,6 +34,7 @@ export function BatchFilingActions({
 
   async function handleMarkNA() {
     setIsMarkingNA(true);
+    setError(null);
     try {
       const items = selectedDeadlines.map((deadline) => ({
         customerId: deadline.customerId,
@@ -47,7 +46,11 @@ export function BatchFilingActions({
       if (result.success) {
         onFilingSuccess();
         onClearSelection();
+      } else {
+        setError(result.error ?? "Failed to update filing status.");
       }
+    } catch {
+      setError("An unexpected error occurred.");
     } finally {
       setIsMarkingNA(false);
     }
@@ -79,6 +82,9 @@ export function BatchFilingActions({
           <Button size="sm" variant="ghost" onClick={onClearSelection}>
             Clear
           </Button>
+          {error && (
+            <p className="text-sm text-destructive">{error}</p>
+          )}
         </div>
       </div>
       <FilingStatusDialog

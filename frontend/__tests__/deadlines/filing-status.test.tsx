@@ -1,6 +1,6 @@
 import React from "react";
 import { afterEach, beforeEach, vi, describe, it, expect } from "vitest";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 // --- Mocks ---
@@ -99,6 +99,10 @@ describe("FilingStatusDialog", () => {
         ])
       );
     });
+
+    await waitFor(() => {
+      expect(onSuccess).toHaveBeenCalled();
+    });
   });
 });
 
@@ -151,9 +155,30 @@ describe("DeadlineSummaryCards", () => {
     render(<DeadlineSummaryCards summaries={summaries} />);
     expect(screen.getByText("Tax")).toBeInTheDocument();
     expect(screen.getByText("VAT")).toBeInTheDocument();
-    // Tax totals
-    expect(screen.getByText("10")).toBeInTheDocument();
-    // VAT totals
-    expect(screen.getByText("6")).toBeInTheDocument();
+
+    // Helper: find the stat value next to a given label within a card
+    function getStatValue(card: HTMLElement, label: string): string {
+      const cardScope = within(card);
+      const labelEl = cardScope.getByText(label);
+      // The label and value share a parent div.text-center; value is the first <p>
+      const statContainer = labelEl.closest(".text-center")!;
+      return within(statContainer as HTMLElement).getAllByText(/\d+/)[0]
+        .textContent!;
+    }
+
+    const taxCard = screen.getByText("Tax").closest("[data-slot='card']")!;
+    const vatCard = screen.getByText("VAT").closest("[data-slot='card']")!;
+
+    // Tax: total=10, filed=4, pending=5, overdue=1
+    expect(getStatValue(taxCard as HTMLElement, "Total")).toBe("10");
+    expect(getStatValue(taxCard as HTMLElement, "Filed")).toBe("4");
+    expect(getStatValue(taxCard as HTMLElement, "Pending")).toBe("5");
+    expect(getStatValue(taxCard as HTMLElement, "Overdue")).toBe("1");
+
+    // VAT: total=6, filed=3, pending=3, overdue=0
+    expect(getStatValue(vatCard as HTMLElement, "Total")).toBe("6");
+    expect(getStatValue(vatCard as HTMLElement, "Filed")).toBe("3");
+    expect(getStatValue(vatCard as HTMLElement, "Pending")).toBe("3");
+    expect(getStatValue(vatCard as HTMLElement, "Overdue")).toBe("0");
   });
 });

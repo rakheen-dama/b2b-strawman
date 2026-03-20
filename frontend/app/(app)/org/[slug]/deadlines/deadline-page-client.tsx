@@ -85,7 +85,9 @@ export function DeadlinePageClient({
   }, [view, year, month]);
 
   function handleViewChange(v: string) {
-    setView(v as ViewMode);
+    if (v === "list" || v === "calendar" || v === "summary") {
+      setView(v);
+    }
   }
 
   function refetchDeadlines() {

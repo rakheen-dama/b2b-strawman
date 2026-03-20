@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import {
   Dialog,
   DialogContent,
@@ -24,18 +23,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { updateFilingStatus } from "@/app/(app)/org/[slug]/deadlines/actions";
+import { dialogFormSchema, type DialogFormData } from "@/lib/schemas/deadline";
+import { derivePeriodKey } from "@/lib/deadline-utils";
 import type { CalculatedDeadline } from "@/lib/types";
-
-const dialogFormSchema = z.object({
-  notes: z.string().max(1000, "Notes must be 1000 characters or less").optional().or(z.literal("")),
-  referenceNumber: z.string().max(100, "Reference must be 100 characters or less").optional().or(z.literal("")),
-});
-
-type DialogFormData = z.infer<typeof dialogFormSchema>;
-
-function derivePeriodKey(dueDate: string): string {
-  return dueDate.substring(0, 4);
-}
 
 function buildCombinedNotes(referenceNumber?: string, notes?: string): string | undefined {
   const ref = referenceNumber?.trim();
@@ -114,11 +104,11 @@ export function FilingStatusDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Mark as Filed</DialogTitle>
-          {deadlines.length > 1 && (
-            <DialogDescription>
-              Filing {deadlines.length} deadlines
-            </DialogDescription>
-          )}
+          <DialogDescription>
+            {deadlines.length > 1
+              ? `Filing ${deadlines.length} deadlines`
+              : "Mark this deadline as filed"}
+          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

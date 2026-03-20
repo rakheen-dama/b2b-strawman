@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import type { PostCreateActions } from "@/lib/api/schedules";
+
+export type { PostCreateActions };
 
 export interface DocumentTemplateOption {
   slug: string;
@@ -26,17 +29,6 @@ export interface DocumentTemplateOption {
 export interface RequestTemplateOption {
   slug: string;
   name: string;
-}
-
-export interface PostCreateActions {
-  generateDocument?: {
-    templateSlug: string;
-    autoSend: boolean;
-  };
-  sendInfoRequest?: {
-    requestTemplateSlug: string;
-    dueDays: number;
-  };
 }
 
 interface PostCreateActionsSectionProps {
@@ -71,34 +63,48 @@ export function PostCreateActionsSection({
     value?.sendInfoRequest?.dueDays ?? 14,
   );
 
-  // Emit onChange whenever any field changes
-  useEffect(() => {
-    const actions: PostCreateActions = {};
+  const emitOnChange = useCallback(
+    (overrides: {
+      genEnabled?: boolean;
+      docSlug?: string;
+      infoEnabled?: boolean;
+      reqSlug?: string;
+      days?: number;
+    }) => {
+      const genEnabled = overrides.genEnabled ?? generateDocumentEnabled;
+      const docSlug = overrides.docSlug ?? selectedDocTemplateSlug;
+      const infoEnabled = overrides.infoEnabled ?? sendInfoRequestEnabled;
+      const reqSlug = overrides.reqSlug ?? selectedRequestTemplateSlug;
+      const days = overrides.days ?? dueDays;
 
-    if (generateDocumentEnabled && selectedDocTemplateSlug) {
-      actions.generateDocument = {
-        templateSlug: selectedDocTemplateSlug,
-        autoSend: false,
-      };
-    }
+      const actions: PostCreateActions = {};
 
-    if (sendInfoRequestEnabled && selectedRequestTemplateSlug) {
-      actions.sendInfoRequest = {
-        requestTemplateSlug: selectedRequestTemplateSlug,
-        dueDays: dueDays > 0 ? dueDays : 14,
-      };
-    }
+      if (genEnabled && docSlug) {
+        actions.generateDocument = {
+          templateSlug: docSlug,
+          autoSend: false,
+        };
+      }
 
-    const hasActions = Object.keys(actions).length > 0;
-    onChange(hasActions ? actions : null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    generateDocumentEnabled,
-    selectedDocTemplateSlug,
-    sendInfoRequestEnabled,
-    selectedRequestTemplateSlug,
-    dueDays,
-  ]);
+      if (infoEnabled && reqSlug) {
+        actions.sendInfoRequest = {
+          requestTemplateSlug: reqSlug,
+          dueDays: days > 0 ? days : 14,
+        };
+      }
+
+      const hasActions = Object.keys(actions).length > 0;
+      onChange(hasActions ? actions : null);
+    },
+    [
+      generateDocumentEnabled,
+      selectedDocTemplateSlug,
+      sendInfoRequestEnabled,
+      selectedRequestTemplateSlug,
+      dueDays,
+      onChange,
+    ],
+  );
 
   return (
     <div className="space-y-3 border-t border-slate-200 pt-4 dark:border-slate-800">
@@ -118,7 +124,10 @@ export function PostCreateActionsSection({
           <Switch
             id="post-create-generate-doc"
             checked={generateDocumentEnabled}
-            onCheckedChange={setGenerateDocumentEnabled}
+            onCheckedChange={(checked) => {
+              setGenerateDocumentEnabled(checked);
+              emitOnChange({ genEnabled: checked });
+            }}
             size="sm"
           />
           <Label
@@ -138,7 +147,10 @@ export function PostCreateActionsSection({
             ) : (
               <Select
                 value={selectedDocTemplateSlug}
-                onValueChange={setSelectedDocTemplateSlug}
+                onValueChange={(slug) => {
+                  setSelectedDocTemplateSlug(slug);
+                  emitOnChange({ docSlug: slug });
+                }}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select a document template..." />
@@ -187,7 +199,10 @@ export function PostCreateActionsSection({
           <Switch
             id="post-create-send-info-request"
             checked={sendInfoRequestEnabled}
-            onCheckedChange={setSendInfoRequestEnabled}
+            onCheckedChange={(checked) => {
+              setSendInfoRequestEnabled(checked);
+              emitOnChange({ infoEnabled: checked });
+            }}
             size="sm"
           />
           <Label
@@ -207,7 +222,10 @@ export function PostCreateActionsSection({
             ) : (
               <Select
                 value={selectedRequestTemplateSlug}
-                onValueChange={setSelectedRequestTemplateSlug}
+                onValueChange={(slug) => {
+                  setSelectedRequestTemplateSlug(slug);
+                  emitOnChange({ reqSlug: slug });
+                }}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select a request template..." />
@@ -235,9 +253,11 @@ export function PostCreateActionsSection({
                 min={1}
                 max={365}
                 value={dueDays}
-                onChange={(e) =>
-                  setDueDays(Math.max(1, parseInt(e.target.value) || 14))
-                }
+                onChange={(e) => {
+                  const newDays = Math.max(1, parseInt(e.target.value) || 14);
+                  setDueDays(newDays);
+                  emitOnChange({ days: newDays });
+                }}
                 className="w-20"
               />
               <span className="text-xs text-slate-500 dark:text-slate-400">

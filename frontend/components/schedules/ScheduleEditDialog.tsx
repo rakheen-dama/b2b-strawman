@@ -21,10 +21,10 @@ import {
   PostCreateActionsSection,
 } from "@/components/schedules/PostCreateActionsSection";
 import type {
-  PostCreateActions,
   DocumentTemplateOption,
   RequestTemplateOption,
 } from "@/components/schedules/PostCreateActionsSection";
+import type { PostCreateActions } from "@/lib/api/schedules";
 
 interface ScheduleEditDialogProps {
   slug: string;

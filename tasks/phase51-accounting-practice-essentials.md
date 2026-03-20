@@ -31,7 +31,7 @@ The next Flyway tenant migration is **V81** (V80 is taken by `V80__add_complianc
 | 382 | Deadline Calculation Service + Controller | Backend | 381 | M | 382A, 382B | **Done** (PRs #792, #793) |
 | 383 | Post-Schedule Actions (Engagement Kickoff) | Backend | 381 (migration only) | M | 383A, 383B | **Done** (PRs #794, #795) |
 | 384 | Profile Pack Seeders (Rate + Schedule) | Backend | 381 (migration only) | M | 384A, 384B | **Done** (PRs #796, #797) |
-| 385 | Frontend: Deadline Calendar Page | Frontend | 382 | L | 385A, 385B | |
+| 385 | Frontend: Deadline Calendar Page | Frontend | 382 | L | 385A, 385B | **Done** (PRs #798, #799) |
 | 386 | Frontend: Schedule Actions UI + Seeding Feedback + Dashboard Widget | Frontend | 383, 384, 385 | M | 386A, 386B | |
 
 ---
@@ -133,7 +133,7 @@ FRONTEND (requires backend epics 381-384)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 3a | 385 | 385A | Deadlines page (`app/(app)/org/[slug]/deadlines/page.tsx`), server actions (`actions.ts`), `DeadlineListView`, `DeadlineCalendarView`, `DeadlineFilters`, TypeScript types, Zod schemas, nav item in `lib/nav-items.ts` with `requiredModule: "regulatory_deadlines"`. Frontend tests (~5). Frontend only. | **Done** (PR #798) |
-| 3b | 385 | 385B | `FilingStatusDialog`, `BatchFilingActions`, `DeadlineSummaryCards` components. Frontend tests (~4). Frontend only. | |
+| 3b | 385 | 385B | `FilingStatusDialog`, `BatchFilingActions`, `DeadlineSummaryCards` components. Frontend tests (~4). Frontend only. | **Done** (PR #799) |
 
 ### Stage 4: Frontend — Schedule Actions + Dashboard (parallel tracks)
 
@@ -366,7 +366,7 @@ FRONTEND (requires backend epics 381-384)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **385A** | 385.1--385.8 | Deadlines page at `app/(app)/org/[slug]/deadlines/page.tsx`, server actions (`actions.ts`), `DeadlineListView` table component with sort/filter, `DeadlineCalendarView` month grid with deadline count badges, `DeadlineFilters` component (category, status, customer), TypeScript types (`lib/types.ts` extension), Zod schemas (`lib/schemas/deadline.ts`), nav item in `lib/nav-items.ts` with `requiredModule: "regulatory_deadlines"`. Frontend tests (~5). Frontend only. | **Done** (PR #798) |
-| **385B** | 385.9--385.14 | `FilingStatusDialog` component (mark as filed with date, notes, reference fields), `BatchFilingActions` component (multi-select checkbox + batch "Mark as Filed"/"Mark N/A" buttons), `DeadlineSummaryCards` component (category cards with filed/pending/overdue counts), view mode toggle (month/list/summary tabs). Frontend tests (~4). Frontend only. | |
+| **385B** | 385.9--385.14 | `FilingStatusDialog` component (mark as filed with date, notes, reference fields), `BatchFilingActions` component (multi-select checkbox + batch "Mark as Filed"/"Mark N/A" buttons), `DeadlineSummaryCards` component (category cards with filed/pending/overdue counts), view mode toggle (month/list/summary tabs). Frontend tests (~4). Frontend only. | **Done** (PR #799) |
 
 ### Tasks
 

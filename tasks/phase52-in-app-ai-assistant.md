@@ -36,7 +36,7 @@ The next epic number starts at **387**. ADRs 200--204 are already accepted.
 | 387 | LLM Provider Abstraction: Interface, Records, Registry, Anthropic Adapter | Backend | -- | M | 387A, 387B | **Done** (PRs #802, #803) |
 | 388 | Tool Framework + Read Tools (Batch 1: Core Entities) | Backend | 387A | M | 388A, 388B | **Done** (PRs #804, #805) |
 | 389 | Read Tools (Batch 2: Financial + Search) + System Guide | Backend | 387A | M | 389A | **Done** (PR #806) |
-| 390 | Assistant Service + Chat API + Confirmation Flow | Backend | 387, 388, 389 | L | 390A, 390B | |
+| 390 | Assistant Service + Chat API + Confirmation Flow | Backend | 387, 388, 389 | L | 390A, 390B | **Done** (PRs #807, #808) |
 | 391 | Frontend Chat UI: Provider, Panel, Trigger, SSE Hook | Frontend | 390 | L | 391A, 391B | |
 | 392 | Write Tools + Settings Enhancement | Both | 390, 391 | M | 392A, 392B | |
 
@@ -159,7 +159,7 @@ WRITE TOOLS + SETTINGS (parallel)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 2a | 390 | 390A | `AssistantService` orchestration: pre-flight checks (tier, aiEnabled, provider, key), system prompt assembly (guide + tenant context + behavioral instructions), LLM invocation with `Consumer<StreamEvent>`, event routing loop, multi-turn tool execution, confirmation flow (`CompletableFuture` + `ConcurrentHashMap`). Update `IntegrationService.testConnection()` for AI domain. `ChatContext` record. Integration tests (~8). Backend only. | **Done** (PR #807) |
-| 2b | 390 | 390B | `AssistantController`: `POST /api/assistant/chat` (returns `SseEmitter`, virtual thread executor, `ScopedValue` re-binding), `POST /api/assistant/chat/confirm`, `GET /api/settings/integrations/ai/models`. Integration tests (~6). Backend only. | |
+| 2b | 390 | 390B | `AssistantController`: `POST /api/assistant/chat` (returns `SseEmitter`, virtual thread executor, `ScopedValue` re-binding), `POST /api/assistant/chat/confirm`, `GET /api/settings/integrations/ai/models`. Integration tests (~6). Backend only. | **Done** (PR #808) |
 
 ### Stage 3: Frontend Chat UI (sequential)
 
@@ -345,7 +345,7 @@ WRITE TOOLS + SETTINGS (parallel)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **390A** | 390.1--390.8 | `AssistantService` orchestration: `chat()` method with pre-flight checks (PRO tier, aiEnabled, provider configured, key exists), system prompt assembly (guide + tenant context + behavioral instructions), `Consumer<StreamEvent>` event routing loop with multi-turn tool execution, confirmation flow (`CompletableFuture` + `ConcurrentHashMap` + 120s timeout), `confirm()` method. `ChatContext` record. Update `IntegrationService.testConnection()` for AI domain. Integration tests (~8). Backend only. | **Done** (PR #807) |
-| **390B** | 390.2, 390.9--390.15 | `AssistantController`: `POST /api/assistant/chat` with `SseEmitter` (300s timeout), virtual thread executor, `ScopedValue` capture and re-bind (ADR-204). `POST /api/assistant/chat/confirm`. `GET /api/settings/integrations/ai/models`. Integration tests (~6). Backend only. | |
+| **390B** | 390.2, 390.9--390.15 | `AssistantController`: `POST /api/assistant/chat` with `SseEmitter` (300s timeout), virtual thread executor, `ScopedValue` capture and re-bind (ADR-204). `POST /api/assistant/chat/confirm`. `GET /api/settings/integrations/ai/models`. Integration tests (~6). Backend only. | **Done** (PR #808) |
 
 ### Tasks
 

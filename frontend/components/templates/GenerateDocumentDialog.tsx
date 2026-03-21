@@ -16,6 +16,7 @@ import { getTemplateClauses } from "@/lib/actions/template-clause-actions";
 import type { TemplateClauseDetail } from "@/lib/actions/template-clause-actions";
 import { GenerationClauseStep } from "@/components/templates/generation-clause-step";
 import type { SelectedClause } from "@/components/templates/generation-clause-step";
+import { A4PreviewWrapper } from "@/components/documents/a4-preview-wrapper";
 import type { TemplateValidationResult } from "@/lib/types";
 import { SendForAcceptanceDialog } from "@/components/acceptance/SendForAcceptanceDialog";
 
@@ -287,16 +288,7 @@ export function GenerateDocumentDialog({
                 </div>
               )}
 
-              {html && (
-                <div className="overflow-hidden rounded-lg border border-slate-200 dark:border-slate-800">
-                  <iframe
-                    sandbox=""
-                    srcDoc={html}
-                    className="h-[500px] w-full bg-white"
-                    title="Document Preview"
-                  />
-                </div>
-              )}
+              {html && <A4PreviewWrapper html={html} />}
 
               {validationResult && !validationResult.allPresent && (
                 <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-3 dark:border-yellow-900 dark:bg-yellow-950/50">

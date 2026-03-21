@@ -38,6 +38,7 @@ import type {
   Customer,
   InvoiceResponse,
 } from "@/lib/types";
+import { A4PreviewWrapper } from "@/components/documents/a4-preview-wrapper";
 
 interface TemplatePreviewDialogProps {
   templateId: string;
@@ -239,16 +240,7 @@ export function TemplatePreviewDialog({
 
           {error && <p className="text-sm text-destructive">{error}</p>}
 
-          {html && (
-            <div className="overflow-hidden rounded-lg border border-slate-200 dark:border-slate-800">
-              <iframe
-                sandbox=""
-                srcDoc={html}
-                className="h-[500px] w-full bg-white"
-                title="Template Preview"
-              />
-            </div>
-          )}
+          {html && <A4PreviewWrapper html={html} />}
         </div>
       </DialogContent>
     </Dialog>

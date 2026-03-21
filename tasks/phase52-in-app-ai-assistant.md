@@ -158,7 +158,7 @@ WRITE TOOLS + SETTINGS (parallel)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 2a | 390 | 390A | `AssistantService` orchestration: pre-flight checks (tier, aiEnabled, provider, key), system prompt assembly (guide + tenant context + behavioral instructions), LLM invocation with `Consumer<StreamEvent>`, event routing loop, multi-turn tool execution, confirmation flow (`CompletableFuture` + `ConcurrentHashMap`). Update `IntegrationService.testConnection()` for AI domain. `ChatContext` record. Integration tests (~8). Backend only. | |
+| 2a | 390 | 390A | `AssistantService` orchestration: pre-flight checks (tier, aiEnabled, provider, key), system prompt assembly (guide + tenant context + behavioral instructions), LLM invocation with `Consumer<StreamEvent>`, event routing loop, multi-turn tool execution, confirmation flow (`CompletableFuture` + `ConcurrentHashMap`). Update `IntegrationService.testConnection()` for AI domain. `ChatContext` record. Integration tests (~8). Backend only. | **Done** (PR #807) |
 | 2b | 390 | 390B | `AssistantController`: `POST /api/assistant/chat` (returns `SseEmitter`, virtual thread executor, `ScopedValue` re-binding), `POST /api/assistant/chat/confirm`, `GET /api/settings/integrations/ai/models`. Integration tests (~6). Backend only. | |
 
 ### Stage 3: Frontend Chat UI (sequential)
@@ -344,7 +344,7 @@ WRITE TOOLS + SETTINGS (parallel)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **390A** | 390.1--390.8 | `AssistantService` orchestration: `chat()` method with pre-flight checks (PRO tier, aiEnabled, provider configured, key exists), system prompt assembly (guide + tenant context + behavioral instructions), `Consumer<StreamEvent>` event routing loop with multi-turn tool execution, confirmation flow (`CompletableFuture` + `ConcurrentHashMap` + 120s timeout), `confirm()` method. `ChatContext` record. Update `IntegrationService.testConnection()` for AI domain. Integration tests (~8). Backend only. | |
+| **390A** | 390.1--390.8 | `AssistantService` orchestration: `chat()` method with pre-flight checks (PRO tier, aiEnabled, provider configured, key exists), system prompt assembly (guide + tenant context + behavioral instructions), `Consumer<StreamEvent>` event routing loop with multi-turn tool execution, confirmation flow (`CompletableFuture` + `ConcurrentHashMap` + 120s timeout), `confirm()` method. `ChatContext` record. Update `IntegrationService.testConnection()` for AI domain. Integration tests (~8). Backend only. | **Done** (PR #807) |
 | **390B** | 390.2, 390.9--390.15 | `AssistantController`: `POST /api/assistant/chat` with `SseEmitter` (300s timeout), virtual thread executor, `ScopedValue` capture and re-bind (ADR-204). `POST /api/assistant/chat/confirm`. `GET /api/settings/integrations/ai/models`. Integration tests (~6). Backend only. | |
 
 ### Tasks

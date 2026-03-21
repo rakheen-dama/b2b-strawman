@@ -8,7 +8,9 @@ import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.assistant.tool.AssistantToolRegistry;
 import io.b2mash.b2b.b2bstrawman.assistant.tool.TenantToolContext;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerService;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
@@ -16,6 +18,8 @@ import io.b2mash.b2b.b2bstrawman.project.ProjectService;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
+import io.b2mash.b2b.b2bstrawman.task.TaskService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.time.LocalDate;
 import java.util.Map;
@@ -48,14 +52,17 @@ class WriteToolsTest {
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private ProjectService projectService;
   @Autowired private CustomerService customerService;
+  @Autowired private CustomerRepository customerRepository;
   @Autowired private ProjectRepository projectRepository;
   @Autowired private TaskRepository taskRepository;
+  @Autowired private TaskService taskService;
   @Autowired private TimeEntryRepository timeEntryRepository;
   @Autowired private AssistantToolRegistry assistantToolRegistry;
 
   @Autowired private CreateProjectTool createProjectTool;
   @Autowired private UpdateProjectTool updateProjectTool;
   @Autowired private CreateCustomerTool createCustomerTool;
+  @Autowired private UpdateCustomerTool updateCustomerTool;
   @Autowired private CreateTaskTool createTaskTool;
   @Autowired private UpdateTaskTool updateTaskTool;
   @Autowired private LogTimeEntryTool logTimeEntryTool;
@@ -209,10 +216,107 @@ class WriteToolsTest {
   }
 
   @Test
+  void updateCustomerToolUpdatesCustomerFields() {
+    runInTenantScope(
+        () -> {
+          // Create a customer first
+          var ctx = buildContext(Set.of("CUSTOMER_MANAGEMENT"));
+          @SuppressWarnings("unchecked")
+          var createResult =
+              (Map<String, Object>)
+                  createCustomerTool.execute(
+                      Map.of(
+                          "name", "Update Test Customer",
+                          "email", "before@test.com",
+                          "phone", "111-111-1111"),
+                      ctx);
+          var customerId = (String) createResult.get("id");
+
+          // Update name and email
+          @SuppressWarnings("unchecked")
+          var result =
+              (Map<String, Object>)
+                  updateCustomerTool.execute(
+                      Map.of(
+                          "customerId", customerId,
+                          "name", "Updated Customer Name",
+                          "email", "after@test.com"),
+                      ctx);
+
+          assertThat(result.get("name")).isEqualTo("Updated Customer Name");
+          assertThat(result.get("email")).isEqualTo("after@test.com");
+
+          // Verify persisted
+          var updated = customerRepository.findById(UUID.fromString(customerId));
+          assertThat(updated).isPresent();
+          assertThat(updated.get().getName()).isEqualTo("Updated Customer Name");
+          assertThat(updated.get().getEmail()).isEqualTo("after@test.com");
+        });
+  }
+
+  @Test
+  void updateTaskToolUpdatesTaskTitleAndStatus() {
+    runInTenantScope(
+        () -> {
+          // Create project and task
+          var project = projectService.createProject("UpdateTask Host", "desc", memberIdOwner);
+          var actor = new ActorContext(memberIdOwner, "owner");
+          var task =
+              taskService.createTask(
+                  project.getId(), "Original Title", null, "MEDIUM", "TASK", null, actor);
+
+          var ctx = buildContext(Set.of());
+          @SuppressWarnings("unchecked")
+          var result =
+              (Map<String, Object>)
+                  updateTaskTool.execute(
+                      Map.of(
+                          "taskId", task.getId().toString(),
+                          "title", "Updated Title",
+                          "status", "IN_PROGRESS"),
+                      ctx);
+
+          assertThat(result.get("title")).isEqualTo("Updated Title");
+          assertThat(result.get("status")).isEqualTo("IN_PROGRESS");
+
+          // Verify persisted
+          var updated = taskRepository.findById(task.getId());
+          assertThat(updated).isPresent();
+          assertThat(updated.get().getTitle()).isEqualTo("Updated Title");
+          assertThat(updated.get().getStatus().name()).isEqualTo("IN_PROGRESS");
+        });
+  }
+
+  @Test
+  void createInvoiceDraftToolCreatesDraftInvoice() {
+    runInTenantScope(
+        () -> {
+          // Create an ACTIVE customer (invoices require ACTIVE status)
+          var customer =
+              TestCustomerFactory.createActiveCustomerWithPrerequisiteFields(
+                  "Invoice Test Customer", "invoice_test@test.com", memberIdOwner);
+          customer = customerRepository.save(customer);
+
+          var ctx = buildContext(Set.of("INVOICING"));
+          @SuppressWarnings("unchecked")
+          var result =
+              (Map<String, Object>)
+                  createInvoiceDraftTool.execute(
+                      Map.of("customerId", customer.getId().toString()), ctx);
+
+          assertThat(result).containsKey("id");
+          assertThat(result).containsKey("invoiceNumber");
+          assertThat(result.get("status")).isEqualTo("DRAFT");
+          assertThat(result).containsKey("totalAmount");
+        });
+  }
+
+  @Test
   void allWriteToolsRequireConfirmation() {
     assertThat(createProjectTool.requiresConfirmation()).isTrue();
     assertThat(updateProjectTool.requiresConfirmation()).isTrue();
     assertThat(createCustomerTool.requiresConfirmation()).isTrue();
+    assertThat(updateCustomerTool.requiresConfirmation()).isTrue();
     assertThat(createTaskTool.requiresConfirmation()).isTrue();
     assertThat(updateTaskTool.requiresConfirmation()).isTrue();
     assertThat(logTimeEntryTool.requiresConfirmation()).isTrue();

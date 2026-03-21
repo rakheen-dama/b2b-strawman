@@ -66,9 +66,21 @@ public class CreateTaskTool implements AssistantTool {
 
     var title = (String) input.get("title");
     var description = (String) input.get("description");
+    var assigneeIdStr = (String) input.get("assigneeId");
+
+    UUID assigneeId = null;
+    if (assigneeIdStr != null && !assigneeIdStr.isBlank()) {
+      try {
+        assigneeId = UUID.fromString(assigneeIdStr);
+      } catch (IllegalArgumentException e) {
+        return Map.of("error", "Invalid assigneeId format: " + assigneeIdStr);
+      }
+    }
 
     var actor = new ActorContext(context.memberId(), context.orgRole());
-    var task = taskService.createTask(projectId, title, description, "MEDIUM", "TASK", null, actor);
+    var task =
+        taskService.createTask(
+            projectId, title, description, "MEDIUM", "TASK", null, actor, null, null, assigneeId);
 
     var result = new LinkedHashMap<String, Object>();
     result.put("id", task.getId().toString());

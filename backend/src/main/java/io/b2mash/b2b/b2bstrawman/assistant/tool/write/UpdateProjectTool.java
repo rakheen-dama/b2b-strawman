@@ -27,7 +27,8 @@ public class UpdateProjectTool implements AssistantTool {
 
   @Override
   public String description() {
-    return "Update an existing project's name, description, or customer link.";
+    return "Update an existing project's name, description, or customer link."
+        + " Status changes (complete, archive) must go through dedicated project lifecycle actions.";
   }
 
   @Override
@@ -39,12 +40,6 @@ public class UpdateProjectTool implements AssistantTool {
                 "projectId",
                     Map.of("type", "string", "description", "UUID of the project to update"),
                 "name", Map.of("type", "string", "description", "New project name"),
-                "status",
-                    Map.of(
-                        "type",
-                        "string",
-                        "description",
-                        "New project status: ACTIVE, COMPLETED, or ARCHIVED"),
                 "customerId",
                     Map.of("type", "string", "description", "UUID of the customer to link")),
         "required", List.of("projectId"));

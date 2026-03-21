@@ -26,7 +26,8 @@ public class CreateProjectTool implements AssistantTool {
 
   @Override
   public String description() {
-    return "Create a new project in the current organization.";
+    return "Create a new project in the current organization."
+        + " Document templates are applied at generation time, not project creation.";
   }
 
   @Override
@@ -37,9 +38,7 @@ public class CreateProjectTool implements AssistantTool {
             Map.of(
                 "name", Map.of("type", "string", "description", "Name of the project"),
                 "customerId",
-                    Map.of("type", "string", "description", "UUID of the customer to link"),
-                "templateId",
-                    Map.of("type", "string", "description", "UUID of the template to apply")),
+                    Map.of("type", "string", "description", "UUID of the customer to link")),
         "required", List.of("name"));
   }
 

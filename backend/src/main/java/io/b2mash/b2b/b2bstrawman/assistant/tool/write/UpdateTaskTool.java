@@ -2,7 +2,9 @@ package io.b2mash.b2b.b2bstrawman.assistant.tool.write;
 
 import io.b2mash.b2b.b2bstrawman.assistant.tool.AssistantTool;
 import io.b2mash.b2b.b2bstrawman.assistant.tool.TenantToolContext;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
+import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.task.TaskService;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -15,9 +17,11 @@ import org.springframework.stereotype.Component;
 public class UpdateTaskTool implements AssistantTool {
 
   private final TaskService taskService;
+  private final TaskRepository taskRepository;
 
-  public UpdateTaskTool(TaskService taskService) {
+  public UpdateTaskTool(TaskService taskService, TaskRepository taskRepository) {
     this.taskService = taskService;
+    this.taskRepository = taskRepository;
   }
 
   @Override
@@ -82,9 +86,27 @@ public class UpdateTaskTool implements AssistantTool {
       }
     }
 
+    // Read current task to backfill required fields the LLM may not provide
+    var currentTask =
+        taskRepository
+            .findById(taskId)
+            .orElseThrow(() -> new ResourceNotFoundException("Task", taskId));
+    var effectiveTitle = title != null ? title : currentTask.getTitle();
+    var effectivePriority = currentTask.getPriority().name();
+    var effectiveStatus = status != null ? status : currentTask.getStatus().name();
+
     var actor = new ActorContext(context.memberId(), context.orgRole());
     var task =
-        taskService.updateTask(taskId, title, null, null, status, null, null, assigneeId, actor);
+        taskService.updateTask(
+            taskId,
+            effectiveTitle,
+            null,
+            effectivePriority,
+            effectiveStatus,
+            null,
+            null,
+            assigneeId,
+            actor);
 
     var result = new LinkedHashMap<String, Object>();
     result.put("id", task.getId().toString());

@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { cleanup, render, screen, within } from "@testing-library/react";
-import { PersonalKpis } from "@/components/my-work/personal-kpis";
+import { cleanup, render, screen } from "@testing-library/react";
 import { TimeBreakdown } from "@/components/my-work/time-breakdown";
 import {
   UrgencyTaskList,
@@ -110,30 +109,6 @@ function makeTask(
   };
 }
 
-describe("PersonalKpis on My Work page", () => {
-  afterEach(() => {
-    cleanup();
-  });
-
-  it("renders personal KPIs when data is available", () => {
-    render(
-      <PersonalKpis data={mockDashboardData} periodLabel="This Week" />
-    );
-    expect(screen.getByText("Hours This Week")).toBeInTheDocument();
-    expect(screen.getByText("38.5h")).toBeInTheDocument();
-    expect(screen.getByText("Billable %")).toBeInTheDocument();
-    expect(screen.getByText("78%")).toBeInTheDocument();
-    expect(screen.getByText("Overdue Tasks")).toBeInTheDocument();
-    expect(screen.getByText("2")).toBeInTheDocument();
-  });
-
-  it("renders empty state when data is null", () => {
-    render(<PersonalKpis data={null} periodLabel="This Week" />);
-    expect(screen.getByText("Hours This Week")).toBeInTheDocument();
-    expect(screen.getAllByText("No data")).toHaveLength(3);
-  });
-});
-
 describe("TimeBreakdown on My Work page", () => {
   afterEach(() => {
     cleanup();
@@ -236,7 +211,7 @@ describe("My Work page renders new layout components", () => {
     cleanup();
   });
 
-  it("renders TodaysAgenda and WeeklyRhythmStrip (not PersonalKpis)", () => {
+  it("renders TodaysAgenda and WeeklyRhythmStrip", () => {
     render(
       <>
         <TodaysAgenda

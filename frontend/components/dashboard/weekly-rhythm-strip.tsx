@@ -40,6 +40,8 @@ export function WeeklyRhythmStrip({
             <button
               key={i}
               data-testid={`rhythm-day-${i}`}
+              aria-label={`${label}: ${hours.toFixed(1)} hours logged`}
+              aria-pressed={isSelected}
               onClick={() => onDaySelect(isSelected ? null : i)}
               className={cn(
                 "flex flex-1 cursor-pointer flex-col items-center gap-0.5 rounded pb-1 pt-1 hover:bg-slate-50",

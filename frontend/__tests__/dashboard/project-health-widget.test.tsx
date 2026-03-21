@@ -45,7 +45,7 @@ const mockProjects: ProjectHealth[] = [
     tasksDone: 5,
     tasksTotal: 30,
     completionPercent: 16.7,
-    budgetConsumedPercent: 95.0,
+    budgetConsumedPercent: 120.0,
     hoursLogged: 200.0,
   },
 ];
@@ -91,39 +91,40 @@ describe("ProjectHealthWidget", () => {
     expect(screen.getByText("Beta Inc")).toBeInTheDocument();
   });
 
-  it("shows health reasons", () => {
+  it("shows task ratio and hours in dense row", () => {
     renderWidget(
       <ProjectHealthWidget projects={mockProjects} orgSlug="acme" />
     );
 
-    expect(
-      screen.getByText(/Budget 85% consumed/)
-    ).toBeInTheDocument();
+    // Task ratios shown as X/Y
+    expect(screen.getByText("20/40")).toBeInTheDocument();
+    expect(screen.getByText("15/20")).toBeInTheDocument();
+    expect(screen.getByText("5/30")).toBeInTheDocument();
   });
 
-  it("filters to AT_RISK projects when At Risk tab clicked", () => {
+  it("filters to at-risk and critical projects when At Risk tab clicked", () => {
     renderWidget(
       <ProjectHealthWidget projects={mockProjects} orgSlug="acme" />
     );
 
     fireEvent.click(screen.getByRole("button", { name: "At Risk" }));
 
+    // At Risk filter includes both AT_RISK and CRITICAL
     expect(screen.getByText("Website Redesign")).toBeInTheDocument();
+    expect(screen.getByText("API Migration")).toBeInTheDocument();
     expect(screen.queryByText("Mobile App")).not.toBeInTheDocument();
-    expect(screen.queryByText("API Migration")).not.toBeInTheDocument();
   });
 
-  it("filters to CRITICAL projects when Critical tab clicked", () => {
+  it("filters to over-budget projects when Over Budget tab clicked", () => {
     renderWidget(
       <ProjectHealthWidget projects={mockProjects} orgSlug="acme" />
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Critical" }));
+    fireEvent.click(screen.getByRole("button", { name: "Over Budget" }));
 
+    // Only proj-3 has budgetConsumedPercent > 100
     expect(screen.getByText("API Migration")).toBeInTheDocument();
-    expect(
-      screen.queryByText("Website Redesign")
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText("Website Redesign")).not.toBeInTheDocument();
     expect(screen.queryByText("Mobile App")).not.toBeInTheDocument();
   });
 
@@ -159,7 +160,7 @@ describe("ProjectHealthWidget", () => {
       screen.getByRole("button", { name: "At Risk" })
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Critical" })
+      screen.getByRole("button", { name: "Over Budget" })
     ).toBeInTheDocument();
   });
 
@@ -183,8 +184,16 @@ describe("ProjectHealthWidget", () => {
       <ProjectHealthWidget projects={healthyOnly} orgSlug="acme" />
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Critical" }));
+    fireEvent.click(screen.getByRole("button", { name: "Over Budget" }));
 
-    expect(screen.getByText("No critical projects")).toBeInTheDocument();
+    expect(screen.getByText("No matching projects")).toBeInTheDocument();
+  });
+
+  it("renders project-health-panel data-testid", () => {
+    renderWidget(
+      <ProjectHealthWidget projects={mockProjects} orgSlug="acme" />
+    );
+
+    expect(screen.getByTestId("project-health-panel")).toBeInTheDocument();
   });
 });

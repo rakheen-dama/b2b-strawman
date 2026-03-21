@@ -8,7 +8,9 @@ import {
   CardHeader,
   CardTitle,
   CardContent,
+  CardFooter,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { fetchDeadlineSummary } from "@/app/(app)/org/[slug]/deadlines/actions";
 import type { DeadlineSummary } from "@/lib/types";
 
@@ -43,20 +45,6 @@ function aggregateSummaries(summaries: DeadlineSummary[]) {
   );
 }
 
-function DeadlineCardShell({ children }: { children: React.ReactNode }) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base">
-          <CalendarClock className="size-4" />
-          Upcoming Deadlines
-        </CardTitle>
-      </CardHeader>
-      {children}
-    </Card>
-  );
-}
-
 export function DeadlineWidget({ orgSlug }: DeadlineWidgetProps) {
   const { from, to } = getCurrentMonthRange();
 
@@ -72,25 +60,37 @@ export function DeadlineWidget({ orgSlug }: DeadlineWidgetProps) {
 
   if (isLoading) {
     return (
-      <DeadlineCardShell>
+      <Card data-testid="deadline-widget">
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-sm font-medium">
+            <CalendarClock className="size-4" />
+            Deadlines
+          </CardTitle>
+        </CardHeader>
         <CardContent>
-          <p className="text-sm italic text-muted-foreground">
-            Loading deadline data&hellip;
+          <p className="text-xs italic text-slate-500">
+            Loading&hellip;
           </p>
         </CardContent>
-      </DeadlineCardShell>
+      </Card>
     );
   }
 
   if (error || !data) {
     return (
-      <DeadlineCardShell>
+      <Card data-testid="deadline-widget">
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-sm font-medium">
+            <CalendarClock className="size-4" />
+            Deadlines
+          </CardTitle>
+        </CardHeader>
         <CardContent>
-          <p className="text-sm italic text-muted-foreground">
+          <p className="text-xs italic text-slate-500">
             Unable to load deadline data.
           </p>
         </CardContent>
-      </DeadlineCardShell>
+      </Card>
     );
   }
 
@@ -98,64 +98,84 @@ export function DeadlineWidget({ orgSlug }: DeadlineWidgetProps) {
 
   if (totals.total === 0) {
     return (
-      <DeadlineCardShell>
+      <Card data-testid="deadline-widget">
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-sm font-medium">
+            <CalendarClock className="size-4" />
+            Deadlines
+          </CardTitle>
+        </CardHeader>
         <CardContent>
-          <p className="text-sm italic text-muted-foreground">
+          <p className="text-xs italic text-slate-500">
             No deadlines this month.
           </p>
         </CardContent>
-      </DeadlineCardShell>
+      </Card>
     );
   }
 
   return (
-    <DeadlineCardShell>
-      <CardContent className="space-y-3">
-        <div className="flex items-baseline gap-4">
-          <div className="text-center">
-            <p className="font-mono text-2xl font-semibold tabular-nums text-slate-950 dark:text-slate-50">
-              {totals.total}
-            </p>
-            <p className="text-xs text-slate-500 dark:text-slate-400">Total</p>
-          </div>
-          <div className="text-center">
-            <p className="font-mono text-2xl font-semibold tabular-nums text-teal-600 dark:text-teal-400">
-              {totals.filed}
-            </p>
-            <p className="text-xs text-slate-500 dark:text-slate-400">Filed</p>
-          </div>
-          <div className="text-center">
-            <p className="font-mono text-2xl font-semibold tabular-nums text-amber-600 dark:text-amber-400">
-              {totals.pending}
-            </p>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Pending
-            </p>
-          </div>
-          <div className="text-center">
-            <p
-              className={`font-mono text-2xl font-semibold tabular-nums ${
-                totals.overdue > 0
-                  ? "text-red-600 dark:text-red-400"
-                  : "text-slate-300 dark:text-slate-600"
-              }`}
-            >
-              {totals.overdue}
-            </p>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Overdue
-            </p>
-          </div>
+    <Card data-testid="deadline-widget">
+      <CardHeader className="pb-2">
+        <CardTitle className="flex items-center gap-2 text-sm font-medium">
+          <CalendarClock className="size-4" />
+          Deadlines
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-1 pt-0">
+        {/* Compact list rows */}
+        <div className="flex items-center justify-between rounded-md px-2 py-1.5">
+          <span className="text-xs text-slate-600 dark:text-slate-400">
+            Total
+          </span>
+          <span className="font-mono text-sm font-bold tabular-nums">
+            {totals.total}
+          </span>
         </div>
+        <div className="flex items-center justify-between rounded-md px-2 py-1.5">
+          <span className="text-xs text-teal-600 dark:text-teal-400">
+            Filed
+          </span>
+          <span className="font-mono text-sm font-bold tabular-nums text-teal-600 dark:text-teal-400">
+            {totals.filed}
+          </span>
+        </div>
+        <div className="flex items-center justify-between rounded-md px-2 py-1.5">
+          <span className="text-xs text-amber-600 dark:text-amber-400">
+            Pending
+          </span>
+          <span className="font-mono text-sm font-bold tabular-nums text-amber-600 dark:text-amber-400">
+            {totals.pending}
+          </span>
+        </div>
+        {totals.overdue > 0 && (
+          <div className="flex items-center justify-between rounded-md bg-red-50/50 px-2 py-1.5 dark:bg-red-950/20">
+            <span className="text-xs font-medium text-red-600 dark:text-red-400">
+              Overdue
+            </span>
+            <span className="font-mono text-sm font-bold tabular-nums text-red-600 dark:text-red-400">
+              {totals.overdue}
+            </span>
+          </div>
+        )}
+        {totals.overdue === 0 && (
+          <div className="flex items-center justify-between rounded-md px-2 py-1.5">
+            <span className="text-xs text-slate-400 dark:text-slate-500">
+              Overdue
+            </span>
+            <span className="font-mono text-sm font-bold tabular-nums text-slate-300 dark:text-slate-600">
+              0
+            </span>
+          </div>
+        )}
       </CardContent>
-      <div className="border-t border-slate-200 px-6 py-3 dark:border-slate-700">
-        <Link
-          href={`/org/${orgSlug}/deadlines`}
-          className="text-sm text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300"
-        >
-          View All &rarr;
-        </Link>
-      </div>
-    </DeadlineCardShell>
+      <CardFooter className="pt-0">
+        <Button variant="ghost" size="sm" className="h-7 text-xs text-slate-500" asChild>
+          <Link href={`/org/${orgSlug}/deadlines`}>
+            View All &rarr;
+          </Link>
+        </Button>
+      </CardFooter>
+    </Card>
   );
 }

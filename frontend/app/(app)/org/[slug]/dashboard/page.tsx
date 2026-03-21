@@ -1,18 +1,14 @@
-import { getCurrentUserEmail } from "@/lib/auth";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
-import { api, ApiError, handleApiError } from "@/lib/api";
+import { ApiError, handleApiError } from "@/lib/api";
 import { Loader2 } from "lucide-react";
 import { ProvisioningPendingRefresh } from "./provisioning-pending-refresh";
 import { DashboardHeader } from "./dashboard-header";
-import { KpiCardRow } from "@/components/dashboard/kpi-card-row";
+import { MetricsStrip } from "@/components/dashboard/metrics-strip";
 import { ProjectHealthWidget } from "@/components/dashboard/project-health-widget";
 import { TeamWorkloadWidget } from "@/components/dashboard/team-workload-widget";
 import { RecentActivityWidget } from "@/components/dashboard/recent-activity-widget";
-import { IncompleteProfilesWidget } from "@/components/dashboard/incomplete-profiles-widget";
-import { InformationRequestsWidget } from "@/components/dashboard/information-requests-widget";
-import { AutomationsWidget } from "@/components/automations/automations-widget";
-import { TeamCapacityWidget } from "@/components/dashboard/team-capacity-widget";
-import { MyScheduleWidget } from "@/components/dashboard/my-schedule-widget";
+import { AdminStatsColumn } from "@/components/dashboard/admin-stats-column";
+import { MyWeekColumn } from "@/components/dashboard/my-week-column";
 import { DeadlineWidget } from "@/components/dashboard/deadline-widget";
 import { ModuleGate } from "@/components/module-gate";
 import {
@@ -26,14 +22,9 @@ import {
 } from "@/lib/actions/dashboard";
 import {
   getTeamCapacityGrid,
-  listAllocations,
-  listLeaveForMember,
   type TeamCapacityGrid,
-  type AllocationResponse,
-  type LeaveBlockResponse,
 } from "@/lib/api/capacity";
 import { resolveDateRange, getCurrentMonday, formatDate as formatDateUtil, addWeeks } from "@/lib/date-utils";
-import type { OrgMember } from "@/lib/types";
 import { GettingStartedCard } from "@/components/dashboard/getting-started-card";
 
 export default async function OrgDashboardPage({
@@ -62,7 +53,7 @@ export default async function OrgDashboardPage({
       fetchDashboardKpis(from, to),
       fetchProjectHealth(),
       fetchTeamWorkload(from, to),
-      fetchDashboardActivity(10),
+      fetchDashboardActivity(15),
       isAdmin ? fetchAggregatedCompleteness() : Promise.resolve(null),
       isAdmin ? fetchInformationRequestSummary() : Promise.resolve(null),
       isAdmin ? fetchAutomationSummary() : Promise.resolve(null),
@@ -102,96 +93,54 @@ export default async function OrgDashboardPage({
   const weekEndStr = formatDateUtil(weekEnd);
 
   let capacityGrid: TeamCapacityGrid | null = null;
-  let myAllocations: AllocationResponse[] | null = null;
-  let myLeave: LeaveBlockResponse[] | null = null;
-  let myWeeklyCapacity = 40;
 
-  // Fetch capacity grid, email, and members in parallel (all independent)
-  const [gridResult, emailResult, membersResult] = await Promise.all([
-    getTeamCapacityGrid(weekStartStr, weekEndStr).catch(() => null),
-    getCurrentUserEmail().catch(() => null),
-    api.get<OrgMember[]>("/api/members").catch(() => null as OrgMember[] | null),
-  ]);
-  capacityGrid = gridResult;
-
-  // Resolve current member for personal schedule widget
-  if (emailResult && membersResult) {
-    const match = membersResult.find((m) => m.email === emailResult);
-    if (match) {
-      try {
-        const [allocRes, leaveRes] = await Promise.all([
-          listAllocations({ memberId: match.id, weekStart: weekStartStr, weekEnd: weekEndStr }),
-          listLeaveForMember(match.id),
-        ]);
-        myAllocations = allocRes;
-        myLeave = leaveRes;
-        const memberRow = capacityGrid?.members.find((m) => m.memberId === match.id);
-        if (memberRow && memberRow.weeks.length > 0) {
-          myWeeklyCapacity = memberRow.weeks[0].effectiveCapacity;
-        }
-      } catch {
-        // Non-fatal: my schedule widget will show error state
-      }
-    }
-  }
+  // Fetch capacity grid (used by MetricsStrip for team utilization)
+  capacityGrid = await getTeamCapacityGrid(weekStartStr, weekEndStr).catch(() => null);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
+      <GettingStartedCard activeProjectCount={kpis?.activeProjectCount} />
+
       <DashboardHeader from={from} to={to} />
 
-      <GettingStartedCard />
+      <MetricsStrip
+        kpis={kpis ?? null}
+        capacityData={capacityGrid}
+        projectHealth={projectHealth ?? null}
+      />
 
-      <KpiCardRow kpis={kpis ?? null} isAdmin={isAdmin} orgSlug={slug} />
-
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
+      {/* Hero two-panel layout */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
         <div className="lg:col-span-3">
           <ProjectHealthWidget
             projects={projectHealth ?? null}
             orgSlug={slug}
           />
         </div>
-        <div className="space-y-6 lg:col-span-2">
+        <div className="lg:col-span-2">
           <TeamWorkloadWidget data={teamWorkload ?? null} isAdmin={isAdmin} />
-          <TeamCapacityWidget data={capacityGrid} orgSlug={slug} />
-          <MyScheduleWidget
-            allocations={myAllocations}
-            leaveBlocks={myLeave}
-            weeklyCapacity={myWeeklyCapacity}
-            projectNames={
-              capacityGrid
-                ? Object.fromEntries(
-                    capacityGrid.members.flatMap((m) =>
-                      m.weeks.flatMap((w) =>
-                        w.allocations.map((a) => [a.projectId, a.projectName]),
-                      ),
-                    ),
-                  )
-                : {}
-            }
-          />
-          <ModuleGate module="regulatory_deadlines">
-            <DeadlineWidget orgSlug={slug} />
-          </ModuleGate>
-          {isAdmin && (
-            <IncompleteProfilesWidget
-              data={aggregatedCompleteness ?? null}
-              orgSlug={slug}
-            />
-          )}
-          {isAdmin && (
-            <InformationRequestsWidget
-              data={requestSummary ?? null}
-              orgSlug={slug}
-            />
-          )}
-          {isAdmin && (
-            <AutomationsWidget
-              data={automationSummary ?? null}
-              orgSlug={slug}
-            />
-          )}
-          <RecentActivityWidget items={activity ?? null} orgSlug={slug} />
         </div>
+      </div>
+
+      {/* Secondary three-column layout */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <RecentActivityWidget items={activity ?? null} orgSlug={slug} />
+        <ModuleGate module="regulatory_deadlines">
+          <DeadlineWidget orgSlug={slug} />
+        </ModuleGate>
+        {isAdmin ? (
+          <AdminStatsColumn
+            aggregatedCompleteness={aggregatedCompleteness ?? null}
+            requestSummary={requestSummary ?? null}
+            automationSummary={automationSummary ?? null}
+            orgSlug={slug}
+          />
+        ) : (
+          <MyWeekColumn
+            kpis={kpis ?? null}
+            activity={activity ?? null}
+          />
+        )}
       </div>
     </div>
   );

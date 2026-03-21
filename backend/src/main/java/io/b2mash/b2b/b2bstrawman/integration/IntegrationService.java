@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.integration;
 
+import io.b2mash.b2b.b2bstrawman.assistant.provider.LlmChatProviderRegistry;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
@@ -26,16 +27,19 @@ public class IntegrationService {
   private final IntegrationRegistry integrationRegistry;
   private final SecretStore secretStore;
   private final AuditService auditService;
+  private final LlmChatProviderRegistry llmChatProviderRegistry;
 
   public IntegrationService(
       OrgIntegrationRepository orgIntegrationRepository,
       IntegrationRegistry integrationRegistry,
       SecretStore secretStore,
-      AuditService auditService) {
+      AuditService auditService,
+      LlmChatProviderRegistry llmChatProviderRegistry) {
     this.orgIntegrationRepository = orgIntegrationRepository;
     this.integrationRegistry = integrationRegistry;
     this.secretStore = secretStore;
     this.auditService = auditService;
+    this.llmChatProviderRegistry = llmChatProviderRegistry;
   }
 
   /**
@@ -161,7 +165,7 @@ public class IntegrationService {
         switch (domain) {
           case ACCOUNTING ->
               integrationRegistry.resolve(domain, AccountingProvider.class).testConnection();
-          case AI -> integrationRegistry.resolve(domain, AiProvider.class).testConnection();
+          case AI -> testAiConnection(domain);
           case DOCUMENT_SIGNING ->
               integrationRegistry.resolve(domain, DocumentSigningProvider.class).testConnection();
           case EMAIL -> integrationRegistry.resolve(domain, EmailProvider.class).testConnection();
@@ -230,6 +234,40 @@ public class IntegrationService {
   private void evictCache(IntegrationDomain domain) {
     var tenantSchema = RequestScopes.TENANT_ID.get();
     integrationRegistry.evict(tenantSchema, domain);
+  }
+
+  private ConnectionTestResult testAiConnection(IntegrationDomain domain) {
+    var integration = orgIntegrationRepository.findByDomain(domain);
+    if (integration.isEmpty() || "noop".equals(integration.get().getProviderSlug())) {
+      return integrationRegistry.resolve(domain, AiProvider.class).testConnection();
+    }
+    var slug = integration.get().getProviderSlug();
+    try {
+      var provider = llmChatProviderRegistry.get(slug);
+      var secretKey = "ai:" + slug + ":api_key";
+      if (!secretStore.exists(secretKey)) {
+        return new ConnectionTestResult(false, slug, "No API key configured");
+      }
+      var apiKey = secretStore.retrieve(secretKey);
+      var model = parseModel(integration.get().getConfigJson());
+      var ok = provider.validateKey(apiKey, model);
+      return new ConnectionTestResult(ok, slug, ok ? null : "API key validation failed");
+    } catch (IllegalArgumentException e) {
+      return new ConnectionTestResult(false, slug, "Provider not found: " + slug);
+    }
+  }
+
+  private static String parseModel(String configJson) {
+    if (configJson == null || configJson.isBlank()) return "claude-sonnet-4-6";
+    try {
+      var idx = configJson.indexOf("\"model\"");
+      if (idx < 0) return "claude-sonnet-4-6";
+      var afterColon = configJson.indexOf("\"", idx + 8);
+      var end = configJson.indexOf("\"", afterColon + 1);
+      return configJson.substring(afterColon + 1, end);
+    } catch (Exception e) {
+      return "claude-sonnet-4-6";
+    }
   }
 
   private static String buildSecretKey(IntegrationDomain domain, String providerSlug) {

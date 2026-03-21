@@ -172,7 +172,7 @@ WRITE TOOLS + SETTINGS (parallel)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 4a (parallel) | 392 | 392A | 8 write tools: `CreateProjectTool`, `UpdateProjectTool`, `CreateCustomerTool`, `UpdateCustomerTool`, `CreateTaskTool`, `UpdateTaskTool`, `LogTimeEntryTool`, `CreateInvoiceDraftTool`. Integration tests (~8). Backend only. | |
+| 4a (parallel) | 392 | 392A | 8 write tools: `CreateProjectTool`, `UpdateProjectTool`, `CreateCustomerTool`, `UpdateCustomerTool`, `CreateTaskTool`, `UpdateTaskTool`, `LogTimeEntryTool`, `CreateInvoiceDraftTool`. Integration tests (~8). Backend only. | **Done** (PR #811) |
 | 4b (parallel) | 392 | 392B | AI `IntegrationCard` enhancement: model selector dropdown (from `GET /ai/models`), PRO badge, STARTER upgrade prompt, `fetchAiModels` server action, `ModelInfo` type. Frontend tests (~4). Frontend only. | |
 
 ---
@@ -456,7 +456,7 @@ WRITE TOOLS + SETTINGS (parallel)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **392A** | 392.1--392.10 | 8 write tool `@Component` implementations: `CreateProjectTool`, `UpdateProjectTool`, `CreateCustomerTool`, `UpdateCustomerTool`, `CreateTaskTool`, `UpdateTaskTool`, `LogTimeEntryTool`, `CreateInvoiceDraftTool`. All return `requiresConfirmation() = true`. Integration tests (~8). Backend only. | |
+| **392A** | 392.1--392.10 | 8 write tool `@Component` implementations: `CreateProjectTool`, `UpdateProjectTool`, `CreateCustomerTool`, `UpdateCustomerTool`, `CreateTaskTool`, `UpdateTaskTool`, `LogTimeEntryTool`, `CreateInvoiceDraftTool`. All return `requiresConfirmation() = true`. Integration tests (~8). Backend only. | **Done** (PR #811) |
 | **392B** | 392.11--392.16 | AI `IntegrationCard` enhancement: model selector dropdown populated from `GET /api/settings/integrations/ai/models`, PRO badge on AI card, STARTER tier upgrade prompt, `fetchAiModels` server action, `getAiModels()` API client, `ModelInfo` TypeScript type. Frontend tests (~4). Frontend only. | |
 
 ### Tasks

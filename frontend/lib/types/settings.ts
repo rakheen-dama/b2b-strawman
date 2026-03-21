@@ -112,6 +112,14 @@ export interface ToggleIntegrationRequest {
   enabled: boolean;
 }
 
+// ---- AI Model Info (from IntegrationController /ai/models) ----
+
+export interface ModelInfo {
+  id: string;
+  name: string;
+  recommended: boolean;
+}
+
 // ---- Payment Provider Configs (parsed from OrgIntegration.configJson) ----
 
 export interface StripePaymentConfig {

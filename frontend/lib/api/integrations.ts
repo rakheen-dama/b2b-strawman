@@ -8,6 +8,7 @@ import type {
   UpsertIntegrationRequest,
   SetApiKeyRequest,
   ToggleIntegrationRequest,
+  ModelInfo,
 } from "@/lib/types";
 
 // ---- API Functions ----
@@ -51,4 +52,8 @@ export async function toggleIntegration(
   data: ToggleIntegrationRequest,
 ): Promise<OrgIntegration> {
   return api.patch<OrgIntegration>(`/api/integrations/${domain}/toggle`, data);
+}
+
+export async function getAiModels(): Promise<{ models: ModelInfo[] }> {
+  return api.get<{ models: ModelInfo[] }>("/api/settings/integrations/ai/models");
 }

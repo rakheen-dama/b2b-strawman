@@ -7,6 +7,7 @@ import {
   deleteApiKey,
   toggleIntegration,
   testConnection,
+  getAiModels,
 } from "@/lib/api/integrations";
 import { revalidatePath } from "next/cache";
 import type {
@@ -15,6 +16,7 @@ import type {
   SetApiKeyRequest,
   ToggleIntegrationRequest,
   ConnectionTestResult,
+  ModelInfo,
 } from "@/lib/types";
 
 interface ActionResult<T = undefined> {
@@ -117,5 +119,18 @@ export async function testConnectionAction(
       return { success: false, error: error.message };
     }
     return { success: false, error: "An unexpected error occurred." };
+  }
+}
+
+export async function fetchAiModels(): Promise<{ models: ModelInfo[] }> {
+  try {
+    return await getAiModels();
+  } catch (error) {
+    if (error instanceof ApiError) {
+      console.error("Failed to fetch AI models:", error.message);
+    } else {
+      console.error("Unexpected error fetching AI models:", error);
+    }
+    return { models: [] };
   }
 }

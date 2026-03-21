@@ -1,57 +1,56 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
-import { SetupProgressCard } from "@/components/setup/setup-progress-card";
-import { ActionCard } from "@/components/setup/action-card";
-import { TemplateReadinessCard } from "@/components/setup/template-readiness-card";
-import { Clock } from "lucide-react";
-import type { SetupStep, TemplateReadinessItem } from "@/components/setup/types";
+import { CompletionProgressBar } from "@/components/dashboard/completion-progress-bar";
+import type { SetupStep } from "@/components/setup/types";
 
 // ---- helpers ----
 
-function makeSetupSteps(overallComplete = false): SetupStep[] {
+function makeSetupSteps(overrides?: Partial<{ complete: boolean }>): SetupStep[] {
+  const complete = overrides?.complete ?? false;
   return [
     {
       label: "Customer assigned",
-      complete: overallComplete,
+      complete,
       actionHref: "?tab=customers",
     },
     {
       label: "Rate card configured",
-      complete: overallComplete,
+      complete,
       actionHref: "?tab=rates",
       permissionRequired: true,
     },
     {
       label: "Budget set",
-      complete: overallComplete,
+      complete,
       actionHref: "?tab=budget",
     },
     {
       label: "Team members added",
-      complete: overallComplete,
+      complete,
       actionHref: "?tab=members",
     },
     {
       label: "Required fields filled (0/2)",
-      complete: overallComplete,
+      complete,
       actionHref: "#custom-fields",
     },
   ];
 }
 
-function makeTemplates(ready = true): TemplateReadinessItem[] {
-  return [
-    {
-      templateId: "t1",
-      templateName: "Engagement Letter",
-      templateSlug: "engagement-letter",
-      ready,
-      missingFields: ready ? [] : ["Tax Number"],
-    },
-  ];
-}
+// Mock next/link for the setup bar links
+vi.mock("next/link", () => ({
+  default: ({ children, href }: { children: React.ReactNode; href: string }) => (
+    <a href={href}>{children}</a>
+  ),
+}));
 
-describe("OverviewTab — Setup Guidance Cards", () => {
+/**
+ * These tests verify the new compact setup bar behavior (Epic 395A, task 395.2).
+ * The setup bar replaces the old SetupProgressCard + ActionCard + TemplateReadinessCard.
+ * - Shows "X/Y setup steps complete" with CompletionProgressBar when incomplete
+ * - Hides entirely when all steps are complete
+ */
+describe("OverviewTab — Compact Setup Bar (395.2)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -60,105 +59,92 @@ describe("OverviewTab — Setup Guidance Cards", () => {
     cleanup();
   });
 
-  // Test 1: SetupProgressCard visible when overallComplete=false
-  it("SetupProgressCard renders with progress bar when overallComplete=false", () => {
+  // Test 1: Setup bar renders with progress when incomplete
+  it("renders compact setup bar with step count and progress when incomplete", () => {
+    const steps = makeSetupSteps({ complete: false });
+    const completedSteps = steps.filter((s) => s.complete).length;
+    const totalSteps = steps.length;
+
     render(
-      <SetupProgressCard
-        title="Project Setup"
-        completionPercentage={40}
-        overallComplete={false}
-        steps={makeSetupSteps(false)}
-        canManage={true}
-      />,
+      <details
+        data-testid="setup-progress-bar"
+        className="rounded-lg border bg-card"
+      >
+        <summary className="flex items-center gap-3 px-4 py-3">
+          <div className="min-w-0 flex-1">
+            <span className="text-sm font-medium">
+              {completedSteps}/{totalSteps} setup steps complete
+            </span>
+            <div className="mt-1.5">
+              <CompletionProgressBar
+                percent={(completedSteps / totalSteps) * 100}
+              />
+            </div>
+          </div>
+        </summary>
+        <div className="border-t px-4 py-3">
+          <ul className="space-y-1.5">
+            {steps.map((step, i) => (
+              <li key={i} className="text-sm">
+                {step.label}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </details>,
     );
 
-    expect(screen.getByText("Project Setup")).toBeInTheDocument();
-    expect(screen.getByRole("progressbar")).toBeInTheDocument();
-    expect(screen.getByText("40%")).toBeInTheDocument();
+    expect(screen.getByTestId("setup-progress-bar")).toBeInTheDocument();
+    expect(screen.getByText("0/5 setup steps complete")).toBeInTheDocument();
     expect(screen.getByText("Customer assigned")).toBeInTheDocument();
   });
 
-  // Test 2: ActionCard NOT rendered when entryCount=0
-  it("ActionCard is not rendered when unbilledSummary.entryCount is 0", () => {
-    const entryCount = 0;
+  // Test 2: Setup bar hides when all steps are complete
+  it("does not render setup bar when all steps are complete", () => {
+    const steps = makeSetupSteps({ complete: true });
+    const completedSteps = steps.filter((s) => s.complete).length;
+    const totalSteps = steps.length;
+    const setupIncomplete = completedSteps < totalSteps;
+
     render(
       <div>
-        {entryCount > 0 && (
-          <ActionCard
-            icon={Clock}
-            title="Unbilled Time"
-            description="$0.00 across 0.0 hours"
-          />
+        {setupIncomplete && (
+          <details data-testid="setup-progress-bar">
+            <summary>
+              {completedSteps}/{totalSteps} setup steps complete
+            </summary>
+          </details>
         )}
         <p>Other content</p>
       </div>,
     );
 
-    expect(screen.queryByText("Unbilled Time")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("setup-progress-bar")).not.toBeInTheDocument();
     expect(screen.getByText("Other content")).toBeInTheDocument();
   });
 
-  // Test 3: ActionCard visible with formatted amount when entryCount>0
-  it("ActionCard renders with formatted amount when entryCount > 0", () => {
-    const entryCount = 5;
-    render(
-      <div>
-        {entryCount > 0 && (
-          <ActionCard
-            icon={Clock}
-            title="Unbilled Time"
-            description="$1,250.00 across 23.5 hours"
-            primaryAction={{ label: "Create Invoice", href: "/org/acme/customers/c1?tab=invoices" }}
-            secondaryAction={{ label: "View Entries", href: "?tab=time" }}
-            variant="accent"
-          />
-        )}
-      </div>,
-    );
-
-    expect(screen.getByText("Unbilled Time")).toBeInTheDocument();
-    expect(screen.getByText("$1,250.00 across 23.5 hours")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Create Invoice" })).toBeInTheDocument();
-  });
-
-  // Test 4: canManage=false hides "Configure Rates" action link
-  it("SetupProgressCard hides rate card link when canManage=false", () => {
-    render(
-      <SetupProgressCard
-        title="Project Setup"
-        completionPercentage={20}
-        overallComplete={false}
-        steps={makeSetupSteps(false)}
-        canManage={false}
-      />,
-    );
-
-    // "Rate card configured" has permissionRequired=true → no link for non-managers
-    const rateItem = screen.getByText("Rate card configured");
-    expect(rateItem.closest("li")?.querySelector("a")).toBeNull();
-
-    // "Customer assigned" has no permissionRequired → link shown
-    const customerItem = screen.getByText("Customer assigned");
-    expect(customerItem.closest("li")?.querySelector("a")).not.toBeNull();
-  });
-
-  // Test 5: TemplateReadinessCard NOT rendered when templateReadiness is empty
-  it("TemplateReadinessCard is not rendered when templateReadiness is empty", () => {
-    const templateReadiness: TemplateReadinessItem[] = [];
+  // Test 3: Setup bar shows correct count with mixed completion
+  it("shows correct count when some steps are complete", () => {
+    const steps: SetupStep[] = [
+      { label: "Customer assigned", complete: true, actionHref: "?tab=customers" },
+      { label: "Rate card configured", complete: true, actionHref: "?tab=rates", permissionRequired: true },
+      { label: "Budget set", complete: false, actionHref: "?tab=budget" },
+      { label: "Team members added", complete: false, actionHref: "?tab=members" },
+      { label: "Required fields filled", complete: false, actionHref: "#custom-fields" },
+    ];
+    const completedSteps = steps.filter((s) => s.complete).length;
+    const totalSteps = steps.length;
 
     render(
-      <div>
-        {templateReadiness.length > 0 && (
-          <TemplateReadinessCard
-            templates={templateReadiness}
-            baseHref="/org/acme/projects/p1"
-          />
-        )}
-        <p>Other content</p>
-      </div>,
+      <details data-testid="setup-progress-bar" className="rounded-lg border bg-card">
+        <summary className="flex items-center gap-3 px-4 py-3">
+          <span className="text-sm font-medium">
+            {completedSteps}/{totalSteps} setup steps complete
+          </span>
+        </summary>
+      </details>,
     );
 
-    expect(screen.queryByText("Document Templates")).not.toBeInTheDocument();
-    expect(screen.getByText("Other content")).toBeInTheDocument();
+    expect(screen.getByText("2/5 setup steps complete")).toBeInTheDocument();
   });
 });

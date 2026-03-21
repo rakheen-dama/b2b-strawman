@@ -31,7 +31,7 @@ export function parseSseEvents(buffer: string): {
       if (line.startsWith("event:")) {
         type = line.slice("event:".length).trim();
       } else if (line.startsWith("data:")) {
-        dataLine = line.slice("data:".length).trim();
+        dataLine += (dataLine ? "\n" : "") + line.slice("data:".length).trim();
       }
     }
 

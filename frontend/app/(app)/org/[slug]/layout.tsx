@@ -73,6 +73,8 @@ export default async function OrgLayout({
     console.error("Failed to fetch org settings for terminology:", settingsResult.reason);
   }
 
+  // TODO: Add PRO tier gate when tier info is available in frontend context
+  // Backend already enforces tier-based access control — this is defense-in-depth
   const aiEnabled =
     settingsResult.status === "fulfilled" &&
     settingsResult.value.aiEnabled === true;

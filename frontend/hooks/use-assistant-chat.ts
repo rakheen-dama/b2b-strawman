@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { parseSseEvents } from "@/lib/sse-parser";
 
 // ---- Types ----
@@ -23,6 +23,8 @@ export interface TokenUsage {
 }
 
 // ---- Auth helpers ----
+// API_BASE uses NEXT_PUBLIC_BACKEND_URL (same env var as portal-api.ts and hooks.ts)
+// to reach the backend in mock/e2e mode; in keycloak mode, relative URLs are used.
 
 const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "keycloak";
 const API_BASE =
@@ -51,10 +53,8 @@ function getAuthHeaders(): Record<string, string> {
 
 // ---- Helpers ----
 
-let messageCounter = 0;
 function nextId(): string {
-  messageCounter += 1;
-  return `msg_${Date.now()}_${messageCounter}`;
+  return `msg_${crypto.randomUUID()}`;
 }
 
 function buildHistory(
@@ -77,11 +77,21 @@ export function useAssistantChat() {
 
   const abortControllerRef = useRef<AbortController | null>(null);
   const streamingMessageIdRef = useRef<string | null>(null);
+  const messagesRef = useRef<ChatMessage[]>(messages);
+  const isStreamingRef = useRef(false);
+
+  // Keep refs in sync with state for use inside async callbacks
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
 
   const sendMessage = useCallback(
     async (text: string) => {
       const trimmed = text.trim();
-      if (!trimmed || isStreaming) return;
+      if (!trimmed || isStreamingRef.current) return;
+
+      // Set streaming ref synchronously to prevent double-sends
+      isStreamingRef.current = true;
 
       // Add user message
       const userMsg: ChatMessage = {
@@ -106,7 +116,7 @@ export function useAssistantChat() {
 
       try {
         const currentMessages = [
-          ...messages,
+          ...messagesRef.current,
           userMsg,
         ];
 
@@ -261,12 +271,13 @@ export function useAssistantChat() {
           ]);
         }
       } finally {
+        isStreamingRef.current = false;
         setIsStreaming(false);
         abortControllerRef.current = null;
         streamingMessageIdRef.current = null;
       }
     },
-    [isStreaming, messages],
+    [],
   );
 
   const stopStreaming = useCallback(() => {
@@ -274,6 +285,7 @@ export function useAssistantChat() {
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
     }
+    isStreamingRef.current = false;
     setIsStreaming(false);
   }, []);
 
@@ -286,8 +298,18 @@ export function useAssistantChat() {
           credentials: AUTH_MODE === "keycloak" ? "include" : "omit",
           body: JSON.stringify({ toolCallId, approved }),
         });
-      } catch {
-        // Silently fail — the SSE stream will report the outcome
+      } catch (err) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: nextId(),
+            role: "error",
+            content:
+              err instanceof Error
+                ? err.message
+                : "Failed to confirm tool call",
+          },
+        ]);
       }
     },
     [],

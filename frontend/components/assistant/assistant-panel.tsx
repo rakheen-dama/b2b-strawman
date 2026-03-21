@@ -85,7 +85,7 @@ export function AssistantPanel() {
 
   // Scroll to bottom on new messages
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: "instant" });
   }, [messages]);
 
   // Focus textarea when panel opens

@@ -339,7 +339,7 @@ describe("Dashboard Layout Components", () => {
     );
     expect(screen.getByTestId("my-week-column")).toBeInTheDocument();
     expect(screen.getByText("My Week")).toBeInTheDocument();
-    expect(screen.getByText("Logged today")).toBeInTheDocument();
+    expect(screen.getByText("Avg. daily hours")).toBeInTheDocument();
     expect(screen.getByText("Tasks this week")).toBeInTheDocument();
   });
 

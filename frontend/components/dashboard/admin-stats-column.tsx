@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import { Users, ClipboardList, Zap } from "lucide-react";
 import {

@@ -160,16 +160,22 @@ export function ProjectHealthWidget({
         <div className="flex items-center gap-2 border-b border-slate-100 px-2 pb-1.5 text-[11px] font-medium uppercase tracking-wider text-slate-400 dark:border-slate-800">
           <button
             type="button"
+            role="columnheader"
             onClick={() => handleSort("name")}
             className="flex min-w-0 flex-1 items-center gap-1"
+            aria-label="Sort by project name"
+            aria-sort={sortField === "name" ? (sortDirection === "asc" ? "ascending" : "descending") : "none"}
           >
             Project
             {sortField === "name" && <SortIcon className="size-3" />}
           </button>
           <button
             type="button"
+            role="columnheader"
             onClick={() => handleSort("health")}
             className="flex w-12 items-center justify-center gap-1"
+            aria-label="Sort by health status"
+            aria-sort={sortField === "health" ? (sortDirection === "asc" ? "ascending" : "descending") : "none"}
           >
             Status
             {sortField === "health" && <SortIcon className="size-3" />}

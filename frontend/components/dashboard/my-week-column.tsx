@@ -41,7 +41,7 @@ export function MyWeekColumn({ kpis, activity }: MyWeekColumnProps) {
           <span className="font-mono text-sm font-bold tabular-nums">
             {hoursToday}h
           </span>
-          <span className="text-xs text-slate-500">Logged today</span>
+          <span className="text-xs text-slate-500">Avg. daily hours</span>
         </div>
 
         <div className="flex items-center gap-3 rounded-md px-2 py-2">

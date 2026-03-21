@@ -11,7 +11,7 @@ Phase 53 is a **pure frontend visual overhaul** targeting the three primary dash
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 393 | Chart Component Library & Foundation | Frontend | -- | M | 393A, 393B | **Done** (PRs #813, #814) |
-| 394 | Dashboard Redesigns | Frontend | 393A | L | 394A, 394B | |
+| 394 | Dashboard Redesigns | Frontend | 393A | L | 394A, 394B | **Done** (PRs #815, #816) |
 | 395 | Project Detail & Document Preview | Frontend | 393A (395A only) | M | 395A, 395B | |
 | 396 | Test Updates & Visual Baselines | Frontend | 393-395 | S | 396A | |
 
@@ -52,7 +52,7 @@ Phase 53 is a **pure frontend visual overhaul** targeting the three primary dash
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
 | 2a | Epic 394 | 394A | Org Dashboard full layout restructure — MetricsStrip, hero two-panel, secondary three-column. Depends on 393A chart components. | **Done** (PR #815) |
-| 2b | Epic 394 | 394B | My Work page full layout restructure — Today's Agenda hero, WeeklyRhythmStrip, two-column work panels. Depends on 393A chart components. |
+| 2b | Epic 394 | 394B | My Work page full layout restructure — Today's Agenda hero, WeeklyRhythmStrip, two-column work panels. Depends on 393A chart components. | **Done** (PR #816) |
 | 2c | Epic 395 | 395A | Project Detail Overview tab polish — health band, compact setup bar, two-panel body. Depends on 393A chart components. |
 
 ### Stage 3: Test Stabilization
@@ -176,7 +176,7 @@ Stage 3:  [396A]                               <- test stabilization (after all 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **394A** | 394.1-394.8 | Org Dashboard: MetricsStrip (6 metrics), GettingStartedCard banner, hero two-panel (ProjectHealth + TeamTime), secondary three-column (Activity, Deadlines, AdminStats/MyWeek), page layout restructure, tests (~8 tests) | **Done** (PR #815) |
-| **394B** | 394.9-394.15 | My Work: TodaysAgenda hero, WeeklyRhythmStrip, two-column work panels (tasks + time/activity), extended widgets area, page layout restructure, tests (~8 tests) | |
+| **394B** | 394.9-394.15 | My Work: TodaysAgenda hero, WeeklyRhythmStrip, two-column work panels (tasks + time/activity), extended widgets area, page layout restructure, tests (~8 tests) | **Done** (PR #816) |
 
 ### Tasks
 

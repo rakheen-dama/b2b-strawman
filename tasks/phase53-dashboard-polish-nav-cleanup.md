@@ -10,7 +10,7 @@ Phase 53 is a **pure frontend visual overhaul** targeting the three primary dash
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 393 | Chart Component Library & Foundation | Frontend | -- | M | 393A, 393B | |
+| 393 | Chart Component Library & Foundation | Frontend | -- | M | 393A, 393B | **Done** (PRs #813, #814) |
 | 394 | Dashboard Redesigns | Frontend | 393A | L | 394A, 394B | |
 | 395 | Project Detail & Document Preview | Frontend | 393A (395A only) | M | 395A, 395B | |
 | 396 | Test Updates & Visual Baselines | Frontend | 393-395 | S | 396A | |
@@ -44,7 +44,7 @@ Phase 53 is a **pure frontend visual overhaul** targeting the three primary dash
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
 | 1a | Epic 393 | 393A | Chart theme config + new micro-chart components (Sparkline, RadialGauge, MicroStackedBar, ChartTooltip, DonutChart) + HorizontalBarChart theme migration. Foundation for all dashboard redesigns. | **Done** (PR #813) |
-| 1b | Epic 393 | 393B | Sidebar nav cleanup (rename groups, remove Documents, move Proposals) + org documents relocation to Settings. Fully independent of 393A. |
+| 1b | Epic 393 | 393B | Sidebar nav cleanup (rename groups, remove Documents, move Proposals) + org documents relocation to Settings. Fully independent of 393A. | **Done** (PR #814) |
 | 1c | Epic 395 | 395B | A4 preview wrapper component + GenerateDocumentDialog integration. Fully independent. |
 
 ### Stage 2: Dashboard Redesigns (Parallel)
@@ -88,7 +88,7 @@ Stage 3:  [396A]                               <- test stabilization (after all 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **393A** | 393.1-393.8 | `CHART_THEME` config, Sparkline, RadialGauge, MicroStackedBar, ChartTooltip, DonutChart components, HorizontalBarChart theme migration, unit tests (~12 tests) | **Done** (PR #813) |
-| **393B** | 393.9-393.15 | Sidebar nav cleanup (4 changes to nav-items.ts), delete org documents page, create OrgDocumentsSection in Settings, update Organization settings entry, test updates (~6 tests) | |
+| **393B** | 393.9-393.15 | Sidebar nav cleanup (4 changes to nav-items.ts), delete org documents page, create OrgDocumentsSection in Settings, update Organization settings entry, test updates (~6 tests) | **Done** (PR #814) |
 
 ### Tasks
 

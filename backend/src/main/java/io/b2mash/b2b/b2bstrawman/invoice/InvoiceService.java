@@ -616,6 +616,18 @@ public class InvoiceService {
   }
 
   @Transactional(readOnly = true)
+  public InvoiceResponse findByInvoiceNumber(String invoiceNumber) {
+    var invoice =
+        invoiceRepository
+            .findByInvoiceNumber(invoiceNumber)
+            .orElseThrow(
+                () ->
+                    ResourceNotFoundException.withDetail(
+                        "Invoice not found", "No invoice found with number " + invoiceNumber));
+    return buildResponse(invoice);
+  }
+
+  @Transactional(readOnly = true)
   public List<PaymentEventResponse> getPaymentEvents(UUID invoiceId) {
     invoiceRepository
         .findById(invoiceId)

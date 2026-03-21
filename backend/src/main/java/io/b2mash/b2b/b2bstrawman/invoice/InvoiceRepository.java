@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.invoice;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -36,6 +37,10 @@ public interface InvoiceRepository extends JpaRepository<Invoice, UUID> {
   /** Counts invoices for a customer. Used by customer archive protection guard. */
   @Query("SELECT COUNT(i) FROM Invoice i WHERE i.customerId = :customerId")
   long countByCustomerId(@Param("customerId") UUID customerId);
+
+  /** Find an invoice by its human-readable invoice number (e.g., INV-0042). */
+  @Query("SELECT i FROM Invoice i WHERE i.invoiceNumber = :invoiceNumber")
+  Optional<Invoice> findByInvoiceNumber(@Param("invoiceNumber") String invoiceNumber);
 
   /**
    * JPQL-based batch lookup scoped to the current tenant schema (search_path isolation), unlike

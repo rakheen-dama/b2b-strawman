@@ -86,8 +86,8 @@ class AssistantToolRegistryTest {
     var financial = new FinancialTool();
     var registry = new AssistantToolRegistry(List.of(allAccess, financial));
 
-    assertThat(registry.getTool("all_access_tool")).isSameAs(allAccess);
-    assertThat(registry.getTool("financial_tool")).isSameAs(financial);
+    assertThat(registry.getToolInternal("all_access_tool")).isSameAs(allAccess);
+    assertThat(registry.getToolInternal("financial_tool")).isSameAs(financial);
   }
 
   @Test
@@ -114,10 +114,49 @@ class AssistantToolRegistryTest {
   }
 
   @Test
+  void getToolInternalThrowsIllegalArgumentExceptionForUnknownName() {
+    var registry = new AssistantToolRegistry(List.of(new AllAccessTool()));
+
+    assertThatThrownBy(() -> registry.getToolInternal("unknown_tool"))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("unknown_tool");
+  }
+
+  @Test
+  void getToolReturnsToolWhenUserHasSufficientCapabilities() {
+    var financial = new FinancialTool();
+    var registry = new AssistantToolRegistry(List.of(new AllAccessTool(), financial));
+
+    var result = registry.getTool("financial_tool", Set.of("FINANCIAL_VISIBILITY", "INVOICING"));
+
+    assertThat(result).isSameAs(financial);
+  }
+
+  @Test
+  void getToolReturnsToolWithNoRequiredCapabilitiesForAnyUser() {
+    var allAccess = new AllAccessTool();
+    var registry = new AssistantToolRegistry(List.of(allAccess, new FinancialTool()));
+
+    var result = registry.getTool("all_access_tool", Set.of());
+
+    assertThat(result).isSameAs(allAccess);
+  }
+
+  @Test
+  void getToolThrowsInsufficientCapabilityWhenUserLacksRequiredCapability() {
+    var registry = new AssistantToolRegistry(List.of(new AllAccessTool(), new FinancialTool()));
+
+    assertThatThrownBy(() -> registry.getTool("financial_tool", Set.of()))
+        .isInstanceOf(InsufficientToolCapabilityException.class)
+        .hasMessageContaining("financial_tool")
+        .hasMessageContaining("FINANCIAL_VISIBILITY");
+  }
+
+  @Test
   void getToolThrowsIllegalArgumentExceptionForUnknownName() {
     var registry = new AssistantToolRegistry(List.of(new AllAccessTool()));
 
-    assertThatThrownBy(() -> registry.getTool("unknown_tool"))
+    assertThatThrownBy(() -> registry.getTool("unknown_tool", Set.of()))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("unknown_tool");
   }

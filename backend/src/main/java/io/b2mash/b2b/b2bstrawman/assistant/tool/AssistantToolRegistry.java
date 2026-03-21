@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
@@ -16,6 +18,8 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class AssistantToolRegistry {
+
+  private static final Logger LOG = LoggerFactory.getLogger(AssistantToolRegistry.class);
 
   private final Map<String, AssistantTool> tools;
 
@@ -34,6 +38,7 @@ public class AssistantToolRegistry {
       }
     }
     this.tools = Map.copyOf(mutable);
+    LOG.info("Registered {} assistant tools", tools.size());
   }
 
   /**
@@ -62,13 +67,29 @@ public class AssistantToolRegistry {
   }
 
   /**
-   * Returns the tool with the given name.
+   * Returns the tool with the given name, enforcing capability checks. The tool is returned only if
+   * the user's capabilities satisfy the tool's {@link AssistantTool#requiredCapabilities()}.
    *
    * @throws IllegalArgumentException if no tool is registered with the given name (this indicates
    *     an LLM hallucination — the {@code AssistantService} handles this gracefully by sending an
    *     error tool result back to the LLM)
+   * @throws InsufficientToolCapabilityException if the user's capabilities do not satisfy the
+   *     tool's required capabilities
    */
-  public AssistantTool getTool(String name) {
+  public AssistantTool getTool(String name, Set<String> userCapabilities) {
+    var tool = getToolInternal(name);
+    if (!tool.requiredCapabilities().isEmpty()
+        && !userCapabilities.containsAll(tool.requiredCapabilities())) {
+      throw new InsufficientToolCapabilityException(name, tool.requiredCapabilities());
+    }
+    return tool;
+  }
+
+  /**
+   * Returns the tool with the given name without capability checks. Package-private — intended for
+   * internal use only (e.g., tests, registry introspection).
+   */
+  AssistantTool getToolInternal(String name) {
     var tool = tools.get(name);
     if (tool == null) {
       throw new IllegalArgumentException("No AssistantTool registered with name: \"" + name + "\"");

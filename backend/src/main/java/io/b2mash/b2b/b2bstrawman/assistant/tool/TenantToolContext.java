@@ -15,6 +15,11 @@ import java.util.UUID;
 public record TenantToolContext(
     String tenantId, UUID memberId, String orgRole, Set<String> capabilities) {
 
+  /** Compact constructor — guarantees immutability of the capabilities set. */
+  public TenantToolContext {
+    capabilities = Set.copyOf(capabilities);
+  }
+
   /**
    * Constructs a {@code TenantToolContext} from the currently bound {@link RequestScopes}. Must be
    * called within a scoped binding (i.e., inside a virtual thread that has re-bound the scoped

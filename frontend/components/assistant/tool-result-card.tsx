@@ -10,9 +10,7 @@ interface ToolResultCardProps {
 
 export function ToolResultCard({ message }: ToolResultCardProps) {
   const isSuccess = message.success !== false;
-  const isCancelled =
-    message.content === "User cancelled this action" ||
-    message.content.toLowerCase().includes("cancel");
+  const isCancelled = message.content === "User cancelled this action";
 
   if (isCancelled || !isSuccess) {
     return (

@@ -36,12 +36,20 @@ export function ConfirmationCard({
 
   const handleConfirm = async () => {
     setIsPending(true);
-    await onConfirm(toolCallId, true);
+    try {
+      await onConfirm(toolCallId, true);
+    } finally {
+      setIsPending(false);
+    }
   };
 
   const handleCancel = async () => {
     setIsPending(true);
-    await onConfirm(toolCallId, false);
+    try {
+      await onConfirm(toolCallId, false);
+    } finally {
+      setIsPending(false);
+    }
   };
 
   return (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useState, type KeyboardEvent } from "react";
+import { useRef, useEffect, useMemo, useState, type KeyboardEvent } from "react";
 import { Sparkles, Send, Square } from "lucide-react";
 import {
   Sheet,
@@ -43,11 +43,15 @@ export function AssistantPanel({ slug, orgRole }: AssistantPanelProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Pre-compute set of resolved tool call IDs (for ToolUseCard isLoading logic)
-  const toolResultIds = new Set(
-    messages
-      .filter((m) => m.role === "tool_result")
-      .map((m) => m.toolCallId)
-      .filter(Boolean) as string[],
+  const toolResultIds = useMemo(
+    () =>
+      new Set(
+        messages
+          .filter((m) => m.role === "tool_result")
+          .map((m) => m.toolCallId)
+          .filter(Boolean) as string[],
+      ),
+    [messages],
   );
 
   useEffect(() => {

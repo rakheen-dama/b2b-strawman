@@ -38,7 +38,6 @@ describe("RecentActivityWidget", () => {
     render(<RecentActivityWidget items={items} orgSlug="acme" />);
     expect(screen.getByText("AS")).toBeInTheDocument(); // initials for "Alice Smith"
     expect(screen.getByText("Created task: Fix login bug")).toBeInTheDocument();
-    expect(screen.getByText("Website Redesign")).toBeInTheDocument();
   });
 
   /**
@@ -99,5 +98,22 @@ describe("RecentActivityWidget", () => {
 
     render(<RecentActivityWidget items={items} orgSlug="acme" />);
     expect(screen.getByText("?")).toBeInTheDocument();
+  });
+
+  it("renders recent-activity-widget data-testid", () => {
+    const items: CrossProjectActivityItem[] = [
+      {
+        eventId: "evt-1",
+        eventType: "task.created",
+        description: "Test activity",
+        actorName: "Test User",
+        projectId: "proj-1",
+        projectName: "Test Project",
+        occurredAt: new Date().toISOString(),
+      },
+    ];
+
+    render(<RecentActivityWidget items={items} orgSlug="acme" />);
+    expect(screen.getByTestId("recent-activity-widget")).toBeInTheDocument();
   });
 });

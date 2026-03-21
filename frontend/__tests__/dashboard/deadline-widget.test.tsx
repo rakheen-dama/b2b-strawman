@@ -70,7 +70,7 @@ describe("DeadlineWidget", () => {
 
     render(<DeadlineWidget orgSlug="acme" />);
 
-    expect(screen.getByText("Upcoming Deadlines")).toBeInTheDocument();
+    expect(screen.getByText("Deadlines")).toBeInTheDocument();
     // Aggregated: total=12, filed=8, pending=3, overdue=1
     expect(screen.getByText("12")).toBeInTheDocument();
     expect(screen.getByText("8")).toBeInTheDocument();
@@ -121,7 +121,23 @@ describe("DeadlineWidget", () => {
     );
 
     expect(
-      screen.queryByText("Upcoming Deadlines"),
+      screen.queryByText("Deadlines"),
     ).not.toBeInTheDocument();
+  });
+
+  it("renders deadline-widget data-testid", () => {
+    mockSWRWithData([
+      {
+        month: "2026-03",
+        category: "tax",
+        total: 3,
+        filed: 1,
+        pending: 1,
+        overdue: 1,
+      },
+    ]);
+
+    render(<DeadlineWidget orgSlug="acme" />);
+    expect(screen.getByTestId("deadline-widget")).toBeInTheDocument();
   });
 });

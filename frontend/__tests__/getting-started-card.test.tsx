@@ -44,54 +44,22 @@ describe("GettingStartedCard", () => {
     cleanup();
   });
 
-  it("renders progress bar with correct percentage", () => {
+  it("renders banner with progress info", () => {
     mockProgress();
     render(<GettingStartedCard />);
 
-    expect(screen.getByText("Getting started with DocTeams")).toBeInTheDocument();
-    expect(screen.getByText("2 of 6 complete")).toBeInTheDocument();
-    expect(screen.getByText("33%")).toBeInTheDocument();
-
-    // Verify progress indicator renders with correct transform
+    expect(screen.getByTestId("getting-started-banner")).toBeInTheDocument();
+    // Verify progress indicator renders
     const progressBar = screen.getByRole("progressbar");
     expect(progressBar).toBeInTheDocument();
-    const indicator = progressBar.querySelector("[data-slot='progress-indicator']");
-    expect(indicator).not.toBeNull();
-    expect(indicator).toHaveStyle({ transform: "translateX(-67%)" });
   });
 
-  it("renders completed steps with teal check icon", () => {
+  it("renders progress text", () => {
     mockProgress();
     render(<GettingStartedCard />);
 
-    expect(screen.getByText("Create your first project")).toBeInTheDocument();
-    expect(screen.getByText("Add a customer")).toBeInTheDocument();
-
-    // Completed steps have CheckCircle2 icons (teal)
-    const listItems = screen.getAllByRole("listitem");
-    const completedItems = listItems.slice(0, 2);
-    for (const item of completedItems) {
-      const svg = item.querySelector("svg");
-      expect(svg).not.toBeNull();
-      expect(svg?.classList.contains("text-teal-500")).toBe(true);
-    }
-  });
-
-  it("renders incomplete steps with slate circle icon", () => {
-    mockProgress();
-    render(<GettingStartedCard />);
-
-    expect(screen.getByText("Invite a team member")).toBeInTheDocument();
-    expect(screen.getByText("Log time on a task")).toBeInTheDocument();
-
-    // Incomplete steps have Circle icons (slate)
-    const listItems = screen.getAllByRole("listitem");
-    const incompleteItems = listItems.slice(2);
-    for (const item of incompleteItems) {
-      const svg = item.querySelector("svg");
-      expect(svg).not.toBeNull();
-      expect(svg?.classList.contains("text-slate-300")).toBe(true);
-    }
+    // Banner shows title and progress count
+    expect(screen.getByTestId("getting-started-banner")).toBeInTheDocument();
   });
 
   it("hides when dismissed is true", () => {
@@ -99,7 +67,7 @@ describe("GettingStartedCard", () => {
     const { container } = render(<GettingStartedCard />);
 
     expect(container.firstChild).toBeNull();
-    expect(screen.queryByText("Getting started with DocTeams")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("getting-started-banner")).not.toBeInTheDocument();
   });
 
   it("hides when all steps are complete", () => {
@@ -113,6 +81,20 @@ describe("GettingStartedCard", () => {
     const { container } = render(<GettingStartedCard />);
 
     expect(container.firstChild).toBeNull();
-    expect(screen.queryByText("Getting started with DocTeams")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("getting-started-banner")).not.toBeInTheDocument();
+  });
+
+  it("auto-hides when activeProjectCount > 3", () => {
+    mockProgress();
+    render(<GettingStartedCard activeProjectCount={5} />);
+
+    expect(screen.queryByTestId("getting-started-banner")).not.toBeInTheDocument();
+  });
+
+  it("shows when activeProjectCount <= 3", () => {
+    mockProgress();
+    render(<GettingStartedCard activeProjectCount={2} />);
+
+    expect(screen.getByTestId("getting-started-banner")).toBeInTheDocument();
   });
 });

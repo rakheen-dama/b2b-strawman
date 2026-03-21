@@ -250,6 +250,7 @@ public class IntegrationService {
       var provider = llmChatProviderRegistry.get(slug);
       return provider.availableModels();
     } catch (IllegalArgumentException e) {
+      LOG.warn("Unknown AI provider slug: {}", slug, e);
       return List.of();
     }
   }

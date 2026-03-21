@@ -196,8 +196,8 @@ class AssistantControllerTest {
   // Test 5: Confirm with valid pending confirmation returns {"acknowledged": true}
   @Test
   void confirmEndpointReturnsAcknowledgedForKnownToolCallId() throws Exception {
-    // Plant a confirmation via the package-private test helper
-    assistantService.plantConfirmation("test-confirm-tool-call", memberIdOwner);
+    // Plant a confirmation via the package-private test helper and capture the future
+    var future = assistantService.plantConfirmation("test-confirm-tool-call", memberIdOwner);
 
     mockMvc
         .perform(
@@ -210,6 +210,9 @@ class AssistantControllerTest {
                     """))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.acknowledged").value(true));
+
+    // Verify the confirmation was actually applied to the future
+    assertThat(future).isCompletedWithValue(true);
   }
 
   // Test 6: GET /api/settings/integrations/ai/models returns model list

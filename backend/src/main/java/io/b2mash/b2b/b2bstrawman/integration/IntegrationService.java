@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.integration;
 
 import io.b2mash.b2b.b2bstrawman.assistant.provider.LlmChatProviderRegistry;
+import io.b2mash.b2b.b2bstrawman.assistant.provider.ModelInfo;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
@@ -232,6 +233,26 @@ public class IntegrationService {
       result.put(domain.name(), integrationRegistry.availableProviders(domain));
     }
     return result;
+  }
+
+  /**
+   * Returns the list of available AI models for the configured AI provider. Returns an empty list
+   * if no provider is configured or the provider slug is "noop".
+   */
+  @Transactional(readOnly = true)
+  public List<ModelInfo> getAiModels() {
+    var integration = orgIntegrationRepository.findByDomain(IntegrationDomain.AI);
+    var slug = integration.map(OrgIntegration::getProviderSlug).orElse("noop");
+    if ("noop".equals(slug)) {
+      return List.of();
+    }
+    try {
+      var provider = llmChatProviderRegistry.get(slug);
+      return provider.availableModels();
+    } catch (IllegalArgumentException e) {
+      LOG.warn("Unknown AI provider slug: {}", slug, e);
+      return List.of();
+    }
   }
 
   private OrgIntegration findByDomainOrThrow(IntegrationDomain domain) {

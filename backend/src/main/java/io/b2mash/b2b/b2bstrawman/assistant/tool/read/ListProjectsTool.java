@@ -70,7 +70,12 @@ public class ListProjectsTool implements AssistantTool {
           stream.filter(pwr -> pwr.project().getStatus().name().equalsIgnoreCase(statusFilter));
     }
     if (customerIdFilter != null && !customerIdFilter.isBlank()) {
-      var customerId = UUID.fromString(customerIdFilter);
+      UUID customerId;
+      try {
+        customerId = UUID.fromString(customerIdFilter);
+      } catch (IllegalArgumentException e) {
+        return Map.of("error", "Invalid customerId format: " + customerIdFilter);
+      }
       stream = stream.filter(pwr -> customerId.equals(pwr.project().getCustomerId()));
     }
 

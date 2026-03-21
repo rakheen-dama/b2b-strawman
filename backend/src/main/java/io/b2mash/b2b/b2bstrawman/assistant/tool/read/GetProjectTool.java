@@ -2,7 +2,6 @@ package io.b2mash.b2b.b2bstrawman.assistant.tool.read;
 
 import io.b2mash.b2b.b2bstrawman.assistant.tool.AssistantTool;
 import io.b2mash.b2b.b2bstrawman.assistant.tool.TenantToolContext;
-import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
 import io.b2mash.b2b.b2bstrawman.project.ProjectWithRole;
@@ -17,12 +16,9 @@ import org.springframework.stereotype.Component;
 public class GetProjectTool implements AssistantTool {
 
   private final ProjectService projectService;
-  private final ProjectMemberRepository projectMemberRepository;
 
-  public GetProjectTool(
-      ProjectService projectService, ProjectMemberRepository projectMemberRepository) {
+  public GetProjectTool(ProjectService projectService) {
     this.projectService = projectService;
-    this.projectMemberRepository = projectMemberRepository;
   }
 
   @Override
@@ -65,13 +61,20 @@ public class GetProjectTool implements AssistantTool {
   @Override
   public Object execute(Map<String, Object> input, TenantToolContext context) {
     var actor = new ActorContext(context.memberId(), context.orgRole());
-    var projectId = (String) input.get("projectId");
+    var projectIdStr = (String) input.get("projectId");
     var projectName = (String) input.get("projectName");
 
     ProjectWithRole pwr;
-    if (projectId != null && !projectId.isBlank()) {
-      pwr = projectService.getProject(UUID.fromString(projectId), actor);
+    if (projectIdStr != null && !projectIdStr.isBlank()) {
+      UUID projectId;
+      try {
+        projectId = UUID.fromString(projectIdStr);
+      } catch (IllegalArgumentException e) {
+        return Map.of("error", "Invalid projectId format: " + projectIdStr);
+      }
+      pwr = projectService.getProject(projectId, actor);
     } else if (projectName != null && !projectName.isBlank()) {
+      // Name lookup via full list scan — acceptable for small tenant project counts
       pwr =
           projectService.listProjects(actor).stream()
               .filter(p -> p.project().getName().equalsIgnoreCase(projectName))
@@ -86,7 +89,6 @@ public class GetProjectTool implements AssistantTool {
     }
 
     var p = pwr.project();
-    var memberCount = projectMemberRepository.findByProjectId(p.getId()).size();
 
     var result = new LinkedHashMap<String, Object>();
     result.put("id", p.getId().toString());
@@ -96,7 +98,6 @@ public class GetProjectTool implements AssistantTool {
     result.put("customerId", p.getCustomerId() != null ? p.getCustomerId().toString() : null);
     result.put("dueDate", p.getDueDate() != null ? p.getDueDate().toString() : null);
     result.put("createdAt", p.getCreatedAt().toString());
-    result.put("memberCount", memberCount);
     return result;
   }
 }

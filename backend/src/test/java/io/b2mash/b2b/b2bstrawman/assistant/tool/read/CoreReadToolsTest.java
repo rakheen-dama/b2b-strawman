@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.assistant.tool.read;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -31,7 +30,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -135,7 +133,8 @@ class CoreReadToolsTest {
                   getProjectTool.execute(Map.of("projectId", projectId.toString()), ctx);
           assertThat(result).containsKey("id");
           assertThat(result.get("name")).isEqualTo("Test Project");
-          assertThat(result.get("memberCount")).isEqualTo(1);
+          assertThat(result).containsKey("status");
+          assertThat(result).containsKey("createdAt");
         });
   }
 
@@ -261,10 +260,5 @@ class CoreReadToolsTest {
             .andExpect(status().isCreated())
             .andReturn();
     return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_crt_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
   }
 }

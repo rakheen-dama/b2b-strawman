@@ -67,11 +67,24 @@ public class ListTasksTool implements AssistantTool {
     }
 
     var actor = new ActorContext(context.memberId(), context.orgRole());
-    var projectId = UUID.fromString(projectIdStr);
+
+    UUID projectId;
+    try {
+      projectId = UUID.fromString(projectIdStr);
+    } catch (IllegalArgumentException e) {
+      return Map.of("error", "Invalid projectId format: " + projectIdStr);
+    }
+
     var statusFilter = (String) input.get("status");
     var assigneeIdStr = (String) input.get("assigneeId");
-    var assigneeId =
-        (assigneeIdStr != null && !assigneeIdStr.isBlank()) ? UUID.fromString(assigneeIdStr) : null;
+    UUID assigneeId = null;
+    if (assigneeIdStr != null && !assigneeIdStr.isBlank()) {
+      try {
+        assigneeId = UUID.fromString(assigneeIdStr);
+      } catch (IllegalArgumentException e) {
+        return Map.of("error", "Invalid assigneeId format: " + assigneeIdStr);
+      }
+    }
 
     var tasks = taskService.listTasks(projectId, actor, statusFilter, assigneeId, null, null);
 

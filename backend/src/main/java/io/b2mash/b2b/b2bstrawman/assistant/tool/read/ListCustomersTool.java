@@ -58,11 +58,18 @@ public class ListCustomersTool implements AssistantTool {
   public Object execute(Map<String, Object> input, TenantToolContext context) {
     var statusFilter = (String) input.get("status");
 
-    var customers =
-        (statusFilter != null && !statusFilter.isBlank())
-            ? customerService.listCustomersByLifecycleStatus(
-                LifecycleStatus.valueOf(statusFilter.toUpperCase()))
-            : customerService.listCustomers();
+    List<io.b2mash.b2b.b2bstrawman.customer.Customer> customers;
+    if (statusFilter != null && !statusFilter.isBlank()) {
+      LifecycleStatus lifecycle;
+      try {
+        lifecycle = LifecycleStatus.valueOf(statusFilter.toUpperCase());
+      } catch (IllegalArgumentException e) {
+        return Map.of("error", "Invalid status value: " + statusFilter);
+      }
+      customers = customerService.listCustomersByLifecycleStatus(lifecycle);
+    } else {
+      customers = customerService.listCustomers();
+    }
 
     return customers.stream()
         .map(

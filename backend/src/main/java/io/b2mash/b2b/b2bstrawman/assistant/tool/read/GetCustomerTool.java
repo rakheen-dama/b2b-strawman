@@ -63,8 +63,15 @@ public class GetCustomerTool implements AssistantTool {
 
     Customer customer;
     if (customerId != null && !customerId.isBlank()) {
-      customer = customerService.getCustomer(UUID.fromString(customerId));
+      UUID id;
+      try {
+        id = UUID.fromString(customerId);
+      } catch (IllegalArgumentException e) {
+        return Map.of("error", "Invalid customerId format: " + customerId);
+      }
+      customer = customerService.getCustomer(id);
     } else if (customerName != null && !customerName.isBlank()) {
+      // Name lookup via full list scan — acceptable for small tenant customer counts
       customer =
           customerService.listCustomers().stream()
               .filter(c -> c.getName().equalsIgnoreCase(customerName))

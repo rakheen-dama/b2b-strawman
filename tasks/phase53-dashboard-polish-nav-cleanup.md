@@ -12,7 +12,7 @@ Phase 53 is a **pure frontend visual overhaul** targeting the three primary dash
 |------|------|-------|------|--------|--------|--------|
 | 393 | Chart Component Library & Foundation | Frontend | -- | M | 393A, 393B | **Done** (PRs #813, #814) |
 | 394 | Dashboard Redesigns | Frontend | 393A | L | 394A, 394B | **Done** (PRs #815, #816) |
-| 395 | Project Detail & Document Preview | Frontend | 393A (395A only) | M | 395A, 395B | |
+| 395 | Project Detail & Document Preview | Frontend | 393A (395A only) | M | 395A, 395B | **Done** (PRs #817, #818) |
 | 396 | Test Updates & Visual Baselines | Frontend | 393-395 | S | 396A | |
 
 ## Dependency Graph
@@ -45,7 +45,7 @@ Phase 53 is a **pure frontend visual overhaul** targeting the three primary dash
 |-------|------|-------|-----------|
 | 1a | Epic 393 | 393A | Chart theme config + new micro-chart components (Sparkline, RadialGauge, MicroStackedBar, ChartTooltip, DonutChart) + HorizontalBarChart theme migration. Foundation for all dashboard redesigns. | **Done** (PR #813) |
 | 1b | Epic 393 | 393B | Sidebar nav cleanup (rename groups, remove Documents, move Proposals) + org documents relocation to Settings. Fully independent of 393A. | **Done** (PR #814) |
-| 1c | Epic 395 | 395B | A4 preview wrapper component + GenerateDocumentDialog integration. Fully independent. |
+| 1c | Epic 395 | 395B | A4 preview wrapper component + GenerateDocumentDialog integration. Fully independent. | **Done** (PR #818) |
 
 ### Stage 2: Dashboard Redesigns (Parallel)
 
@@ -272,7 +272,7 @@ Stage 3:  [396A]                               <- test stabilization (after all 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **395A** | 395.1-395.5 | Project detail overview: health band + metrics strip, compact setup bar (auto-hide), two-panel body (activity/tasks + financial/team), tests (~5 tests) | **Done** (PR #817) |
-| **395B** | 395.6-395.9 | A4PreviewWrapper component, GenerateDocumentDialog integration, template editor preview integration, tests (~4 tests) | |
+| **395B** | 395.6-395.9 | A4PreviewWrapper component, GenerateDocumentDialog integration, template editor preview integration, tests (~4 tests) | **Done** (PR #818) |
 
 ### Tasks
 

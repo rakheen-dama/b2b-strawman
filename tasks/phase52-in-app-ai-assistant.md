@@ -165,7 +165,7 @@ WRITE TOOLS + SETTINGS (parallel)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 3a | 391 | 391A | `AssistantProvider` context, `AssistantPanel` (Sheet), `AssistantTrigger` (floating button), `parseSseEvents` utility, `useAssistantChat` hook (SSE connection + state + abort), layout.tsx integration. Frontend tests (~7). Frontend only. | |
+| 3a | 391 | 391A | `AssistantProvider` context, `AssistantPanel` (Sheet), `AssistantTrigger` (floating button), `parseSseEvents` utility, `useAssistantChat` hook (SSE connection + state + abort), layout.tsx integration. Frontend tests (~7). Frontend only. | **Done** (PR #809) |
 | 3b | 391 | 391B | Message components: `UserMessage`, `AssistantMessage` (react-markdown), `ToolUseCard`, `ConfirmationCard`, `ToolResultCard`, `ErrorCard`, `TokenUsageBadge`, `EmptyState`. Frontend tests (~8). Frontend only. | |
 
 ### Stage 4: Write Tools + Settings (parallel tracks)
@@ -398,7 +398,7 @@ WRITE TOOLS + SETTINGS (parallel)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **391A** | 391.1--391.9 | `AssistantProvider` context (open/close, aiEnabled flag), `AssistantPanel` (Sheet-based, 420px, message list, textarea input, send/stop controls), `AssistantTrigger` (fixed bottom-right, teal button, visibility logic), `parseSseEvents` utility, `useAssistantChat` hook (SSE via fetch + ReadableStream, message state, abort control, token tracking), layout.tsx integration. Frontend tests (~7). Frontend only. | |
+| **391A** | 391.1--391.9 | `AssistantProvider` context (open/close, aiEnabled flag), `AssistantPanel` (Sheet-based, 420px, message list, textarea input, send/stop controls), `AssistantTrigger` (fixed bottom-right, teal button, visibility logic), `parseSseEvents` utility, `useAssistantChat` hook (SSE via fetch + ReadableStream, message state, abort control, token tracking), layout.tsx integration. Frontend tests (~7). Frontend only. | **Done** (PR #809) |
 | **391B** | 391.10--391.19 | Message components: `UserMessage` (right-aligned bubble), `AssistantMessage` (left-aligned, react-markdown, streaming cursor), `ToolUseCard` (loading spinner, expand/collapse), `ConfirmationCard` (data preview, Confirm/Cancel buttons), `ToolResultCard` (success/cancelled states), `ErrorCard`, `TokenUsageBadge` (header badge), `EmptyState` (admin vs. member messaging). Frontend tests (~8). Frontend only. | |
 
 ### Tasks

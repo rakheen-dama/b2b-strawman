@@ -264,6 +264,13 @@ public class AssistantService {
     pending.future().complete(approved);
   }
 
+  /** Package-private for testing only. Plants a pending confirmation for a given tool call ID. */
+  CompletableFuture<Boolean> plantConfirmation(String toolCallId, UUID memberId) {
+    var future = new CompletableFuture<Boolean>();
+    pendingConfirmations.put(toolCallId, new PendingConfirmation(future, memberId));
+    return future;
+  }
+
   /**
    * Validates pre-flight conditions (org exists, PRO tier, AI integration enabled). Emits an error
    * to the SSE emitter and throws {@link PreflightFailedException} if any check fails.

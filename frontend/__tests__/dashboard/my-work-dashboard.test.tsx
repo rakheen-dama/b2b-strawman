@@ -6,6 +6,8 @@ import {
   UrgencyTaskList,
   groupByUrgency,
 } from "@/components/my-work/urgency-task-list";
+import { TodaysAgenda } from "@/components/dashboard/todays-agenda";
+import { WeeklyRhythmStrip } from "@/components/dashboard/weekly-rhythm-strip";
 import type { PersonalDashboardResponse } from "@/lib/dashboard-types";
 import type { MyWorkTaskItem } from "@/lib/types";
 
@@ -20,6 +22,11 @@ vi.mock("recharts", () => ({
     <div data-testid="bar-chart">{children}</div>
   ),
   Bar: () => <div data-testid="bar" />,
+  PieChart: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="pie-chart">{children}</div>
+  ),
+  Pie: () => <div />,
+  Cell: () => <div />,
   XAxis: () => <div />,
   YAxis: () => <div />,
   Tooltip: () => <div />,
@@ -221,5 +228,36 @@ describe("UrgencyTaskList grouping", () => {
     // Render with tasks - date range is not a prop of UrgencyTaskList
     render(<UrgencyTaskList tasks={tasks} slug="acme" />);
     expect(screen.getByText("Always visible task")).toBeInTheDocument();
+  });
+});
+
+describe("My Work page renders new layout components", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("renders TodaysAgenda and WeeklyRhythmStrip (not PersonalKpis)", () => {
+    render(
+      <>
+        <TodaysAgenda
+          tasks={[]}
+          todayEntries={[]}
+          upcomingDeadlines={[]}
+          weeklyCapacityHours={40}
+        />
+        <WeeklyRhythmStrip
+          dailyHours={[0, 0, 0, 0, 0, 0, 0]}
+          dailyCapacity={8}
+          selectedDayIndex={null}
+          onDaySelect={() => {}}
+        />
+      </>,
+    );
+
+    // New components present
+    expect(screen.getByTestId("todays-tasks")).toBeInTheDocument();
+    expect(screen.getByTestId("time-progress-today")).toBeInTheDocument();
+    expect(screen.getByTestId("next-deadline")).toBeInTheDocument();
+    expect(screen.getByTestId("weekly-rhythm-strip")).toBeInTheDocument();
   });
 });

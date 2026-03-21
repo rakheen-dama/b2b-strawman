@@ -10,6 +10,11 @@ vi.mock("recharts", () => ({
   }: {
     children: React.ReactNode;
   }) => <div data-testid="responsive-container">{children}</div>,
+  PieChart: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="pie-chart">{children}</div>
+  ),
+  Pie: () => <div />,
+  Cell: () => <div />,
   BarChart: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="bar-chart">{children}</div>
   ),
@@ -58,8 +63,8 @@ describe("TimeBreakdown", () => {
     expect(screen.getByText("20.0h (52%)")).toBeInTheDocument();
     expect(screen.getByText("12.5h (33%)")).toBeInTheDocument();
     expect(screen.getByText("6.0h (16%)")).toBeInTheDocument();
-    // HorizontalBarChart is dynamically imported — wait for it to load
-    expect(await screen.findByTestId("responsive-container")).toBeInTheDocument();
+    // DonutChart renders with data-testid="donut-chart"
+    expect(screen.getByTestId("donut-chart")).toBeInTheDocument();
   });
 
   it("renders empty state when data is empty", () => {

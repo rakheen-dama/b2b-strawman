@@ -116,7 +116,7 @@ export default async function OrgLayout({
             </main>
           </div>
         </div>
-        <AssistantPanel />
+        <AssistantPanel slug={slug} orgRole={capData.role} />
         <AssistantTrigger />
         </AssistantProvider>
         </CommandPaletteProvider>

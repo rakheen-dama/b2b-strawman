@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect, useState, type KeyboardEvent } from "react";
+import { useRef, useEffect, useMemo, useState, type KeyboardEvent } from "react";
 import { Sparkles, Send, Square } from "lucide-react";
 import {
   Sheet,
@@ -11,87 +11,55 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
 import { useAssistant } from "@/components/assistant/assistant-provider";
-import { useAssistantChat, type ChatMessage } from "@/hooks/use-assistant-chat";
+import { useAssistantChat } from "@/hooks/use-assistant-chat";
+import { UserMessage } from "@/components/assistant/user-message";
+import { AssistantMessage } from "@/components/assistant/assistant-message";
+import { ToolUseCard } from "@/components/assistant/tool-use-card";
+import { ConfirmationCard } from "@/components/assistant/confirmation-card";
+import { ToolResultCard } from "@/components/assistant/tool-result-card";
+import { ErrorCard } from "@/components/assistant/error-card";
+import { TokenUsageBadge } from "@/components/assistant/token-usage-badge";
+import { EmptyState } from "@/components/assistant/empty-state";
 
-// ---- Message bubble ----
-
-function MessageBubble({ message }: { message: ChatMessage }) {
-  const isUser = message.role === "user";
-  const isError = message.role === "error";
-  const isToolUse = message.role === "tool_use";
-  const isToolResult = message.role === "tool_result";
-
-  if (isToolUse) {
-    return (
-      <div className="my-1 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
-        <span className="font-medium">Tool:</span> {message.toolName}
-        {message.requiresConfirmation && (
-          <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-amber-700 dark:bg-amber-900 dark:text-amber-300">
-            Needs confirmation
-          </span>
-        )}
-      </div>
-    );
-  }
-
-  if (isToolResult) {
-    return (
-      <div
-        className={cn(
-          "my-1 rounded-md border px-3 py-2 text-xs",
-          message.success
-            ? "border-teal-200 bg-teal-50 text-teal-700 dark:border-teal-800 dark:bg-teal-900/30 dark:text-teal-400"
-            : "border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-400",
-        )}
-      >
-        <span className="font-medium">
-          {message.toolName} {message.success ? "result" : "failed"}:
-        </span>{" "}
-        {message.content.length > 200
-          ? message.content.slice(0, 200) + "..."
-          : message.content}
-      </div>
-    );
-  }
-
-  return (
-    <div
-      className={cn(
-        "max-w-[85%] rounded-lg px-3 py-2 text-sm",
-        isUser
-          ? "ml-auto bg-teal-600 text-white"
-          : isError
-            ? "bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-            : "bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-100",
-      )}
-    >
-      <p className="whitespace-pre-wrap">{message.content}</p>
-    </div>
-  );
+interface AssistantPanelProps {
+  slug: string;
+  orgRole: string;
 }
 
-// ---- Panel ----
-
-export function AssistantPanel() {
+export function AssistantPanel({ slug, orgRole }: AssistantPanelProps) {
   const { isOpen, toggle } = useAssistant();
-  const { messages, isStreaming, tokenUsage, sendMessage, stopStreaming } =
-    useAssistantChat();
+  const {
+    messages,
+    isStreaming,
+    tokenUsage,
+    sendMessage,
+    stopStreaming,
+    confirmToolCall,
+  } = useAssistantChat();
 
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Scroll to bottom on new messages
+  // Pre-compute set of resolved tool call IDs (for ToolUseCard isLoading logic)
+  const toolResultIds = useMemo(
+    () =>
+      new Set(
+        messages
+          .filter((m) => m.role === "tool_result")
+          .map((m) => m.toolCallId)
+          .filter(Boolean) as string[],
+      ),
+    [messages],
+  );
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "instant" });
   }, [messages]);
 
-  // Focus textarea when panel opens
   useEffect(() => {
     if (isOpen) {
-      // Small delay for the sheet animation
       const timer = setTimeout(() => textareaRef.current?.focus(), 100);
       return () => clearTimeout(timer);
     }
@@ -126,9 +94,10 @@ export function AssistantPanel() {
           </div>
           <div className="flex items-center gap-2">
             {(tokenUsage.input > 0 || tokenUsage.output > 0) && (
-              <span className="text-xs text-slate-400">
-                {tokenUsage.input + tokenUsage.output} tokens
-              </span>
+              <TokenUsageBadge
+                inputTokens={tokenUsage.input}
+                outputTokens={tokenUsage.output}
+              />
             )}
             <Button
               variant="ghost"
@@ -147,19 +116,63 @@ export function AssistantPanel() {
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto px-1 py-3">
-          {messages.length === 0 && (
-            <div className="flex h-full items-center justify-center">
-              <p className="text-sm text-slate-400">
-                Ask anything about your workspace...
-              </p>
+          {messages.length === 0 ? (
+            <EmptyState orgRole={orgRole} slug={slug} />
+          ) : (
+            <div className="flex flex-col gap-2">
+              {messages.map((msg, index) => {
+                const isLastMessage = index === messages.length - 1;
+
+                if (msg.role === "user") {
+                  return <UserMessage key={msg.id} message={msg} />;
+                }
+
+                if (msg.role === "assistant") {
+                  return (
+                    <AssistantMessage
+                      key={msg.id}
+                      message={msg}
+                      isStreaming={isStreaming && isLastMessage}
+                    />
+                  );
+                }
+
+                if (msg.role === "tool_use") {
+                  if (msg.requiresConfirmation) {
+                    return (
+                      <ConfirmationCard
+                        key={msg.id}
+                        message={msg}
+                        onConfirm={confirmToolCall}
+                      />
+                    );
+                  }
+                  return (
+                    <ToolUseCard
+                      key={msg.id}
+                      message={msg}
+                      isLoading={
+                        msg.toolCallId
+                          ? !toolResultIds.has(msg.toolCallId)
+                          : false
+                      }
+                    />
+                  );
+                }
+
+                if (msg.role === "tool_result") {
+                  return <ToolResultCard key={msg.id} message={msg} />;
+                }
+
+                if (msg.role === "error") {
+                  return <ErrorCard key={msg.id} message={msg} />;
+                }
+
+                return null;
+              })}
+              <div ref={messagesEndRef} />
             </div>
           )}
-          <div className="flex flex-col gap-2">
-            {messages.map((msg) => (
-              <MessageBubble key={msg.id} message={msg} />
-            ))}
-            <div ref={messagesEndRef} />
-          </div>
         </div>
 
         {/* Footer */}

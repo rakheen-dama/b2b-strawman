@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.integration;
 
+import io.b2mash.b2b.b2bstrawman.assistant.provider.LlmChatProviderRegistry;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
@@ -15,27 +16,39 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.ObjectMapper;
 
 /** Orchestrates integration configuration, secrets management, and connection testing. */
 @Service
 public class IntegrationService {
 
+  private static final Logger LOG = LoggerFactory.getLogger(IntegrationService.class);
+  private static final String DEFAULT_MODEL = "claude-sonnet-4-6";
+
   private final OrgIntegrationRepository orgIntegrationRepository;
   private final IntegrationRegistry integrationRegistry;
   private final SecretStore secretStore;
   private final AuditService auditService;
+  private final LlmChatProviderRegistry llmChatProviderRegistry;
+  private final ObjectMapper objectMapper;
 
   public IntegrationService(
       OrgIntegrationRepository orgIntegrationRepository,
       IntegrationRegistry integrationRegistry,
       SecretStore secretStore,
-      AuditService auditService) {
+      AuditService auditService,
+      LlmChatProviderRegistry llmChatProviderRegistry,
+      ObjectMapper objectMapper) {
     this.orgIntegrationRepository = orgIntegrationRepository;
     this.integrationRegistry = integrationRegistry;
     this.secretStore = secretStore;
     this.auditService = auditService;
+    this.llmChatProviderRegistry = llmChatProviderRegistry;
+    this.objectMapper = objectMapper;
   }
 
   /**
@@ -115,7 +128,7 @@ public class IntegrationService {
       throw new InvalidStateException("API key required", "API key must not be blank");
     }
     var integration = findByDomainOrThrow(domain);
-    var secretKey = buildSecretKey(domain, integration.getProviderSlug());
+    var secretKey = IntegrationKeys.apiKey(domain, integration.getProviderSlug());
 
     secretStore.store(secretKey, apiKey);
 
@@ -136,7 +149,7 @@ public class IntegrationService {
   @Transactional
   public void deleteApiKey(IntegrationDomain domain) {
     var integration = findByDomainOrThrow(domain);
-    var secretKey = buildSecretKey(domain, integration.getProviderSlug());
+    var secretKey = IntegrationKeys.apiKey(domain, integration.getProviderSlug());
 
     secretStore.delete(secretKey);
     integration.clearKeySuffix();
@@ -161,7 +174,7 @@ public class IntegrationService {
         switch (domain) {
           case ACCOUNTING ->
               integrationRegistry.resolve(domain, AccountingProvider.class).testConnection();
-          case AI -> integrationRegistry.resolve(domain, AiProvider.class).testConnection();
+          case AI -> testAiConnection(domain);
           case DOCUMENT_SIGNING ->
               integrationRegistry.resolve(domain, DocumentSigningProvider.class).testConnection();
           case EMAIL -> integrationRegistry.resolve(domain, EmailProvider.class).testConnection();
@@ -232,7 +245,41 @@ public class IntegrationService {
     integrationRegistry.evict(tenantSchema, domain);
   }
 
-  private static String buildSecretKey(IntegrationDomain domain, String providerSlug) {
-    return domain.name().toLowerCase() + ":" + providerSlug + ":api_key";
+  private ConnectionTestResult testAiConnection(IntegrationDomain domain) {
+    var integration = orgIntegrationRepository.findByDomain(domain);
+    if (integration.isEmpty() || "noop".equals(integration.get().getProviderSlug())) {
+      return integrationRegistry.resolve(domain, AiProvider.class).testConnection();
+    }
+    var slug = integration.get().getProviderSlug();
+    try {
+      var provider = llmChatProviderRegistry.get(slug);
+      var secretKey = IntegrationKeys.aiApiKey(slug);
+      // Retrieve directly — avoids TOCTOU race between exists() and retrieve()
+      String apiKey;
+      try {
+        apiKey = secretStore.retrieve(secretKey);
+      } catch (ResourceNotFoundException e) {
+        return new ConnectionTestResult(false, slug, "No API key configured");
+      }
+      var model = parseModel(integration.get().getConfigJson());
+      var ok = provider.validateKey(apiKey, model);
+      return new ConnectionTestResult(ok, slug, ok ? null : "API key validation failed");
+    } catch (IllegalArgumentException e) {
+      return new ConnectionTestResult(false, slug, "Provider not found: " + slug);
+    }
+  }
+
+  /** Parses the model name from the integration config JSON using ObjectMapper. */
+  private String parseModel(String configJson) {
+    if (configJson == null || configJson.isBlank()) return DEFAULT_MODEL;
+    try {
+      var node = objectMapper.readTree(configJson);
+      var modelNode = node.get("model");
+      if (modelNode == null || modelNode.isNull()) return DEFAULT_MODEL;
+      return modelNode.asText(DEFAULT_MODEL);
+    } catch (Exception e) {
+      LOG.debug("Failed to parse model from config JSON, using default", e);
+      return DEFAULT_MODEL;
+    }
   }
 }

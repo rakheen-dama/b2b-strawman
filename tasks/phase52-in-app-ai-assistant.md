@@ -35,7 +35,7 @@ The next epic number starts at **387**. ADRs 200--204 are already accepted.
 |------|------|-------|------|--------|--------|--------|
 | 387 | LLM Provider Abstraction: Interface, Records, Registry, Anthropic Adapter | Backend | -- | M | 387A, 387B | **Done** (PRs #802, #803) |
 | 388 | Tool Framework + Read Tools (Batch 1: Core Entities) | Backend | 387A | M | 388A, 388B | **Done** (PRs #804, #805) |
-| 389 | Read Tools (Batch 2: Financial + Search) + System Guide | Backend | 387A | M | 389A | |
+| 389 | Read Tools (Batch 2: Financial + Search) + System Guide | Backend | 387A | M | 389A | **Done** (PR #806) |
 | 390 | Assistant Service + Chat API + Confirmation Flow | Backend | 387, 388, 389 | L | 390A, 390B | |
 | 391 | Frontend Chat UI: Provider, Panel, Trigger, SSE Hook | Frontend | 390 | L | 391A, 391B | |
 | 392 | Write Tools + Settings Enhancement | Both | 390, 391 | M | 392A, 392B | |
@@ -152,7 +152,7 @@ WRITE TOOLS + SETTINGS (parallel)
 |-------|------|-------|---------|--------|
 | 1a-i (parallel) | 388 | 388A | `AssistantTool` interface, `AssistantToolRegistry` auto-discovery + capability filtering, `TenantToolContext` record. Unit tests (~4). Backend only. | **Done** (PR #804) |
 | 1a-ii (after 388A) | 388 | 388B | Core entity read tools: `ListProjectsTool`, `GetProjectTool`, `ListCustomersTool`, `GetCustomerTool`, `ListTasksTool`, `GetMyTasksTool`, `GetTimeSummaryTool`. Integration tests (~7). Backend only. | **Done** (PR #805) |
-| 1b (parallel with 388) | 389 | 389A | Financial/search read tools: `GetUnbilledTimeTool`, `GetProjectBudgetTool`, `GetProfitabilityTool`, `ListInvoicesTool`, `GetInvoiceTool`, `SearchEntitiesTool`, `GetNavigationHelpTool`. `system-guide.md` resource file. Integration tests (~8). Backend only. | |
+| 1b (parallel with 388) | 389 | 389A | Financial/search read tools: `GetUnbilledTimeTool`, `GetProjectBudgetTool`, `GetProfitabilityTool`, `ListInvoicesTool`, `GetInvoiceTool`, `SearchEntitiesTool`, `GetNavigationHelpTool`. `system-guide.md` resource file. Integration tests (~8). Backend only. | **Done** (PR #806) |
 
 ### Stage 2: Backend Orchestration (sequential)
 
@@ -296,7 +296,7 @@ WRITE TOOLS + SETTINGS (parallel)
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **389A** | 389.1--389.10 | 7 read tool `@Component` implementations: `GetUnbilledTimeTool` (FINANCIAL_VISIBILITY), `GetProjectBudgetTool` (FINANCIAL_VISIBILITY), `GetProfitabilityTool` (FINANCIAL_VISIBILITY), `ListInvoicesTool` (INVOICING), `GetInvoiceTool` (INVOICING), `SearchEntitiesTool`, `GetNavigationHelpTool`. `system-guide.md` classpath resource (~3-5K tokens). Integration tests (~8). Backend only. | |
+| **389A** | 389.1--389.10 | 7 read tool `@Component` implementations: `GetUnbilledTimeTool` (FINANCIAL_VISIBILITY), `GetProjectBudgetTool` (FINANCIAL_VISIBILITY), `GetProfitabilityTool` (FINANCIAL_VISIBILITY), `ListInvoicesTool` (INVOICING), `GetInvoiceTool` (INVOICING), `SearchEntitiesTool`, `GetNavigationHelpTool`. `system-guide.md` classpath resource (~3-5K tokens). Integration tests (~8). Backend only. | **Done** (PR #806) |
 
 ### Tasks
 

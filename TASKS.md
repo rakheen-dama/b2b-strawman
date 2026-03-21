@@ -440,7 +440,7 @@
 | **Phase 52 — In-App AI Assistant (BYOAK)** | | | | | | See [tasks/phase52-in-app-ai-assistant.md](tasks/phase52-in-app-ai-assistant.md) |
 | 387 | LLM Provider Abstraction: Interface, Records, Registry, Anthropic Adapter | Backend | -- | M | 387A, 387B | **Done** (PRs #802, #803) |
 | 388 | Tool Framework + Read Tools (Batch 1: Core Entities) | Backend | 387A | M | 388A, 388B | **Done** (PRs #804, #805) |
-| 389 | Read Tools (Batch 2: Financial + Search) + System Guide | Backend | 388A | M | 389A | |
+| 389 | Read Tools (Batch 2: Financial + Search) + System Guide | Backend | 388A | M | 389A | **Done** (PR #806) |
 | 390 | Assistant Service + Chat API + Confirmation Flow | Backend | 387, 388, 389 | L | 390A, 390B | |
 | 391 | Frontend Chat UI: Provider, Panel, Trigger, SSE Hook | Frontend | 390 | L | 391A, 391B | |
 | 392 | Write Tools + Settings Enhancement | Both | 390, 391 | M | 392A, 392B | |

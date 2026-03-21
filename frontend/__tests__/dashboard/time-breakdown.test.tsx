@@ -18,6 +18,8 @@ vi.mock("recharts", () => ({
   YAxis: () => <div />,
   Tooltip: () => <div />,
   Legend: () => <div data-testid="legend" />,
+  CartesianGrid: () => <div data-testid="cartesian-grid" />,
+  ReferenceLine: () => <div data-testid="reference-line" />,
 }));
 
 const mockBreakdown: PersonalProjectBreakdown[] = [

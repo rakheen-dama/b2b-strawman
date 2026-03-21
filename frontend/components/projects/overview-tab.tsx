@@ -301,7 +301,7 @@ export async function OverviewTab({
       {setupIncomplete && (
         <details
           data-testid="setup-progress-bar"
-          className="rounded-lg border border-slate-200/60 bg-card shadow-sm"
+          className="group rounded-lg border border-slate-200/60 bg-card shadow-sm"
         >
           <summary className="flex cursor-pointer items-center gap-3 px-4 py-3">
             <div className="min-w-0 flex-1">
@@ -316,7 +316,7 @@ export async function OverviewTab({
                 />
               </div>
             </div>
-            <ChevronDown className="size-4 shrink-0 text-slate-400 transition-transform [[open]>&]:rotate-180" />
+            <ChevronDown className="size-4 shrink-0 text-slate-400 transition-transform group-open:rotate-180" />
           </summary>
           <div className="border-t border-slate-200/60 px-4 py-3 dark:border-slate-700/60">
             <ul className="space-y-1.5">
@@ -453,7 +453,6 @@ export async function OverviewTab({
                         label: "Open",
                       },
                     ]}
-                    width={undefined}
                     height={8}
                     className="w-full"
                   />

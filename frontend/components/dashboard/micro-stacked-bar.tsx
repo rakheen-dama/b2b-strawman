@@ -11,7 +11,7 @@ interface MicroStackedBarProps {
 
 export function MicroStackedBar({
   segments,
-  width = 120,
+  width,
   height = 8,
   className,
 }: MicroStackedBarProps) {
@@ -23,7 +23,7 @@ export function MicroStackedBar({
     <div
       data-testid="micro-stacked-bar"
       className={cn("flex overflow-hidden rounded-full", className)}
-      style={{ width, height }}
+      style={{ width: width ?? undefined, height }}
     >
       {total > 0 &&
         segments.map((segment, i) => (

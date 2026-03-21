@@ -447,7 +447,7 @@
 | **Phase 53 — Dashboard Polish, Navigation Cleanup & Print-Accurate Previews** | | | | | | See [tasks/phase53-dashboard-polish-nav-cleanup.md](tasks/phase53-dashboard-polish-nav-cleanup.md) |
 | 393 | Chart Component Library & Foundation | Frontend | -- | M | 393A, 393B | **Done** (PRs #813, #814) |
 | 394 | Dashboard Redesigns | Frontend | 393A | L | 394A, 394B | **Done** (PRs #815, #816) |
-| 395 | Project Detail & Document Preview | Frontend | 393A (395A only) | M | 395A, 395B | |
+| 395 | Project Detail & Document Preview | Frontend | 393A (395A only) | M | 395A, 395B | 395A **Done** (PR #817) |
 | 396 | Test Updates & Visual Baselines | Frontend | 393-395 | S | 396A | |
 
 ---

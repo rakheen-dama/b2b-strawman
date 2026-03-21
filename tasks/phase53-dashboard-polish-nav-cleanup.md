@@ -53,7 +53,7 @@ Phase 53 is a **pure frontend visual overhaul** targeting the three primary dash
 |-------|------|-------|-----------|
 | 2a | Epic 394 | 394A | Org Dashboard full layout restructure — MetricsStrip, hero two-panel, secondary three-column. Depends on 393A chart components. | **Done** (PR #815) |
 | 2b | Epic 394 | 394B | My Work page full layout restructure — Today's Agenda hero, WeeklyRhythmStrip, two-column work panels. Depends on 393A chart components. | **Done** (PR #816) |
-| 2c | Epic 395 | 395A | Project Detail Overview tab polish — health band, compact setup bar, two-panel body. Depends on 393A chart components. |
+| 2c | Epic 395 | 395A | Project Detail Overview tab polish — health band, compact setup bar, two-panel body. Depends on 393A chart components. | **Done** (PR #817) |
 
 ### Stage 3: Test Stabilization
 
@@ -271,7 +271,7 @@ Stage 3:  [396A]                               <- test stabilization (after all 
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **395A** | 395.1-395.5 | Project detail overview: health band + metrics strip, compact setup bar (auto-hide), two-panel body (activity/tasks + financial/team), tests (~5 tests) | |
+| **395A** | 395.1-395.5 | Project detail overview: health band + metrics strip, compact setup bar (auto-hide), two-panel body (activity/tasks + financial/team), tests (~5 tests) | **Done** (PR #817) |
 | **395B** | 395.6-395.9 | A4PreviewWrapper component, GenerateDocumentDialog integration, template editor preview integration, tests (~4 tests) | |
 
 ### Tasks

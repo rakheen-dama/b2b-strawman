@@ -6,8 +6,6 @@ interface TooltipPayloadEntry {
   name: string;
   value: number;
   color?: string;
-  dataKey?: string;
-  payload?: Record<string, unknown>;
 }
 
 interface ChartTooltipProps {

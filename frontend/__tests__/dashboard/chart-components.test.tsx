@@ -194,6 +194,10 @@ describe("DonutChart", () => {
     expect(screen.getByTestId("pie-chart")).toBeInTheDocument();
     expect(screen.getByText("A: 40")).toBeInTheDocument();
     expect(screen.getByText("B: 60")).toBeInTheDocument();
+
+    // Center content renders as HTML overlay
+    expect(screen.getByText("$1.2k")).toBeInTheDocument();
+    expect(screen.getByText("Revenue")).toBeInTheDocument();
   });
 });
 

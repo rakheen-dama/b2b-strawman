@@ -1,11 +1,11 @@
 export const CHART_THEME = {
-  // Color palette — references CSS custom properties resolved at runtime
+  // Color palette — references CSS custom properties with hex fallbacks
   colors: {
-    primary: "var(--chart-1)",   // warm orange
-    secondary: "var(--chart-2)", // teal
-    tertiary: "var(--chart-3)",  // dark blue
-    quaternary: "var(--chart-4)", // yellow
-    quinary: "var(--chart-5)",   // amber
+    primary: "var(--color-chart-1, #2563eb)",   // warm orange
+    secondary: "var(--color-chart-2, #e11d48)", // teal
+    tertiary: "var(--color-chart-3, #e77e23)",  // dark blue
+    quaternary: "var(--color-chart-4, #8b5cf6)", // yellow
+    quinary: "var(--color-chart-5, #06b6d4)",   // amber
   },
 
   // Slate-based supplementary colors for data-heavy charts

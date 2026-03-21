@@ -28,47 +28,6 @@ const DEFAULT_COLORS = [
   CHART_THEME.colors.quinary,
 ];
 
-function CenterContent({
-  cx,
-  cy,
-  centerValue,
-  centerLabel,
-}: {
-  cx: number;
-  cy: number;
-  centerValue?: string;
-  centerLabel?: string;
-}) {
-  if (!centerValue && !centerLabel) return null;
-
-  return (
-    <g>
-      {centerValue && (
-        <text
-          x={cx}
-          y={centerLabel ? cy - 6 : cy}
-          textAnchor="middle"
-          dominantBaseline="central"
-          className="fill-current font-mono text-lg font-bold tabular-nums"
-        >
-          {centerValue}
-        </text>
-      )}
-      {centerLabel && (
-        <text
-          x={cx}
-          y={centerValue ? cy + 14 : cy}
-          textAnchor="middle"
-          dominantBaseline="central"
-          className="fill-current text-xs opacity-60"
-        >
-          {centerLabel}
-        </text>
-      )}
-    </g>
-  );
-}
-
 export function DonutChart({
   data,
   centerValue,
@@ -87,7 +46,7 @@ export function DonutChart({
   const { donut } = CHART_THEME;
 
   return (
-    <div data-testid="donut-chart" className={cn(className)}>
+    <div data-testid="donut-chart" className={cn("relative", className)}>
       <ResponsiveContainer width="100%" height={height}>
         <PieChart>
           <Pie
@@ -107,14 +66,6 @@ export function DonutChart({
                 fill={entry.color || DEFAULT_COLORS[i % DEFAULT_COLORS.length]}
               />
             ))}
-            {(centerValue || centerLabel) && (
-              <CenterContent
-                cx={0}
-                cy={0}
-                centerValue={centerValue}
-                centerLabel={centerLabel}
-              />
-            )}
           </Pie>
           <Tooltip content={<ChartTooltip />} />
           <Legend
@@ -125,6 +76,16 @@ export function DonutChart({
           />
         </PieChart>
       </ResponsiveContainer>
+      {(centerValue || centerLabel) && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+          {centerValue && (
+            <span className="font-mono text-lg font-bold">{centerValue}</span>
+          )}
+          {centerLabel && (
+            <span className="text-xs opacity-60">{centerLabel}</span>
+          )}
+        </div>
+      )}
     </div>
   );
 }

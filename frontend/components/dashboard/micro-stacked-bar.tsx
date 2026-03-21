@@ -15,6 +15,8 @@ export function MicroStackedBar({
   height = 8,
   className,
 }: MicroStackedBarProps) {
+  if (!segments || segments.length === 0) return null;
+
   const total = segments.reduce((sum, seg) => sum + seg.value, 0);
 
   return (

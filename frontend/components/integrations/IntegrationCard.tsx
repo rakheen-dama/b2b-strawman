@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
+import useSWR from "swr";
 import { Calculator, Sparkles, PenTool, CreditCard, KeyRound, Mail } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,6 +27,7 @@ import {
   upsertIntegrationAction,
   toggleIntegrationAction,
   deleteApiKeyAction,
+  fetchAiModels,
 } from "@/app/(app)/org/[slug]/settings/integrations/actions";
 import type { IntegrationDomain, OrgIntegration } from "@/lib/types";
 
@@ -39,6 +42,16 @@ const DOMAIN_ICONS: Record<
   PAYMENT: CreditCard,
 };
 
+function getCurrentModel(integration: OrgIntegration | null): string | null {
+  if (!integration?.configJson) return null;
+  try {
+    const parsed = JSON.parse(integration.configJson);
+    return parsed.model ?? null;
+  } catch {
+    return null;
+  }
+}
+
 interface IntegrationCardProps {
   domain: IntegrationDomain;
   label: string;
@@ -46,6 +59,7 @@ interface IntegrationCardProps {
   integration: OrgIntegration | null;
   providers: string[];
   slug: string;
+  tier?: string;
 }
 
 export function IntegrationCard({
@@ -55,16 +69,28 @@ export function IntegrationCard({
   integration,
   providers,
   slug,
+  tier,
 }: IntegrationCardProps) {
   const [isTogglingProvider, setIsTogglingProvider] = useState(false);
   const [isTogglingEnabled, setIsTogglingEnabled] = useState(false);
   const [isDeletingKey, setIsDeletingKey] = useState(false);
+  const [isUpdatingModel, setIsUpdatingModel] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const Icon = DOMAIN_ICONS[domain];
   const hasProvider = !!integration?.providerSlug;
   const isEnabled = !!integration?.enabled;
   const hasKey = !!integration?.keySuffix;
+  const isStarter = domain === "AI" && tier === "STARTER";
+
+  // Fetch AI models when domain is AI and key is configured
+  const shouldFetchModels = domain === "AI" && hasKey;
+  const { data: modelsData, isLoading: isLoadingModels } = useSWR(
+    shouldFetchModels ? "ai-models" : null,
+    () => fetchAiModels(),
+  );
+
+  const currentModel = getCurrentModel(integration);
 
   function getStatusBadge() {
     if (!integration || !integration.providerSlug) {
@@ -125,6 +151,25 @@ export function IntegrationCard({
     }
   }
 
+  async function handleModelChange(modelId: string) {
+    if (!integration?.providerSlug) return;
+    setIsUpdatingModel(true);
+    setError(null);
+    try {
+      const result = await upsertIntegrationAction(slug, domain, {
+        providerSlug: integration.providerSlug,
+        configJson: JSON.stringify({ model: modelId }),
+      });
+      if (!result.success) {
+        setError(result.error ?? "Failed to update model.");
+      }
+    } catch {
+      setError("An unexpected error occurred.");
+    } finally {
+      setIsUpdatingModel(false);
+    }
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -134,6 +179,7 @@ export function IntegrationCard({
               <Icon className="size-5 text-slate-600 dark:text-slate-400" />
             </div>
             <CardTitle className="font-display text-lg">{label}</CardTitle>
+            {domain === "AI" && <Badge variant="pro">PRO</Badge>}
           </div>
           {getStatusBadge()}
         </div>
@@ -144,6 +190,21 @@ export function IntegrationCard({
           <p className="text-sm text-destructive" role="alert">
             {error}
           </p>
+        )}
+
+        {/* STARTER tier upgrade prompt */}
+        {isStarter && (
+          <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800">
+            <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+              AI Assistant requires the PRO plan
+            </p>
+            <Link
+              href={`/org/${slug}/settings/billing`}
+              className="mt-2 inline-flex items-center text-sm text-teal-600 hover:text-teal-700"
+            >
+              Upgrade to Pro
+            </Link>
+          </div>
         )}
 
         {/* Provider selector */}
@@ -157,7 +218,7 @@ export function IntegrationCard({
           <Select
             value={integration?.providerSlug ?? ""}
             onValueChange={handleProviderChange}
-            disabled={isTogglingProvider}
+            disabled={isTogglingProvider || isStarter}
           >
             <SelectTrigger id={`provider-${domain}`} className="w-full">
               <SelectValue placeholder="Select provider" />
@@ -189,7 +250,7 @@ export function IntegrationCard({
                     {"••••" + integration.keySuffix}
                   </span>
                   <SetApiKeyDialog slug={slug} domain={domain}>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" disabled={isStarter}>
                       Update Key
                     </Button>
                   </SetApiKeyDialog>
@@ -197,7 +258,7 @@ export function IntegrationCard({
                     variant="outline"
                     size="sm"
                     onClick={handleDeleteKey}
-                    disabled={isDeletingKey}
+                    disabled={isDeletingKey || isStarter}
                     className="text-destructive hover:text-destructive"
                   >
                     {isDeletingKey ? "Removing..." : "Remove Key"}
@@ -205,12 +266,41 @@ export function IntegrationCard({
                 </>
               ) : (
                 <SetApiKeyDialog slug={slug} domain={domain}>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" disabled={isStarter}>
                     Set API Key
                   </Button>
                 </SetApiKeyDialog>
               )}
             </div>
+          </div>
+        )}
+
+        {/* Model selector (AI domain only, when key is configured) */}
+        {domain === "AI" && hasKey && (
+          <div className="space-y-2">
+            <label
+              htmlFor={`model-${domain}`}
+              className="text-sm font-medium text-slate-700 dark:text-slate-300"
+            >
+              Model
+            </label>
+            <Select
+              value={currentModel ?? ""}
+              onValueChange={handleModelChange}
+              disabled={isUpdatingModel || isLoadingModels || isStarter}
+            >
+              <SelectTrigger id={`model-${domain}`} className="w-full">
+                <SelectValue placeholder={isLoadingModels ? "Loading models..." : "Select model"} />
+              </SelectTrigger>
+              <SelectContent>
+                {modelsData?.models.map((model) => (
+                  <SelectItem key={model.id} value={model.id}>
+                    {model.name}
+                    {model.recommended ? " (Recommended)" : ""}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         )}
 
@@ -227,7 +317,7 @@ export function IntegrationCard({
               id={`enabled-${domain}`}
               checked={isEnabled}
               onCheckedChange={handleToggle}
-              disabled={!hasProvider || isTogglingEnabled}
+              disabled={!hasProvider || isTogglingEnabled || isStarter}
             />
           </div>
         )}

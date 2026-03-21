@@ -2,6 +2,12 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import IntegrationsSettingsPage from "@/app/(app)/org/[slug]/settings/integrations/page";
 
+vi.mock("@/lib/api", () => ({
+  api: {
+    get: vi.fn().mockResolvedValue({ planSlug: "pro", tier: "PRO", status: "active", limits: { maxMembers: 10, currentMembers: 1 } }),
+  },
+}));
+
 vi.mock("@/lib/api/integrations", () => ({
   listIntegrations: vi.fn().mockResolvedValue([]),
   listProviders: vi.fn().mockResolvedValue({}),

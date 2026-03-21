@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
+import { api } from "@/lib/api";
 import { listIntegrations, listProviders } from "@/lib/api/integrations";
 import { IntegrationCard } from "@/components/integrations/IntegrationCard";
 import { EmailIntegrationCard } from "@/components/integrations/EmailIntegrationCard";
 import { PaymentIntegrationCard } from "@/components/integrations/PaymentIntegrationCard";
 import type { IntegrationDomain, OrgIntegration } from "@/lib/types";
+import type { BillingResponse } from "@/lib/internal-api";
 
 const DOMAIN_CONFIG: {
   domain: IntegrationDomain;
@@ -47,12 +49,17 @@ export default async function IntegrationsSettingsPage({
 
   let integrations: OrgIntegration[] = [];
   let providers: Partial<Record<IntegrationDomain, string[]>> = {};
+  let tier = "STARTER";
 
   try {
-    [integrations, providers] = await Promise.all([
+    const [integrationsResult, providersResult, billing] = await Promise.all([
       listIntegrations(),
       listProviders(),
+      api.get<BillingResponse>("/api/billing/subscription"),
     ]);
+    integrations = integrationsResult;
+    providers = providersResult;
+    tier = billing.tier;
   } catch {
     // Non-fatal: show empty state
   }
@@ -106,6 +113,7 @@ export default async function IntegrationsSettingsPage({
               integration={integration}
               providers={domainProviders}
               slug={slug}
+              {...(config.domain === "AI" ? { tier } : {})}
             />
           );
         })}

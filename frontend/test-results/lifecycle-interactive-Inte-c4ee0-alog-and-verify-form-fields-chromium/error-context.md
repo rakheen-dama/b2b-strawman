@@ -1,0 +1,1117 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e6]: DocTeams
+      - generic [ref=e9]: e2e-test-org
+      - button "Search, Command K" [ref=e11]:
+        - img [ref=e12]
+        - text: Search...
+        - generic [ref=e15]: ⌘K
+      - navigation "Main navigation" [ref=e16]:
+        - generic [ref=e17]:
+          - button "Work" [expanded] [ref=e18]:
+            - generic [ref=e19]: Work
+            - img [ref=e20]
+          - generic [ref=e22]:
+            - link "Dashboard" [ref=e23] [cursor=pointer]:
+              - /url: /org/e2e-test-org/dashboard
+              - img [ref=e24]
+              - text: Dashboard
+            - link "My Work" [ref=e29] [cursor=pointer]:
+              - /url: /org/e2e-test-org/my-work
+              - img [ref=e30]
+              - text: My Work
+            - link "Calendar" [ref=e33] [cursor=pointer]:
+              - /url: /org/e2e-test-org/calendar
+              - img [ref=e34]
+              - text: Calendar
+        - generic [ref=e37]:
+          - button "Delivery" [expanded] [ref=e38]:
+            - generic [ref=e39]: Delivery
+            - img [ref=e40]
+          - generic [ref=e42]:
+            - link "Engagements" [ref=e43] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects
+              - img [ref=e44]
+              - text: Engagements
+            - link "Documents" [ref=e46] [cursor=pointer]:
+              - /url: /org/e2e-test-org/documents
+              - img [ref=e47]
+              - text: Documents
+            - link "Recurring Schedules" [ref=e50] [cursor=pointer]:
+              - /url: /org/e2e-test-org/schedules
+              - img [ref=e51]
+              - text: Recurring Schedules
+        - button "Clients" [ref=e57]:
+          - generic [ref=e58]: Clients
+          - img [ref=e59]
+        - button "Finance" [ref=e63]:
+          - generic [ref=e64]: Finance
+          - img [ref=e65]
+        - generic [ref=e68]:
+          - button "Team & Resources" [expanded] [ref=e69]:
+            - generic [ref=e70]: Team & Resources
+            - img [ref=e71]
+          - generic [ref=e73]:
+            - link "Team" [ref=e74] [cursor=pointer]:
+              - /url: /org/e2e-test-org/team
+              - img [ref=e75]
+              - text: Team
+            - link "Resources" [ref=e80] [cursor=pointer]:
+              - /url: /org/e2e-test-org/resources
+              - img [ref=e81]
+              - text: Resources
+      - link "Platform Admin" [ref=e88] [cursor=pointer]:
+        - /url: /platform-admin/access-requests
+        - img [ref=e89]
+        - text: Platform Admin
+      - generic [ref=e92]:
+        - link "Notifications" [ref=e93] [cursor=pointer]:
+          - /url: /org/e2e-test-org/notifications
+          - img [ref=e94]
+          - text: Notifications
+        - link "Settings" [ref=e97] [cursor=pointer]:
+          - /url: /org/e2e-test-org/settings
+          - img [ref=e98]
+          - text: Settings
+      - generic [ref=e102]:
+        - generic [ref=e103]: AO
+        - generic [ref=e104]:
+          - paragraph [ref=e105]: Alice Owner
+          - paragraph [ref=e106]: alice@e2e-test.local
+    - generic [ref=e107]:
+      - banner [ref=e108]:
+        - navigation "Breadcrumb" [ref=e109]:
+          - link "e2e-test-org" [ref=e110] [cursor=pointer]:
+            - /url: /org/e2e-test-org/dashboard
+          - generic [ref=e111]:
+            - img [ref=e112]
+            - generic [ref=e114]: Engagement Letters
+        - generic [ref=e115]:
+          - generic [ref=e117]: e2e-test-org
+          - button "AO" [ref=e119]
+          - generic [ref=e120]: Pro
+          - button "Notifications" [ref=e122]:
+            - img
+      - main [ref=e124]:
+        - generic [ref=e127]:
+          - generic [ref=e128]:
+            - generic [ref=e129]:
+              - heading "Engagement Letters" [level=1] [ref=e130]
+              - generic [ref=e131]: "107"
+            - button "New Proposal" [ref=e132]:
+              - img
+              - text: New Proposal
+          - generic [ref=e133]:
+            - generic [ref=e134]:
+              - generic [ref=e135]:
+                - generic [ref=e136]: Total Proposals
+                - img [ref=e137]
+              - paragraph [ref=e141]: "107"
+            - generic [ref=e142]:
+              - generic [ref=e143]:
+                - generic [ref=e144]: Pending
+                - img [ref=e145]
+              - paragraph [ref=e149]: "0"
+            - generic [ref=e150]:
+              - generic [ref=e151]:
+                - generic [ref=e152]: Accepted
+                - img [ref=e153]
+              - paragraph [ref=e157]: "0"
+            - generic [ref=e158]:
+              - generic [ref=e159]:
+                - generic [ref=e160]: Conversion Rate
+                - img [ref=e161]
+              - paragraph [ref=e165]: 0.0%
+          - paragraph [ref=e167]: No overdue proposals. All caught up!
+          - generic [ref=e168]:
+            - generic [ref=e169]:
+              - button "All" [ref=e170]
+              - button "Draft" [ref=e171]
+              - button "Sent" [ref=e172]
+              - button "Accepted" [ref=e173]
+              - button "Declined" [ref=e174]
+              - button "Expired" [ref=e175]
+            - table [ref=e177]:
+              - rowgroup [ref=e178]:
+                - row "Title Number Status Sent Date Days Since Sent" [ref=e179]:
+                  - columnheader "Title" [ref=e180]
+                  - columnheader "Number" [ref=e181]
+                  - columnheader "Status" [ref=e182]
+                  - columnheader "Sent Date" [ref=e183]
+                  - columnheader "Days Since Sent" [ref=e184]
+              - rowgroup [ref=e185]:
+                - row "Hourly Consulting tqjx PROP-0107 Draft — —" [ref=e186]:
+                  - cell "Hourly Consulting tqjx" [ref=e187]:
+                    - link "Hourly Consulting tqjx" [ref=e188] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/460fdc37-cb2e-4b39-8c38-a40058928b25
+                  - cell "PROP-0107" [ref=e189]
+                  - cell "Draft" [ref=e190]:
+                    - generic [ref=e191]: Draft
+                  - cell "—" [ref=e192]
+                  - cell "—" [ref=e193]
+                - row "Fixed Fee Audit tqjx PROP-0106 Draft — —" [ref=e194]:
+                  - cell "Fixed Fee Audit tqjx" [ref=e195]:
+                    - link "Fixed Fee Audit tqjx" [ref=e196] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/52ef40a4-9fa3-4117-911e-c3d73c039e33
+                  - cell "PROP-0106" [ref=e197]
+                  - cell "Draft" [ref=e198]:
+                    - generic [ref=e199]: Draft
+                  - cell "—" [ref=e200]
+                  - cell "—" [ref=e201]
+                - row "Lifecycle Draft trl4 PROP-0105 Draft — —" [ref=e202]:
+                  - cell "Lifecycle Draft trl4" [ref=e203]:
+                    - link "Lifecycle Draft trl4" [ref=e204] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/0910fef1-1e07-4289-aa87-0d4bb8da4127
+                  - cell "PROP-0105" [ref=e205]
+                  - cell "Draft" [ref=e206]:
+                    - generic [ref=e207]: Draft
+                  - cell "—" [ref=e208]
+                  - cell "—" [ref=e209]
+                - row "Decline Test ri1r PROP-0104 Draft — —" [ref=e210]:
+                  - cell "Decline Test ri1r" [ref=e211]:
+                    - link "Decline Test ri1r" [ref=e212] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/700dbf70-ac94-4240-bad2-43f21b978cc7
+                  - cell "PROP-0104" [ref=e213]
+                  - cell "Draft" [ref=e214]:
+                    - generic [ref=e215]: Draft
+                  - cell "—" [ref=e216]
+                  - cell "—" [ref=e217]
+                - row "Accept Test ri1r PROP-0103 Draft — —" [ref=e218]:
+                  - cell "Accept Test ri1r" [ref=e219]:
+                    - link "Accept Test ri1r" [ref=e220] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/a0864033-f599-4a5f-a5af-be9367c8f418
+                  - cell "PROP-0103" [ref=e221]
+                  - cell "Draft" [ref=e222]:
+                    - generic [ref=e223]: Draft
+                  - cell "—" [ref=e224]
+                  - cell "—" [ref=e225]
+                - row "Lifecycle Draft ri1r PROP-0102 Draft — —" [ref=e226]:
+                  - cell "Lifecycle Draft ri1r" [ref=e227]:
+                    - link "Lifecycle Draft ri1r" [ref=e228] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/d55894af-e79e-471f-a965-7402aafff391
+                  - cell "PROP-0102" [ref=e229]
+                  - cell "Draft" [ref=e230]:
+                    - generic [ref=e231]: Draft
+                  - cell "—" [ref=e232]
+                  - cell "—" [ref=e233]
+                - row "Hourly Consulting rgl0 PROP-0101 Draft — —" [ref=e234]:
+                  - cell "Hourly Consulting rgl0" [ref=e235]:
+                    - link "Hourly Consulting rgl0" [ref=e236] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/c2c8b5e5-66a8-4ab6-892b-af28bacab6bb
+                  - cell "PROP-0101" [ref=e237]
+                  - cell "Draft" [ref=e238]:
+                    - generic [ref=e239]: Draft
+                  - cell "—" [ref=e240]
+                  - cell "—" [ref=e241]
+                - row "Fixed Fee Audit rgl0 PROP-0100 Draft — —" [ref=e242]:
+                  - cell "Fixed Fee Audit rgl0" [ref=e243]:
+                    - link "Fixed Fee Audit rgl0" [ref=e244] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/7eadd68c-8b30-4daa-8685-45238b7723d0
+                  - cell "PROP-0100" [ref=e245]
+                  - cell "Draft" [ref=e246]:
+                    - generic [ref=e247]: Draft
+                  - cell "—" [ref=e248]
+                  - cell "—" [ref=e249]
+                - row "Decline Test p9j0 PROP-0099 Draft — —" [ref=e250]:
+                  - cell "Decline Test p9j0" [ref=e251]:
+                    - link "Decline Test p9j0" [ref=e252] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/78801fdc-6849-420b-a16f-44d30406ae72
+                  - cell "PROP-0099" [ref=e253]
+                  - cell "Draft" [ref=e254]:
+                    - generic [ref=e255]: Draft
+                  - cell "—" [ref=e256]
+                  - cell "—" [ref=e257]
+                - row "Accept Test p9j0 PROP-0098 Draft — —" [ref=e258]:
+                  - cell "Accept Test p9j0" [ref=e259]:
+                    - link "Accept Test p9j0" [ref=e260] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/7ad99f20-5b91-43ac-8418-48b541a10c31
+                  - cell "PROP-0098" [ref=e261]
+                  - cell "Draft" [ref=e262]:
+                    - generic [ref=e263]: Draft
+                  - cell "—" [ref=e264]
+                  - cell "—" [ref=e265]
+                - row "Lifecycle Draft p9j0 PROP-0097 Draft — —" [ref=e266]:
+                  - cell "Lifecycle Draft p9j0" [ref=e267]:
+                    - link "Lifecycle Draft p9j0" [ref=e268] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/fcb77cb9-1d4b-43b4-a0d5-7cd52c098b43
+                  - cell "PROP-0097" [ref=e269]
+                  - cell "Draft" [ref=e270]:
+                    - generic [ref=e271]: Draft
+                  - cell "—" [ref=e272]
+                  - cell "—" [ref=e273]
+                - row "Hourly Consulting p75z PROP-0096 Draft — —" [ref=e274]:
+                  - cell "Hourly Consulting p75z" [ref=e275]:
+                    - link "Hourly Consulting p75z" [ref=e276] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/663d6821-6dae-4ed3-bae5-30ba260d99b1
+                  - cell "PROP-0096" [ref=e277]
+                  - cell "Draft" [ref=e278]:
+                    - generic [ref=e279]: Draft
+                  - cell "—" [ref=e280]
+                  - cell "—" [ref=e281]
+                - row "Fixed Fee Audit p75z PROP-0095 Draft — —" [ref=e282]:
+                  - cell "Fixed Fee Audit p75z" [ref=e283]:
+                    - link "Fixed Fee Audit p75z" [ref=e284] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/5f36ff42-aa2b-46f7-aca8-7272d0c84aa5
+                  - cell "PROP-0095" [ref=e285]
+                  - cell "Draft" [ref=e286]:
+                    - generic [ref=e287]: Draft
+                  - cell "—" [ref=e288]
+                  - cell "—" [ref=e289]
+                - row "Decline Test ne5a PROP-0094 Draft — —" [ref=e290]:
+                  - cell "Decline Test ne5a" [ref=e291]:
+                    - link "Decline Test ne5a" [ref=e292] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/390d8115-fbf1-48d3-ace8-876569d424d2
+                  - cell "PROP-0094" [ref=e293]
+                  - cell "Draft" [ref=e294]:
+                    - generic [ref=e295]: Draft
+                  - cell "—" [ref=e296]
+                  - cell "—" [ref=e297]
+                - row "Accept Test ne5a PROP-0093 Draft — —" [ref=e298]:
+                  - cell "Accept Test ne5a" [ref=e299]:
+                    - link "Accept Test ne5a" [ref=e300] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/06c91de0-5037-46f2-85dd-e510b7a52f96
+                  - cell "PROP-0093" [ref=e301]
+                  - cell "Draft" [ref=e302]:
+                    - generic [ref=e303]: Draft
+                  - cell "—" [ref=e304]
+                  - cell "—" [ref=e305]
+                - row "Lifecycle Draft ne5a PROP-0092 Draft — —" [ref=e306]:
+                  - cell "Lifecycle Draft ne5a" [ref=e307]:
+                    - link "Lifecycle Draft ne5a" [ref=e308] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/98460974-240a-46f0-8d79-bdbcd4e5b12f
+                  - cell "PROP-0092" [ref=e309]
+                  - cell "Draft" [ref=e310]:
+                    - generic [ref=e311]: Draft
+                  - cell "—" [ref=e312]
+                  - cell "—" [ref=e313]
+                - row "Hourly Consulting nccu PROP-0091 Draft — —" [ref=e314]:
+                  - cell "Hourly Consulting nccu" [ref=e315]:
+                    - link "Hourly Consulting nccu" [ref=e316] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/e58d7735-51a8-40ce-baac-5dae1fe5869a
+                  - cell "PROP-0091" [ref=e317]
+                  - cell "Draft" [ref=e318]:
+                    - generic [ref=e319]: Draft
+                  - cell "—" [ref=e320]
+                  - cell "—" [ref=e321]
+                - row "Fixed Fee Audit nccu PROP-0090 Draft — —" [ref=e322]:
+                  - cell "Fixed Fee Audit nccu" [ref=e323]:
+                    - link "Fixed Fee Audit nccu" [ref=e324] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/943ddaeb-7c53-404d-97f9-d16eb1cbce8e
+                  - cell "PROP-0090" [ref=e325]
+                  - cell "Draft" [ref=e326]:
+                    - generic [ref=e327]: Draft
+                  - cell "—" [ref=e328]
+                  - cell "—" [ref=e329]
+                - row "Decline Test l1ub PROP-0089 Draft — —" [ref=e330]:
+                  - cell "Decline Test l1ub" [ref=e331]:
+                    - link "Decline Test l1ub" [ref=e332] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/0347460e-cd6b-4e5d-9195-007b8d11952e
+                  - cell "PROP-0089" [ref=e333]
+                  - cell "Draft" [ref=e334]:
+                    - generic [ref=e335]: Draft
+                  - cell "—" [ref=e336]
+                  - cell "—" [ref=e337]
+                - row "Accept Test l1ub PROP-0088 Draft — —" [ref=e338]:
+                  - cell "Accept Test l1ub" [ref=e339]:
+                    - link "Accept Test l1ub" [ref=e340] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/d7e50672-4a30-4bc1-8668-cd8692aa2f92
+                  - cell "PROP-0088" [ref=e341]
+                  - cell "Draft" [ref=e342]:
+                    - generic [ref=e343]: Draft
+                  - cell "—" [ref=e344]
+                  - cell "—" [ref=e345]
+                - row "Lifecycle Draft kocg PROP-0087 Draft — —" [ref=e346]:
+                  - cell "Lifecycle Draft kocg" [ref=e347]:
+                    - link "Lifecycle Draft kocg" [ref=e348] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/8aab6b90-78ef-458a-abe0-42bb49b34439
+                  - cell "PROP-0087" [ref=e349]
+                  - cell "Draft" [ref=e350]:
+                    - generic [ref=e351]: Draft
+                  - cell "—" [ref=e352]
+                  - cell "—" [ref=e353]
+                - row "Decline Test kg5m PROP-0086 Draft — —" [ref=e354]:
+                  - cell "Decline Test kg5m" [ref=e355]:
+                    - link "Decline Test kg5m" [ref=e356] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/f20eda53-a5f4-4ba1-8ebc-d539db0c6415
+                  - cell "PROP-0086" [ref=e357]
+                  - cell "Draft" [ref=e358]:
+                    - generic [ref=e359]: Draft
+                  - cell "—" [ref=e360]
+                  - cell "—" [ref=e361]
+                - row "Accept Test kg5m PROP-0085 Draft — —" [ref=e362]:
+                  - cell "Accept Test kg5m" [ref=e363]:
+                    - link "Accept Test kg5m" [ref=e364] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/4226d697-b527-44ea-a4c9-06ff8e6fe97b
+                  - cell "PROP-0085" [ref=e365]
+                  - cell "Draft" [ref=e366]:
+                    - generic [ref=e367]: Draft
+                  - cell "—" [ref=e368]
+                  - cell "—" [ref=e369]
+                - row "Lifecycle Draft k2bw PROP-0084 Draft — —" [ref=e370]:
+                  - cell "Lifecycle Draft k2bw" [ref=e371]:
+                    - link "Lifecycle Draft k2bw" [ref=e372] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/324a4cce-7f20-41d6-9c21-2f1c07ef78e4
+                  - cell "PROP-0084" [ref=e373]
+                  - cell "Draft" [ref=e374]:
+                    - generic [ref=e375]: Draft
+                  - cell "—" [ref=e376]
+                  - cell "—" [ref=e377]
+                - row "Decline Test gy2i PROP-0083 Draft — —" [ref=e378]:
+                  - cell "Decline Test gy2i" [ref=e379]:
+                    - link "Decline Test gy2i" [ref=e380] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/a8e26092-2a63-4151-9291-06339ea5bb2a
+                  - cell "PROP-0083" [ref=e381]
+                  - cell "Draft" [ref=e382]:
+                    - generic [ref=e383]: Draft
+                  - cell "—" [ref=e384]
+                  - cell "—" [ref=e385]
+                - row "Accept Test gy2i PROP-0082 Draft — —" [ref=e386]:
+                  - cell "Accept Test gy2i" [ref=e387]:
+                    - link "Accept Test gy2i" [ref=e388] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/73b5f2f0-72bd-42ad-8f2b-c7217a7c277b
+                  - cell "PROP-0082" [ref=e389]
+                  - cell "Draft" [ref=e390]:
+                    - generic [ref=e391]: Draft
+                  - cell "—" [ref=e392]
+                  - cell "—" [ref=e393]
+                - row "Lifecycle Draft gkic PROP-0081 Draft — —" [ref=e394]:
+                  - cell "Lifecycle Draft gkic" [ref=e395]:
+                    - link "Lifecycle Draft gkic" [ref=e396] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/e55fb3e4-4779-48fd-903a-5d06702449d6
+                  - cell "PROP-0081" [ref=e397]
+                  - cell "Draft" [ref=e398]:
+                    - generic [ref=e399]: Draft
+                  - cell "—" [ref=e400]
+                  - cell "—" [ref=e401]
+                - row "Decline Test fmc5 PROP-0080 Draft — —" [ref=e402]:
+                  - cell "Decline Test fmc5" [ref=e403]:
+                    - link "Decline Test fmc5" [ref=e404] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/50190b8c-3050-4bca-b541-366cf5d1c62d
+                  - cell "PROP-0080" [ref=e405]
+                  - cell "Draft" [ref=e406]:
+                    - generic [ref=e407]: Draft
+                  - cell "—" [ref=e408]
+                  - cell "—" [ref=e409]
+                - row "Accept Test fmc5 PROP-0079 Draft — —" [ref=e410]:
+                  - cell "Accept Test fmc5" [ref=e411]:
+                    - link "Accept Test fmc5" [ref=e412] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/04e4b1df-24e3-4549-bc94-0893dd135a9a
+                  - cell "PROP-0079" [ref=e413]
+                  - cell "Draft" [ref=e414]:
+                    - generic [ref=e415]: Draft
+                  - cell "—" [ref=e416]
+                  - cell "—" [ref=e417]
+                - row "Lifecycle Draft fbka PROP-0078 Draft — —" [ref=e418]:
+                  - cell "Lifecycle Draft fbka" [ref=e419]:
+                    - link "Lifecycle Draft fbka" [ref=e420] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/5e2c64f2-cdde-4b00-b41f-bc961d1ed745
+                  - cell "PROP-0078" [ref=e421]
+                  - cell "Draft" [ref=e422]:
+                    - generic [ref=e423]: Draft
+                  - cell "—" [ref=e424]
+                  - cell "—" [ref=e425]
+                - row "Hourly Consulting f8p5 PROP-0077 Draft — —" [ref=e426]:
+                  - cell "Hourly Consulting f8p5" [ref=e427]:
+                    - link "Hourly Consulting f8p5" [ref=e428] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/6ee23f48-de7c-4da5-8311-483ec484d5cd
+                  - cell "PROP-0077" [ref=e429]
+                  - cell "Draft" [ref=e430]:
+                    - generic [ref=e431]: Draft
+                  - cell "—" [ref=e432]
+                  - cell "—" [ref=e433]
+                - row "Fixed Fee Audit f8p5 PROP-0076 Draft — —" [ref=e434]:
+                  - cell "Fixed Fee Audit f8p5" [ref=e435]:
+                    - link "Fixed Fee Audit f8p5" [ref=e436] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/f357f3a3-5057-4fcd-86e0-7320f574b697
+                  - cell "PROP-0076" [ref=e437]
+                  - cell "Draft" [ref=e438]:
+                    - generic [ref=e439]: Draft
+                  - cell "—" [ref=e440]
+                  - cell "—" [ref=e441]
+                - row "Decline Test esj7 PROP-0075 Draft — —" [ref=e442]:
+                  - cell "Decline Test esj7" [ref=e443]:
+                    - link "Decline Test esj7" [ref=e444] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/f7c1f515-005f-426e-beda-65329d6ab40c
+                  - cell "PROP-0075" [ref=e445]
+                  - cell "Draft" [ref=e446]:
+                    - generic [ref=e447]: Draft
+                  - cell "—" [ref=e448]
+                  - cell "—" [ref=e449]
+                - row "Accept Test esj7 PROP-0074 Draft — —" [ref=e450]:
+                  - cell "Accept Test esj7" [ref=e451]:
+                    - link "Accept Test esj7" [ref=e452] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/21dd1603-8d27-4db8-aa1d-47a15d6e6174
+                  - cell "PROP-0074" [ref=e453]
+                  - cell "Draft" [ref=e454]:
+                    - generic [ref=e455]: Draft
+                  - cell "—" [ref=e456]
+                  - cell "—" [ref=e457]
+                - row "Lifecycle Draft ehsz PROP-0073 Draft — —" [ref=e458]:
+                  - cell "Lifecycle Draft ehsz" [ref=e459]:
+                    - link "Lifecycle Draft ehsz" [ref=e460] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/b9f1347b-1078-4d8e-8c85-164cc17d7a39
+                  - cell "PROP-0073" [ref=e461]
+                  - cell "Draft" [ref=e462]:
+                    - generic [ref=e463]: Draft
+                  - cell "—" [ref=e464]
+                  - cell "—" [ref=e465]
+                - row "Hourly Consulting eec3 PROP-0072 Draft — —" [ref=e466]:
+                  - cell "Hourly Consulting eec3" [ref=e467]:
+                    - link "Hourly Consulting eec3" [ref=e468] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/7dbea7bd-ff93-40b9-87d3-c9f5b7074156
+                  - cell "PROP-0072" [ref=e469]
+                  - cell "Draft" [ref=e470]:
+                    - generic [ref=e471]: Draft
+                  - cell "—" [ref=e472]
+                  - cell "—" [ref=e473]
+                - row "Fixed Fee Audit eec3 PROP-0071 Draft — —" [ref=e474]:
+                  - cell "Fixed Fee Audit eec3" [ref=e475]:
+                    - link "Fixed Fee Audit eec3" [ref=e476] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/a31086a6-c387-4b69-a11c-fb2bf96f9b4d
+                  - cell "PROP-0071" [ref=e477]
+                  - cell "Draft" [ref=e478]:
+                    - generic [ref=e479]: Draft
+                  - cell "—" [ref=e480]
+                  - cell "—" [ref=e481]
+                - row "Decline Test b6ss PROP-0070 Draft — —" [ref=e482]:
+                  - cell "Decline Test b6ss" [ref=e483]:
+                    - link "Decline Test b6ss" [ref=e484] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/b89aa7da-cab8-40fa-bcb3-09443da59fa6
+                  - cell "PROP-0070" [ref=e485]
+                  - cell "Draft" [ref=e486]:
+                    - generic [ref=e487]: Draft
+                  - cell "—" [ref=e488]
+                  - cell "—" [ref=e489]
+                - row "Accept Test b6ss PROP-0069 Draft — —" [ref=e490]:
+                  - cell "Accept Test b6ss" [ref=e491]:
+                    - link "Accept Test b6ss" [ref=e492] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/468d082e-b5a1-49b1-981e-7df2aa71cafa
+                  - cell "PROP-0069" [ref=e493]
+                  - cell "Draft" [ref=e494]:
+                    - generic [ref=e495]: Draft
+                  - cell "—" [ref=e496]
+                  - cell "—" [ref=e497]
+                - row "Lifecycle Draft avn6 PROP-0068 Draft — —" [ref=e498]:
+                  - cell "Lifecycle Draft avn6" [ref=e499]:
+                    - link "Lifecycle Draft avn6" [ref=e500] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/4844dd5f-483a-486e-85da-b4811d013f8b
+                  - cell "PROP-0068" [ref=e501]
+                  - cell "Draft" [ref=e502]:
+                    - generic [ref=e503]: Draft
+                  - cell "—" [ref=e504]
+                  - cell "—" [ref=e505]
+                - row "Hourly Consulting asgw PROP-0067 Draft — —" [ref=e506]:
+                  - cell "Hourly Consulting asgw" [ref=e507]:
+                    - link "Hourly Consulting asgw" [ref=e508] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/b04c1154-11e3-4926-abda-3017bc6088e7
+                  - cell "PROP-0067" [ref=e509]
+                  - cell "Draft" [ref=e510]:
+                    - generic [ref=e511]: Draft
+                  - cell "—" [ref=e512]
+                  - cell "—" [ref=e513]
+                - row "Fixed Fee Audit asgw PROP-0066 Draft — —" [ref=e514]:
+                  - cell "Fixed Fee Audit asgw" [ref=e515]:
+                    - link "Fixed Fee Audit asgw" [ref=e516] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/f7401633-e43e-4574-a0cb-758674d41e4f
+                  - cell "PROP-0066" [ref=e517]
+                  - cell "Draft" [ref=e518]:
+                    - generic [ref=e519]: Draft
+                  - cell "—" [ref=e520]
+                  - cell "—" [ref=e521]
+                - row "Decline Test 8ms8 PROP-0065 Draft — —" [ref=e522]:
+                  - cell "Decline Test 8ms8" [ref=e523]:
+                    - link "Decline Test 8ms8" [ref=e524] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/9de4538f-dcff-4e87-9716-b555ea638123
+                  - cell "PROP-0065" [ref=e525]
+                  - cell "Draft" [ref=e526]:
+                    - generic [ref=e527]: Draft
+                  - cell "—" [ref=e528]
+                  - cell "—" [ref=e529]
+                - row "Accept Test 8ms8 PROP-0064 Draft — —" [ref=e530]:
+                  - cell "Accept Test 8ms8" [ref=e531]:
+                    - link "Accept Test 8ms8" [ref=e532] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/c09e4430-2085-4f7b-adf4-65836a6b1da5
+                  - cell "PROP-0064" [ref=e533]
+                  - cell "Draft" [ref=e534]:
+                    - generic [ref=e535]: Draft
+                  - cell "—" [ref=e536]
+                  - cell "—" [ref=e537]
+                - row "Lifecycle Draft 89tw PROP-0063 Draft — —" [ref=e538]:
+                  - cell "Lifecycle Draft 89tw" [ref=e539]:
+                    - link "Lifecycle Draft 89tw" [ref=e540] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/be724893-ba09-49a8-9594-25c2a698f197
+                  - cell "PROP-0063" [ref=e541]
+                  - cell "Draft" [ref=e542]:
+                    - generic [ref=e543]: Draft
+                  - cell "—" [ref=e544]
+                  - cell "—" [ref=e545]
+                - row "Hourly Consulting 86w0 PROP-0062 Draft — —" [ref=e546]:
+                  - cell "Hourly Consulting 86w0" [ref=e547]:
+                    - link "Hourly Consulting 86w0" [ref=e548] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/f73967f8-afd0-4674-8154-476d14c899cb
+                  - cell "PROP-0062" [ref=e549]
+                  - cell "Draft" [ref=e550]:
+                    - generic [ref=e551]: Draft
+                  - cell "—" [ref=e552]
+                  - cell "—" [ref=e553]
+                - row "Fixed Fee Audit 86w0 PROP-0061 Draft — —" [ref=e554]:
+                  - cell "Fixed Fee Audit 86w0" [ref=e555]:
+                    - link "Fixed Fee Audit 86w0" [ref=e556] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/d2cfbab5-d3d5-407c-8f4e-2d81f5323e01
+                  - cell "PROP-0061" [ref=e557]
+                  - cell "Draft" [ref=e558]:
+                    - generic [ref=e559]: Draft
+                  - cell "—" [ref=e560]
+                  - cell "—" [ref=e561]
+                - row "Decline Test 6igw PROP-0060 Draft — —" [ref=e562]:
+                  - cell "Decline Test 6igw" [ref=e563]:
+                    - link "Decline Test 6igw" [ref=e564] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/40d44e8e-b851-4983-86c6-5de6d255e4c1
+                  - cell "PROP-0060" [ref=e565]
+                  - cell "Draft" [ref=e566]:
+                    - generic [ref=e567]: Draft
+                  - cell "—" [ref=e568]
+                  - cell "—" [ref=e569]
+                - row "Accept Test 6igw PROP-0059 Draft — —" [ref=e570]:
+                  - cell "Accept Test 6igw" [ref=e571]:
+                    - link "Accept Test 6igw" [ref=e572] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/9ed09d84-5fad-48a9-9601-f62ae5657fd1
+                  - cell "PROP-0059" [ref=e573]
+                  - cell "Draft" [ref=e574]:
+                    - generic [ref=e575]: Draft
+                  - cell "—" [ref=e576]
+                  - cell "—" [ref=e577]
+                - row "Lifecycle Draft 65q9 PROP-0058 Draft — —" [ref=e578]:
+                  - cell "Lifecycle Draft 65q9" [ref=e579]:
+                    - link "Lifecycle Draft 65q9" [ref=e580] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/840cb013-1136-4249-bef7-90326a17ac43
+                  - cell "PROP-0058" [ref=e581]
+                  - cell "Draft" [ref=e582]:
+                    - generic [ref=e583]: Draft
+                  - cell "—" [ref=e584]
+                  - cell "—" [ref=e585]
+                - row "Hourly Consulting 633q PROP-0057 Draft — —" [ref=e586]:
+                  - cell "Hourly Consulting 633q" [ref=e587]:
+                    - link "Hourly Consulting 633q" [ref=e588] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/a19217e5-5087-4fd7-bb4f-f24446fb53ca
+                  - cell "PROP-0057" [ref=e589]
+                  - cell "Draft" [ref=e590]:
+                    - generic [ref=e591]: Draft
+                  - cell "—" [ref=e592]
+                  - cell "—" [ref=e593]
+                - row "Fixed Fee Audit 633q PROP-0056 Draft — —" [ref=e594]:
+                  - cell "Fixed Fee Audit 633q" [ref=e595]:
+                    - link "Fixed Fee Audit 633q" [ref=e596] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/448779a9-bad1-464b-b1d4-f5b5bfa37cde
+                  - cell "PROP-0056" [ref=e597]
+                  - cell "Draft" [ref=e598]:
+                    - generic [ref=e599]: Draft
+                  - cell "—" [ref=e600]
+                  - cell "—" [ref=e601]
+                - row "Decline Test 3ybh PROP-0055 Draft — —" [ref=e602]:
+                  - cell "Decline Test 3ybh" [ref=e603]:
+                    - link "Decline Test 3ybh" [ref=e604] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/913711f4-148b-4d7d-a8a7-d16c1053f673
+                  - cell "PROP-0055" [ref=e605]
+                  - cell "Draft" [ref=e606]:
+                    - generic [ref=e607]: Draft
+                  - cell "—" [ref=e608]
+                  - cell "—" [ref=e609]
+                - row "Accept Test 3ybh PROP-0054 Draft — —" [ref=e610]:
+                  - cell "Accept Test 3ybh" [ref=e611]:
+                    - link "Accept Test 3ybh" [ref=e612] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/259bc1c8-42c4-4e8b-afe4-b68c6e5687ca
+                  - cell "PROP-0054" [ref=e613]
+                  - cell "Draft" [ref=e614]:
+                    - generic [ref=e615]: Draft
+                  - cell "—" [ref=e616]
+                  - cell "—" [ref=e617]
+                - row "Lifecycle Draft 3nl2 PROP-0053 Draft — —" [ref=e618]:
+                  - cell "Lifecycle Draft 3nl2" [ref=e619]:
+                    - link "Lifecycle Draft 3nl2" [ref=e620] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/ce381f1b-8019-4318-856b-356cca91f655
+                  - cell "PROP-0053" [ref=e621]
+                  - cell "Draft" [ref=e622]:
+                    - generic [ref=e623]: Draft
+                  - cell "—" [ref=e624]
+                  - cell "—" [ref=e625]
+                - row "Hourly Consulting 3ki5 PROP-0052 Draft — —" [ref=e626]:
+                  - cell "Hourly Consulting 3ki5" [ref=e627]:
+                    - link "Hourly Consulting 3ki5" [ref=e628] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/546e839f-4862-4c88-9332-bab4310a633e
+                  - cell "PROP-0052" [ref=e629]
+                  - cell "Draft" [ref=e630]:
+                    - generic [ref=e631]: Draft
+                  - cell "—" [ref=e632]
+                  - cell "—" [ref=e633]
+                - row "Fixed Fee Audit 3ki5 PROP-0051 Draft — —" [ref=e634]:
+                  - cell "Fixed Fee Audit 3ki5" [ref=e635]:
+                    - link "Fixed Fee Audit 3ki5" [ref=e636] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/48b8bde8-3e1b-41f7-89be-3256f7aa169d
+                  - cell "PROP-0051" [ref=e637]
+                  - cell "Draft" [ref=e638]:
+                    - generic [ref=e639]: Draft
+                  - cell "—" [ref=e640]
+                  - cell "—" [ref=e641]
+                - row "Decline Test zq4b PROP-0050 Draft — —" [ref=e642]:
+                  - cell "Decline Test zq4b" [ref=e643]:
+                    - link "Decline Test zq4b" [ref=e644] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/7dbea623-5258-41fb-8876-d1c6637df4e2
+                  - cell "PROP-0050" [ref=e645]
+                  - cell "Draft" [ref=e646]:
+                    - generic [ref=e647]: Draft
+                  - cell "—" [ref=e648]
+                  - cell "—" [ref=e649]
+                - row "Accept Test zq4b PROP-0049 Draft — —" [ref=e650]:
+                  - cell "Accept Test zq4b" [ref=e651]:
+                    - link "Accept Test zq4b" [ref=e652] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/80f371f6-35f6-49dd-a8ce-1bb1a7bedcbe
+                  - cell "PROP-0049" [ref=e653]
+                  - cell "Draft" [ref=e654]:
+                    - generic [ref=e655]: Draft
+                  - cell "—" [ref=e656]
+                  - cell "—" [ref=e657]
+                - row "Lifecycle Draft zf9q PROP-0048 Draft — —" [ref=e658]:
+                  - cell "Lifecycle Draft zf9q" [ref=e659]:
+                    - link "Lifecycle Draft zf9q" [ref=e660] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/93710933-27cd-45d2-a989-fdd76e956386
+                  - cell "PROP-0048" [ref=e661]
+                  - cell "Draft" [ref=e662]:
+                    - generic [ref=e663]: Draft
+                  - cell "—" [ref=e664]
+                  - cell "—" [ref=e665]
+                - row "Hourly Consulting zc3y PROP-0047 Draft — —" [ref=e666]:
+                  - cell "Hourly Consulting zc3y" [ref=e667]:
+                    - link "Hourly Consulting zc3y" [ref=e668] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/2470bbf3-4811-4639-914e-3ae401e5c431
+                  - cell "PROP-0047" [ref=e669]
+                  - cell "Draft" [ref=e670]:
+                    - generic [ref=e671]: Draft
+                  - cell "—" [ref=e672]
+                  - cell "—" [ref=e673]
+                - row "Fixed Fee Audit zc3y PROP-0046 Draft — —" [ref=e674]:
+                  - cell "Fixed Fee Audit zc3y" [ref=e675]:
+                    - link "Fixed Fee Audit zc3y" [ref=e676] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/4846498d-54d8-4e59-99d8-2326b76771e5
+                  - cell "PROP-0046" [ref=e677]
+                  - cell "Draft" [ref=e678]:
+                    - generic [ref=e679]: Draft
+                  - cell "—" [ref=e680]
+                  - cell "—" [ref=e681]
+                - row "Decline Test wf5w PROP-0045 Draft — —" [ref=e682]:
+                  - cell "Decline Test wf5w" [ref=e683]:
+                    - link "Decline Test wf5w" [ref=e684] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/42dadf7a-504f-4f12-a6e4-a98f49e179f0
+                  - cell "PROP-0045" [ref=e685]
+                  - cell "Draft" [ref=e686]:
+                    - generic [ref=e687]: Draft
+                  - cell "—" [ref=e688]
+                  - cell "—" [ref=e689]
+                - row "Accept Test wf5w PROP-0044 Draft — —" [ref=e690]:
+                  - cell "Accept Test wf5w" [ref=e691]:
+                    - link "Accept Test wf5w" [ref=e692] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/eb429806-bc24-4f9a-a5b4-44b648934840
+                  - cell "PROP-0044" [ref=e693]
+                  - cell "Draft" [ref=e694]:
+                    - generic [ref=e695]: Draft
+                  - cell "—" [ref=e696]
+                  - cell "—" [ref=e697]
+                - row "Lifecycle Draft w364 PROP-0043 Draft — —" [ref=e698]:
+                  - cell "Lifecycle Draft w364" [ref=e699]:
+                    - link "Lifecycle Draft w364" [ref=e700] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/5d4e3217-7ac5-4ff1-8439-c4ad7d71b674
+                  - cell "PROP-0043" [ref=e701]
+                  - cell "Draft" [ref=e702]:
+                    - generic [ref=e703]: Draft
+                  - cell "—" [ref=e704]
+                  - cell "—" [ref=e705]
+                - row "Decline Test sj8r PROP-0042 Draft — —" [ref=e706]:
+                  - cell "Decline Test sj8r" [ref=e707]:
+                    - link "Decline Test sj8r" [ref=e708] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/bef5995e-21fd-45dc-be71-8dea0ed3110f
+                  - cell "PROP-0042" [ref=e709]
+                  - cell "Draft" [ref=e710]:
+                    - generic [ref=e711]: Draft
+                  - cell "—" [ref=e712]
+                  - cell "—" [ref=e713]
+                - row "Accept Test sj8r PROP-0041 Draft — —" [ref=e714]:
+                  - cell "Accept Test sj8r" [ref=e715]:
+                    - link "Accept Test sj8r" [ref=e716] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/ddc180f2-58e2-408e-92b3-939b59996960
+                  - cell "PROP-0041" [ref=e717]
+                  - cell "Draft" [ref=e718]:
+                    - generic [ref=e719]: Draft
+                  - cell "—" [ref=e720]
+                  - cell "—" [ref=e721]
+                - row "Lifecycle Draft s8gr PROP-0040 Draft — —" [ref=e722]:
+                  - cell "Lifecycle Draft s8gr" [ref=e723]:
+                    - link "Lifecycle Draft s8gr" [ref=e724] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/af3a7084-e9ce-49f7-ba52-2bf57980c79a
+                  - cell "PROP-0040" [ref=e725]
+                  - cell "Draft" [ref=e726]:
+                    - generic [ref=e727]: Draft
+                  - cell "—" [ref=e728]
+                  - cell "—" [ref=e729]
+                - row "Hourly Consulting s5fp PROP-0039 Draft — —" [ref=e730]:
+                  - cell "Hourly Consulting s5fp" [ref=e731]:
+                    - link "Hourly Consulting s5fp" [ref=e732] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/3db830bd-24fa-40a9-b161-ba401f6be0a7
+                  - cell "PROP-0039" [ref=e733]
+                  - cell "Draft" [ref=e734]:
+                    - generic [ref=e735]: Draft
+                  - cell "—" [ref=e736]
+                  - cell "—" [ref=e737]
+                - row "Fixed Fee Audit s5fp PROP-0038 Draft — —" [ref=e738]:
+                  - cell "Fixed Fee Audit s5fp" [ref=e739]:
+                    - link "Fixed Fee Audit s5fp" [ref=e740] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/a02d88ec-b1d2-4fb5-9407-ed3337db0b3c
+                  - cell "PROP-0038" [ref=e741]
+                  - cell "Draft" [ref=e742]:
+                    - generic [ref=e743]: Draft
+                  - cell "—" [ref=e744]
+                  - cell "—" [ref=e745]
+                - row "Hourly Consulting pcrj PROP-0037 Draft — —" [ref=e746]:
+                  - cell "Hourly Consulting pcrj" [ref=e747]:
+                    - link "Hourly Consulting pcrj" [ref=e748] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/6672e300-4747-49e9-821b-ba520fb6ca93
+                  - cell "PROP-0037" [ref=e749]
+                  - cell "Draft" [ref=e750]:
+                    - generic [ref=e751]: Draft
+                  - cell "—" [ref=e752]
+                  - cell "—" [ref=e753]
+                - row "Fixed Fee Audit pand PROP-0036 Draft — —" [ref=e754]:
+                  - cell "Fixed Fee Audit pand" [ref=e755]:
+                    - link "Fixed Fee Audit pand" [ref=e756] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/9145c5dd-e992-4f2c-b149-09e22b21e2ae
+                  - cell "PROP-0036" [ref=e757]
+                  - cell "Draft" [ref=e758]:
+                    - generic [ref=e759]: Draft
+                  - cell "—" [ref=e760]
+                  - cell "—" [ref=e761]
+                - row "Decline Test noss PROP-0035 Draft — —" [ref=e762]:
+                  - cell "Decline Test noss" [ref=e763]:
+                    - link "Decline Test noss" [ref=e764] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/a811f299-a09d-4415-9df9-70f05ade0183
+                  - cell "PROP-0035" [ref=e765]
+                  - cell "Draft" [ref=e766]:
+                    - generic [ref=e767]: Draft
+                  - cell "—" [ref=e768]
+                  - cell "—" [ref=e769]
+                - row "Accept Test noss PROP-0034 Draft — —" [ref=e770]:
+                  - cell "Accept Test noss" [ref=e771]:
+                    - link "Accept Test noss" [ref=e772] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/d7975018-38be-484f-872b-be014b93f674
+                  - cell "PROP-0034" [ref=e773]
+                  - cell "Draft" [ref=e774]:
+                    - generic [ref=e775]: Draft
+                  - cell "—" [ref=e776]
+                  - cell "—" [ref=e777]
+                - row "Hourly Consulting ndtk PROP-0033 Draft — —" [ref=e778]:
+                  - cell "Hourly Consulting ndtk" [ref=e779]:
+                    - link "Hourly Consulting ndtk" [ref=e780] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/ae2f92a5-98fe-4742-b016-ea7471a0d0be
+                  - cell "PROP-0033" [ref=e781]
+                  - cell "Draft" [ref=e782]:
+                    - generic [ref=e783]: Draft
+                  - cell "—" [ref=e784]
+                  - cell "—" [ref=e785]
+                - row "Lifecycle Draft ncys PROP-0032 Draft — —" [ref=e786]:
+                  - cell "Lifecycle Draft ncys" [ref=e787]:
+                    - link "Lifecycle Draft ncys" [ref=e788] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/76dad47f-b977-4826-99de-f6867915bd8a
+                  - cell "PROP-0032" [ref=e789]
+                  - cell "Draft" [ref=e790]:
+                    - generic [ref=e791]: Draft
+                  - cell "—" [ref=e792]
+                  - cell "—" [ref=e793]
+                - row "Fixed Fee Audit nasj PROP-0031 Draft — —" [ref=e794]:
+                  - cell "Fixed Fee Audit nasj" [ref=e795]:
+                    - link "Fixed Fee Audit nasj" [ref=e796] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/60c84847-fecd-4bf1-8689-e8bb38b30640
+                  - cell "PROP-0031" [ref=e797]
+                  - cell "Draft" [ref=e798]:
+                    - generic [ref=e799]: Draft
+                  - cell "—" [ref=e800]
+                  - cell "—" [ref=e801]
+                - row "Decline Test l7x0 PROP-0030 Draft — —" [ref=e802]:
+                  - cell "Decline Test l7x0" [ref=e803]:
+                    - link "Decline Test l7x0" [ref=e804] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/3deeda5a-3c34-43d2-8f60-87f4d1867014
+                  - cell "PROP-0030" [ref=e805]
+                  - cell "Draft" [ref=e806]:
+                    - generic [ref=e807]: Draft
+                  - cell "—" [ref=e808]
+                  - cell "—" [ref=e809]
+                - row "Accept Test l7x0 PROP-0029 Draft — —" [ref=e810]:
+                  - cell "Accept Test l7x0" [ref=e811]:
+                    - link "Accept Test l7x0" [ref=e812] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/193e82b3-280a-4f74-8d52-fd5ac2e68f2c
+                  - cell "PROP-0029" [ref=e813]
+                  - cell "Draft" [ref=e814]:
+                    - generic [ref=e815]: Draft
+                  - cell "—" [ref=e816]
+                  - cell "—" [ref=e817]
+                - row "Hourly Consulting kwwm PROP-0028 Draft — —" [ref=e818]:
+                  - cell "Hourly Consulting kwwm" [ref=e819]:
+                    - link "Hourly Consulting kwwm" [ref=e820] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/2c0da46c-fe50-4ba1-9751-83b4727c37cf
+                  - cell "PROP-0028" [ref=e821]
+                  - cell "Draft" [ref=e822]:
+                    - generic [ref=e823]: Draft
+                  - cell "—" [ref=e824]
+                  - cell "—" [ref=e825]
+                - row "Lifecycle Draft kx38 PROP-0027 Draft — —" [ref=e826]:
+                  - cell "Lifecycle Draft kx38" [ref=e827]:
+                    - link "Lifecycle Draft kx38" [ref=e828] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/a01b718b-a1c5-4f25-a8f8-d2bedc169972
+                  - cell "PROP-0027" [ref=e829]
+                  - cell "Draft" [ref=e830]:
+                    - generic [ref=e831]: Draft
+                  - cell "—" [ref=e832]
+                  - cell "—" [ref=e833]
+                - row "Fixed Fee Audit kumr PROP-0026 Draft — —" [ref=e834]:
+                  - cell "Fixed Fee Audit kumr" [ref=e835]:
+                    - link "Fixed Fee Audit kumr" [ref=e836] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/98116923-63e8-4c15-bda8-73fbbac77593
+                  - cell "PROP-0026" [ref=e837]
+                  - cell "Draft" [ref=e838]:
+                    - generic [ref=e839]: Draft
+                  - cell "—" [ref=e840]
+                  - cell "—" [ref=e841]
+                - row "Decline Test iq14 PROP-0025 Draft — —" [ref=e842]:
+                  - cell "Decline Test iq14" [ref=e843]:
+                    - link "Decline Test iq14" [ref=e844] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/a4090cdb-c334-4d19-aa7c-d5f5b4068097
+                  - cell "PROP-0025" [ref=e845]
+                  - cell "Draft" [ref=e846]:
+                    - generic [ref=e847]: Draft
+                  - cell "—" [ref=e848]
+                  - cell "—" [ref=e849]
+                - row "Accept Test iq14 PROP-0024 Draft — —" [ref=e850]:
+                  - cell "Accept Test iq14" [ref=e851]:
+                    - link "Accept Test iq14" [ref=e852] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/07ee75fe-26ea-4bad-9e5f-e610559cfda2
+                  - cell "PROP-0024" [ref=e853]
+                  - cell "Draft" [ref=e854]:
+                    - generic [ref=e855]: Draft
+                  - cell "—" [ref=e856]
+                  - cell "—" [ref=e857]
+                - row "Lifecycle Draft iese PROP-0023 Draft — —" [ref=e858]:
+                  - cell "Lifecycle Draft iese" [ref=e859]:
+                    - link "Lifecycle Draft iese" [ref=e860] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/4ca03386-bacc-4e22-bb35-3cf5e516a989
+                  - cell "PROP-0023" [ref=e861]
+                  - cell "Draft" [ref=e862]:
+                    - generic [ref=e863]: Draft
+                  - cell "—" [ref=e864]
+                  - cell "—" [ref=e865]
+                - row "Hourly Consulting idty PROP-0022 Draft — —" [ref=e866]:
+                  - cell "Hourly Consulting idty" [ref=e867]:
+                    - link "Hourly Consulting idty" [ref=e868] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/fa49ddb3-69b1-4d12-8d12-930965ce872e
+                  - cell "PROP-0022" [ref=e869]
+                  - cell "Draft" [ref=e870]:
+                    - generic [ref=e871]: Draft
+                  - cell "—" [ref=e872]
+                  - cell "—" [ref=e873]
+                - row "Fixed Fee Audit ibx8 PROP-0021 Draft — —" [ref=e874]:
+                  - cell "Fixed Fee Audit ibx8" [ref=e875]:
+                    - link "Fixed Fee Audit ibx8" [ref=e876] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/00d1f2e7-860a-481b-bdea-87d27c11cb5d
+                  - cell "PROP-0021" [ref=e877]
+                  - cell "Draft" [ref=e878]:
+                    - generic [ref=e879]: Draft
+                  - cell "—" [ref=e880]
+                  - cell "—" [ref=e881]
+                - row "Decline Test 8ei1 PROP-0020 Draft — —" [ref=e882]:
+                  - cell "Decline Test 8ei1" [ref=e883]:
+                    - link "Decline Test 8ei1" [ref=e884] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/19019eeb-5a2b-4c86-90e4-35c35ae006b2
+                  - cell "PROP-0020" [ref=e885]
+                  - cell "Draft" [ref=e886]:
+                    - generic [ref=e887]: Draft
+                  - cell "—" [ref=e888]
+                  - cell "—" [ref=e889]
+                - row "Accept Test 8ei1 PROP-0019 Draft — —" [ref=e890]:
+                  - cell "Accept Test 8ei1" [ref=e891]:
+                    - link "Accept Test 8ei1" [ref=e892] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/309a511d-2ea7-4c7a-9db7-ef6fff6ec7cf
+                  - cell "PROP-0019" [ref=e893]
+                  - cell "Draft" [ref=e894]:
+                    - generic [ref=e895]: Draft
+                  - cell "—" [ref=e896]
+                  - cell "—" [ref=e897]
+                - row "Lifecycle Draft 83rc PROP-0018 Draft — —" [ref=e898]:
+                  - cell "Lifecycle Draft 83rc" [ref=e899]:
+                    - link "Lifecycle Draft 83rc" [ref=e900] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/2b0c553d-69a7-4b79-a1b2-a5695d4afe3f
+                  - cell "PROP-0018" [ref=e901]
+                  - cell "Draft" [ref=e902]:
+                    - generic [ref=e903]: Draft
+                  - cell "—" [ref=e904]
+                  - cell "—" [ref=e905]
+                - row "Decline Test hbaj PROP-0017 Draft — —" [ref=e906]:
+                  - cell "Decline Test hbaj" [ref=e907]:
+                    - link "Decline Test hbaj" [ref=e908] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/6957e94b-c5fb-4985-b960-2842585f3235
+                  - cell "PROP-0017" [ref=e909]
+                  - cell "Draft" [ref=e910]:
+                    - generic [ref=e911]: Draft
+                  - cell "—" [ref=e912]
+                  - cell "—" [ref=e913]
+                - row "Accept Test hbaj PROP-0016 Draft — —" [ref=e914]:
+                  - cell "Accept Test hbaj" [ref=e915]:
+                    - link "Accept Test hbaj" [ref=e916] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/52796f32-7511-4e69-8a66-4b68d1144dcf
+                  - cell "PROP-0016" [ref=e917]
+                  - cell "Draft" [ref=e918]:
+                    - generic [ref=e919]: Draft
+                  - cell "—" [ref=e920]
+                  - cell "—" [ref=e921]
+                - row "Lifecycle Draft gnmh PROP-0015 Draft — —" [ref=e922]:
+                  - cell "Lifecycle Draft gnmh" [ref=e923]:
+                    - link "Lifecycle Draft gnmh" [ref=e924] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/5b085bfd-600c-45b5-87de-bc52b46cee11
+                  - cell "PROP-0015" [ref=e925]
+                  - cell "Draft" [ref=e926]:
+                    - generic [ref=e927]: Draft
+                  - cell "—" [ref=e928]
+                  - cell "—" [ref=e929]
+                - row "Decline Test gb4h PROP-0014 Draft — —" [ref=e930]:
+                  - cell "Decline Test gb4h" [ref=e931]:
+                    - link "Decline Test gb4h" [ref=e932] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/b3b959a7-0f7c-4e3e-b94c-f1b7b3e4ebb4
+                  - cell "PROP-0014" [ref=e933]
+                  - cell "Draft" [ref=e934]:
+                    - generic [ref=e935]: Draft
+                  - cell "—" [ref=e936]
+                  - cell "—" [ref=e937]
+                - row "Decline Test dm61 PROP-0013 Draft — —" [ref=e938]:
+                  - cell "Decline Test dm61" [ref=e939]:
+                    - link "Decline Test dm61" [ref=e940] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/9502822a-d535-4cad-81ce-c784798c7d08
+                  - cell "PROP-0013" [ref=e941]
+                  - cell "Draft" [ref=e942]:
+                    - generic [ref=e943]: Draft
+                  - cell "—" [ref=e944]
+                  - cell "—" [ref=e945]
+                - row "Accept Test dm61 PROP-0012 Draft — —" [ref=e946]:
+                  - cell "Accept Test dm61" [ref=e947]:
+                    - link "Accept Test dm61" [ref=e948] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/9b8973b8-0b9b-4692-8f2b-fa63aa02a4dc
+                  - cell "PROP-0012" [ref=e949]
+                  - cell "Draft" [ref=e950]:
+                    - generic [ref=e951]: Draft
+                  - cell "—" [ref=e952]
+                  - cell "—" [ref=e953]
+                - row "Lifecycle Draft dbe1 PROP-0011 Draft — —" [ref=e954]:
+                  - cell "Lifecycle Draft dbe1" [ref=e955]:
+                    - link "Lifecycle Draft dbe1" [ref=e956] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/bf6a90d4-b6d3-4c63-a36d-64d08613c487
+                  - cell "PROP-0011" [ref=e957]
+                  - cell "Draft" [ref=e958]:
+                    - generic [ref=e959]: Draft
+                  - cell "—" [ref=e960]
+                  - cell "—" [ref=e961]
+                - row "Decline Test admv PROP-0010 Draft — —" [ref=e962]:
+                  - cell "Decline Test admv" [ref=e963]:
+                    - link "Decline Test admv" [ref=e964] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/34c3615f-64af-4041-857d-1ccbe9d0c58b
+                  - cell "PROP-0010" [ref=e965]
+                  - cell "Draft" [ref=e966]:
+                    - generic [ref=e967]: Draft
+                  - cell "—" [ref=e968]
+                  - cell "—" [ref=e969]
+                - row "Accept Test admv PROP-0009 Draft — —" [ref=e970]:
+                  - cell "Accept Test admv" [ref=e971]:
+                    - link "Accept Test admv" [ref=e972] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/0c9b3824-d051-4a97-983e-dcdc4ae68140
+                  - cell "PROP-0009" [ref=e973]
+                  - cell "Draft" [ref=e974]:
+                    - generic [ref=e975]: Draft
+                  - cell "—" [ref=e976]
+                  - cell "—" [ref=e977]
+                - row "Lifecycle Draft a2t7 PROP-0008 Draft — —" [ref=e978]:
+                  - cell "Lifecycle Draft a2t7" [ref=e979]:
+                    - link "Lifecycle Draft a2t7" [ref=e980] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/b5f90377-dea0-4303-8755-ed4f73ac6e6f
+                  - cell "PROP-0008" [ref=e981]
+                  - cell "Draft" [ref=e982]:
+                    - generic [ref=e983]: Draft
+                  - cell "—" [ref=e984]
+                  - cell "—" [ref=e985]
+                - row "Decline Test 9pl7 PROP-0007 Draft — —" [ref=e986]:
+                  - cell "Decline Test 9pl7" [ref=e987]:
+                    - link "Decline Test 9pl7" [ref=e988] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/fb16834d-2f1b-45e8-9316-c31522c8640e
+                  - cell "PROP-0007" [ref=e989]
+                  - cell "Draft" [ref=e990]:
+                    - generic [ref=e991]: Draft
+                  - cell "—" [ref=e992]
+                  - cell "—" [ref=e993]
+                - row "Decline Test 730z PROP-0006 Draft — —" [ref=e994]:
+                  - cell "Decline Test 730z" [ref=e995]:
+                    - link "Decline Test 730z" [ref=e996] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/8bbbb443-f57f-4556-8510-9a1654529150
+                  - cell "PROP-0006" [ref=e997]
+                  - cell "Draft" [ref=e998]:
+                    - generic [ref=e999]: Draft
+                  - cell "—" [ref=e1000]
+                  - cell "—" [ref=e1001]
+                - row "Accept Test 730z PROP-0005 Draft — —" [ref=e1002]:
+                  - cell "Accept Test 730z" [ref=e1003]:
+                    - link "Accept Test 730z" [ref=e1004] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/cce939d6-8cb0-4382-a9d9-48b9b538ef33
+                  - cell "PROP-0005" [ref=e1005]
+                  - cell "Draft" [ref=e1006]:
+                    - generic [ref=e1007]: Draft
+                  - cell "—" [ref=e1008]
+                  - cell "—" [ref=e1009]
+                - row "Lifecycle Draft 6ryz PROP-0004 Draft — —" [ref=e1010]:
+                  - cell "Lifecycle Draft 6ryz" [ref=e1011]:
+                    - link "Lifecycle Draft 6ryz" [ref=e1012] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/aadb1aa6-8d73-4c22-bdc5-4552e7c17d30
+                  - cell "PROP-0004" [ref=e1013]
+                  - cell "Draft" [ref=e1014]:
+                    - generic [ref=e1015]: Draft
+                  - cell "—" [ref=e1016]
+                  - cell "—" [ref=e1017]
+                - row "Decline Test 4011 PROP-0003 Draft — —" [ref=e1018]:
+                  - cell "Decline Test 4011" [ref=e1019]:
+                    - link "Decline Test 4011" [ref=e1020] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/d2c75bfa-a449-4578-9115-5bb0ae5e0bc6
+                  - cell "PROP-0003" [ref=e1021]
+                  - cell "Draft" [ref=e1022]:
+                    - generic [ref=e1023]: Draft
+                  - cell "—" [ref=e1024]
+                  - cell "—" [ref=e1025]
+                - row "Accept Test 4011 PROP-0002 Draft — —" [ref=e1026]:
+                  - cell "Accept Test 4011" [ref=e1027]:
+                    - link "Accept Test 4011" [ref=e1028] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/7c238357-d005-4ea4-9a31-69be1f1f5137
+                  - cell "PROP-0002" [ref=e1029]
+                  - cell "Draft" [ref=e1030]:
+                    - generic [ref=e1031]: Draft
+                  - cell "—" [ref=e1032]
+                  - cell "—" [ref=e1033]
+                - row "Lifecycle Draft 3p7w PROP-0001 Draft — —" [ref=e1034]:
+                  - cell "Lifecycle Draft 3p7w" [ref=e1035]:
+                    - link "Lifecycle Draft 3p7w" [ref=e1036] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/proposals/f14ef42e-78cc-4a05-8abc-4476e2763070
+                  - cell "PROP-0001" [ref=e1037]
+                  - cell "Draft" [ref=e1038]:
+                    - generic [ref=e1039]: Draft
+                  - cell "—" [ref=e1040]
+                  - cell "—" [ref=e1041]
+  - generic [ref=e1042]:
+    - heading "Command Palette" [level=2] [ref=e1043]
+    - paragraph [ref=e1044]: Search pages and settings
+  - region "Notifications alt+T"
+  - alert [ref=e1045]
+```

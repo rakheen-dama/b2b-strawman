@@ -66,12 +66,20 @@ describe("AI IntegrationCard", () => {
     expect(modelTrigger).toBeInTheDocument();
   });
 
-  it("shows PRO badge on AI integration card", () => {
+  it("shows PRO badge on AI integration card for non-PRO tier", () => {
     render(
-      <IntegrationCard {...defaultProps} integration={null} />,
+      <IntegrationCard {...defaultProps} tier="STARTER" integration={null} />,
     );
 
     expect(screen.getByText("PRO")).toBeInTheDocument();
+  });
+
+  it("hides PRO badge when org is already on PRO tier", () => {
+    render(
+      <IntegrationCard {...defaultProps} tier="PRO" integration={null} />,
+    );
+
+    expect(screen.queryByText("PRO")).not.toBeInTheDocument();
   });
 
   it("shows upgrade prompt and disables controls for STARTER tier", () => {

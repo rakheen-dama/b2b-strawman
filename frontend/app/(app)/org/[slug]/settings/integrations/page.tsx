@@ -52,16 +52,21 @@ export default async function IntegrationsSettingsPage({
   let tier = "STARTER";
 
   try {
-    const [integrationsResult, providersResult, billing] = await Promise.all([
+    const [integrationsResult, providersResult] = await Promise.all([
       listIntegrations(),
       listProviders(),
-      api.get<BillingResponse>("/api/billing/subscription"),
     ]);
     integrations = integrationsResult;
     providers = providersResult;
-    tier = billing.tier;
   } catch {
     // Non-fatal: show empty state
+  }
+
+  try {
+    const billing = await api.get<BillingResponse>("/api/billing/subscription");
+    tier = billing.tier;
+  } catch {
+    // Non-fatal: default to STARTER
   }
 
   return (

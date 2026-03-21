@@ -86,7 +86,7 @@ export function IntegrationCard({
   // Fetch AI models when domain is AI and key is configured
   const shouldFetchModels = domain === "AI" && hasKey;
   const { data: modelsData, isLoading: isLoadingModels } = useSWR(
-    shouldFetchModels ? "ai-models" : null,
+    shouldFetchModels ? `ai-models-${slug}` : null,
     () => fetchAiModels(),
   );
 
@@ -179,7 +179,7 @@ export function IntegrationCard({
               <Icon className="size-5 text-slate-600 dark:text-slate-400" />
             </div>
             <CardTitle className="font-display text-lg">{label}</CardTitle>
-            {domain === "AI" && <Badge variant="pro">PRO</Badge>}
+            {domain === "AI" && tier !== "PRO" && <Badge variant="pro">PRO</Badge>}
           </div>
           {getStatusBadge()}
         </div>
@@ -275,8 +275,8 @@ export function IntegrationCard({
           </div>
         )}
 
-        {/* Model selector (AI domain only, when key is configured) */}
-        {domain === "AI" && hasKey && (
+        {/* Model selector (AI domain only, when key is configured and enabled) */}
+        {domain === "AI" && hasKey && isEnabled && (
           <div className="space-y-2">
             <label
               htmlFor={`model-${domain}`}

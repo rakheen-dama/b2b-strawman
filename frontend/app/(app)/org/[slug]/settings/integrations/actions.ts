@@ -128,6 +128,8 @@ export async function fetchAiModels(): Promise<{ models: ModelInfo[] }> {
   } catch (error) {
     if (error instanceof ApiError) {
       console.error("Failed to fetch AI models:", error.message);
+    } else {
+      console.error("Unexpected error fetching AI models:", error);
     }
     return { models: [] };
   }

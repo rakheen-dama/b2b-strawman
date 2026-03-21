@@ -13,7 +13,7 @@ Phase 53 is a **pure frontend visual overhaul** targeting the three primary dash
 | 393 | Chart Component Library & Foundation | Frontend | -- | M | 393A, 393B | **Done** (PRs #813, #814) |
 | 394 | Dashboard Redesigns | Frontend | 393A | L | 394A, 394B | **Done** (PRs #815, #816) |
 | 395 | Project Detail & Document Preview | Frontend | 393A (395A only) | M | 395A, 395B | **Done** (PRs #817, #818) |
-| 396 | Test Updates & Visual Baselines | Frontend | 393-395 | S | 396A | |
+| 396 | Test Updates & Visual Baselines | Frontend | 393-395 | S | 396A | **Done** (PR #819) |
 
 ## Dependency Graph
 
@@ -59,7 +59,7 @@ Phase 53 is a **pure frontend visual overhaul** targeting the three primary dash
 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
-| 3a | Epic 396 | 396A | Update all broken tests (sidebar selectors, dashboard structure, widget ordering), refresh visual baselines, verify data-testid coverage. Depends on all prior slices. |
+| 3a | Epic 396 | 396A | Update all broken tests (sidebar selectors, dashboard structure, widget ordering), refresh visual baselines, verify data-testid coverage. Depends on all prior slices. | **Done** (PR #819) |
 
 ### Timeline
 
@@ -339,7 +339,7 @@ Stage 3:  [396A]                               <- test stabilization (after all 
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **396A** | 396.1-396.5 | Fix all broken tests from layout changes, update E2E selectors, refresh visual regression baselines, verify data-testid coverage, run full suite green (~0 new tests, updates only) | |
+| **396A** | 396.1-396.5 | Fix all broken tests from layout changes, update E2E selectors, refresh visual regression baselines, verify data-testid coverage, run full suite green (~0 new tests, updates only) | **Done** (PR #819) |
 
 ### Tasks
 

@@ -448,7 +448,7 @@
 | 393 | Chart Component Library & Foundation | Frontend | -- | M | 393A, 393B | **Done** (PRs #813, #814) |
 | 394 | Dashboard Redesigns | Frontend | 393A | L | 394A, 394B | **Done** (PRs #815, #816) |
 | 395 | Project Detail & Document Preview | Frontend | 393A (395A only) | M | 395A, 395B | **Done** (PRs #817, #818) |
-| 396 | Test Updates & Visual Baselines | Frontend | 393-395 | S | 396A | |
+| 396 | Test Updates & Visual Baselines | Frontend | 393-395 | S | 396A | **Done** (PR #819) |
 
 ---
 

@@ -46,4 +46,17 @@ describe("A4PreviewWrapper", () => {
     const paperDiv = wrapper.querySelector(".shadow-xl");
     expect(paperDiv).toBeInTheDocument();
   });
+
+  it("disconnects ResizeObserver on unmount", () => {
+    const disconnectSpy = vi.fn();
+    global.ResizeObserver = class {
+      observe = vi.fn();
+      unobserve = vi.fn();
+      disconnect = disconnectSpy;
+      constructor() {}
+    } as any;
+    const { unmount } = render(<A4PreviewWrapper html="<p>Test</p>" />);
+    unmount();
+    expect(disconnectSpy).toHaveBeenCalled();
+  });
 });

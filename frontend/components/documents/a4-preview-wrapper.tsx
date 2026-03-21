@@ -19,7 +19,9 @@ export function A4PreviewWrapper({ html, className }: A4PreviewWrapperProps) {
     const updateScale = () => {
       if (containerRef.current) {
         const containerWidth = containerRef.current.clientWidth;
-        setScale(containerWidth / A4_WIDTH);
+        if (containerWidth > 0) {
+          setScale(containerWidth / A4_WIDTH);
+        }
       }
     };
 

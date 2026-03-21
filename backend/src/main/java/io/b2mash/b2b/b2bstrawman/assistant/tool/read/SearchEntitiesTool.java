@@ -3,6 +3,8 @@ package io.b2mash.b2b.b2bstrawman.assistant.tool.read;
 import io.b2mash.b2b.b2bstrawman.assistant.tool.AssistantTool;
 import io.b2mash.b2b.b2bstrawman.assistant.tool.TenantToolContext;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerService;
+import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
 import io.b2mash.b2b.b2bstrawman.task.TaskService;
@@ -72,9 +74,12 @@ public class SearchEntitiesTool implements AssistantTool {
     var actor = new ActorContext(context.memberId(), context.orgRole());
     var lowerQuery = query.toLowerCase();
 
+    // Fetch projects once and reuse
+    var allProjects = projectService.listProjects(actor);
+
     // Search projects
     var matchingProjects =
-        projectService.listProjects(actor).stream()
+        allProjects.stream()
             .filter(pwr -> pwr.project().getName().toLowerCase().contains(lowerQuery))
             .map(
                 pwr -> {
@@ -109,9 +114,9 @@ public class SearchEntitiesTool implements AssistantTool {
                 })
             .toList();
 
-    // Search tasks across matching projects
+    // Search tasks across all projects (reuse fetched list)
     var matchingTasks = new ArrayList<Map<String, Object>>();
-    for (var pwr : projectService.listProjects(actor)) {
+    for (var pwr : allProjects) {
       try {
         var tasks = taskService.listTasks(pwr.project().getId(), actor, null, null, null, null);
         for (var t : tasks) {
@@ -125,8 +130,8 @@ public class SearchEntitiesTool implements AssistantTool {
             matchingTasks.add(map);
           }
         }
-      } catch (Exception e) {
-        // Skip projects where task listing fails (e.g., access denied)
+      } catch (ResourceNotFoundException | ForbiddenException e) {
+        // Skip projects where task listing fails (e.g., access denied or deleted)
       }
     }
 

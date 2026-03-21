@@ -81,14 +81,9 @@ public class GetInvoiceTool implements AssistantTool {
       }
     } else {
       // Look up by invoice number
-      var all = invoiceService.findAll(null, null, null);
-      invoice =
-          all.stream()
-              .filter(inv -> invoiceNumber.equals(inv.invoiceNumber()))
-              .findFirst()
-              .orElse(null);
-
-      if (invoice == null) {
+      try {
+        invoice = invoiceService.findByInvoiceNumber(invoiceNumber);
+      } catch (ResourceNotFoundException e) {
         return Map.of("error", "Invoice not found");
       }
     }

@@ -438,7 +438,7 @@
 | 385 | Frontend: Deadline Calendar Page | Frontend | 382 | L | 385A, 385B | **Done** (PRs #798, #799) |
 | 386 | Frontend: Schedule Actions UI + Seeding Feedback + Dashboard Widget | Frontend | 383, 384, 385 | M | 386A, 386B | **Done** (PRs #800, #801) |
 | **Phase 52 — In-App AI Assistant (BYOAK)** | | | | | | See [tasks/phase52-in-app-ai-assistant.md](tasks/phase52-in-app-ai-assistant.md) |
-| 387 | LLM Provider Abstraction: Interface, Records, Registry, Anthropic Adapter | Backend | -- | M | 387A, 387B | 387A **Done** (PR #802) |
+| 387 | LLM Provider Abstraction: Interface, Records, Registry, Anthropic Adapter | Backend | -- | M | 387A, 387B | **Done** (PRs #802, #803) |
 | 388 | Tool Framework + Read Tools (Batch 1: Core Entities) | Backend | 387A | M | 388A, 388B | |
 | 389 | Read Tools (Batch 2: Financial + Search) + System Guide | Backend | 388A | M | 389A | |
 | 390 | Assistant Service + Chat API + Confirmation Flow | Backend | 387, 388, 389 | L | 390A, 390B | |

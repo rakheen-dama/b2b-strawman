@@ -33,7 +33,7 @@ The next epic number starts at **387**. ADRs 200--204 are already accepted.
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 387 | LLM Provider Abstraction: Interface, Records, Registry, Anthropic Adapter | Backend | -- | M | 387A, 387B | |
+| 387 | LLM Provider Abstraction: Interface, Records, Registry, Anthropic Adapter | Backend | -- | M | 387A, 387B | **Done** (PRs #802, #803) |
 | 388 | Tool Framework + Read Tools (Batch 1: Core Entities) | Backend | 387A | M | 388A, 388B | |
 | 389 | Read Tools (Batch 2: Financial + Search) + System Guide | Backend | 387A | M | 389A | |
 | 390 | Assistant Service + Chat API + Confirmation Flow | Backend | 387, 388, 389 | L | 390A, 390B | |
@@ -144,7 +144,7 @@ WRITE TOOLS + SETTINGS (parallel)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 0a | 387 | 387A | `LlmChatProvider` interface, `ChatRequest`/`StreamEvent`/`ChatMessage`/`ToolDefinition`/`ModelInfo`/`ToolResult` records, `LlmChatProviderRegistry` auto-discovery registry. Unit tests (~4). Backend only. | **Done** (PR #802) |
-| 0b | 387 | 387B | `AnthropicLlmProvider` -- RestClient-based Anthropic Messages API adapter with SSE parsing, `validateKey()`, `availableModels()`, error mapping (401/403/429/5xx). WireMock test suite (~6). Backend only. | |
+| 0b | 387 | 387B | `AnthropicLlmProvider` -- RestClient-based Anthropic Messages API adapter with SSE parsing, `validateKey()`, `availableModels()`, error mapping (401/403/429/5xx). WireMock test suite (~6). Backend only. | **Done** (PR #803) |
 
 ### Stage 1: Backend Tools (parallel tracks)
 
@@ -194,7 +194,7 @@ WRITE TOOLS + SETTINGS (parallel)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **387A** | 387.1--387.5 | `LlmChatProvider` interface with `chat()`, `validateKey()`, `availableModels()`, `providerId()`. Records: `ChatRequest`, `StreamEvent` (sealed interface with 5 inner records: `TextDelta`, `ToolUse`, `Usage`, `Done`, `Error`), `ChatMessage`, `ToolDefinition`, `ToolResult`, `ModelInfo`. `LlmChatProviderRegistry` auto-discovery + lookup. Unit tests (~4). Backend only. | **Done** (PR #802) |
-| **387B** | 387.6--387.12 | `AnthropicLlmProvider` implementing `LlmChatProvider` via Spring `RestClient` with manual SSE parsing. Maps Anthropic SSE events (`content_block_delta`, `content_block_start`, `message_delta`, `message_stop`) to `StreamEvent` records. `validateKey()` sends minimal 1-token request. `availableModels()` returns static list. `@IntegrationAdapter(domain = AI, slug = "anthropic")`. WireMock test suite (~6). Backend only. | |
+| **387B** | 387.6--387.12 | `AnthropicLlmProvider` implementing `LlmChatProvider` via Spring `RestClient` with manual SSE parsing. Maps Anthropic SSE events (`content_block_delta`, `content_block_start`, `message_delta`, `message_stop`) to `StreamEvent` records. `validateKey()` sends minimal 1-token request. `availableModels()` returns static list. `@IntegrationAdapter(domain = AI, slug = "anthropic")`. WireMock test suite (~6). Backend only. | **Done** (PR #803) |
 
 ### Tasks
 

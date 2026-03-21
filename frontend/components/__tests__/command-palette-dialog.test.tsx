@@ -89,9 +89,9 @@ describe("CommandPaletteDialog", () => {
     expect(screen.getByText("Dashboard")).toBeInTheDocument();
   });
 
-  it("omits comingSoon settings items — Organization is not in DOM", () => {
+  it("omits comingSoon settings items — Security is not in DOM", () => {
     renderDialog();
-    expect(screen.queryByText("Organization")).not.toBeInTheDocument();
+    expect(screen.queryByText("Security")).not.toBeInTheDocument();
   });
 
   it("omits adminOnly settings items for non-admin — Batch Billing not visible to member", () => {

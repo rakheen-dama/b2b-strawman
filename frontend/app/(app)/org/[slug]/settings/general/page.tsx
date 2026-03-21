@@ -4,7 +4,8 @@ import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api } from "@/lib/api";
 import { GeneralSettingsForm } from "@/components/settings/general-settings-form";
 import { VerticalProfileSection } from "@/components/settings/vertical-profile-section";
-import type { OrgSettings } from "@/lib/types";
+import { OrgDocumentsSection } from "@/components/settings/org-documents-section";
+import type { Document, OrgSettings } from "@/lib/types";
 
 export default async function GeneralSettingsPage({
   params,
@@ -13,8 +14,16 @@ export default async function GeneralSettingsPage({
 }) {
   const { slug } = await params;
   const caps = await fetchMyCapabilities();
+  const isAdmin = caps.isAdmin || caps.isOwner;
 
-  if (!caps.isAdmin && !caps.isOwner) {
+  let documents: Document[] = [];
+  try {
+    documents = await api.get<Document[]>("/api/documents?scope=ORG");
+  } catch {
+    // silently degrade — documents section renders with empty list
+  }
+
+  if (!isAdmin) {
     return (
       <div className="space-y-8">
         <Link
@@ -27,10 +36,12 @@ export default async function GeneralSettingsPage({
         <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
           General
         </h1>
-        <p className="text-slate-600 dark:text-slate-400">
-          You do not have permission to manage general settings. Only admins and
-          owners can access this page.
-        </p>
+
+        <OrgDocumentsSection
+          slug={slug}
+          documents={documents}
+          isAdmin={false}
+        />
       </div>
     );
   }
@@ -79,6 +90,12 @@ export default async function GeneralSettingsPage({
         taxRegistrationNumber={settings.taxRegistrationNumber ?? ""}
         taxLabel={settings.taxLabel ?? ""}
         taxInclusive={settings.taxInclusive ?? false}
+      />
+
+      <OrgDocumentsSection
+        slug={slug}
+        documents={documents}
+        isAdmin={true}
       />
     </div>
   );

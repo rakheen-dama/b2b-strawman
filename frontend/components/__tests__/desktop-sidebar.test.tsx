@@ -79,10 +79,10 @@ describe("DesktopSidebar", () => {
     renderSidebar();
 
     expect(screen.getByText("Work")).toBeInTheDocument();
-    expect(screen.getByText("Delivery")).toBeInTheDocument();
+    expect(screen.getAllByText("Projects").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("Clients")).toBeInTheDocument();
     expect(screen.getByText("Finance")).toBeInTheDocument();
-    expect(screen.getByText("Team & Resources")).toBeInTheDocument();
+    expect(screen.getAllByText("Team").length).toBeGreaterThanOrEqual(1);
   });
 
   it("collapses a zone on header click, hides its items", async () => {

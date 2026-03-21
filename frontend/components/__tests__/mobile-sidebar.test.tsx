@@ -80,10 +80,10 @@ describe("MobileSidebar", () => {
     await user.click(screen.getByRole("button", { name: /toggle menu/i }));
 
     expect(screen.getByText("Work")).toBeInTheDocument();
-    expect(screen.getByText("Delivery")).toBeInTheDocument();
+    expect(screen.getAllByText("Projects").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("Clients")).toBeInTheDocument();
     expect(screen.getByText("Finance")).toBeInTheDocument();
-    expect(screen.getByText("Team & Resources")).toBeInTheDocument();
+    expect(screen.getAllByText("Team").length).toBeGreaterThanOrEqual(1);
   });
 
   it("renders utility footer items (Notifications, Settings)", async () => {

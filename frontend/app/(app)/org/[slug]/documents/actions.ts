@@ -55,7 +55,7 @@ export async function confirmOrgUpload(
     return { success: false, error: "Failed to confirm upload." };
   }
 
-  revalidatePath(`/org/${slug}/documents`);
+  revalidatePath(`/org/${slug}/settings/general`);
 
   return { success: true };
 }

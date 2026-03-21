@@ -1,10 +1,14 @@
-import { fetchMyCapabilities } from "@/lib/api/capabilities";
-import { api, handleApiError } from "@/lib/api";
 import type { Document, DocumentScope, DocumentStatus } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { OrgDocumentUpload } from "@/components/documents/org-document-upload";
 import { formatDate, formatFileSize } from "@/lib/format";
-import { FileText, FileImage, FileSpreadsheet, FileArchive, File } from "lucide-react";
+import {
+  FileText,
+  FileImage,
+  FileSpreadsheet,
+  FileArchive,
+  File,
+} from "lucide-react";
 
 function getFileIcon(contentType: string) {
   if (contentType.startsWith("image/")) return FileImage;
@@ -15,7 +19,11 @@ function getFileIcon(contentType: string) {
     contentType.includes("csv")
   )
     return FileSpreadsheet;
-  if (contentType.includes("zip") || contentType.includes("gzip") || contentType.includes("tar"))
+  if (
+    contentType.includes("zip") ||
+    contentType.includes("gzip") ||
+    contentType.includes("tar")
+  )
     return FileArchive;
   return File;
 }
@@ -38,58 +46,51 @@ const SCOPE_BADGE: Record<
   CUSTOMER: { label: "Customer", variant: "lead" },
 };
 
-export default async function OrgDocumentsPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = await params;
-  const caps = await fetchMyCapabilities();
+interface OrgDocumentsSectionProps {
+  slug: string;
+  documents: Document[];
+  isAdmin: boolean;
+}
 
-  const isAdmin = caps.isAdmin || caps.isOwner;
-
-  let documents: Document[] = [];
-  try {
-    documents = await api.get<Document[]>("/api/documents?scope=ORG");
-  } catch (error) {
-    handleApiError(error);
-  }
-
+export function OrgDocumentsSection({
+  slug,
+  documents,
+  isAdmin,
+}: OrgDocumentsSectionProps) {
   return (
-    <div className="space-y-8">
-      {/* Page Header */}
+    <div
+      data-testid="org-documents-section"
+      className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950"
+    >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-            Organization Documents
-          </h1>
+          <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
+            Org Documents
+          </h2>
           <span className="rounded-full bg-slate-200 px-2.5 py-0.5 text-sm text-slate-700 dark:bg-slate-800 dark:text-slate-300">
             {documents.length}
           </span>
         </div>
         {isAdmin && <OrgDocumentUpload slug={slug} />}
       </div>
+      <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+        Organization-level documents shared across all projects.
+      </p>
 
-      {/* Document Table or Empty State */}
       {documents.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-24 text-center">
-          <FileText className="size-16 text-slate-300 dark:text-slate-700" />
-          <h2 className="mt-6 font-display text-xl text-slate-900 dark:text-slate-100">
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <FileText className="size-12 text-slate-300 dark:text-slate-700" />
+          <h3 className="mt-4 text-sm font-medium text-slate-900 dark:text-slate-100">
             No organization documents yet
-          </h2>
-          <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+          </h3>
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
             {isAdmin
               ? "Upload your first organization-level document to get started."
               : "No organization documents have been uploaded yet."}
           </p>
-          {isAdmin && (
-            <div className="mt-6">
-              <OrgDocumentUpload slug={slug} />
-            </div>
-          )}
         </div>
       ) : (
-        <div className="overflow-x-auto">
+        <div className="mt-4 overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b border-slate-200 dark:border-slate-800">
@@ -132,10 +133,14 @@ export default async function OrgDocumentsPage({
                       {formatFileSize(doc.size)}
                     </td>
                     <td className="px-4 py-3">
-                      <Badge variant={scopeBadge.variant}>{scopeBadge.label}</Badge>
+                      <Badge variant={scopeBadge.variant}>
+                        {scopeBadge.label}
+                      </Badge>
                     </td>
                     <td className="px-4 py-3">
-                      <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
+                      <Badge variant={statusBadge.variant}>
+                        {statusBadge.label}
+                      </Badge>
                     </td>
                     <td className="hidden px-4 py-3 text-sm text-slate-400 dark:text-slate-600 lg:table-cell">
                       {doc.uploadedAt ? formatDate(doc.uploadedAt) : "\u2014"}

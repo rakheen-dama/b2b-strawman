@@ -42,6 +42,10 @@ vi.mock("recharts", () => ({
       {children}
     </div>
   ),
+  CartesianGrid: () => <div data-testid="cartesian-grid" />,
+  ReferenceLine: ({ x }: { x?: number }) => (
+    <div data-testid="reference-line" data-value={x} />
+  ),
 }));
 
 const SAMPLE_DATA = [

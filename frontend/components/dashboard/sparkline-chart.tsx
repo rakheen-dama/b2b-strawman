@@ -8,6 +8,8 @@ interface SparklineChartProps {
   width?: number;
   height?: number;
   color?: string;
+  showGradient?: boolean;
+  className?: string;
 }
 
 export function SparklineChart({
@@ -15,17 +17,35 @@ export function SparklineChart({
   width = 80,
   height = 24,
   color = "currentColor",
+  showGradient = true,
+  className,
 }: SparklineChartProps) {
   const gradientId = useId();
 
   if (!data || data.length === 0) {
-    return <svg width={width} height={height} aria-hidden="true" />;
+    return (
+      <svg
+        width={width}
+        height={height}
+        aria-hidden="true"
+        data-testid="sparkline"
+        className={cn("inline-block", className)}
+      />
+    );
   }
 
   // Filter out non-finite values (NaN, Infinity, -Infinity)
   const validData = data.filter(Number.isFinite);
   if (validData.length === 0) {
-    return <svg width={width} height={height} aria-hidden="true" />;
+    return (
+      <svg
+        width={width}
+        height={height}
+        aria-hidden="true"
+        data-testid="sparkline"
+        className={cn("inline-block", className)}
+      />
+    );
   }
 
   const min = Math.min(...validData);
@@ -55,15 +75,20 @@ export function SparklineChart({
       height={height}
       viewBox={`0 0 ${width} ${height}`}
       aria-hidden="true"
-      className="inline-block"
+      data-testid="sparkline"
+      className={cn("inline-block", className)}
     >
-      <defs>
-        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity={0.2} />
-          <stop offset="100%" stopColor={color} stopOpacity={0} />
-        </linearGradient>
-      </defs>
-      <polygon points={fillPoints} fill={`url(#${gradientId})`} />
+      {showGradient && (
+        <defs>
+          <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={color} stopOpacity={0.2} />
+            <stop offset="100%" stopColor={color} stopOpacity={0} />
+          </linearGradient>
+        </defs>
+      )}
+      {showGradient && (
+        <polygon points={fillPoints} fill={`url(#${gradientId})`} />
+      )}
       <polyline
         points={points}
         fill="none"

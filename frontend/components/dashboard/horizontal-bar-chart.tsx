@@ -7,8 +7,11 @@ import {
   YAxis,
   Tooltip,
   Legend,
+  CartesianGrid,
+  ReferenceLine,
   ResponsiveContainer,
 } from "recharts";
+import { CHART_THEME } from "@/lib/chart-theme";
 
 interface HorizontalBarChartProps {
   data: Array<{
@@ -21,20 +24,22 @@ interface HorizontalBarChartProps {
   }>;
   maxValue?: number;
   showLegend?: boolean;
+  referenceLine?: number;
 }
 
-const DEFAULT_COLORS = [
-  "var(--color-chart-1, #2563eb)",
-  "var(--color-chart-2, #e11d48)",
-  "var(--color-chart-3, #e77e23)",
-  "var(--color-chart-4, #8b5cf6)",
-  "var(--color-chart-5, #06b6d4)",
+const THEME_COLORS = [
+  CHART_THEME.colors.primary,
+  CHART_THEME.colors.secondary,
+  CHART_THEME.colors.tertiary,
+  CHART_THEME.colors.quaternary,
+  CHART_THEME.colors.quinary,
 ];
 
 export function HorizontalBarChart({
   data,
   maxValue,
   showLegend = false,
+  referenceLine,
 }: HorizontalBarChartProps) {
   if (!data || data.length === 0) {
     return (
@@ -49,14 +54,14 @@ export function HorizontalBarChart({
     new Set(data.flatMap((d) => d.segments.map((s) => s.label)))
   );
 
-  // Build color map from first occurrence, falling back to defaults
+  // Build color map from first occurrence, falling back to theme colors
   const colorMap: Record<string, string> = {};
   let colorIdx = 0;
   for (const item of data) {
     for (const seg of item.segments) {
       if (!colorMap[seg.label]) {
         colorMap[seg.label] =
-          seg.color || DEFAULT_COLORS[colorIdx % DEFAULT_COLORS.length];
+          seg.color || THEME_COLORS[colorIdx % THEME_COLORS.length];
         colorIdx++;
       }
     }
@@ -90,6 +95,11 @@ export function HorizontalBarChart({
         layout="vertical"
         margin={{ top: 4, right: 24, bottom: 4, left: 80 }}
       >
+        <CartesianGrid
+          strokeDasharray={CHART_THEME.grid.strokeDasharray}
+          stroke={CHART_THEME.grid.stroke}
+          horizontal={false}
+        />
         <XAxis
           type="number"
           domain={[0, computedMax]}
@@ -109,8 +119,11 @@ export function HorizontalBarChart({
           cursor={{ fill: "var(--color-muted, #f5f5f5)", opacity: 0.5 }}
           contentStyle={{
             fontSize: 12,
-            borderRadius: 6,
-            border: "1px solid var(--color-border, #e5e5e5)",
+            backgroundColor: CHART_THEME.tooltip.background,
+            color: CHART_THEME.tooltip.text,
+            border: CHART_THEME.tooltip.border,
+            borderRadius: CHART_THEME.tooltip.borderRadius,
+            boxShadow: CHART_THEME.tooltip.boxShadow,
           }}
         />
         {showLegend && (
@@ -121,13 +134,26 @@ export function HorizontalBarChart({
             wrapperStyle={{ fontSize: 12, paddingTop: 8 }}
           />
         )}
+        {referenceLine != null && (
+          <ReferenceLine
+            x={referenceLine}
+            stroke={CHART_THEME.slate.muted}
+            strokeDasharray="4 4"
+            label={{
+              value: String(referenceLine),
+              position: "top",
+              fontSize: 11,
+              fill: CHART_THEME.slate.muted,
+            }}
+          />
+        )}
         {allSegmentLabels.map((segLabel) => (
           <Bar
             key={segLabel}
             dataKey={segLabel}
             stackId="stack"
             fill={colorMap[segLabel]}
-            radius={[0, 0, 0, 0]}
+            radius={CHART_THEME.bar.radius}
             barSize={barHeight}
           />
         ))}

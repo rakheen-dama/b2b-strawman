@@ -442,7 +442,7 @@
 | 388 | Tool Framework + Read Tools (Batch 1: Core Entities) | Backend | 387A | M | 388A, 388B | **Done** (PRs #804, #805) |
 | 389 | Read Tools (Batch 2: Financial + Search) + System Guide | Backend | 388A | M | 389A | **Done** (PR #806) |
 | 390 | Assistant Service + Chat API + Confirmation Flow | Backend | 387, 388, 389 | L | 390A, 390B | **Done** (PRs #807, #808) |
-| 391 | Frontend Chat UI: Provider, Panel, Trigger, SSE Hook | Frontend | 390 | L | 391A, 391B | |
+| 391 | Frontend Chat UI: Provider, Panel, Trigger, SSE Hook | Frontend | 390 | L | 391A, 391B | **Done** (PRs #809, #810) |
 | 392 | Write Tools + Settings Enhancement | Both | 390, 391 | M | 392A, 392B | |
 
 ---

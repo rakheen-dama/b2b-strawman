@@ -37,7 +37,7 @@ The next epic number starts at **387**. ADRs 200--204 are already accepted.
 | 388 | Tool Framework + Read Tools (Batch 1: Core Entities) | Backend | 387A | M | 388A, 388B | **Done** (PRs #804, #805) |
 | 389 | Read Tools (Batch 2: Financial + Search) + System Guide | Backend | 387A | M | 389A | **Done** (PR #806) |
 | 390 | Assistant Service + Chat API + Confirmation Flow | Backend | 387, 388, 389 | L | 390A, 390B | **Done** (PRs #807, #808) |
-| 391 | Frontend Chat UI: Provider, Panel, Trigger, SSE Hook | Frontend | 390 | L | 391A, 391B | |
+| 391 | Frontend Chat UI: Provider, Panel, Trigger, SSE Hook | Frontend | 390 | L | 391A, 391B | **Done** (PRs #809, #810) |
 | 392 | Write Tools + Settings Enhancement | Both | 390, 391 | M | 392A, 392B | |
 
 ---
@@ -166,7 +166,7 @@ WRITE TOOLS + SETTINGS (parallel)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 3a | 391 | 391A | `AssistantProvider` context, `AssistantPanel` (Sheet), `AssistantTrigger` (floating button), `parseSseEvents` utility, `useAssistantChat` hook (SSE connection + state + abort), layout.tsx integration. Frontend tests (~7). Frontend only. | **Done** (PR #809) |
-| 3b | 391 | 391B | Message components: `UserMessage`, `AssistantMessage` (react-markdown), `ToolUseCard`, `ConfirmationCard`, `ToolResultCard`, `ErrorCard`, `TokenUsageBadge`, `EmptyState`. Frontend tests (~8). Frontend only. | |
+| 3b | 391 | 391B | Message components: `UserMessage`, `AssistantMessage` (react-markdown), `ToolUseCard`, `ConfirmationCard`, `ToolResultCard`, `ErrorCard`, `TokenUsageBadge`, `EmptyState`. Frontend tests (~8). Frontend only. | **Done** (PR #810) |
 
 ### Stage 4: Write Tools + Settings (parallel tracks)
 
@@ -399,7 +399,7 @@ WRITE TOOLS + SETTINGS (parallel)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **391A** | 391.1--391.9 | `AssistantProvider` context (open/close, aiEnabled flag), `AssistantPanel` (Sheet-based, 420px, message list, textarea input, send/stop controls), `AssistantTrigger` (fixed bottom-right, teal button, visibility logic), `parseSseEvents` utility, `useAssistantChat` hook (SSE via fetch + ReadableStream, message state, abort control, token tracking), layout.tsx integration. Frontend tests (~7). Frontend only. | **Done** (PR #809) |
-| **391B** | 391.10--391.19 | Message components: `UserMessage` (right-aligned bubble), `AssistantMessage` (left-aligned, react-markdown, streaming cursor), `ToolUseCard` (loading spinner, expand/collapse), `ConfirmationCard` (data preview, Confirm/Cancel buttons), `ToolResultCard` (success/cancelled states), `ErrorCard`, `TokenUsageBadge` (header badge), `EmptyState` (admin vs. member messaging). Frontend tests (~8). Frontend only. | |
+| **391B** | 391.10--391.19 | Message components: `UserMessage` (right-aligned bubble), `AssistantMessage` (left-aligned, react-markdown, streaming cursor), `ToolUseCard` (loading spinner, expand/collapse), `ConfirmationCard` (data preview, Confirm/Cancel buttons), `ToolResultCard` (success/cancelled states), `ErrorCard`, `TokenUsageBadge` (header badge), `EmptyState` (admin vs. member messaging). Frontend tests (~8). Frontend only. | **Done** (PR #810) |
 
 ### Tasks
 

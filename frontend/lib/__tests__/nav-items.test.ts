@@ -13,7 +13,7 @@ describe("NAV_GROUPS", () => {
 
   it("zones are in correct order", () => {
     const ids = NAV_GROUPS.map((g) => g.id);
-    expect(ids).toEqual(["work", "delivery", "clients", "finance", "team"]);
+    expect(ids).toEqual(["work", "projects", "clients", "finance", "team"]);
   });
 
   it("each group has at least one item", () => {
@@ -22,9 +22,9 @@ describe("NAV_GROUPS", () => {
     }
   });
 
-  it("total items across all groups equals 18", () => {
+  it("total items across all groups equals 17", () => {
     const total = NAV_GROUPS.reduce((sum, g) => sum + g.items.length, 0);
-    expect(total).toBe(18);
+    expect(total).toBe(17);
   });
 
   it("clients and finance zones default to collapsed", () => {
@@ -34,12 +34,12 @@ describe("NAV_GROUPS", () => {
     expect(finance?.defaultExpanded).toBe(false);
   });
 
-  it("work, delivery, and team zones default to expanded", () => {
+  it("work, projects, and team zones default to expanded", () => {
     const work = NAV_GROUPS.find((g) => g.id === "work");
-    const delivery = NAV_GROUPS.find((g) => g.id === "delivery");
+    const projects = NAV_GROUPS.find((g) => g.id === "projects");
     const team = NAV_GROUPS.find((g) => g.id === "team");
     expect(work?.defaultExpanded).toBe(true);
-    expect(delivery?.defaultExpanded).toBe(true);
+    expect(projects?.defaultExpanded).toBe(true);
     expect(team?.defaultExpanded).toBe(true);
   });
 
@@ -79,8 +79,8 @@ describe("NAV_ITEMS (backward compat)", () => {
     expect(NAV_ITEMS).toEqual(expected);
   });
 
-  it("total count is 20 (18 group items + 2 utility items)", () => {
-    expect(NAV_ITEMS).toHaveLength(20);
+  it("total count is 19 (17 group items + 2 utility items)", () => {
+    expect(NAV_ITEMS).toHaveLength(19);
   });
 
   it("includes Notifications and Settings from UTILITY_ITEMS", () => {
@@ -117,7 +117,7 @@ describe("SETTINGS_ITEMS", () => {
   it("comingSoon items are flagged correctly", () => {
     const comingSoonItems = SETTINGS_ITEMS.filter((i) => i.comingSoon);
     const titles = comingSoonItems.map((i) => i.title).sort();
-    expect(titles).toEqual(["Organization", "Security"]);
+    expect(titles).toEqual(["Security"]);
   });
 
   it("all non-comingSoon items have valid href functions returning a path", () => {

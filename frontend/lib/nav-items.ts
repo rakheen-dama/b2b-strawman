@@ -90,20 +90,14 @@ export const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-    id: "delivery",
-    label: "Delivery",
+    id: "projects",
+    label: "Projects",
     defaultExpanded: true,
     items: [
       {
         label: "Projects",
         href: (slug) => `/org/${slug}/projects`,
         icon: FolderOpen,
-      },
-      {
-        label: "Documents",
-        href: (slug) => `/org/${slug}/documents`,
-        icon: FileText,
-        exact: true,
       },
       {
         label: "Recurring Schedules",
@@ -123,6 +117,12 @@ export const NAV_GROUPS: NavGroup[] = [
         href: (slug) => `/org/${slug}/customers`,
         icon: UserRound,
         requiredCapability: "CUSTOMER_MANAGEMENT",
+      },
+      {
+        label: "Proposals",
+        href: (slug) => `/org/${slug}/proposals`,
+        icon: FileText,
+        requiredCapability: "INVOICING",
       },
       {
         label: "Retainers",
@@ -158,12 +158,6 @@ export const NAV_GROUPS: NavGroup[] = [
         requiredCapability: "INVOICING",
       },
       {
-        label: "Proposals",
-        href: (slug) => `/org/${slug}/proposals`,
-        icon: FileText,
-        requiredCapability: "INVOICING",
-      },
-      {
         label: "Profitability",
         href: (slug) => `/org/${slug}/profitability`,
         icon: TrendingUp,
@@ -189,7 +183,7 @@ export const NAV_GROUPS: NavGroup[] = [
   },
   {
     id: "team",
-    label: "Team & Resources",
+    label: "Team",
     defaultExpanded: true,
     items: [
       {
@@ -351,8 +345,7 @@ export const SETTINGS_ITEMS: SettingsItem[] = [
   {
     title: "Organization",
     description: "Update org name, logo, and details",
-    href: () => "#",
-    comingSoon: true,
+    href: (slug) => `/org/${slug}/settings/general`,
   },
   {
     title: "Security",

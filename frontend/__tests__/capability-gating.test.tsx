@@ -117,6 +117,10 @@ describe("Sidebar capability gating", () => {
     expect(screen.getByText("Compliance")).toBeInTheDocument();
     expect(screen.getByText("Retainers")).toBeInTheDocument();
     expect(screen.getByText("Recurring Schedules")).toBeInTheDocument();
+    // Documents item removed from sidebar
+    expect(screen.queryByRole("link", { name: "Documents" })).not.toBeInTheDocument();
+    // Proposals moved from Finance to Clients
+    expect(screen.getByText("Proposals")).toBeInTheDocument();
   });
 });
 

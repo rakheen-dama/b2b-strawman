@@ -4,7 +4,8 @@ import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api } from "@/lib/api";
 import { GeneralSettingsForm } from "@/components/settings/general-settings-form";
 import { VerticalProfileSection } from "@/components/settings/vertical-profile-section";
-import type { OrgSettings } from "@/lib/types";
+import { OrgDocumentsSection } from "@/components/settings/org-documents-section";
+import type { Document, OrgSettings } from "@/lib/types";
 
 export default async function GeneralSettingsPage({
   params,
@@ -44,6 +45,13 @@ export default async function GeneralSettingsPage({
     settings = settingsResult;
   }
 
+  let documents: Document[] = [];
+  try {
+    documents = await api.get<Document[]>("/api/documents?scope=ORG");
+  } catch {
+    // silently degrade — documents section renders with empty list
+  }
+
   return (
     <div className="space-y-8">
       <Link
@@ -79,6 +87,12 @@ export default async function GeneralSettingsPage({
         taxRegistrationNumber={settings.taxRegistrationNumber ?? ""}
         taxLabel={settings.taxLabel ?? ""}
         taxInclusive={settings.taxInclusive ?? false}
+      />
+
+      <OrgDocumentsSection
+        slug={slug}
+        documents={documents}
+        isAdmin={caps.isAdmin || caps.isOwner}
       />
     </div>
   );

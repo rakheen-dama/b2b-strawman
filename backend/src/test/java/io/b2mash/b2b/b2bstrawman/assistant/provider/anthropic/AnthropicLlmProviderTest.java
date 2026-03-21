@@ -18,12 +18,14 @@ import org.junit.jupiter.api.Test;
 class AnthropicLlmProviderTest {
 
   private static WireMockServer wireMock;
+  private static String originalTransformerFactory;
   private AnthropicLlmProvider provider;
 
   @BeforeAll
   static void startWireMock() {
     // Force JDK default TransformerFactory to avoid docx4j's impl which doesn't support
     // indent-number (causes WireMock's FormatXmlHelper initialization to fail)
+    originalTransformerFactory = System.getProperty("javax.xml.transform.TransformerFactory");
     System.setProperty(
         "javax.xml.transform.TransformerFactory",
         "com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl");
@@ -34,6 +36,11 @@ class AnthropicLlmProviderTest {
   @AfterAll
   static void stopWireMock() {
     wireMock.stop();
+    if (originalTransformerFactory != null) {
+      System.setProperty("javax.xml.transform.TransformerFactory", originalTransformerFactory);
+    } else {
+      System.clearProperty("javax.xml.transform.TransformerFactory");
+    }
   }
 
   @BeforeEach
@@ -350,6 +357,94 @@ class AnthropicLlmProviderTest {
                         "{\"type\":\"error\",\"error\":{\"type\":\"authentication_error\",\"message\":\"invalid x-api-key\"}}")));
 
     assertThat(provider.validateKey("bad-key", "claude-sonnet-4-6")).isFalse();
+  }
+
+  // --- Test 8: Error on 5xx server error ---
+
+  @Test
+  void chat_emitsError_on500Response() {
+    wireMock.stubFor(
+        post(urlEqualTo("/v1/messages"))
+            .willReturn(
+                aResponse()
+                    .withStatus(500)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(
+                        "{\"type\":\"error\",\"error\":{\"type\":\"api_error\",\"message\":\"Internal server error\"}}")));
+
+    List<StreamEvent> events = new ArrayList<>();
+    provider.chat(simpleChatRequest(), events::add);
+
+    assertThat(events).hasSize(1);
+    assertThat(events.getFirst()).isInstanceOf(StreamEvent.Error.class);
+    assertThat(((StreamEvent.Error) events.getFirst()).message()).contains("Provider unavailable");
+  }
+
+  // --- Test 9: SSE-level error event mid-stream ---
+
+  @Test
+  void chat_emitsError_onSseLevelErrorEvent() {
+    wireMock.stubFor(
+        post(urlEqualTo("/v1/messages"))
+            .willReturn(
+                aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "text/event-stream")
+                    .withBody(
+                        buildSseBody(
+                            """
+                            event: message_start
+                            data: {"type":"message_start","message":{"usage":{"input_tokens":10,"output_tokens":0}}}
+
+                            event: content_block_start
+                            data: {"type":"content_block_start","index":0,"content_block":{"type":"text","text":""}}
+
+                            event: content_block_delta
+                            data: {"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"Hello"}}
+
+                            event: error
+                            data: {"type":"error","error":{"type":"overloaded_error","message":"Overloaded"}}
+
+                            """))));
+
+    List<StreamEvent> events = new ArrayList<>();
+    provider.chat(simpleChatRequest(), events::add);
+
+    assertThat(events)
+        .anySatisfy(
+            e ->
+                assertThat(e)
+                    .isInstanceOf(StreamEvent.TextDelta.class)
+                    .extracting("text")
+                    .isEqualTo("Hello"));
+    assertThat(events)
+        .anySatisfy(
+            e -> {
+              assertThat(e).isInstanceOf(StreamEvent.Error.class);
+              assertThat(((StreamEvent.Error) e).message()).isEqualTo("Overloaded");
+            });
+  }
+
+  // --- Test 10: Error on other 4xx (e.g. 400 Bad Request) ---
+
+  @Test
+  void chat_emitsError_on400Response() {
+    wireMock.stubFor(
+        post(urlEqualTo("/v1/messages"))
+            .willReturn(
+                aResponse()
+                    .withStatus(400)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(
+                        "{\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"max_tokens: must be positive\"}}")));
+
+    List<StreamEvent> events = new ArrayList<>();
+    provider.chat(simpleChatRequest(), events::add);
+
+    assertThat(events).hasSize(1);
+    assertThat(events.getFirst()).isInstanceOf(StreamEvent.Error.class);
+    assertThat(((StreamEvent.Error) events.getFirst()).message()).contains("Request error");
+    assertThat(((StreamEvent.Error) events.getFirst()).message()).contains("400");
   }
 
   /** WireMock expects \n line endings in SSE body. */

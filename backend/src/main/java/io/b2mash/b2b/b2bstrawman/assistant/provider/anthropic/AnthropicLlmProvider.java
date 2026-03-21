@@ -10,8 +10,7 @@ import io.b2mash.b2b.b2bstrawman.assistant.provider.ModelInfo;
 import io.b2mash.b2b.b2bstrawman.assistant.provider.StreamEvent;
 import io.b2mash.b2b.b2bstrawman.assistant.provider.ToolDefinition;
 import io.b2mash.b2b.b2bstrawman.assistant.provider.ToolResult;
-import io.b2mash.b2b.b2bstrawman.integration.IntegrationAdapter;
-import io.b2mash.b2b.b2bstrawman.integration.IntegrationDomain;
+import jakarta.annotation.PreDestroy;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,6 +20,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -31,12 +31,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
-@IntegrationAdapter(domain = IntegrationDomain.AI, slug = "anthropic")
 public class AnthropicLlmProvider implements LlmChatProvider {
 
   private static final Logger log = LoggerFactory.getLogger(AnthropicLlmProvider.class);
   private static final String API_VERSION = "2023-06-01";
   private static final String DEFAULT_BASE_URL = "https://api.anthropic.com";
+  private static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(10);
+  private static final Duration CHAT_REQUEST_TIMEOUT = Duration.ofSeconds(120);
+  private static final Duration VALIDATE_REQUEST_TIMEOUT = Duration.ofSeconds(10);
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
   private final HttpClient httpClient;
@@ -48,8 +50,17 @@ public class AnthropicLlmProvider implements LlmChatProvider {
 
   /** Package-private constructor for testing with a custom base URL (e.g. WireMock). */
   AnthropicLlmProvider(String baseUrl) {
-    this.httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
+    this.httpClient =
+        HttpClient.newBuilder()
+            .version(HttpClient.Version.HTTP_1_1)
+            .connectTimeout(CONNECT_TIMEOUT)
+            .build();
     this.baseUrl = baseUrl;
+  }
+
+  @PreDestroy
+  void close() {
+    httpClient.close();
   }
 
   @Override
@@ -78,32 +89,41 @@ public class AnthropicLlmProvider implements LlmChatProvider {
               .header("anthropic-version", API_VERSION)
               .header("content-type", "application/json")
               .header("accept", "text/event-stream")
+              .timeout(CHAT_REQUEST_TIMEOUT)
               .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
               .build();
 
       var response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofInputStream());
 
-      int status = response.statusCode();
-      if (status == 401 || status == 403) {
-        log.warn("AnthropicLlmProvider: authentication error (HTTP {})", status);
-        eventConsumer.accept(
-            new StreamEvent.Error(
-                "Invalid API key. Please check your Anthropic API key in Settings."));
-        return;
-      }
-      if (status == 429) {
-        log.warn("AnthropicLlmProvider: rate limit exceeded (HTTP 429)");
-        eventConsumer.accept(
-            new StreamEvent.Error("Rate limit exceeded. Please wait a moment and try again."));
-        return;
-      }
-      if (status >= 500) {
-        log.warn("AnthropicLlmProvider: server error (HTTP {})", status);
-        eventConsumer.accept(new StreamEvent.Error("Provider unavailable. Please try again."));
-        return;
-      }
+      try (var responseBody = response.body()) {
+        int status = response.statusCode();
+        if (status == 401 || status == 403) {
+          log.warn("AnthropicLlmProvider: authentication error (HTTP {})", status);
+          eventConsumer.accept(
+              new StreamEvent.Error(
+                  "Invalid API key. Please check your Anthropic API key in Settings."));
+          return;
+        }
+        if (status == 429) {
+          log.warn("AnthropicLlmProvider: rate limit exceeded (HTTP 429)");
+          eventConsumer.accept(
+              new StreamEvent.Error("Rate limit exceeded. Please wait a moment and try again."));
+          return;
+        }
+        if (status >= 500) {
+          log.warn("AnthropicLlmProvider: server error (HTTP {})", status);
+          eventConsumer.accept(new StreamEvent.Error("Provider unavailable. Please try again."));
+          return;
+        }
+        if (status >= 400) {
+          log.warn("AnthropicLlmProvider: client error (HTTP {})", status);
+          eventConsumer.accept(
+              new StreamEvent.Error("Request error (HTTP " + status + "). Please try again."));
+          return;
+        }
 
-      parseSseStream(response.body(), eventConsumer);
+        parseSseStream(responseBody, eventConsumer);
+      }
 
     } catch (Exception e) {
       log.warn("AnthropicLlmProvider: unexpected error during chat", e);
@@ -129,6 +149,7 @@ public class AnthropicLlmProvider implements LlmChatProvider {
               .header("x-api-key", apiKey)
               .header("anthropic-version", API_VERSION)
               .header("content-type", "application/json")
+              .timeout(VALIDATE_REQUEST_TIMEOUT)
               .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
               .build();
 

@@ -68,7 +68,7 @@ export function MyWorkTasksClient({
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4" data-testid="tasks-panel">
       {/* View Selector */}
       <Suspense fallback={null}>
         <ViewSelectorClient

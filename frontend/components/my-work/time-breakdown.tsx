@@ -1,16 +1,7 @@
 "use client";
 
 import { Card } from "@/components/ui/card";
-import dynamic from "next/dynamic";
-import { Skeleton } from "@/components/ui/skeleton";
-
-const HorizontalBarChart = dynamic(
-  () =>
-    import("@/components/dashboard/horizontal-bar-chart").then(
-      (mod) => mod.HorizontalBarChart,
-    ),
-  { loading: () => <Skeleton className="h-48 w-full" />, ssr: false },
-);
+import { DonutChart } from "@/components/dashboard/donut-chart";
 import type { PersonalProjectBreakdown } from "@/lib/dashboard-types";
 
 const PROJECT_COLORS = [
@@ -29,7 +20,7 @@ interface TimeBreakdownProps {
 export function TimeBreakdown({ data }: TimeBreakdownProps) {
   if (!data) {
     return (
-      <Card>
+      <Card data-testid="time-activity-panel">
         <div className="px-4 py-3">
           <h3 className="font-semibold text-slate-900 dark:text-slate-100">
             Time Breakdown
@@ -44,7 +35,7 @@ export function TimeBreakdown({ data }: TimeBreakdownProps) {
 
   if (data.length === 0) {
     return (
-      <Card>
+      <Card data-testid="time-activity-panel">
         <div className="px-4 py-3">
           <h3 className="font-semibold text-slate-900 dark:text-slate-100">
             Time Breakdown
@@ -57,12 +48,12 @@ export function TimeBreakdown({ data }: TimeBreakdownProps) {
     );
   }
 
-  // Take top 5 projects and aggregate the rest as "Other"
+  // Take top 4 projects and aggregate the rest as "Other"
   const sorted = [...data].sort((a, b) => b.hours - a.hours);
-  const top5 = sorted.slice(0, 5);
-  const rest = sorted.slice(5);
+  const top4 = sorted.slice(0, 4);
+  const rest = sorted.slice(4);
 
-  const items = [...top5];
+  const items = [...top4];
 
   if (rest.length > 0) {
     const otherHours = rest.reduce((sum, p) => sum + p.hours, 0);
@@ -75,26 +66,28 @@ export function TimeBreakdown({ data }: TimeBreakdownProps) {
     });
   }
 
-  // Transform to HorizontalBarChart data format (single-segment bars)
+  // Transform to DonutChart data format
   const chartData = items.map((item, idx) => ({
-    label: item.projectName,
-    segments: [
-      {
-        label: "Hours",
-        value: item.hours,
-        color: PROJECT_COLORS[idx % PROJECT_COLORS.length],
-      },
-    ],
+    name: item.projectName,
+    value: item.hours,
+    color: PROJECT_COLORS[idx % PROJECT_COLORS.length],
   }));
 
+  const totalHours = items.reduce((sum, p) => sum + p.hours, 0);
+
   return (
-    <Card>
+    <Card data-testid="time-activity-panel">
       <div className="px-4 py-3">
         <h3 className="font-semibold text-slate-900 dark:text-slate-100">
           Time Breakdown
         </h3>
         <div className="mt-2">
-          <HorizontalBarChart data={chartData} />
+          <DonutChart
+            data={chartData}
+            centerValue={`${totalHours.toFixed(1)}h`}
+            centerLabel="total"
+            height={180}
+          />
         </div>
         <div className="mt-2 space-y-1">
           {items.map((item, idx) => (

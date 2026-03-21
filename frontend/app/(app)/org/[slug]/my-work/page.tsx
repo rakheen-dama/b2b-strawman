@@ -24,9 +24,9 @@ import type {
 import { WeeklyTimeSummary } from "@/components/my-work/weekly-time-summary";
 import { TodayTimeEntries } from "@/components/my-work/today-time-entries";
 import { MyExpenses } from "@/components/my-work/my-expenses";
-import { PersonalKpis } from "@/components/my-work/personal-kpis";
 import { TimeBreakdown } from "@/components/my-work/time-breakdown";
-import { UpcomingDeadlines } from "@/components/my-work/upcoming-deadlines";
+import { TodaysAgenda } from "@/components/dashboard/todays-agenda";
+import { WeeklyRhythmStripClient } from "./weekly-rhythm-strip-client";
 import { MyWorkHeader } from "./my-work-header";
 import { MyWorkTasksClient } from "./my-work-tasks-client";
 import { createMyWorkViewAction } from "./view-actions";
@@ -57,7 +57,7 @@ function resolveMyWorkDateRange(searchParams: {
   const monday = new Date(
     now.getFullYear(),
     now.getMonth(),
-    now.getDate() + diffToMonday
+    now.getDate() + diffToMonday,
   );
   const sunday = new Date(monday);
   sunday.setDate(monday.getDate() + 6);
@@ -108,7 +108,7 @@ export default async function MyWorkPage({
   let timeSummary: MyWorkTimeSummary | null = null;
   try {
     timeSummary = await api.get<MyWorkTimeSummary>(
-      `/api/my-work/time-summary?from=${from}&to=${to}`
+      `/api/my-work/time-summary?from=${from}&to=${to}`,
     );
   } catch {
     // Non-fatal: show empty time summary
@@ -119,10 +119,20 @@ export default async function MyWorkPage({
   let todayEntries: MyWorkTimeEntryItem[] = [];
   try {
     todayEntries = await api.get<MyWorkTimeEntryItem[]>(
-      `/api/my-work/time-entries?from=${today}&to=${today}`
+      `/api/my-work/time-entries?from=${today}&to=${today}`,
     );
   } catch {
     // Non-fatal: show empty today entries
+  }
+
+  // Fetch week entries for the rhythm strip
+  let weekEntries: MyWorkTimeEntryItem[] = [];
+  try {
+    weekEntries = await api.get<MyWorkTimeEntryItem[]>(
+      `/api/my-work/time-entries?from=${from}&to=${to}`,
+    );
+  } catch {
+    // Non-fatal
   }
 
   // Fetch user's recent expenses
@@ -146,7 +156,11 @@ export default async function MyWorkPage({
       const match = orgMembers.find((m) => m.email === email);
       if (match) currentMemberId = match.id;
     }
-    members = orgMembers.map((m) => ({ id: m.id, name: m.name, email: m.email }));
+    members = orgMembers.map((m) => ({
+      id: m.id,
+      name: m.name,
+      email: m.email,
+    }));
   } catch (e) {
     console.error("Failed to resolve current member:", e);
   }
@@ -201,14 +215,12 @@ export default async function MyWorkPage({
     return createMyWorkViewAction(slug, req);
   }
 
-  // Determine period label from date range for KPIs
-  const periodLabel = resolvedSearchParams.from ? undefined : "This Week";
-
   const { t } = createMessages("empty-states");
-  const hasNoTasks = tasksData.assigned.length === 0 && tasksData.unassigned.length === 0;
+  const hasNoTasks =
+    tasksData.assigned.length === 0 && tasksData.unassigned.length === 0;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       {/* Page Header with Date Range Selector */}
       <div className="flex items-center justify-between">
         <MyWorkHeader from={from} to={to} />
@@ -220,23 +232,21 @@ export default async function MyWorkPage({
         </Link>
       </div>
 
-      {/* Personal KPI Cards */}
-      <PersonalKpis data={personalDashboard} periodLabel={periodLabel} />
+      {/* Hero: Today's Agenda */}
+      <TodaysAgenda
+        tasks={tasksData.assigned}
+        todayEntries={todayEntries}
+        upcomingDeadlines={personalDashboard?.upcomingDeadlines ?? []}
+        weeklyCapacityHours={40}
+      />
 
-      {/* Dashboard Widgets: Time Breakdown + Upcoming Deadlines */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <TimeBreakdown
-          data={personalDashboard?.projectBreakdown ?? null}
-        />
-        <UpcomingDeadlines
-          deadlines={personalDashboard?.upcomingDeadlines ?? null}
-        />
-      </div>
+      {/* Weekly Rhythm Strip */}
+      <WeeklyRhythmStripClient weekEntries={weekEntries} from={from} />
 
-      {/* Two-column layout: tasks left, time summary right */}
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-        {/* Tasks Column (wider) */}
-        <div className="space-y-8 lg:col-span-2">
+      {/* Two-column work panels */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
+        {/* Left: Tasks (col-span-3) */}
+        <div className="lg:col-span-3">
           {hasNoTasks ? (
             <EmptyState
               icon={ClipboardList}
@@ -265,15 +275,25 @@ export default async function MyWorkPage({
           )}
         </div>
 
-        {/* Time Summary Column */}
-        <div className="space-y-6">
-          <WeeklyTimeSummary
-            initialSummary={timeSummary}
-            initialFrom={from}
+        {/* Right: Time/Activity (col-span-2) */}
+        <div className="space-y-4 lg:col-span-2">
+          <TimeBreakdown
+            data={personalDashboard?.projectBreakdown ?? null}
           />
           <TodayTimeEntries entries={todayEntries} />
-          <MyExpenses expenses={myExpenses} />
         </div>
+      </div>
+
+      {/* Extended widgets */}
+      <div
+        data-testid="extended-widgets"
+        className="grid grid-cols-1 gap-4 md:grid-cols-2"
+      >
+        <WeeklyTimeSummary
+          initialSummary={timeSummary}
+          initialFrom={from}
+        />
+        <MyExpenses expenses={myExpenses} />
       </div>
     </div>
   );

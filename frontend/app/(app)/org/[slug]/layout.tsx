@@ -15,6 +15,9 @@ import { TerminologyProvider } from "@/lib/terminology";
 import { OrgProfileProvider } from "@/lib/org-profile";
 import { CommandPaletteProvider } from "@/components/command-palette-provider";
 import { RecentItemsProvider } from "@/components/recent-items-provider";
+import { AssistantProvider } from "@/components/assistant/assistant-provider";
+import { AssistantPanel } from "@/components/assistant/assistant-panel";
+import { AssistantTrigger } from "@/components/assistant/assistant-trigger";
 
 export default async function OrgLayout({
   children,
@@ -70,6 +73,12 @@ export default async function OrgLayout({
     console.error("Failed to fetch org settings for terminology:", settingsResult.reason);
   }
 
+  // TODO: Add PRO tier gate when tier info is available in frontend context
+  // Backend already enforces tier-based access control — this is defense-in-depth
+  const aiEnabled =
+    settingsResult.status === "fulfilled" &&
+    settingsResult.value.aiEnabled === true;
+
   return (
     <CapabilityProvider
       capabilities={capData.capabilities}
@@ -85,6 +94,7 @@ export default async function OrgLayout({
       <TerminologyProvider verticalProfile={verticalProfile}>
       <RecentItemsProvider>
         <CommandPaletteProvider slug={slug}>
+        <AssistantProvider aiEnabled={aiEnabled}>
         <div className="flex min-h-screen">
           <DesktopSidebar slug={slug} groups={groups} />
           <div className="flex flex-1 flex-col">
@@ -106,6 +116,9 @@ export default async function OrgLayout({
             </main>
           </div>
         </div>
+        <AssistantPanel />
+        <AssistantTrigger />
+        </AssistantProvider>
         </CommandPaletteProvider>
       </RecentItemsProvider>
       </TerminologyProvider>

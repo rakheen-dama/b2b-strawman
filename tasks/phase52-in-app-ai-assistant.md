@@ -38,7 +38,7 @@ The next epic number starts at **387**. ADRs 200--204 are already accepted.
 | 389 | Read Tools (Batch 2: Financial + Search) + System Guide | Backend | 387A | M | 389A | **Done** (PR #806) |
 | 390 | Assistant Service + Chat API + Confirmation Flow | Backend | 387, 388, 389 | L | 390A, 390B | **Done** (PRs #807, #808) |
 | 391 | Frontend Chat UI: Provider, Panel, Trigger, SSE Hook | Frontend | 390 | L | 391A, 391B | **Done** (PRs #809, #810) |
-| 392 | Write Tools + Settings Enhancement | Both | 390, 391 | M | 392A, 392B | |
+| 392 | Write Tools + Settings Enhancement | Both | 390, 391 | M | 392A, 392B | **Done** (PRs #811, #812) |
 
 ---
 
@@ -173,7 +173,7 @@ WRITE TOOLS + SETTINGS (parallel)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 4a (parallel) | 392 | 392A | 8 write tools: `CreateProjectTool`, `UpdateProjectTool`, `CreateCustomerTool`, `UpdateCustomerTool`, `CreateTaskTool`, `UpdateTaskTool`, `LogTimeEntryTool`, `CreateInvoiceDraftTool`. Integration tests (~8). Backend only. | **Done** (PR #811) |
-| 4b (parallel) | 392 | 392B | AI `IntegrationCard` enhancement: model selector dropdown (from `GET /ai/models`), PRO badge, STARTER upgrade prompt, `fetchAiModels` server action, `ModelInfo` type. Frontend tests (~4). Frontend only. | |
+| 4b (parallel) | 392 | 392B | AI `IntegrationCard` enhancement: model selector dropdown (from `GET /ai/models`), PRO badge, STARTER upgrade prompt, `fetchAiModels` server action, `ModelInfo` type. Frontend tests (~4). Frontend only. | **Done** (PR #812) |
 
 ---
 
@@ -457,7 +457,7 @@ WRITE TOOLS + SETTINGS (parallel)
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **392A** | 392.1--392.10 | 8 write tool `@Component` implementations: `CreateProjectTool`, `UpdateProjectTool`, `CreateCustomerTool`, `UpdateCustomerTool`, `CreateTaskTool`, `UpdateTaskTool`, `LogTimeEntryTool`, `CreateInvoiceDraftTool`. All return `requiresConfirmation() = true`. Integration tests (~8). Backend only. | **Done** (PR #811) |
-| **392B** | 392.11--392.16 | AI `IntegrationCard` enhancement: model selector dropdown populated from `GET /api/settings/integrations/ai/models`, PRO badge on AI card, STARTER tier upgrade prompt, `fetchAiModels` server action, `getAiModels()` API client, `ModelInfo` TypeScript type. Frontend tests (~4). Frontend only. | |
+| **392B** | 392.11--392.16 | AI `IntegrationCard` enhancement: model selector dropdown populated from `GET /api/settings/integrations/ai/models`, PRO badge on AI card, STARTER tier upgrade prompt, `fetchAiModels` server action, `getAiModels()` API client, `ModelInfo` TypeScript type. Frontend tests (~4). Frontend only. | **Done** (PR #812) |
 
 ### Tasks
 

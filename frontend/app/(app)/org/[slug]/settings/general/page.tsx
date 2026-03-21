@@ -14,8 +14,16 @@ export default async function GeneralSettingsPage({
 }) {
   const { slug } = await params;
   const caps = await fetchMyCapabilities();
+  const isAdmin = caps.isAdmin || caps.isOwner;
 
-  if (!caps.isAdmin && !caps.isOwner) {
+  let documents: Document[] = [];
+  try {
+    documents = await api.get<Document[]>("/api/documents?scope=ORG");
+  } catch {
+    // silently degrade — documents section renders with empty list
+  }
+
+  if (!isAdmin) {
     return (
       <div className="space-y-8">
         <Link
@@ -28,10 +36,12 @@ export default async function GeneralSettingsPage({
         <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
           General
         </h1>
-        <p className="text-slate-600 dark:text-slate-400">
-          You do not have permission to manage general settings. Only admins and
-          owners can access this page.
-        </p>
+
+        <OrgDocumentsSection
+          slug={slug}
+          documents={documents}
+          isAdmin={false}
+        />
       </div>
     );
   }
@@ -43,13 +53,6 @@ export default async function GeneralSettingsPage({
     .catch(() => null);
   if (settingsResult) {
     settings = settingsResult;
-  }
-
-  let documents: Document[] = [];
-  try {
-    documents = await api.get<Document[]>("/api/documents?scope=ORG");
-  } catch {
-    // silently degrade — documents section renders with empty list
   }
 
   return (
@@ -92,7 +95,7 @@ export default async function GeneralSettingsPage({
       <OrgDocumentsSection
         slug={slug}
         documents={documents}
-        isAdmin={caps.isAdmin || caps.isOwner}
+        isAdmin={true}
       />
     </div>
   );

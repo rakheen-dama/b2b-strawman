@@ -1,5 +1,3 @@
-"use client";
-
 import type { Document, DocumentScope, DocumentStatus } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { OrgDocumentUpload } from "@/components/documents/org-document-upload";

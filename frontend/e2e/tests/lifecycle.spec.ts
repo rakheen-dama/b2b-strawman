@@ -260,9 +260,9 @@ test.describe.serial('Day 90 — Quarter Review', () => {
     await expect(page.locator('main')).toBeVisible()
   })
 
-  test('Documents page loads', async ({ page }) => {
+  test('Org documents section loads on settings page', async ({ page }) => {
     await loginAs(page, 'alice')
-    await page.goto(`${BASE}/documents`)
-    await expect(page.locator('main')).toBeVisible()
+    await page.goto(`${BASE}/settings/general`)
+    await expect(page.locator('[data-testid="org-documents-section"]')).toBeVisible()
   })
 })

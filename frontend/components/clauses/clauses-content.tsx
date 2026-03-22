@@ -222,6 +222,7 @@ export function ClausesContent({
                 type="button"
                 onClick={() => toggleCategory(category)}
                 className="flex w-full items-center gap-2 text-left"
+                data-testid="clause-category"
               >
                 {isExpanded ? (
                   <ChevronDown className="size-4 text-slate-500" />
@@ -350,7 +351,10 @@ function ClauseCard({
 
   return (
     <>
-      <div className="rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
+      <div
+        className="rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950"
+        data-testid="clause-row"
+      >
         {/* Card header */}
         <div className="flex items-center justify-between p-4">
           <div className="flex min-w-0 flex-1 items-start gap-3">
@@ -384,7 +388,10 @@ function ClauseCard({
                   </Badge>
                 )}
                 {clause.templateUsageCount != null && (
-                  <span className="inline-flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
+                  <span
+                    className="inline-flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400"
+                    data-testid="template-clause-association"
+                  >
                     <FileText className="size-3" />
                     Used in {clause.templateUsageCount}{" "}
                     {clause.templateUsageCount === 1

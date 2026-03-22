@@ -192,6 +192,7 @@ export function EditRequestTemplateForm({
               {sortedItems.map((item, index) => (
                 <div
                   key={item.id}
+                  data-testid="request-item-row"
                   className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950"
                 >
                   <div className="flex items-center gap-3">
@@ -209,6 +210,15 @@ export function EditRequestTemplateForm({
                       )}
                     </div>
                     <ResponseTypeBadge responseType={item.responseType} />
+                    <input
+                      type="checkbox"
+                      checked={item.required}
+                      readOnly
+                      data-testid="request-item-required"
+                      className="sr-only"
+                      aria-hidden="true"
+                      tabIndex={-1}
+                    />
                     {item.required && (
                       <span className="text-xs font-medium text-red-600 dark:text-red-400">
                         Required
@@ -291,6 +301,7 @@ export function EditRequestTemplateForm({
           {items.map((item, index) => (
             <div
               key={item.key}
+              data-testid="request-item-row"
               className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950"
             >
               <div className="flex items-start gap-3">
@@ -381,6 +392,7 @@ export function EditRequestTemplateForm({
                           })
                         }
                         className="size-3.5 rounded border-slate-300 text-teal-600 focus:ring-teal-500"
+                        data-testid="request-item-required"
                       />
                       Required
                     </label>

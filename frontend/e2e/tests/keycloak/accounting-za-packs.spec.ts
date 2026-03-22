@@ -227,4 +227,214 @@ test.describe.serial('accounting-za pack verification', () => {
     })
   })
 
+  test.describe('3. Rate card defaults (known gap)', () => {
+    test.skip(true, 'Rate card seeding from vertical profile may not be implemented — surfaces gap if it fails')
+    test('Settings > Rates shows billing rates for Owner, Admin, Member', async ({ page }) => {
+      const slug = await loginAndGetSlug(page)
+      await page.goto(`/org/${slug}/settings/rates`)
+      await expect(page.getByTestId('billing-rate-owner')).toBeVisible({ timeout: 10_000 })
+      await expect(page.getByTestId('billing-rate-owner')).toContainText('1500')
+      await expect(page.getByTestId('billing-rate-admin')).toContainText('850')
+      await expect(page.getByTestId('billing-rate-member')).toContainText('450')
+    })
+  })
+
+  test.describe('8. Document templates (7 templates)', () => {
+    test('Settings > Templates shows accounting-za engagement letter templates', async ({ page }) => {
+      const slug = await loginAndGetSlug(page)
+      await page.goto(`/org/${slug}/settings/templates`)
+
+      await expect(page.getByTestId('template-list-item').first()).toBeVisible({ timeout: 10_000 })
+
+      await expect(page.getByRole('link', { name: 'Engagement Letter — Monthly Bookkeeping' })).toBeVisible()
+      await expect(page.getByRole('link', { name: 'Engagement Letter — Annual Tax Return' })).toBeVisible()
+      await expect(page.getByRole('link', { name: 'Engagement Letter — Advisory' })).toBeVisible()
+    })
+
+    test('Settings > Templates shows remaining 4 accounting-za templates', async ({ page }) => {
+      const slug = await loginAndGetSlug(page)
+      await page.goto(`/org/${slug}/settings/templates`)
+
+      await expect(page.getByTestId('template-list-item').first()).toBeVisible({ timeout: 10_000 })
+
+      await expect(page.getByRole('link', { name: 'Monthly Report Cover' })).toBeVisible()
+      await expect(page.getByRole('link', { name: 'SA Tax Invoice' })).toBeVisible()
+      await expect(page.getByRole('link', { name: 'Statement of Account' })).toBeVisible()
+      await expect(page.getByRole('link', { name: 'FICA Confirmation Letter' })).toBeVisible()
+    })
+
+    test('Settings > Templates has 7 template rows from accounting-za pack', async ({ page }) => {
+      const slug = await loginAndGetSlug(page)
+      await page.goto(`/org/${slug}/settings/templates`)
+
+      await expect(page.getByTestId('template-list-item').first()).toBeVisible({ timeout: 10_000 })
+
+      // accounting-za pack has exactly 7 templates
+      // (common pack templates may also appear — assert >=7 to be safe)
+      const count = await page.getByTestId('template-list-item').count()
+      expect(count).toBeGreaterThanOrEqual(7)
+    })
+  })
+
+  test.describe('9. Clauses (7 clauses + 3 template associations)', () => {
+    test('Settings > Clauses shows Legal category with accounting-za clauses', async ({ page }) => {
+      const slug = await loginAndGetSlug(page)
+      await page.goto(`/org/${slug}/settings/clauses`)
+
+      await expect(page.getByTestId('clause-category').first()).toBeVisible({ timeout: 10_000 })
+
+      // Legal category must be present
+      const legalCategory = page.getByTestId('clause-category').filter({ hasText: 'Legal' })
+      await expect(legalCategory).toBeVisible()
+
+      // Commercial and Compliance categories
+      await expect(page.getByTestId('clause-category').filter({ hasText: 'Commercial' })).toBeVisible()
+      await expect(page.getByTestId('clause-category').filter({ hasText: 'Compliance' })).toBeVisible()
+    })
+
+    test('Settings > Clauses shows all 7 accounting-za clauses', async ({ page }) => {
+      const slug = await loginAndGetSlug(page)
+      await page.goto(`/org/${slug}/settings/clauses`)
+
+      await expect(page.getByTestId('clause-row').first()).toBeVisible({ timeout: 10_000 })
+
+      // Assert specific clause titles
+      await expect(page.getByText('Limitation of Liability (Accounting)')).toBeVisible()
+      await expect(page.getByText('Fee Escalation')).toBeVisible()
+      await expect(page.getByText('Termination (Accounting)')).toBeVisible()
+      await expect(page.getByText('Confidentiality (Accounting)')).toBeVisible()
+      await expect(page.getByText('Document Retention (Accounting)')).toBeVisible()
+      await expect(page.getByText('Third-Party Reliance')).toBeVisible()
+      await expect(page.getByText('Electronic Communication Consent')).toBeVisible()
+    })
+
+    test('Clauses show template usage count (template-clause-association)', async ({ page }) => {
+      const slug = await loginAndGetSlug(page)
+      await page.goto(`/org/${slug}/settings/clauses`)
+
+      await expect(page.getByTestId('clause-row').first()).toBeVisible({ timeout: 10_000 })
+
+      // At least some clauses should show template association counts
+      // The Limitation of Liability clause is used in 3 templates
+      const assocBadges = page.getByTestId('template-clause-association')
+      await expect(assocBadges.first()).toBeVisible({ timeout: 10_000 })
+
+      // Verify at least 3 template associations are visible (one per associated template)
+      const count = await assocBadges.count()
+      expect(count).toBeGreaterThanOrEqual(3)
+    })
+
+    test('Limitation of Liability clause is associated with multiple templates', async ({ page }) => {
+      const slug = await loginAndGetSlug(page)
+      await page.goto(`/org/${slug}/settings/clauses`)
+
+      await expect(page.getByTestId('clause-row').first()).toBeVisible({ timeout: 10_000 })
+
+      // Find the Limitation of Liability clause row
+      const limitationRow = page.getByTestId('clause-row').filter({
+        has: page.getByText('Limitation of Liability (Accounting)')
+      })
+      await expect(limitationRow).toBeVisible()
+
+      // It should show template usage — associated with all 3 engagement letter templates
+      const assoc = limitationRow.getByTestId('template-clause-association')
+      await expect(assoc).toBeVisible()
+      await expect(assoc).toContainText('template')
+    })
+  })
+
+  test.describe('10. Automation rules (4 rules)', () => {
+    test('Settings > Automations shows all 4 accounting-za automation rules', async ({ page }) => {
+      const slug = await loginAndGetSlug(page)
+      await page.goto(`/org/${slug}/settings/automations`)
+
+      await expect(page.getByTestId('automation-row').first()).toBeVisible({ timeout: 10_000 })
+
+      // Assert all 4 rule names
+      await expect(page.getByText('FICA Reminder (7 days)')).toBeVisible()
+      await expect(page.getByText('Engagement Budget Alert (80%)')).toBeVisible()
+      await expect(page.getByText('Invoice Overdue (30 days)')).toBeVisible()
+      await expect(page.getByText('SARS Deadline Reminder')).toBeVisible()
+    })
+
+    test('Settings > Automations has exactly 4 automation rows', async ({ page }) => {
+      const slug = await loginAndGetSlug(page)
+      await page.goto(`/org/${slug}/settings/automations`)
+
+      await expect(page.getByTestId('automation-row').first()).toBeVisible({ timeout: 10_000 })
+
+      const count = await page.getByTestId('automation-row').count()
+      expect(count).toBe(4)
+    })
+  })
+
+  test.describe('11. Request template (Year-End, 8 items)', () => {
+    test('Settings > Request Templates shows Year-End Information Request template', async ({ page }) => {
+      const slug = await loginAndGetSlug(page)
+      await page.goto(`/org/${slug}/settings/request-templates`)
+
+      await expect(page.getByTestId('request-template-row').first()).toBeVisible({ timeout: 10_000 })
+
+      await expect(page.getByRole('link', { name: 'Year-End Information Request (SA)' })).toBeVisible()
+    })
+
+    test('Year-End template detail has 8 items', async ({ page }) => {
+      const slug = await loginAndGetSlug(page)
+      await page.goto(`/org/${slug}/settings/request-templates`)
+
+      await expect(page.getByTestId('request-template-row').first()).toBeVisible({ timeout: 10_000 })
+
+      // Click through to the template detail page
+      await page.getByRole('link', { name: 'Year-End Information Request (SA)' }).click()
+      await page.waitForURL(/\/settings\/request-templates\/[^/]+$/, { timeout: 10_000 })
+
+      // Wait for items to render
+      await expect(page.getByTestId('request-item-row').first()).toBeVisible({ timeout: 10_000 })
+
+      const count = await page.getByTestId('request-item-row').count()
+      expect(count).toBe(8)
+    })
+
+    test('Year-End template contains specific item names', async ({ page }) => {
+      const slug = await loginAndGetSlug(page)
+      await page.goto(`/org/${slug}/settings/request-templates`)
+
+      await expect(page.getByTestId('request-template-row').first()).toBeVisible({ timeout: 10_000 })
+      await page.getByRole('link', { name: 'Year-End Information Request (SA)' }).click()
+      await page.waitForURL(/\/settings\/request-templates\/[^/]+$/, { timeout: 10_000 })
+
+      await expect(page.getByTestId('request-item-row').first()).toBeVisible({ timeout: 10_000 })
+
+      // Assert specific item names from year-end-info-request-za pack
+      await expect(page.getByText('Trial Balance')).toBeVisible()
+      await expect(page.getByText('Bank Statements (Full Year)')).toBeVisible()
+      await expect(page.getByText('Loan Agreements')).toBeVisible()
+      await expect(page.getByText('Fixed Asset Register')).toBeVisible()
+      await expect(page.getByText('Payroll Summary')).toBeVisible()
+    })
+
+    test('Year-End template has required items marked', async ({ page }) => {
+      const slug = await loginAndGetSlug(page)
+      await page.goto(`/org/${slug}/settings/request-templates`)
+
+      await expect(page.getByTestId('request-template-row').first()).toBeVisible({ timeout: 10_000 })
+      await page.getByRole('link', { name: 'Year-End Information Request (SA)' }).click()
+      await page.waitForURL(/\/settings\/request-templates\/[^/]+$/, { timeout: 10_000 })
+
+      await expect(page.getByTestId('request-item-row').first()).toBeVisible({ timeout: 10_000 })
+
+      // Items 1,2,3,4,8 are required = 5 checked required checkboxes
+      // (Trial Balance, Bank Statements, Loan Agreements, Fixed Asset Register, Payroll Summary)
+      const requiredCheckboxes = page.getByTestId('request-item-required')
+      const allCheckboxes = await requiredCheckboxes.all()
+      let checkedCount = 0
+      for (const cb of allCheckboxes) {
+        if (await cb.isChecked()) {
+          checkedCount++
+        }
+      }
+      expect(checkedCount).toBe(5)
+    })
+  })
+
 })

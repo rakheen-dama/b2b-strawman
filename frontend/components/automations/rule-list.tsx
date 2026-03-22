@@ -169,6 +169,7 @@ export function RuleList({ slug, rules, templates, canManage }: RuleListProps) {
                 key={rule.id}
                 className="cursor-pointer"
                 onClick={() => handleRowClick(rule.id)}
+                data-testid="automation-row"
               >
                 <TableCell>
                   <div>

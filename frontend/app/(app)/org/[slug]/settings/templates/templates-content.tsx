@@ -153,7 +153,7 @@ export function TemplatesContent({
               </TableHeader>
               <TableBody>
                 {grouped[cat].map((template) => (
-                  <TableRow key={template.id}>
+                  <TableRow key={template.id} data-testid="template-list-item">
                     <TableCell>
                       <Link
                         href={`/org/${slug}/settings/templates/${template.id}/edit`}

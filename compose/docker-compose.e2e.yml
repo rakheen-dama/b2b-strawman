@@ -1,3 +1,7 @@
+# DEPRECATED — Phase 54 (2026-03): Prefer Keycloak dev stack (docker-compose.yml --all).
+# See compose/scripts/dev-e2e-up.sh to start the primary E2E stack.
+# This file is retained as a lightweight fallback only.
+#
 # Ephemeral E2E-only stack — credentials below are throwaway defaults
 # used only in local/CI containers. No real secrets here.
 name: docteams-e2e

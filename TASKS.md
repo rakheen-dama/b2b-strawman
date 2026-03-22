@@ -449,6 +449,13 @@
 | 394 | Dashboard Redesigns | Frontend | 393A | L | 394A, 394B | **Done** (PRs #815, #816) |
 | 395 | Project Detail & Document Preview | Frontend | 393A (395A only) | M | 395A, 395B | **Done** (PRs #817, #818) |
 | 396 | Test Updates & Visual Baselines | Frontend | 393-395 | S | 396A | **Done** (PR #819) |
+| **Phase 54 — Keycloak E2E Test Suite** | | | | | | See [tasks/phase54-keycloak-e2e-test-suite.md](tasks/phase54-keycloak-e2e-test-suite.md) |
+| 397 | Docker Compose & Scripts | Infra | -- | S | 397A | **Done** (PR #820) |
+| 398 | Playwright Harness — Config, Fixtures, Helpers, POMs | E2E | 397 | M | -- | |
+| 399 | Onboarding Flow Test | Both | 398 | M | -- | |
+| 400 | Pack Verification Tests | Both | 399 | L | 400A, 400B | |
+| 401 | Member Invite & RBAC Tests | Both | 399 | M | -- | |
+| 402 | Existing E2E Test Migration | Both | 398 | S | -- | |
 
 ---
 

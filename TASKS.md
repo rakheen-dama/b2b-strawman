@@ -454,7 +454,7 @@
 | 398 | Playwright Harness — Config, Fixtures, Helpers, POMs | E2E | 397 | M | -- | **Done** (PR #821) |
 | 399 | Onboarding Flow Test | Both | 398 | M | -- | **Done** (PR #822) |
 | 400 | Pack Verification Tests | Both | 399 | L | 400A, 400B | **Done** (PR #823, #824) |
-| 401 | Member Invite & RBAC Tests | Both | 399 | M | -- | |
+| 401 | Member Invite & RBAC Tests | Both | 399 | M | -- | **Done** (PR #825) |
 | 402 | Existing E2E Test Migration | Both | 398 | S | -- | |
 
 ---

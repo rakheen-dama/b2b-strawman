@@ -3,6 +3,7 @@ import { KeycloakLoginPage } from '../page-objects/keycloak-login.page'
 import { KeycloakRegisterPage } from '../page-objects/keycloak-register.page'
 
 const GATEWAY_URL = process.env.GATEWAY_URL || 'http://localhost:8443'
+const BASE_HOST = new URL(process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000').host
 
 /**
  * Logs in as the platform admin (padmin@docteams.local / password).
@@ -31,7 +32,7 @@ export async function loginAs(
   await loginPage.login(email, password)
 
   // Wait for redirect back to the app (through gateway)
-  await page.waitForURL(/localhost:3000/, { timeout: 30_000 })
+  await page.waitForURL(new RegExp(BASE_HOST), { timeout: 30_000 })
 }
 
 /**
@@ -43,14 +44,15 @@ export async function registerFromInvite(
   inviteLink: string,
   firstName: string,
   lastName: string,
+  email: string,
   password: string
 ): Promise<void> {
   await page.goto(inviteLink)
 
   const registerPage = new KeycloakRegisterPage(page)
   await registerPage.waitForReady()
-  await registerPage.register(firstName, lastName, password)
+  await registerPage.register(firstName, lastName, email, password)
 
   // After registration, Keycloak redirects to the app via Gateway
-  await page.waitForURL(/localhost:3000/, { timeout: 30_000 })
+  await page.waitForURL(new RegExp(BASE_HOST), { timeout: 30_000 })
 }

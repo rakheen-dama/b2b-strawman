@@ -1,4 +1,4 @@
-const MAILPIT_API = process.env.MAILPIT_API_URL || 'http://localhost:8025/api/v1'
+export const MAILPIT_API = process.env.MAILPIT_API_URL || 'http://localhost:8025/api/v1'
 
 export interface MailpitMessage {
   ID: string
@@ -29,7 +29,7 @@ export async function waitForEmail(
 
   while (Date.now() - start < timeout) {
     const res = await fetch(
-      `${MAILPIT_API}/search?query=to:${encodeURIComponent(recipient)}`
+      `${MAILPIT_API}/search?query=${encodeURIComponent(`to:${recipient}`)}`
     )
     if (!res.ok) throw new Error(`Mailpit search failed: ${res.status}`)
 
@@ -42,7 +42,12 @@ export async function waitForEmail(
       return true
     })
 
-    if (match) return match
+    if (match) {
+      // Search results lack message bodies — fetch the full message
+      const fullRes = await fetch(`${MAILPIT_API}/message/${match.ID}`)
+      if (!fullRes.ok) throw new Error(`Mailpit message fetch failed: ${fullRes.status}`)
+      return (await fullRes.json()) as MailpitMessage
+    }
 
     await new Promise((r) => setTimeout(r, pollInterval))
   }
@@ -90,7 +95,8 @@ export function extractInviteLink(email: MailpitMessage): string {
  * Deletes all emails in Mailpit. Call in test setup for a clean slate.
  */
 export async function clearMailbox(): Promise<void> {
-  await fetch(`${MAILPIT_API}/messages`, { method: 'DELETE' })
+  const res = await fetch(`${MAILPIT_API}/messages`, { method: 'DELETE' })
+  if (!res.ok) throw new Error(`Mailpit clearMailbox failed: ${res.status}`)
 }
 
 /**
@@ -98,7 +104,7 @@ export async function clearMailbox(): Promise<void> {
  */
 export async function getEmails(recipient: string): Promise<MailpitMessage[]> {
   const res = await fetch(
-    `${MAILPIT_API}/search?query=to:${encodeURIComponent(recipient)}`
+    `${MAILPIT_API}/search?query=${encodeURIComponent(`to:${recipient}`)}`
   )
   if (!res.ok) throw new Error(`Mailpit search failed: ${res.status}`)
   const data: MailpitSearchResult = await res.json()

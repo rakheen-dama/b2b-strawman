@@ -50,10 +50,49 @@ When working in a git worktree, ALWAYS verify the correct working directory befo
 The worktree path is NOT inside the main repo directory. Before writing the first file, run `pwd` and confirm you 
 are in the worktree directory, not the main repo. Never write files to the main repo when a worktree is active.
 
-## Agent UI Navigation (Mock Auth)
+## Agent UI Navigation
 
-Production uses Keycloak — agents cannot authenticate on port 3000.
-Use the E2E mock-auth stack on port 3001 instead.
+### Keycloak Dev Stack (Primary)
+
+Use the full Keycloak dev stack for Playwright E2E tests and agent UI navigation.
+
+| Service | URL |
+|---------|-----|
+| Frontend | http://localhost:3000 |
+| Gateway | http://localhost:8443 |
+| Backend | http://localhost:8080 |
+| Keycloak | http://localhost:8180 (admin/admin) |
+| Mailpit UI | http://localhost:8025 |
+
+**Start/stop the stack:**
+```bash
+bash compose/scripts/dev-e2e-up.sh           # Start all services + bootstrap (3-5 min first time)
+bash compose/scripts/dev-e2e-up.sh --clean   # Wipe volumes first, then start
+bash compose/scripts/dev-e2e-down.sh         # Tear down + wipe data
+```
+
+**To authenticate in Playwright:**
+1. Navigate to `http://localhost:8443/oauth2/authorization/keycloak`
+2. Keycloak login page loads — fill email and password
+3. Redirected through gateway back to `http://localhost:3000` — proceed with navigation
+
+**Platform admin:** `padmin@docteams.local` / `password`
+
+**Tailing logs:**
+```bash
+docker compose -f compose/docker-compose.yml logs -f backend   # Backend logs
+docker compose -f compose/docker-compose.yml logs -f frontend  # Frontend logs
+docker compose -f compose/docker-compose.yml logs -f keycloak  # Keycloak logs
+```
+
+**Database access:**
+```bash
+docker exec -it b2b-postgres psql -U postgres -d docteams
+```
+
+### Mock-Auth Stack (Deprecated Fallback)
+
+The mock-auth stack is retained as a lightweight fallback for fast smoke tests without Keycloak. Do NOT target new test development at this stack.
 
 | Service | URL |
 |---------|-----|
@@ -77,17 +116,6 @@ bash compose/scripts/e2e-rebuild.sh backend frontend  # Rebuild specific service
 
 **Available users:** Alice (owner), Bob (admin), Carol (member)
 **Org slug:** e2e-test-org
-
-**Tailing logs:**
-```bash
-docker compose -f compose/docker-compose.e2e.yml logs -f backend   # Backend logs
-docker compose -f compose/docker-compose.e2e.yml logs -f frontend  # Frontend logs
-```
-
-**Database access:**
-```bash
-docker exec -it e2e-postgres psql -U postgres -d app
-```
 
 **Working in a worktree:** Agents can use `isolation: "worktree"` on the Task tool.
 The E2E stack builds from relative paths, so it picks up the worktree's source code automatically.

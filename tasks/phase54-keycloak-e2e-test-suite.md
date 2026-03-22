@@ -11,7 +11,7 @@ Playwright E2E test suite running against the full Keycloak dev stack, validatin
 |------|------|-------|------|--------|--------|--------|
 | 397 | Docker Compose & Scripts | Infra | -- | S | 397A | **Done** (PR #820) |
 | 398 | Playwright Harness — Config, Fixtures, Helpers, POMs | E2E | 397 | M | 398A | **Done** (PR #821) |
-| 399 | Onboarding Flow Test | Both | 398 | M | 399A | |
+| 399 | Onboarding Flow Test | Both | 398 | M | 399A | **Done** (PR #822) |
 | 400 | Pack Verification Tests | Both | 399 | L | 400A, 400B | |
 | 401 | Member Invite & RBAC Tests | Both | 399 | M | 401A | |
 | 402 | Existing E2E Test Migration | Both | 398 | S | 402A | |
@@ -54,7 +54,7 @@ Verification)      Invite & RBAC)
 
 | Slice | Epic | Rationale |
 |-------|------|-----------|
-| **399A** | 399 | Onboarding flow creates the org, owner, and tenant that pack verification and RBAC tests depend on. |
+| **399A** | 399 | Onboarding flow creates the org, owner, and tenant that pack verification and RBAC tests depend on. | **Done** (PR #822) |
 
 ### Stage 4: Test Suites (Parallel)
 

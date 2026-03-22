@@ -174,7 +174,7 @@ export function MemberRatesTable({
                   const activeRate = getActiveRate(memberRates);
 
                   return (
-                    <TableRow key={member.id}>
+                    <TableRow key={member.id} data-testid={`billing-rate-${member.orgRole?.toLowerCase() ?? member.id}`}>
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <AvatarCircle name={member.name} size={32} />
@@ -314,7 +314,7 @@ export function MemberRatesTable({
                   const activeRate = getActiveRate(memberRates);
 
                   return (
-                    <TableRow key={member.id}>
+                    <TableRow key={member.id} data-testid={`cost-rate-${member.orgRole?.toLowerCase() ?? member.id}`}>
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <AvatarCircle name={member.name} size={32} />

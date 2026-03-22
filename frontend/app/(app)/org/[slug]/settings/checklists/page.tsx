@@ -111,6 +111,7 @@ export default async function ChecklistsSettingsPage({
               {templates.map((template) => (
                 <tr
                   key={template.id}
+                  data-testid="checklist-template-row"
                   className="border-b border-slate-100 transition-colors last:border-0 hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900/50"
                 >
                   <td className="px-4 py-3">

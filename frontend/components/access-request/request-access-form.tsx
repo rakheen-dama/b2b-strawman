@@ -187,7 +187,7 @@ export function RequestAccessForm() {
 
   if (step === 3) {
     return (
-      <Card>
+      <Card data-testid="success-message">
         <CardHeader>
           <CardTitle className="font-display text-lg">
             <span className="flex items-center gap-2">
@@ -236,6 +236,7 @@ export function RequestAccessForm() {
               <Label htmlFor="otp">Verification Code</Label>
               <Input
                 id="otp"
+                data-testid="otp-input"
                 type="text"
                 inputMode="numeric"
                 maxLength={6}
@@ -295,6 +296,7 @@ export function RequestAccessForm() {
 
             <Button
               type="submit"
+              data-testid="verify-otp-btn"
               variant="accent"
               size="lg"
               className="w-full"
@@ -324,11 +326,12 @@ export function RequestAccessForm() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} data-testid="request-access-form" className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Work Email</Label>
             <Input
               id="email"
+              data-testid="email-input"
               type="email"
               placeholder="you@company.com"
               value={fields.email}
@@ -345,6 +348,7 @@ export function RequestAccessForm() {
             <Label htmlFor="fullName">Full Name</Label>
             <Input
               id="fullName"
+              data-testid="full-name-input"
               type="text"
               placeholder="Jane Smith"
               value={fields.fullName}
@@ -357,6 +361,7 @@ export function RequestAccessForm() {
             <Label htmlFor="organizationName">Organisation Name</Label>
             <Input
               id="organizationName"
+              data-testid="org-name-input"
               type="text"
               placeholder="Acme Corp"
               value={fields.organizationName}
@@ -371,7 +376,7 @@ export function RequestAccessForm() {
               value={fields.country}
               onValueChange={(value) => updateField("country", value)}
             >
-              <SelectTrigger id="country" className="w-full">
+              <SelectTrigger id="country" data-testid="country-select" className="w-full">
                 <SelectValue placeholder="Select a country" />
               </SelectTrigger>
               <SelectContent>
@@ -390,7 +395,7 @@ export function RequestAccessForm() {
               value={fields.industry}
               onValueChange={(value) => updateField("industry", value)}
             >
-              <SelectTrigger id="industry" className="w-full">
+              <SelectTrigger id="industry" data-testid="industry-select" className="w-full">
                 <SelectValue placeholder="Select an industry" />
               </SelectTrigger>
               <SelectContent>
@@ -414,6 +419,7 @@ export function RequestAccessForm() {
 
           <Button
             type="submit"
+            data-testid="submit-request-btn"
             variant="accent"
             size="lg"
             className="w-full"

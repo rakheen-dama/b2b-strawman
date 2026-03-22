@@ -69,7 +69,7 @@ export function ApproveDialog({
           <AlertDialogCancel variant="plain" disabled={isApproving}>
             Cancel
           </AlertDialogCancel>
-          <Button variant="accent" onClick={handleApprove} disabled={isApproving}>
+          <Button variant="accent" onClick={handleApprove} disabled={isApproving} data-testid="confirm-approve-btn">
             {isApproving ? "Approving..." : "Approve"}
           </Button>
         </AlertDialogFooter>

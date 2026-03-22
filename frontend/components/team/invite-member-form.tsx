@@ -302,7 +302,7 @@ function InviteFormUI({
               </SelectContent>
             </Select>
           </div>
-          <Button type="submit" disabled={isSubmitting} size="sm">
+          <Button type="submit" disabled={isSubmitting} size="sm" data-testid="invite-member-btn">
             {isSubmitting ? "Sending..." : "Send Invite"}
           </Button>
         </form>

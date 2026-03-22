@@ -451,7 +451,7 @@
 | 396 | Test Updates & Visual Baselines | Frontend | 393-395 | S | 396A | **Done** (PR #819) |
 | **Phase 54 — Keycloak E2E Test Suite** | | | | | | See [tasks/phase54-keycloak-e2e-test-suite.md](tasks/phase54-keycloak-e2e-test-suite.md) |
 | 397 | Docker Compose & Scripts | Infra | -- | S | 397A | **Done** (PR #820) |
-| 398 | Playwright Harness — Config, Fixtures, Helpers, POMs | E2E | 397 | M | -- | |
+| 398 | Playwright Harness — Config, Fixtures, Helpers, POMs | E2E | 397 | M | -- | **Done** (PR #821) |
 | 399 | Onboarding Flow Test | Both | 398 | M | -- | |
 | 400 | Pack Verification Tests | Both | 399 | L | 400A, 400B | |
 | 401 | Member Invite & RBAC Tests | Both | 399 | M | -- | |

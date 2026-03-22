@@ -10,7 +10,7 @@ Playwright E2E test suite running against the full Keycloak dev stack, validatin
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 397 | Docker Compose & Scripts | Infra | -- | S | 397A | **Done** (PR #820) |
-| 398 | Playwright Harness — Config, Fixtures, Helpers, POMs | E2E | 397 | M | 398A | |
+| 398 | Playwright Harness — Config, Fixtures, Helpers, POMs | E2E | 397 | M | 398A | **Done** (PR #821) |
 | 399 | Onboarding Flow Test | Both | 398 | M | 399A | |
 | 400 | Pack Verification Tests | Both | 399 | L | 400A, 400B | |
 | 401 | Member Invite & RBAC Tests | Both | 399 | M | 401A | |
@@ -48,7 +48,7 @@ Verification)      Invite & RBAC)
 
 | Slice | Epic | Rationale |
 |-------|------|-----------|
-| **398A** | 398 | Auth fixtures, Mailpit helpers, Keycloak POMs, selectors, bootstrap check test. All subsequent tests depend on this. |
+| **398A** | 398 | Auth fixtures, Mailpit helpers, Keycloak POMs, selectors, bootstrap check test. All subsequent tests depend on this. | **Done** (PR #821) |
 
 ### Stage 3: Core Test Flow
 

@@ -12,7 +12,7 @@ Playwright E2E test suite running against the full Keycloak dev stack, validatin
 | 397 | Docker Compose & Scripts | Infra | -- | S | 397A | **Done** (PR #820) |
 | 398 | Playwright Harness — Config, Fixtures, Helpers, POMs | E2E | 397 | M | 398A | **Done** (PR #821) |
 | 399 | Onboarding Flow Test | Both | 398 | M | 399A | **Done** (PR #822) |
-| 400 | Pack Verification Tests | Both | 399 | L | 400A, 400B | |
+| 400 | Pack Verification Tests | Both | 399 | L | 400A, 400B | 400A **Done** (PR #823) |
 | 401 | Member Invite & RBAC Tests | Both | 399 | M | 401A | |
 | 402 | Existing E2E Test Migration | Both | 398 | S | 402A | |
 
@@ -60,7 +60,7 @@ Verification)      Invite & RBAC)
 
 | Slice | Epic | Rationale |
 |-------|------|-----------|
-| **400A** | 400 | data-testid additions for settings pages + defaults/fields/compliance verification. |
+| **400A** | 400 | data-testid additions for settings pages + defaults/fields/compliance verification. | **Done** (PR #823) |
 | **400B** | 400 | Templates/clauses/automations/request templates verification + full test file assembly. |
 | **401A** | 401 | Member invite + RBAC — invite Bob (Admin) and Carol (Member), verify role-based access. |
 | **402A** | 402 | Migrate 3 smoke tests, write migration guide, create dev-seed-tenant script. |
@@ -172,7 +172,7 @@ Verification)      Invite & RBAC)
 
 | Slice | Summary |
 |-------|---------|
-| 400A | data-testid additions for settings pages + defaults/fields/compliance verification |
+| **400A** | data-testid additions for settings pages + defaults/fields/compliance verification | **Done** (PR #823) |
 | 400B | Templates/clauses/automations/request templates verification + full test file assembly |
 
 ### Tasks

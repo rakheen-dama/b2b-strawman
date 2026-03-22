@@ -123,7 +123,7 @@ export function CustomFieldsContent({
                 </TableHeader>
                 <TableBody>
                   {fieldsByType[tab.value].map((field) => (
-                    <TableRow key={field.id}>
+                    <TableRow key={field.id} data-testid="field-row">
                       <TableCell className="font-medium">
                         {field.name}
                         {field.description && (
@@ -255,6 +255,7 @@ export function CustomFieldsContent({
                   <div
                     key={group.id}
                     className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950"
+                    data-testid={`field-group-${group.slug}`}
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-3">

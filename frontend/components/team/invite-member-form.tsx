@@ -258,6 +258,7 @@ function InviteFormUI({
               id="invite-email"
               type="email"
               placeholder="colleague@company.com"
+              data-testid="invite-email-input"
               {...form.register("emailAddress")}
               onChange={(e) => {
                 form.setValue("emailAddress", e.target.value);
@@ -280,7 +281,7 @@ function InviteFormUI({
               value={getSelectValue()}
               onValueChange={handleRoleSelectChange}
             >
-              <SelectTrigger className="h-9 w-full min-w-[140px]" id="invite-role">
+              <SelectTrigger className="h-9 w-full min-w-[140px]" id="invite-role" data-testid="role-select">
                 <SelectValue placeholder="Select a role..." />
               </SelectTrigger>
               <SelectContent>

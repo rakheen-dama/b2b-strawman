@@ -4,6 +4,7 @@ import {
   registerFromInvite,
 } from '../../fixtures/keycloak-auth'
 import {
+  clearMailbox,
   waitForEmail,
   extractInviteLink,
 } from '../../helpers/mailpit'
@@ -37,11 +38,13 @@ async function loginAndGetSlug(
 }
 
 test.describe.serial('Member invite and RBAC', () => {
-  let orgSlug: string
+  test.beforeAll(async () => {
+    await clearMailbox()
+  })
 
   // === INVITE BOB (Admin) ===
   test('Invite Bob as Admin', async ({ page }) => {
-    orgSlug = await loginAndGetSlug(page, OWNER_EMAIL, OWNER_PASSWORD)
+    const orgSlug = await loginAndGetSlug(page, OWNER_EMAIL, OWNER_PASSWORD)
     await page.goto(`/org/${orgSlug}/team`)
 
     // Fill invite form
@@ -160,6 +163,8 @@ test.describe.serial('Member invite and RBAC', () => {
 
     // Member CANNOT access Settings > General fully (restricted view — no form)
     await carolPage.goto(`/org/${slug}/settings/general`)
+    // Wait for page to render before checking negative assertion
+    await expect(carolPage.getByText('General')).toBeVisible({ timeout: 10_000 })
     // Non-admin sees restricted view — GeneralSettingsForm is NOT rendered
     // The default-currency testid only appears in admin view
     await expect(carolPage.getByTestId('default-currency')).not.toBeVisible({ timeout: 5_000 })
@@ -169,11 +174,9 @@ test.describe.serial('Member invite and RBAC', () => {
     await expect(carolPage.getByText(/do not have permission/i)).toBeVisible({ timeout: 10_000 })
 
     // Member does NOT see Profitability in sidebar (requires FINANCIAL_VISIBILITY)
-    // Navigate to profitability directly — should show empty or blocked
+    // Navigate to profitability directly — should show access denied
     await carolPage.goto(`/org/${slug}/profitability`)
-    // The nav item won't be visible, and the page may show a restricted view
-    // Assert that the profitability page does not render the main content
-    // (This depends on whether the page itself has a capability guard)
+    await expect(carolPage.getByText(/don.t have access/i)).toBeVisible({ timeout: 10_000 })
 
     await carolContext.close()
   })

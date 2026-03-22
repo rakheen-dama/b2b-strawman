@@ -216,9 +216,9 @@ function MemberRow({
       <td className="py-3 pr-4">
         <div className="flex items-center gap-1.5">
           {isSystemRole ? (
-            <Badge variant={roleInfo.variant}>{roleInfo.label}</Badge>
+            <Badge variant={roleInfo.variant} data-testid="member-role-badge">{roleInfo.label}</Badge>
           ) : (
-            <Badge variant="neutral">
+            <Badge variant="neutral" data-testid="member-role-badge">
               {member.orgRoleName ?? member.role}
             </Badge>
           )}

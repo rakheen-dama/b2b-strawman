@@ -35,11 +35,11 @@
 
 | ID | Summary | Severity | Status | Owner | PR | Track | Notes |
 |----|---------|----------|--------|-------|----|-------|-------|
-| GAP-P49-001 | SARS Tax Reference blank in Tax Return template | major | OPEN | backend | — | T1.2 | customer.customFields.sars_tax_reference not flowing into PROJECT-scoped template context |
-| GAP-P49-002 | Statement of Account invoice table empty | major | OPEN | backend | — | T1.6 | CustomerContextBuilder not populating invoice list despite APPROVED invoice existing |
-| GAP-P49-003 | FICA verification date blank despite being populated | major | OPEN | backend | — | T1.7, T5.2 | fica_verification_date (DATE type) not mapped in CustomerContextBuilder |
-| GAP-P49-004 | No pre-generation warning for missing custom fields | minor | OPEN | backend | — | T5.6 | validationResult.allPresent=true even when template fields have blank values |
-| GAP-P49-005 | Blank field produces dangling label | cosmetic | OPEN | backend/template | — | T5.6 | "Registration Number: " with blank value, no "N/A" fallback or conditional hide |
+| GAP-P49-001 | SARS Tax Reference blank in Tax Return template | major | SPEC_READY | backend | — | T1.2 | Likely data issue: custom field cleared by subsequent PUT. Spec: `fix-specs/GAP-P49-001-kc.md` |
+| GAP-P49-002 | Statement of Account invoice table empty | major | SPEC_READY | backend | — | T1.6 | Invoice.customerId mismatch or data issue. Also: `invoices` loop source missing in VariableMetadataRegistry. Spec: `fix-specs/GAP-P49-002-kc.md` |
+| GAP-P49-003 | FICA verification date blank despite being populated | major | SPEC_READY | backend | — | T1.7, T5.2 | Same pattern as 001: likely custom field cleared by subsequent PUT. Spec: `fix-specs/GAP-P49-003-kc.md` |
+| GAP-P49-004 | No pre-generation warning for missing custom fields | minor | SPEC_READY | backend | — | T5.6 | TemplateValidationService only checks requiredContextFields, not template variable presence. Spec: `fix-specs/GAP-P49-004-kc.md` |
+| GAP-P49-005 | Blank field produces dangling label | cosmetic | SPEC_READY | backend/template | — | T5.6 | Wrap label+value in conditionalBlock (isNotEmpty) in template JSON. Spec: `fix-specs/GAP-P49-005-kc.md` |
 
 ## Results Summary
 
@@ -95,3 +95,9 @@
 | 2026-03-24T22:50Z | QA Agent | T2.1-T2.3: Clause assembly via UI — 7 clauses shown in Step 1 dialog (4 required locked, 3 optional toggleable). All variables resolved in clause bodies. |
 | 2026-03-24T22:50Z | QA Agent | T5.1-T5.6: Custom field flow tested. company_registration_number flows correctly. fica_verification_date does NOT flow (GAP-003). Missing field behavior: no warning, dangling labels (GAP-004, GAP-005). |
 | 2026-03-24T22:55Z | QA Agent | Cycle 1 complete. 5 gaps logged (3 major, 1 minor, 1 cosmetic). 88% pass rate on tested items. T3/T4/T6 skipped (require 90-day seed data). |
+| 2026-03-24T23:30Z | Product Agent | Triage started for 5 OPEN items. Investigated template rendering pipeline: TemplateContextBuilder, CustomerContextBuilder, ProjectContextBuilder, TiptapRenderer, TemplateValidationService, VariableMetadataRegistry, PdfRenderingService, CustomFieldValidator. |
+| 2026-03-24T23:45Z | Product Agent | GAP-P49-001: Code path correct (ProjectContextBuilder includes customer.customFields). Hypothesis: custom field cleared by subsequent full-replace PUT. Status: SPEC_READY. |
+| 2026-03-24T23:46Z | Product Agent | GAP-P49-002: CustomerContextBuilder.findByCustomerId query is correct. Hypothesis: data mismatch (invoice.customerId != customer.id) OR runtime data issue. Also found: `invoices` loop source not registered in VariableMetadataRegistry for CUSTOMER type. Status: SPEC_READY. |
+| 2026-03-24T23:47Z | Product Agent | GAP-P49-003: Same pattern as 001. DATE field slug matches between field pack and template. Custom field validator accepts DATE values correctly. Hypothesis: cleared by subsequent PUT. Status: SPEC_READY. |
+| 2026-03-24T23:48Z | Product Agent | GAP-P49-004: Confirmed TemplateValidationService only validates requiredContextFields metadata (usually empty). Recommended: auto-detect blank variables via TemplateVariableAnalyzer + context resolution. Status: SPEC_READY. |
+| 2026-03-24T23:49Z | Product Agent | GAP-P49-005: TiptapRenderer already supports conditionalBlock with isNotEmpty operator. Fix is template JSON only — wrap label+value pairs in conditionalBlock nodes. No Java changes needed. Status: SPEC_READY. |

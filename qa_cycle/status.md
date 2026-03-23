@@ -25,9 +25,9 @@
 
 | ID | Summary | Severity | Status | Owner | PR | Track | Notes |
 |----|---------|----------|--------|-------|----|-------|-------|
-| BUG-KC-001 | Settings page crashes on client-side navigation (sidebar click) | HIGH | OPEN | — | — | NAV-01 | React hooks ordering bug: "Rendered more hooks than during previous render" in Router/useMemo. Workaround: use direct URL navigation. |
-| BUG-KC-002 | Create Customer Step 2 dialog footer buttons inaccessible (overflow) | MEDIUM | OPEN | — | — | CUST-01 | Dialog with many custom fields overflows viewport. Buttons unreachable. Workaround: JS click. |
-| BUG-KC-003 | Keycloak user passwords not set during provisioning | MEDIUM | OPEN | — | — | Auth | thandi/bob passwords failed on first login. Required admin API password reset. |
+| BUG-KC-001 | Settings page crashes on client-side navigation (sidebar click) | HIGH | SPEC_READY | — | — | NAV-01 | Root cause: sidebar link targets `/settings` which does server `redirect()` to `/settings/general`, causing React hooks ordering crash during client-side nav. Fix: change sidebar link to point directly to `/settings/general`. Spec: `qa_cycle/fix-specs/BUG-KC-001.md`. |
+| BUG-KC-002 | Create Customer Step 2 dialog footer buttons inaccessible (overflow) | MEDIUM | SPEC_READY | — | — | CUST-01 | Root cause: dialog content div has no max-height or overflow scroll. Fix: add `max-h-[60vh] overflow-y-auto` to content wrapper in CreateCustomerDialog. Spec: `qa_cycle/fix-specs/BUG-KC-002.md`. |
+| BUG-KC-003 | Keycloak user passwords not set during provisioning | MEDIUM | SPEC_READY | — | — | Auth | Root cause: provisioning uses KC invite-user endpoint (email flow), but local dev users never complete registration. Fix: add `setUserPassword` to provisioning client + bootstrap script backfill. Spec: `qa_cycle/fix-specs/BUG-KC-003.md`. |
 
 ## Results Summary
 
@@ -90,3 +90,4 @@
 | 2026-03-23T00:01Z | Setup | Existing state: 1 org "Thornton & Associates" (alias=thornton-associates), 2 members (Thandi Thornton owner, Bob Ndlovu member), 1 tenant schema (tenant_4a171ca30392). Platform admin: padmin@docteams.local. |
 | 2026-03-23T19:52Z | QA Agent | Cycle 1 started. Keycloak auth flow tested (required admin API password reset for thandi/bob). |
 | 2026-03-23T20:05Z | QA Agent | Cycle 1 complete. 8 tracks tested (NAV-01, CUST-01, CUST-02, PROJ-01, PROJ-02, SET-02, AUTO-01, DOC-01). 27 PASS, 1 FAIL (Settings sidebar crash), 1 PARTIAL (dialog overflow). 3 bugs logged (BUG-KC-001 HIGH, BUG-KC-002 MEDIUM, BUG-KC-003 MEDIUM). |
+| 2026-03-23T21:30Z | Product Agent | Triaged 3 bugs from cycle 1. All 3 moved OPEN -> SPEC_READY. BUG-KC-001 (HIGH, S effort): sidebar link targets redirect page, fix is single-line href change. BUG-KC-002 (MEDIUM, S effort): dialog overflow, fix is CSS max-height + scroll. BUG-KC-003 (MEDIUM, M effort): provisioning flow relies on email invite, fix needs backend method + bootstrap script. No cascading bugs detected -- none block downstream tests beyond their own track. |

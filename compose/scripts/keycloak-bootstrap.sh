@@ -25,7 +25,7 @@ echo "=== Keycloak Bootstrap ==="
 echo ""
 
 # ---- Wait for Keycloak to be ready ----
-echo "[1/5] Waiting for Keycloak..."
+echo "[1/7] Waiting for Keycloak..."
 MAX_WAIT=120
 ELAPSED=0
 while [[ $ELAPSED -lt $MAX_WAIT ]]; do
@@ -42,7 +42,7 @@ if [[ $ELAPSED -ge $MAX_WAIT ]]; then
 fi
 
 # ---- Authenticate admin ----
-echo "[2/5] Authenticating admin..."
+echo "[2/7] Authenticating admin..."
 $KCADM config credentials \
   --server "${KEYCLOAK_URL}" \
   --realm master \
@@ -50,7 +50,7 @@ $KCADM config credentials \
   --password "${KEYCLOAK_ADMIN_PASSWORD}"
 
 # ---- Register org_role in User Profile ----
-echo "[3/6] Registering org_role in user profile..."
+echo "[3/7] Registering org_role in user profile..."
 
 # Keycloak 26.x uses strict user profile — unregistered attributes are silently stripped.
 # We must declare org_role before it can be set on any user.
@@ -81,7 +81,7 @@ else
 fi
 
 # ---- Add Protocol Mappers to gateway-bff client ----
-echo "[4/6] Configuring protocol mappers on gateway-bff client..."
+echo "[4/7] Configuring protocol mappers on gateway-bff client..."
 
 CLIENT_KC_ID=$($KCADM get clients -r "${REALM}" --fields id,clientId \
   | jq -r '.[] | select(.clientId=="gateway-bff") | .id' 2>/dev/null || true)
@@ -130,7 +130,7 @@ ORG_ROLE_OK=$($KCADM get "clients/${CLIENT_KC_ID}/protocol-mappers/models" -r "$
 [[ "$ORG_ROLE_OK" == "org-role" ]] && echo "  org-role mapper OK" || echo "  ERROR: org-role mapper MISSING"
 
 # ---- Create platform admin user and assign to existing platform-admins group ----
-echo "[5/6] Creating platform admin user..."
+echo "[5/7] Creating platform admin user..."
 
 # Look up the platform-admins group (created by realm-export.json)
 GROUP_ID=$($KCADM get groups -r "${REALM}" --fields id,name \
@@ -176,8 +176,8 @@ $KCADM update "users/${PADMIN_ID}/groups/${GROUP_ID}" \
 
 echo "  ${PADMIN_EMAIL} / password -> platform-admins group"
 
-# ---- Backfill org_role attribute on existing org members ----
-echo "[6/6] Backfilling org_role for existing organization members..."
+# ---- Backfill org_role attribute and passwords on existing org members ----
+echo "[6/7] Backfilling org_role for existing organization members..."
 
 # Iterate all organizations, find the creator (stored as org attribute), set org_role=owner.
 # All other org members without org_role get member as default.
@@ -243,11 +243,53 @@ else
   done
 fi
 
+# ---- Backfill passwords for existing org members (local dev only) ----
+echo "[7/7] Backfilling passwords for existing organization members..."
+
+# Re-fetch token (may have expired during org_role backfill)
+TOKEN=$(curl -sf "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" \
+  -d "grant_type=password&client_id=admin-cli&username=${KEYCLOAK_ADMIN}&password=${KEYCLOAK_ADMIN_PASSWORD}" \
+  | jq -r '.access_token')
+
+DEFAULT_PASSWORD="password"
+
+if [[ "$ORG_COUNT" -eq 0 ]]; then
+  echo "  No organizations found — nothing to backfill."
+else
+  for i in $(seq 0 $((ORG_COUNT - 1))); do
+    ORG_ID=$(echo "$ORGS_JSON" | jq -r ".[$i].id")
+    ORG_ALIAS=$(echo "$ORGS_JSON" | jq -r ".[$i].alias")
+
+    # List org members
+    MEMBERS_JSON=$(curl -sf "${KEYCLOAK_URL}/admin/realms/${REALM}/organizations/${ORG_ID}/members" \
+      -H "Authorization: Bearer ${TOKEN}" 2>/dev/null || echo "[]")
+    MEMBER_COUNT=$(echo "$MEMBERS_JSON" | jq 'length' 2>/dev/null || echo "0")
+
+    for j in $(seq 0 $((MEMBER_COUNT - 1))); do
+      MEMBER_ID=$(echo "$MEMBERS_JSON" | jq -r ".[$j].id")
+      MEMBER_EMAIL=$(echo "$MEMBERS_JSON" | jq -r ".[$j].email // .[$j].username")
+
+      # Set password via REST API (idempotent — overwrites any existing password)
+      HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X PUT \
+        "${KEYCLOAK_URL}/admin/realms/${REALM}/users/${MEMBER_ID}/reset-password" \
+        -H "Authorization: Bearer ${TOKEN}" \
+        -H "Content-Type: application/json" \
+        -d "{\"type\":\"password\",\"value\":\"${DEFAULT_PASSWORD}\",\"temporary\":false}")
+      if [[ "$HTTP_CODE" == "204" ]]; then
+        echo "  ${MEMBER_EMAIL} (${ORG_ALIAS}): password set to '${DEFAULT_PASSWORD}'"
+      else
+        echo "  ${MEMBER_EMAIL} (${ORG_ALIAS}): WARN failed to set password (HTTP ${HTTP_CODE})"
+      fi
+    done
+  done
+fi
+
 echo ""
 echo "=== Keycloak Bootstrap Complete ==="
 echo ""
 echo "  Mappers: groups, org-role (on gateway-bff)"
 echo "  User:    padmin@docteams.local / password"
+echo "  Org members: password backfilled to 'password' for local dev login"
 echo ""
 echo "  Users must log out and back in to get the updated org_role claim in their JWT."
 echo ""

@@ -26,7 +26,7 @@
 | ID | Summary | Severity | Status | Owner | PR | Track | Notes |
 |----|---------|----------|--------|-------|----|-------|-------|
 | BUG-KC-001 | Settings page crashes on client-side navigation (sidebar click) | HIGH | FIXED | Dev Agent | [#827](https://github.com/rakheen-dama/b2b-strawman/pull/827) | NAV-01 | Fixed: sidebar Settings href changed from `/settings` to `/settings/general` in `nav-items.ts`. PR #827 merged. Needs re-test in cycle 2. |
-| BUG-KC-002 | Create Customer Step 2 dialog footer buttons inaccessible (overflow) | MEDIUM | SPEC_READY | — | — | CUST-01 | Root cause: dialog content div has no max-height or overflow scroll. Fix: add `max-h-[60vh] overflow-y-auto` to content wrapper in CreateCustomerDialog. Spec: `qa_cycle/fix-specs/BUG-KC-002.md`. |
+| BUG-KC-002 | Create Customer Step 2 dialog footer buttons inaccessible (overflow) | MEDIUM | FIXED | Dev Agent | [#828](https://github.com/rakheen-dama/b2b-strawman/pull/828) | CUST-01 | Fixed: added `max-h-[60vh] overflow-y-auto` to content wrapper div in CreateCustomerDialog. PR #828 merged. Needs re-test in cycle 2. |
 | BUG-KC-003 | Keycloak user passwords not set during provisioning | MEDIUM | SPEC_READY | — | — | Auth | Root cause: provisioning uses KC invite-user endpoint (email flow), but local dev users never complete registration. Fix: add `setUserPassword` to provisioning client + bootstrap script backfill. Spec: `qa_cycle/fix-specs/BUG-KC-003.md`. |
 
 ## Results Summary
@@ -92,3 +92,4 @@
 | 2026-03-23T20:05Z | QA Agent | Cycle 1 complete. 8 tracks tested (NAV-01, CUST-01, CUST-02, PROJ-01, PROJ-02, SET-02, AUTO-01, DOC-01). 27 PASS, 1 FAIL (Settings sidebar crash), 1 PARTIAL (dialog overflow). 3 bugs logged (BUG-KC-001 HIGH, BUG-KC-002 MEDIUM, BUG-KC-003 MEDIUM). |
 | 2026-03-23T21:30Z | Product Agent | Triaged 3 bugs from cycle 1. All 3 moved OPEN -> SPEC_READY. BUG-KC-001 (HIGH, S effort): sidebar link targets redirect page, fix is single-line href change. BUG-KC-002 (MEDIUM, S effort): dialog overflow, fix is CSS max-height + scroll. BUG-KC-003 (MEDIUM, M effort): provisioning flow relies on email invite, fix needs backend method + bootstrap script. No cascading bugs detected -- none block downstream tests beyond their own track. |
 | 2026-03-23T22:15Z | Dev Agent | BUG-KC-001 FIXED. Changed Settings sidebar href from `/settings` to `/settings/general` in `frontend/lib/nav-items.ts`. Build passes, 1692/1692 tests pass. PR #827 merged (squash) into bugfix_cycle_kc_2026-03-23. |
+| 2026-03-23T22:30Z | Dev Agent | BUG-KC-002 FIXED. Added `max-h-[60vh] overflow-y-auto` to content wrapper div in `frontend/components/customers/create-customer-dialog.tsx`. Build passes, 1692/1692 tests pass. PR #828 merged (squash) into bugfix_cycle_kc_2026-03-23. |

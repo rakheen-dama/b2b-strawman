@@ -23,7 +23,42 @@ bash compose/scripts/dev-rebuild.sh backend mailpit  # Rebuild specific services
 | Mailpit UI | [http://localhost:8025](http://localhost:8025) |
 | Backend (with `--all`) | 8080 |
 
-## E2E Stack
+## Keycloak E2E Stack (Primary — Phase 54+)
+
+Full Keycloak dev stack for Playwright E2E tests. This is the primary test target.
+Builds all services from source.
+
+```bash
+bash compose/scripts/dev-e2e-up.sh              # Build + start all services + Keycloak bootstrap
+bash compose/scripts/dev-e2e-up.sh --clean      # Wipe volumes first, then start
+bash compose/scripts/dev-e2e-down.sh            # Tear down + wipe volumes
+bash compose/scripts/dev-seed-tenant.sh         # Seed acme-corp tenant for migrated tests
+```
+
+| Service | Port |
+|---------|------|
+| Frontend | 3000 |
+| Gateway (BFF) | 8443 |
+| Backend | 8080 |
+| Keycloak | 8180 (admin/admin) |
+| Mailpit SMTP | 1025 |
+| Mailpit UI | [http://localhost:8025](http://localhost:8025) |
+
+**Seed users (after `dev-seed-tenant.sh`):**
+- `padmin@docteams.local` / `password` (platform admin)
+- `alice@example.com` / `password` (owner — acme-corp)
+- `bob@example.com` / `password` (admin — acme-corp)
+- `carol@example.com` / `password` (member — acme-corp)
+
+**Run tests:**
+```bash
+cd frontend && npx playwright test e2e/tests/keycloak/
+```
+
+## E2E Stack (Mock Auth — Deprecated)
+
+> **Deprecated** (Phase 54, 2026-03): Use the Keycloak E2E stack above for new tests.
+> Mock auth stack retained for reference. Do not write new tests targeting port 3001.
 
 Full mock-auth stack for Playwright testing and agent UI navigation. Builds from current source.
 
@@ -61,6 +96,11 @@ bash compose/scripts/dev-rebuild.sh
 **Rebuild frontend + backend for E2E:**
 ```bash
 bash compose/scripts/e2e-rebuild.sh backend frontend
+```
+
+**Seed acme-corp tenant for Keycloak E2E tests:**
+```bash
+bash compose/scripts/dev-seed-tenant.sh
 ```
 
 **View captured emails:**

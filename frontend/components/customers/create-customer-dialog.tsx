@@ -200,7 +200,7 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-2">
+        <div className="max-h-[60vh] space-y-4 overflow-y-auto py-2">
           {/* Step 1: Base fields */}
           {step === 1 && (
             <Form {...form}>

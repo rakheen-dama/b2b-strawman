@@ -151,11 +151,12 @@ export function TaxRateTable({ slug, taxRates }: TaxRateTableProps) {
               {taxRates.map((taxRate) => (
                 <tr
                   key={taxRate.id}
+                  data-testid="tax-rate-row"
                   className="border-b border-slate-100 transition-colors last:border-0 hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900/50"
                 >
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                      <span className="text-sm font-medium text-slate-900 dark:text-slate-100" data-testid="tax-rate-name">
                         {taxRate.name}
                       </span>
                       {taxRate.isExempt && (
@@ -163,10 +164,10 @@ export function TaxRateTable({ slug, taxRates }: TaxRateTableProps) {
                       )}
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">
+                  <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400" data-testid="tax-rate-value">
                     {taxRate.rate.toFixed(2)}%
                   </td>
-                  <td className="hidden px-4 py-3 sm:table-cell">
+                  <td className="hidden px-4 py-3 sm:table-cell" data-testid="tax-rate-default">
                     {taxRate.isDefault && (
                       <Badge variant="success">Default</Badge>
                     )}

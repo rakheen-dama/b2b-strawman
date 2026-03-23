@@ -150,6 +150,7 @@ export default async function ChecklistTemplateDetailPage({
                   {sortedItems.map((item, index) => (
                     <tr
                       key={item.id}
+                      data-testid="checklist-item-row"
                       className="border-b border-slate-100 last:border-0 dark:border-slate-800/50"
                     >
                       <td className="px-3 py-2 text-sm text-slate-500 dark:text-slate-400">
@@ -163,7 +164,7 @@ export default async function ChecklistTemplateDetailPage({
                       </td>
                       <td className="px-3 py-2">
                         {item.required ? (
-                          <Badge variant="destructive">Required</Badge>
+                          <Badge variant="destructive" data-testid="checklist-item-required">Required</Badge>
                         ) : (
                           <span className="text-sm text-slate-400">Optional</span>
                         )}

@@ -187,7 +187,7 @@ export function GeneralSettingsForm({
         <div className="mt-4 max-w-xs">
           <Label htmlFor="default-currency">Default Currency</Label>
           <Select value={currency} onValueChange={setCurrency}>
-            <SelectTrigger id="default-currency" className="mt-1">
+            <SelectTrigger id="default-currency" className="mt-1" data-testid="default-currency">
               <SelectValue placeholder="Select currency" />
             </SelectTrigger>
             <SelectContent>

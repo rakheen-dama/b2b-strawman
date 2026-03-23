@@ -154,7 +154,7 @@ function InvitationRow({
   onRevoke: () => void;
 }) {
   return (
-    <tr className="border-b border-slate-100 transition-colors hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900/30">
+    <tr data-testid="pending-invite-row" className="border-b border-slate-100 transition-colors hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900/30">
       <td className="py-3 pr-4 font-medium text-slate-900 dark:text-slate-100">
         {email}
       </td>

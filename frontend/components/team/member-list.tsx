@@ -190,6 +190,7 @@ function MemberRow({
 
   return (
     <tr
+      data-testid={`member-row-${member.email}`}
       className={`border-b border-slate-100 transition-colors hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900/30${isAdmin ? " cursor-pointer" : ""}`}
       onClick={() => isAdmin && onRowClick?.(member)}
       role={isAdmin ? "button" : undefined}
@@ -215,9 +216,9 @@ function MemberRow({
       <td className="py-3 pr-4">
         <div className="flex items-center gap-1.5">
           {isSystemRole ? (
-            <Badge variant={roleInfo.variant}>{roleInfo.label}</Badge>
+            <Badge variant={roleInfo.variant} data-testid="member-role-badge">{roleInfo.label}</Badge>
           ) : (
-            <Badge variant="neutral">
+            <Badge variant="neutral" data-testid="member-role-badge">
               {member.orgRoleName ?? member.role}
             </Badge>
           )}

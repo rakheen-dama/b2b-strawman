@@ -4,17 +4,15 @@ const linkGroups = [
   {
     heading: "Product",
     links: [
-      { label: "Features", href: "#" },
-      { label: "Pricing", href: "#" },
-      { label: "Documentation", href: "#" },
+      { label: "Features", href: "#features" },
+      { label: "Pricing", href: "#pricing" },
     ],
   },
   {
     heading: "Company",
     links: [
       { label: "About", href: "#" },
-      { label: "Blog", href: "#" },
-      { label: "Careers", href: "#" },
+      { label: "Contact", href: "mailto:hello@kazi.africa" },
     ],
   },
   {
@@ -22,20 +20,24 @@ const linkGroups = [
     links: [
       { label: "Privacy", href: "#" },
       { label: "Terms", href: "#" },
-      { label: "Security", href: "#" },
     ],
   },
 ];
 
 export function Footer() {
   return (
-    <footer className="bg-slate-950">
+    <footer className="bg-slate-950 border-t border-white/5">
       <div className="mx-auto max-w-7xl px-6 py-12">
         {/* Top row */}
         <div className="flex flex-col gap-10 lg:flex-row lg:justify-between">
-          {/* Logo */}
+          {/* Logo & tagline */}
           <div>
-            <span className="font-display text-xl text-white">DocTeams</span>
+            <Link href="/" className="font-display text-xl tracking-tight text-white">
+              kazi
+            </Link>
+            <p className="mt-2 text-sm text-white/40">
+              Practice management, built for Africa.
+            </p>
           </div>
 
           {/* Link groups */}
@@ -48,12 +50,21 @@ export function Footer() {
                 <ul className="space-y-2">
                   {group.links.map((link) => (
                     <li key={link.label}>
-                      <Link
-                        href={link.href}
-                        className="text-sm text-white/60 transition-colors hover:text-white"
-                      >
-                        {link.label}
-                      </Link>
+                      {link.href.startsWith("mailto:") || link.href === "#" ? (
+                        <a
+                          href={link.href}
+                          className="text-sm text-white/60 transition-colors hover:text-white"
+                        >
+                          {link.label}
+                        </a>
+                      ) : (
+                        <Link
+                          href={link.href}
+                          className="text-sm text-white/60 transition-colors hover:text-white"
+                        >
+                          {link.label}
+                        </Link>
+                      )}
                     </li>
                   ))}
                 </ul>
@@ -63,9 +74,12 @@ export function Footer() {
         </div>
 
         {/* Bottom row */}
-        <div className="mt-8 border-t border-white/10 pt-8">
+        <div className="mt-8 flex flex-col items-start justify-between gap-4 border-t border-white/10 pt-8 sm:flex-row sm:items-center">
           <p className="text-sm text-white/40">
-            &copy; {new Date().getFullYear()} DocTeams. All rights reserved.
+            &copy; {new Date().getFullYear()} Kazi. All rights reserved.
+          </p>
+          <p className="text-sm text-white/30">
+            Built in South Africa
           </p>
         </div>
       </div>

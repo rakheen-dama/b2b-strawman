@@ -60,13 +60,14 @@ export function AccessRequestsTable({ requests }: AccessRequestsTableProps) {
   }
 
   return (
-    <>
+    <div data-testid="access-requests-page">
       <TabsPrimitive.Root value={activeTab} onValueChange={(v) => setActiveTab(v as TabId)}>
         <TabsPrimitive.List className="relative flex gap-6 border-b border-slate-200 dark:border-slate-800">
           {tabs.map((tab) => (
             <TabsPrimitive.Trigger
               key={tab.id}
               value={tab.id}
+              data-testid={tab.id === "PENDING" ? "pending-tab" : undefined}
               className={cn(
                 "relative pb-3 text-sm font-medium transition-colors outline-none",
                 "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200",
@@ -115,7 +116,7 @@ export function AccessRequestsTable({ requests }: AccessRequestsTableProps) {
             </TableHeader>
             <TableBody>
               {sorted.map((request) => (
-                <TableRow key={request.id}>
+                <TableRow key={request.id} data-testid={`request-row-${request.organizationName}`}>
                   <TableCell className="font-medium">{request.organizationName}</TableCell>
                   <TableCell>{request.email}</TableCell>
                   <TableCell>{request.fullName}</TableCell>
@@ -133,6 +134,7 @@ export function AccessRequestsTable({ requests }: AccessRequestsTableProps) {
                         <Button
                           variant="accent"
                           size="sm"
+                          data-testid="approve-btn"
                           onClick={() => setApproveTarget(request)}
                         >
                           Approve
@@ -179,6 +181,6 @@ export function AccessRequestsTable({ requests }: AccessRequestsTableProps) {
           onSuccess={handleSuccess}
         />
       )}
-    </>
+    </div>
   );
 }

@@ -22,10 +22,11 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "DocTeams",
-    template: "%s | DocTeams",
+    default: "Kazi — Practice management, built for Africa",
+    template: "%s | Kazi",
   },
-  description: "Multi-tenant document management for teams",
+  description:
+    "Time tracking, invoicing, compliance, and profitability for South African professional services firms.",
 };
 
 export default function RootLayout({

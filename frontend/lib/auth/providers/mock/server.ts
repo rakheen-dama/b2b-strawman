@@ -80,27 +80,36 @@ export async function getAuthToken(): Promise<string> {
 }
 
 export async function getCurrentUserEmail(): Promise<string | null> {
+  const info = await getCurrentUserInfo();
+  return info.email;
+}
+
+export async function getCurrentUserInfo(): Promise<{
+  name: string | null;
+  email: string | null;
+}> {
   const cookieStore = await cookies();
   const token = getTokenFromCookie(cookieStore);
   const payload = decodeJwtPayload(token);
 
-  // Email is now a top-level claim in the Keycloak-format token
-  const email = payload.email as string | undefined;
-  if (email) return email;
+  const email = (payload.email as string | undefined) ?? null;
+  const name = (payload.name as string | undefined) ?? null;
+
+  if (email || name) return { name, email };
 
   // Fallback: fetch from userinfo endpoint
   const userId = payload.sub as string | undefined;
-  if (!userId) return null;
+  if (!userId) return { name: null, email: null };
 
   try {
     const response = await fetch(`${MOCK_IDP_URL}/userinfo/${userId}`, {
       signal: AbortSignal.timeout(3000),
     });
-    if (!response.ok) return null;
+    if (!response.ok) return { name: null, email: null };
     const data = await response.json();
-    return data.email ?? null;
+    return { name: data.name ?? null, email: data.email ?? null };
   } catch {
-    return null;
+    return { name: null, email: null };
   }
 }
 

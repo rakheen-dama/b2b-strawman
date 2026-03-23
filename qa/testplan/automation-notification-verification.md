@@ -5,7 +5,7 @@
 **Date**: 2026-03-17
 **Author**: Product + QA
 **Vertical**: accounting-za (Thornton & Associates)
-**Stack**: E2E mock-auth (localhost:3001 / backend 8081 / Mailpit 8026)
+**Stack**: Keycloak dev stack (frontend 3000 / backend 8080 / gateway 8443 / Keycloak 8180 / Mailpit 8025). See `qa/keycloak-e2e-guide.md` for setup.
 **Depends on**: Phase 49 test plan T0 (seed data) — run that first or share the same seeded environment
 
 ---
@@ -57,7 +57,7 @@ Same as Phase 49 T0 — Thornton & Associates 90-day lifecycle seeded.
 | Requirement | How to verify |
 |-------------|---------------|
 | Automation templates seeded (accounting-za pack) | Settings > Automations shows rules |
-| Mailpit is empty (or note existing email count) | `GET http://localhost:8026/api/v1/messages` |
+| Mailpit is empty (or note existing email count) | `GET http://localhost:8025/api/v1/messages` |
 | At least 1 customer in PROSPECT status (for trigger testing) | Create a fresh test customer |
 
 ### 3.2 Mailpit API Reference
@@ -65,10 +65,10 @@ Same as Phase 49 T0 — Thornton & Associates 90-day lifecycle seeded.
 Mailpit exposes a REST API for checking received emails:
 
 ```
-GET  http://localhost:8026/api/v1/messages              # List all messages
-GET  http://localhost:8026/api/v1/message/{id}           # Get specific message (headers + body)
-GET  http://localhost:8026/api/v1/search?query=subject:X # Search by subject, to, from, etc.
-DELETE http://localhost:8026/api/v1/messages              # Clear all messages
+GET  http://localhost:8025/api/v1/messages              # List all messages
+GET  http://localhost:8025/api/v1/message/{id}           # Get specific message (headers + body)
+GET  http://localhost:8025/api/v1/search?query=subject:X # Search by subject, to, from, etc.
+DELETE http://localhost:8025/api/v1/messages              # Clear all messages
 ```
 
 **Before each track**: Clear Mailpit (`DELETE /api/v1/messages`) to isolate email assertions.
@@ -571,7 +571,7 @@ Same structure as Phase 49. Categories specific to this plan:
 
 Before each track that checks email, clear Mailpit:
 ```bash
-curl -X DELETE http://localhost:8026/api/v1/messages
+curl -X DELETE http://localhost:8025/api/v1/messages
 ```
 This prevents false positives from emails sent in earlier tracks.
 

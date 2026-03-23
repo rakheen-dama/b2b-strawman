@@ -21,9 +21,11 @@ import { SidebarUserFooter } from "@/components/sidebar-user-footer";
 interface MobileSidebarProps {
   slug: string;
   groups?: string[];
+  userName?: string | null;
+  userEmail?: string | null;
 }
 
-export function MobileSidebar({ slug, groups = [] }: MobileSidebarProps) {
+export function MobileSidebar({ slug, groups = [], userName, userEmail }: MobileSidebarProps) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
@@ -125,7 +127,7 @@ export function MobileSidebar({ slug, groups = [] }: MobileSidebarProps) {
         </div>
 
         {/* Footer */}
-        <SidebarUserFooter />
+        <SidebarUserFooter userName={userName} userEmail={userEmail} />
       </SheetContent>
     </Sheet>
   );

@@ -5,7 +5,7 @@
 **Date**: 2026-03-17
 **Author**: Product + QA
 **Vertical**: accounting-za (Thornton & Associates)
-**Stack**: E2E mock-auth (localhost:3001 / backend 8081 / Mailpit 8026)
+**Stack**: Keycloak dev stack (frontend 3000 / backend 8080 / gateway 8443 / Keycloak 8180 / Mailpit 8025). See `qa/keycloak-e2e-guide.md` for setup.
 **Depends on**: Phase 49 test plan T0 (seed data) — run that first or share the same seeded environment
 
 ---
@@ -44,7 +44,7 @@ branding and complete data isolation from other clients?
 - Document content verification (tested in Phase 49)
 - Information request portal flow (tested in Phase 49 T4)
 - Document acceptance e-signing flow (tested in Phase 49 T6)
-- Keycloak/production auth (this tests mock-auth E2E stack only)
+- Clerk auth (this tests Keycloak dev stack)
 
 ## 3. Prerequisites
 
@@ -60,7 +60,7 @@ is seeded with 4 customers, projects, invoices, time entries, custom fields, etc
 | Portal contacts exist for Kgosi (Thabo) and Vukani (Sipho) | Phase 49 T0.8 |
 | At least 1 generated document exists for Kgosi | Phase 49 T1.1 (engagement letter) |
 | At least 1 proposal exists (DRAFT or SENT) | Phase 49 T3.1 |
-| Mailpit is accessible at localhost:8026 | `curl http://localhost:8026/api/v1/messages` |
+| Mailpit is accessible at localhost:8025 | `curl http://localhost:8025/api/v1/messages` |
 
 ### 3.2 Notation
 

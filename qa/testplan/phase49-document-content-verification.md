@@ -5,7 +5,7 @@
 **Date**: 2026-03-17
 **Author**: Product + QA
 **Vertical**: accounting-za (Thornton & Associates)
-**Stack**: E2E mock-auth (localhost:3001 / backend 8081 / Mailpit 8026)
+**Stack**: Keycloak dev stack (frontend 3000 / backend 8080 / gateway 8443 / Keycloak 8180 / Mailpit 8025). See `qa/keycloak-e2e-guide.md` for setup.
 
 ---
 
@@ -45,13 +45,11 @@ clauses — or would it have blanks, wrong values, or missing sections?
 
 ## 3. Prerequisites
 
-### 3.1 E2E Stack
+### 3.1 Keycloak Dev Stack
 
-```bash
-bash compose/scripts/e2e-up.sh    # All 6 services healthy
-```
+Start infrastructure and local services per `qa/keycloak-e2e-guide.md`, then run `keycloak-bootstrap.sh`.
 
-Verify: frontend (3001), backend (8081), mock-idp (8090), postgres (5433), localstack (4567), mailpit (8026).
+Verify: frontend (3000), backend (8080), gateway (8443), keycloak (8180), postgres (5432), localstack (4566), mailpit (8025).
 
 ### 3.2 90-Day Seed Data
 

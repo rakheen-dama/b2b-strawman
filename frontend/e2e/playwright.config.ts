@@ -1,17 +1,23 @@
 import { defineConfig, devices } from '@playwright/test'
 
+const authMode = process.env.E2E_AUTH_MODE || 'mock'
+
 export default defineConfig({
   testDir: './tests',
-  globalTimeout: 300_000,
-  timeout: 30_000,
-  retries: process.env.CI ? 2 : 0,
+  globalTimeout: 600_000,
+  timeout: authMode === 'keycloak' ? 60_000 : 30_000,
+  retries: process.env.CI ? 1 : 0,
+  workers: authMode === 'keycloak' ? 1 : undefined,
   use: {
     baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000',
+    screenshot: 'only-on-failure',
+    trace: 'on-first-retry',
   },
   projects: [
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+      testIgnore: authMode === 'keycloak' ? undefined : ['**/keycloak/**'],
     },
   ],
 })

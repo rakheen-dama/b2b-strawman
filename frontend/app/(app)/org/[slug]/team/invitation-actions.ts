@@ -56,26 +56,37 @@ function mapBffInvitation(inv: BffInvitation): MappedInvitation {
 
 // --- BFF actions ---
 
+async function resolveOrgRoleId(
+  role: "org:member" | "org:admin",
+  orgRoleId?: string,
+): Promise<string> {
+  // If an explicit orgRoleId was provided (custom role), use it directly
+  if (orgRoleId) return orgRoleId;
+
+  // For system roles, look up the UUID by slug
+  const slug = role.replace("org:", ""); // "member" or "admin"
+  const roles = await api.get<{ id: string; slug: string; isSystem: boolean }[]>(
+    "/api/org-roles",
+  );
+  const match = (roles ?? []).find((r) => r.slug === slug && r.isSystem);
+  if (!match) {
+    throw new Error(`System role "${slug}" not found`);
+  }
+  return match.id;
+}
+
 async function inviteMemberBff(
   email: string,
   role: "org:member" | "org:admin",
   orgRoleId?: string,
-  capabilityOverrides?: string[],
+  _capabilityOverrides?: string[],
 ): Promise<ActionResult> {
   try {
-    // Gateway expects bare role names (member, admin) — strip org: prefix
-    const bareRole = role.replace("org:", "");
-    const body: Record<string, unknown> = {
+    const resolvedRoleId = await resolveOrgRoleId(role, orgRoleId);
+    await api.post<unknown>("/api/invitations", {
       email,
-      role: bareRole,
-    };
-    if (orgRoleId) {
-      body.orgRoleId = orgRoleId;
-    }
-    if (capabilityOverrides && capabilityOverrides.length > 0) {
-      body.capabilityOverrides = capabilityOverrides;
-    }
-    await api.post<{ success: boolean }>("/bff/admin/invite", body);
+      orgRoleId: resolvedRoleId,
+    });
     return { success: true };
   } catch (err: unknown) {
     const message =
@@ -86,19 +97,38 @@ async function inviteMemberBff(
   }
 }
 
+/** Shape returned by the backend's GET /api/invitations endpoint. */
+interface BackendInvitation {
+  id: string;
+  email: string;
+  roleName: string;
+  roleSlug: string;
+  invitedByName: string;
+  status: string;
+  expiresAt: string;
+  createdAt: string;
+  acceptedAt: string | null;
+}
+
 async function listInvitationsBff(): Promise<MappedInvitation[]> {
   try {
-    const raw = await api.get<BffInvitation[]>("/bff/admin/invitations");
-    return (raw ?? []).map(mapBffInvitation);
+    const raw = await api.get<{ invitations: BackendInvitation[] }>("/api/invitations");
+    return (raw?.invitations ?? []).map((inv) => ({
+      id: inv.id,
+      emailAddress: inv.email,
+      role: normalizeRole(inv.roleSlug),
+      status: inv.status,
+      createdAt: inv.createdAt,
+    }));
   } catch (err: unknown) {
-    console.error("Failed to list BFF invitations:", err);
+    console.error("Failed to list invitations:", err);
     return [];
   }
 }
 
 async function revokeInvitationBff(id: string): Promise<ActionResult> {
   try {
-    await api.delete<void>(`/bff/admin/invitations/${encodeURIComponent(id)}`);
+    await api.delete<void>(`/api/invitations/${encodeURIComponent(id)}`);
     return { success: true };
   } catch (err: unknown) {
     const message =

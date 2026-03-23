@@ -3,7 +3,7 @@
 > **Purpose**: Comprehensive regression test specification for a QA automation engineer to implement in Playwright.
 > **Baseline**: Phases 1–50 complete. Existing E2E: 44 tests (smoke, lifecycle-read, lifecycle-interactive, portal).
 > **Target**: ~180–220 automated tests covering all functional areas.
-> **Stack**: Playwright + Chromium, mock-auth E2E stack (port 3001/8081), lifecycle seed data.
+> **Stack**: Playwright + Chromium, Keycloak dev stack (frontend 3000 / backend 8080 / gateway 8443 / Keycloak 8180 / Mailpit 8025). See `qa/keycloak-e2e-guide.md` for setup.
 
 ---
 
@@ -697,7 +697,7 @@ Lower priority but important for full coverage. Run nightly or before releases.
 
 ### Data Strategy
 
-All tests should run against the **E2E mock-auth stack** (port 3001). Two data approaches:
+All tests should run against the **Keycloak dev stack** (frontend 3000 / backend 8080 — see `qa/keycloak-e2e-guide.md`). Two data approaches:
 
 1. **Seeded data** (`compose/seed/lifecycle-test.sh`): Use for read-only assertions and as a base for interactive tests. Known entities: 4 customers (Kgosi, Naledi, Vukani, Moroka), multiple projects, time entries, invoices, proposals, retainers.
 
@@ -742,7 +742,7 @@ For email-dependent tests (automation triggers, information requests, document a
 
 ```typescript
 // e2e/fixtures/mailpit.ts
-const MAILPIT_API = 'http://localhost:8026/api/v1';
+const MAILPIT_API = 'http://localhost:8025/api/v1';
 
 export async function getLatestEmail(to: string) {
   const res = await fetch(`${MAILPIT_API}/search?query=to:${to}&limit=1`);

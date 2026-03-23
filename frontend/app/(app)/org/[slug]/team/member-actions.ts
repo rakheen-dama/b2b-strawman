@@ -32,12 +32,26 @@ function normalizeRole(role: string | undefined | null): string {
   return `org:${lower}`;
 }
 
+/** Shape returned by the backend's GET /api/members endpoint. */
+interface BackendMember {
+  id: string;
+  name: string;
+  email: string;
+  avatarUrl: string | null;
+  orgRole: string;
+}
+
 async function listMembersBff(): Promise<BffMember[]> {
   try {
-    const raw = await api.get<BffMember[]>("/bff/admin/members");
-    return (raw ?? []).map((m) => ({ ...m, role: normalizeRole(m.role) }));
+    const raw = await api.get<BackendMember[]>("/api/members");
+    return (raw ?? []).map((m) => ({
+      id: m.id,
+      email: m.email,
+      name: m.name,
+      role: normalizeRole(m.orgRole),
+    }));
   } catch (err: unknown) {
-    console.error("Failed to list BFF members:", err);
+    console.error("Failed to list members:", err);
     return [];
   }
 }

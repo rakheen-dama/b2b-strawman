@@ -1,9 +1,14 @@
 "use client";
 
 import { useAuthUser } from "@/lib/auth/client";
-import { useBffUser, getInitials as getBffInitials } from "@/components/auth/user-menu-bff";
+import { getInitials as getBffInitials } from "@/components/auth/user-menu-bff";
 
 const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "keycloak";
+
+interface SidebarUserFooterProps {
+  userName?: string | null;
+  userEmail?: string | null;
+}
 
 function getInitials(
   firstName: string | null,
@@ -58,11 +63,17 @@ function UserFooterUI({
   );
 }
 
-function KeycloakUserFooter() {
-  const user = useBffUser();
-
-  const name = user?.name ?? "User";
-  const email = user?.email ?? "";
+function KeycloakUserFooter({
+  userName,
+  userEmail,
+}: {
+  userName?: string | null;
+  userEmail?: string | null;
+}) {
+  // Use server-provided user info (passed from layout via getAuthContext/getCurrentUserInfo)
+  // instead of client-side /bff/me fetch (which fails due to SameSite cookie restrictions)
+  const name = userName ?? "User";
+  const email = userEmail ?? "";
   const initials = getBffInitials(name);
 
   return <UserFooterUI initials={initials} name={name} email={email} />;
@@ -71,8 +82,10 @@ function KeycloakUserFooter() {
 /**
  * Auth-aware sidebar user footer — dispatches between mock
  * and Keycloak based on build-time AUTH_MODE selection.
+ * In Keycloak mode, accepts server-provided userName/userEmail props
+ * to avoid cross-origin client-side fetch issues.
  */
-export function SidebarUserFooter() {
+export function SidebarUserFooter({ userName, userEmail }: SidebarUserFooterProps) {
   if (AUTH_MODE === "mock") return <MockUserFooter />;
-  return <KeycloakUserFooter />;
+  return <KeycloakUserFooter userName={userName} userEmail={userEmail} />;
 }

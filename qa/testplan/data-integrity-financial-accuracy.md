@@ -5,7 +5,7 @@
 **Date**: 2026-03-18
 **Author**: Product + QA
 **Vertical**: accounting-za (Thornton & Associates)
-**Stack**: E2E mock-auth (localhost:3001 / backend 8081 / Mailpit 8026)
+**Stack**: Keycloak dev stack (frontend 3000 / backend 8080 / gateway 8443 / Keycloak 8180 / Mailpit 8025). See `qa/keycloak-e2e-guide.md` for setup.
 **Depends on**: Phase 49 test plan T0 (seed data)
 
 ---

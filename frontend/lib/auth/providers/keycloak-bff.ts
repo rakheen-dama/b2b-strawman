@@ -112,6 +112,18 @@ export async function getCurrentUserEmail(): Promise<string | null> {
   }
 }
 
+export async function getCurrentUserInfo(): Promise<{
+  name: string | null;
+  email: string | null;
+}> {
+  try {
+    const info = await fetchBffMe();
+    return { name: info.name ?? null, email: info.email ?? null };
+  } catch {
+    return { name: null, email: null };
+  }
+}
+
 export async function hasPlan(_plan: string): Promise<boolean> {
   // Keycloak BFF mode always returns true — billing not yet wired for Keycloak
   return true;

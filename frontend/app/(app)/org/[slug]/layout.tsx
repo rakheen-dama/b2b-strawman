@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getAuthContext } from "@/lib/auth";
+import { getAuthContext, getCurrentUserInfo } from "@/lib/auth";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { getOrgSettings } from "@/lib/api/settings";
 import { DesktopSidebar } from "@/components/desktop-sidebar";
@@ -43,9 +43,10 @@ export default async function OrgLayout({
     redirect(`/org/${orgSlug}/dashboard`);
   }
 
-  const [capResult, settingsResult] = await Promise.allSettled([
+  const [capResult, settingsResult, userInfoResult] = await Promise.allSettled([
     fetchMyCapabilities(),
     getOrgSettings(),
+    getCurrentUserInfo(),
   ]);
 
   let capData = {
@@ -73,6 +74,11 @@ export default async function OrgLayout({
     console.error("Failed to fetch org settings for terminology:", settingsResult.reason);
   }
 
+  const userInfo =
+    userInfoResult.status === "fulfilled"
+      ? userInfoResult.value
+      : { name: null, email: null };
+
   // TODO: Add PRO tier gate when tier info is available in frontend context
   // Backend already enforces tier-based access control — this is defense-in-depth
   const aiEnabled =
@@ -96,10 +102,10 @@ export default async function OrgLayout({
         <CommandPaletteProvider slug={slug}>
         <AssistantProvider aiEnabled={aiEnabled}>
         <div className="flex min-h-screen">
-          <DesktopSidebar slug={slug} groups={groups} />
+          <DesktopSidebar slug={slug} groups={groups} userName={userInfo.name} userEmail={userInfo.email} />
           <div className="flex flex-1 flex-col">
             <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b border-slate-200/60 bg-slate-100/80 px-4 backdrop-blur-md md:px-6 dark:border-slate-800/60 dark:bg-slate-950/90">
-              <MobileSidebar slug={slug} groups={groups} />
+              <MobileSidebar slug={slug} groups={groups} userName={userInfo.name} userEmail={userInfo.email} />
               <Breadcrumbs slug={slug} />
               <div className="ml-auto flex items-center gap-3">
                 <AuthHeaderControls />

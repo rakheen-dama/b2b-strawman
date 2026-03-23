@@ -2,46 +2,109 @@
 
 **Target**: DocTeams platform (post-Phase 48)
 **Vertical**: Small SA accounting firm ("Thornton & Associates")
-**Stack**: E2E mock-auth on port 3001 / backend 8081 / Mailpit 8026
+**Stack**: Keycloak dev stack (frontend 3000 / backend 8080 / gateway 8443 / Keycloak 8180 / Mailpit 8025). See `qa/keycloak-e2e-guide.md` for setup.
 
-**Prereqs**: `bash compose/scripts/e2e-up.sh` running. Login at `http://localhost:3001/mock-login`.
-**Users**: Alice (Owner), Bob (Admin), Carol (Member)
-**Org**: e2e-test-org
+**Prereqs**: Dev stack running locally (see guide). `keycloak-bootstrap.sh` already run.
+**Users**: Created during Day 0 onboarding — Thandi (Owner), Bob (Admin), Carol (Member)
+**Org**: Created during Day 0 — "Thornton & Associates" (slug assigned by backend)
+
+**Auth**: All logins go through Keycloak. Navigate to `/dashboard` → redirected to Keycloak login → fill email + password → submit. Use `loginAs(page, email, password)` fixture or manual browser login.
 
 **How to use**: Walk through each step in order. Check the box when done. Note any failures with the step number.
 
 ---
 
-## Day 0 — Firm Setup
+## Day 0 — Org Onboarding & Firm Setup
 
-Actor: **Alice** (Owner)
+### Phase A: Access Request & Approval
 
-- [ ] **0.1** Login as Alice at `/mock-login` → lands on `/org/e2e-test-org/dashboard`
-- [ ] **0.2** Dashboard shows a getting-started or onboarding card
-- [ ] **0.3** Navigate to **Settings > General** (`/settings/general`)
-- [ ] **0.4** Set default currency to **ZAR** → Save → verify it persists on reload
-- [ ] **0.5** Set brand colour to **#1B5E20** → Save → verify colour chip shows green
-- [ ] **0.6** Navigate to **Settings > Rates** (`/settings/rates`)
-- [ ] **0.7** Create org-level billing rate for Alice: **R1,500/hr** (ZAR)
-- [ ] **0.8** Create org-level billing rate for Bob: **R850/hr**
-- [ ] **0.9** Create org-level billing rate for Carol: **R450/hr**
-- [ ] **0.10** Create cost rate for Alice: **R600/hr**
-- [ ] **0.11** Create cost rate for Bob: **R400/hr**
-- [ ] **0.12** Create cost rate for Carol: **R200/hr**
-- [ ] **0.13** Navigate to **Settings > Tax** (`/settings/tax`)
-- [ ] **0.14** Create tax rate: Name = **VAT**, Rate = **15%**, Active = yes
-- [ ] **0.15** Navigate to **Settings > Team** (`/settings/team`) → verify Alice (Owner), Bob (Admin), Carol (Member) are listed
-- [ ] **0.16** Navigate to **Settings > Custom Fields** (`/settings/custom-fields`) → verify customer fields exist (accounting pack should be pre-seeded)
-- [ ] **0.17** Navigate to **Settings > Templates** (`/settings/templates`) → verify accounting template pack is listed
-- [ ] **0.18** Navigate to **Settings > Automations** (`/settings/automations`) → note how many rules exist (should be pre-seeded from accounting pack)
+Actor: **New org owner** (Thandi Thornton)
+
+- [ ] **0.1** Navigate to `http://localhost:3000` → landing page loads
+- [ ] **0.2** Click **"Get Started"** → navigates to `/request-access`
+- [ ] **0.3** Fill form: Email = `thandi@thornton-test.local`, Full Name = **Thandi Thornton**, Organization = **Thornton & Associates**, Country = **South Africa**, Industry = **Accounting**
+- [ ] **0.4** Click **Submit** → OTP verification step appears
+- [ ] **0.5** Open **Mailpit** (`http://localhost:8025`) → verify OTP email arrived for `thandi@thornton-test.local`
+- [ ] **0.6** Copy 6-digit OTP from email → enter in verification form → click **Verify**
+- [ ] **0.7** Success message appears: "Your request has been submitted for review"
+
+Actor: **Platform Admin** (`padmin@docteams.local` / `password`)
+
+- [ ] **0.8** Log out (clear cookies) or open new browser context
+- [ ] **0.9** Navigate to `http://localhost:3000/dashboard` → redirected to Keycloak login
+- [ ] **0.10** Login as `padmin@docteams.local` / `password`
+- [ ] **0.11** Navigate to `/platform-admin/access-requests`
+- [ ] **0.12** Verify **Thornton & Associates** appears in the Pending tab
+- [ ] **0.13** Click **Approve** → confirm in dialog
+- [ ] **0.14** Verify status changes to **Approved** (no provisioning error)
+- [ ] **0.15** Check Mailpit for Keycloak invitation email to `thandi@thornton-test.local`
+
+### Phase B: Owner Registration & First Login
+
+Actor: **Thandi** (registering via Keycloak invite)
+
+- [ ] **0.16** Open the Keycloak invitation link from the email
+- [ ] **0.17** Keycloak registration page loads — fill: First Name = **Thandi**, Last Name = **Thornton**, Password = `SecureP@ss1`, Confirm Password = `SecureP@ss1`
+- [ ] **0.18** Submit → redirected to the app → should land on org dashboard
+- [ ] **0.19** Verify URL contains `/org/thornton-associates/dashboard` (or similar slug)
+- [ ] **0.20** Verify sidebar shows org name, user avatar or name
+
+### Phase C: Plan Upgrade & Team Setup
+
+Actor: **Thandi** (Owner — logged in)
+
+- [ ] **0.21** Navigate to **Settings > Billing** → verify current plan is **Starter**
+- [ ] **0.22** Click **Upgrade to Pro** → confirm in dialog → verify plan shows **Pro**
+- [ ] **0.23** Navigate to **Settings > Team** → verify Thandi is listed as **Owner**
+- [ ] **0.24** Click **Invite Member** → fill: Email = `bob@thornton-test.local`, Role = **Admin** → Send
+- [ ] **0.25** Check Mailpit for Keycloak invitation email to `bob@thornton-test.local`
+- [ ] **0.26** Click **Invite Member** → fill: Email = `carol@thornton-test.local`, Role = **Member** → Send
+- [ ] **0.27** Check Mailpit for Keycloak invitation email to `carol@thornton-test.local`
+
+Actor: **Bob** (registering via Keycloak invite)
+
+- [ ] **0.28** Open Bob's invitation link from Mailpit
+- [ ] **0.29** Register: First Name = **Bob**, Last Name = **Ndlovu**, Password = `SecureP@ss2`
+- [ ] **0.30** Verify redirect to app → authenticated → on org dashboard
+
+Actor: **Carol** (registering via Keycloak invite)
+
+- [ ] **0.31** Open Carol's invitation link from Mailpit
+- [ ] **0.32** Register: First Name = **Carol**, Last Name = **Mokoena**, Password = `SecureP@ss3`
+- [ ] **0.33** Verify redirect to app → authenticated → on org dashboard
+
+### Phase D: Firm Settings (Accounting-ZA pack verification)
+
+Actor: **Thandi** (Owner — log back in if needed via Keycloak: `thandi@thornton-test.local` / `SecureP@ss1`)
+
+- [ ] **0.34** Navigate to **Settings > General** (`/settings/general`)
+- [ ] **0.35** Verify default currency is **ZAR** (should be auto-seeded from accounting-za profile) — if not, set it manually
+- [ ] **0.36** Set brand colour to **#1B5E20** → Save → verify colour chip shows green
+- [ ] **0.37** Navigate to **Settings > Rates** (`/settings/rates`)
+- [ ] **0.38** Verify rate cards are pre-seeded (accounting-za profile defaults: Owner R1,500/hr, Admin R850/hr, Member R450/hr billing; Owner R650/hr, Admin R350/hr, Member R180/hr cost). If not pre-seeded, create manually:
+  - Billing rate for Thandi: **R1,500/hr** (ZAR)
+  - Billing rate for Bob: **R850/hr**
+  - Billing rate for Carol: **R450/hr**
+  - Cost rate for Thandi: **R600/hr**
+  - Cost rate for Bob: **R400/hr**
+  - Cost rate for Carol: **R200/hr**
+- [ ] **0.39** Navigate to **Settings > Tax** (`/settings/tax`)
+- [ ] **0.40** Verify VAT 15% is pre-seeded. If not, create: Name = **VAT**, Rate = **15%**, Active = yes
+- [ ] **0.41** Navigate to **Settings > Team** (`/settings/team`) → verify Thandi (Owner), Bob (Admin), Carol (Member) are listed
+- [ ] **0.42** Navigate to **Settings > Custom Fields** (`/settings/custom-fields`) → verify customer fields exist (accounting-za pack: "SA Accounting — Client Details" field group)
+- [ ] **0.43** Navigate to **Settings > Templates** (`/settings/templates`) → verify accounting template pack is listed (7 templates)
+- [ ] **0.44** Navigate to **Settings > Automations** (`/settings/automations`) → verify automation rules are listed (4 rules from accounting-za pack)
 
 **Day 0 Checkpoints**:
+- [ ] Org created through real access request → approval → Keycloak registration flow
+- [ ] Owner, Admin, and Member all registered via Keycloak invites
+- [ ] Plan upgraded to Pro (allows 3+ members)
 - [ ] Currency shows ZAR on settings page
-- [ ] 3 billing rates visible on rates page
+- [ ] Rate cards visible on rates page (3 billing + 3 cost)
 - [ ] VAT 15% visible on tax page
-- [ ] Custom fields exist for CUSTOMER entity type
-- [ ] At least 1 document template present
-- [ ] Automation rules are listed (may be 0 if pack not auto-applied — note this)
+- [ ] Custom fields exist for CUSTOMER entity type (accounting-za pack)
+- [ ] At least 7 document templates present (accounting-za pack)
+- [ ] Automation rules are listed (4 from accounting-za pack)
 
 ---
 
@@ -51,7 +114,7 @@ Actor: **Alice** (Owner)
 
 Actor: **Bob** (Admin)
 
-- [ ] **1.1** Login as Bob → Navigate to **Customers** (`/customers`)
+- [ ] **1.1** Login as Bob (`bob@thornton-test.local` / `SecureP@ss2`) → Navigate to **Customers** (`/customers`)
 - [ ] **1.2** Click **New Customer** (or equivalent button)
 - [ ] **1.3** Fill: Name = **Kgosi Construction (Pty) Ltd**, Email = **thabo@kgosiconstruction.co.za**, Phone = **+27-11-555-0100**
 - [ ] **1.4** If custom fields are visible in the form, fill: Notes = "Pty Ltd, FYE 28 Feb, VAT vendor"
@@ -74,13 +137,13 @@ Actor: **Bob** (Admin)
 - [ ] **1.15** Click **New Information Request**
 - [ ] **1.16** Fill: Subject = "FICA Documents Required", add 3 items: "Certified ID Copy", "Company Registration (CM29)", "Proof of Address"
 - [ ] **1.17** Save → then click **Send**
-- [ ] **1.18** Open **Mailpit** (`http://localhost:8026`) → verify notification email was sent
+- [ ] **1.18** Open **Mailpit** (`http://localhost:8025`) → verify notification email was sent
 
 ### Proposal (engagement letter)
 
-Actor: **Alice** (Owner)
+Actor: **Thandi** (Owner)
 
-- [ ] **1.19** Login as Alice → Navigate to **Proposals** (`/proposals`)
+- [ ] **1.19** Login as Thandi (`thandi@thornton-test.local` / `SecureP@ss1`) → Navigate to **Proposals** (`/proposals`)
 - [ ] **1.20** Click **New Proposal**
 - [ ] **1.21** Fill: Title = "Monthly Bookkeeping — Kgosi Construction", Customer = Kgosi, Fee Model = **Retainer**, Amount = **R5,500**, Hours = **10**, Expiry = 30 days from now
 - [ ] **1.22** Save → verify proposal appears in list as **DRAFT**
@@ -126,7 +189,7 @@ Actor: **Alice** (Owner)
 
 ## Day 2–3 — Additional Client Onboarding
 
-Actor: **Bob** (Admin), then **Alice** for retainer
+Actor: **Bob** (Admin), then **Thandi** for retainer
 
 Repeat the Day 1 create-customer flow for each client below. For each: create customer → transition to ACTIVE (complete FICA) → create project → create tasks.
 
@@ -136,7 +199,7 @@ Repeat the Day 1 create-customer flow for each client below. For each: create cu
 - [ ] **2.2** Transition to ACTIVE (complete FICA checklist)
 - [ ] **2.3** Create project: "Monthly Bookkeeping — Naledi"
 - [ ] **2.4** Create task: "Monthly reconciliation" → assigned to Carol
-- [ ] **2.5** Create task: "Tax advisory" → assigned to Alice
+- [ ] **2.5** Create task: "Tax advisory" → assigned to Thandi
 
 ### Vukani Tech Solutions (retainer + hourly overflow)
 
@@ -144,7 +207,7 @@ Repeat the Day 1 create-customer flow for each client below. For each: create cu
 - [ ] **2.7** Transition to ACTIVE
 - [ ] **2.8** Create project: "Monthly Bookkeeping — Vukani"
 - [ ] **2.9** Create tasks: "Monthly reconciliation" (Carol), "Sage accounts reconciliation" (Carol)
-- [ ] **2.10** Create retainer (Alice): Customer = Vukani, Name = "Vukani Monthly Retainer", Hours = 8, Fee = R4,500/month
+- [ ] **2.10** Create retainer (Thandi): Customer = Vukani, Name = "Vukani Monthly Retainer", Hours = 8, Fee = R4,500/month
 
 ### Moroka Family Trust (fixed fee)
 
@@ -165,7 +228,7 @@ Repeat the Day 1 create-customer flow for each client below. For each: create cu
 
 ### Carol (Junior) — bookkeeping
 
-- [ ] **7.1** Login as Carol → navigate to **My Work** (`/my-work`)
+- [ ] **7.1** Login as Carol (`carol@thornton-test.local` / `SecureP@ss3`) → navigate to **My Work** (`/my-work`)
 - [ ] **7.2** Verify assigned tasks are visible (Kgosi: 2 tasks, Naledi: 1, Vukani: 2)
 - [ ] **7.3** Open Kgosi project → Tasks tab → click "Capture bank statements" task
 - [ ] **7.4** Mark task status → **In Progress**
@@ -176,17 +239,17 @@ Repeat the Day 1 create-customer flow for each client below. For each: create cu
 
 ### Bob (Admin) — client communication
 
-- [ ] **7.9** Login as Bob → open Kgosi project
+- [ ] **7.9** Login as Bob (`bob@thornton-test.local` / `SecureP@ss2`) → open Kgosi project
 - [ ] **7.10** Find comments section (may be a tab or inline) → add comment: **"Missing February bank statements — sent follow-up email to Thabo"**
 - [ ] **7.11** Verify comment appears with Bob's name and timestamp
 - [ ] **7.12** Log time on "Client liaison" task: **60 min**, "Client liaison — outstanding documentation follow-up"
 - [ ] **7.13** Verify rate snapshot is **R850** (Bob's rate)
 
-### Alice (Owner) — advisory
+### Thandi (Owner) — advisory
 
-- [ ] **7.14** Login as Alice → open Naledi project
+- [ ] **7.14** Login as Thandi (`thandi@thornton-test.local` / `SecureP@ss1`) → open Naledi project
 - [ ] **7.15** Log time on "Tax advisory" task: **30 min**, "Tax planning discussion — provisional tax implications"
-- [ ] **7.16** Verify rate snapshot is **R1,500** (Alice's rate)
+- [ ] **7.16** Verify rate snapshot is **R1,500** (Thandi's rate)
 
 ### Verification
 
@@ -235,7 +298,7 @@ Actor: **Bob**
 
 ### Hourly invoice for Naledi
 
-Actor: **Alice** (Owner)
+Actor: **Thandi** (Owner)
 
 - [ ] **30.1** Navigate to **Invoices** (`/invoices`)
 - [ ] **30.2** Click to create a new invoice
@@ -286,7 +349,7 @@ Actor: **Alice** (Owner)
 
 ### Payment recording
 
-Actor: **Alice**
+Actor: **Thandi**
 
 - [ ] **45.1** Open Kgosi January invoice
 - [ ] **45.2** Click **Record Payment** (or payment action)
@@ -304,11 +367,11 @@ Actor: **Bob**
 
 ### Ad-hoc engagement
 
-Actor: **Alice**
+Actor: **Thandi**
 
 - [ ] **45.9** Create new project: "BEE Certificate Review — Vukani", Customer = Vukani Tech
 - [ ] **45.10** Set budget: Hours = 5, Amount = R7,500
-- [ ] **45.11** Create task: "BEE certificate analysis" → assigned to Alice, priority HIGH
+- [ ] **45.11** Create task: "BEE certificate analysis" → assigned to Thandi, priority HIGH
 - [ ] **45.12** Log time: 120 min, "BEE scorecard analysis"
 
 ### Resource planning
@@ -328,7 +391,7 @@ Actor: **Alice**
 
 ### February invoices
 
-Actor: **Alice**
+Actor: **Thandi**
 
 - [ ] **60.1** Create Kgosi February retainer invoice with line: "Monthly Bookkeeping Retainer — February" R5,500 + VAT
 - [ ] **60.2** Add expense line to same invoice: "CIPC annual return filing — disbursement" R150 + VAT
@@ -360,10 +423,10 @@ Actor: **Alice**
 
 ### Create year-end project
 
-Actor: **Alice**
+Actor: **Thandi**
 
 - [ ] **75.1** Create project: "Annual Tax Return 2026 — Kgosi", Customer = Kgosi Construction
-- [ ] **75.2** Create tasks: "Gather financial data" (Carol, HIGH), "Prepare trial balance" (Bob, HIGH), "Submit ITR14" (Alice, URGENT)
+- [ ] **75.2** Create tasks: "Gather financial data" (Carol, HIGH), "Prepare trial balance" (Bob, HIGH), "Submit ITR14" (Thandi, URGENT)
 
 ### Information request for tax documents
 
@@ -376,7 +439,7 @@ Actor: **Alice**
 
 Actor: **Carol**
 
-- [ ] **75.7** Login as Carol → open "Annual Tax Return 2026 — Kgosi" project
+- [ ] **75.7** Login as Carol (`carol@thornton-test.local` / `SecureP@ss3`) → open "Annual Tax Return 2026 — Kgosi" project
 - [ ] **75.8** Log time on "Gather financial data": 240 min, "Review client documents and begin data capture"
 
 ### Verify multi-engagement
@@ -396,7 +459,7 @@ Actor: **Carol**
 
 ### Portfolio review
 
-Actor: **Alice**
+Actor: **Thandi**
 
 - [ ] **90.1** Navigate to **Customers** → verify all 4 clients listed with ACTIVE status
 - [ ] **90.2** Check customer lifecycle summary (if available as a widget or filter count)

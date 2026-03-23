@@ -7,56 +7,84 @@ description: Run an autonomous QA cycle against the Keycloak dev stack — dispa
 
 Run all QA cycle agent turns directly in this session against the **Keycloak dev stack** (not the E2E mock-auth stack). Each agent role (QA, Product, Dev, Infra) is dispatched as a subagent via the Agent tool. You (the orchestrator) inspect results between turns and adapt when things go wrong.
 
-## Environment — Keycloak Dev Stack
+## Environment — Keycloak Dev Stack (Local Services)
 
-| Service | URL | Notes |
-|---------|-----|-------|
-| Frontend | http://localhost:3000 | Keycloak auth mode |
-| Backend | http://localhost:8080 | Spring profile: `local,keycloak` |
-| Gateway (BFF) | http://localhost:8443 | OAuth2 session management |
-| Keycloak | http://localhost:8180 | Admin: admin/admin |
-| Postgres | localhost:5432 | User: postgres |
-| Mailpit UI | http://localhost:8025 | SMTP on 1025 |
-| LocalStack | localhost:4566 | S3 |
+Services run **locally in terminal sessions** (not Docker). Only infrastructure runs via Docker Compose.
 
-**Compose file**: `compose/docker-compose.yml` with `compose/.env.keycloak`
-**Start**: `cp compose/.env.keycloak compose/.env && bash compose/scripts/dev-up.sh --all`
-**Stop**: `bash compose/scripts/dev-down.sh`
+| Service | How to Start | URL |
+|---------|-------------|-----|
+| Infra (Postgres, LocalStack, Mailpit, Keycloak) | `bash compose/scripts/dev-up.sh` | various |
+| Backend | `SPRING_PROFILES_ACTIVE=local,keycloak ./mvnw spring-boot:run` (in `backend/`) | http://localhost:8080 |
+| Frontend | `NEXT_PUBLIC_AUTH_MODE=keycloak pnpm dev` (in `frontend/`) | http://localhost:3000 |
+| Gateway | `./mvnw spring-boot:run` (in `gateway/`) | http://localhost:8443 |
+| Portal | `pnpm dev` (in `portal/`) | http://localhost:3002 |
+| Keycloak Bootstrap | `bash compose/scripts/keycloak-bootstrap.sh` (run once after first start) | — |
 
-### Keycloak Users (after seeding)
+**Stop infra**: `bash compose/scripts/dev-down.sh`
+**Stop services**: Ctrl+C in each terminal
+
+### Key URLs
+
+| Service | URL |
+|---------|-----|
+| Frontend | http://localhost:3000 |
+| Backend | http://localhost:8080 |
+| Gateway (BFF) | http://localhost:8443 |
+| Keycloak Admin | http://localhost:8180 (admin/admin) |
+| Mailpit UI | http://localhost:8025 |
+| Mailpit API | http://localhost:8025/api/v1/ |
+
+### Platform Admin (pre-created by keycloak-bootstrap.sh)
 
 | User | Email | Password | Role |
 |------|-------|----------|------|
-| Alice | alice@example.com | password | owner |
-| Bob | bob@example.com | password | admin |
-| Carol | carol@example.com | password | member |
 | Platform Admin | padmin@docteams.local | password | platform-admin |
 
-**Organization**: acme-corp
+Other users (org owners, members) are created through the product's onboarding flow — not pre-seeded.
 
 ### Keycloak Login Flow (Playwright)
 
-Authentication in Keycloak mode uses a multi-redirect OIDC flow:
+Authentication uses a multi-redirect OIDC flow. The `keycloak-auth.ts` fixture at `frontend/e2e/fixtures/keycloak-auth.ts` provides helper functions:
 
-1. Navigate to any protected route (e.g., `http://localhost:3000/dashboard`)
-2. Frontend middleware detects no `SESSION` cookie → redirects to `http://localhost:8443/oauth2/authorization/keycloak`
-3. Gateway initiates OAuth2 code flow → redirects browser to Keycloak login page
-4. **Fill in username** (e.g., `alice@example.com`) and **password** (`password`)
-5. Submit the Keycloak login form
-6. Keycloak authenticates → redirects back to gateway callback → gateway creates session → redirects to frontend
-7. Frontend now has `SESSION` cookie → user is authenticated
+- `loginAs(page, email, password)` — navigates to `/dashboard`, follows redirect to Keycloak login, fills form, waits for redirect back
+- `loginAsPlatformAdmin(page)` — shortcut for padmin
+- `registerFromInvite(page, inviteLink, firstName, lastName, password)` — follows KC invite link, fills registration form
 
-**IMPORTANT**: The Keycloak login page is served by Keycloak itself (custom DocTeams theme). The form fields are typically `#username` and `#password` with a submit button `#kc-login`.
+**Keycloak form selectors** are centralized in `frontend/e2e/fixtures/keycloak-selectors.ts` (based on Keycloakify theme). If the theme changes, update that one file.
 
-### Prerequisites
+### Onboarding Flow (How Orgs Are Created)
 
-The gateway container references Keycloak by Docker hostname (`keycloak`). When it redirects the browser to the Keycloak login page, the URL contains `keycloak:8180`. For this to work from the host machine, add to `/etc/hosts`:
+1. New user clicks "Get Started" → `/request-access`
+2. Fills form: email, name, org name, country, industry → submits
+3. Receives OTP via email (Mailpit) → enters OTP → request goes to PENDING
+4. Platform admin logs in → `/platform-admin/access-requests` → approves
+5. Approval triggers: Keycloak org creation → tenant schema provisioning → invite email
+6. User clicks invite link from Mailpit → Keycloak registration page → sets password
+7. User logs in → backend JIT syncs member → user becomes org owner
+8. Owner invites members via Teams page (needs plan upgrade for >2 members)
 
+### Email Integration (Mailpit API)
+
+The `mailpit.ts` helper at `frontend/e2e/helpers/mailpit.ts` provides:
+
+- `clearMailbox()` — delete all emails (call before test runs)
+- `waitForEmail(recipient, { subject?, timeout? })` — polls until email arrives
+- `extractOtp(email)` — extracts 6-digit code from email body
+- `extractInviteLink(email)` — extracts Keycloak invite/registration URL
+
+### Running E2E Tests
+
+```bash
+# Run Keycloak onboarding + member invite tests
+cd frontend && E2E_AUTH_MODE=keycloak npx playwright test keycloak/ --config e2e/playwright.config.ts --reporter=list
+
+# Debug with headed browser
+cd frontend && E2E_AUTH_MODE=keycloak npx playwright test keycloak/onboarding --config e2e/playwright.config.ts --headed
 ```
-127.0.0.1 keycloak
-```
 
-The Infra agent should verify this before starting the stack.
+The `E2E_AUTH_MODE=keycloak` env var:
+- Sets Playwright to 60s timeout, 1 worker (serial)
+- Allows port 3000 navigation in the PreToolUse hook
 
 ## Why In-Session (not bash script)
 
@@ -146,69 +174,43 @@ You are the **Infra Agent** for the QA cycle on branch `{BRANCH}`.
 {IF rebuild: Rebuild the dev stack after Dev fixes have been merged.}
 
 ## Your Job
-{IF first start: Start the Keycloak dev stack, seed Keycloak and backend data.}
-{IF rebuild: Rebuild specific services after Dev fixes.}
+{IF first start: Start the Keycloak dev stack infra and verify local services are running.}
+{IF rebuild: Restart specific local services after Dev fixes.}
 
-## Environment — Keycloak Dev Stack
-- Compose file: compose/docker-compose.yml with compose/.env.keycloak
-- Frontend: http://localhost:3000
-- Backend: http://localhost:8080
-- Gateway (BFF): http://localhost:8443
-- Keycloak: http://localhost:8180 (admin/admin)
-- Postgres: localhost:5432 (user: postgres, pass: postgres, db: docteams)
-- Mailpit: http://localhost:8025
-- LocalStack: localhost:4566
+## Environment — Local Services
+Services run locally in terminal sessions. Only infra runs via Docker.
+
+| Service | How to Start | URL |
+|---------|-------------|-----|
+| Infra | `bash compose/scripts/dev-up.sh` | Postgres:5432, Keycloak:8180, Mailpit:8025 |
+| Backend | `SPRING_PROFILES_ACTIVE=local,keycloak ./mvnw spring-boot:run` (in backend/) | http://localhost:8080 |
+| Frontend | `NEXT_PUBLIC_AUTH_MODE=keycloak pnpm dev` (in frontend/) | http://localhost:3000 |
+| Gateway | `./mvnw spring-boot:run` (in gateway/) | http://localhost:8443 |
+| Portal | `pnpm dev` (in portal/) | http://localhost:3002 |
 
 ## Prerequisites Check
-1. Verify `/etc/hosts` contains `127.0.0.1 keycloak` — if not, report it and exit.
-2. Verify Docker is running.
+1. Verify Docker is running.
+2. Verify all local services respond to health checks.
 
 ## Starting the Stack (first time)
-1. Copy env file: `cp compose/.env.keycloak compose/.env`
-2. Start all services: `bash compose/scripts/dev-up.sh --all`
-3. Wait for all services to be healthy (the script does this).
-4. Run Keycloak bootstrap: `bash compose/scripts/keycloak-bootstrap.sh`
-5. Run Keycloak seed: `bash compose/scripts/keycloak-seed.sh`
-6. Provision backend org via internal API:
-   ```bash
-   # Provision the org (matches keycloak-seed.sh org alias)
-   curl -s -o /dev/null -w "%{http_code}" \
-     -X POST "http://localhost:8080/internal/orgs/provision" \
-     -H "Content-Type: application/json" \
-     -H "X-API-KEY: local-dev-api-key-change-in-production" \
-     -d '{"clerkOrgId":"acme-corp","orgName":"Acme Corp","verticalProfile":"accounting-za"}'
+1. Start Docker infra: `bash compose/scripts/dev-up.sh`
+2. Wait for Keycloak to be ready: `curl -sf http://localhost:8180/realms/docteams`
+3. Run Keycloak bootstrap (creates platform admin): `bash compose/scripts/keycloak-bootstrap.sh`
+4. Verify local services:
+   - Backend: `curl -sf http://localhost:8080/actuator/health`
+   - Gateway: `curl -sf http://localhost:8443/actuator/health`
+   - Frontend: `curl -sf http://localhost:3000/`
+   - Mailpit: `curl -sf http://localhost:8025/api/v1/messages`
+5. If any service is not running, report which one and exit.
 
-   # Sync plan to PRO
-   curl -s -o /dev/null -w "%{http_code}" \
-     -X POST "http://localhost:8080/internal/orgs/plan-sync" \
-     -H "Content-Type: application/json" \
-     -H "X-API-KEY: local-dev-api-key-change-in-production" \
-     -d '{"clerkOrgId":"acme-corp","planSlug":"pro"}'
-   ```
-7. Sync members (alice, bob, carol) via internal API — use Keycloak user IDs:
-   ```bash
-   # Get Keycloak user IDs
-   KCADM="docker exec b2b-keycloak /opt/keycloak/bin/kcadm.sh"
-   $KCADM config credentials --server http://localhost:8180 --realm master --user admin --password admin
-   ALICE_KC_ID=$($KCADM get "users?username=alice@example.com&exact=true" -r docteams | jq -r '.[0].id')
-   BOB_KC_ID=$($KCADM get "users?username=bob@example.com&exact=true" -r docteams | jq -r '.[0].id')
-   CAROL_KC_ID=$($KCADM get "users?username=carol@example.com&exact=true" -r docteams | jq -r '.[0].id')
-
-   # Sync each member
-   for entry in "$ALICE_KC_ID alice@example.com Alice_Owner owner" "$BOB_KC_ID bob@example.com Bob_Admin admin" "$CAROL_KC_ID carol@example.com Carol_Member member"; do
-     set -- $entry
-     curl -s -o /dev/null -w "%{http_code}" \
-       -X POST "http://localhost:8080/internal/members/sync" \
-       -H "Content-Type: application/json" \
-       -H "X-API-KEY: local-dev-api-key-change-in-production" \
-       -d "{\"clerkOrgId\":\"acme-corp\",\"clerkUserId\":\"$1\",\"email\":\"$2\",\"name\":\"$(echo $3 | tr '_' ' ')\",\"avatarUrl\":\"\",\"orgRole\":\"$4\"}"
-   done
-   ```
+**NOTE**: Org/user data is NOT pre-seeded. The QA lifecycle script's Day 0 exercises the real onboarding flow (access request → admin approval → Keycloak registration).
 
 ## Rebuilding (after Dev fixes)
-1. `bash compose/scripts/dev-rebuild.sh {services}` (e.g., `backend`, `frontend`, or both)
-2. Wait for health checks to pass.
-3. Clear NEEDS_REBUILD from status.md.
+1. Stop the affected local service (Ctrl+C in its terminal).
+2. Restart it with the same command.
+3. Wait for health check to pass.
+4. If Docker infra changed: `bash compose/scripts/dev-rebuild.sh {service}`
+5. Clear NEEDS_REBUILD from status.md.
 
 ## State File
 Read and update: qa_cycle/status.md
@@ -483,15 +485,17 @@ When `ALL_DAYS_COMPLETE` appears in status.md OR max cycles reached:
 
 | Aspect | /qa-cycle (E2E) | /qa-cycle-kc (Keycloak) |
 |--------|-----------------|-------------------------|
-| Frontend | http://localhost:3001 | http://localhost:3000 |
-| Backend | http://localhost:8081 | http://localhost:8080 |
+| Frontend | http://localhost:3001 (Docker) | http://localhost:3000 (local pnpm dev) |
+| Backend | http://localhost:8081 (Docker) | http://localhost:8080 (local mvnw) |
 | Auth | Mock IDP (port 8090) | Keycloak (port 8180) via Gateway BFF (8443) |
 | Login flow | Navigate to `/mock-login`, click Sign In | OIDC redirect → Keycloak login form → fill email/password |
-| Compose file | `docker-compose.e2e.yml` | `docker-compose.yml` + `.env.keycloak` |
-| Start script | `e2e-up.sh` | `dev-up.sh --all` |
-| Seed | Docker seed container (automatic) | `keycloak-bootstrap.sh` + `keycloak-seed.sh` + internal API calls |
+| Services | All in Docker | Infra in Docker, services run locally in terminals |
+| Start | `e2e-up.sh` | `dev-up.sh` + start services manually |
+| Seed data | Docker seed container (automatic) | `keycloak-bootstrap.sh` (platform admin only). Orgs created through UI. |
 | Postgres | localhost:5433, db: app | localhost:5432, db: docteams |
-| Prerequisite | None | `/etc/hosts` entry for `keycloak` |
+| Prerequisite | None | None (gateway runs locally, uses localhost:8180) |
+| E2E fixtures | `e2e/fixtures/auth.ts` (mock) | `e2e/fixtures/keycloak-auth.ts` |
+| Email helper | None | `e2e/helpers/mailpit.ts` (OTP + invite links) |
 
 ## Guardrails
 

@@ -14,9 +14,11 @@ import { useCommandPalette } from "@/components/command-palette-provider";
 interface DesktopSidebarProps {
   slug: string;
   groups?: string[];
+  userName?: string | null;
+  userEmail?: string | null;
 }
 
-export function DesktopSidebar({ slug, groups = [] }: DesktopSidebarProps) {
+export function DesktopSidebar({ slug, groups = [], userName, userEmail }: DesktopSidebarProps) {
   const pathname = usePathname();
   const { setOpen } = useCommandPalette();
 
@@ -113,7 +115,7 @@ export function DesktopSidebar({ slug, groups = [] }: DesktopSidebarProps) {
       </div>
 
       {/* Footer */}
-      <SidebarUserFooter />
+      <SidebarUserFooter userName={userName} userEmail={userEmail} />
     </aside>
   );
 }

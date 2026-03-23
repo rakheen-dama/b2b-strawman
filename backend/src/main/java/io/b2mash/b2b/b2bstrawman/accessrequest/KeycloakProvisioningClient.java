@@ -147,6 +147,31 @@ public class KeycloakProvisioningClient {
   }
 
   /**
+   * Sets a temporary password on a Keycloak user identified by email. Used during local development
+   * so that users created via the access-request approval flow can log in immediately without
+   * completing the email-based registration. The password is non-temporary (no forced reset).
+   *
+   * @param email the user's email address
+   * @param password the password to set
+   */
+  public void setUserPassword(String email, String password) {
+    String userId = findUserIdByEmail(email);
+    if (userId == null) {
+      log.warn("Cannot set password — no Keycloak user found for email {}", email);
+      return;
+    }
+    restClient
+        .put()
+        .uri("/users/{userId}/reset-password", userId)
+        .header("Authorization", "Bearer " + getAdminToken())
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(Map.of("type", "password", "value", password, "temporary", false))
+        .retrieve()
+        .toBodilessEntity();
+    log.info("Set default password for user {} ({})", userId, email);
+  }
+
+  /**
    * Sets the creatorUserId attribute on the organization. The gateway uses this to determine which
    * member is the org owner (Keycloak org memberships don't carry roles by default).
    */

@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Sort;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
@@ -30,20 +31,25 @@ public class AccessRequestApprovalService {
           "Accounting", "accounting-za",
           "Legal", "legal-za");
 
+  private static final String DEFAULT_PASSWORD = "password";
+
   private final AccessRequestRepository accessRequestRepository;
   private final KeycloakProvisioningClient keycloakProvisioningClient;
   private final TenantProvisioningService tenantProvisioningService;
   private final TransactionTemplate txTemplate;
+  private final boolean setDefaultPassword;
 
   public AccessRequestApprovalService(
       AccessRequestRepository accessRequestRepository,
       @Nullable KeycloakProvisioningClient keycloakProvisioningClient,
       TenantProvisioningService tenantProvisioningService,
-      TransactionTemplate txTemplate) {
+      TransactionTemplate txTemplate,
+      @Value("${app.keycloak.set-default-password:false}") boolean setDefaultPassword) {
     this.accessRequestRepository = accessRequestRepository;
     this.keycloakProvisioningClient = keycloakProvisioningClient;
     this.tenantProvisioningService = tenantProvisioningService;
     this.txTemplate = txTemplate;
+    this.setDefaultPassword = setDefaultPassword;
   }
 
   /**
@@ -104,6 +110,12 @@ public class AccessRequestApprovalService {
       keycloakProvisioningClient.inviteUser(kcOrgId, request.getEmail());
       log.info("Sent invitation to {} for org {}", request.getEmail(), kcOrgId);
       keycloakProvisioningClient.setOrgCreator(kcOrgId, request.getEmail());
+
+      // Step 4b: Set default password for local dev (skips email-based registration)
+      if (setDefaultPassword) {
+        keycloakProvisioningClient.setUserPassword(request.getEmail(), DEFAULT_PASSWORD);
+        log.info("Set default password for {} (local dev mode)", request.getEmail());
+      }
 
       // Step 5: Mark as approved (short transaction)
       return txTemplate.execute(

@@ -216,7 +216,7 @@ export const UTILITY_ITEMS: NavItem[] = [
   },
   {
     label: "Settings",
-    href: (slug) => `/org/${slug}/settings`,
+    href: (slug) => `/org/${slug}/settings/general`,
     icon: Settings,
   },
 ];

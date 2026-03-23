@@ -13,6 +13,8 @@ spring:
 app:
   jit-provisioning:
     enabled: true
+  keycloak:
+    set-default-password: true
 
 keycloak:
   admin:

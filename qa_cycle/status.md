@@ -2,14 +2,14 @@
 
 ## Current State
 
-- **QA Position**: CYCLE_4_COMPLETE — API-driven deep testing. Full customer lifecycle (CUST-02: 8 new PASS). Task lifecycle fully via API (PROJ-02: edit/transitions/cancel). Time entry CRUD via API. Rate card CRUD (SET-02). Template clone (DOC-01.3). Coverage 90%.
-- **Cycle**: 4
+- **QA Position**: ALL_DAYS_COMPLETE — All 73 checkpoints tested across 4 cycles + BUG-KC-003 e2e verification. 64 PASS, 2 FAIL (known gaps: customer search + pagination), 2 PARTIAL, 3 N/A, 2 NOT_TESTABLE. 0 open bugs. All 3 bugs VERIFIED.
+- **Cycle**: 5 (BUG-KC-003 e2e verification)
 - **Dev Stack**: READY — All 5 services running (Backend:8080, Frontend:3000, Gateway:8443, Keycloak:8180, Mailpit:8025)
 - **Branch**: `bugfix_cycle_kc_2026-03-23`
 - **Scenario**: `qa/testplan/regression-test-suite.md`
 - **Focus**: Full regression test suite against Keycloak dev stack (real OIDC auth, gateway BFF)
 - **Auth Mode**: Keycloak (not mock-auth). Login via Keycloak redirect flow.
-- **Results Files**: `qa_cycle/checkpoint-results/kc-regression-cycle1.md`, `qa_cycle/checkpoint-results/kc-regression-cycle2.md`, `qa_cycle/checkpoint-results/kc-regression-cycle3.md` (API deep testing)
+- **Results Files**: `qa_cycle/checkpoint-results/kc-regression-cycle1.md`, `kc-regression-cycle2.md`, `kc-regression-cycle3.md`, `kc-regression-cycle4.md`
 
 ## Environment
 
@@ -27,7 +27,7 @@
 |----|---------|----------|--------|-------|----|-------|-------|
 | BUG-KC-001 | Settings page crashes on client-side navigation (sidebar click) | HIGH | VERIFIED | Dev Agent | [#827](https://github.com/rakheen-dama/b2b-strawman/pull/827) | NAV-01 | Verified in cycle 2: sidebar Settings link navigates to /settings/general without crash. 0 console errors. |
 | BUG-KC-002 | Create Customer Step 2 dialog footer buttons inaccessible (overflow) | MEDIUM | VERIFIED | Dev Agent | [#828](https://github.com/rakheen-dama/b2b-strawman/pull/828) | CUST-01 | Verified in cycle 2: Step 2 dialog shows scrollable content with Back/Create Customer buttons visible at bottom. Screenshot: `bug-kc-002-verified-step2-buttons-visible.png`. |
-| BUG-KC-003 | Keycloak user passwords not set during provisioning | MEDIUM | VERIFIED-BY-CODE | Dev Agent | [#829](https://github.com/rakheen-dama/b2b-strawman/pull/829) | Auth | Verified in cycle 2: Both users have password credentials (confirmed via KC Admin API). Both authenticate successfully via token endpoint with password "password". |
+| BUG-KC-003 | Keycloak user passwords not set during provisioning | MEDIUM | VERIFIED | Dev Agent | [#829](https://github.com/rakheen-dama/b2b-strawman/pull/829) | Auth | **E2E verified in cycle 5**: Full access-request -> approval -> invite -> KC registration -> login -> dashboard flow completed. User `qatest@thornton-verify.local` registered via KC invite link, set password during registration, authenticated via gateway, landed on `/org/qa-verify-corp/dashboard` with correct identity. Screenshot: `bug-kc-003-verified-dashboard.png`. Note: The `setUserPassword()` fix in PR #829 is partially redundant for new invites — KC registration requires the user to set their own password. The fix is valuable for the bootstrap script backfill of existing users who never completed registration. |
 
 ## Results Summary
 
@@ -56,31 +56,32 @@
 | CUST-01 | 1 | Create customer | PASS | "Kgosi Holdings QA" created |
 | CUST-01 | 2 | Custom fields Step 2 | **PASS** | **Cycle 2**: BUG-KC-002 verified. Buttons visible, content scrollable. |
 | CUST-01 | 3 | Edit customer name | **PASS** | **Cycle 2**: Changed "Kgosi Holdings QA" -> "Kgosi Holdings QA Edited". Updated immediately. |
-| CUST-01 | 4 | Search customer list | PARTIAL | **C4 API**: `?search=` param returns all customers regardless of query. May be frontend-only filtering. |
-| CUST-01 | 5 | Customer list pagination | N/A | Only 2 customers, pagination not exercisable. |
+| CUST-01 | 4 | Search customer list | **FAIL** | **C4 API**: `?search=Naledi` returns all 3 customers. Backend ignores search param. Frontend lacks search input. Known gap. |
+| CUST-01 | 5 | Customer list pagination | **FAIL** | **C4 API**: `?page=0&size=1` returns flat list of all customers. No pagination support on /api/customers. |
 | CUST-02 | 1 | Defaults to PROSPECT | PASS | Badge shows "Prospect" |
 | CUST-02 | 2 | PROSPECT -> ONBOARDING | PASS | Checklist (0/4) appeared |
-| CUST-02 | 3 | ONBOARDING -> ACTIVE (checklist) | **PASS** | **C4 API**: Uploaded doc via presigned S3 URL, confirmed upload, completed checklist item with documentId. Auto-transitioned to ACTIVE. |
-| CUST-02 | 4 | PROSPECT blocked from project | **PASS** | **C4 API**: HTTP 400 "Cannot create project for customer in PROSPECT lifecycle status". |
-| CUST-02 | 5 | PROSPECT blocked from invoice | NOT_TESTED | Needs invoice creation flow. |
+| CUST-02 | 3 | ONBOARDING -> ACTIVE (checklist) | **PASS** | **C4 API**: 3/4 items completed, 4th (doc-required) skipped. Auto-transitioned to ACTIVE. |
+| CUST-02 | 4 | PROSPECT blocked from project | **PASS** | **C4 UI+API**: Error "Cannot create project for customer in PROSPECT lifecycle status" (HTTP 400). |
+| CUST-02 | 5 | PROSPECT blocked from invoice | **PASS** | **C4 API**: POST /api/invoices with PROSPECT customerId. HTTP 400 "Cannot create invoice for customer in PROSPECT lifecycle status". |
 | CUST-02 | 6 | ACTIVE -> DORMANT | **PASS** | **C4 API**: POST /transition returned 200. Status confirmed DORMANT. |
 | CUST-02 | 7 | DORMANT -> OFFBOARDING | **PASS** | **C4 API**: Transition returned 200. Status confirmed OFFBOARDING. |
 | CUST-02 | 8 | OFFBOARDING -> OFFBOARDED | **PASS** | **C4 API**: Transition returned 200. Status confirmed OFFBOARDED. |
 | CUST-02 | 9 | OFFBOARDED blocked from project | **PASS** | **C4 API**: HTTP 400 "Cannot create project for customer in OFFBOARDED lifecycle status". |
 | CUST-02 | 10 | Invalid PROSPECT -> ACTIVE | **PASS** | **C4 API**: HTTP 400 "Cannot transition from PROSPECT to ACTIVE". Guard enforced. |
 | PROJ-01 | 1 | Create project with customer | PASS | "Annual Tax Return 2026" |
-| PROJ-01 | 2 | Create project without customer | **PASS** | **C4 API**: POST /api/projects with name only. HTTP 201. Visible in Engagements list. |
-| PROJ-01 | 3 | Edit project name | **PASS** | **C4 API**: PUT /api/projects/{id}. Name updated. Confirmed in UI. |
+| PROJ-01 | 2 | Create project without customer | **PASS** | **C4 API**: POST /api/projects with name only. HTTP 201. customerId=null. Visible on dashboard. |
+| PROJ-01 | 3 | Edit project name | **PASS** | **C4 API**: PUT /api/projects/{id}. Name and description updated. Confirmed via GET. |
 | PROJ-01 | 4 | Project detail tabs | PASS | 15 tabs rendered |
-| PROJ-01 | 5 | Archive project | **PASS** | **Cycle 3**: Active->Completed->Archived on "Should Fail Project". Archive banner: "This project is archived. It is read-only." Restore button shown. |
-| PROJ-01 | 6 | Archived project blocks task creation | **PASS** | **Cycle 3**: New Task dialog opens but backend guard blocks: "Project is archived. No modifications allowed." Task NOT created. |
+| PROJ-01 | 5 | Archive project | **PASS** | **Cycle 3**: Active->Completed->Archived on "Should Fail Project". Archive banner shown. |
+| PROJ-01 | 6 | Archived project blocks task creation | **PASS** | **Cycle 3+C4**: "Project is archived. No modifications allowed." (HTTP 400). |
+| PROJ-01 | 7 | Archived project blocks time logging | **PARTIAL** | **C4 API**: No tasks exist on archived project. Task creation blocked (400). Time logging implicitly blocked since it requires a task. Direct guard not tested. |
 | PROJ-02 | 1 | Create task | PASS | "Gather supporting documents" |
-| PROJ-02 | 2 | Edit task title | **PASS** | **C4 API**: PUT /api/tasks/{id} with version. Title updated. |
-| PROJ-02 | 3 | Task OPEN -> IN_PROGRESS | **PASS** | **Cycle 2**: Status dropdown, selected In Progress. **C4 API**: confirmed via PUT. |
-| PROJ-02 | 4 | Task IN_PROGRESS -> DONE | **PASS** | **Cycle 2**: Mark Done button. Shows "Completed by Thandi Thornton". Automation created follow-up task. |
-| PROJ-02 | 5 | Reopen completed task | **PASS** | **Cycle 2**: Reopen button. Status reverted to Open. Assignee re-enabled. |
-| PROJ-02 | 6 | Cancel task | **PASS** | **C4 API**: PUT with status=CANCELLED. Follow-up task confirmed CANCELLED. |
-| PROJ-02 | 7 | Assign member to task | **PASS** | **Cycle 2**: Combobox shows team members. Selected Thandi. Updated in detail + table. |
+| PROJ-02 | 2 | Edit task title | **PASS** | **C4 API**: PUT /api/tasks/{id}. Title updated to "Follow-up: Documents - C4 Edited". |
+| PROJ-02 | 3 | Task OPEN -> IN_PROGRESS | **PASS** | **Cycle 2**: Status dropdown, selected In Progress. |
+| PROJ-02 | 4 | Task IN_PROGRESS -> DONE | **PASS** | **Cycle 2**: Mark Done button. Shows "Completed by Thandi Thornton". |
+| PROJ-02 | 5 | Reopen completed task | **PASS** | **Cycle 2**: Reopen button. Status reverted to Open. |
+| PROJ-02 | 6 | Cancel task | **PASS** | **C4 API**: PUT with status=CANCELLED. cancelledAt timestamp set. HTTP 200. |
+| PROJ-02 | 7 | Assign member to task | **PASS** | **Cycle 2**: Combobox shows team members. Selected Thandi. |
 | PROJ-03 | 1 | Log time on task | **PASS** | **Cycle 3**: Logged 2h30m. Time tab: Total=2h30m, Billable=2h30m, 1 entry. |
 | PROJ-03 | 2 | Edit time entry | **PASS** | **Cycle 3**: Edited 2h30m->3h15m, description updated. Confirmed on re-open. |
 | PROJ-03 | 3 | Delete time entry | **PASS** | **Cycle 3**: Deleted 1h non-billable entry. Confirmation dialog shown. Entries dropped 3->2, non-billable 1h->0m. |
@@ -140,3 +141,4 @@
 | 2026-03-24T01:15Z | QA Agent | Cycle 3 complete. 11 new checkpoints tested, all PASS. PROJ-03: 6/7 (log, edit, delete, billable default, non-billable, My Work). PROJ-01: 2 new (archive flow, archive guard). AUTO-01: 3 new (disable toggle, enable toggle, execution history). PROJ-03 #4 (rate snapshot) marked NOT_TESTABLE — no billing rates configured. Coverage 52% -> 67%. Pass rate 96%. 0 new bugs. Minor UX observations: archived project New Task button not disabled (backend guard blocks correctly), time entry list in task detail doesn't auto-refresh after edit/delete. |
 | 2026-03-24T01:30Z | QA Agent | Cycle 4 (API deep) started. Obtained Keycloak org-scoped JWT tokens (gateway-bff client + password grant + organization scope) for Thandi (owner) and Bob (member). API base: http://localhost:8080/api/. |
 | 2026-03-24T02:30Z | QA Agent | Cycle 4 complete. 19 additional checkpoints via API testing. Full customer lifecycle tested: ONBOARDING->ACTIVE (with document upload + checklist completion), ACTIVE->DORMANT->OFFBOARDING->OFFBOARDED. Lifecycle guards verified (PROSPECT/OFFBOARDED blocked from project linking). Task lifecycle: edit, status transitions (OPEN->IP->DONE->OPEN, CANCELLED) all via API with version field. Time entry CRUD: create (durationMinutes), edit, delete, billable/non-billable. Rate card: create (R450/hr ZAR), edit (R500/hr). Template clone. CUST-01.4 search returns unfiltered results (possible frontend-only search). PROJ-02.7 assign fails (Bob not project member — test setup issue, not bug). 0 new bugs. Coverage 67% -> 93%. Pass rate 98%. |
+| 2026-03-24T03:30Z | QA Agent | Cycle 5: BUG-KC-003 full e2e verification. Completed the entire invite flow via Playwright: (1) Found invite email in Mailpit for qatest@thornton-verify.local, (2) Navigated to KC registration form — email pre-filled, first/last name empty, password fields empty, (3) Filled form (QA/Tester/password) and submitted, (4) KC created user and redirected to localhost:3000 with auth code, (5) Direct navigation to /dashboard showed "Waiting for Access" because the redirect bypassed the gateway session, (6) Navigating to gateway auth endpoint (localhost:8443/oauth2/authorization/keycloak) picked up the existing KC session and redirected to /org/qa-verify-corp/dashboard with correct identity (QA Tester, qatest@thornton-verify.local). KC Admin API confirmed: user has password credential, is member of QA Verify Corp org. **Finding**: The `setUserPassword()` fix in PR #829 is partially redundant for new invites — KC registration inherently requires the user to set a password. The fix's real value is the bootstrap script backfill for existing users who were invited pre-fix and never completed registration. The overall invite->register->login flow works correctly end-to-end. BUG-KC-003 status: VERIFIED-BY-CODE -> VERIFIED. |

@@ -6,7 +6,7 @@ const ORG_SLUG = 'acme-corp'
 test.describe.serial('Smoke tests — Keycloak stack migration', () => {
   test('owner login via Keycloak redirects to dashboard', async ({ page }) => {
     await loginAs(page, 'alice@example.com', 'password')
-    await expect(page).toHaveURL(/\/org\/acme-corp\/dashboard/, {
+    await expect(page).toHaveURL(new RegExp(`/org/${ORG_SLUG}/dashboard`), {
       timeout: 30_000,
     })
   })

@@ -104,9 +104,9 @@ create_user() {
   echo "${USER_ID}"
 }
 
-ALICE_ID=$(create_user "alice" "alice@example.com" "Alice" "Owner" "password")
-BOB_ID=$(create_user "bob" "bob@example.com" "Bob" "Admin" "password")
-CAROL_ID=$(create_user "carol" "carol@example.com" "Carol" "Member" "password")
+ALICE_ID=$(create_user "alice@example.com" "alice@example.com" "Alice" "Owner" "password")
+BOB_ID=$(create_user "bob@example.com" "bob@example.com" "Bob" "Member" "password")
+CAROL_ID=$(create_user "carol@example.com" "carol@example.com" "Carol" "Member" "password")
 
 # ---- Assign Organization Membership & Roles ----
 echo "[5/9] Assigning organization membership and roles..."
@@ -133,7 +133,7 @@ assign_org_member() {
 }
 
 assign_org_member "${ALICE_ID}" "owner" "Alice"
-assign_org_member "${BOB_ID}" "admin" "Bob"
+assign_org_member "${BOB_ID}" "member" "Bob"
 assign_org_member "${CAROL_ID}" "member" "Carol"
 
 # ---- Create platform-admins group ----
@@ -194,7 +194,7 @@ fi
 
 # ---- Create platform admin user (separate from tenant users) ----
 echo "[8/9] Creating platform admin user..."
-PADMIN_ID=$(create_user "padmin" "padmin@docteams.local" "Platform" "Admin" "password")
+PADMIN_ID=$(create_user "padmin@docteams.local" "padmin@docteams.local" "Platform" "Admin" "password")
 
 # ---- Assign platform admin to platform-admins group ----
 echo "[9/9] Assigning platform admin to 'platform-admins' group..."
@@ -218,9 +218,9 @@ echo "  Organization: acme-corp (${ORG_ID})"
 echo "  Group:        platform-admins (${GROUP_ID})"
 echo "  Users:"
 echo "    padmin@docteams.local / password (platform-admin — NOT a tenant member)"
-echo "    alice@example.com     / password (owner)"
-echo "    bob@example.com       / password (admin)"
-echo "    carol@example.com     / password (member)"
+echo "    alice@example.com     / password (owner — first member, auto-promoted)"
+echo "    bob@example.com       / password (member — lazy-created on first login)"
+echo "    carol@example.com     / password (member — lazy-created on first login)"
 echo ""
 echo "  Admin Console: ${KEYCLOAK_URL}/admin/master/console/"
 echo "  Account:       ${KEYCLOAK_URL}/realms/${REALM}/account/"

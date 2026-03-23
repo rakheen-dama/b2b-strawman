@@ -163,6 +163,6 @@ Target directory for migrated tests: `frontend/e2e/tests/keycloak/`
 `dev-seed-tenant.sh` provides:
 - Organization: `acme-corp` (Acme Corp)
 - `alice@example.com` / `password` — owner
-- `bob@example.com` / `password` — admin
+- `bob@example.com` / `password` — member
 - `carol@example.com` / `password` — member
 - `padmin@docteams.local` / `password` — platform admin (not a tenant member)

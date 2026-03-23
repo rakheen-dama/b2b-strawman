@@ -47,7 +47,7 @@ bash compose/scripts/dev-seed-tenant.sh         # Seed acme-corp tenant for migr
 **Seed users (after `dev-seed-tenant.sh`):**
 - `padmin@docteams.local` / `password` (platform admin)
 - `alice@example.com` / `password` (owner — acme-corp)
-- `bob@example.com` / `password` (admin — acme-corp)
+- `bob@example.com` / `password` (member — acme-corp)
 - `carol@example.com` / `password` (member — acme-corp)
 
 **Run tests:**

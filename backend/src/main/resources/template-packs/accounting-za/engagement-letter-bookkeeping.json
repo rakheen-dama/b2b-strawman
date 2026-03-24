@@ -48,19 +48,37 @@
       ]
     },
     {
-      "type": "paragraph",
+      "type": "conditionalBlock",
+      "attrs": {
+        "fieldKey": "customer.customFields.acct_company_registration_number",
+        "operator": "isNotEmpty"
+      },
       "content": [
-        { "type": "text", "marks": [{ "type": "bold" }], "text": "Registration Number:" },
-        { "type": "text", "text": " " },
-        { "type": "variable", "attrs": { "key": "customer.customFields.acct_company_registration_number" } }
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "marks": [{ "type": "bold" }], "text": "Registration Number:" },
+            { "type": "text", "text": " " },
+            { "type": "variable", "attrs": { "key": "customer.customFields.acct_company_registration_number" } }
+          ]
+        }
       ]
     },
     {
-      "type": "paragraph",
+      "type": "conditionalBlock",
+      "attrs": {
+        "fieldKey": "project.customFields.engagement_type",
+        "operator": "isNotEmpty"
+      },
       "content": [
-        { "type": "text", "marks": [{ "type": "bold" }], "text": "Engagement Type:" },
-        { "type": "text", "text": " " },
-        { "type": "variable", "attrs": { "key": "project.customFields.engagement_type" } }
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "marks": [{ "type": "bold" }], "text": "Engagement Type:" },
+            { "type": "text", "text": " " },
+            { "type": "variable", "attrs": { "key": "project.customFields.engagement_type" } }
+          ]
+        }
       ]
     },
     {

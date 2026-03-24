@@ -9,19 +9,29 @@ Run all QA cycle agent turns directly in this session against the **Keycloak dev
 
 ## Environment — Keycloak Dev Stack (Local Services)
 
-Services run **locally in terminal sessions** (not Docker). Only infrastructure runs via Docker Compose.
+Services run **locally in the background** (not Docker). Only infrastructure runs via Docker Compose.
+Use `compose/scripts/svc.sh` to manage services:
+
+```bash
+bash compose/scripts/svc.sh start all              # Start backend, gateway, frontend, portal
+bash compose/scripts/svc.sh restart backend         # Restart after Java changes
+bash compose/scripts/svc.sh stop frontend portal    # Stop specific services
+bash compose/scripts/svc.sh status                  # Health check all services
+bash compose/scripts/svc.sh logs backend            # Last 50 lines of log
+```
 
 | Service | How to Start | URL |
 |---------|-------------|-----|
 | Infra (Postgres, LocalStack, Mailpit, Keycloak) | `bash compose/scripts/dev-up.sh` | various |
-| Backend | `SPRING_PROFILES_ACTIVE=local,keycloak ./mvnw spring-boot:run` (in `backend/`) | http://localhost:8080 |
-| Frontend | `NEXT_PUBLIC_AUTH_MODE=keycloak pnpm dev` (in `frontend/`) | http://localhost:3000 |
-| Gateway | `./mvnw spring-boot:run` (in `gateway/`) | http://localhost:8443 |
-| Portal | `pnpm dev` (in `portal/`) | http://localhost:3002 |
+| Backend | `svc.sh start backend` (or `SPRING_PROFILES_ACTIVE=local,keycloak ./mvnw spring-boot:run`) | http://localhost:8080 |
+| Frontend | `svc.sh start frontend` (or `NEXT_PUBLIC_AUTH_MODE=keycloak pnpm dev`) | http://localhost:3000 |
+| Gateway | `svc.sh start gateway` (or `./mvnw spring-boot:run` in gateway/) | http://localhost:8443 |
+| Portal | `svc.sh start portal` (or `pnpm dev` in portal/) | http://localhost:3002 |
 | Keycloak Bootstrap | `bash compose/scripts/keycloak-bootstrap.sh` (run once after first start) | — |
 
 **Stop infra**: `bash compose/scripts/dev-down.sh`
-**Stop services**: Ctrl+C in each terminal
+**Stop services**: `bash compose/scripts/svc.sh stop all`
+**Restart after code changes**: `bash compose/scripts/svc.sh restart backend` (Java changes need restart; frontend/portal use HMR)
 
 ### Key URLs
 
@@ -177,40 +187,46 @@ You are the **Infra Agent** for the QA cycle on branch `{BRANCH}`.
 {IF first start: Start the Keycloak dev stack infra and verify local services are running.}
 {IF rebuild: Restart specific local services after Dev fixes.}
 
-## Environment — Local Services
-Services run locally in terminal sessions. Only infra runs via Docker.
+## Service Management
+Use `compose/scripts/svc.sh` to manage local services (background, PID-tracked, with health waits):
 
-| Service | How to Start | URL |
-|---------|-------------|-----|
-| Infra | `bash compose/scripts/dev-up.sh` | Postgres:5432, Keycloak:8180, Mailpit:8025 |
-| Backend | `SPRING_PROFILES_ACTIVE=local,keycloak ./mvnw spring-boot:run` (in backend/) | http://localhost:8080 |
-| Frontend | `NEXT_PUBLIC_AUTH_MODE=keycloak pnpm dev` (in frontend/) | http://localhost:3000 |
-| Gateway | `./mvnw spring-boot:run` (in gateway/) | http://localhost:8443 |
-| Portal | `pnpm dev` (in portal/) | http://localhost:3002 |
+```bash
+bash compose/scripts/svc.sh status              # Check health of all services
+bash compose/scripts/svc.sh start all            # Start backend, gateway, frontend, portal
+bash compose/scripts/svc.sh restart backend      # Restart after Java changes
+bash compose/scripts/svc.sh stop frontend portal # Stop specific services
+bash compose/scripts/svc.sh logs backend         # Last 50 lines of log
+```
+
+| Service | Port | Health Check |
+|---------|------|-------------|
+| Backend | 8080 | /actuator/health |
+| Gateway | 8443 | /actuator/health |
+| Frontend | 3000 | / |
+| Portal | 3002 | / |
+
+Docker infra (Postgres, Keycloak, Mailpit, LocalStack) is managed separately via `bash compose/scripts/dev-up.sh`.
 
 ## Prerequisites Check
-1. Verify Docker is running.
-2. Verify all local services respond to health checks.
+1. Verify Docker infra is running: `bash compose/scripts/dev-up.sh`
+2. Check service health: `bash compose/scripts/svc.sh status`
+3. Start any services that are down: `bash compose/scripts/svc.sh start all`
 
 ## Starting the Stack (first time)
 1. Start Docker infra: `bash compose/scripts/dev-up.sh`
 2. Wait for Keycloak to be ready: `curl -sf http://localhost:8180/realms/docteams`
 3. Run Keycloak bootstrap (creates platform admin): `bash compose/scripts/keycloak-bootstrap.sh`
-4. Verify local services:
-   - Backend: `curl -sf http://localhost:8080/actuator/health`
-   - Gateway: `curl -sf http://localhost:8443/actuator/health`
-   - Frontend: `curl -sf http://localhost:3000/`
-   - Mailpit: `curl -sf http://localhost:8025/api/v1/messages`
-5. If any service is not running, report which one and exit.
+4. Start local services: `bash compose/scripts/svc.sh start all`
+5. If any service fails to start, check logs: `bash compose/scripts/svc.sh logs {service}`
 
 **NOTE**: Org/user data is NOT pre-seeded. The QA lifecycle script's Day 0 exercises the real onboarding flow (access request → admin approval → Keycloak registration).
 
 ## Rebuilding (after Dev fixes)
-1. Stop the affected local service (Ctrl+C in its terminal).
-2. Restart it with the same command.
-3. Wait for health check to pass.
-4. If Docker infra changed: `bash compose/scripts/dev-rebuild.sh {service}`
-5. Clear NEEDS_REBUILD from status.md.
+1. Restart the affected service: `bash compose/scripts/svc.sh restart backend` (or gateway/frontend/portal)
+2. svc.sh will stop, restart, and wait for health check automatically.
+3. If Docker infra changed: `bash compose/scripts/dev-rebuild.sh {service}`
+4. Clear NEEDS_REBUILD from status.md.
+5. **When to restart**: Backend/Gateway need restart after Java source changes. Frontend/Portal use HMR (auto-reload).
 
 ## State File
 Read and update: qa_cycle/status.md
@@ -408,7 +424,8 @@ git checkout {BRANCH} && git pull origin {BRANCH}
 
 ### 7. Update Status
 Set gap status to FIXED in qa_cycle/status.md.
-If backend/seed/docker changed: add NEEDS_REBUILD to Current State.
+If backend/gateway changed: run `bash compose/scripts/svc.sh restart backend` (or gateway).
+If frontend/portal changed: HMR picks up changes automatically (no restart needed).
 Add log entry. Commit and push to {BRANCH}.
 
 ## Guard Rails

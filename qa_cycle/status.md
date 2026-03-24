@@ -39,7 +39,7 @@
 | GAP-P49-002 | Statement of Account invoice table empty | major | FIXED | backend | #830 | T1.6 | `invoices` loop source registered in VariableMetadataRegistry. `totalOutstanding` added to variable picker. Invoice query logging added. Data verified: INV-0001 customer_id matches Naledi. Needs re-test. |
 | GAP-P49-003 | FICA verification date blank despite being populated | major | FIXED | backend | #830 | T1.7, T5.2 | Debug logging added to CustomerContextBuilder. Data verified present in DB. Needs re-test. |
 | GAP-P49-004 | No pre-generation warning for missing custom fields | minor | SPEC_READY | backend | — | T5.6 | TemplateValidationService only checks requiredContextFields, not template variable presence. Spec: `fix-specs/GAP-P49-004-kc.md` |
-| GAP-P49-005 | Blank field produces dangling label | cosmetic | SPEC_READY | backend/template | — | T5.6 | Wrap label+value in conditionalBlock (isNotEmpty) in template JSON. Spec: `fix-specs/GAP-P49-005-kc.md` |
+| GAP-P49-005 | Blank field produces dangling label | cosmetic | FIXED | Dev Agent | [#831](https://github.com/rakheen-dama/b2b-strawman/pull/831) | T5.6 | Wrapped 6 optional custom field paragraphs in `conditionalBlock` nodes with `isNotEmpty` operator across 3 accounting-za template JSONs (engagement-letter-tax-return, engagement-letter-bookkeeping, fica-confirmation). No Java changes. |
 
 ## Results Summary
 

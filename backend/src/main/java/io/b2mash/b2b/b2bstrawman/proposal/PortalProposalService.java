@@ -128,6 +128,13 @@ public class PortalProposalService {
           "Proposal not actionable", "Cannot accept proposal in status " + portalRow.status());
     }
 
+    // Check if proposal has expired (race window: expiresAt passed but scheduled processor hasn't
+    // run yet)
+    if (portalRow.expiresAt() != null && Instant.now().isAfter(portalRow.expiresAt())) {
+      throw new ResourceConflictException(
+          "Proposal expired", "This proposal expired on " + portalRow.expiresAt());
+    }
+
     // Execute orchestration using the already-bound tenant context from CustomerAuthFilter
     var result = orchestrationService.acceptProposal(proposalId, portalContactId);
 
@@ -159,6 +166,13 @@ public class PortalProposalService {
           "Proposal not actionable", "Cannot decline proposal in status " + portalRow.status());
     }
 
+    // Check if proposal has expired (race window: expiresAt passed but scheduled processor hasn't
+    // run yet)
+    if (portalRow.expiresAt() != null && Instant.now().isAfter(portalRow.expiresAt())) {
+      throw new ResourceConflictException(
+          "Proposal expired", "This proposal expired on " + portalRow.expiresAt());
+    }
+
     // Execute decline using the already-bound tenant context from CustomerAuthFilter
     proposalService.declineProposal(proposalId, reason);
 
@@ -173,18 +187,21 @@ public class PortalProposalService {
     return portalJdbc
         .sql(
             """
-            SELECT id, org_id, status, portal_contact_id
+            SELECT id, org_id, status, portal_contact_id, expires_at
             FROM portal.portal_proposals
             WHERE id = ? AND customer_id = ?
             """)
         .params(proposalId, customerId)
         .query(
-            (rs, rowNum) ->
-                new PortalProposalRow(
-                    rs.getObject("id", UUID.class),
-                    rs.getString("org_id"),
-                    rs.getString("status"),
-                    rs.getObject("portal_contact_id", UUID.class)))
+            (rs, rowNum) -> {
+              var expiresAtTs = rs.getTimestamp("expires_at");
+              return new PortalProposalRow(
+                  rs.getObject("id", UUID.class),
+                  rs.getString("org_id"),
+                  rs.getString("status"),
+                  rs.getObject("portal_contact_id", UUID.class),
+                  expiresAtTs != null ? expiresAtTs.toInstant() : null);
+            })
         .optional()
         .orElseThrow(() -> new ResourceNotFoundException("Proposal", proposalId));
   }
@@ -228,5 +245,6 @@ public class PortalProposalService {
 
   public record PortalDeclineResponse(UUID proposalId, String status, Instant declinedAt) {}
 
-  private record PortalProposalRow(UUID id, String orgId, String status, UUID portalContactId) {}
+  private record PortalProposalRow(
+      UUID id, String orgId, String status, UUID portalContactId, Instant expiresAt) {}
 }

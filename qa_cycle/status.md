@@ -49,12 +49,12 @@
 
 | ID | Summary | Severity | Status | Owner | PR | Track | Notes |
 |----|---------|----------|--------|-------|----|-------|-------|
-| GAP-DI-01 | DRAFT invoices cannot be voided (only APPROVED/SENT) | Minor | OPEN | — | — | T1.2 | Design decision — not a bypass |
+| GAP-DI-01 | DRAFT invoices cannot be voided (only APPROVED/SENT) | Minor | WONT_FIX | — | — | T1.2 | BY_DESIGN: DRAFT invoices can be deleted (no financial impact). Voiding is for APPROVED/SENT invoices to preserve audit trail. Confirmed by architecture doc and QA plan INV-040. Existing fix-spec already documents this. |
 | GAP-DI-02 | Comments on ARCHIVED projects | Minor | FIXED | — | — | T1.4 | Archive guard now blocks comments |
 | GAP-DI-03 | Audit DELETE vulnerability | Major | FIXED | — | — | T4.11 | prevent_audit_delete() trigger added |
-| GAP-DI-04 | Auto-transition actorType is USER not SYSTEM | Minor | OPEN | — | — | T4.12 | Auto-transitions record triggering user |
-| GAP-DI-05 | No project unarchive endpoint | Minor | OPEN | — | — | T1.4 | Projects cannot be unarchived |
-| GAP-DI-06 | ipAddress not in audit API response | Minor | OPEN | — | — | T4.10 | Field may exist in DB but not in DTO |
+| GAP-DI-04 | Auto-transition actorType is USER not SYSTEM | Minor | WONT_FIX | — | — | T4.12 | BY_DESIGN: Auto-transitions (checklist completion -> ACTIVE) are triggered by the last user action within their HTTP request. AuditEventBuilder auto-detects actorType=USER because MEMBER_ID is bound. Recording the triggering user provides better traceability than a generic SYSTEM actor. The actorType=SYSTEM path is correctly used for non-HTTP contexts (scheduled jobs like DormancyScheduledJob). |
+| GAP-DI-05 | No project unarchive endpoint | Minor | WONT_FIX | — | — | T1.4 | FALSE_POSITIVE: Project unarchive IS supported via `PATCH /api/projects/{id}/reopen`. ProjectStatus enum allows ARCHIVED->ACTIVE transition. Project.reopen() handles both COMPLETED and ARCHIVED states. QA agent missed the existing endpoint. |
+| GAP-DI-06 | ipAddress not in audit API response | Minor | SPEC_READY | — | — | T4.10 | AuditEventResponse DTO omits ipAddress and userAgent fields that exist in AuditEvent entity and are populated by AuditEventBuilder. Fix spec: qa_cycle/fix-specs/GAP-DI-06.md |
 
 ## Log
 
@@ -69,3 +69,4 @@
 | 2026-03-24T20:58Z | QA | T3 complete: 17 checkpoints, all MATH_OK. Rounding uses HALF_UP. Per-line tax calculation confirmed. Edge cases (fractional qty, tiny amounts) correct. |
 | 2026-03-24T21:02Z | QA | T4 complete: 18 checkpoints, all AUDIT_OK. Customer + invoice lifecycle events present with correct details. Audit immutability verified — both UPDATE and DELETE blocked by triggers. GAP-DI-03 (DELETE vulnerability) FIXED. |
 | 2026-03-24T21:05Z | QA | Cycle 1 complete. 84 checkpoints tested, 83 PASS, 1 known design decision. 2 previous gaps fixed. 3 new minor gaps documented. No blockers. |
+| 2026-03-24T21:30Z | Product | Triaged 4 OPEN gaps from cycle 1. GAP-DI-01: WONT_FIX (by design — DRAFT deletion exists, voiding is for approved/sent). GAP-DI-04: WONT_FIX (by design — user-triggered auto-transitions correctly record the triggering user, SYSTEM reserved for scheduled jobs). GAP-DI-05: WONT_FIX (false positive — PATCH /reopen endpoint already handles ARCHIVED->ACTIVE). GAP-DI-06: SPEC_READY — AuditEventResponse DTO missing ipAddress/userAgent fields (fix spec written). |

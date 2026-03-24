@@ -48,27 +48,54 @@
       ]
     },
     {
-      "type": "paragraph",
+      "type": "conditionalBlock",
+      "attrs": {
+        "fieldKey": "customer.customFields.sars_tax_reference",
+        "operator": "isNotEmpty"
+      },
       "content": [
-        { "type": "text", "marks": [{ "type": "bold" }], "text": "SARS Tax Reference:" },
-        { "type": "text", "text": " " },
-        { "type": "variable", "attrs": { "key": "customer.customFields.sars_tax_reference" } }
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "marks": [{ "type": "bold" }], "text": "SARS Tax Reference:" },
+            { "type": "text", "text": " " },
+            { "type": "variable", "attrs": { "key": "customer.customFields.sars_tax_reference" } }
+          ]
+        }
       ]
     },
     {
-      "type": "paragraph",
+      "type": "conditionalBlock",
+      "attrs": {
+        "fieldKey": "project.customFields.tax_year",
+        "operator": "isNotEmpty"
+      },
       "content": [
-        { "type": "text", "marks": [{ "type": "bold" }], "text": "Tax Year:" },
-        { "type": "text", "text": " " },
-        { "type": "variable", "attrs": { "key": "project.customFields.tax_year" } }
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "marks": [{ "type": "bold" }], "text": "Tax Year:" },
+            { "type": "text", "text": " " },
+            { "type": "variable", "attrs": { "key": "project.customFields.tax_year" } }
+          ]
+        }
       ]
     },
     {
-      "type": "paragraph",
+      "type": "conditionalBlock",
+      "attrs": {
+        "fieldKey": "project.customFields.sars_submission_deadline",
+        "operator": "isNotEmpty"
+      },
       "content": [
-        { "type": "text", "marks": [{ "type": "bold" }], "text": "SARS Submission Deadline:" },
-        { "type": "text", "text": " " },
-        { "type": "variable", "attrs": { "key": "project.customFields.sars_submission_deadline" } }
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "marks": [{ "type": "bold" }], "text": "SARS Submission Deadline:" },
+            { "type": "text", "text": " " },
+            { "type": "variable", "attrs": { "key": "project.customFields.sars_submission_deadline" } }
+          ]
+        }
       ]
     },
     {

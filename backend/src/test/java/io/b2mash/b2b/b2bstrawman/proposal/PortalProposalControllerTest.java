@@ -487,6 +487,65 @@ class PortalProposalControllerTest {
         .andExpect(status().isConflict());
   }
 
+  @Test
+  void acceptProposal_sentButExpired_returns409() throws Exception {
+    // GAP-DI-07: SENT proposal with expiresAt in the past — race window scenario
+    var sentExpiredId = UUID.randomUUID();
+    seedPortalProposal(
+        sentExpiredId,
+        customerId,
+        portalContactId,
+        "PROP-RACE-001",
+        "Sent But Expired Proposal",
+        "SENT",
+        "FIXED",
+        new BigDecimal("10000.00"),
+        "ZAR",
+        "<p>This proposal has expired but status not yet updated</p>",
+        "[]",
+        Instant.parse("2025-12-01T10:00:00Z"),
+        Instant.parse("2025-12-15T10:00:00Z")); // expiresAt in the past
+
+    mockMvc
+        .perform(
+            post("/portal/api/proposals/{id}/accept", sentExpiredId)
+                .header("Authorization", "Bearer " + portalToken))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.title").value("Proposal expired"));
+  }
+
+  @Test
+  void declineProposal_sentButExpired_returns409() throws Exception {
+    // GAP-DI-07: SENT proposal with expiresAt in the past — decline also guarded
+    var sentExpiredDeclineId = UUID.randomUUID();
+    seedPortalProposal(
+        sentExpiredDeclineId,
+        customerId,
+        portalContactId,
+        "PROP-RACE-002",
+        "Sent But Expired For Decline",
+        "SENT",
+        "HOURLY",
+        null,
+        null,
+        "<p>Expired proposal for decline test</p>",
+        "[]",
+        Instant.parse("2025-12-01T10:00:00Z"),
+        Instant.parse("2025-12-15T10:00:00Z")); // expiresAt in the past
+
+    mockMvc
+        .perform(
+            post("/portal/api/proposals/{id}/decline", sentExpiredDeclineId)
+                .header("Authorization", "Bearer " + portalToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"reason": "Too late anyway"}
+                    """))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.title").value("Proposal expired"));
+  }
+
   // --- Decline tests ---
 
   @Test

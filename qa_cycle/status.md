@@ -2,8 +2,8 @@
 
 ## Current State
 
-- **QA Position**: ALL_TRACKS_COMPLETE. Cycles 1+2 finished. 138 checkpoints, 136 passed, 2 known (GAP-DI-01 WONT_FIX, GAP-DI-07 OPEN). One new major gap: expired proposals can be accepted (GAP-DI-07).
-- **Cycle**: 2 (complete)
+- **QA Position**: ALL_VERIFIED. Cycles 1+2+3 finished. 142 checkpoints, 140 passed, 1 known design decision (GAP-DI-01 WONT_FIX), 1 gap verified fixed (GAP-DI-07 VERIFIED). All major and minor gaps resolved.
+- **Cycle**: 3 (complete — verification only)
 - **Dev Stack**: READY — all services healthy
 - **Branch**: `bugfix_cycle_financial_accuracy_2026-03-24`
 - **Scenario**: `qa/testplan/data-integrity-financial-accuracy.md`
@@ -64,15 +64,22 @@
 
 **New gap**: GAP-DI-07 (expired proposals can be accepted). **Verified**: GAP-DI-05 (false positive confirmed), GAP-DI-06 (ipAddress/userAgent now in API).
 
-## Combined Totals (Cycle 1 + 2)
+## Cycle 3 Summary (Verification)
+
+| Track | Tested | Passed | Failed |
+|-------|--------|--------|--------|
+| GAP-DI-07 Verify | 4 | 4 | 0 |
+
+## Combined Totals (Cycle 1 + 2 + 3)
 
 | Track | Total Tested | Total Passed | Total Failed |
 |-------|-------------|--------------|--------------|
-| T1 — State Machines | 50 | 48 | 2 (DI-01 known, DI-07 new) |
+| T1 — State Machines | 50 | 49 | 1 (DI-01 WONT_FIX) |
 | T2 — Rate Hierarchy | 21 | 21 | 0 |
 | T3 — Invoice Math | 27 | 27 | 0 |
 | T4 — Audit Trail | 40 | 40 | 0 |
-| **Total** | **138** | **136** | **2** |
+| GAP Verifications | 4 | 4 | 0 |
+| **Total** | **142** | **141** | **1 (design decision)** |
 
 ## Tracker
 
@@ -84,7 +91,7 @@
 | GAP-DI-04 | Auto-transition actorType is USER not SYSTEM | Minor | WONT_FIX | — | — | T4.12 | BY_DESIGN: Auto-transitions (checklist completion -> ACTIVE) are triggered by the last user action within their HTTP request. AuditEventBuilder auto-detects actorType=USER because MEMBER_ID is bound. Recording the triggering user provides better traceability than a generic SYSTEM actor. The actorType=SYSTEM path is correctly used for non-HTTP contexts (scheduled jobs like DormancyScheduledJob). |
 | GAP-DI-05 | No project unarchive endpoint | Minor | WONT_FIX | — | — | T1.4 | FALSE_POSITIVE: Project unarchive IS supported via `PATCH /api/projects/{id}/reopen`. ProjectStatus enum allows ARCHIVED->ACTIVE transition. Project.reopen() handles both COMPLETED and ARCHIVED states. QA agent missed the existing endpoint. |
 | GAP-DI-06 | ipAddress not in audit API response | Minor | VERIFIED | Dev Agent | [#832](https://github.com/rakheen-dama/b2b-strawman/pull/832) | T4.10 | Added ipAddress and userAgent to AuditEventResponse DTO and from() factory method. Verified in Cycle 2: all 5 sampled events have ipAddress=0:0:0:0:0:0:0:1 and userAgent=curl/8.9.1. |
-| GAP-DI-07 | Expired proposals can be accepted via portal | Major | SPEC_READY | — | — | T1.3 | `PortalProposalService.acceptProposal()` checks status==SENT but does NOT check expiresAt. A proposal with expiresAt=2026-01-01 was accepted on 2026-03-24. Fix spec: `qa_cycle/fix-specs/GAP-DI-07.md`. Add `isExpired()` to Proposal entity, add expiry guard in `acceptProposal()` and `declineProposal()`, defense-in-depth in `markAccepted()`. |
+| GAP-DI-07 | Expired proposals can be accepted via portal | Major | VERIFIED | Dev Agent | — | T1.3 | Fixed: Added `isExpired()` to Proposal entity, expiry guards in `PortalProposalService.acceptProposal()` and `declineProposal()`, defense-in-depth in `Proposal.markAccepted()`. Verified in Cycle 3: SENT proposal with expiresAt=2026-01-15 correctly rejected with 409 on both accept and decline. Non-expired proposal accepted normally (regression OK). |
 
 ## Log
 
@@ -113,3 +120,7 @@
 | 2026-03-25T01:00Z | QA | GAP-DI-06 VERIFIED: All 5 sampled audit events have ipAddress and userAgent fields populated in API response. |
 | 2026-03-25T01:05Z | QA | Cycle 2 complete. 54 checkpoints tested, 53 PASS, 1 FAIL (GAP-DI-07). Combined Cycle 1+2: 138 tested, 136 passed, 2 known (DI-01 WONT_FIX, DI-07 OPEN). QA Position set to ALL_TRACKS_COMPLETE. |
 | 2026-03-25T01:20Z | Product | GAP-DI-07 SPEC_READY. Root cause confirmed: `PortalProposalService.acceptProposal()` and `declineProposal()` check status==SENT but not expiresAt. Race window between expiry and hourly `ProposalExpiryProcessor` batch run. Fix: add `isExpired()` to Proposal entity, expiry guards in PortalProposalService (accept+decline), defense-in-depth in `markAccepted()`. Also needs `declineProposal()` guard for consistency. Fix spec: `qa_cycle/fix-specs/GAP-DI-07.md`. |
+| 2026-03-25T02:49Z | QA | Cycle 3 started. GAP-DI-07 verification. Authenticated as Thandi via Keycloak direct grant. Portal JWT obtained via magic link exchange for naledi@qatest.local. |
+| 2026-03-25T02:50Z | QA | Created PROP-0005 (SENT, expiresAt=2026-01-15, expired) and PROP-0006 (SENT, expiresAt=2026-12-31, non-expired) for verification. |
+| 2026-03-25T02:51Z | QA | GAP-DI-07 VERIFIED. Accept expired proposal: 409 "Proposal expired". Decline expired proposal: 409 "Proposal expired". Accept non-expired proposal: 200 ACCEPTED (regression OK). Expired proposal status unchanged (still SENT). 4/4 checkpoints PASS. |
+| 2026-03-25T02:52Z | QA | Cycle 3 complete. QA Position updated to ALL_VERIFIED. Combined totals: 142 tested, 141 passed, 1 design decision (DI-01 WONT_FIX). All gaps resolved. |

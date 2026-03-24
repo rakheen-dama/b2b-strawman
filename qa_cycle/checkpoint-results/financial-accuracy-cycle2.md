@@ -313,3 +313,48 @@ Already verified in Cycle 1: snapshot immutability confirmed (changing rate card
 | T3 — Invoice Math | 17 | 10 | 27 | 27 | 0 |
 | T4 — Audit Trail | 18 | 22 | 40 | 40 | 0 |
 | **Total** | **84** | **54** | **138** | **136** | **2** |
+
+---
+
+## Cycle 3 — Verification (GAP-DI-07 Fix)
+
+**Date**: 2026-03-25
+**Agent**: QA Agent
+**Branch**: `bugfix_cycle_financial_accuracy_2026-03-24`
+**Stack**: Keycloak dev stack (localhost:8080 / Keycloak 8180)
+**Auth**: Thandi (owner) via Keycloak direct grant, Portal JWT via magic link exchange for naledi@qatest.local
+**Scope**: Verify GAP-DI-07 fix — expired proposals must be rejected by portal accept/decline endpoints
+
+### Fix Summary
+
+The fix adds expiry guards at three levels:
+1. **`PortalProposalService.acceptProposal()`** — checks `expiresAt` after status==SENT validation, throws 409 if expired
+2. **`PortalProposalService.declineProposal()`** — same guard for consistency
+3. **`Proposal.markAccepted()`** — defense-in-depth `isExpired()` check at entity level
+4. **`Proposal.isExpired()`** — new convenience method: `expiresAt != null && Instant.now().isAfter(expiresAt)`
+5. **`PortalProposalRow`** — updated to include `expiresAt` field + SQL query updated
+
+### Test Setup
+
+| Item | Details |
+|------|---------|
+| PROP-0005 | SENT, expiresAt=2026-01-15T00:00:00Z (expired ~2 months ago), id=95fa0b32 |
+| PROP-0006 | SENT, expiresAt=2026-12-31T23:59:59Z (future — regression check), id=acc4f932 |
+| Portal JWT | Obtained via magic link exchange for naledi@qatest.local (customerId=4160e3cb, portalContactId=36f2980b) |
+
+### Verification Results
+
+| ID | Test | Expected | Actual | Result |
+|----|------|----------|--------|--------|
+| V-DI-07.1 | Accept expired SENT proposal (PROP-0005) | 409 Conflict | HTTP 409 — `{"title":"Proposal expired","detail":"This proposal expired on 2026-01-15T00:00:00Z"}` | **PASS** |
+| V-DI-07.2 | Decline expired SENT proposal (PROP-0005) | 409 Conflict | HTTP 409 — `{"title":"Proposal expired","detail":"This proposal expired on 2026-01-15T00:00:00Z"}` | **PASS** |
+| V-DI-07.3 | Accept non-expired SENT proposal (PROP-0006) | 200 OK | HTTP 200 — status=ACCEPTED, acceptedAt=2026-03-24T22:49:14Z, message="Thank you for accepting this proposal." | **PASS (regression OK)** |
+| V-DI-07.4 | Expired proposal status unchanged after rejection | SENT | PROP-0005 status=SENT, acceptedAt=null | **PASS** |
+
+**Cycle 3 Result: 4/4 PASS — GAP-DI-07 VERIFIED**
+
+### Conclusion
+
+The expiry guard fix works correctly. Expired proposals in SENT status are now rejected with a clear 409 Conflict response at the portal API layer. Non-expired proposals continue to be accepted normally. The fix closes the race window between `expiresAt` and the hourly `ProposalExpiryProcessor` batch run.
+
+**GAP-DI-07 Status: FIXED -> VERIFIED**

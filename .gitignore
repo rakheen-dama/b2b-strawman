@@ -140,3 +140,4 @@ node_modules/
 
 /lexpro-screenshots/
 /e2e-screenshots/
+.svc/

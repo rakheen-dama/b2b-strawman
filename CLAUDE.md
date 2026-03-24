@@ -27,7 +27,7 @@ Always read the relevant subdirectory CLAUDE.md before making changes.
 ## Local Dev Quick Start
 
 ```bash
-# Start infrastructure (Postgres, LocalStack, Mailpit)
+# Start infrastructure (Postgres, LocalStack, Mailpit, Keycloak)
 bash compose/scripts/dev-up.sh
 
 # Frontend (from frontend/)
@@ -44,6 +44,29 @@ bash compose/scripts/dev-down.sh --clean  # Wipe volumes
 # Rebuild a specific service
 bash compose/scripts/dev-rebuild.sh backend
 ```
+
+## Agent Service Management (Keycloak Mode)
+
+Agents use `compose/scripts/svc.sh` to start/stop/restart services in Keycloak mode.
+Services run in the background with PID tracking, health-check waits, and logs in `.svc/logs/`.
+
+```bash
+bash compose/scripts/svc.sh start all              # Start backend, gateway, frontend, portal
+bash compose/scripts/svc.sh restart backend         # Restart just backend (after Java changes)
+bash compose/scripts/svc.sh stop frontend portal    # Stop specific services
+bash compose/scripts/svc.sh status                  # Health check all services
+bash compose/scripts/svc.sh logs backend            # Last 50 lines of backend log
+```
+
+| Service | Port | Health Check | Start Command (managed by svc.sh) |
+|---------|------|-------------|-----------------------------------|
+| Backend | 8080 | /actuator/health | `SPRING_PROFILES_ACTIVE=local,keycloak ./mvnw spring-boot:run` |
+| Gateway | 8443 | /actuator/health | `./mvnw spring-boot:run` |
+| Frontend | 3000 | / | `NEXT_PUBLIC_AUTH_MODE=keycloak pnpm dev` |
+| Portal | 3002 | / | `pnpm dev` |
+
+**When to restart**: Backend/Gateway need restart after Java source changes (no hot-reload).
+Frontend/Portal use HMR — TypeScript changes are picked up automatically.
 
 ## Git Worktrees 
 When working in a git worktree, ALWAYS verify the correct working directory before writing any files. 

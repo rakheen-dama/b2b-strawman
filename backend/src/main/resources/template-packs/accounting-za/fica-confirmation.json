@@ -50,11 +50,20 @@
       ]
     },
     {
-      "type": "paragraph",
+      "type": "conditionalBlock",
+      "attrs": {
+        "fieldKey": "customer.customFields.fica_verification_date",
+        "operator": "isNotEmpty"
+      },
       "content": [
-        { "type": "text", "marks": [{ "type": "bold" }], "text": "Verification Date:" },
-        { "type": "text", "text": " " },
-        { "type": "variable", "attrs": { "key": "customer.customFields.fica_verification_date" } }
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "marks": [{ "type": "bold" }], "text": "Verification Date:" },
+            { "type": "text", "text": " " },
+            { "type": "variable", "attrs": { "key": "customer.customFields.fica_verification_date" } }
+          ]
+        }
       ]
     },
     {

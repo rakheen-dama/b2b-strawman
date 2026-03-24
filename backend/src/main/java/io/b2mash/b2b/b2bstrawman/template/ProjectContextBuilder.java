@@ -16,10 +16,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ProjectContextBuilder implements TemplateContextBuilder {
+
+  private static final Logger log = LoggerFactory.getLogger(ProjectContextBuilder.class);
 
   private final ProjectRepository projectRepository;
   private final CustomerRepository customerRepository;
@@ -85,24 +89,35 @@ public class ProjectContextBuilder implements TemplateContextBuilder {
     }
 
     if (resolvedCustomerId != null) {
+      final UUID custId = resolvedCustomerId;
       customerRepository
-          .findById(resolvedCustomerId)
+          .findById(custId)
           .ifPresentOrElse(
               customer -> {
                 var customerMap = new LinkedHashMap<String, Object>();
                 customerMap.put("id", customer.getId());
                 customerMap.put("name", customer.getName());
                 customerMap.put("email", customer.getEmail());
-                customerMap.put(
-                    "customFields",
+                Map<String, Object> rawCustomFields =
+                    customer.getCustomFields() != null ? customer.getCustomFields() : Map.of();
+                Map<String, Object> resolvedCustomFields =
                     contextHelper.resolveDropdownLabels(
-                        customer.getCustomFields() != null ? customer.getCustomFields() : Map.of(),
-                        EntityType.CUSTOMER,
-                        fieldDefCache));
+                        rawCustomFields, EntityType.CUSTOMER, fieldDefCache);
+                customerMap.put("customFields", resolvedCustomFields);
+                log.debug(
+                    "Project {} customer {} customFields: raw keys={}, resolved keys={}",
+                    entityId,
+                    custId,
+                    rawCustomFields.keySet(),
+                    resolvedCustomFields != null ? resolvedCustomFields.keySet() : "null");
                 context.put("customer", customerMap);
               },
-              () -> context.put("customer", null));
+              () -> {
+                log.debug("Project {} customer {} not found in repository", entityId, custId);
+                context.put("customer", null);
+              });
     } else {
+      log.debug("Project {} has no linked customer", entityId);
       context.put("customer", null);
     }
 

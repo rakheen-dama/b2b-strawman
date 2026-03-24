@@ -17,10 +17,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class CustomerContextBuilder implements TemplateContextBuilder {
+
+  private static final Logger log = LoggerFactory.getLogger(CustomerContextBuilder.class);
 
   private final CustomerRepository customerRepository;
   private final CustomerProjectRepository customerProjectRepository;
@@ -64,12 +68,16 @@ public class CustomerContextBuilder implements TemplateContextBuilder {
     customerMap.put("email", customer.getEmail());
     customerMap.put("phone", customer.getPhone());
     customerMap.put("status", customer.getStatus());
-    customerMap.put(
-        "customFields",
-        contextHelper.resolveDropdownLabels(
-            customer.getCustomFields() != null ? customer.getCustomFields() : Map.of(),
-            EntityType.CUSTOMER,
-            fieldDefCache));
+    Map<String, Object> rawCustomFields =
+        customer.getCustomFields() != null ? customer.getCustomFields() : Map.of();
+    Map<String, Object> resolvedCustomFields =
+        contextHelper.resolveDropdownLabels(rawCustomFields, EntityType.CUSTOMER, fieldDefCache);
+    customerMap.put("customFields", resolvedCustomFields);
+    log.debug(
+        "Customer {} customFields: raw keys={}, resolved keys={}",
+        entityId,
+        rawCustomFields.keySet(),
+        resolvedCustomFields != null ? resolvedCustomFields.keySet() : "null");
     context.put("customer", customerMap);
 
     // projects[] (linked via CustomerProject)
@@ -126,6 +134,12 @@ public class CustomerContextBuilder implements TemplateContextBuilder {
 
     context.put("invoices", invoicesList);
     context.put("totalOutstanding", totalOutstanding);
+    log.debug(
+        "Customer {} invoice context: query returned {} invoices, context list size={}, totalOutstanding={}",
+        entityId,
+        invoices.size(),
+        invoicesList.size(),
+        totalOutstanding);
 
     // org.*
     context.put("org", contextHelper.buildOrgContext());

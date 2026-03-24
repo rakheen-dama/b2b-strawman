@@ -31,11 +31,11 @@
 
 | ID | Summary | Severity | Status | Owner | PR | Notes |
 |----|---------|----------|--------|-------|----|-------|
-| GAP-AN-001 | "New Automation" button is non-functional — click does nothing | HIGH | SPEC_READY | frontend | — | Root cause: `onClick={router.push()}` instead of `<Link>`. Fix: convert to `<Link>` for progressive enhancement. Spec: `fix-specs/GAP-AN-001.md` |
-| GAP-AN-002 | Rule row click does not open edit form or detail page | HIGH | SPEC_READY | frontend | — | Root cause: same `router.push()` pattern on `<tr>` onClick. Fix: wrap rule name in `<Link>`. Spec: `fix-specs/GAP-AN-002.md` |
-| GAP-AN-003 | UI toggle switch does not change backend state | HIGH | SPEC_READY | frontend | — | Root cause: likely CSRF token issue in Keycloak BFF mode + no optimistic UI. Fix: add error logging, optimistic state, verify CSRF flow. Spec: `fix-specs/GAP-AN-003.md` |
-| GAP-AN-004 | "View Execution Log" link does not navigate when clicked | MEDIUM | SPEC_READY | frontend | — | Root cause: `<Link>` lacks visual affordance; possible click-target issue. Fix: add underline + arrow, secondary link in client component. Spec: `fix-specs/GAP-AN-004.md` |
-| GAP-AN-005 | "Other" notification preference category has 19 raw enum names | LOW | SPEC_READY | frontend | — | Root cause: `NOTIFICATION_TYPE_LABELS` map covers 24 of 41 backend types. Fix: extend map with all types + new categories. Spec: `fix-specs/GAP-AN-005.md` |
+| GAP-AN-001 | "New Automation" button is non-functional — click does nothing | HIGH | FIXED | frontend | 3f605219 | Converted both "New Automation" buttons to `<Link>` with `asChild` pattern. |
+| GAP-AN-002 | Rule row click does not open edit form or detail page | HIGH | FIXED | frontend | 3f605219 | Wrapped rule name in `<Link>` with hover styling. Removed `onClick` from `<TableRow>`. |
+| GAP-AN-003 | UI toggle switch does not change backend state | HIGH | FIXED | frontend | 3f605219 | Added optimistic toggle state, error logging in server action, success/error toast feedback. |
+| GAP-AN-004 | "View Execution Log" link does not navigate when clicked | MEDIUM | FIXED | frontend | 3f605219 | Added underline + arrow affordance. Added secondary link below rules table in client component. |
+| GAP-AN-005 | "Other" notification preference category has 19 raw enum names | LOW | FIXED | frontend | 3f605219 | Extended `NOTIFICATION_TYPE_LABELS` to cover all 41 types across 12 categories (Tasks, Projects, Collaboration, Proposals, Billing & Invoicing, Client Requests, Scheduling, Retainers, Time Tracking, Resource Planning, Security, System). |
 
 ## Cycle 1 Summary
 
@@ -65,3 +65,4 @@
 | 2026-03-25T00:05Z | Infra | Dev stack verified READY. All Docker infra (Postgres, Keycloak, Mailpit, LocalStack) healthy. All app services (Backend:8080, Gateway:8443, Frontend:3000, Portal:3002) running and healthy. Keycloak realm 'docteams' active, padmin user present. No restarts needed. |
 | 2026-03-25T23:10Z | QA | Cycle 1 executed. Tested T1 (CRUD), T2.3 (task trigger), T3.1 (CREATE_TASK action), T5 (notifications), T6.1 (preferences view), T7 (vertical templates). Found 5 gaps (3 HIGH, 1 MEDIUM, 1 LOW). All UI interaction on automations page is broken; backend API and automation engine work correctly. Results: qa_cycle/checkpoint-results/automation-notif-cycle1.md |
 | 2026-03-25T23:45Z | Product | Triaged all 5 OPEN items (GAP-AN-001 through GAP-AN-005). Root cause analysis via codebase search. Common theme for GAP-AN-001/002: JS-only navigation via `router.push()` in `rule-list.tsx` — fix is to use `<Link>` for progressive enhancement. GAP-AN-003: CSRF/session issue in Keycloak BFF mode + missing optimistic UI. GAP-AN-005: `NOTIFICATION_TYPE_LABELS` map missing 17 of 41 backend types. All 5 items moved to SPEC_READY with fix specs in `qa_cycle/fix-specs/`. |
+| 2026-03-26T01:35Z | Dev | Fixed all 5 gaps in commit 3f605219. Files modified: `rule-list.tsx` (GAP-AN-001/002/003/004), `actions.ts` (GAP-AN-003), `page.tsx` (GAP-AN-004), `notification-preferences-form.tsx` (GAP-AN-005). Also updated `rule-list.test.tsx` to match Link-based navigation. Build green, all 277 test files pass (1692 tests). Removed `useRouter` dependency from rule-list.tsx entirely. |

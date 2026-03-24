@@ -15,60 +15,60 @@ const NOTIFICATION_TYPE_LABELS: Record<
   TASK_ASSIGNED: { label: "Task Assigned", category: "Tasks" },
   TASK_CLAIMED: { label: "Task Claimed", category: "Tasks" },
   TASK_UPDATED: { label: "Task Updated", category: "Tasks" },
+  TASK_CANCELLED: { label: "Task Cancelled", category: "Tasks" },
+  TASK_RECURRENCE_CREATED: { label: "Task Recurrence Created", category: "Tasks" },
+  // Projects
+  PROJECT_COMPLETED: { label: "Project Completed", category: "Projects" },
+  PROJECT_ARCHIVED: { label: "Project Archived", category: "Projects" },
+  PREREQUISITE_BLOCKED_ACTIVATION: { label: "Prerequisite Blocked", category: "Projects" },
   // Collaboration
   COMMENT_ADDED: { label: "Comment Added", category: "Collaboration" },
   DOCUMENT_SHARED: { label: "Document Shared", category: "Collaboration" },
   MEMBER_INVITED: { label: "Member Invited", category: "Collaboration" },
-  DOCUMENT_GENERATED: {
-    label: "Document Generated",
-    category: "Collaboration",
-  },
+  DOCUMENT_GENERATED: { label: "Document Generated", category: "Collaboration" },
+  ACCEPTANCE_COMPLETED: { label: "Acceptance Completed", category: "Collaboration" },
+  // Proposals
+  PROPOSAL_SENT: { label: "Proposal Sent", category: "Proposals" },
+  PROPOSAL_ACCEPTED: { label: "Proposal Accepted", category: "Proposals" },
+  PROPOSAL_DECLINED: { label: "Proposal Declined", category: "Proposals" },
+  PROPOSAL_EXPIRED: { label: "Proposal Expired", category: "Proposals" },
   // Billing & Invoicing
   BUDGET_ALERT: { label: "Budget Alert", category: "Billing & Invoicing" },
-  INVOICE_APPROVED: {
-    label: "Invoice Approved",
-    category: "Billing & Invoicing",
-  },
+  INVOICE_APPROVED: { label: "Invoice Approved", category: "Billing & Invoicing" },
   INVOICE_SENT: { label: "Invoice Sent", category: "Billing & Invoicing" },
   INVOICE_PAID: { label: "Invoice Paid", category: "Billing & Invoicing" },
-  INVOICE_VOIDED: {
-    label: "Invoice Voided",
-    category: "Billing & Invoicing",
-  },
+  INVOICE_VOIDED: { label: "Invoice Voided", category: "Billing & Invoicing" },
+  PAYMENT_FAILED: { label: "Payment Failed", category: "Billing & Invoicing" },
+  PAYMENT_LINK_EXPIRED: { label: "Payment Link Expired", category: "Billing & Invoicing" },
+  BILLING_RUN_COMPLETED: { label: "Billing Run Completed", category: "Billing & Invoicing" },
+  BILLING_RUN_SENT: { label: "Billing Run Sent", category: "Billing & Invoicing" },
+  BILLING_RUN_FAILURES: { label: "Billing Run Failures", category: "Billing & Invoicing" },
+  // Client Requests
+  INFORMATION_REQUEST_ITEM_SUBMITTED: { label: "Request Item Submitted", category: "Client Requests" },
+  INFORMATION_REQUEST_COMPLETED: { label: "Request Completed", category: "Client Requests" },
+  INFORMATION_REQUEST_DRAFT_CREATED: { label: "Request Draft Created", category: "Client Requests" },
   // Scheduling
-  RECURRING_PROJECT_CREATED: {
-    label: "Recurring Project Created",
-    category: "Scheduling",
-  },
+  RECURRING_PROJECT_CREATED: { label: "Recurring Project Created", category: "Scheduling" },
   SCHEDULE_SKIPPED: { label: "Schedule Skipped", category: "Scheduling" },
   SCHEDULE_COMPLETED: { label: "Schedule Completed", category: "Scheduling" },
   // Retainers
-  RETAINER_PERIOD_READY_TO_CLOSE: {
-    label: "Retainer Period Ready to Close",
-    category: "Retainers",
-  },
-  RETAINER_PERIOD_CLOSED: {
-    label: "Retainer Period Closed",
-    category: "Retainers",
-  },
-  RETAINER_APPROACHING_CAPACITY: {
-    label: "Retainer Approaching Capacity",
-    category: "Retainers",
-  },
-  RETAINER_FULLY_CONSUMED: {
-    label: "Retainer Fully Consumed",
-    category: "Retainers",
-  },
-  RETAINER_TERMINATED: {
-    label: "Retainer Terminated",
-    category: "Retainers",
-  },
+  RETAINER_PERIOD_READY_TO_CLOSE: { label: "Retainer Period Ready to Close", category: "Retainers" },
+  RETAINER_PERIOD_CLOSED: { label: "Retainer Period Closed", category: "Retainers" },
+  RETAINER_APPROACHING_CAPACITY: { label: "Retainer Approaching Capacity", category: "Retainers" },
+  RETAINER_FULLY_CONSUMED: { label: "Retainer Fully Consumed", category: "Retainers" },
+  RETAINER_TERMINATED: { label: "Retainer Terminated", category: "Retainers" },
   // Time Tracking
   TIME_REMINDER: { label: "Time Reminders", category: "Time Tracking" },
   // Resource Planning
   ALLOCATION_CHANGED: { label: "Allocation Changed", category: "Resource Planning" },
   MEMBER_OVER_ALLOCATED: { label: "Member Over-Allocated", category: "Resource Planning" },
   LEAVE_CREATED: { label: "Leave Created", category: "Resource Planning" },
+  // Security & Compliance
+  ROLE_PERMISSIONS_CHANGED: { label: "Role Permissions Changed", category: "Security" },
+  RETENTION_PURGE_WARNING: { label: "Retention Purge Warning", category: "Security" },
+  DSAR_DEADLINE_WARNING: { label: "DSAR Deadline Warning", category: "Security" },
+  // System
+  POST_CREATE_ACTION_FAILED: { label: "Post-Create Action Failed", category: "System" },
 };
 
 interface NotificationPreferencesFormProps {
@@ -126,12 +126,17 @@ export function NotificationPreferencesForm({
   // Maintain stable category order
   const categoryOrder = [
     "Tasks",
+    "Projects",
     "Collaboration",
+    "Proposals",
     "Billing & Invoicing",
+    "Client Requests",
     "Scheduling",
     "Retainers",
     "Time Tracking",
     "Resource Planning",
+    "Security",
+    "System",
     "Other",
   ];
   const sortedCategories = categoryOrder.filter((c) => grouped[c]);

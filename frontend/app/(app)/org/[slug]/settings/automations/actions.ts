@@ -31,6 +31,7 @@ export async function toggleRuleAction(
   try {
     await toggleRule(ruleId);
   } catch (error) {
+    console.error("[toggleRuleAction] Failed to toggle rule:", ruleId, error);
     if (error instanceof ApiError) {
       if (error.status === 403) {
         return {

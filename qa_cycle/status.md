@@ -2,8 +2,8 @@
 
 ## Current State
 
-- **QA Position**: Cycle 2 complete. 4 of 5 fixes verified. GAP-AN-003 reopened (gateway BFF blocks mutations). T2.2 and T2.4 triggers verified. T4 deferred. T6.2 verified via API.
-- **Cycle**: 2 (complete)
+- **QA Position**: Cycle 2 complete. 4 of 5 fixes verified. 3 items triaged for Cycle 3 (GAP-AN-003 blocked by OBS-AN-006, OBS-AN-006 gateway fix spec ready, OBS-AN-007 badge fix spec ready). T2.2 and T2.4 triggers verified. T4 deferred. T6.2 verified via API.
+- **Cycle**: 2 (complete), Cycle 3 triage done
 - **Dev Stack**: READY
 - **Branch**: `bugfix_cycle_2026-03-25`
 - **Scenario**: `qa/testplan/automation-notification-verification.md`
@@ -33,11 +33,11 @@
 |----|---------|----------|--------|-------|----|-------|
 | GAP-AN-001 | "New Automation" button is non-functional — click does nothing | HIGH | VERIFIED | frontend | 3f605219 | Cycle 2: Link navigates to `/new` page. Form loads with Name, Description, Trigger, Conditions, Actions. |
 | GAP-AN-002 | Rule row click does not open edit form or detail page | HIGH | VERIFIED | frontend | 3f605219 | Cycle 2: Rule names are `<a>` links to `/settings/automations/{id}`. Detail page loads with full config form. |
-| GAP-AN-003 | UI toggle switch does not change backend state | HIGH | REOPENED | frontend + gateway | 3f605219 | Cycle 2: Frontend code fix is correct (optimistic UI, error handling). But gateway BFF returns HTTP 302 for mutations — server action cannot toggle. Backend API toggle works directly. |
+| GAP-AN-003 | UI toggle switch does not change backend state | HIGH | SPEC_READY | frontend + gateway | 3f605219 | Cycle 2: Frontend code correct. Blocked by OBS-AN-006. Fix spec: `GAP-AN-003-v2.md`. No additional frontend changes needed — will resolve when OBS-AN-006 is fixed. |
 | GAP-AN-004 | "View Execution Log" link does not navigate when clicked | MEDIUM | VERIFIED | frontend | 3f605219 | Cycle 2: Link has correct href, target page loads with execution history. Two links present (header + footer). |
 | GAP-AN-005 | "Other" notification preference category has 19 raw enum names | LOW | VERIFIED | frontend | 3f605219 | Cycle 2: All 46 types properly labeled across 12 categories. Zero raw enum names. No "Other" category. |
-| OBS-AN-006 | Gateway BFF session does not forward for server action mutations | HIGH | OPEN | gateway | -- | All POST/PUT/DELETE via gateway return 302 redirect. Blocks toggle, delete, save preferences via UI. Backend API works directly. |
-| OBS-AN-007 | Trigger type badge shows raw enum for some types | LOW | OPEN | frontend | -- | PROPOSAL_SENT and FIELD_DATE_APPROACHING display as raw enums; others show readable badges. |
+| OBS-AN-006 | Gateway BFF returns 302 for all server action mutations | HIGH | SPEC_READY | gateway + frontend | -- | Root cause: missing API-specific AuthenticationEntryPoint in gateway SecurityConfig. Fix: add `.exceptionHandling()` for /api/** to return 401 instead of 302, add `redirect: "manual"` to frontend fetch. Fix spec: `OBS-AN-006.md`. |
+| OBS-AN-007 | Trigger type badge shows raw enum for some types | LOW | SPEC_READY | frontend | -- | Missing PROPOSAL_SENT and FIELD_DATE_APPROACHING in TriggerType union and TRIGGER_TYPE_CONFIG map. Fix spec: `OBS-AN-007.md`. |
 
 ## Cycle 2 Summary
 
@@ -87,3 +87,4 @@
 | 2026-03-25T23:45Z | Product | Triaged all 5 OPEN items (GAP-AN-001 through GAP-AN-005). Root cause analysis via codebase search. Common theme for GAP-AN-001/002: JS-only navigation via `router.push()` in `rule-list.tsx` — fix is to use `<Link>` for progressive enhancement. GAP-AN-003: CSRF/session issue in Keycloak BFF mode + missing optimistic UI. GAP-AN-005: `NOTIFICATION_TYPE_LABELS` map missing 17 of 41 backend types. All 5 items moved to SPEC_READY with fix specs in `qa_cycle/fix-specs/`. |
 | 2026-03-26T01:35Z | Dev | Fixed all 5 gaps in commit 3f605219. Files modified: `rule-list.tsx` (GAP-AN-001/002/003/004), `actions.ts` (GAP-AN-003), `page.tsx` (GAP-AN-004), `notification-preferences-form.tsx` (GAP-AN-005). Also updated `rule-list.test.tsx` to match Link-based navigation. Build green, all 277 test files pass (1692 tests). Removed `useRouter` dependency from rule-list.tsx entirely. |
 | 2026-03-25T23:50Z | QA | Cycle 2 executed. Verified 4 of 5 fixes (GAP-AN-001/002/004/005 VERIFIED, GAP-AN-003 REOPENED). Tested T2.2 (INVOICE_STATUS_CHANGED -- trigger fires, action failed on ORG_ADMINS resolution), T2.4 (TIME_ENTRY_CREATED -- full pipeline works), T6.2 (preference save works via API). Discovered root cause of GAP-AN-003: gateway BFF returns 302 for all server action mutations. Filed OBS-AN-006 (gateway mutation issue) and OBS-AN-007 (trigger type badge inconsistency). T4 (email content) deferred. Results: qa_cycle/checkpoint-results/automation-notif-cycle2.md |
+| 2026-03-26T02:00Z | Product | Triaged 3 items (GAP-AN-003 reopened, OBS-AN-006, OBS-AN-007). Deep investigation of gateway BFF 302 root cause: traced full auth flow from browser SESSION cookie through Next.js server action to gateway SecurityConfig. Root cause: `oauth2Login()` default AuthenticationEntryPoint returns 302 for unauthenticated /api/** requests instead of 401; Node.js fetch follows redirects silently. GAP-AN-003 blocked by OBS-AN-006 (no additional frontend changes needed). OBS-AN-007: TriggerType union and TRIGGER_TYPE_CONFIG missing 2 of 10 backend enum values. All 3 items moved to SPEC_READY. Fix specs: `OBS-AN-006.md`, `GAP-AN-003-v2.md`, `OBS-AN-007.md`. |

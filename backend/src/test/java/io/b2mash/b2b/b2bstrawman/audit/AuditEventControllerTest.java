@@ -3,7 +3,9 @@ package io.b2mash.b2b.b2bstrawman.audit;
 import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.startsWith;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -255,20 +257,25 @@ class AuditEventControllerTest {
   }
 
   @Test
-  void responseExcludesPiiFields() throws Exception {
-    mockMvc
-        .perform(get("/api/audit-events").with(ownerJwt()))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.content[0]").exists())
-        .andExpect(jsonPath("$.content[0].ipAddress").doesNotExist())
-        .andExpect(jsonPath("$.content[0].userAgent").doesNotExist())
-        .andExpect(jsonPath("$.content[0].tenantId").doesNotExist())
-        // Verify expected fields ARE present
-        .andExpect(jsonPath("$.content[0].id").exists())
-        .andExpect(jsonPath("$.content[0].eventType").exists())
-        .andExpect(jsonPath("$.content[0].entityType").exists())
-        .andExpect(jsonPath("$.content[0].entityId").exists())
-        .andExpect(jsonPath("$.content[0].occurredAt").exists());
+  void responseIncludesSecurityFieldsButExcludesTenantId() throws Exception {
+    var result =
+        mockMvc
+            .perform(get("/api/audit-events").with(ownerJwt()))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content[0]").exists())
+            .andExpect(jsonPath("$.content[0].ipAddress", is("127.0.0.1")))
+            .andExpect(jsonPath("$.content[0].tenantId").doesNotExist())
+            // Verify expected fields ARE present
+            .andExpect(jsonPath("$.content[0].id").exists())
+            .andExpect(jsonPath("$.content[0].eventType").exists())
+            .andExpect(jsonPath("$.content[0].entityType").exists())
+            .andExpect(jsonPath("$.content[0].entityId").exists())
+            .andExpect(jsonPath("$.content[0].occurredAt").exists())
+            .andReturn();
+
+    // Verify userAgent key is present in JSON (even if null — MockMvc doesn't set User-Agent)
+    String body = result.getResponse().getContentAsString();
+    assertTrue(body.contains("\"userAgent\""), "Response should include userAgent field");
   }
 
   // --- Helpers ---

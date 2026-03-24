@@ -88,7 +88,7 @@ class VariableMetadataEndpointTest {
 
   @Test
   void getVariables_customer_returnsStaticAndCustomFieldGroups() throws Exception {
-    // 3 static groups + 1 custom field group (customer custom fields)
+    // 4 static groups + 1 custom field group (customer custom fields)
     mockMvc
         .perform(
             get("/api/templates/variables")
@@ -97,13 +97,16 @@ class VariableMetadataEndpointTest {
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.groups").isArray())
-        .andExpect(jsonPath("$.groups.length()", greaterThanOrEqualTo(4)))
+        .andExpect(jsonPath("$.groups.length()", greaterThanOrEqualTo(5)))
         .andExpect(jsonPath("$.groups[0].label").value("Customer"))
         .andExpect(jsonPath("$.groups[0].variables.length()").value(5))
         .andExpect(jsonPath("$.groups[0].variables[3].key").value("customer.phone"))
         .andExpect(jsonPath("$.groups[0].variables[4].key").value("customer.status"))
-        .andExpect(jsonPath("$.groups[1].label").value("Organization"))
-        .andExpect(jsonPath("$.groups[2].label").value("Generated"))
+        .andExpect(jsonPath("$.groups[1].label").value("Invoice Summary"))
+        .andExpect(jsonPath("$.groups[1].variables[0].key").value("totalOutstanding"))
+        .andExpect(jsonPath("$.groups[1].variables[0].type").value("currency"))
+        .andExpect(jsonPath("$.groups[2].label").value("Organization"))
+        .andExpect(jsonPath("$.groups[3].label").value("Generated"))
         // Dynamic customer custom fields group (position-independent)
         .andExpect(
             jsonPath(
@@ -172,7 +175,7 @@ class VariableMetadataEndpointTest {
         .andExpect(jsonPath("$.loopSources[0].label").value("Invoice Lines"))
         .andExpect(jsonPath("$.loopSources[0].fields.length()").value(4));
 
-    // CUSTOMER has projects and tags loop sources
+    // CUSTOMER has projects, invoices, and tags loop sources
     mockMvc
         .perform(
             get("/api/templates/variables")
@@ -180,9 +183,12 @@ class VariableMetadataEndpointTest {
                 .with(memberJwt())
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.loopSources.length()").value(2))
+        .andExpect(jsonPath("$.loopSources.length()").value(3))
         .andExpect(jsonPath("$.loopSources[0].key").value("projects"))
-        .andExpect(jsonPath("$.loopSources[1].key").value("tags"));
+        .andExpect(jsonPath("$.loopSources[1].key").value("invoices"))
+        .andExpect(jsonPath("$.loopSources[1].label").value("Invoices"))
+        .andExpect(jsonPath("$.loopSources[1].fields.length()").value(7))
+        .andExpect(jsonPath("$.loopSources[2].key").value("tags"));
   }
 
   @Test

@@ -161,9 +161,12 @@ public class Proposal {
     this.updatedAt = Instant.now();
   }
 
-  /** Marks the proposal as accepted by the customer. Only valid from SENT. */
+  /** Marks the proposal as accepted by the customer. Only valid from SENT and not expired. */
   public void markAccepted() {
     requireStatus(Set.of(ProposalStatus.SENT), "mark as accepted");
+    if (isExpired()) {
+      throw new InvalidStateException("Proposal expired", "Cannot accept an expired proposal");
+    }
     this.status = ProposalStatus.ACCEPTED;
     this.acceptedAt = Instant.now();
     this.updatedAt = Instant.now();
@@ -204,6 +207,11 @@ public class Proposal {
   /** Returns true if the proposal is in a terminal status (ACCEPTED, DECLINED, EXPIRED). */
   public boolean isTerminal() {
     return TERMINAL_STATUSES.contains(this.status);
+  }
+
+  /** Returns true if the proposal has an expiry date that is in the past. */
+  public boolean isExpired() {
+    return expiresAt != null && Instant.now().isAfter(expiresAt);
   }
 
   /** Throws InvalidStateException if the proposal is not in DRAFT status. */

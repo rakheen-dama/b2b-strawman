@@ -165,6 +165,12 @@ public class VariableMetadataRegistry {
                 new VariableInfo("customer.phone", "Customer Phone", "string"),
                 new VariableInfo("customer.status", "Customer Status", "string"))));
 
+    groups.add(
+        new VariableGroup(
+            "Invoice Summary",
+            "invoiceSummary",
+            List.of(new VariableInfo("totalOutstanding", "Total Outstanding", "currency"))));
+
     groups.add(buildOrgGroup());
     groups.add(buildGeneratedGroup());
 
@@ -174,6 +180,18 @@ public class VariableMetadataRegistry {
         TemplateEntityType.CUSTOMER,
         List.of(
             new LoopSource("projects", "Projects", List.of("CUSTOMER"), List.of("id", "name")),
+            new LoopSource(
+                "invoices",
+                "Invoices",
+                List.of("CUSTOMER"),
+                List.of(
+                    "invoiceNumber",
+                    "issueDate",
+                    "dueDate",
+                    "total",
+                    "currency",
+                    "status",
+                    "runningBalance")),
             new LoopSource(
                 "tags", "Tags", List.of("PROJECT", "CUSTOMER"), List.of("name", "color"))));
   }

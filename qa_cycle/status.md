@@ -31,11 +31,11 @@
 
 | ID | Summary | Severity | Status | Owner | PR | Notes |
 |----|---------|----------|--------|-------|----|-------|
-| GAP-AN-001 | "New Automation" button is non-functional — click does nothing | HIGH | OPEN | frontend | — | Blocks rule creation for end users. Backend API works. |
-| GAP-AN-002 | Rule row click does not open edit form or detail page | HIGH | OPEN | frontend | — | Blocks rule editing for end users. Backend PUT works. |
-| GAP-AN-003 | UI toggle switch does not change backend state | HIGH | OPEN | frontend | — | Server Action fires (POST to page) but state unchanged. API toggle (POST) works. |
-| GAP-AN-004 | "View Execution Log" link does not navigate when clicked | MEDIUM | OPEN | frontend | — | Direct URL `/settings/automations/executions` works fine. |
-| GAP-AN-005 | "Other" notification preference category has 19 raw enum names | LOW | OPEN | frontend | — | UI polish — TASK_CANCELLED, PROPOSAL_SENT etc. shown as raw enums instead of human labels in categories. |
+| GAP-AN-001 | "New Automation" button is non-functional — click does nothing | HIGH | SPEC_READY | frontend | — | Root cause: `onClick={router.push()}` instead of `<Link>`. Fix: convert to `<Link>` for progressive enhancement. Spec: `fix-specs/GAP-AN-001.md` |
+| GAP-AN-002 | Rule row click does not open edit form or detail page | HIGH | SPEC_READY | frontend | — | Root cause: same `router.push()` pattern on `<tr>` onClick. Fix: wrap rule name in `<Link>`. Spec: `fix-specs/GAP-AN-002.md` |
+| GAP-AN-003 | UI toggle switch does not change backend state | HIGH | SPEC_READY | frontend | — | Root cause: likely CSRF token issue in Keycloak BFF mode + no optimistic UI. Fix: add error logging, optimistic state, verify CSRF flow. Spec: `fix-specs/GAP-AN-003.md` |
+| GAP-AN-004 | "View Execution Log" link does not navigate when clicked | MEDIUM | SPEC_READY | frontend | — | Root cause: `<Link>` lacks visual affordance; possible click-target issue. Fix: add underline + arrow, secondary link in client component. Spec: `fix-specs/GAP-AN-004.md` |
+| GAP-AN-005 | "Other" notification preference category has 19 raw enum names | LOW | SPEC_READY | frontend | — | Root cause: `NOTIFICATION_TYPE_LABELS` map covers 24 of 41 backend types. Fix: extend map with all types + new categories. Spec: `fix-specs/GAP-AN-005.md` |
 
 ## Cycle 1 Summary
 
@@ -64,3 +64,4 @@
 | 2026-03-25T00:00Z | Setup | Automation & Notification Verification QA cycle initialized on branch bugfix_cycle_2026-03-25. Scenario: qa/testplan/automation-notification-verification.md. Reusing seed data from previous cycles. |
 | 2026-03-25T00:05Z | Infra | Dev stack verified READY. All Docker infra (Postgres, Keycloak, Mailpit, LocalStack) healthy. All app services (Backend:8080, Gateway:8443, Frontend:3000, Portal:3002) running and healthy. Keycloak realm 'docteams' active, padmin user present. No restarts needed. |
 | 2026-03-25T23:10Z | QA | Cycle 1 executed. Tested T1 (CRUD), T2.3 (task trigger), T3.1 (CREATE_TASK action), T5 (notifications), T6.1 (preferences view), T7 (vertical templates). Found 5 gaps (3 HIGH, 1 MEDIUM, 1 LOW). All UI interaction on automations page is broken; backend API and automation engine work correctly. Results: qa_cycle/checkpoint-results/automation-notif-cycle1.md |
+| 2026-03-25T23:45Z | Product | Triaged all 5 OPEN items (GAP-AN-001 through GAP-AN-005). Root cause analysis via codebase search. Common theme for GAP-AN-001/002: JS-only navigation via `router.push()` in `rule-list.tsx` — fix is to use `<Link>` for progressive enhancement. GAP-AN-003: CSRF/session issue in Keycloak BFF mode + missing optimistic UI. GAP-AN-005: `NOTIFICATION_TYPE_LABELS` map missing 17 of 41 backend types. All 5 items moved to SPEC_READY with fix specs in `qa_cycle/fix-specs/`. |

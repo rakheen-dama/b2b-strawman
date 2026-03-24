@@ -72,6 +72,8 @@ public class AuditEventController {
       UUID actorId,
       String actorType,
       String source,
+      String ipAddress,
+      String userAgent,
       Map<String, Object> details,
       Instant occurredAt) {
 
@@ -84,6 +86,8 @@ public class AuditEventController {
           event.getActorId(),
           event.getActorType(),
           event.getSource(),
+          event.getIpAddress(),
+          event.getUserAgent(),
           event.getDetails(),
           event.getOccurredAt());
     }

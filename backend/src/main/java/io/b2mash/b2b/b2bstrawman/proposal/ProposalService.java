@@ -580,6 +580,20 @@ public class ProposalService {
     validateFeeConfiguration(
         proposal.getFeeModel(), proposal.getFixedFeeAmount(), proposal.getRetainerAmount());
 
+    // 3b. Validate currency is set for fee models that create billing entities (GAP-PE-009)
+    if (proposal.getFeeModel() == FeeModel.FIXED) {
+      if (proposal.getFixedFeeCurrency() == null || proposal.getFixedFeeCurrency().isBlank()) {
+        throw new InvalidStateException(
+            "Missing fee currency", "Fixed-fee proposals require a currency code");
+      }
+    }
+    if (proposal.getFeeModel() == FeeModel.RETAINER) {
+      if (proposal.getRetainerCurrency() == null || proposal.getRetainerCurrency().isBlank()) {
+        throw new InvalidStateException(
+            "Missing fee currency", "Retainer proposals require a currency code");
+      }
+    }
+
     // 4. Validate milestones sum to 100 if FIXED + milestones exist
     if (proposal.getFeeModel() == FeeModel.FIXED) {
       var milestones = milestoneRepository.findByProposalIdOrderBySortOrder(proposalId);

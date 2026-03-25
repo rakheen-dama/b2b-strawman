@@ -27,6 +27,7 @@ import io.b2mash.b2b.b2bstrawman.retainer.RetainerFrequency;
 import io.b2mash.b2b.b2bstrawman.retainer.RetainerType;
 import io.b2mash.b2b.b2bstrawman.retainer.RolloverPolicy;
 import io.b2mash.b2b.b2bstrawman.retainer.dto.CreateRetainerRequest;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -66,6 +67,7 @@ public class ProposalOrchestrationService {
   private final PrerequisiteService prerequisiteService;
   private final NotificationService notificationService;
   private final ProjectTemplateRepository templateRepository;
+  private final OrgSettingsService orgSettingsService;
 
   public ProposalOrchestrationService(
       ProposalRepository proposalRepository,
@@ -83,7 +85,8 @@ public class ProposalOrchestrationService {
       RetainerAgreementService retainerAgreementService,
       PrerequisiteService prerequisiteService,
       NotificationService notificationService,
-      ProjectTemplateRepository templateRepository) {
+      ProjectTemplateRepository templateRepository,
+      OrgSettingsService orgSettingsService) {
     this.proposalRepository = proposalRepository;
     this.proposalMilestoneRepository = proposalMilestoneRepository;
     this.proposalTeamMemberRepository = proposalTeamMemberRepository;
@@ -100,6 +103,7 @@ public class ProposalOrchestrationService {
     this.prerequisiteService = prerequisiteService;
     this.notificationService = notificationService;
     this.templateRepository = templateRepository;
+    this.orgSettingsService = orgSettingsService;
   }
 
   /**
@@ -364,12 +368,22 @@ public class ProposalOrchestrationService {
             .orElseThrow(() -> new ResourceNotFoundException("Organization", orgId));
     String orgName = organization.getName();
 
+    // Resolve currency: proposal field first, then org default (GAP-PE-009)
+    String currency = proposal.getFixedFeeCurrency();
+    if (currency == null || currency.isBlank()) {
+      currency = orgSettingsService.getDefaultCurrency();
+      log.info(
+          "Proposal {} has no fixedFeeCurrency, falling back to org default: {}",
+          proposal.getId(),
+          currency);
+    }
+
     if (milestones.isEmpty()) {
       // Single invoice for full fixed fee amount
       var invoice =
           createDraftInvoice(
               proposal.getCustomerId(),
-              proposal.getFixedFeeCurrency(),
+              currency,
               customer.getName(),
               customer.getEmail(),
               orgName,
@@ -396,7 +410,7 @@ public class ProposalOrchestrationService {
       var invoice =
           createDraftInvoice(
               proposal.getCustomerId(),
-              proposal.getFixedFeeCurrency(),
+              currency,
               customer.getName(),
               customer.getEmail(),
               orgName,

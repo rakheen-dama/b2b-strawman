@@ -5,7 +5,7 @@
 - **QA Position**: ALL_TRACKS_COMPLETE (T1-T7)
 - **Cycle**: 2 (T3/T5/T4/T6)
 - **Dev Stack**: READY
-- **NEEDS_REBUILD**: backend
+- **NEEDS_REBUILD**: false
 - **Branch**: `bugfix_cycle_portal_2026-03-25`
 - **Scenario**: `qa/testplan/portal-experience-proposal-acceptance.md`
 - **Focus**: Magic link auth, portal home, project/document viewing, proposal lifecycle (create->send->accept->project), document download, org branding, cross-customer data isolation
@@ -17,7 +17,7 @@
 | Service | URL | Status |
 |---------|-----|--------|
 | Frontend | http://localhost:3000 | UP (PID 66435) |
-| Backend | http://localhost:8080 | UP (PID 95686) |
+| Backend | http://localhost:8080 | UP (PID 75061) |
 | Gateway (BFF) | http://localhost:8443 | UP (PID 20774) |
 | Portal | http://localhost:3002 | UP (PID 66487) |
 | Keycloak | http://localhost:8180 | UP (realm=docteams verified) |
@@ -127,3 +127,4 @@ Portal contacts are under `/api/customers/{id}/portal-contacts` (not a top-level
 | 2026-03-25T09:15Z | Dev | **GAP-PE-001+002+008 FIXED** (PR #836, merged). `PortalEmailService.java`: replaced `appBaseUrl` with `portalBaseUrl` (from `docteams.app.portal-base-url`), added `OrganizationRepository` to resolve org name directly from contact's orgId (bypasses `EmailContextBuilder.resolveOrgName()` which fails when `ORG_ID` ScopedValue not bound), fixed magic link URL to `/auth/exchange?token=...&orgId=...`. `portal/app/layout.tsx`: removed hardcoded "DocTeams" from metadata title. 2 files changed. Backend targeted tests pass, portal lint+build green. Only pre-existing DashboardProjectIntegrationTest failure. NEEDS_REBUILD: backend. |
 | 2026-03-25T09:53Z | Dev | **GAP-PE-007 FIXED** (PR #837, merged). `NotificationEventHandler.java`: added `MemberRepository` constructor dependency, `dispatchAll()` now resolves recipient email via `memberRepository.findById(notification.getRecipientMemberId()).map(Member::getEmail)` before dispatching. 1 file changed (+15/-4 lines). All notification/dispatch tests pass. Only pre-existing DashboardProjectIntegrationTest failure. NEEDS_REBUILD: backend. |
 | 2026-03-25T10:00Z | Dev | **GAP-PE-003 FIXED** (PR #838, merged). `portal/lib/api-client.ts`: `portalGet()` and `portalPost()` now return friendly messages for 404 ("The requested resource was not found."), 403 ("You don't have permission..."), and generic errors instead of raw JSON body. `portal/app/(authenticated)/projects/[id]/page.tsx`: error state shows centered "Project not found" with explanation and back link instead of red error banner. Test updated. 3 files changed. Lint, build, and all 87 tests pass. Portal uses HMR — no restart needed. |
+| 2026-03-25T10:10Z | Infra | **Backend restarted** after PRs #834, #836, #837 merged. Stopped PID 95686, started PID 75061. Health check passed in 24s. All 4 app services (backend, gateway, frontend, portal) confirmed UP and healthy. NEEDS_REBUILD set to false. |

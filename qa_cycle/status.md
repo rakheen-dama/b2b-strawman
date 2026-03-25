@@ -1,26 +1,29 @@
-# QA Cycle Status — Automation & Notification Verification / Keycloak Dev Stack (2026-03-25)
+# QA Cycle Status — Portal Experience & Proposal Acceptance / Keycloak Dev Stack (2026-03-25)
 
 ## Current State
 
-- **QA Position**: ALL_TRACKS_COMPLETE. All 7 items VERIFIED across 3 cycles. Zero OPEN or REOPENED items. No new bugs found.
-- **Cycle**: 3 (verification complete)
+- **QA Position**: Not started — Infra verification COMPLETE, stack is READY
+- **Cycle**: 0 (setup)
 - **Dev Stack**: READY
 - **NEEDS_REBUILD**: false
-- **Branch**: `bugfix_cycle_2026-03-25`
-- **Scenario**: `qa/testplan/automation-notification-verification.md`
-- **Focus**: Automation rules, triggers, actions, email templates, in-app notifications, execution tracking
-- **Auth Mode**: Keycloak (not mock-auth). JWT via direct grant with organization scope.
-- **Auth Note**: gateway-bff client is confidential — requires `client_secret=docteams-web-secret`
+- **Branch**: `bugfix_cycle_portal_2026-03-25`
+- **Scenario**: `qa/testplan/portal-experience-proposal-acceptance.md`
+- **Focus**: Magic link auth, portal home, project/document viewing, proposal lifecycle (create->send->accept->project), document download, org branding, cross-customer data isolation
+- **Auth Mode**: Keycloak (not mock-auth). Portal uses magic link tokens. Firm uses JWT via gateway BFF.
+- **Depends On**: Phase 49 T0 seed data (Thornton & Associates lifecycle with 4 customers, portal contacts, proposals, documents)
 
 ## Environment
 
 | Service | URL | Status |
 |---------|-----|--------|
-| Frontend | http://localhost:3000 | UP |
-| Backend | http://localhost:8080 | UP |
-| Gateway (BFF) | http://localhost:8443 | UP |
-| Keycloak | http://localhost:8180 | UP |
-| Mailpit | http://localhost:8025 | UP |
+| Frontend | http://localhost:3000 | UP (PID 66435) |
+| Backend | http://localhost:8080 | UP (PID 95686) |
+| Gateway (BFF) | http://localhost:8443 | UP (PID 20774) |
+| Portal | http://localhost:3002 | UP (PID 66487) |
+| Keycloak | http://localhost:8180 | UP (realm=docteams verified) |
+| Mailpit | http://localhost:8025 | UP (API responding) |
+| LocalStack | http://localhost:4566 | UP (v4.13.2) |
+| Postgres | b2mash.local:5432 | UP (backend actuator healthy) |
 
 ## Existing Data (from previous cycles)
 
@@ -28,86 +31,64 @@
 - **Users**: padmin@docteams.local (platform-admin), thandi@thornton-test.local (owner), bob@thornton-test.local (admin)
 - All passwords: `password`
 
+### Customers (5 total)
+
+| Customer | Status | Portal Contact | Contact Email |
+|----------|--------|----------------|---------------|
+| Naledi Corp QA | ACTIVE | Naledi Corp QA | naledi@qatest.local |
+| Kgosi Holdings QA Cycle2 | OFFBOARDED | Kgosi Holdings QA | kgosi@qatest.local |
+| Lifecycle Chain C4 | OFFBOARDED | Lifecycle Chain C4 | lifecycle-c4@qatest.local |
+| Invalid Transition Test Customer | PROSPECT | (none) | -- |
+| Test Integrity Customer | OFFBOARDED | Test Integrity Customer | integrity@qatest.local |
+
+**Note**: The test plan referenced "Kgosi (Thabo)" and "Vukani (Sipho)" from Phase 49 seed data. These do NOT exist. The actual data is from previous QA cycles with different names. Only **Naledi Corp QA** is ACTIVE and usable for full portal testing.
+
+### Proposals (6 total, all linked to Naledi Corp QA)
+
+| Number | Title | Status |
+|--------|-------|--------|
+| PROP-0001 | QA Test Proposal Invalid | DRAFT |
+| PROP-0002 | QA Cycle 2 Test Proposal | ACCEPTED |
+| PROP-0003 | QA Decline Test Proposal | DECLINED |
+| PROP-0004 | QA Expired Test Proposal | ACCEPTED |
+| PROP-0005 | GAP-DI-07 Verification - Expired Proposal | EXPIRED |
+| PROP-0006 | GAP-DI-07 Regression - Non-Expired Proposal | ACCEPTED |
+
+### Generated Documents (2 found)
+
+| Template | Entity | File |
+|----------|--------|------|
+| QA Cycle 4 Template Edited | CUSTOMER: Naledi Corp QA | qa-cycle-4-test-template-naledi-corp-qa-2026-03-23.pdf |
+| Engagement Letter -- Monthly Bookkeeping | PROJECT: QA Onboarding Verified Project | engagement-letter-monthly-bookkeeping-qa-onboarding-verified-project-2026-03-24.pdf |
+
+### Projects (9 total, 5 linked to Naledi Corp QA)
+
+Includes projects created from accepted proposals (PROP-0002, PROP-0004, PROP-0006) plus earlier QA projects.
+
+## API Auth Note
+
+Direct grant tokens MUST include `scope=openid organization` to get org claims. Without the `organization` scope, the JWT has no org claims and the backend returns 403 (insufficient scope).
+
+```bash
+TOKEN=$(curl -sf -X POST "http://localhost:8180/realms/docteams/protocol/openid-connect/token" \
+  -d "client_id=gateway-bff" \
+  -d "client_secret=docteams-web-secret" \
+  -d "grant_type=password" \
+  -d "username=thandi@thornton-test.local" \
+  -d "password=password" \
+  -d "scope=openid organization" | jq -r '.access_token')
+```
+
+Portal contacts are under `/api/customers/{id}/portal-contacts` (not a top-level `/api/portal-contacts` endpoint).
+
 ## Tracker
 
 | ID | Summary | Severity | Status | Owner | PR | Notes |
 |----|---------|----------|--------|-------|----|-------|
-| GAP-AN-001 | "New Automation" button is non-functional — click does nothing | HIGH | VERIFIED | frontend | 3f605219 | Cycle 2: Link navigates to `/new` page. Form loads with Name, Description, Trigger, Conditions, Actions. |
-| GAP-AN-002 | Rule row click does not open edit form or detail page | HIGH | VERIFIED | frontend | 3f605219 | Cycle 2: Rule names are `<a>` links to `/settings/automations/{id}`. Detail page loads with full config form. |
-| GAP-AN-003 | UI toggle switch does not change backend state | HIGH | VERIFIED | frontend + gateway | d6643210 | Cycle 3: Backend toggle works (POST 200, state flips). Gateway returns 401 (not 302) for /api/**. Frontend redirect:manual + 3xx detection confirmed. |
-| GAP-AN-004 | "View Execution Log" link does not navigate when clicked | MEDIUM | VERIFIED | frontend | 3f605219 | Cycle 2: Link has correct href, target page loads with execution history. Two links present (header + footer). |
-| GAP-AN-005 | "Other" notification preference category has 19 raw enum names | LOW | VERIFIED | frontend | 3f605219 | Cycle 2: All 46 types properly labeled across 12 categories. Zero raw enum names. No "Other" category. |
-| OBS-AN-006 | Gateway BFF returns 302 for all server action mutations | HIGH | VERIFIED | gateway + frontend | d6643210 | Cycle 3: All 5 HTTP methods on /api/** return 401 (not 302). /actuator/health still returns 200 (no regression). Frontend redirect:manual + 3xx detection confirmed in source. |
-| OBS-AN-007 | Trigger type badge shows raw enum for some types | LOW | VERIFIED | frontend | d6643210 | Cycle 3: All 10 trigger types have human-readable labels in trigger-type-badge.tsx, automations.ts, rule-form.tsx, and trigger-config-form.tsx. |
-
-## Cycle 3 Summary
-
-**Results file**: `qa_cycle/checkpoint-results/automation-notif-cycle3.md`
-
-**Fix verification**: 3 of 3 VERIFIED (OBS-AN-006, OBS-AN-007, GAP-AN-003).
-
-**Tests executed (API only, no Playwright)**:
-- Gateway 401 vs 302: All 5 HTTP methods (GET/POST/PUT/DELETE/PATCH) on /api/** return 401 when unauthenticated. Non-API paths (/actuator/health) unaffected.
-- Toggle API: Two rules toggled via POST /api/automation-rules/{id}/toggle -- state flips correctly and restores.
-- Frontend source audit: PROPOSAL_SENT and FIELD_DATE_APPROACHING present in all 5 relevant files (trigger-type-badge.tsx, automations.ts, rule-form.tsx, trigger-config-form.tsx, notification-preferences-form.tsx).
-- Notification preferences: TASK_ASSIGNED emailEnabled toggled true, persisted on re-read, restored to false.
-- Execution history: 13 executions, 12 COMPLETED, 1 FAILED (known ORG_ADMINS data issue).
-- Notifications: Proper types, titles, bodies, timestamps. No unresolved variables.
-
-**New bugs found**: None.
-
-**All 7 tracker items now VERIFIED. QA position: ALL_TRACKS_COMPLETE.**
-
----
-
-## Cycle 2 Summary
-
-**Results file**: `qa_cycle/checkpoint-results/automation-notif-cycle2.md`
-
-**Fix verification**: 4 of 5 VERIFIED (GAP-AN-001, 002, 004, 005). GAP-AN-003 REOPENED (frontend code correct but gateway BFF blocks mutations).
-
-**Tracks tested**: T2.2 (INVOICE_STATUS_CHANGED), T2.4 (TIME_ENTRY_CREATED), T6.2 (preference save/persistence via API)
-
-**New findings**:
-- INVOICE_STATUS_CHANGED trigger fires correctly (InvoicePaidEvent). Action failed on ORG_ADMINS recipient resolution (data issue, not engine bug).
-- TIME_ENTRY_CREATED trigger fires correctly (TimeEntryChangedEvent). SEND_NOTIFICATION with TRIGGER_ACTOR works end-to-end.
-- Notification preference save/persistence works via backend API. UI save blocked by gateway BFF mutation issue.
-- Gateway BFF returns HTTP 302 for all mutation requests from server actions (OBS-AN-006). This is the root cause of GAP-AN-003 remaining broken despite correct frontend code.
-
-**Deferred**: T4 (email content verification) -- no SEND_EMAIL actions triggered in this cycle.
-
----
-
-## Cycle 1 Summary
-
-**Results file**: `qa_cycle/checkpoint-results/automation-notif-cycle1.md`
-
-**Tracks tested**: T1 (CRUD), T2.3 (TASK_STATUS_CHANGED), T3.1 (CREATE_TASK action), T5 (notifications), T6.1 (preferences view), T7 (vertical templates)
-
-**What works**:
-- Backend automation engine fires rules correctly on domain events
-- Variable resolution in actions (`{{task.name}}`, `{{project.name}}`)
-- CREATE_TASK and SEND_NOTIFICATION actions execute successfully
-- Execution log page displays history accurately
-- Notification preferences page renders with categories and toggles
-- Notifications page shows all notifications with resolved content
-- 11 seeded vertical automation templates present and configured
-
-**What doesn't work (UI only)**:
-- Cannot create, edit, or toggle automation rules via the UI (GAP-AN-001/002/003)
-- "View Execution Log" link doesn't navigate (GAP-AN-004)
-- All backend APIs work correctly — the issue is purely frontend wiring
 
 ## Log
 
 | Timestamp | Agent | Action |
 |-----------|-------|--------|
-| 2026-03-25T00:00Z | Setup | Automation & Notification Verification QA cycle initialized on branch bugfix_cycle_2026-03-25. Scenario: qa/testplan/automation-notification-verification.md. Reusing seed data from previous cycles. |
-| 2026-03-25T00:05Z | Infra | Dev stack verified READY. All Docker infra (Postgres, Keycloak, Mailpit, LocalStack) healthy. All app services (Backend:8080, Gateway:8443, Frontend:3000, Portal:3002) running and healthy. Keycloak realm 'docteams' active, padmin user present. No restarts needed. |
-| 2026-03-25T23:10Z | QA | Cycle 1 executed. Tested T1 (CRUD), T2.3 (task trigger), T3.1 (CREATE_TASK action), T5 (notifications), T6.1 (preferences view), T7 (vertical templates). Found 5 gaps (3 HIGH, 1 MEDIUM, 1 LOW). All UI interaction on automations page is broken; backend API and automation engine work correctly. Results: qa_cycle/checkpoint-results/automation-notif-cycle1.md |
-| 2026-03-25T23:45Z | Product | Triaged all 5 OPEN items (GAP-AN-001 through GAP-AN-005). Root cause analysis via codebase search. Common theme for GAP-AN-001/002: JS-only navigation via `router.push()` in `rule-list.tsx` — fix is to use `<Link>` for progressive enhancement. GAP-AN-003: CSRF/session issue in Keycloak BFF mode + missing optimistic UI. GAP-AN-005: `NOTIFICATION_TYPE_LABELS` map missing 17 of 41 backend types. All 5 items moved to SPEC_READY with fix specs in `qa_cycle/fix-specs/`. |
-| 2026-03-26T01:35Z | Dev | Fixed all 5 gaps in commit 3f605219. Files modified: `rule-list.tsx` (GAP-AN-001/002/003/004), `actions.ts` (GAP-AN-003), `page.tsx` (GAP-AN-004), `notification-preferences-form.tsx` (GAP-AN-005). Also updated `rule-list.test.tsx` to match Link-based navigation. Build green, all 277 test files pass (1692 tests). Removed `useRouter` dependency from rule-list.tsx entirely. |
-| 2026-03-25T23:50Z | QA | Cycle 2 executed. Verified 4 of 5 fixes (GAP-AN-001/002/004/005 VERIFIED, GAP-AN-003 REOPENED). Tested T2.2 (INVOICE_STATUS_CHANGED -- trigger fires, action failed on ORG_ADMINS resolution), T2.4 (TIME_ENTRY_CREATED -- full pipeline works), T6.2 (preference save works via API). Discovered root cause of GAP-AN-003: gateway BFF returns 302 for all server action mutations. Filed OBS-AN-006 (gateway mutation issue) and OBS-AN-007 (trigger type badge inconsistency). T4 (email content) deferred. Results: qa_cycle/checkpoint-results/automation-notif-cycle2.md |
-| 2026-03-26T02:00Z | Product | Triaged 3 items (GAP-AN-003 reopened, OBS-AN-006, OBS-AN-007). Deep investigation of gateway BFF 302 root cause: traced full auth flow from browser SESSION cookie through Next.js server action to gateway SecurityConfig. Root cause: `oauth2Login()` default AuthenticationEntryPoint returns 302 for unauthenticated /api/** requests instead of 401; Node.js fetch follows redirects silently. GAP-AN-003 blocked by OBS-AN-006 (no additional frontend changes needed). OBS-AN-007: TriggerType union and TRIGGER_TYPE_CONFIG missing 2 of 10 backend enum values. All 3 items moved to SPEC_READY. Fix specs: `OBS-AN-006.md`, `GAP-AN-003-v2.md`, `OBS-AN-007.md`. |
-| 2026-03-26T02:15Z | Dev | Fixed OBS-AN-006, OBS-AN-007, GAP-AN-003 in commit d6643210. Gateway: added `.exceptionHandling()` with `HttpStatusEntryPoint(UNAUTHORIZED)` for `/api/**` using `PathPatternRequestMatcher` (Spring Security 7.0 removed `AntPathRequestMatcher`). Frontend: added `redirect:"manual"` to fetch and 3xx detection in `apiRequest`. Added PROPOSAL_SENT and FIELD_DATE_APPROACHING to TriggerType union, TRIGGER_TYPE_CONFIG, rule-form options, trigger-config-form simple triggers. Gateway compile green. Frontend build green, 277 test files pass (1692 tests). Gateway restarted. NEEDS_REBUILD=false. |
-| 2026-03-26T02:30Z | QA | Cycle 3 executed (API-only verification). Verified all 3 fixes: OBS-AN-006 (gateway 401 for all 5 HTTP methods on /api/**), OBS-AN-007 (all 10 trigger types labeled in 5 frontend files), GAP-AN-003 (toggle via POST returns 200, state flips). Additional checks: preference save/persistence (PASS), execution history (13 records), notifications (proper content). Zero new bugs. All 7 tracker items VERIFIED. QA position: ALL_TRACKS_COMPLETE. Results: qa_cycle/checkpoint-results/automation-notif-cycle3.md |
+| 2026-03-25T00:00Z | Setup | Portal Experience & Proposal Acceptance QA cycle initialized on branch bugfix_cycle_portal_2026-03-25. Scenario: qa/testplan/portal-experience-proposal-acceptance.md. Reusing org data from previous cycles. |
+| 2026-03-25T05:40Z | Infra | Stack verification complete. All 8 services UP. Keycloak realm=docteams verified. Seed data inventoried: 5 customers (1 ACTIVE), 4 portal contacts, 6 proposals (1 DRAFT), 2 generated documents, 9 projects. Phase 49 named contacts (Kgosi/Thabo, Vukani/Sipho) NOT present — data is from earlier QA cycles. PROP-0001 (DRAFT) available for proposal lifecycle testing. Dev stack marked READY. |

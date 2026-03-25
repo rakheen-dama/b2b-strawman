@@ -45,8 +45,13 @@ export async function portalFetch(
 export async function portalGet<T>(path: string): Promise<T> {
   const response = await portalFetch(path);
   if (!response.ok) {
-    const body = await response.text();
-    throw new Error(`API error: ${response.status} ${body}`);
+    if (response.status === 404) {
+      throw new Error("The requested resource was not found.");
+    }
+    if (response.status === 403) {
+      throw new Error("You don't have permission to access this resource.");
+    }
+    throw new Error("Something went wrong. Please try again later.");
   }
   return response.json() as Promise<T>;
 }
@@ -61,8 +66,13 @@ export async function portalPost<T>(path: string, body: unknown): Promise<T> {
     body: JSON.stringify(body),
   });
   if (!response.ok) {
-    const respBody = await response.text();
-    throw new Error(`API error: ${response.status} ${respBody}`);
+    if (response.status === 404) {
+      throw new Error("The requested resource was not found.");
+    }
+    if (response.status === 403) {
+      throw new Error("You don't have permission to access this resource.");
+    }
+    throw new Error("Something went wrong. Please try again later.");
   }
   return response.json() as Promise<T>;
 }

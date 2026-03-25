@@ -5,6 +5,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
+import io.b2mash.b2b.b2bstrawman.customerbackend.event.CustomerProjectLinkedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.ProjectCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.ProjectUpdatedEvent;
 import io.b2mash.b2b.b2bstrawman.event.ProjectArchivedEvent;
@@ -147,6 +148,13 @@ public class ProjectService {
     // Create CustomerProject join record for consistency with CustomerProjectRepository queries
     if (customerId != null) {
       customerProjectRepository.save(new CustomerProject(customerId, project.getId(), createdBy));
+
+      // Publish event for portal read model sync
+      String tenantIdForLink = RequestScopes.getTenantIdOrNull();
+      String orgIdForLink = RequestScopes.getOrgIdOrNull();
+      eventPublisher.publishEvent(
+          new CustomerProjectLinkedEvent(
+              customerId, project.getId(), orgIdForLink, tenantIdForLink));
     }
 
     log.info("Created project {} with lead member {}", project.getId(), createdBy);
@@ -241,6 +249,12 @@ public class ProjectService {
     if (newCustomerId != null
         && !customerProjectRepository.existsByCustomerIdAndProjectId(newCustomerId, id)) {
       customerProjectRepository.save(new CustomerProject(newCustomerId, id, actor.memberId()));
+
+      // Publish event for portal read model sync
+      String tenantIdForLink = RequestScopes.getTenantIdOrNull();
+      String orgIdForLink = RequestScopes.getOrgIdOrNull();
+      eventPublisher.publishEvent(
+          new CustomerProjectLinkedEvent(newCustomerId, id, orgIdForLink, tenantIdForLink));
     }
 
     // Build delta map -- only include changed fields (use actual values from entity)

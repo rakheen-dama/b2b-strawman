@@ -21,6 +21,8 @@ import io.b2mash.b2b.b2bstrawman.event.TaskCancelledEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskClaimedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskRecurrenceCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskStatusChangedEvent;
+import io.b2mash.b2b.b2bstrawman.member.Member;
+import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.channel.NotificationDispatcher;
 import io.b2mash.b2b.b2bstrawman.schedule.event.RecurringProjectCreatedEvent;
@@ -53,11 +55,15 @@ public class NotificationEventHandler {
 
   private final NotificationService notificationService;
   private final NotificationDispatcher notificationDispatcher;
+  private final MemberRepository memberRepository;
 
   public NotificationEventHandler(
-      NotificationService notificationService, NotificationDispatcher notificationDispatcher) {
+      NotificationService notificationService,
+      NotificationDispatcher notificationDispatcher,
+      MemberRepository memberRepository) {
     this.notificationService = notificationService;
     this.notificationDispatcher = notificationDispatcher;
+    this.memberRepository = memberRepository;
   }
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -416,8 +422,10 @@ public class NotificationEventHandler {
             String title =
                 "Proposal %s has been sent"
                     .formatted(event.details().getOrDefault("proposal_number", ""));
-            notificationService.notifyAdminsAndOwners(
-                "PROPOSAL_SENT", title, null, "PROPOSAL", event.entityId());
+            var notifications =
+                notificationService.notifyAdminsAndOwners(
+                    "PROPOSAL_SENT", title, null, "PROPOSAL", event.entityId());
+            dispatchAll(notifications);
           } catch (Exception e) {
             log.warn(
                 "Failed to create notifications for proposal.sent event={}", event.entityId(), e);
@@ -436,8 +444,10 @@ public class NotificationEventHandler {
                 "Billing run \"%s\" completed — %d invoices generated"
                     .formatted(
                         event.runName() != null ? event.runName() : "", event.totalInvoices());
-            notificationService.notifyAdminsAndOwners(
-                "BILLING_RUN_COMPLETED", title, null, "BILLING_RUN", event.billingRunId());
+            var notifications =
+                notificationService.notifyAdminsAndOwners(
+                    "BILLING_RUN_COMPLETED", title, null, "BILLING_RUN", event.billingRunId());
+            dispatchAll(notifications);
           } catch (Exception e) {
             log.warn(
                 "Failed to create notifications for billing_run.completed run={}",
@@ -458,8 +468,10 @@ public class NotificationEventHandler {
                 "Billing run \"%s\" had %d failures"
                     .formatted(
                         event.runName() != null ? event.runName() : "", event.failureCount());
-            notificationService.notifyAdminsAndOwners(
-                "BILLING_RUN_FAILURES", title, null, "BILLING_RUN", event.billingRunId());
+            var notifications =
+                notificationService.notifyAdminsAndOwners(
+                    "BILLING_RUN_FAILURES", title, null, "BILLING_RUN", event.billingRunId());
+            dispatchAll(notifications);
           } catch (Exception e) {
             log.warn(
                 "Failed to create notifications for billing_run.failures run={}",
@@ -479,8 +491,10 @@ public class NotificationEventHandler {
             var title =
                 "Billing run \"%s\" — %d invoices sent"
                     .formatted(event.runName() != null ? event.runName() : "", event.totalSent());
-            notificationService.notifyAdminsAndOwners(
-                "BILLING_RUN_SENT", title, null, "BILLING_RUN", event.billingRunId());
+            var notifications =
+                notificationService.notifyAdminsAndOwners(
+                    "BILLING_RUN_SENT", title, null, "BILLING_RUN", event.billingRunId());
+            dispatchAll(notifications);
           } catch (Exception e) {
             log.warn(
                 "Failed to create notifications for billing_run.sent run={}",
@@ -491,12 +505,17 @@ public class NotificationEventHandler {
   }
 
   /**
-   * Dispatches all created notifications through multi-channel delivery. Email is passed as null
-   * because email resolution is not yet implemented.
+   * Dispatches all created notifications through multi-channel delivery. Resolves the recipient's
+   * email from MemberRepository for email channel delivery.
    */
   private void dispatchAll(List<Notification> notifications) {
     for (var notification : notifications) {
-      notificationDispatcher.dispatch(notification, null);
+      String recipientEmail =
+          memberRepository
+              .findById(notification.getRecipientMemberId())
+              .map(Member::getEmail)
+              .orElse(null);
+      notificationDispatcher.dispatch(notification, recipientEmail);
     }
   }
 

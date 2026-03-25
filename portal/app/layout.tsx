@@ -20,8 +20,8 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Client Portal | DocTeams",
-    template: "%s | DocTeams Portal",
+    default: "Client Portal",
+    template: "%s | Client Portal",
   },
   description: "Client portal for document management and collaboration",
 };

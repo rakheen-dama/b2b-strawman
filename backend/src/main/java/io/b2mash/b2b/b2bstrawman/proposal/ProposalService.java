@@ -9,10 +9,12 @@ import io.b2mash.b2b.b2bstrawman.exception.PrerequisiteNotMetException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
+import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
+import io.b2mash.b2b.b2bstrawman.notification.channel.NotificationDispatcher;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteContext;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService;
@@ -60,6 +62,7 @@ public class ProposalService {
   private final MemberNameResolver memberNameResolver;
   private final AuditService auditService;
   private final NotificationService notificationService;
+  private final NotificationDispatcher notificationDispatcher;
   private final PrerequisiteService prerequisiteService;
   private final ProjectTemplateRepository projectTemplateRepository;
 
@@ -76,6 +79,7 @@ public class ProposalService {
       MemberNameResolver memberNameResolver,
       AuditService auditService,
       NotificationService notificationService,
+      NotificationDispatcher notificationDispatcher,
       PrerequisiteService prerequisiteService,
       ProjectTemplateRepository projectTemplateRepository) {
     this.proposalRepository = proposalRepository;
@@ -90,6 +94,7 @@ public class ProposalService {
     this.memberNameResolver = memberNameResolver;
     this.auditService = auditService;
     this.notificationService = notificationService;
+    this.notificationDispatcher = notificationDispatcher;
     this.prerequisiteService = prerequisiteService;
     this.projectTemplateRepository = projectTemplateRepository;
   }
@@ -580,6 +585,20 @@ public class ProposalService {
     validateFeeConfiguration(
         proposal.getFeeModel(), proposal.getFixedFeeAmount(), proposal.getRetainerAmount());
 
+    // 3b. Validate currency is set for fee models that create billing entities (GAP-PE-009)
+    if (proposal.getFeeModel() == FeeModel.FIXED) {
+      if (proposal.getFixedFeeCurrency() == null || proposal.getFixedFeeCurrency().isBlank()) {
+        throw new InvalidStateException(
+            "Missing fee currency", "Fixed-fee proposals require a currency code");
+      }
+    }
+    if (proposal.getFeeModel() == FeeModel.RETAINER) {
+      if (proposal.getRetainerCurrency() == null || proposal.getRetainerCurrency().isBlank()) {
+        throw new InvalidStateException(
+            "Missing fee currency", "Retainer proposals require a currency code");
+      }
+    }
+
     // 4. Validate milestones sum to 100 if FIXED + milestones exist
     if (proposal.getFeeModel() == FeeModel.FIXED) {
       var milestones = milestoneRepository.findByProposalIdOrderBySortOrder(proposalId);
@@ -713,14 +732,21 @@ public class ProposalService {
     proposalPortalSyncService.updatePortalProposalStatus(proposalId, "DECLINED");
 
     // Notify proposal creator (client-initiated decline)
-    notificationService.createNotification(
-        proposal.getCreatedById(),
-        "PROPOSAL_DECLINED",
-        "Proposal %s was declined".formatted(proposal.getProposalNumber()),
-        reason != null ? "Reason: %s".formatted(reason) : "No reason provided",
-        "PROPOSAL",
-        proposalId,
-        null);
+    var notification =
+        notificationService.createNotification(
+            proposal.getCreatedById(),
+            "PROPOSAL_DECLINED",
+            "Proposal %s was declined".formatted(proposal.getProposalNumber()),
+            reason != null ? "Reason: %s".formatted(reason) : "No reason provided",
+            "PROPOSAL",
+            proposalId,
+            null);
+    String recipientEmail =
+        memberRepository
+            .findById(notification.getRecipientMemberId())
+            .map(Member::getEmail)
+            .orElse(null);
+    notificationDispatcher.dispatch(notification, recipientEmail);
 
     log.info("Declined proposal {} with reason: {}", proposalId, reason);
     return saved;

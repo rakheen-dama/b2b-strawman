@@ -1,7 +1,12 @@
 package io.b2mash.b2b.b2bstrawman.proposal;
 
+import io.b2mash.b2b.b2bstrawman.member.Member;
+import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.notification.Notification;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
+import io.b2mash.b2b.b2bstrawman.notification.channel.NotificationDispatcher;
+import java.util.ArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -19,12 +24,18 @@ public class ProposalAcceptedEventHandler {
   private static final Logger log = LoggerFactory.getLogger(ProposalAcceptedEventHandler.class);
 
   private final NotificationService notificationService;
+  private final NotificationDispatcher notificationDispatcher;
+  private final MemberRepository memberRepository;
   private final ProposalPortalSyncService proposalPortalSyncService;
 
   public ProposalAcceptedEventHandler(
       NotificationService notificationService,
+      NotificationDispatcher notificationDispatcher,
+      MemberRepository memberRepository,
       ProposalPortalSyncService proposalPortalSyncService) {
     this.notificationService = notificationService;
+    this.notificationDispatcher = notificationDispatcher;
+    this.memberRepository = memberRepository;
     this.proposalPortalSyncService = proposalPortalSyncService;
   }
 
@@ -35,31 +46,47 @@ public class ProposalAcceptedEventHandler {
         event.orgId(),
         () -> {
           try {
+            var notifications = new ArrayList<Notification>();
+
             // 1. Notify creator
-            notificationService.createNotification(
-                event.creatorMemberId(),
-                "PROPOSAL_ACCEPTED",
-                "Proposal %s accepted — project created".formatted(event.proposalNumber()),
-                "Project \"%s\" has been created for customer %s"
-                    .formatted(event.projectName(), event.customerName()),
-                "PROPOSAL",
-                event.proposalId(),
-                event.createdProjectId());
+            var creatorNotif =
+                notificationService.createNotification(
+                    event.creatorMemberId(),
+                    "PROPOSAL_ACCEPTED",
+                    "Proposal %s accepted — project created".formatted(event.proposalNumber()),
+                    "Project \"%s\" has been created for customer %s"
+                        .formatted(event.projectName(), event.customerName()),
+                    "PROPOSAL",
+                    event.proposalId(),
+                    event.createdProjectId());
+            notifications.add(creatorNotif);
 
             // 2. Notify team members
             for (var memberId : event.teamMemberIds()) {
-              notificationService.createNotification(
-                  memberId,
-                  "PROJECT_ASSIGNED",
-                  "You've been assigned to project %s".formatted(event.projectName()),
-                  "You have been assigned to project \"%s\" for customer %s"
-                      .formatted(event.projectName(), event.customerName()),
-                  "PROJECT",
-                  event.createdProjectId(),
-                  event.createdProjectId());
+              var teamNotif =
+                  notificationService.createNotification(
+                      memberId,
+                      "PROJECT_ASSIGNED",
+                      "You've been assigned to project %s".formatted(event.projectName()),
+                      "You have been assigned to project \"%s\" for customer %s"
+                          .formatted(event.projectName(), event.customerName()),
+                      "PROJECT",
+                      event.createdProjectId(),
+                      event.createdProjectId());
+              notifications.add(teamNotif);
             }
 
-            // 3. Update portal status
+            // 3. Dispatch all through multi-channel (email + in-app)
+            for (var notification : notifications) {
+              String recipientEmail =
+                  memberRepository
+                      .findById(notification.getRecipientMemberId())
+                      .map(Member::getEmail)
+                      .orElse(null);
+              notificationDispatcher.dispatch(notification, recipientEmail);
+            }
+
+            // 4. Update portal status
             proposalPortalSyncService.updatePortalProposalStatus(event.proposalId(), "ACCEPTED");
 
             log.info(

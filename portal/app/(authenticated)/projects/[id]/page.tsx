@@ -108,8 +108,17 @@ export default function ProjectDetailPage() {
 
   if (error) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-        {error}
+      <div className="flex flex-col items-center justify-center py-16 text-center">
+        <p className="text-lg font-medium text-slate-600">Project not found</p>
+        <p className="mt-1 text-sm text-slate-500">
+          This project may have been removed or you may not have access.
+        </p>
+        <Link
+          href="/projects"
+          className="mt-4 text-sm text-teal-600 hover:underline"
+        >
+          Back to projects
+        </Link>
       </div>
     );
   }

@@ -176,7 +176,7 @@ describe("RuleList", () => {
     expect(screen.getByText("Invoice Status")).toBeInTheDocument();
   });
 
-  it("navigates to rule detail on row click", () => {
+  it("renders rule name as a link to rule detail", () => {
     render(
       <RuleList
         slug="acme"
@@ -185,8 +185,9 @@ describe("RuleList", () => {
         canManage={true}
       />,
     );
-    fireEvent.click(screen.getByText("Auto-assign tasks"));
-    expect(mockPush).toHaveBeenCalledWith(
+    const ruleLink = screen.getByText("Auto-assign tasks").closest("a");
+    expect(ruleLink).toHaveAttribute(
+      "href",
       "/org/acme/settings/automations/rule-1",
     );
   });

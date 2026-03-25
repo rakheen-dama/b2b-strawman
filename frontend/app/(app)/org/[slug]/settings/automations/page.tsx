@@ -52,9 +52,9 @@ export default async function AutomationsSettingsPage({
         {isAdmin && (
           <Link
             href={`/org/${slug}/settings/automations/executions`}
-            className="mt-2 inline-flex items-center gap-1 text-sm text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300"
+            className="mt-2 inline-flex items-center gap-1 text-sm text-teal-600 underline-offset-4 hover:text-teal-700 hover:underline dark:text-teal-400 dark:hover:text-teal-300"
           >
-            View Execution Log
+            View Execution Log &rarr;
           </Link>
         )}
       </div>

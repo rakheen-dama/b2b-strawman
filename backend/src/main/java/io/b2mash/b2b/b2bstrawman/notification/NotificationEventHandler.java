@@ -422,8 +422,10 @@ public class NotificationEventHandler {
             String title =
                 "Proposal %s has been sent"
                     .formatted(event.details().getOrDefault("proposal_number", ""));
-            notificationService.notifyAdminsAndOwners(
-                "PROPOSAL_SENT", title, null, "PROPOSAL", event.entityId());
+            var notifications =
+                notificationService.notifyAdminsAndOwners(
+                    "PROPOSAL_SENT", title, null, "PROPOSAL", event.entityId());
+            dispatchAll(notifications);
           } catch (Exception e) {
             log.warn(
                 "Failed to create notifications for proposal.sent event={}", event.entityId(), e);
@@ -442,8 +444,10 @@ public class NotificationEventHandler {
                 "Billing run \"%s\" completed — %d invoices generated"
                     .formatted(
                         event.runName() != null ? event.runName() : "", event.totalInvoices());
-            notificationService.notifyAdminsAndOwners(
-                "BILLING_RUN_COMPLETED", title, null, "BILLING_RUN", event.billingRunId());
+            var notifications =
+                notificationService.notifyAdminsAndOwners(
+                    "BILLING_RUN_COMPLETED", title, null, "BILLING_RUN", event.billingRunId());
+            dispatchAll(notifications);
           } catch (Exception e) {
             log.warn(
                 "Failed to create notifications for billing_run.completed run={}",
@@ -464,8 +468,10 @@ public class NotificationEventHandler {
                 "Billing run \"%s\" had %d failures"
                     .formatted(
                         event.runName() != null ? event.runName() : "", event.failureCount());
-            notificationService.notifyAdminsAndOwners(
-                "BILLING_RUN_FAILURES", title, null, "BILLING_RUN", event.billingRunId());
+            var notifications =
+                notificationService.notifyAdminsAndOwners(
+                    "BILLING_RUN_FAILURES", title, null, "BILLING_RUN", event.billingRunId());
+            dispatchAll(notifications);
           } catch (Exception e) {
             log.warn(
                 "Failed to create notifications for billing_run.failures run={}",
@@ -485,8 +491,10 @@ public class NotificationEventHandler {
             var title =
                 "Billing run \"%s\" — %d invoices sent"
                     .formatted(event.runName() != null ? event.runName() : "", event.totalSent());
-            notificationService.notifyAdminsAndOwners(
-                "BILLING_RUN_SENT", title, null, "BILLING_RUN", event.billingRunId());
+            var notifications =
+                notificationService.notifyAdminsAndOwners(
+                    "BILLING_RUN_SENT", title, null, "BILLING_RUN", event.billingRunId());
+            dispatchAll(notifications);
           } catch (Exception e) {
             log.warn(
                 "Failed to create notifications for billing_run.sent run={}",

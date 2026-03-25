@@ -797,12 +797,16 @@ public class NotificationService {
    * agreement-level notifications.
    */
   @Transactional(propagation = Propagation.REQUIRES_NEW)
-  public void notifyAdminsAndOwners(
+  public List<Notification> notifyAdminsAndOwners(
       String type, String title, String body, String entityType, UUID entityId) {
     var adminsAndOwners = memberRepository.findByRoleSlugsIn(List.of("admin", "owner"));
+    var created = new ArrayList<Notification>();
     for (var member : adminsAndOwners) {
-      createNotification(member.getId(), type, title, body, entityType, entityId, null);
+      var notification =
+          createNotification(member.getId(), type, title, body, entityType, entityId, null);
+      created.add(notification);
     }
+    return created;
   }
 
   // --- Private helpers ---

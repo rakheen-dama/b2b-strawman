@@ -9,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.integration.email.EmailRateLimiter;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.template.EmailContextBuilder;
 import io.b2mash.b2b.b2bstrawman.notification.template.EmailTemplateRenderer;
+import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -33,7 +34,8 @@ public class PortalEmailService {
   private final EmailContextBuilder emailContextBuilder;
   private final EmailDeliveryLogService deliveryLogService;
   private final EmailRateLimiter emailRateLimiter;
-  private final String appBaseUrl;
+  private final OrganizationRepository organizationRepository;
+  private final String portalBaseUrl;
 
   public PortalEmailService(
       IntegrationRegistry integrationRegistry,
@@ -41,13 +43,15 @@ public class PortalEmailService {
       EmailContextBuilder emailContextBuilder,
       EmailDeliveryLogService deliveryLogService,
       EmailRateLimiter emailRateLimiter,
-      @Value("${docteams.app.base-url:http://localhost:3000}") String appBaseUrl) {
+      OrganizationRepository organizationRepository,
+      @Value("${docteams.app.portal-base-url:http://localhost:3002}") String portalBaseUrl) {
     this.integrationRegistry = integrationRegistry;
     this.emailTemplateRenderer = emailTemplateRenderer;
     this.emailContextBuilder = emailContextBuilder;
     this.deliveryLogService = deliveryLogService;
     this.emailRateLimiter = emailRateLimiter;
-    this.appBaseUrl = appBaseUrl;
+    this.organizationRepository = organizationRepository;
+    this.portalBaseUrl = portalBaseUrl;
   }
 
   /**
@@ -76,13 +80,18 @@ public class PortalEmailService {
           integrationRegistry.resolve(IntegrationDomain.EMAIL, EmailProvider.class);
 
       // 2. Build context (base + magic-link-specific). No unsubscribe for transactional emails.
-      String magicLinkUrl = appBaseUrl + "/portal/auth?token=" + rawToken;
+      String orgId = contact.getOrgId();
+      String magicLinkUrl = portalBaseUrl + "/auth/exchange?token=" + rawToken + "&orgId=" + orgId;
       Map<String, Object> context =
           emailContextBuilder.buildBaseContext(contact.getDisplayName(), null);
       context.put("contactName", contact.getDisplayName());
       context.put("magicLinkUrl", magicLinkUrl);
       context.put("expiryMinutes", String.valueOf(MagicLinkService.TOKEN_TTL_MINUTES));
-      String orgName = (String) context.get("orgName");
+
+      // Resolve org name directly from OrganizationRepository since ORG_ID ScopedValue
+      // may not be bound during portal auth flow (only TENANT_ID is bound)
+      String orgName = resolveOrgName(orgId);
+      context.put("orgName", orgName);
       context.put("subject", "Your portal access link from " + orgName);
 
       // 3. Render template
@@ -125,5 +134,16 @@ public class PortalEmailService {
     } catch (Exception e) {
       log.error("Unexpected error sending magic link email for contact={}", contact.getId(), e);
     }
+  }
+
+  /** Resolves the org name from the global organizations table, falling back to "DocTeams". */
+  private String resolveOrgName(String orgId) {
+    if (orgId == null) {
+      return "DocTeams";
+    }
+    return organizationRepository
+        .findByClerkOrgId(orgId)
+        .map(org -> org.getName())
+        .orElse("DocTeams");
   }
 }

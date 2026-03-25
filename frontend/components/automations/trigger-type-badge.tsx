@@ -13,6 +13,8 @@ const TRIGGER_TYPE_CONFIG: Record<
   BUDGET_THRESHOLD_REACHED: { label: "Budget Threshold", variant: "warning" },
   DOCUMENT_ACCEPTED: { label: "Document Accepted", variant: "success" },
   INFORMATION_REQUEST_COMPLETED: { label: "Request Completed", variant: "lead" },
+  PROPOSAL_SENT: { label: "Proposal Sent", variant: "success" },
+  FIELD_DATE_APPROACHING: { label: "Date Approaching", variant: "warning" },
 };
 
 interface TriggerTypeBadgeProps {

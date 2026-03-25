@@ -67,6 +67,8 @@ const TRIGGER_TYPE_OPTIONS: { value: TriggerType; label: string; description: st
   { value: "BUDGET_THRESHOLD_REACHED", label: "Budget Threshold Reached", description: "Triggered when budget consumption hits a threshold" },
   { value: "DOCUMENT_ACCEPTED", label: "Document Accepted", description: "Triggered when a document is accepted" },
   { value: "INFORMATION_REQUEST_COMPLETED", label: "Information Request Completed", description: "Triggered when an information request is completed" },
+  { value: "PROPOSAL_SENT", label: "Proposal Sent", description: "Triggered when a proposal is sent to a customer" },
+  { value: "FIELD_DATE_APPROACHING", label: "Date Approaching", description: "Triggered when a tracked date field is approaching" },
 ];
 
 function parseConditions(

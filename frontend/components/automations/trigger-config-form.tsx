@@ -53,6 +53,8 @@ const SIMPLE_TRIGGERS = new Set([
   "TIME_ENTRY_CREATED",
   "DOCUMENT_ACCEPTED",
   "INFORMATION_REQUEST_COMPLETED",
+  "PROPOSAL_SENT",
+  "FIELD_DATE_APPROACHING",
 ]);
 
 export function TriggerConfigForm({

@@ -90,7 +90,13 @@ export async function apiRequest<T>(endpoint: string, options: ApiRequestOptions
     cache: options.cache,
     next: options.next,
     credentials: authOptions.credentials,
+    redirect: "manual",
   });
+
+  // Detect redirect responses (e.g., gateway redirecting to login)
+  if (response.status >= 300 && response.status < 400) {
+    throw new ApiError(401, "Authentication session expired");
+  }
 
   if (!response.ok) {
     let detail: ProblemDetail | undefined;

@@ -21,6 +21,8 @@ import io.b2mash.b2b.b2bstrawman.event.TaskCancelledEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskClaimedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskRecurrenceCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskStatusChangedEvent;
+import io.b2mash.b2b.b2bstrawman.member.Member;
+import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.channel.NotificationDispatcher;
 import io.b2mash.b2b.b2bstrawman.schedule.event.RecurringProjectCreatedEvent;
@@ -53,11 +55,15 @@ public class NotificationEventHandler {
 
   private final NotificationService notificationService;
   private final NotificationDispatcher notificationDispatcher;
+  private final MemberRepository memberRepository;
 
   public NotificationEventHandler(
-      NotificationService notificationService, NotificationDispatcher notificationDispatcher) {
+      NotificationService notificationService,
+      NotificationDispatcher notificationDispatcher,
+      MemberRepository memberRepository) {
     this.notificationService = notificationService;
     this.notificationDispatcher = notificationDispatcher;
+    this.memberRepository = memberRepository;
   }
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -491,12 +497,17 @@ public class NotificationEventHandler {
   }
 
   /**
-   * Dispatches all created notifications through multi-channel delivery. Email is passed as null
-   * because email resolution is not yet implemented.
+   * Dispatches all created notifications through multi-channel delivery. Resolves the recipient's
+   * email from MemberRepository for email channel delivery.
    */
   private void dispatchAll(List<Notification> notifications) {
     for (var notification : notifications) {
-      notificationDispatcher.dispatch(notification, null);
+      String recipientEmail =
+          memberRepository
+              .findById(notification.getRecipientMemberId())
+              .map(Member::getEmail)
+              .orElse(null);
+      notificationDispatcher.dispatch(notification, recipientEmail);
     }
   }
 

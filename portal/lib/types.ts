@@ -184,6 +184,52 @@ export interface AcceptanceResponse {
   acceptorName: string;
 }
 
+// === Proposals ===
+
+export type ProposalStatus = "SENT" | "ACCEPTED" | "DECLINED" | "EXPIRED";
+
+export interface PortalProposal {
+  id: string;
+  proposalNumber: string;
+  title: string;
+  status: ProposalStatus;
+  feeModel: string;
+  feeAmount: number | null;
+  feeCurrency: string | null;
+  sentAt: string; // ISO 8601 instant
+}
+
+export interface PortalProposalDetail {
+  id: string;
+  proposalNumber: string;
+  title: string;
+  status: ProposalStatus;
+  feeModel: string;
+  feeAmount: number | null;
+  feeCurrency: string | null;
+  contentHtml: string | null;
+  milestonesJson: string | null;
+  sentAt: string | null;
+  expiresAt: string | null;
+  orgName: string | null;
+  orgLogoUrl: string | null;
+  orgBrandColor: string | null;
+}
+
+export interface PortalAcceptResponse {
+  proposalId: string;
+  status: string;
+  acceptedAt: string;
+  projectName: string | null;
+  message: string;
+}
+
+export interface PortalDeclineResponse {
+  proposalId: string;
+  status: string;
+  declinedAt: string;
+}
+
 // === Pending Acceptances ===
 
 export interface PortalPendingAcceptance {

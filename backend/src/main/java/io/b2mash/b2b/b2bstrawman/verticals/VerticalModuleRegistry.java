@@ -39,17 +39,17 @@ public class VerticalModuleRegistry {
                 "court_calendar",
                 "Court Calendar",
                 "Court date tracking and deadline management",
-                "stub",
-                List.of(),
-                List.of()),
+                "active",
+                List.of("legal-za"),
+                List.of(new NavItem("/court-calendar", "Court Calendar", "legal"))),
             "conflict_check",
             new ModuleDefinition(
                 "conflict_check",
                 "Conflict Check",
                 "Matter conflict of interest checks",
-                "stub",
-                List.of(),
-                List.of()),
+                "active",
+                List.of("legal-za"),
+                List.of(new NavItem("/conflict-check", "Conflict Check", "legal"))),
             "regulatory_deadlines",
             new ModuleDefinition(
                 "regulatory_deadlines",
@@ -57,7 +57,15 @@ public class VerticalModuleRegistry {
                 "Firm-wide calendar of regulatory filing deadlines with status tracking",
                 "active",
                 List.of("accounting-za"),
-                List.of(new NavItem("/deadlines", "Deadlines", "clients"))));
+                List.of(new NavItem("/deadlines", "Deadlines", "clients"))),
+            "lssa_tariff",
+            new ModuleDefinition(
+                "lssa_tariff",
+                "LSSA Tariff",
+                "LSSA tariff schedule management for legal billing",
+                "active",
+                List.of("legal-za"),
+                List.of(new NavItem("/legal/tariffs", "Tariffs", "finance"))));
   }
 
   /** Returns all known module definitions. */

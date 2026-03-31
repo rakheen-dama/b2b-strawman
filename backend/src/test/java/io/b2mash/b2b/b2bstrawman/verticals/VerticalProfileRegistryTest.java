@@ -51,4 +51,23 @@ class VerticalProfileRegistryTest {
         .extracting(VerticalProfileRegistry.ProfileDefinition::profileId)
         .contains("accounting-za");
   }
+
+  @Test
+  void legalZaProfileIncludesLegalModules() {
+    var profile = registry.getProfile("legal-za");
+
+    assertThat(profile).isPresent();
+
+    var p = profile.get();
+    assertThat(p.enabledModules())
+        .containsExactlyInAnyOrder("court_calendar", "conflict_check", "lssa_tariff");
+  }
+
+  @Test
+  void legalZaProfileDoesNotIncludeTrustAccounting() {
+    var profile = registry.getProfile("legal-za");
+
+    assertThat(profile).isPresent();
+    assertThat(profile.get().enabledModules()).doesNotContain("trust_accounting");
+  }
 }

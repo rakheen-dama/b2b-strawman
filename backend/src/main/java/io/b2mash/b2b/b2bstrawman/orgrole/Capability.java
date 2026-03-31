@@ -13,7 +13,9 @@ public enum Capability {
   AUTOMATIONS,
   RESOURCE_PLANNING,
   MANAGE_COMPLIANCE,
-  MANAGE_COMPLIANCE_DESTRUCTIVE;
+  MANAGE_COMPLIANCE_DESTRUCTIVE,
+  VIEW_LEGAL,
+  MANAGE_LEGAL;
 
   /** Capabilities restricted to the owner role — admin does NOT inherit these. */
   public static final Set<String> OWNER_ONLY = Set.of(MANAGE_COMPLIANCE_DESTRUCTIVE.name());

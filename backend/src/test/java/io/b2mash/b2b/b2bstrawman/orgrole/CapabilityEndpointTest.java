@@ -157,14 +157,15 @@ class CapabilityEndpointTest {
   }
 
   @Test
-  void getMyCapabilities_member_returnsEmpty() throws Exception {
+  void getMyCapabilities_member_returnsViewLegal() throws Exception {
     mockMvc
         .perform(get("/api/me/capabilities").with(memberJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.isAdmin").value(false))
         .andExpect(jsonPath("$.isOwner").value(false))
         .andExpect(jsonPath("$.capabilities").isArray())
-        .andExpect(jsonPath("$.capabilities.length()").value(0))
+        .andExpect(jsonPath("$.capabilities.length()").value(1))
+        .andExpect(jsonPath("$.capabilities[0]").value("VIEW_LEGAL"))
         .andExpect(jsonPath("$.role").value("Member"));
   }
 

@@ -67,9 +67,10 @@ class TenantProvisioningServiceIntegrationTest {
     // Verify enabled_modules via direct SQL
     String enabledModules = getOrgSettingsColumn(tenantSchema, "enabled_modules");
     assertThat(enabledModules).isNotNull();
-    assertThat(enabledModules).contains("trust_accounting");
     assertThat(enabledModules).contains("court_calendar");
     assertThat(enabledModules).contains("conflict_check");
+    assertThat(enabledModules).contains("lssa_tariff");
+    assertThat(enabledModules).doesNotContain("trust_accounting");
 
     // Verify terminology_namespace via direct SQL
     String terminologyNamespace = getOrgSettingsColumn(tenantSchema, "terminology_namespace");
@@ -81,11 +82,11 @@ class TenantProvisioningServiceIntegrationTest {
   }
 
   @Test
-  void provisionWithLegalZa_trustAccountingStubReturns200() throws Exception {
+  void provisionWithLegalZa_courtCalendarStubReturns200() throws Exception {
     mockMvc
-        .perform(get("/api/trust-accounting/status").with(ownerJwt()))
+        .perform(get("/api/court-calendar/status").with(ownerJwt()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.module").value("trust_accounting"))
+        .andExpect(jsonPath("$.module").value("court_calendar"))
         .andExpect(jsonPath("$.status").value("stub"))
         .andExpect(jsonPath("$.message").exists());
   }

@@ -73,6 +73,10 @@ public interface ProjectRepository extends JpaRepository<Project, UUID> {
    * isolation), unlike JpaRepository.findAllById which uses EntityManager.find directly.
    */
 
+  /** JPQL-based batch find by IDs — respects tenant schema isolation (unlike findAllById). */
+  @Query("SELECT p FROM Project p WHERE p.id IN :ids")
+  List<Project> findByIdIn(@Param("ids") Collection<UUID> ids);
+
   /** Batch-loads projects for multiple customers in a single query. */
   @Query("SELECT p FROM Project p WHERE p.customerId IN :customerIds ORDER BY p.createdAt DESC")
   List<Project> findByCustomerIdIn(@Param("customerIds") Collection<UUID> customerIds);

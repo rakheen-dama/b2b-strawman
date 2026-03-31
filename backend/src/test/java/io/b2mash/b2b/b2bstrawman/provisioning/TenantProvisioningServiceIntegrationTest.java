@@ -82,13 +82,11 @@ class TenantProvisioningServiceIntegrationTest {
   }
 
   @Test
-  void provisionWithLegalZa_courtCalendarStubReturns200() throws Exception {
+  void provisionWithLegalZa_courtCalendarListReturns200() throws Exception {
     mockMvc
-        .perform(get("/api/court-calendar/status").with(ownerJwt()))
+        .perform(get("/api/court-dates").with(ownerJwt()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.module").value("court_calendar"))
-        .andExpect(jsonPath("$.status").value("stub"))
-        .andExpect(jsonPath("$.message").exists());
+        .andExpect(jsonPath("$.content").isArray());
   }
 
   // --- Helpers ---

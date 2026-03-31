@@ -18,21 +18,27 @@ public interface AdversePartyRepository extends JpaRepository<AdverseParty, UUID
   @Query(
       value =
           "SELECT * FROM adverse_parties"
-              + " WHERE similarity(lower(name), lower(:name)) > :threshold"
-              + " ORDER BY similarity(lower(name), lower(:name)) DESC",
+              + " WHERE public.similarity(lower(name), lower(:name)) > :threshold"
+              + " ORDER BY public.similarity(lower(name), lower(:name)) DESC"
+              + " LIMIT :maxResults",
       nativeQuery = true)
   List<AdverseParty> findBySimilarName(
-      @Param("name") String name, @Param("threshold") double threshold);
+      @Param("name") String name,
+      @Param("threshold") double threshold,
+      @Param("maxResults") int maxResults);
 
   @Query(
       value =
           "SELECT * FROM adverse_parties"
               + " WHERE aliases IS NOT NULL"
-              + " AND similarity(lower(aliases), lower(:name)) > :threshold"
-              + " ORDER BY similarity(lower(aliases), lower(:name)) DESC",
+              + " AND public.similarity(lower(aliases), lower(:name)) > :threshold"
+              + " ORDER BY public.similarity(lower(aliases), lower(:name)) DESC"
+              + " LIMIT :maxResults",
       nativeQuery = true)
   List<AdverseParty> findByAliasContaining(
-      @Param("name") String name, @Param("threshold") double threshold);
+      @Param("name") String name,
+      @Param("threshold") double threshold,
+      @Param("maxResults") int maxResults);
 
   @Query(
       """

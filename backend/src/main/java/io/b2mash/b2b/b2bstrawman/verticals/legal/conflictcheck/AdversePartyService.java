@@ -173,8 +173,8 @@ public class AdversePartyService {
             .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("AdverseParty", id));
 
-    if (adversePartyLinkRepository.existsByAdversePartyId(id)) {
-      var linkCount = adversePartyLinkRepository.findByAdversePartyId(id).size();
+    long linkCount = adversePartyLinkRepository.countByAdversePartyId(id);
+    if (linkCount > 0) {
       throw new ResourceConflictException(
           "Adverse party has active links",
           "Cannot delete adverse party with ID "
@@ -327,9 +327,13 @@ public class AdversePartyService {
     moduleGuard.requireModule(MODULE_ID);
 
     if (search != null && !search.isBlank()) {
-      // Fuzzy search: combine name + alias results, deduplicate, then paginate in-memory
-      var nameMatches = adversePartyRepository.findBySimilarName(search, FUZZY_THRESHOLD);
-      var aliasMatches = adversePartyRepository.findByAliasContaining(search, FUZZY_THRESHOLD);
+      // Limit each native query to a reasonable upper bound to avoid loading unbounded results.
+      // We fetch enough to fill the page after dedup + filtering, but cap at a safe maximum.
+      int maxResults = pageable.isPaged() ? pageable.getPageSize() * 3 : 200;
+      var nameMatches =
+          adversePartyRepository.findBySimilarName(search, FUZZY_THRESHOLD, maxResults);
+      var aliasMatches =
+          adversePartyRepository.findByAliasContaining(search, FUZZY_THRESHOLD, maxResults);
 
       // Merge and deduplicate preserving name-match order
       var seen = new LinkedHashSet<UUID>();
@@ -341,8 +345,11 @@ public class AdversePartyService {
 
       // Manual pagination (handle unpaged gracefully)
       if (pageable.isUnpaged()) {
+        var counts = batchLinkCounts(merged);
         return new org.springframework.data.domain.PageImpl<>(
-            merged.stream().map(this::toResponse).toList());
+            merged.stream()
+                .map(ap -> toResponse(ap, counts.getOrDefault(ap.getId(), 0L)))
+                .toList());
       }
 
       int start = (int) pageable.getOffset();
@@ -350,11 +357,18 @@ public class AdversePartyService {
       var pageContent =
           start >= merged.size() ? List.<AdverseParty>of() : merged.subList(start, end);
 
+      var counts = batchLinkCounts(pageContent);
       return new org.springframework.data.domain.PageImpl<>(
-          pageContent.stream().map(this::toResponse).toList(), pageable, merged.size());
+          pageContent.stream()
+              .map(ap -> toResponse(ap, counts.getOrDefault(ap.getId(), 0L)))
+              .toList(),
+          pageable,
+          merged.size());
     }
 
-    return adversePartyRepository.findByFilters(partyType, pageable).map(this::toResponse);
+    var page = adversePartyRepository.findByFilters(partyType, pageable);
+    var counts = batchLinkCounts(page.getContent());
+    return page.map(ap -> toResponse(ap, counts.getOrDefault(ap.getId(), 0L)));
   }
 
   @Transactional(readOnly = true)
@@ -372,7 +386,11 @@ public class AdversePartyService {
   // --- Private helpers ---
 
   private AdversePartyResponse toResponse(AdverseParty entity) {
-    long linkCount = adversePartyLinkRepository.findByAdversePartyId(entity.getId()).size();
+    long linkCount = adversePartyLinkRepository.countByAdversePartyId(entity.getId());
+    return toResponse(entity, linkCount);
+  }
+
+  private AdversePartyResponse toResponse(AdverseParty entity, long linkCount) {
     return new AdversePartyResponse(
         entity.getId(),
         entity.getName(),
@@ -384,6 +402,16 @@ public class AdversePartyService {
         linkCount,
         entity.getCreatedAt(),
         entity.getUpdatedAt());
+  }
+
+  /** Batch-fetch link counts for a collection of adverse parties (single grouped query). */
+  private Map<UUID, Long> batchLinkCounts(List<AdverseParty> parties) {
+    if (parties.isEmpty()) {
+      return Map.of();
+    }
+    var ids = parties.stream().map(AdverseParty::getId).toList();
+    return adversePartyLinkRepository.countByAdversePartyIdIn(ids).stream()
+        .collect(Collectors.toMap(row -> (UUID) row[0], row -> (Long) row[1]));
   }
 
   private AdversePartyLinkResponse toLinkResponse(

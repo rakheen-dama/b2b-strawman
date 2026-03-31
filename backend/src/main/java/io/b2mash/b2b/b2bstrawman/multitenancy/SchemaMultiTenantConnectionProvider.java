@@ -88,7 +88,8 @@ public class SchemaMultiTenantConnectionProvider implements MultiTenantConnectio
 
   private void setSearchPath(Connection connection, String schema) throws SQLException {
     try (var stmt = connection.createStatement()) {
-      stmt.execute("SET search_path TO " + sanitizeSchema(schema));
+      // Include public so extensions (e.g. pg_trgm) installed there are accessible
+      stmt.execute("SET search_path TO " + sanitizeSchema(schema) + ", public");
     }
   }
 

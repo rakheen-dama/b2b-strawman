@@ -12,6 +12,8 @@ import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -45,6 +47,7 @@ public class CourtCalendarService {
           "POSTPONED", Set.of("HEARD", "CANCELLED"));
 
   private final CourtDateRepository courtDateRepository;
+  private final PrescriptionTrackerRepository prescriptionTrackerRepository;
   private final VerticalModuleGuard moduleGuard;
   private final ProjectRepository projectRepository;
   private final CustomerRepository customerRepository;
@@ -52,11 +55,13 @@ public class CourtCalendarService {
 
   public CourtCalendarService(
       CourtDateRepository courtDateRepository,
+      PrescriptionTrackerRepository prescriptionTrackerRepository,
       VerticalModuleGuard moduleGuard,
       ProjectRepository projectRepository,
       CustomerRepository customerRepository,
       AuditService auditService) {
     this.courtDateRepository = courtDateRepository;
+    this.prescriptionTrackerRepository = prescriptionTrackerRepository;
     this.moduleGuard = moduleGuard;
     this.projectRepository = projectRepository;
     this.customerRepository = customerRepository;
@@ -119,6 +124,29 @@ public class CourtCalendarService {
       String status,
       UUID customerId,
       UUID projectId) {}
+
+  public record UpcomingCourtDateItem(
+      UUID id,
+      UUID projectId,
+      String projectName,
+      String dateType,
+      LocalDate scheduledDate,
+      String courtName,
+      String status,
+      long daysUntil) {}
+
+  public record UpcomingPrescriptionWarningItem(
+      UUID id,
+      UUID projectId,
+      String projectName,
+      String prescriptionType,
+      LocalDate prescriptionDate,
+      String status,
+      long daysUntil) {}
+
+  public record UpcomingResponse(
+      List<UpcomingCourtDateItem> courtDates,
+      List<UpcomingPrescriptionWarningItem> prescriptionWarnings) {}
 
   // --- Service Methods ---
 
@@ -348,6 +376,66 @@ public class CourtCalendarService {
             .orElseThrow(() -> new ResourceNotFoundException("CourtDate", id));
 
     return toResponse(courtDate);
+  }
+
+  @Transactional(readOnly = true)
+  public UpcomingResponse getUpcoming() {
+    moduleGuard.requireModule(MODULE_ID);
+
+    var today = LocalDate.now();
+
+    // Upcoming court dates within 30 days
+    var courtDates =
+        courtDateRepository
+            .findByStatusInAndScheduledDateBetween(
+                List.of("SCHEDULED", "POSTPONED"), today, today.plusDays(30))
+            .stream()
+            .map(
+                cd -> {
+                  String projectName = null;
+                  var project = projectRepository.findById(cd.getProjectId()).orElse(null);
+                  if (project != null) {
+                    projectName = project.getName();
+                  }
+                  long daysUntil = ChronoUnit.DAYS.between(today, cd.getScheduledDate());
+                  return new UpcomingCourtDateItem(
+                      cd.getId(),
+                      cd.getProjectId(),
+                      projectName,
+                      cd.getDateType(),
+                      cd.getScheduledDate(),
+                      cd.getCourtName(),
+                      cd.getStatus(),
+                      daysUntil);
+                })
+            .toList();
+
+    // Prescription warnings within 90 days
+    var prescriptionWarnings =
+        prescriptionTrackerRepository
+            .findByStatusInAndPrescriptionDateBetween(
+                List.of("RUNNING", "WARNED"), today, today.plusDays(90))
+            .stream()
+            .map(
+                pt -> {
+                  String projectName = null;
+                  var project = projectRepository.findById(pt.getProjectId()).orElse(null);
+                  if (project != null) {
+                    projectName = project.getName();
+                  }
+                  long daysUntil = ChronoUnit.DAYS.between(today, pt.getPrescriptionDate());
+                  return new UpcomingPrescriptionWarningItem(
+                      pt.getId(),
+                      pt.getProjectId(),
+                      projectName,
+                      pt.getPrescriptionType(),
+                      pt.getPrescriptionDate(),
+                      pt.getStatus(),
+                      daysUntil);
+                })
+            .toList();
+
+    return new UpcomingResponse(courtDates, prescriptionWarnings);
   }
 
   // --- Private Helpers ---

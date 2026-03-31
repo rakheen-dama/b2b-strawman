@@ -175,7 +175,9 @@ public class NotificationService {
           "ROLE_PERMISSIONS_CHANGED",
           "RETENTION_PURGE_WARNING",
           "DSAR_DEADLINE_WARNING",
-          "POST_CREATE_ACTION_FAILED");
+          "POST_CREATE_ACTION_FAILED",
+          "COURT_DATE_REMINDER",
+          "PRESCRIPTION_WARNING");
 
   // --- Preference methods ---
 

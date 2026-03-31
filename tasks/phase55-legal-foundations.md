@@ -27,7 +27,7 @@ Phase 55 is the multi-vertical architecture stress test. It builds three real le
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 397 | Foundation: V83 Migration + V16 Global + RBAC Capabilities + Module Registration | Backend | -- | M | 397A, 397B | **Done** (PR #841) |
-| 398 | Court Date Entity + Service + Controller | Backend | 397 | M | 398A, 398B | |
+| 398 | Court Date Entity + Service + Controller | Backend | 397 | M | 398A, 398B | **Done** (PR #842) |
 | 399 | Prescription Tracker + Reminder Job | Backend | 398 | M | 399A, 399B | |
 | 400 | Adverse Party Registry + CRUD | Backend | 397 | M | 400A, 400B | |
 | 401 | Conflict Check Service + Search Algorithm | Backend | 400 | M | 401A, 401B | |
@@ -152,7 +152,7 @@ FRONTEND (requires backend epics)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 1a (parallel) | 398 | 398A | `CourtDate` entity + `CourtDateRepository` + `CourtCalendarService` (create, update, postpone, cancel, recordOutcome, list, getById, module guard integration) + audit events. Integration tests (~8). Backend only. |  |
+| 1a (parallel) | 398 | 398A | `CourtDate` entity + `CourtDateRepository` + `CourtCalendarService` (create, update, postpone, cancel, recordOutcome, list, getById, module guard integration) + audit events. Integration tests (~8). Backend only. | **Done** (PR #842) |
 | 1b (parallel) | 400 | 400A | `AdverseParty` entity + `AdversePartyLink` entity + repos + `AdversePartyService` (CRUD, link/unlink, listForProject, search by name, module guard) + audit events. Integration tests (~6). Backend only. |  |
 | 1c (parallel) | 402 | 402A | `TariffSchedule` entity + `TariffItem` entity + repos + `TariffService` (schedule CRUD, item CRUD, clone, search, active lookup, module guard, isSystem protection) + audit events. Integration tests (~6). Backend only. |  |
 | 1d (parallel) | 404 | 404A | `LegalFieldPackSeeder` + `LegalTemplatePackSeeder` + `LegalClausePackSeeder` + `LegalCompliancePackSeeder` + `LegalAutomationPackSeeder`. JSON resources: `field-packs/legal-za-customer.json`, `field-packs/legal-za-project.json`, `template-packs/legal-za/pack.json`, `clause-packs/legal-za-clauses/pack.json`, `compliance-packs/legal-za-onboarding/pack.json`, `automation-templates/legal-za.json`. Integration tests (~4). Backend only. |  |
@@ -161,7 +161,7 @@ FRONTEND (requires backend epics)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 2a (parallel) | 398 | 398B | `CourtCalendarController` (7 endpoints: list, get, create, update, postpone, cancel, outcome) replacing stub. `@RequiresCapability` with `VIEW_LEGAL`/`MANAGE_LEGAL`. Integration tests (~6). Backend only. |  |
+| 2a (parallel) | 398 | 398B | `CourtCalendarController` (7 endpoints: list, get, create, update, postpone, cancel, outcome) replacing stub. `@RequiresCapability` with `VIEW_LEGAL`/`MANAGE_LEGAL`. Integration tests (~6). Backend only. | **Done** (PR #842) |
 | 2b (parallel) | 400 | 400B | `AdversePartyController` (8 endpoints: list, get, create, update, delete, link, unlink, listForProject) replacing stub. Integration tests (~5). Backend only. |  |
 | 2c (parallel) | 402 | 402B | `TariffController` (11 endpoints: schedule list/get/create/update/clone/active, item list/get/create/update/delete). Integration tests (~5). Backend only. |  |
 | 2d (parallel) | 404 | 404B | `LegalTariffSeeder` (LSSA 2024/2025 High Court P&P schedule, 18 items, `isSystem = true`). JSON resource: `tariff-seed/lssa-2024-2025-hc-pp.json`. Provisioning integration (legal-za profile triggers tariff seeding). Integration tests (~3). Backend only. |  |
@@ -314,8 +314,8 @@ Stage 9:  [409A]                                                        <- coexi
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **398A** | 398.1--398.6 | `CourtDate` entity + `CourtDateRepository` (with custom queries for date range, status, project, customer filtering) + `CourtCalendarService` (create, update, postpone, cancel, recordOutcome, list with filters, getById, module guard, audit events). Integration tests (~8). Backend only. |  |
-| **398B** | 398.7--398.11 | Replace stub `CourtCalendarController` with full implementation (7 endpoints: GET list, GET by id, POST create, PUT update, POST postpone, POST cancel, POST outcome). `@RequiresCapability` on all endpoints. Integration tests (~6). Backend only. |  |
+| **398A** | 398.1--398.6 | `CourtDate` entity + `CourtDateRepository` (with custom queries for date range, status, project, customer filtering) + `CourtCalendarService` (create, update, postpone, cancel, recordOutcome, list with filters, getById, module guard, audit events). Integration tests (~8). Backend only. | **Done** (PR #842) |
+| **398B** | 398.7--398.11 | Replace stub `CourtCalendarController` with full implementation (7 endpoints: GET list, GET by id, POST create, PUT update, POST postpone, POST cancel, POST outcome). `@RequiresCapability` on all endpoints. Integration tests (~6). Backend only. | **Done** (PR #842) |
 
 ### Tasks
 

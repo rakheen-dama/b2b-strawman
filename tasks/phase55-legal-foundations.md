@@ -26,7 +26,7 @@ Phase 55 is the multi-vertical architecture stress test. It builds three real le
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 397 | Foundation: V83 Migration + V16 Global + RBAC Capabilities + Module Registration | Backend | -- | M | 397A, 397B | |
+| 397 | Foundation: V83 Migration + V16 Global + RBAC Capabilities + Module Registration | Backend | -- | M | 397A, 397B | **Done** (PR #841) |
 | 398 | Court Date Entity + Service + Controller | Backend | 397 | M | 398A, 398B | |
 | 399 | Prescription Tracker + Reminder Job | Backend | 398 | M | 399A, 399B | |
 | 400 | Adverse Party Registry + CRUD | Backend | 397 | M | 400A, 400B | |
@@ -145,8 +145,8 @@ FRONTEND (requires backend epics)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 0a | 397 | 397A | V83 tenant migration (7 tables: `court_dates`, `prescription_trackers`, `adverse_parties`, `adverse_party_links`, `conflict_checks`, `tariff_schedules`, `tariff_items` + InvoiceLine extension), V16 global migration (`pg_trgm`), `VIEW_LEGAL` + `MANAGE_LEGAL` capability registration, default role mapping updates, unit tests (~4). Backend only. |  |
-| 0b | 397 | 397B | Update `VerticalModuleRegistry`: `court_calendar` and `conflict_check` status to `active`, register `lssa_tariff` module. Update `VerticalProfileRegistry`: `legal-za` profile `enabled_modules` to `["court_calendar", "conflict_check", "lssa_tariff"]`. Update stub controllers to use `VIEW_LEGAL`/`MANAGE_LEGAL`. Integration tests (~4). Backend only. |  |
+| 0a | 397 | 397A | V83 tenant migration (7 tables: `court_dates`, `prescription_trackers`, `adverse_parties`, `adverse_party_links`, `conflict_checks`, `tariff_schedules`, `tariff_items` + InvoiceLine extension), V16 global migration (`pg_trgm`), `VIEW_LEGAL` + `MANAGE_LEGAL` capability registration, default role mapping updates, unit tests (~4). Backend only. | **Done** (PR #841) |
+| 0b | 397 | 397B | Update `VerticalModuleRegistry`: `court_calendar` and `conflict_check` status to `active`, register `lssa_tariff` module. Update `VerticalProfileRegistry`: `legal-za` profile `enabled_modules` to `["court_calendar", "conflict_check", "lssa_tariff"]`. Update stub controllers to use `VIEW_LEGAL`/`MANAGE_LEGAL`. Integration tests (~4). Backend only. | **Done** (PR #841) |
 
 ### Stage 1: Backend Domain Services (parallel tracks)
 
@@ -247,8 +247,8 @@ Stage 9:  [409A]                                                        <- coexi
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **397A** | 397.1--397.6 | V83 tenant migration (7 tables + InvoiceLine extension + all indexes + constraints), V16 global migration (`CREATE EXTENSION IF NOT EXISTS pg_trgm`), `VIEW_LEGAL` and `MANAGE_LEGAL` added to `Capability` enum, default role mapping (Owner+Admin: both, Member: VIEW_LEGAL only), unit tests (~4). Backend only. |  |
-| **397B** | 397.7--397.12 | `VerticalModuleRegistry`: `court_calendar` + `conflict_check` set to active, `lssa_tariff` registered. `VerticalProfileRegistry`: `legal-za` profile `enabled_modules` updated. Stub controllers updated: `@RequiresCapability("VIEW_LEGAL")` on read, `@RequiresCapability("MANAGE_LEGAL")` on write. Integration tests (~4). Backend only. |  |
+| **397A** | 397.1--397.6 | V83 tenant migration (7 tables + InvoiceLine extension + all indexes + constraints), V16 global migration (`CREATE EXTENSION IF NOT EXISTS pg_trgm`), `VIEW_LEGAL` and `MANAGE_LEGAL` added to `Capability` enum, default role mapping (Owner+Admin: both, Member: VIEW_LEGAL only), unit tests (~4). Backend only. | **Done** (PR #841) |
+| **397B** | 397.7--397.12 | `VerticalModuleRegistry`: `court_calendar` + `conflict_check` set to active, `lssa_tariff` registered. `VerticalProfileRegistry`: `legal-za` profile `enabled_modules` updated. Stub controllers updated: `@RequiresCapability("VIEW_LEGAL")` on read, `@RequiresCapability("MANAGE_LEGAL")` on write. Integration tests (~4). Backend only. | **Done** (PR #841) |
 
 ### Tasks
 

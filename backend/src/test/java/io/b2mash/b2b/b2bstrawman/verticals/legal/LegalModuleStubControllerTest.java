@@ -104,23 +104,6 @@ class LegalModuleStubControllerTest {
   }
 
   @Test
-  void courtCalendarStatus_returns200_whenModuleEnabled() throws Exception {
-    mockMvc
-        .perform(get("/api/court-calendar/status").with(enabledOwnerJwt()))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.module").value("court_calendar"))
-        .andExpect(jsonPath("$.status").value("stub"))
-        .andExpect(jsonPath("$.message").exists());
-  }
-
-  @Test
-  void courtCalendarStatus_returns403_whenModuleDisabled() throws Exception {
-    mockMvc
-        .perform(get("/api/court-calendar/status").with(disabledOwnerJwt()))
-        .andExpect(status().isForbidden());
-  }
-
-  @Test
   void conflictCheckStatus_returns200_whenModuleEnabled() throws Exception {
     mockMvc
         .perform(get("/api/conflict-check/status").with(enabledOwnerJwt()))

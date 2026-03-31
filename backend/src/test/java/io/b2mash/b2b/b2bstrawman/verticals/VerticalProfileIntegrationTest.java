@@ -166,7 +166,7 @@ class VerticalProfileIntegrationTest {
     // Guard tenant was provisioned with consulting-generic (no modules)
     // Court calendar should be denied (403)
     mockMvc
-        .perform(get("/api/court-calendar/status").with(guardOwnerJwt()))
+        .perform(get("/api/court-dates").with(guardOwnerJwt()))
         .andExpect(status().isForbidden());
 
     // Switch guard tenant to legal-za
@@ -182,10 +182,9 @@ class VerticalProfileIntegrationTest {
 
     // Now court calendar should be allowed (200)
     mockMvc
-        .perform(get("/api/court-calendar/status").with(guardOwnerJwt()))
+        .perform(get("/api/court-dates").with(guardOwnerJwt()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.module").value("court_calendar"))
-        .andExpect(jsonPath("$.status").value("stub"));
+        .andExpect(jsonPath("$.content").isArray());
   }
 
   // --- Helpers ---

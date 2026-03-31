@@ -20,7 +20,7 @@ public class ConflictCheckController {
   }
 
   @GetMapping("/status")
-  @RequiresCapability("PROJECT_MANAGEMENT")
+  @RequiresCapability("VIEW_LEGAL")
   public ResponseEntity<ModuleStatusResponse> getStatus() {
     moduleGuard.requireModule("conflict_check");
     return ResponseEntity.ok(

@@ -20,7 +20,7 @@ public class CourtCalendarController {
   }
 
   @GetMapping("/status")
-  @RequiresCapability("PROJECT_MANAGEMENT")
+  @RequiresCapability("VIEW_LEGAL")
   public ResponseEntity<ModuleStatusResponse> getStatus() {
     moduleGuard.requireModule("court_calendar");
     return ResponseEntity.ok(

@@ -20,7 +20,7 @@ public class TrustAccountingController {
   }
 
   @GetMapping("/status")
-  @RequiresCapability("FINANCIAL_VISIBILITY")
+  @RequiresCapability("VIEW_LEGAL")
   public ResponseEntity<ModuleStatusResponse> getStatus() {
     moduleGuard.requireModule("trust_accounting");
     return ResponseEntity.ok(

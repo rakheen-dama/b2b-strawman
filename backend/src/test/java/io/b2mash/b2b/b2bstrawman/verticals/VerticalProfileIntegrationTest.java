@@ -102,7 +102,7 @@ class VerticalProfileIntegrationTest {
         .andExpect(
             jsonPath(
                 "$.enabledModules",
-                containsInAnyOrder("trust_accounting", "court_calendar", "conflict_check")))
+                containsInAnyOrder("court_calendar", "conflict_check", "lssa_tariff")))
         .andExpect(jsonPath("$.terminologyNamespace").value("en-ZA-legal"));
 
     // Verify audit event was logged
@@ -164,9 +164,9 @@ class VerticalProfileIntegrationTest {
   @Order(3)
   void guardDeniesAccessThenAllowsAfterProfileSwitch() throws Exception {
     // Guard tenant was provisioned with consulting-generic (no modules)
-    // Trust accounting should be denied (403)
+    // Court calendar should be denied (403)
     mockMvc
-        .perform(get("/api/trust-accounting/status").with(guardOwnerJwt()))
+        .perform(get("/api/court-calendar/status").with(guardOwnerJwt()))
         .andExpect(status().isForbidden());
 
     // Switch guard tenant to legal-za
@@ -180,11 +180,11 @@ class VerticalProfileIntegrationTest {
                     {"verticalProfile": "legal-za"}"""))
         .andExpect(status().isOk());
 
-    // Now trust accounting should be allowed (200)
+    // Now court calendar should be allowed (200)
     mockMvc
-        .perform(get("/api/trust-accounting/status").with(guardOwnerJwt()))
+        .perform(get("/api/court-calendar/status").with(guardOwnerJwt()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.module").value("trust_accounting"))
+        .andExpect(jsonPath("$.module").value("court_calendar"))
         .andExpect(jsonPath("$.status").value("stub"));
   }
 

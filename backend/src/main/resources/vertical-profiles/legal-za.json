@@ -2,7 +2,7 @@
   "profileId": "legal-za",
   "name": "Legal (South Africa)",
   "description": "SA law firm with trust accounting, court calendar, and conflict check",
-  "enabledModules": ["trust_accounting", "court_calendar", "conflict_check"],
+  "enabledModules": ["court_calendar", "conflict_check", "lssa_tariff"],
   "locale": "en-ZA",
   "currency": "ZAR",
   "packs": {

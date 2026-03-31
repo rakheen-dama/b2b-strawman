@@ -15,6 +15,8 @@ import java.time.LocalTime;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -174,6 +176,7 @@ public class CourtCalendarService {
             .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("CourtDate", id));
 
+    requireMutableState(courtDate);
     validateDateType(request.dateType());
 
     courtDate.setDateType(request.dateType());
@@ -189,6 +192,19 @@ public class CourtCalendarService {
     courtDate.setUpdatedAt(Instant.now());
 
     var saved = courtDateRepository.save(courtDate);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("court_date.updated")
+            .entityType("court_date")
+            .entityId(saved.getId())
+            .details(
+                Map.of(
+                    "date_type", saved.getDateType(),
+                    "scheduled_date", saved.getScheduledDate().toString(),
+                    "court_name", saved.getCourtName()))
+            .build());
+
     return toResponse(saved);
   }
 
@@ -205,12 +221,6 @@ public class CourtCalendarService {
 
     courtDate.setScheduledDate(request.newDate());
     courtDate.setStatus("POSTPONED");
-    if (request.reason() != null) {
-      String currentDesc = courtDate.getDescription();
-      String postponeNote = "[Postponed: " + request.reason() + "]";
-      courtDate.setDescription(
-          currentDesc != null ? currentDesc + "\n" + postponeNote : postponeNote);
-    }
     courtDate.setUpdatedAt(Instant.now());
 
     var saved = courtDateRepository.save(courtDate);
@@ -293,16 +303,39 @@ public class CourtCalendarService {
   public Page<CourtDateResponse> list(CourtDateFilters filters, Pageable pageable) {
     moduleGuard.requireModule(MODULE_ID);
 
-    return courtDateRepository
-        .findByFilters(
+    var page =
+        courtDateRepository.findByFilters(
             filters.dateFrom(),
             filters.dateTo(),
             filters.dateType(),
             filters.status(),
             filters.customerId(),
             filters.projectId(),
-            pageable)
-        .map(this::toResponse);
+            pageable);
+
+    // Batch-fetch projects and customers to avoid N+1 queries
+    var projectIds =
+        page.getContent().stream().map(CourtDate::getProjectId).collect(Collectors.toSet());
+    var customerIds =
+        page.getContent().stream().map(CourtDate::getCustomerId).collect(Collectors.toSet());
+
+    var projectMap =
+        projectIds.isEmpty()
+            ? Map.<UUID, io.b2mash.b2b.b2bstrawman.project.Project>of()
+            : projectRepository.findByIdIn(projectIds).stream()
+                .collect(
+                    Collectors.toMap(
+                        io.b2mash.b2b.b2bstrawman.project.Project::getId, Function.identity()));
+
+    var customerMap =
+        customerIds.isEmpty()
+            ? Map.<UUID, io.b2mash.b2b.b2bstrawman.customer.Customer>of()
+            : customerRepository.findByIdIn(customerIds).stream()
+                .collect(
+                    Collectors.toMap(
+                        io.b2mash.b2b.b2bstrawman.customer.Customer::getId, Function.identity()));
+
+    return page.map(entity -> toResponse(entity, projectMap, customerMap));
   }
 
   @Transactional(readOnly = true)
@@ -318,6 +351,16 @@ public class CourtCalendarService {
   }
 
   // --- Private Helpers ---
+
+  private static final Set<String> TERMINAL_STATES = Set.of("HEARD", "CANCELLED");
+
+  private void requireMutableState(CourtDate courtDate) {
+    if (TERMINAL_STATES.contains(courtDate.getStatus())) {
+      throw new InvalidStateException(
+          "Court date is in a terminal state",
+          "Cannot modify a court date with status " + courtDate.getStatus());
+    }
+  }
 
   private void validateTransition(String currentStatus, String targetStatus) {
     var allowed = ALLOWED_TRANSITIONS.getOrDefault(currentStatus, Set.of());
@@ -350,6 +393,23 @@ public class CourtCalendarService {
       customerName = customer.getName();
     }
 
+    return buildResponse(entity, projectName, customerName);
+  }
+
+  private CourtDateResponse toResponse(
+      CourtDate entity,
+      Map<UUID, io.b2mash.b2b.b2bstrawman.project.Project> projectMap,
+      Map<UUID, io.b2mash.b2b.b2bstrawman.customer.Customer> customerMap) {
+    var project = projectMap.get(entity.getProjectId());
+    var customer = customerMap.get(entity.getCustomerId());
+    return buildResponse(
+        entity,
+        project != null ? project.getName() : null,
+        customer != null ? customer.getName() : null);
+  }
+
+  private CourtDateResponse buildResponse(
+      CourtDate entity, String projectName, String customerName) {
     return new CourtDateResponse(
         entity.getId(),
         entity.getProjectId(),

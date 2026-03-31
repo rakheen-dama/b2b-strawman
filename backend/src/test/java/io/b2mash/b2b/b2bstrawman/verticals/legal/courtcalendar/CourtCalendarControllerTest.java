@@ -329,6 +329,62 @@ class CourtCalendarControllerTest {
   }
 
   @Test
+  void putCourtDate_heardStatus_returns400() throws Exception {
+    // Create a court date
+    var createResult =
+        mockMvc
+            .perform(
+                post("/api/court-dates")
+                    .with(ownerJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "projectId": "%s",
+                          "dateType": "HEARING",
+                          "scheduledDate": "2026-12-01",
+                          "courtName": "Terminal State Court"
+                        }
+                        """
+                            .formatted(projectId)))
+            .andExpect(status().isCreated())
+            .andReturn();
+
+    String id =
+        com.jayway.jsonpath.JsonPath.read(createResult.getResponse().getContentAsString(), "$.id");
+
+    // Record outcome to transition to HEARD
+    mockMvc
+        .perform(
+            post("/api/court-dates/" + id + "/outcome")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "outcome": "Judgment granted"
+                    }
+                    """))
+        .andExpect(status().isOk());
+
+    // Attempt update on HEARD court date — should return 400
+    mockMvc
+        .perform(
+            put("/api/court-dates/" + id)
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "dateType": "TRIAL",
+                      "scheduledDate": "2026-12-15",
+                      "courtName": "Should Not Work"
+                    }
+                    """))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
   void postCourtDate_memberRole_returns403() throws Exception {
     mockMvc
         .perform(

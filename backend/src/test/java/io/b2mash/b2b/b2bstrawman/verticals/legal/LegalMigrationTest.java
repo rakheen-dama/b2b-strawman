@@ -9,8 +9,8 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import javax.sql.DataSource;
@@ -66,21 +66,20 @@ class LegalMigrationTest {
             "tariff_schedules",
             "tariff_items");
 
-    try (Connection conn = dataSource.getConnection();
-        Statement stmt = conn.createStatement()) {
+    try (Connection conn = dataSource.getConnection()) {
       for (String tableName : expectedTables) {
-        ResultSet rs =
-            stmt.executeQuery(
+        try (PreparedStatement ps =
+            conn.prepareStatement(
                 "SELECT COUNT(*) FROM information_schema.tables "
-                    + "WHERE table_schema = '"
-                    + tenantSchema
-                    + "' AND table_name = '"
-                    + tableName
-                    + "'");
-        assertThat(rs.next()).as("ResultSet should have a row for " + tableName).isTrue();
-        assertThat(rs.getInt(1))
-            .as("Table %s should exist in schema %s", tableName, tenantSchema)
-            .isEqualTo(1);
+                    + "WHERE table_schema = ? AND table_name = ?")) {
+          ps.setString(1, tenantSchema);
+          ps.setString(2, tableName);
+          ResultSet rs = ps.executeQuery();
+          assertThat(rs.next()).as("ResultSet should have a row for " + tableName).isTrue();
+          assertThat(rs.getInt(1))
+              .as("Table %s should exist in schema %s", tableName, tenantSchema)
+              .isEqualTo(1);
+        }
       }
     }
   }
@@ -88,15 +87,14 @@ class LegalMigrationTest {
   @Test
   void v83AddsInvoiceLineColumns() throws Exception {
     try (Connection conn = dataSource.getConnection();
-        Statement stmt = conn.createStatement()) {
+        PreparedStatement ps =
+            conn.prepareStatement(
+                "SELECT column_name FROM information_schema.columns "
+                    + "WHERE table_schema = ? AND table_name = 'invoice_lines' "
+                    + "AND column_name IN ('tariff_item_id', 'line_source')")) {
+      ps.setString(1, tenantSchema);
       List<String> columns = new ArrayList<>();
-      ResultSet rs =
-          stmt.executeQuery(
-              "SELECT column_name FROM information_schema.columns "
-                  + "WHERE table_schema = '"
-                  + tenantSchema
-                  + "' AND table_name = 'invoice_lines' "
-                  + "AND column_name IN ('tariff_item_id', 'line_source')");
+      ResultSet rs = ps.executeQuery();
       while (rs.next()) {
         columns.add(rs.getString("column_name"));
       }
@@ -107,9 +105,10 @@ class LegalMigrationTest {
   @Test
   void v16EnablesPgTrgmExtension() throws Exception {
     try (Connection conn = dataSource.getConnection();
-        Statement stmt = conn.createStatement()) {
-      ResultSet rs =
-          stmt.executeQuery("SELECT COUNT(*) FROM pg_extension WHERE extname = 'pg_trgm'");
+        PreparedStatement ps =
+            conn.prepareStatement("SELECT COUNT(*) FROM pg_extension WHERE extname = ?")) {
+      ps.setString(1, "pg_trgm");
+      ResultSet rs = ps.executeQuery();
       assertThat(rs.next()).isTrue();
       assertThat(rs.getInt(1)).as("pg_trgm extension should be installed").isEqualTo(1);
     }

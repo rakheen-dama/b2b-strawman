@@ -7,8 +7,8 @@
 -- ============================================================
 CREATE TABLE court_dates (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    project_id      UUID NOT NULL,
-    customer_id     UUID NOT NULL,
+    project_id      UUID NOT NULL REFERENCES projects(id),
+    customer_id     UUID NOT NULL REFERENCES customers(id),
     date_type       VARCHAR(30) NOT NULL,
     scheduled_date  DATE NOT NULL,
     scheduled_time  TIME,
@@ -19,7 +19,7 @@ CREATE TABLE court_dates (
     status          VARCHAR(20) NOT NULL DEFAULT 'SCHEDULED',
     outcome         TEXT,
     reminder_days   INTEGER NOT NULL DEFAULT 7,
-    created_by      UUID NOT NULL,
+    created_by      UUID NOT NULL REFERENCES members(id),
     created_at      TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at      TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
@@ -35,8 +35,8 @@ CREATE INDEX idx_court_dates_reminder ON court_dates (scheduled_date, status)
 -- ============================================================
 CREATE TABLE prescription_trackers (
     id                   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    project_id           UUID NOT NULL,
-    customer_id          UUID NOT NULL,
+    project_id           UUID NOT NULL REFERENCES projects(id),
+    customer_id          UUID NOT NULL REFERENCES customers(id),
     cause_of_action_date DATE NOT NULL,
     prescription_type    VARCHAR(30) NOT NULL,
     custom_years         INTEGER,
@@ -45,7 +45,7 @@ CREATE TABLE prescription_trackers (
     interruption_reason  VARCHAR(200),
     status               VARCHAR(20) NOT NULL DEFAULT 'RUNNING',
     notes                TEXT,
-    created_by           UUID NOT NULL,
+    created_by           UUID NOT NULL REFERENCES members(id),
     created_at           TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at           TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
@@ -84,9 +84,9 @@ CREATE INDEX idx_adverse_parties_aliases_trgm ON adverse_parties
 -- ============================================================
 CREATE TABLE adverse_party_links (
     id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    adverse_party_id UUID NOT NULL,
-    project_id       UUID NOT NULL,
-    customer_id      UUID NOT NULL,
+    adverse_party_id UUID NOT NULL REFERENCES adverse_parties(id),
+    project_id       UUID NOT NULL REFERENCES projects(id),
+    customer_id      UUID NOT NULL REFERENCES customers(id),
     relationship     VARCHAR(30) NOT NULL,
     description      TEXT,
     created_at       TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
@@ -111,13 +111,13 @@ CREATE TABLE conflict_checks (
     conflicts_found             JSONB,
     resolution                  VARCHAR(30),
     resolution_notes            TEXT,
-    waiver_document_id          UUID,
-    checked_by                  UUID NOT NULL,
-    resolved_by                 UUID,
+    waiver_document_id          UUID REFERENCES documents(id),
+    checked_by                  UUID NOT NULL REFERENCES members(id),
+    resolved_by                 UUID REFERENCES members(id),
     checked_at                  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     resolved_at                 TIMESTAMP WITH TIME ZONE,
-    customer_id                 UUID,
-    project_id                  UUID
+    customer_id                 UUID REFERENCES customers(id),
+    project_id                  UUID REFERENCES projects(id)
 );
 
 CREATE INDEX idx_conflict_checks_checked_by ON conflict_checks (checked_by);

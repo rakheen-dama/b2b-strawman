@@ -16,6 +16,9 @@ public interface PrescriptionTrackerRepository extends JpaRepository<Prescriptio
   List<PrescriptionTracker> findByStatusInAndPrescriptionDateBetween(
       List<String> statuses, LocalDate from, LocalDate to);
 
+  List<PrescriptionTracker> findByStatusInAndPrescriptionDateLessThanEqual(
+      List<String> statuses, LocalDate to);
+
   @Query(
       """
       SELECT p FROM PrescriptionTracker p

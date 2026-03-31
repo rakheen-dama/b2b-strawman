@@ -20,6 +20,8 @@ public class CourtDateReminderJob {
 
   private static final Logger log = LoggerFactory.getLogger(CourtDateReminderJob.class);
   private static final String MODULE_ID = "court_calendar";
+  private static final int COURT_DATE_LOOKAHEAD_DAYS = 30;
+  private static final int PRESCRIPTION_LOOKAHEAD_DAYS = 90;
 
   private final OrgSchemaMappingRepository mappingRepository;
   private final CourtDateRepository courtDateRepository;
@@ -76,35 +78,46 @@ public class CourtDateReminderJob {
   }
 
   private int processTenant() {
-    Integer count =
-        transactionTemplate.execute(
-            tx -> {
-              if (!moduleGuard.isModuleEnabled(MODULE_ID)) {
-                return 0;
-              }
+    // Check module enablement in its own read
+    Boolean enabled = transactionTemplate.execute(tx -> moduleGuard.isModuleEnabled(MODULE_ID));
+    if (!Boolean.TRUE.equals(enabled)) {
+      return 0;
+    }
 
-              int notifications = 0;
-              notifications += processCourtDateReminders();
-              notifications += processPrescriptionWarnings();
-              return notifications;
-            });
+    // Separate transactions so a failure in one domain doesn't roll back the other
+    int notifications = 0;
 
-    return count != null ? count : 0;
+    try {
+      Integer courtCount = transactionTemplate.execute(tx -> processCourtDateReminders());
+      notifications += courtCount != null ? courtCount : 0;
+    } catch (Exception e) {
+      log.error("Failed to process court date reminders", e);
+    }
+
+    try {
+      Integer prescriptionCount = transactionTemplate.execute(tx -> processPrescriptionWarnings());
+      notifications += prescriptionCount != null ? prescriptionCount : 0;
+    } catch (Exception e) {
+      log.error("Failed to process prescription warnings", e);
+    }
+
+    return notifications;
   }
 
   private int processCourtDateReminders() {
     var today = LocalDate.now();
-    // Find maximum reminder days to determine query range
-    int maxReminderDays = 30;
     var upcomingDates =
         courtDateRepository.findByStatusInAndScheduledDateBetween(
-            List.of("SCHEDULED", "POSTPONED"), today, today.plusDays(maxReminderDays));
+            List.of("SCHEDULED", "POSTPONED"), today, today.plusDays(COURT_DATE_LOOKAHEAD_DAYS));
 
     int created = 0;
     for (var courtDate : upcomingDates) {
       long daysUntil = ChronoUnit.DAYS.between(today, courtDate.getScheduledDate());
       if (daysUntil <= courtDate.getReminderDays()) {
-        // Idempotency check
+        // Idempotency: one notification per court date per creator. This is intentional —
+        // the notification targets the creator only, so dedup by (type, referenceEntityId) is
+        // sufficient. If multi-recipient notifications are added later, the dedup key must include
+        // the recipient.
         if (notificationRepository.existsByTypeAndReferenceEntityId(
             "COURT_DATE_REMINDER", courtDate.getId())) {
           continue;
@@ -135,22 +148,25 @@ public class CourtDateReminderJob {
 
   private int processPrescriptionWarnings() {
     var today = LocalDate.now();
+    // No lower bound on date — catches trackers that expired while the job was down (e.g.,
+    // downtime, weekends). The status filter (RUNNING/WARNED) excludes already-EXPIRED trackers.
     var trackers =
-        prescriptionTrackerRepository.findByStatusInAndPrescriptionDateBetween(
-            List.of("RUNNING", "WARNED"), today.minusDays(1), today.plusDays(90));
+        prescriptionTrackerRepository.findByStatusInAndPrescriptionDateLessThanEqual(
+            List.of("RUNNING", "WARNED"), today.plusDays(PRESCRIPTION_LOOKAHEAD_DAYS));
 
     int created = 0;
     for (var tracker : trackers) {
       long daysUntil = ChronoUnit.DAYS.between(today, tracker.getPrescriptionDate());
 
-      // Handle expired prescriptions
+      // Handle expired prescriptions — catches any that slipped past while job was down
       if (daysUntil < 0) {
         tracker.setStatus("EXPIRED");
         prescriptionTrackerRepository.save(tracker);
         continue;
       }
 
-      // Idempotency check
+      // Idempotency: one notification per tracker per creator. Intentional — see court date
+      // comment above for rationale.
       if (notificationRepository.existsByTypeAndReferenceEntityId(
           "PRESCRIPTION_WARNING", tracker.getId())) {
         continue;

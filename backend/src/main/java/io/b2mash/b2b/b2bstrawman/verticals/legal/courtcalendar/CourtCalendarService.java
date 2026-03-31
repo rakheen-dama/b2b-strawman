@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -378,30 +379,50 @@ public class CourtCalendarService {
     return toResponse(courtDate);
   }
 
+  private static final int UPCOMING_COURT_DATE_DAYS = 30;
+  private static final int UPCOMING_PRESCRIPTION_DAYS = 90;
+
   @Transactional(readOnly = true)
   public UpcomingResponse getUpcoming() {
     moduleGuard.requireModule(MODULE_ID);
 
     var today = LocalDate.now();
 
-    // Upcoming court dates within 30 days
+    // Upcoming court dates within lookahead window
+    var rawCourtDates =
+        courtDateRepository.findByStatusInAndScheduledDateBetween(
+            List.of("SCHEDULED", "POSTPONED"), today, today.plusDays(UPCOMING_COURT_DATE_DAYS));
+
+    // Prescription warnings within lookahead window
+    var rawPrescriptions =
+        prescriptionTrackerRepository.findByStatusInAndPrescriptionDateBetween(
+            List.of("RUNNING", "WARNED"), today, today.plusDays(UPCOMING_PRESCRIPTION_DAYS));
+
+    // Batch-fetch all referenced projects to avoid N+1
+    var allProjectIds =
+        Stream.concat(
+                rawCourtDates.stream().map(CourtDate::getProjectId),
+                rawPrescriptions.stream().map(PrescriptionTracker::getProjectId))
+            .collect(Collectors.toSet());
+
+    var projectMap =
+        allProjectIds.isEmpty()
+            ? Map.<UUID, io.b2mash.b2b.b2bstrawman.project.Project>of()
+            : projectRepository.findByIdIn(allProjectIds).stream()
+                .collect(
+                    Collectors.toMap(
+                        io.b2mash.b2b.b2bstrawman.project.Project::getId, Function.identity()));
+
     var courtDates =
-        courtDateRepository
-            .findByStatusInAndScheduledDateBetween(
-                List.of("SCHEDULED", "POSTPONED"), today, today.plusDays(30))
-            .stream()
+        rawCourtDates.stream()
             .map(
                 cd -> {
-                  String projectName = null;
-                  var project = projectRepository.findById(cd.getProjectId()).orElse(null);
-                  if (project != null) {
-                    projectName = project.getName();
-                  }
+                  var project = projectMap.get(cd.getProjectId());
                   long daysUntil = ChronoUnit.DAYS.between(today, cd.getScheduledDate());
                   return new UpcomingCourtDateItem(
                       cd.getId(),
                       cd.getProjectId(),
-                      projectName,
+                      project != null ? project.getName() : null,
                       cd.getDateType(),
                       cd.getScheduledDate(),
                       cd.getCourtName(),
@@ -410,24 +431,16 @@ public class CourtCalendarService {
                 })
             .toList();
 
-    // Prescription warnings within 90 days
     var prescriptionWarnings =
-        prescriptionTrackerRepository
-            .findByStatusInAndPrescriptionDateBetween(
-                List.of("RUNNING", "WARNED"), today, today.plusDays(90))
-            .stream()
+        rawPrescriptions.stream()
             .map(
                 pt -> {
-                  String projectName = null;
-                  var project = projectRepository.findById(pt.getProjectId()).orElse(null);
-                  if (project != null) {
-                    projectName = project.getName();
-                  }
+                  var project = projectMap.get(pt.getProjectId());
                   long daysUntil = ChronoUnit.DAYS.between(today, pt.getPrescriptionDate());
                   return new UpcomingPrescriptionWarningItem(
                       pt.getId(),
                       pt.getProjectId(),
-                      projectName,
+                      project != null ? project.getName() : null,
                       pt.getPrescriptionType(),
                       pt.getPrescriptionDate(),
                       pt.getStatus(),

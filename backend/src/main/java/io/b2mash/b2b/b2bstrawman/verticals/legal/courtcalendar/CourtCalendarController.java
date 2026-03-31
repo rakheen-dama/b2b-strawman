@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.CourtCalendarServ
 import io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.CourtCalendarService.CreateCourtDateRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.CourtCalendarService.OutcomeRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.CourtCalendarService.PostponeRequest;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.CourtCalendarService.UpcomingResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.CourtCalendarService.UpdateCourtDateRequest;
 import jakarta.validation.Valid;
 import java.time.LocalDate;
@@ -94,5 +95,11 @@ public class CourtCalendarController {
   public ResponseEntity<CourtDateResponse> recordOutcome(
       @PathVariable UUID id, @Valid @RequestBody OutcomeRequest request) {
     return ResponseEntity.ok(courtCalendarService.recordOutcome(id, request));
+  }
+
+  @GetMapping("/upcoming")
+  @RequiresCapability("VIEW_LEGAL")
+  public ResponseEntity<UpcomingResponse> upcoming() {
+    return ResponseEntity.ok(courtCalendarService.getUpcoming());
   }
 }

@@ -12,11 +12,14 @@ import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -45,6 +48,7 @@ public class CourtCalendarService {
           "POSTPONED", Set.of("HEARD", "CANCELLED"));
 
   private final CourtDateRepository courtDateRepository;
+  private final PrescriptionTrackerRepository prescriptionTrackerRepository;
   private final VerticalModuleGuard moduleGuard;
   private final ProjectRepository projectRepository;
   private final CustomerRepository customerRepository;
@@ -52,11 +56,13 @@ public class CourtCalendarService {
 
   public CourtCalendarService(
       CourtDateRepository courtDateRepository,
+      PrescriptionTrackerRepository prescriptionTrackerRepository,
       VerticalModuleGuard moduleGuard,
       ProjectRepository projectRepository,
       CustomerRepository customerRepository,
       AuditService auditService) {
     this.courtDateRepository = courtDateRepository;
+    this.prescriptionTrackerRepository = prescriptionTrackerRepository;
     this.moduleGuard = moduleGuard;
     this.projectRepository = projectRepository;
     this.customerRepository = customerRepository;
@@ -119,6 +125,29 @@ public class CourtCalendarService {
       String status,
       UUID customerId,
       UUID projectId) {}
+
+  public record UpcomingCourtDateItem(
+      UUID id,
+      UUID projectId,
+      String projectName,
+      String dateType,
+      LocalDate scheduledDate,
+      String courtName,
+      String status,
+      long daysUntil) {}
+
+  public record UpcomingPrescriptionWarningItem(
+      UUID id,
+      UUID projectId,
+      String projectName,
+      String prescriptionType,
+      LocalDate prescriptionDate,
+      String status,
+      long daysUntil) {}
+
+  public record UpcomingResponse(
+      List<UpcomingCourtDateItem> courtDates,
+      List<UpcomingPrescriptionWarningItem> prescriptionWarnings) {}
 
   // --- Service Methods ---
 
@@ -348,6 +377,78 @@ public class CourtCalendarService {
             .orElseThrow(() -> new ResourceNotFoundException("CourtDate", id));
 
     return toResponse(courtDate);
+  }
+
+  private static final int UPCOMING_COURT_DATE_DAYS = 30;
+  private static final int UPCOMING_PRESCRIPTION_DAYS = 90;
+
+  @Transactional(readOnly = true)
+  public UpcomingResponse getUpcoming() {
+    moduleGuard.requireModule(MODULE_ID);
+
+    var today = LocalDate.now();
+
+    // Upcoming court dates within lookahead window
+    var rawCourtDates =
+        courtDateRepository.findByStatusInAndScheduledDateBetween(
+            List.of("SCHEDULED", "POSTPONED"), today, today.plusDays(UPCOMING_COURT_DATE_DAYS));
+
+    // Prescription warnings within lookahead window
+    var rawPrescriptions =
+        prescriptionTrackerRepository.findByStatusInAndPrescriptionDateBetween(
+            List.of("RUNNING", "WARNED"), today, today.plusDays(UPCOMING_PRESCRIPTION_DAYS));
+
+    // Batch-fetch all referenced projects to avoid N+1
+    var allProjectIds =
+        Stream.concat(
+                rawCourtDates.stream().map(CourtDate::getProjectId),
+                rawPrescriptions.stream().map(PrescriptionTracker::getProjectId))
+            .collect(Collectors.toSet());
+
+    var projectMap =
+        allProjectIds.isEmpty()
+            ? Map.<UUID, io.b2mash.b2b.b2bstrawman.project.Project>of()
+            : projectRepository.findByIdIn(allProjectIds).stream()
+                .collect(
+                    Collectors.toMap(
+                        io.b2mash.b2b.b2bstrawman.project.Project::getId, Function.identity()));
+
+    var courtDates =
+        rawCourtDates.stream()
+            .map(
+                cd -> {
+                  var project = projectMap.get(cd.getProjectId());
+                  long daysUntil = ChronoUnit.DAYS.between(today, cd.getScheduledDate());
+                  return new UpcomingCourtDateItem(
+                      cd.getId(),
+                      cd.getProjectId(),
+                      project != null ? project.getName() : null,
+                      cd.getDateType(),
+                      cd.getScheduledDate(),
+                      cd.getCourtName(),
+                      cd.getStatus(),
+                      daysUntil);
+                })
+            .toList();
+
+    var prescriptionWarnings =
+        rawPrescriptions.stream()
+            .map(
+                pt -> {
+                  var project = projectMap.get(pt.getProjectId());
+                  long daysUntil = ChronoUnit.DAYS.between(today, pt.getPrescriptionDate());
+                  return new UpcomingPrescriptionWarningItem(
+                      pt.getId(),
+                      pt.getProjectId(),
+                      project != null ? project.getName() : null,
+                      pt.getPrescriptionType(),
+                      pt.getPrescriptionDate(),
+                      pt.getStatus(),
+                      daysUntil);
+                })
+            .toList();
+
+    return new UpcomingResponse(courtDates, prescriptionWarnings);
   }
 
   // --- Private Helpers ---

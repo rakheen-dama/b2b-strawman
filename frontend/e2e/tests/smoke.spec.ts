@@ -12,10 +12,12 @@ test('owner can create a project', async ({ page }) => {
   const name = `E2E Test ${Date.now()}`
   await loginAs(page, 'alice')
   await page.goto('/org/e2e-test-org/projects')
-  await page.getByRole('button', { name: 'New Project' }).click()
+  await page.getByRole('button', { name: /New (Project|Engagement)/i }).click()
   await page.getByLabel('Name').fill(name)
-  await page.getByRole('button', { name: 'Create Project' }).click()
-  await expect(page.getByText(name)).toBeVisible()
+  await page.getByRole('button', { name: /Create (Project|Engagement)/i }).click()
+  await expect(page.getByRole('dialog')).not.toBeVisible({ timeout: 10000 })
+  await page.goto('/org/e2e-test-org/projects')
+  await expect(page.getByText(name).first()).toBeVisible({ timeout: 10000 })
 })
 
 test('member cannot access admin settings', async ({ page }) => {

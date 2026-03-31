@@ -1,0 +1,97 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e6]: DocTeams
+      - generic [ref=e9]: e2e-test-org
+      - button "Search, Command K" [ref=e11]:
+        - img [ref=e12]
+        - text: Search...
+        - generic [ref=e15]: ⌘K
+      - navigation "Main navigation" [ref=e16]:
+        - generic [ref=e17]:
+          - button "Work" [expanded] [ref=e18]:
+            - generic [ref=e19]: Work
+            - img [ref=e20]
+          - generic [ref=e22]:
+            - link "Dashboard" [ref=e23] [cursor=pointer]:
+              - /url: /org/e2e-test-org/dashboard
+              - img [ref=e24]
+              - text: Dashboard
+            - link "My Work" [ref=e29] [cursor=pointer]:
+              - /url: /org/e2e-test-org/my-work
+              - img [ref=e30]
+              - text: My Work
+            - link "Calendar" [ref=e33] [cursor=pointer]:
+              - /url: /org/e2e-test-org/calendar
+              - img [ref=e34]
+              - text: Calendar
+        - generic [ref=e37]:
+          - button "Projects" [expanded] [ref=e38]:
+            - generic [ref=e39]: Projects
+            - img [ref=e40]
+          - link "Projects" [ref=e43] [cursor=pointer]:
+            - /url: /org/e2e-test-org/projects
+            - img [ref=e45]
+            - text: Projects
+        - generic [ref=e50]:
+          - button "Team" [expanded] [ref=e51]:
+            - generic [ref=e52]: Team
+            - img [ref=e53]
+          - link "Team" [ref=e56] [cursor=pointer]:
+            - /url: /org/e2e-test-org/team
+            - img [ref=e57]
+            - text: Team
+      - generic [ref=e63]:
+        - link "Notifications" [ref=e64] [cursor=pointer]:
+          - /url: /org/e2e-test-org/notifications
+          - img [ref=e65]
+          - text: Notifications
+        - link "Settings" [ref=e68] [cursor=pointer]:
+          - /url: /org/e2e-test-org/settings/general
+          - img [ref=e69]
+          - text: Settings
+      - generic [ref=e73]:
+        - generic [ref=e74]: CM
+        - generic [ref=e75]:
+          - paragraph [ref=e76]: Carol Member
+          - paragraph [ref=e77]: carol@e2e-test.local
+    - generic [ref=e78]:
+      - banner [ref=e79]:
+        - navigation "Breadcrumb" [ref=e80]:
+          - link "e2e-test-org" [ref=e81] [cursor=pointer]:
+            - /url: /org/e2e-test-org/dashboard
+          - generic [ref=e82]:
+            - img [ref=e83]
+            - link "Projects" [ref=e85] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects
+          - generic [ref=e86]:
+            - img [ref=e87]
+            - generic [ref=e89]: Project
+        - generic [ref=e90]:
+          - generic [ref=e92]: e2e-test-org
+          - button "CM" [ref=e94]
+          - generic [ref=e95]: Pro
+          - button "Notifications" [ref=e97]:
+            - img
+            - generic [ref=e98]: 23 unread notifications
+            - generic [ref=e99]: "23"
+      - main [ref=e100]:
+        - generic [ref=e102]:
+          - img [ref=e103]
+          - heading "Something went wrong" [level=2] [ref=e105]
+          - paragraph [ref=e106]: An unexpected error occurred while loading this page. Try refreshing, or go back and try again.
+          - generic [ref=e107]:
+            - button "Try again" [ref=e108]
+            - button "Refresh page" [ref=e109]
+            - button "Go back" [ref=e110]
+  - generic [ref=e111]:
+    - heading "Command Palette" [level=2] [ref=e112]
+    - paragraph [ref=e113]: Search pages and settings
+  - region "Notifications alt+T"
+  - alert [ref=e114]
+```

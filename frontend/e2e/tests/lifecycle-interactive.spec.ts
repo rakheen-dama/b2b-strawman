@@ -32,11 +32,11 @@ test.describe.serial('Interactive Lifecycle — Customer Onboarding', () => {
   test('Alice: Create a new customer via the New Customer dialog', async ({ page }) => {
     await loginAs(page, 'alice')
     await page.goto(`${BASE}/customers`)
-    await expect(page.getByRole('heading', { name: 'Customers', level: 1 })).toBeVisible({ timeout: 10000 })
+    await expect(page.getByRole('heading', { name: /Customers|Clients/i, level: 1 })).toBeVisible({ timeout: 10000 })
 
     // Click "New Customer"
-    await page.getByRole('button', { name: 'New Customer' }).click()
-    await expect(page.getByRole('dialog', { name: 'Create Customer' })).toBeVisible({ timeout: 5000 })
+    await page.getByRole('button', { name: /New (Customer|Client)/i }).click()
+    await expect(page.getByRole('dialog', { name: /Create (Customer|Client)/i })).toBeVisible({ timeout: 5000 })
 
     // Fill Step 1 — basic info
     await page.getByRole('textbox', { name: 'Name' }).fill(CUSTOMER_NAME)
@@ -50,7 +50,7 @@ test.describe.serial('Interactive Lifecycle — Customer Onboarding', () => {
     // Step 2 has many custom field groups that push the "Create Customer" button
     // out of the viewport. The dialog scroll container clips the button.
     // Use JS to programmatically click it since Playwright can't scroll it into view.
-    const createBtn = page.getByRole('button', { name: 'Create Customer' })
+    const createBtn = page.getByRole('button', { name: /Create (Customer|Client)/i })
     await createBtn.evaluate((el: HTMLElement) => el.click())
 
     // Wait for either the dialog to close or validation errors.
@@ -73,7 +73,7 @@ test.describe.serial('Interactive Lifecycle — Customer Onboarding', () => {
   test('Bob: Transition customer to ONBOARDING', async ({ page }) => {
     await loginAs(page, 'bob')
     await page.goto(`${BASE}/customers`)
-    await expect(page.getByRole('heading', { name: 'Customers', level: 1 })).toBeVisible({ timeout: 10000 })
+    await expect(page.getByRole('heading', { name: /Customers|Clients/i, level: 1 })).toBeVisible({ timeout: 10000 })
 
     // Click on the customer we just created
     await page.getByRole('link', { name: CUSTOMER_NAME }).click()
@@ -97,7 +97,7 @@ test.describe.serial('Interactive Lifecycle — Customer Onboarding', () => {
   test('Bob: Verify customer is now in Onboarding status', async ({ page }) => {
     await loginAs(page, 'bob')
     await page.goto(`${BASE}/customers`)
-    await expect(page.getByRole('heading', { name: 'Customers', level: 1 })).toBeVisible({ timeout: 10000 })
+    await expect(page.getByRole('heading', { name: /Customers|Clients/i, level: 1 })).toBeVisible({ timeout: 10000 })
 
     // Navigate to customer detail
     await page.getByRole('link', { name: CUSTOMER_NAME }).click()
@@ -107,7 +107,7 @@ test.describe.serial('Interactive Lifecycle — Customer Onboarding', () => {
     await expect(page.getByText(/Onboarding/).first()).toBeVisible({ timeout: 5000 })
 
     // Verify tabs are visible (customer detail loaded)
-    await expect(page.getByRole('tab', { name: 'Projects' })).toBeVisible({ timeout: 5000 })
+    await expect(page.getByRole('tab', { name: /Projects|Engagements/i })).toBeVisible({ timeout: 5000 })
   })
 })
 
@@ -121,21 +121,21 @@ test.describe.serial('Interactive Lifecycle — Project & Time', () => {
   test('Alice: Create a project linked to a customer', async ({ page }) => {
     await loginAs(page, 'alice')
     await page.goto(`${BASE}/projects`)
-    await expect(page.getByRole('heading', { name: 'Projects', level: 1 })).toBeVisible({ timeout: 10000 })
+    await expect(page.getByRole('heading', { name: /Projects|Engagements/i, level: 1 })).toBeVisible({ timeout: 10000 })
 
     // Click "New Project"
-    await page.getByRole('button', { name: 'New Project' }).click()
-    await expect(page.getByRole('dialog', { name: 'Create Project' })).toBeVisible({ timeout: 5000 })
+    await page.getByRole('button', { name: /New (Project|Engagement)/i }).click()
+    await expect(page.getByRole('dialog', { name: /Create (Project|Engagement)/i })).toBeVisible({ timeout: 5000 })
 
     // Fill in the form
     await page.getByRole('textbox', { name: 'Name' }).fill(PROJECT_NAME)
     await page.getByRole('textbox', { name: /Description/ }).fill('Automated test project created by Playwright')
 
     // Select a customer from the combobox
-    await page.getByRole('combobox', { name: /Customer/ }).selectOption({ label: 'Acme Corp' })
+    await page.getByRole('combobox', { name: /Customer|Client/i }).selectOption({ label: 'Acme Corp' })
 
     // Submit
-    await page.getByRole('button', { name: 'Create Project' }).click()
+    await page.getByRole('button', { name: /Create (Project|Engagement)/i }).click()
 
     // Wait for dialog to close and project to appear
     await expect(page.getByRole('dialog')).not.toBeVisible({ timeout: 10000 })
@@ -148,7 +148,7 @@ test.describe.serial('Interactive Lifecycle — Project & Time', () => {
   test('Alice: Create a task on the project', async ({ page }) => {
     await loginAs(page, 'alice')
     await page.goto(`${BASE}/projects`)
-    await expect(page.getByRole('heading', { name: 'Projects', level: 1 })).toBeVisible({ timeout: 10000 })
+    await expect(page.getByRole('heading', { name: /Projects|Engagements/i, level: 1 })).toBeVisible({ timeout: 10000 })
 
     // Click on the project we created
     await page.getByText(PROJECT_NAME).first().click()
@@ -238,7 +238,7 @@ test.describe.serial('Interactive Lifecycle — Project & Time', () => {
   test('Bob: View project Activity tab', async ({ page }) => {
     await loginAs(page, 'bob')
     await page.goto(`${BASE}/projects`)
-    await expect(page.getByRole('heading', { name: 'Projects', level: 1 })).toBeVisible({ timeout: 10000 })
+    await expect(page.getByRole('heading', { name: /Projects|Engagements/i, level: 1 })).toBeVisible({ timeout: 10000 })
 
     // Navigate to the test project
     await page.getByText(PROJECT_NAME).first().click()
@@ -325,19 +325,19 @@ test.describe.serial('Interactive Lifecycle — Proposals', () => {
   test('Alice: Open New Proposal dialog and verify form fields', async ({ page }) => {
     await loginAs(page, 'alice')
     await page.goto(`${BASE}/proposals`)
-    await expect(page.getByRole('heading', { name: 'Proposals', level: 1 })).toBeVisible({ timeout: 10000 })
+    await expect(page.getByRole('heading', { name: /Proposals|Engagement Letters/i, level: 1 })).toBeVisible({ timeout: 10000 })
 
     // Click "New Proposal"
-    await page.getByRole('button', { name: 'New Proposal' }).click()
-    await expect(page.getByRole('dialog', { name: 'New Proposal' })).toBeVisible({ timeout: 5000 })
+    await page.getByRole('button', { name: /New (Proposal|Engagement Letter)/i }).click()
+    await expect(page.getByRole('dialog', { name: /New (Proposal|Engagement Letter)/i })).toBeVisible({ timeout: 5000 })
 
     // Verify all form fields are present
     await expect(page.getByRole('textbox', { name: 'Title' })).toBeVisible()
-    await expect(page.getByRole('combobox', { name: 'Customer' })).toBeVisible()
+    await expect(page.getByRole('combobox', { name: /Customer|Client/i })).toBeVisible()
     await expect(page.getByRole('combobox', { name: 'Fee Model' })).toBeVisible()
     await expect(page.getByRole('spinbutton', { name: /Retainer Amount/ })).toBeVisible()
     await expect(page.getByRole('textbox', { name: 'Currency' })).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Create Proposal' })).toBeVisible()
+    await expect(page.getByRole('button', { name: /Create (Proposal|Engagement Letter)/i })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Cancel' })).toBeVisible()
 
     // Close dialog
@@ -348,7 +348,7 @@ test.describe.serial('Interactive Lifecycle — Proposals', () => {
   test('Alice: View existing proposal detail', async ({ page }) => {
     await loginAs(page, 'alice')
     await page.goto(`${BASE}/proposals`)
-    await expect(page.getByRole('heading', { name: 'Proposals', level: 1 })).toBeVisible({ timeout: 10000 })
+    await expect(page.getByRole('heading', { name: /Proposals|Engagement Letters/i, level: 1 })).toBeVisible({ timeout: 10000 })
 
     // Click on the existing seed proposal
     await page.getByRole('link', { name: /Monthly Bookkeeping/ }).click()

@@ -449,6 +449,20 @@
 | 394 | Dashboard Redesigns | Frontend | 393A | L | 394A, 394B | **Done** (PRs #815, #816) |
 | 395 | Project Detail & Document Preview | Frontend | 393A (395A only) | M | 395A, 395B | **Done** (PRs #817, #818) |
 | 396 | Test Updates & Visual Baselines | Frontend | 393-395 | S | 396A | **Done** (PR #819) |
+| **Phase 55 — Legal Foundations: Court Calendar, Conflict Check & LSSA Tariff** | | | | | | See [tasks/phase55-legal-foundations.md](tasks/phase55-legal-foundations.md) |
+| 397 | Foundation: V83 Migration + V16 Global + RBAC Capabilities + Module Registration | Backend | -- | M | 397A, 397B | |
+| 398 | Court Date Entity + Service + Controller | Backend | 397 | M | 398A, 398B | |
+| 399 | Prescription Tracker + Reminder Job | Backend | 398 | M | 399A, 399B | |
+| 400 | Adverse Party Registry + CRUD | Backend | 397 | M | 400A, 400B | |
+| 401 | Conflict Check Service + Search Algorithm | Backend | 400 | M | 401A, 401B | |
+| 402 | Tariff Schedule Entity + Service + CRUD | Backend | 397 | M | 402A, 402B | |
+| 403 | Invoice Tariff Integration + InvoiceLine Extension | Backend | 402 | S | 403A | |
+| 404 | Legal Pack Content + Tariff Seed Data | Backend | 397 | M | 404A, 404B | |
+| 405 | Frontend: Court Calendar + Prescription Pages | Frontend | 398, 399 | L | 405A, 405B | |
+| 406 | Frontend: Conflict Check + Adverse Party Pages | Frontend | 400, 401 | L | 406A, 406B | |
+| 407 | Frontend: Tariff Pages + Invoice Tariff Selector | Frontend | 402, 403 | M | 407A, 407B | |
+| 408 | Frontend: Project Detail Tabs + Sidebar + Dashboard Widget | Frontend | 405, 406, 407 | M | 408A | |
+| 409 | Multi-Vertical Coexistence Tests | Backend + Frontend | 397-408 | S | 409A | |
 
 ---
 

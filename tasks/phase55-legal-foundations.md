@@ -28,7 +28,7 @@ Phase 55 is the multi-vertical architecture stress test. It builds three real le
 |------|------|-------|------|--------|--------|--------|
 | 397 | Foundation: V83 Migration + V16 Global + RBAC Capabilities + Module Registration | Backend | -- | M | 397A, 397B | **Done** (PR #841) |
 | 398 | Court Date Entity + Service + Controller | Backend | 397 | M | 398A, 398B | **Done** (PR #842) |
-| 399 | Prescription Tracker + Reminder Job | Backend | 398 | M | 399A, 399B | |
+| 399 | Prescription Tracker + Reminder Job | Backend | 398 | M | 399A, 399B | **Done** (PR #843) |
 | 400 | Adverse Party Registry + CRUD | Backend | 397 | M | 400A, 400B | |
 | 401 | Conflict Check Service + Search Algorithm | Backend | 400 | M | 401A, 401B | |
 | 402 | Tariff Schedule Entity + Service + CRUD | Backend | 397 | M | 402A, 402B | |
@@ -170,7 +170,7 @@ FRONTEND (requires backend epics)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 3a (parallel) | 399 | 399A | `PrescriptionTracker` entity + `PrescriptionTrackerRepository` + `PrescriptionRuleRegistry` static utility + `PrescriptionTrackerService` (create with date calculation, update, interrupt, list) + `PrescriptionTrackerController` (5 endpoints) + audit events. Integration tests (~8). Backend only. |  |
+| 3a (parallel) | 399 | 399A | `PrescriptionTracker` entity + `PrescriptionTrackerRepository` + `PrescriptionRuleRegistry` static utility + `PrescriptionTrackerService` (create with date calculation, update, interrupt, list) + `PrescriptionTrackerController` (5 endpoints) + audit events. Integration tests (~8). Backend only. | **Done** (PR #843) |
 | 3b (parallel) | 401 | 401A | `ConflictCheck` entity + `ConflictCheckRepository` + `ConflictCheckService` (performCheck with pg_trgm fuzzy search + exact ID match + result classification + JSONB conflict details + audit trail). Native SQL queries for `similarity()`. Integration tests (~8). Backend only. |  |
 | 3c (parallel) | 403 | 403A | Extend `InvoiceLine` entity with `tariffItemId` (UUID) + `lineSource` (String). Add `TARIFF` to `InvoiceLineType` enum. Extend `InvoiceService.addLine()` for tariff lines with module guard. Extend `InvoiceLineResponse` DTO. Integration tests (~5). Backend only. |  |
 
@@ -178,7 +178,7 @@ FRONTEND (requires backend epics)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 4a (parallel) | 399 | 399B | `CourtDateReminderJob` (daily scheduled: iterate tenants, check module enabled, query upcoming court dates + expiring prescriptions, create notifications, update tracker status). `/api/court-calendar/upcoming` endpoint (combined dashboard data). Integration tests (~5). Backend only. |  |
+| 4a (parallel) | 399 | 399B | `CourtDateReminderJob` (daily scheduled: iterate tenants, check module enabled, query upcoming court dates + expiring prescriptions, create notifications, update tracker status). `/api/court-calendar/upcoming` endpoint (combined dashboard data). Integration tests (~5). Backend only. | **Done** (PR #843) |
 | 4b (parallel) | 401 | 401B | `ConflictCheckController` (4 endpoints: perform, list, get, resolve). Integration tests (~4). Backend only. |  |
 
 ### Stage 5: Frontend Court Calendar + Prescription (sequential)
@@ -376,8 +376,8 @@ Stage 9:  [409A]                                                        <- coexi
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **399A** | 399.1--399.7 | `PrescriptionTracker` entity + `PrescriptionTrackerRepository` + `PrescriptionRuleRegistry` static utility (6 prescription types with period years) + `PrescriptionTrackerService` (create with date calculation, update, interrupt, list) + `PrescriptionTrackerController` (5 endpoints). Integration tests (~8). Backend only. |  |
-| **399B** | 399.8--399.12 | `CourtDateReminderJob` (daily scheduled: iterate tenants, query upcoming court dates + expiring prescriptions, create notifications, update tracker status WARNED/EXPIRED). `/api/court-calendar/upcoming` combined dashboard endpoint. Integration tests (~5). Backend only. |  |
+| **399A** | 399.1--399.7 | `PrescriptionTracker` entity + `PrescriptionTrackerRepository` + `PrescriptionRuleRegistry` static utility (6 prescription types with period years) + `PrescriptionTrackerService` (create with date calculation, update, interrupt, list) + `PrescriptionTrackerController` (5 endpoints). Integration tests (~8). Backend only. | **Done** (PR #843) |
+| **399B** | 399.8--399.12 | `CourtDateReminderJob` (daily scheduled: iterate tenants, query upcoming court dates + expiring prescriptions, create notifications, update tracker status WARNED/EXPIRED). `/api/court-calendar/upcoming` combined dashboard endpoint. Integration tests (~5). Backend only. | **Done** (PR #843) |
 
 ### Tasks
 

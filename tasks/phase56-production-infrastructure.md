@@ -144,7 +144,7 @@ KEYCLOAK           CI/CD PIPELINE     OBSERVABILITY
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 2a (parallel) | 411 | 411B | Add ElastiCache Redis to `infra/modules/data/` module. Redis 7, `cache.t4g.micro`, single node, private subnet group, auth token in Secrets Manager. Outputs: Redis endpoint, Redis port, Redis auth token ARN. Infra only. | **Done** (PR #856) |
-| 2b (parallel) | 412 | 412B | Extend security-groups module: add 5 new security groups (gateway: port 8443, portal: port 3002, keycloak: port 8080, RDS: port 5432 from `ecs-sg` only, Redis: port 6379 from `ecs-sg` only). Refactor existing SGs to use `for_each` where possible. Infra only. | |
+| 2b (parallel) | 412 | 412B | Extend security-groups module: add 5 new security groups (gateway: port 8443, portal: port 3002, keycloak: port 8080, RDS: port 5432 from `ecs-sg` only, Redis: port 6379 from `ecs-sg` only). Refactor existing SGs to use `for_each` where possible. Infra only. | **Done** (PR #858) |
 
 ### Stage 3: Service Extension -- IAM (sequential after SGs)
 
@@ -360,7 +360,7 @@ Note: Stage 5 can run in parallel with Stages 1-4 (Dockerfiles are independent).
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **412A** | 412.1--412.3 | Refactor ECR module from 2 hardcoded repos to `for_each` over 5-service list. Use `kazi/{service}` naming per ADR-218. Image scanning, lifecycle policies. Infra only. | **Done** (PR #857) |
-| **412B** | 412.4--412.7 | Extend security-groups module: add gateway (8443), portal (3002), keycloak (8080), RDS (5432), Redis (6379) security groups. Update internal ALB SG to allow gateway ingress. Infra only. | |
+| **412B** | 412.4--412.7 | Extend security-groups module: add gateway (8443), portal (3002), keycloak (8080), RDS (5432), Redis (6379) security groups. Update internal ALB SG to allow gateway ingress. Infra only. | **Done** (PR #858) |
 | **412C** | 412.8--412.12 | Extend IAM module: add task roles for gateway, portal, keycloak. Add GitHub OIDC provider + `heykazi-github-actions` role. Extend ECS execution role to read new secrets. Infra only. | |
 
 ### Tasks

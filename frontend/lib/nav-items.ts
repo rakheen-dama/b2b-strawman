@@ -84,7 +84,6 @@ export const NAV_GROUPS: NavGroup[] = [
         href: (slug) => `/org/${slug}/court-calendar`,
         icon: Gavel,
         exact: true,
-        requiredCapability: "PROJECT_MANAGEMENT",
         requiredModule: "court_calendar",
       },
     ],

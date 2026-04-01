@@ -104,19 +104,17 @@ class LegalModuleStubControllerTest {
   }
 
   @Test
-  void conflictCheckStatus_returns200_whenModuleEnabled() throws Exception {
+  void conflictCheckList_returns200_whenModuleEnabled() throws Exception {
     mockMvc
-        .perform(get("/api/conflict-check/status").with(enabledOwnerJwt()))
+        .perform(get("/api/conflict-checks").with(enabledOwnerJwt()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.module").value("conflict_check"))
-        .andExpect(jsonPath("$.status").value("stub"))
-        .andExpect(jsonPath("$.message").exists());
+        .andExpect(jsonPath("$.content").isArray());
   }
 
   @Test
-  void conflictCheckStatus_returns403_whenModuleDisabled() throws Exception {
+  void conflictCheckList_returns403_whenModuleDisabled() throws Exception {
     mockMvc
-        .perform(get("/api/conflict-check/status").with(disabledOwnerJwt()))
+        .perform(get("/api/conflict-checks").with(disabledOwnerJwt()))
         .andExpect(status().isForbidden());
   }
 

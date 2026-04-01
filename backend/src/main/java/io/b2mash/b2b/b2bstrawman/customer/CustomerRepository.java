@@ -30,4 +30,19 @@ public interface CustomerRepository extends JpaRepository<Customer, UUID> {
           "SELECT lifecycle_status, COUNT(*) AS cnt FROM customers WHERE status = 'ACTIVE' GROUP BY lifecycle_status",
       nativeQuery = true)
   List<Object[]> countByLifecycleStatus();
+
+  @Query(
+      value =
+          "SELECT * FROM customers"
+              + " WHERE public.similarity(lower(name), lower(:name)) > :threshold"
+              + " ORDER BY public.similarity(lower(name), lower(:name)) DESC"
+              + " LIMIT :maxResults",
+      nativeQuery = true)
+  List<Customer> findBySimilarName(
+      @Param("name") String name,
+      @Param("threshold") double threshold,
+      @Param("maxResults") int maxResults);
+
+  @Query(value = "SELECT * FROM customers WHERE id_number = :idNumber", nativeQuery = true)
+  Optional<Customer> findByIdNumberExact(@Param("idNumber") String idNumber);
 }

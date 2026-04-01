@@ -11,6 +11,7 @@ import type {
   TaxRateResponse,
 } from "@/lib/types";
 import {
+  fetchInvoice,
   updateInvoice,
   deleteInvoice,
   addLineItem,
@@ -226,6 +227,16 @@ export function useInvoiceDetail({
     window.open(`/api/invoices/${invoice.id}/preview`, "_blank");
   }
 
+  async function handleRefresh() {
+    setError(null);
+    const result = await fetchInvoice(invoice.id);
+    if (result.success && result.invoice) {
+      setInvoice(result.invoice);
+    } else if (result.error) {
+      setError(result.error);
+    }
+  }
+
   function handleAddLine() {
     setShowAddLine(true);
     setNewLineDesc("");
@@ -379,6 +390,7 @@ export function useInvoiceDetail({
     handleEditLine,
     submitEditLine,
     handleDeleteLine,
+    handleRefresh,
     // Tax rates
     taxRates,
   };

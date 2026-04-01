@@ -37,11 +37,28 @@ const mockDeleteLineItem = vi.fn().mockResolvedValue({ success: true });
 const mockRefreshPaymentLink = vi.fn().mockResolvedValue({ success: true, invoice: null });
 
 vi.mock("@/app/(app)/org/[slug]/invoices/invoice-crud-actions", () => ({
+  fetchInvoice: vi.fn().mockResolvedValue({ success: true, invoice: null }),
   updateInvoice: (...args: unknown[]) => mockUpdateInvoice(...args),
   deleteInvoice: (...args: unknown[]) => mockDeleteInvoice(...args),
   addLineItem: (...args: unknown[]) => mockAddLineItem(...args),
   updateLineItem: (...args: unknown[]) => mockUpdateLineItem(...args),
   deleteLineItem: (...args: unknown[]) => mockDeleteLineItem(...args),
+}));
+
+vi.mock("@/app/(app)/org/[slug]/legal/tariffs/actions", () => ({
+  fetchTariffSchedules: vi.fn().mockResolvedValue({ content: [], page: { totalElements: 0 } }),
+  fetchActiveSchedule: vi.fn().mockResolvedValue(null),
+  fetchTariffItems: vi.fn().mockResolvedValue({ content: [], page: { totalElements: 0 } }),
+}));
+
+vi.mock("@/lib/org-profile", () => ({
+  useOrgProfile: () => ({
+    verticalProfile: null,
+    enabledModules: [],
+    terminologyNamespace: null,
+    isModuleEnabled: () => false,
+  }),
+  OrgProfileProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 vi.mock("@/app/(app)/org/[slug]/invoices/invoice-payment-actions", () => ({
@@ -94,6 +111,8 @@ function makeDraftInvoice(overrides?: Partial<InvoiceResponse>): InvoiceResponse
         taxRatePercent: null,
         taxAmount: null,
         taxExempt: false,
+        tariffItemId: null,
+        lineSource: null,
       },
     ],
     paymentSessionId: null,

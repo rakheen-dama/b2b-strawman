@@ -1,0 +1,7 @@
+# Keycloakify source project (large: node_modules, src, dist)
+# Only the pre-built JAR in providers/ is needed in the image.
+theme/
+
+# OS artifacts
+.DS_Store
+*.swp

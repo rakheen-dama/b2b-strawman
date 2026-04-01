@@ -21,9 +21,17 @@ public record InvoiceLineResponse(
     String taxRateName,
     BigDecimal taxRatePercent,
     BigDecimal taxAmount,
-    boolean taxExempt) {
+    boolean taxExempt,
+    UUID tariffItemId,
+    String lineSource,
+    String tariffItemNumber) {
 
   public static InvoiceLineResponse from(InvoiceLine line, String projectName) {
+    return from(line, projectName, null);
+  }
+
+  public static InvoiceLineResponse from(
+      InvoiceLine line, String projectName, String tariffItemNumber) {
     return new InvoiceLineResponse(
         line.getId(),
         line.getProjectId(),
@@ -40,6 +48,9 @@ public record InvoiceLineResponse(
         line.getTaxRateName(),
         line.getTaxRatePercent(),
         line.getTaxAmount(),
-        line.isTaxExempt());
+        line.isTaxExempt(),
+        line.getTariffItemId(),
+        line.getLineSource(),
+        tariffItemNumber);
   }
 }

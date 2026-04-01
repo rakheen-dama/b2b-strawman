@@ -1,6 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.invoice.dto;
 
-import jakarta.validation.constraints.NotBlank;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineType;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
@@ -9,8 +9,10 @@ import java.util.UUID;
 
 public record AddLineItemRequest(
     UUID projectId,
-    @NotBlank String description,
+    String description,
     @NotNull @Positive BigDecimal quantity,
-    @NotNull @PositiveOrZero BigDecimal unitPrice,
+    @PositiveOrZero BigDecimal unitPrice,
     @PositiveOrZero int sortOrder,
-    UUID taxRateId) {}
+    UUID taxRateId,
+    UUID tariffItemId,
+    InvoiceLineType lineType) {}

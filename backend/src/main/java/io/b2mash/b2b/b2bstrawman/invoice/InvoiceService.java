@@ -54,6 +54,9 @@ import io.b2mash.b2b.b2bstrawman.tax.TaxRate;
 import io.b2mash.b2b.b2bstrawman.tax.TaxRateRepository;
 import io.b2mash.b2b.b2bstrawman.tax.dto.TaxBreakdownEntry;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.tariff.TariffItem;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.tariff.TariffItemRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Tuple;
 import java.math.BigDecimal;
@@ -108,6 +111,8 @@ public class InvoiceService {
   private final TaxRateRepository taxRateRepository;
   private final ExpenseRepository expenseRepository;
   private final PrerequisiteService prerequisiteService;
+  private final TariffItemRepository tariffItemRepository;
+  private final VerticalModuleGuard verticalModuleGuard;
 
   public InvoiceService(
       InvoiceRepository invoiceRepository,
@@ -136,7 +141,9 @@ public class InvoiceService {
       TaxCalculationService taxCalculationService,
       TaxRateRepository taxRateRepository,
       ExpenseRepository expenseRepository,
-      PrerequisiteService prerequisiteService) {
+      PrerequisiteService prerequisiteService,
+      TariffItemRepository tariffItemRepository,
+      VerticalModuleGuard verticalModuleGuard) {
     this.invoiceRepository = invoiceRepository;
     this.lineRepository = lineRepository;
     this.customerRepository = customerRepository;
@@ -164,6 +171,8 @@ public class InvoiceService {
     this.taxRateRepository = taxRateRepository;
     this.expenseRepository = expenseRepository;
     this.prerequisiteService = prerequisiteService;
+    this.tariffItemRepository = tariffItemRepository;
+    this.verticalModuleGuard = verticalModuleGuard;
   }
 
   @Transactional(readOnly = true)
@@ -667,16 +676,59 @@ public class InvoiceService {
           "Invoice not editable", "Line items can only be added to draft invoices");
     }
 
-    var line =
-        new InvoiceLine(
-            invoiceId,
-            request.projectId(),
-            null, // manual line item, no time entry
-            request.description(),
-            request.quantity(),
-            request.unitPrice(),
-            request.sortOrder());
-    line.setLineType(InvoiceLineType.MANUAL);
+    InvoiceLine line;
+
+    if (request.tariffItemId() != null) {
+      // Tariff line — resolve tariff item and compute amount
+      verticalModuleGuard.requireModule("lssa_tariff");
+
+      var tariffItem =
+          tariffItemRepository
+              .findById(request.tariffItemId())
+              .orElseThrow(
+                  () -> new ResourceNotFoundException("TariffItem", request.tariffItemId()));
+
+      String description =
+          (request.description() != null && !request.description().isBlank())
+              ? request.description()
+              : tariffItem.getDescription();
+      BigDecimal unitPrice =
+          (request.unitPrice() != null) ? request.unitPrice() : tariffItem.getAmount();
+
+      line =
+          new InvoiceLine(
+              invoiceId,
+              request.projectId(),
+              null,
+              description,
+              request.quantity(),
+              unitPrice,
+              request.sortOrder());
+      line.setLineType(InvoiceLineType.TARIFF);
+      line.setTariffItemId(request.tariffItemId());
+      line.setLineSource("TARIFF");
+    } else {
+      // Manual line — existing behavior
+      if (request.description() == null || request.description().isBlank()) {
+        throw new ResourceConflictException(
+            "Description required", "Manual line items require a description");
+      }
+      if (request.unitPrice() == null) {
+        throw new ResourceConflictException(
+            "Unit price required", "Manual line items require a unit price");
+      }
+      line =
+          new InvoiceLine(
+              invoiceId,
+              request.projectId(),
+              null,
+              request.description(),
+              request.quantity(),
+              request.unitPrice(),
+              request.sortOrder());
+      line.setLineType(InvoiceLineType.MANUAL);
+    }
+
     line = lineRepository.save(line);
 
     applyTaxToLine(line, request.taxRateId());
@@ -696,6 +748,8 @@ public class InvoiceService {
                 Map.of(
                     "action",
                     "line_item_added",
+                    "line_type",
+                    line.getLineType().name(),
                     "new_subtotal",
                     invoice.getSubtotal().toString(),
                     "new_total",
@@ -1820,6 +1874,21 @@ public class InvoiceService {
   }
 
   /** Batch-fetch project names for a list of invoice lines (single query instead of N+1). */
+  private Map<UUID, String> resolveTariffItemNumbers(List<InvoiceLine> lines) {
+    var tariffItemIds =
+        lines.stream()
+            .map(InvoiceLine::getTariffItemId)
+            .filter(Objects::nonNull)
+            .distinct()
+            .toList();
+
+    if (!tariffItemIds.isEmpty()) {
+      return tariffItemRepository.findAllById(tariffItemIds).stream()
+          .collect(Collectors.toMap(TariffItem::getId, TariffItem::getItemNumber));
+    }
+    return Map.of();
+  }
+
   private Map<UUID, String> resolveProjectNames(List<InvoiceLine> lines) {
     var projectIds =
         lines.stream().map(InvoiceLine::getProjectId).filter(Objects::nonNull).distinct().toList();
@@ -1834,6 +1903,7 @@ public class InvoiceService {
   private InvoiceResponse buildResponse(Invoice invoice) {
     var lines = lineRepository.findByInvoiceIdOrderBySortOrder(invoice.getId());
     var projectNames = resolveProjectNames(lines);
+    var tariffItemNumbers = resolveTariffItemNumbers(lines);
 
     var lineResponses =
         lines.stream()
@@ -1841,7 +1911,10 @@ public class InvoiceService {
                 line ->
                     InvoiceLineResponse.from(
                         line,
-                        line.getProjectId() != null ? projectNames.get(line.getProjectId()) : null))
+                        line.getProjectId() != null ? projectNames.get(line.getProjectId()) : null,
+                        line.getTariffItemId() != null
+                            ? tariffItemNumbers.get(line.getTariffItemId())
+                            : null))
             .toList();
 
     List<TaxBreakdownEntry> taxBreakdown = taxCalculationService.buildTaxBreakdown(lines);

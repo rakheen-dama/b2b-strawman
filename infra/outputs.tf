@@ -1,4 +1,7 @@
-# VPC outputs
+# -----------------------------------------------------------------------------
+# VPC
+# -----------------------------------------------------------------------------
+
 output "vpc_id" {
   description = "ID of the VPC"
   value       = module.vpc.vpc_id
@@ -19,7 +22,10 @@ output "availability_zones" {
   value       = module.vpc.availability_zones
 }
 
-# Security group outputs
+# -----------------------------------------------------------------------------
+# Security Groups
+# -----------------------------------------------------------------------------
+
 output "public_alb_sg_id" {
   description = "Security group ID for the public ALB"
   value       = module.security_groups.public_alb_sg_id
@@ -40,7 +46,10 @@ output "backend_sg_id" {
   value       = module.security_groups.backend_sg_id
 }
 
-# ECR outputs
+# -----------------------------------------------------------------------------
+# ECR
+# -----------------------------------------------------------------------------
+
 output "frontend_ecr_url" {
   description = "URL of the frontend ECR repository"
   value       = module.ecr.frontend_repository_url
@@ -51,7 +60,10 @@ output "backend_ecr_url" {
   value       = module.ecr.backend_repository_url
 }
 
-# ALB outputs
+# -----------------------------------------------------------------------------
+# ALB
+# -----------------------------------------------------------------------------
+
 output "public_alb_dns_name" {
   description = "DNS name of the public ALB"
   value       = module.alb.public_alb_dns_name
@@ -62,7 +74,10 @@ output "internal_alb_dns_name" {
   value       = module.alb.internal_alb_dns_name
 }
 
-# ECS outputs
+# -----------------------------------------------------------------------------
+# ECS
+# -----------------------------------------------------------------------------
+
 output "ecs_cluster_name" {
   description = "Name of the ECS cluster"
   value       = module.ecs.cluster_name
@@ -78,13 +93,19 @@ output "backend_service_name" {
   value       = module.ecs.backend_service_name
 }
 
-# S3 outputs
+# -----------------------------------------------------------------------------
+# S3
+# -----------------------------------------------------------------------------
+
 output "s3_bucket_name" {
   description = "Name of the S3 bucket"
   value       = module.s3.bucket_name
 }
 
-# DNS outputs
+# -----------------------------------------------------------------------------
+# DNS
+# -----------------------------------------------------------------------------
+
 output "app_url" {
   description = "Application URL (DNS or ALB)"
   value       = var.create_dns ? "https://${module.dns.app_fqdn}" : "http://${module.alb.public_alb_dns_name}"

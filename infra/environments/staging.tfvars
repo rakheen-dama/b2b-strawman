@@ -1,0 +1,31 @@
+# -----------------------------------------------------------------------------
+# Staging Environment
+# -----------------------------------------------------------------------------
+
+project     = "kazi"
+environment = "staging"
+aws_region  = "af-south-1"
+
+# VPC
+vpc_cidr             = "10.1.0.0/16"
+public_subnet_cidrs  = ["10.1.1.0/24", "10.1.2.0/24"]
+private_subnet_cidrs = ["10.1.10.0/24", "10.1.20.0/24"]
+
+# Container images — updated by CI/CD pipeline
+frontend_image = "public.ecr.aws/nginx/nginx:latest"
+backend_image  = "public.ecr.aws/nginx/nginx:latest"
+
+# DNS (set to true and fill in values when domain is available)
+create_dns     = false
+domain_name    = ""
+hosted_zone_id = ""
+
+# Monitoring
+log_retention_days = 14
+
+# Secrets
+secrets_recovery_window = 7
+
+# Auto Scaling
+autoscaling_min_capacity = 1
+autoscaling_max_capacity = 4

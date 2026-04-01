@@ -8,12 +8,20 @@
 
 locals {
   secrets = {
-    "database-url"           = "CHANGE_ME_database_url"
-    "database-migration-url" = "CHANGE_ME_database_migration_url"
-    "clerk-secret-key"       = "CHANGE_ME_clerk_secret_key"
-    "clerk-webhook-secret"   = "CHANGE_ME_clerk_webhook_secret"
-    "clerk-publishable-key"  = "CHANGE_ME_clerk_publishable_key"
-    "internal-api-key"       = "CHANGE_ME_internal_api_key"
+    "database-url"               = "CHANGE_ME_database_url"
+    "database-migration-url"     = "CHANGE_ME_database_migration_url"
+    "internal-api-key"           = "CHANGE_ME_internal_api_key"
+    "keycloak-client-id"         = "CHANGE_ME_keycloak_client_id"
+    "keycloak-client-secret"     = "CHANGE_ME_keycloak_client_secret"
+    "keycloak-admin-username"    = "CHANGE_ME_keycloak_admin_username"
+    "keycloak-admin-password"    = "CHANGE_ME_keycloak_admin_password"
+    "portal-jwt-secret"          = "CHANGE_ME_portal_jwt_secret"
+    "portal-magic-link-secret"   = "CHANGE_ME_portal_magic_link_secret"
+    "integration-encryption-key" = "CHANGE_ME_integration_encryption_key"
+    "smtp-username"              = "CHANGE_ME_smtp_username"
+    "smtp-password"              = "CHANGE_ME_smtp_password"
+    "email-unsubscribe-secret"   = "CHANGE_ME_email_unsubscribe_secret"
+    "redis-auth-token"           = "CHANGE_ME_redis_auth_token"
   }
 }
 

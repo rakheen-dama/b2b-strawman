@@ -1,18 +1,33 @@
 # Infra CLAUDE.md
 
-Terraform IaC for deploying the multi-tenant B2B SaaS platform to AWS. ECS Fargate for compute, Neon for Postgres (external), S3 for file storage.
+Terraform IaC for deploying the Kazi multi-tenant B2B SaaS platform to AWS.
+5 services on ECS Fargate, RDS PostgreSQL, ElastiCache Redis, S3 for file storage.
 
 ## Status
 
-All modules implemented. VPC + Security Groups (Epic 14A), ALB + ECR + ECS + Monitoring (Epic 14B), S3 + Secrets + IAM (Epic 14C), DNS + Auto-scaling (Epic 14D).
+Foundation modules implemented: VPC, Security Groups, ALB, ECR, ECS, Monitoring, S3, Secrets, IAM, DNS, Autoscaling.
+Environment structure flattened to root-level config with per-environment `.tfvars` files.
+Bootstrap config for S3 state bucket and DynamoDB lock table in `bootstrap/`.
 
 ## Commands
 
 ```bash
-terraform init                            # Initialize providers and modules
-terraform plan -var-file=env.tfvars       # Preview changes
-terraform apply -var-file=env.tfvars      # Apply changes
-terraform destroy -var-file=env.tfvars    # Tear down
+# Initialize with environment-specific state key
+terraform init -backend-config="key=staging/terraform.tfstate"
+terraform init -backend-config="key=production/terraform.tfstate"
+
+# Plan and apply
+terraform plan -var-file=environments/staging.tfvars
+terraform apply -var-file=environments/staging.tfvars
+
+# Destroy
+terraform destroy -var-file=environments/staging.tfvars
+
+# Format check
+terraform fmt -check -recursive
+
+# Validate
+terraform validate
 ```
 
 Always run `plan` before `apply`. Never apply without reviewing the plan output.
@@ -21,77 +36,84 @@ Always run `plan` before `apply`. Never apply without reviewing the plan output.
 
 ```
 infra/
+├── main.tf                    # Root module composing all child modules
+├── variables.tf               # All input variables with types and defaults
+├── outputs.tf                 # All output values from child modules
+├── providers.tf               # AWS provider + S3 backend config
+├── versions.tf                # Terraform + provider version pins
+├── bootstrap/                 # Standalone config for state bucket + lock table
+│   ├── main.tf
+│   ├── variables.tf
+│   ├── outputs.tf
+│   └── README.md
 ├── modules/
-│   ├── vpc/              # VPC, subnets, NAT gateways, route tables
-│   ├── security-groups/  # SG definitions and rules
-│   ├── ecr/              # Container registries for frontend + backend
-│   ├── monitoring/       # CloudWatch log groups
-│   ├── s3/               # S3 bucket with CORS and versioning
-│   ├── secrets/          # Secrets Manager entries (placeholder values)
-│   ├── iam/              # Task execution role, task roles, policies
-│   ├── alb/              # Public ALB (HTTPS/HTTP) + internal ALB
-│   ├── ecs/              # ECS Fargate cluster, task definitions, services
-│   ├── dns/              # Route 53 + ACM certificate (conditional)
-│   └── autoscaling/      # ECS service auto-scaling policies
+│   ├── vpc/                   # VPC, subnets, NAT gateways, route tables
+│   ├── security-groups/       # SG definitions and rules
+│   ├── ecr/                   # Container registries
+│   ├── monitoring/            # CloudWatch log groups
+│   ├── s3/                    # S3 bucket with CORS and versioning
+│   ├── secrets/               # Secrets Manager entries (Keycloak-era)
+│   ├── iam/                   # Task execution role, task roles, policies
+│   ├── alb/                   # Public ALB (HTTPS/HTTP) + internal ALB
+│   ├── ecs/                   # ECS Fargate cluster, task definitions, services
+│   ├── dns/                   # Route 53 + ACM certificate (conditional)
+│   └── autoscaling/           # ECS service auto-scaling policies
 ├── environments/
-│   ├── dev/
-│   │   ├── main.tf
-│   │   ├── variables.tf
-│   │   ├── outputs.tf
-│   │   ├── backend.tf          # S3 state backend config
-│   │   └── terraform.tfvars.example
-│   ├── staging/
-│   │   └── ...
-│   └── prod/
-│       └── ...
+│   ├── staging.tfvars         # Staging variable values
+│   └── production.tfvars      # Production variable values
 ├── .gitignore
 └── CLAUDE.md
 ```
 
 ## Architecture Overview
 
-### Compute: ECS Fargate
-- **Frontend service**: Next.js containers (2 tasks, multi-AZ)
-- **Backend service**: Spring Boot containers (2 tasks, multi-AZ)
-- Both in private subnets, egress via NAT gateways
-- Images pulled from ECR
+### Services (5 on ECS Fargate)
+- **Frontend**: Next.js (App Router) — public-facing UI
+- **Backend**: Spring Boot — API server, multitenancy, business logic
+- **Gateway**: Spring Cloud Gateway BFF — routes frontend-to-backend, session management
+- **Portal**: Next.js — customer-facing portal
+- **Keycloak**: Identity provider — orgs, RBAC, SSO
 
 ### Networking: VPC
-- CIDR: `10.0.0.0/16`
-- Public subnets: `10.0.1.0/24`, `10.0.2.0/24` (ALBs, NAT gateways)
-- Private subnets: `10.0.10.0/24`, `10.0.20.0/24` (ECS tasks)
+- Staging CIDR: `10.1.0.0/16`, Production CIDR: `10.2.0.0/16`
+- Public subnets: ALBs, NAT gateways
+- Private subnets: ECS tasks, RDS, ElastiCache
 - 2 AZs for redundancy
 
 ### Load Balancing
-- **Public ALB** (HTTPS:443): Routes `/*` to frontend, `/api/*` to backend. Does NOT route `/internal/*`.
-- **Internal ALB** (HTTP:8080): Routes `/internal/*` from frontend to backend. Not internet-accessible.
+- **Public ALB** (HTTPS:443): Routes to frontend, backend, gateway, portal, Keycloak
+- **Internal ALB** (HTTP:8080): Internal service-to-service calls
 
-### Security Groups
-| SG | Inbound | Purpose |
-|----|---------|---------|
-| `sg-public-alb` | 443/tcp from 0.0.0.0/0 | Public HTTPS |
-| `sg-internal-alb` | 8080/tcp from `sg-frontend` | Internal service calls |
-| `sg-frontend` | 3000/tcp from `sg-public-alb` | Next.js from public ALB |
-| `sg-backend` | 8080/tcp from `sg-public-alb`, `sg-internal-alb` | Spring Boot from both ALBs |
-
-### Database: Neon Postgres (external)
-- Not provisioned by Terraform — managed via Neon console/API
+### Database: RDS PostgreSQL
+- Schema-per-tenant multitenancy (Hibernate + Flyway)
 - Connection strings stored in Secrets Manager
-- Two connection strings per environment: pooled (PgBouncer) and direct (Flyway)
+
+### Cache: ElastiCache Redis
+- Gateway session storage
+- Auth token stored in Secrets Manager
 
 ### Storage: S3
-- Bucket naming: `docteams-{environment}` (e.g., `docteams-prod`)
-- Key structure: `org/{orgId}/project/{projectId}/{documentId}`
-- Backend accesses via IAM task role — no static credentials
+- Document storage with org/project scoped key structure
+- Backend accesses via IAM task role
 
 ### Secrets: AWS Secrets Manager
+
 | Secret | Used By |
 |--------|---------|
-| Neon pooled connection string | Backend |
-| Neon direct connection string | Backend (Flyway) |
-| Clerk secret key | Frontend |
-| Clerk webhook signing secret | Frontend |
-| Internal API key | Frontend + Backend |
+| `database-url` | Backend |
+| `database-migration-url` | Backend (Flyway) |
+| `internal-api-key` | Frontend + Backend |
+| `keycloak-client-id` | Backend, Gateway |
+| `keycloak-client-secret` | Backend, Gateway |
+| `keycloak-admin-username` | Backend (admin API) |
+| `keycloak-admin-password` | Backend (admin API) |
+| `portal-jwt-secret` | Portal, Backend |
+| `portal-magic-link-secret` | Portal |
+| `integration-encryption-key` | Backend |
+| `smtp-username` | Backend (email) |
+| `smtp-password` | Backend (email) |
+| `email-unsubscribe-secret` | Backend |
+| `redis-auth-token` | Gateway, ElastiCache |
 
 Injected into ECS tasks via `secrets` blocks in task definitions.
 
@@ -100,40 +122,48 @@ Injected into ECS tasks via `secrets` blocks in task definitions.
 - ACM certificate for HTTPS on public ALB
 
 ### Observability
-- CloudWatch Log Groups: `/ecs/docteams-frontend`, `/ecs/docteams-backend`
+- CloudWatch Log Groups per service
 - Fargate `awslogs` log driver
 - Container Insights for CPU/memory/network metrics
 
 ## Conventions
 
+### Naming (ADR-218)
+- **Tags**: `Project = kazi`, `Environment = {env}`, `ManagedBy = terraform`
+- **Customer-facing resources**: `heykazi-` prefix (e.g., `heykazi-terraform-state`)
+- **Internal resources**: `kazi-{env}-{resource}` (via `${var.project}-${var.environment}` interpolation)
+- Some legacy resources retain `docteams` in names until natural replacement
+
 ### Module Design
 - Each module is self-contained with `main.tf`, `variables.tf`, `outputs.tf`
-- Modules expose outputs consumed by other modules (e.g., VPC outputs subnet IDs for ECS)
+- All modules have `default = "kazi"` for the `project` variable
+- Modules expose outputs consumed by other modules
 - Use `data` sources for cross-module references where possible
 
-### Naming
-- Resources prefixed with project name and environment: `docteams-{env}-{resource}`
-- Tags on all resources: `Project`, `Environment`, `ManagedBy=terraform`
-
 ### State Management
-- Remote state in S3 with DynamoDB locking (one state file per environment)
-- State bucket and lock table bootstrapped manually or via a separate bootstrap config
+- Remote state in S3 (`heykazi-terraform-state`) with DynamoDB locking (`heykazi-terraform-locks`)
+- One state file per environment: `staging/terraform.tfstate`, `production/terraform.tfstate`
+- Bootstrap config in `infra/bootstrap/` (uses local state)
+- State key passed via CLI: `-backend-config="key=staging/terraform.tfstate"`
 
 ### Environment Separation
-- Each environment in its own directory under `environments/`
-- Shared modules, environment-specific variables
+- Single root configuration with environment-specific `.tfvars` files
+- Staging and production only (no dev environment)
 - No cross-environment resource references
 
 ### Security
-- Never commit `.tfvars` files with real values (gitignored)
-- Provide `.tfvars.example` files with placeholder values
+- Never commit `.tfvars` files with real secrets (gitignored except committed env files)
 - Secrets referenced by ARN, not by value, in task definitions
 - IAM follows least-privilege: task roles only get permissions they need
 - No wildcard `*` in IAM policies — scope to specific resources
+
+### Version Constraints
+- Terraform >= 1.9.0
+- AWS provider >= 5.0
 
 ## CI/CD Integration
 
 Terraform runs are expected to be triggered from GitHub Actions:
 - `terraform plan` on PR (output in PR comment)
-- `terraform apply` on merge to main (with manual approval for prod)
+- `terraform apply` on merge to main (with manual approval for production)
 - State locking prevents concurrent modifications

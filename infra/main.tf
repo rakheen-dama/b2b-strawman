@@ -1,32 +1,18 @@
-terraform {
-  required_version = ">= 1.0"
-
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 5.0"
-    }
-  }
-}
-
-provider "aws" {
-  region = var.aws_region
-
-  default_tags {
-    tags = {
-      Project     = var.project
-      Environment = var.environment
-      ManagedBy   = "terraform"
-    }
-  }
-}
+# -----------------------------------------------------------------------------
+# Root Module — composes all child modules
+# -----------------------------------------------------------------------------
+# Usage:
+#   terraform init -backend-config="key=staging/terraform.tfstate"
+#   terraform plan -var-file=environments/staging.tfvars
+#   terraform apply -var-file=environments/staging.tfvars
+# -----------------------------------------------------------------------------
 
 # -----------------------------------------------------------------------------
 # VPC
 # -----------------------------------------------------------------------------
 
 module "vpc" {
-  source = "../../modules/vpc"
+  source = "./modules/vpc"
 
   project              = var.project
   environment          = var.environment
@@ -40,7 +26,7 @@ module "vpc" {
 # -----------------------------------------------------------------------------
 
 module "security_groups" {
-  source = "../../modules/security-groups"
+  source = "./modules/security-groups"
 
   project     = var.project
   environment = var.environment
@@ -52,7 +38,7 @@ module "security_groups" {
 # -----------------------------------------------------------------------------
 
 module "ecr" {
-  source = "../../modules/ecr"
+  source = "./modules/ecr"
 
   project     = var.project
   environment = var.environment
@@ -63,7 +49,7 @@ module "ecr" {
 # -----------------------------------------------------------------------------
 
 module "monitoring" {
-  source = "../../modules/monitoring"
+  source = "./modules/monitoring"
 
   project            = var.project
   environment        = var.environment
@@ -75,7 +61,7 @@ module "monitoring" {
 # -----------------------------------------------------------------------------
 
 module "s3" {
-  source = "../../modules/s3"
+  source = "./modules/s3"
 
   project     = var.project
   environment = var.environment
@@ -86,7 +72,7 @@ module "s3" {
 # -----------------------------------------------------------------------------
 
 module "secrets" {
-  source = "../../modules/secrets"
+  source = "./modules/secrets"
 
   project                 = var.project
   environment             = var.environment
@@ -98,7 +84,7 @@ module "secrets" {
 # -----------------------------------------------------------------------------
 
 module "iam" {
-  source = "../../modules/iam"
+  source = "./modules/iam"
 
   project                = var.project
   environment            = var.environment
@@ -115,7 +101,7 @@ module "iam" {
 # -----------------------------------------------------------------------------
 
 module "dns" {
-  source = "../../modules/dns"
+  source = "./modules/dns"
 
   project        = var.project
   environment    = var.environment
@@ -131,7 +117,7 @@ module "dns" {
 # -----------------------------------------------------------------------------
 
 module "alb" {
-  source = "../../modules/alb"
+  source = "./modules/alb"
 
   project            = var.project
   environment        = var.environment
@@ -146,9 +132,15 @@ module "alb" {
 # -----------------------------------------------------------------------------
 # ECS Cluster + Services
 # -----------------------------------------------------------------------------
+# NOTE: The ECS module still expects Clerk-era variable names
+# (clerk_secret_key_arn, clerk_webhook_secret_arn, etc.) which will be
+# updated in Epic 412/413 when task definitions are rewritten for the
+# 5-service architecture. For now, pass empty strings for the deprecated
+# Clerk variables to allow validation to pass.
+# -----------------------------------------------------------------------------
 
 module "ecs" {
-  source = "../../modules/ecs"
+  source = "./modules/ecs"
 
   project     = var.project
   environment = var.environment
@@ -177,18 +169,20 @@ module "ecs" {
   frontend_log_group_name = module.monitoring.frontend_log_group_name
   backend_log_group_name  = module.monitoring.backend_log_group_name
 
-  # Secrets
+  # Secrets — current secrets
   database_url_secret_arn           = module.secrets.database_url_arn
   database_migration_url_secret_arn = module.secrets.database_migration_url_arn
-  clerk_secret_key_arn              = module.secrets.clerk_secret_key_arn
-  clerk_webhook_secret_arn          = module.secrets.clerk_webhook_secret_arn
-  clerk_publishable_key_arn         = module.secrets.clerk_publishable_key_arn
   internal_api_key_arn              = module.secrets.internal_api_key_arn
+
+  # Secrets — deprecated Clerk variables (will be removed in E412/E413)
+  clerk_secret_key_arn      = ""
+  clerk_webhook_secret_arn  = ""
+  clerk_publishable_key_arn = ""
 
   # App Config
   internal_alb_dns_name = module.alb.internal_alb_dns_name
-  clerk_issuer          = var.clerk_issuer
-  clerk_jwks_uri        = var.clerk_jwks_uri
+  clerk_issuer          = ""
+  clerk_jwks_uri        = ""
   s3_bucket_name        = module.s3.bucket_name
 }
 
@@ -197,7 +191,7 @@ module "ecs" {
 # -----------------------------------------------------------------------------
 
 module "autoscaling" {
-  source = "../../modules/autoscaling"
+  source = "./modules/autoscaling"
 
   project               = var.project
   environment           = var.environment

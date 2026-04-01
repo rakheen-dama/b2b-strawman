@@ -6,6 +6,8 @@
 *.tfvars.json
 !example.tfvars
 !terraform.tfvars.example
+!environments/staging.tfvars
+!environments/production.tfvars
 .terraform/
 .terraform.lock.hcl
 terraform.tfstate.d/

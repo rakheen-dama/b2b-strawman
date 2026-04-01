@@ -23,6 +23,14 @@ create_dns     = false
 domain_name    = ""
 hosted_zone_id = ""
 
+# ALB Routing Domains
+app_domain    = "staging-app.heykazi.com"
+portal_domain = "staging-portal.heykazi.com"
+auth_domain   = "staging-auth.heykazi.com"
+
+# ALB Protection
+alb_deletion_protection = false
+
 # Monitoring
 log_retention_days = 14
 

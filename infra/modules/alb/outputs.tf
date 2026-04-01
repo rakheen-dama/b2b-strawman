@@ -37,3 +37,18 @@ output "backend_internal_target_group_arn" {
   description = "ARN of the backend internal target group"
   value       = aws_lb_target_group.backend_internal.arn
 }
+
+output "gateway_target_group_arn" {
+  description = "ARN of the gateway target group"
+  value       = aws_lb_target_group.gateway.arn
+}
+
+output "portal_target_group_arn" {
+  description = "ARN of the portal target group"
+  value       = aws_lb_target_group.portal.arn
+}
+
+output "keycloak_target_group_arn" {
+  description = "ARN of the keycloak target group"
+  value       = aws_lb_target_group.keycloak.arn
+}

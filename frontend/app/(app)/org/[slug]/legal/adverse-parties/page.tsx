@@ -1,10 +1,10 @@
 import { notFound } from "next/navigation";
 import { getOrgSettings } from "@/lib/api/settings";
-import { fetchConflictChecks } from "./actions";
-import { ConflictCheckClient } from "./conflict-check-client";
-import type { ConflictCheck } from "@/lib/types";
+import { fetchAdverseParties } from "./actions";
+import { AdversePartyRegistryClient } from "./adverse-party-registry-client";
+import type { AdverseParty } from "@/lib/types";
 
-export default async function ConflictCheckPage({
+export default async function AdversePartiesPage({
   params,
 }: {
   params: Promise<{ slug: string }>;
@@ -23,30 +23,30 @@ export default async function ConflictCheckPage({
     notFound();
   }
 
-  let initialChecks: ConflictCheck[] = [];
+  let initialParties: AdverseParty[] = [];
   let initialTotal = 0;
 
   try {
-    const result = await fetchConflictChecks();
-    initialChecks = result.content;
+    const result = await fetchAdverseParties();
+    initialParties = result.content;
     initialTotal = result.page.totalElements;
   } catch (error) {
-    console.error("Failed to fetch conflict checks:", error);
+    console.error("Failed to fetch adverse parties:", error);
   }
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          Conflict Check
+          Adverse Parties
         </h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Run conflict of interest checks and review history
+          Manage the adverse party registry for conflict checking
         </p>
       </div>
 
-      <ConflictCheckClient
-        initialChecks={initialChecks}
+      <AdversePartyRegistryClient
+        initialParties={initialParties}
         initialTotal={initialTotal}
         slug={slug}
       />

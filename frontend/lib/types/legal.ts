@@ -71,45 +71,92 @@ export interface PrescriptionTracker {
 }
 
 // Conflict check types
-export type ConflictCheckStatus =
-  | "PENDING"
-  | "CLEAR"
+export type ConflictCheckResult =
+  | "NO_CONFLICT"
   | "CONFLICT_FOUND"
-  | "WAIVED";
+  | "POTENTIAL_CONFLICT";
+
+export type ConflictCheckType =
+  | "NEW_CLIENT"
+  | "NEW_MATTER"
+  | "PERIODIC_REVIEW";
+
+export type ConflictResolution =
+  | "PROCEED"
+  | "DECLINED"
+  | "WAIVER_OBTAINED"
+  | "REFERRED";
+
+export interface ConflictMatch {
+  adversePartyId: string;
+  adversePartyName: string;
+  projectId: string;
+  projectName: string;
+  customerId: string;
+  customerName: string;
+  relationship: string;
+  matchType: string; // NAME_SIMILARITY, ID_NUMBER_EXACT, REGISTRATION_NUMBER_EXACT
+  similarityScore: number;
+  explanation: string;
+}
 
 export interface ConflictCheck {
   id: string;
-  projectId: string;
+  checkedName: string;
+  checkedIdNumber: string | null;
+  checkedRegistrationNumber: string | null;
+  checkType: ConflictCheckType;
+  result: ConflictCheckResult;
+  conflictsFound: ConflictMatch[] | null;
+  resolution: ConflictResolution | null;
+  resolutionNotes: string | null;
+  waiverDocumentId: string | null;
   checkedBy: string;
+  resolvedBy: string | null;
   checkedAt: string;
-  status: ConflictCheckStatus;
-  notes: string | null;
-  adverseParties: AdversePartyLink[];
+  resolvedAt: string | null;
+  customerId: string | null;
+  projectId: string | null;
 }
 
 // Adverse party types
+export type AdversePartyType =
+  | "NATURAL_PERSON"
+  | "COMPANY"
+  | "TRUST"
+  | "CLOSE_CORPORATION"
+  | "PARTNERSHIP"
+  | "OTHER";
+
 export interface AdverseParty {
   id: string;
   name: string;
   idNumber: string | null;
   registrationNumber: string | null;
-  email: string | null;
-  phone: string | null;
-  address: string | null;
+  partyType: AdversePartyType;
+  aliases: string | null;
   notes: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
-export type AdversePartyRole = "DEFENDANT" | "RESPONDENT" | "THIRD_PARTY" | "OTHER";
+export type AdversePartyRelationship =
+  | "OPPOSING_PARTY"
+  | "WITNESS"
+  | "CO_ACCUSED"
+  | "RELATED_ENTITY"
+  | "GUARANTOR";
 
 export interface AdversePartyLink {
   id: string;
   adversePartyId: string;
   adversePartyName: string;
   projectId: string;
-  role: AdversePartyRole;
-  notes: string | null;
+  projectName: string;
+  customerId: string;
+  customerName: string;
+  relationship: AdversePartyRelationship;
+  description: string | null;
   createdAt: string;
 }
 

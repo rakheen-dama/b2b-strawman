@@ -15,6 +15,7 @@ import {
   Settings,
   Scale,
   Gavel,
+  ShieldAlert,
   type LucideIcon,
 } from "lucide-react";
 import type { CAPABILITIES } from "@/lib/capabilities";
@@ -142,6 +143,20 @@ export const NAV_GROUPS: NavGroup[] = [
         exact: true,
         requiredCapability: "CUSTOMER_MANAGEMENT",
         requiredModule: "regulatory_deadlines",
+      },
+      {
+        label: "Conflict Check",
+        href: (slug) => `/org/${slug}/conflict-check`,
+        icon: ShieldAlert,
+        exact: true,
+        requiredModule: "conflict_check",
+      },
+      {
+        label: "Adverse Parties",
+        href: (slug) => `/org/${slug}/legal/adverse-parties`,
+        icon: Scale,
+        exact: true,
+        requiredModule: "conflict_check",
       },
     ],
   },

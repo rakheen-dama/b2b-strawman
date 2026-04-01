@@ -125,6 +125,24 @@ variable "backend_image" {
   default     = "public.ecr.aws/nginx/nginx:latest"
 }
 
+variable "gateway_image" {
+  description = "Gateway ECR image URI with tag"
+  type        = string
+  default     = "public.ecr.aws/nginx/nginx:latest"
+}
+
+variable "portal_image" {
+  description = "Portal ECR image URI with tag"
+  type        = string
+  default     = "public.ecr.aws/nginx/nginx:latest"
+}
+
+variable "keycloak_image" {
+  description = "Keycloak ECR image URI with tag"
+  type        = string
+  default     = "public.ecr.aws/nginx/nginx:latest"
+}
+
 # -----------------------------------------------------------------------------
 # DNS (optional)
 # -----------------------------------------------------------------------------

@@ -21,6 +21,10 @@ locals {
     "smtp-username"              = "CHANGE_ME_smtp_username"
     "smtp-password"              = "CHANGE_ME_smtp_password"
     "email-unsubscribe-secret"   = "CHANGE_ME_email_unsubscribe_secret"
+    "keycloak-db-username"       = "CHANGE_ME_keycloak_db_username"
+    "keycloak-db-password"       = "CHANGE_ME_keycloak_db_password"
+    "gateway-db-username"        = "CHANGE_ME_gateway_db_username"
+    "gateway-db-password"        = "CHANGE_ME_gateway_db_password"
     "redis-auth-token"           = "CHANGE_ME_redis_auth_token"
   }
 }

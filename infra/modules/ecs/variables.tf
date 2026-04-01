@@ -95,18 +95,43 @@ variable "database_migration_url_secret_arn" {
   type        = string
 }
 
-variable "clerk_secret_key_arn" {
-  description = "ARN of the Clerk secret key"
+variable "keycloak_client_secret_arn" {
+  description = "ARN of the Keycloak client secret"
   type        = string
 }
 
-variable "clerk_webhook_secret_arn" {
-  description = "ARN of the Clerk webhook signing secret"
+variable "keycloak_admin_username_arn" {
+  description = "ARN of the Keycloak admin console username secret"
   type        = string
 }
 
-variable "clerk_publishable_key_arn" {
-  description = "ARN of the Clerk publishable key"
+variable "keycloak_admin_password_arn" {
+  description = "ARN of the Keycloak admin console password secret"
+  type        = string
+}
+
+variable "keycloak_db_username_arn" {
+  description = "ARN of the Keycloak database username secret (used as KC_DB_USERNAME)"
+  type        = string
+}
+
+variable "keycloak_db_password_arn" {
+  description = "ARN of the Keycloak database password secret (used as KC_DB_PASSWORD)"
+  type        = string
+}
+
+variable "gateway_db_username_arn" {
+  description = "ARN of the gateway database username secret (for session storage)"
+  type        = string
+}
+
+variable "gateway_db_password_arn" {
+  description = "ARN of the gateway database password secret (for session storage)"
+  type        = string
+}
+
+variable "redis_auth_token_arn" {
+  description = "ARN of the Redis auth token secret"
   type        = string
 }
 
@@ -115,22 +140,20 @@ variable "internal_api_key_arn" {
   type        = string
 }
 
-# App Config (non-secret environment variables)
-variable "internal_alb_dns_name" {
-  description = "Internal ALB DNS name for BACKEND_URL"
+# Infrastructure references
+variable "redis_host" {
+  description = "ElastiCache Redis primary endpoint hostname"
   type        = string
 }
 
-variable "clerk_issuer" {
-  description = "Clerk JWT issuer URL"
+variable "rds_endpoint" {
+  description = "RDS PostgreSQL endpoint address (for Keycloak DB URL)"
   type        = string
-  default     = ""
 }
 
-variable "clerk_jwks_uri" {
-  description = "Clerk JWKS URI for JWT validation"
+variable "vpc_id" {
+  description = "VPC ID for Cloud Map private DNS namespace"
   type        = string
-  default     = ""
 }
 
 variable "s3_bucket_name" {
@@ -173,4 +196,160 @@ variable "backend_desired_count" {
   description = "Desired number of backend tasks"
   type        = number
   default     = 2
+}
+
+# -----------------------------------------------------------------------------
+# New Services — Networking
+# -----------------------------------------------------------------------------
+
+variable "gateway_sg_id" {
+  description = "Security group ID for gateway ECS tasks"
+  type        = string
+}
+
+variable "portal_sg_id" {
+  description = "Security group ID for portal ECS tasks"
+  type        = string
+}
+
+variable "keycloak_sg_id" {
+  description = "Security group ID for Keycloak ECS tasks"
+  type        = string
+}
+
+# -----------------------------------------------------------------------------
+# New Services — ALB Target Groups
+# -----------------------------------------------------------------------------
+
+variable "gateway_target_group_arn" {
+  description = "ARN of the gateway ALB target group"
+  type        = string
+  default     = ""
+}
+
+variable "portal_target_group_arn" {
+  description = "ARN of the portal ALB target group"
+  type        = string
+  default     = ""
+}
+
+variable "keycloak_target_group_arn" {
+  description = "ARN of the keycloak ALB target group"
+  type        = string
+  default     = ""
+}
+
+# -----------------------------------------------------------------------------
+# New Services — IAM Task Roles
+# -----------------------------------------------------------------------------
+
+variable "gateway_task_role_arn" {
+  description = "ARN of the gateway ECS task role"
+  type        = string
+}
+
+variable "portal_task_role_arn" {
+  description = "ARN of the portal ECS task role"
+  type        = string
+}
+
+variable "keycloak_task_role_arn" {
+  description = "ARN of the Keycloak ECS task role"
+  type        = string
+}
+
+# -----------------------------------------------------------------------------
+# New Services — Container Images
+# -----------------------------------------------------------------------------
+
+variable "gateway_image" {
+  description = "Full ECR image URI with tag for gateway"
+  type        = string
+}
+
+variable "portal_image" {
+  description = "Full ECR image URI with tag for portal"
+  type        = string
+}
+
+variable "keycloak_image" {
+  description = "Full ECR image URI with tag for keycloak"
+  type        = string
+}
+
+# -----------------------------------------------------------------------------
+# New Services — Monitoring
+# -----------------------------------------------------------------------------
+
+variable "gateway_log_group_name" {
+  description = "CloudWatch log group name for gateway"
+  type        = string
+}
+
+variable "portal_log_group_name" {
+  description = "CloudWatch log group name for portal"
+  type        = string
+}
+
+variable "keycloak_log_group_name" {
+  description = "CloudWatch log group name for keycloak"
+  type        = string
+}
+
+# -----------------------------------------------------------------------------
+# New Services — Sizing
+# -----------------------------------------------------------------------------
+
+variable "gateway_cpu" {
+  description = "Gateway task CPU units"
+  type        = number
+  default     = 1024
+}
+
+variable "gateway_memory" {
+  description = "Gateway task memory in MiB"
+  type        = number
+  default     = 2048
+}
+
+variable "portal_cpu" {
+  description = "Portal task CPU units"
+  type        = number
+  default     = 512
+}
+
+variable "portal_memory" {
+  description = "Portal task memory in MiB"
+  type        = number
+  default     = 1024
+}
+
+variable "keycloak_cpu" {
+  description = "Keycloak task CPU units"
+  type        = number
+  default     = 1024
+}
+
+variable "keycloak_memory" {
+  description = "Keycloak task memory in MiB"
+  type        = number
+  default     = 2048
+}
+
+variable "gateway_desired_count" {
+  description = "Desired number of gateway tasks"
+  type        = number
+  default     = 1
+}
+
+variable "portal_desired_count" {
+  description = "Desired number of portal tasks"
+  type        = number
+  default     = 1
+}
+
+variable "keycloak_desired_count" {
+  description = "Desired number of Keycloak tasks"
+  type        = number
+  default     = 1
 }

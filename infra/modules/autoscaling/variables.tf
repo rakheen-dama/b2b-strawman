@@ -59,3 +59,41 @@ variable "scale_out_cooldown" {
   type        = number
   default     = 60
 }
+
+# -----------------------------------------------------------------------------
+# New Services — Gateway and Portal
+# -----------------------------------------------------------------------------
+
+variable "gateway_service_name" {
+  description = "Name of the gateway ECS service"
+  type        = string
+}
+
+variable "portal_service_name" {
+  description = "Name of the portal ECS service"
+  type        = string
+}
+
+variable "gateway_min_capacity" {
+  description = "Minimum number of gateway tasks"
+  type        = number
+  default     = 1
+}
+
+variable "gateway_max_capacity" {
+  description = "Maximum number of gateway tasks"
+  type        = number
+  default     = 2
+}
+
+variable "portal_min_capacity" {
+  description = "Minimum number of portal tasks"
+  type        = number
+  default     = 1
+}
+
+variable "portal_max_capacity" {
+  description = "Maximum number of portal tasks"
+  type        = number
+  default     = 2
+}

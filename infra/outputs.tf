@@ -113,6 +113,26 @@ output "backend_service_name" {
   value       = module.ecs.backend_service_name
 }
 
+output "gateway_service_name" {
+  description = "Name of the gateway ECS service"
+  value       = module.ecs.gateway_service_name
+}
+
+output "portal_service_name" {
+  description = "Name of the portal ECS service"
+  value       = module.ecs.portal_service_name
+}
+
+output "keycloak_service_name" {
+  description = "Name of the keycloak ECS service"
+  value       = module.ecs.keycloak_service_name
+}
+
+output "cloud_map_namespace_id" {
+  description = "ID of the kazi.internal Cloud Map namespace"
+  value       = module.ecs.cloud_map_namespace_id
+}
+
 # -----------------------------------------------------------------------------
 # S3
 # -----------------------------------------------------------------------------

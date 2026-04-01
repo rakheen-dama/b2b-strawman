@@ -68,6 +68,26 @@ output "email_unsubscribe_secret_arn" {
   value       = aws_secretsmanager_secret.this["email-unsubscribe-secret"].arn
 }
 
+output "keycloak_db_username_arn" {
+  description = "ARN of the Keycloak database username secret"
+  value       = aws_secretsmanager_secret.this["keycloak-db-username"].arn
+}
+
+output "keycloak_db_password_arn" {
+  description = "ARN of the Keycloak database password secret"
+  value       = aws_secretsmanager_secret.this["keycloak-db-password"].arn
+}
+
+output "gateway_db_username_arn" {
+  description = "ARN of the gateway database username secret"
+  value       = aws_secretsmanager_secret.this["gateway-db-username"].arn
+}
+
+output "gateway_db_password_arn" {
+  description = "ARN of the gateway database password secret"
+  value       = aws_secretsmanager_secret.this["gateway-db-password"].arn
+}
+
 output "redis_auth_token_arn" {
   description = "ARN of the Redis auth token secret"
   value       = aws_secretsmanager_secret.this["redis-auth-token"].arn

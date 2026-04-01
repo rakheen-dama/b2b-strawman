@@ -873,8 +873,8 @@ Stage 9:  [409A]                                                        <- coexi
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **407A** | 407.1--407.5 | Tariff schedule browser page (new: `legal/tariffs/page.tsx`). Schedule list, item browser with section grouping, search by description. Clone button. Custom schedule editor. Server actions, nav item, tests (~4). Frontend only. |  |
-| **407B** | 407.6--407.10 | `TariffLineDialog` component (schedule picker, item browser, quantity input). "Add Tariff Items" button in invoice editor (module-gated via `<ModuleGate module="lssa_tariff">`). Tests (~4). Frontend only. |  |
+| **407A** | 407.1--407.5 | Tariff schedule browser page (new: `legal/tariffs/page.tsx`). Schedule list, item browser with section grouping, search by description. Clone button. Custom schedule editor. Server actions, nav item, tests (~4). Frontend only. | **Done** (PR #851) |
+| **407B** | 407.6--407.10 | `TariffLineDialog` component (schedule picker, item browser, quantity input). "Add Tariff Items" button in invoice editor (module-gated via `<ModuleGate module="lssa_tariff">`). Tests (~4). Frontend only. | **Done** (PR #851) |
 
 ### Tasks
 

@@ -84,3 +84,73 @@ export const interruptPrescriptionSchema = z.object({
 export type InterruptPrescriptionFormData = z.infer<
   typeof interruptPrescriptionSchema
 >;
+
+// Conflict check schemas
+
+export const performConflictCheckSchema = z.object({
+  checkedName: z.string().min(1, "Name to check is required").max(300),
+  checkedIdNumber: z.string().max(20).optional().or(z.literal("")),
+  checkedRegistrationNumber: z.string().max(30).optional().or(z.literal("")),
+  checkType: z.enum(["NEW_CLIENT", "NEW_MATTER", "PERIODIC_REVIEW"], {
+    message: "Check type is required",
+  }),
+  customerId: z.string().uuid().optional().or(z.literal("")),
+  projectId: z.string().uuid().optional().or(z.literal("")),
+});
+
+export type PerformConflictCheckFormData = z.infer<
+  typeof performConflictCheckSchema
+>;
+
+export const resolveConflictSchema = z.object({
+  resolution: z.enum(["PROCEED", "DECLINED", "WAIVER_OBTAINED", "REFERRED"], {
+    message: "Resolution is required",
+  }),
+  resolutionNotes: z.string().max(2000).optional().or(z.literal("")),
+  waiverDocumentId: z.string().uuid().optional().or(z.literal("")),
+});
+
+export type ResolveConflictFormData = z.infer<typeof resolveConflictSchema>;
+
+// Adverse party schemas
+
+export const createAdversePartySchema = z.object({
+  name: z.string().min(1, "Name is required").max(300),
+  idNumber: z.string().max(20).optional().or(z.literal("")),
+  registrationNumber: z.string().max(30).optional().or(z.literal("")),
+  partyType: z.enum(
+    [
+      "NATURAL_PERSON",
+      "COMPANY",
+      "TRUST",
+      "CLOSE_CORPORATION",
+      "PARTNERSHIP",
+      "OTHER",
+    ],
+    { message: "Party type is required" }
+  ),
+  aliases: z.string().max(1000).optional().or(z.literal("")),
+  notes: z.string().max(2000).optional().or(z.literal("")),
+});
+
+export type CreateAdversePartyFormData = z.infer<
+  typeof createAdversePartySchema
+>;
+
+export const linkAdversePartySchema = z.object({
+  projectId: z.string().uuid("Please select a matter"),
+  customerId: z.string().uuid("Please select a customer"),
+  relationship: z.enum(
+    [
+      "OPPOSING_PARTY",
+      "WITNESS",
+      "CO_ACCUSED",
+      "RELATED_ENTITY",
+      "GUARANTOR",
+    ],
+    { message: "Relationship is required" }
+  ),
+  description: z.string().max(2000).optional().or(z.literal("")),
+});
+
+export type LinkAdversePartyFormData = z.infer<typeof linkAdversePartySchema>;

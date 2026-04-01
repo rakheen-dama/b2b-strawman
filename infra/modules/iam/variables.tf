@@ -9,14 +9,9 @@ variable "environment" {
   type        = string
 }
 
-variable "frontend_ecr_repo_arn" {
-  description = "ARN of the frontend ECR repository"
-  type        = string
-}
-
-variable "backend_ecr_repo_arn" {
-  description = "ARN of the backend ECR repository"
-  type        = string
+variable "ecr_repo_arns" {
+  description = "List of ECR repository ARNs that the execution role can pull from"
+  type        = list(string)
 }
 
 variable "s3_bucket_arn" {

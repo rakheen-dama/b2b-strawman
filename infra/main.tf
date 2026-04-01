@@ -122,8 +122,7 @@ module "iam" {
 
   project                = var.project
   environment            = var.environment
-  frontend_ecr_repo_arn  = module.ecr.frontend_repository_arn
-  backend_ecr_repo_arn   = module.ecr.backend_repository_arn
+  ecr_repo_arns          = values(module.ecr.ecr_repository_arns)
   s3_bucket_arn          = module.s3.bucket_arn
   secret_arns            = values(module.secrets.secret_arns)
   frontend_log_group_arn = module.monitoring.frontend_log_group_arn

@@ -1,19 +1,9 @@
-output "frontend_repository_url" {
-  description = "URL of the frontend ECR repository"
-  value       = aws_ecr_repository.frontend.repository_url
+output "ecr_repository_urls" {
+  description = "Map of service name to ECR repository URL"
+  value       = { for k, v in aws_ecr_repository.repos : k => v.repository_url }
 }
 
-output "backend_repository_url" {
-  description = "URL of the backend ECR repository"
-  value       = aws_ecr_repository.backend.repository_url
-}
-
-output "frontend_repository_arn" {
-  description = "ARN of the frontend ECR repository"
-  value       = aws_ecr_repository.frontend.arn
-}
-
-output "backend_repository_arn" {
-  description = "ARN of the backend ECR repository"
-  value       = aws_ecr_repository.backend.arn
+output "ecr_repository_arns" {
+  description = "Map of service name to ECR repository ARN"
+  value       = { for k, v in aws_ecr_repository.repos : k => v.arn }
 }

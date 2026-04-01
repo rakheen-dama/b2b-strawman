@@ -28,7 +28,7 @@ Phase 56 updates and extends the existing (stale) AWS infrastructure and CI/CD p
 | 410 | Terraform Foundation: Naming, Secrets, State Bucket & Bootstrap | Infra | -- | M | 410A, 410B | **Done** (PR #854) |
 | 411 | Data Layer: RDS PostgreSQL + ElastiCache Redis | Infra | 410 | M | 411A, 411B | **Done** (PR #855, #856) |
 | 412 | Service Extension: ECR, Security Groups, IAM for 5 Services | Infra | 410 | L | 412A, 412B, 412C | **Done** (PRs #857, #858, #859) |
-| 413 | ECS Services + ALB Routing Restructure | Infra | 411, 412 | L | 413A, 413B | |
+| 413 | ECS Services + ALB Routing Restructure | Infra | 411, 412 | L | 413A, 413B | **Done** (PRs #860, #861) |
 | 414 | Keycloak Deployment: ECS Task, Database, Realm Import | Infra + Config | 411, 413 | M | 414A, 414B | |
 | 415 | Dockerfile Hardening: Health Checks, JAR Fixes, Build Args | Docker | -- | S | 415A | |
 | 416 | CI/CD Pipeline: OIDC, Image Promotion, Terraform Workflow | CI/CD | 412 | L | 416A, 416B, 416C | |
@@ -157,7 +157,7 @@ KEYCLOAK           CI/CD PIPELINE     OBSERVABILITY
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 4a | 413 | 413A | Extend ECS module: add 3 new task definitions (gateway, portal, keycloak) following existing frontend/backend pattern. Add 3 new ECS services. Replace Clerk env vars with Keycloak env vars in frontend/backend task definitions. Add Cloud Map namespace (`kazi.internal`) for service discovery (`backend.kazi.internal`). Extend autoscaling module for gateway, portal. Set `health_check_grace_period_seconds = 180` on backend service (ADR-216). Infra only. | **Done** (PR #860) |
-| 4b | 413 | 413B | Restructure ALB module per ADR-214: add 3 new target groups (gateway on 8443, portal on 3002, keycloak on 8080). Replace existing listener rules with priority-ordered rules (auth.heykazi.com -> keycloak-tg at priority 10, portal.heykazi.com -> portal-tg at 20, app.heykazi.com/bff/* -> gateway-tg at 30, app.heykazi.com/api/* -> gateway-tg at 40, app.heykazi.com -> frontend-tg at 50, default -> 404). Add `enable_deletion_protection = true` for production. Infra only. | |
+| 4b | 413 | 413B | Restructure ALB module per ADR-214: add 3 new target groups (gateway on 8443, portal on 3002, keycloak on 8080). Replace existing listener rules with priority-ordered rules (auth.heykazi.com -> keycloak-tg at priority 10, portal.heykazi.com -> portal-tg at 20, app.heykazi.com/bff/* -> gateway-tg at 30, app.heykazi.com/api/* -> gateway-tg at 40, app.heykazi.com -> frontend-tg at 50, default -> 404). Add `enable_deletion_protection = true` for production. Infra only. | **Done** (PR #861) |
 
 ### Stage 5: Keycloak Deployment + Dockerfile Hardening (parallel tracks)
 
@@ -427,7 +427,7 @@ Note: Stage 5 can run in parallel with Stages 1-4 (Dockerfiles are independent).
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **413A** | 413.1--413.8 | Extend ECS module: add 3 new task definitions (gateway, portal, keycloak) with correct env vars and secrets. Replace Clerk env vars in frontend/backend task defs. Add 3 new ECS services. Add Cloud Map namespace `kazi.internal` with `backend.kazi.internal` service discovery. Extend autoscaling for gateway + portal. Set backend health check grace period to 180s. Infra only. | **Done** (PR #860) |
-| **413B** | 413.9--413.14 | Restructure ALB module: add 3 new target groups (gateway-tg on 8443, portal-tg on 3002, keycloak-tg on 8080). Replace existing listener rules with priority-ordered host-based + path-based rules per ADR-214 (keycloak at priority 10, portal at 20, /bff/* at 30, /api/* at 40, frontend at 50, default 404 at 99). Enable deletion protection for production. Infra only. | |
+| **413B** | 413.9--413.14 | Restructure ALB module: add 3 new target groups (gateway-tg on 8443, portal-tg on 3002, keycloak-tg on 8080). Replace existing listener rules with priority-ordered host-based + path-based rules per ADR-214 (keycloak at priority 10, portal at 20, /bff/* at 30, /api/* at 40, frontend at 50, default 404 at 99). Enable deletion protection for production. Infra only. | **Done** (PR #861) |
 
 ### Tasks
 

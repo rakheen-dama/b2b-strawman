@@ -100,12 +100,13 @@ resource "aws_ecs_task_definition" "backend" {
       ]
 
       environment = [
-        { name = "SPRING_PROFILES_ACTIVE", value = var.environment },
+        { name = "SPRING_PROFILES_ACTIVE", value = "${var.environment},keycloak" },
         { name = "AWS_S3_BUCKET", value = var.s3_bucket_name },
         { name = "AWS_REGION", value = var.aws_region },
-        { name = "KEYCLOAK_ISSUER_URI", value = "https://auth.heykazi.com/realms/kazi" },
-        { name = "KEYCLOAK_ADMIN_URL", value = "https://auth.heykazi.com/admin/realms/kazi" },
-        { name = "KEYCLOAK_CLIENT_ID", value = "backend-service" },
+        { name = "JWT_ISSUER_URI", value = "https://auth.heykazi.com/realms/kazi" },
+        { name = "JWT_JWK_SET_URI", value = "https://auth.heykazi.com/realms/kazi/protocol/openid-connect/certs" },
+        { name = "KEYCLOAK_AUTH_SERVER_URL", value = "https://auth.heykazi.com" },
+        { name = "KEYCLOAK_REALM", value = "kazi" },
         { name = "REDIS_HOST", value = var.redis_host },
         { name = "REDIS_PORT", value = "6379" },
         { name = "SPRING_FLYWAY_ENABLED", value = "true" },
@@ -115,6 +116,8 @@ resource "aws_ecs_task_definition" "backend" {
         { name = "DATABASE_URL", valueFrom = var.database_url_secret_arn },
         { name = "DATABASE_MIGRATION_URL", valueFrom = var.database_migration_url_secret_arn },
         { name = "INTERNAL_API_KEY", valueFrom = var.internal_api_key_arn },
+        { name = "KEYCLOAK_ADMIN_USERNAME", valueFrom = var.keycloak_admin_username_arn },
+        { name = "KEYCLOAK_ADMIN_PASSWORD", valueFrom = var.keycloak_admin_password_arn },
         { name = "KEYCLOAK_CLIENT_SECRET", valueFrom = var.keycloak_client_secret_arn },
         { name = "REDIS_AUTH_TOKEN", valueFrom = var.redis_auth_token_arn },
       ]
@@ -195,13 +198,21 @@ resource "aws_ecs_task_definition" "gateway" {
 
       environment = [
         { name = "BACKEND_URL", value = "http://backend.kazi.internal:8080" },
-        { name = "KEYCLOAK_ISSUER_URI", value = "https://auth.heykazi.com/realms/kazi" },
+        { name = "KEYCLOAK_ISSUER", value = "https://auth.heykazi.com/realms/kazi" },
+        { name = "KEYCLOAK_CLIENT_ID", value = "gateway-bff" },
+        { name = "FRONTEND_URL", value = "https://app.heykazi.com" },
+        { name = "DB_HOST", value = var.rds_endpoint },
+        { name = "DB_PORT", value = "5432" },
+        { name = "DB_NAME", value = "kazi" },
         { name = "CORS_ALLOWED_ORIGINS", value = "https://app.heykazi.com,https://portal.heykazi.com" },
         { name = "REDIS_HOST", value = var.redis_host },
         { name = "REDIS_PORT", value = "6379" },
       ]
 
       secrets = [
+        { name = "KEYCLOAK_CLIENT_SECRET", valueFrom = var.keycloak_client_secret_arn },
+        { name = "DB_USER", valueFrom = var.gateway_db_username_arn },
+        { name = "DB_PASSWORD", valueFrom = var.gateway_db_password_arn },
         { name = "REDIS_AUTH_TOKEN", valueFrom = var.redis_auth_token_arn },
         { name = "INTERNAL_API_KEY", valueFrom = var.internal_api_key_arn },
       ]
@@ -312,8 +323,10 @@ resource "aws_ecs_task_definition" "keycloak" {
       ]
 
       secrets = [
-        { name = "KC_DB_USERNAME", valueFrom = var.keycloak_admin_username_arn },
-        { name = "KC_DB_PASSWORD", valueFrom = var.keycloak_admin_password_arn },
+        { name = "KC_DB_USERNAME", valueFrom = var.keycloak_db_username_arn },
+        { name = "KC_DB_PASSWORD", valueFrom = var.keycloak_db_password_arn },
+        { name = "KEYCLOAK_ADMIN", valueFrom = var.keycloak_admin_username_arn },
+        { name = "KEYCLOAK_ADMIN_PASSWORD", valueFrom = var.keycloak_admin_password_arn },
       ]
 
       healthCheck = {

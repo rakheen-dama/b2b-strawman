@@ -101,12 +101,32 @@ variable "keycloak_client_secret_arn" {
 }
 
 variable "keycloak_admin_username_arn" {
-  description = "ARN of the Keycloak admin username secret (used as KC_DB_USERNAME)"
+  description = "ARN of the Keycloak admin console username secret"
   type        = string
 }
 
 variable "keycloak_admin_password_arn" {
-  description = "ARN of the Keycloak admin password secret (used as KC_DB_PASSWORD)"
+  description = "ARN of the Keycloak admin console password secret"
+  type        = string
+}
+
+variable "keycloak_db_username_arn" {
+  description = "ARN of the Keycloak database username secret (used as KC_DB_USERNAME)"
+  type        = string
+}
+
+variable "keycloak_db_password_arn" {
+  description = "ARN of the Keycloak database password secret (used as KC_DB_PASSWORD)"
+  type        = string
+}
+
+variable "gateway_db_username_arn" {
+  description = "ARN of the gateway database username secret (for session storage)"
+  type        = string
+}
+
+variable "gateway_db_password_arn" {
+  description = "ARN of the gateway database password secret (for session storage)"
   type        = string
 }
 

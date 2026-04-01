@@ -225,6 +225,10 @@ module "ecs" {
   keycloak_client_secret_arn        = module.secrets.keycloak_client_secret_arn
   keycloak_admin_username_arn       = module.secrets.keycloak_admin_username_arn
   keycloak_admin_password_arn       = module.secrets.keycloak_admin_password_arn
+  keycloak_db_username_arn          = module.secrets.keycloak_db_username_arn
+  keycloak_db_password_arn          = module.secrets.keycloak_db_password_arn
+  gateway_db_username_arn           = module.secrets.gateway_db_username_arn
+  gateway_db_password_arn           = module.secrets.gateway_db_password_arn
   redis_auth_token_arn              = module.secrets.redis_auth_token_arn
 
   # Infrastructure endpoints

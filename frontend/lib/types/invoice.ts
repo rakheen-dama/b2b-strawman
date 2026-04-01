@@ -4,7 +4,7 @@ import type { ExpenseCategory } from "./expense";
 
 export type InvoiceStatus = "DRAFT" | "APPROVED" | "SENT" | "PAID" | "VOID";
 
-export type InvoiceLineType = "TIME" | "EXPENSE" | "RETAINER" | "MANUAL";
+export type InvoiceLineType = "TIME" | "EXPENSE" | "RETAINER" | "MANUAL" | "TARIFF" | "FIXED_FEE";
 
 export interface InvoiceLineResponse {
   id: string;
@@ -23,6 +23,8 @@ export interface InvoiceLineResponse {
   taxRatePercent: number | null;
   taxAmount: number | null;
   taxExempt: boolean;
+  tariffItemId: string | null;
+  lineSource: string | null;
 }
 
 export interface TaxBreakdownEntry {
@@ -116,6 +118,8 @@ export interface AddLineItemRequest {
   unitPrice: number;
   sortOrder?: number;
   taxRateId?: string | null;
+  lineType?: string;
+  tariffItemId?: string;
 }
 
 export interface UpdateLineItemRequest {

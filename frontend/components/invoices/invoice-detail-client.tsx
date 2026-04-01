@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { InvoiceLineTable } from "@/components/invoices/invoice-line-table";
 import { useInvoiceDetail } from "@/components/invoices/use-invoice-detail";
 import { InvoiceHeaderActions } from "@/components/invoices/invoice-header-actions";
@@ -15,6 +16,10 @@ import {
   VoidIndicator,
   PaymentHistorySection,
 } from "@/components/invoices/invoice-status-sections";
+import { ModuleGate } from "@/components/module-gate";
+import { TariffLineDialog } from "@/components/legal/tariff-line-dialog";
+import { Button } from "@/components/ui/button";
+import { FileSpreadsheet } from "lucide-react";
 import type {
   InvoiceResponse,
   PaymentEvent,
@@ -37,6 +42,7 @@ export function InvoiceDetailClient({
   taxRates = [],
 }: InvoiceDetailClientProps) {
   const h = useInvoiceDetail({ initialInvoice, slug, taxRates });
+  const [showTariffDialog, setShowTariffDialog] = useState(false);
 
   return (
     <div className="space-y-6">
@@ -135,6 +141,33 @@ export function InvoiceDetailClient({
         onEditLine={h.handleEditLine}
         onDeleteLine={h.handleDeleteLine}
       />
+
+      {/* Add Tariff Items (module-gated) */}
+      {h.isDraft && isAdmin && (
+        <ModuleGate module="lssa_tariff">
+          <div className="flex">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowTariffDialog(true)}
+            >
+              <FileSpreadsheet className="mr-1.5 size-4" />
+              Add Tariff Items
+            </Button>
+          </div>
+          <TariffLineDialog
+            open={showTariffDialog}
+            onOpenChange={setShowTariffDialog}
+            invoiceId={h.invoice.id}
+            slug={slug}
+            customerId={h.invoice.customerId}
+            onSuccess={async () => {
+              setShowTariffDialog(false);
+              await h.handleRefresh();
+            }}
+          />
+        </ModuleGate>
+      )}
 
       {/* Add Line Form */}
       {h.showAddLine && (

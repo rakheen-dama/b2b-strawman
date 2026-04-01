@@ -2,12 +2,14 @@
 
 import { Pencil, Trash2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/format";
 import type { InvoiceLineResponse } from "@/lib/types";
 
 const SECTION_LABELS: Record<string, string> = {
   TIME: "Time Entries",
   EXPENSE: "Expenses",
+  TARIFF: "Tariff Items",
   OTHER: "Other",
 };
 
@@ -18,15 +20,16 @@ function groupLinesByType(lines: InvoiceLineResponse[]) {
     // Backward compat: treat missing lineType as TIME
     const type = line.lineType ?? "TIME";
     const groupKey: string =
-      type === "MANUAL" || type === "RETAINER" ? "OTHER" : type;
+      type === "TARIFF" ? "TARIFF" :
+      type === "MANUAL" || type === "RETAINER" || type === "FIXED_FEE" ? "OTHER" : type;
     if (!groups[groupKey]) {
       groups[groupKey] = [];
     }
     groups[groupKey].push(line);
   }
-  // Return in display order: TIME, EXPENSE, OTHER
+  // Return in display order: TIME, EXPENSE, TARIFF, OTHER
   const ordered: { key: string; label: string; lines: InvoiceLineResponse[] }[] = [];
-  for (const key of ["TIME", "EXPENSE", "OTHER"]) {
+  for (const key of ["TIME", "EXPENSE", "TARIFF", "OTHER"]) {
     if (groups[key] && groups[key].length > 0) {
       ordered.push({ key, label: SECTION_LABELS[key], lines: groups[key] });
     }
@@ -101,7 +104,12 @@ function LineSection({
           className="border-b border-slate-100 last:border-0 dark:border-slate-800/50"
         >
           <td className="px-4 py-3 text-sm text-slate-900 dark:text-slate-100">
-            {line.description}
+            <span className="flex items-center gap-2">
+              {line.description}
+              {line.lineSource === "TARIFF" && (
+                <Badge variant="neutral" className="text-xs">Tariff</Badge>
+              )}
+            </span>
           </td>
           <td className="hidden px-4 py-3 text-sm text-slate-600 sm:table-cell dark:text-slate-400">
             {line.projectName || "\u2014"}

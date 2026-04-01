@@ -154,3 +154,28 @@ export const linkAdversePartySchema = z.object({
 });
 
 export type LinkAdversePartyFormData = z.infer<typeof linkAdversePartySchema>;
+
+// Tariff schedule schemas
+
+export const createTariffScheduleSchema = z.object({
+  name: z.string().min(1, "Name is required").max(100),
+  code: z.string().min(1, "Code is required").max(20),
+  description: z.string().max(500).optional().or(z.literal("")),
+  effectiveFrom: z.string().min(1, "Effective from date is required"),
+  effectiveTo: z.string().optional().or(z.literal("")),
+});
+
+export type CreateTariffScheduleFormData = z.infer<typeof createTariffScheduleSchema>;
+
+export const createTariffItemSchema = z.object({
+  itemNumber: z.string().min(1, "Item number is required").max(20),
+  description: z.string().min(1, "Description is required").max(2000),
+  unit: z.enum(
+    ["PER_ITEM", "PER_PAGE", "PER_FOLIO", "PER_QUARTER_HOUR", "PER_HOUR", "PER_DAY"],
+    { message: "Unit is required" }
+  ),
+  rateInCents: z.number().int().min(0, "Rate must be non-negative"),
+  notes: z.string().max(2000).optional().or(z.literal("")),
+});
+
+export type CreateTariffItemFormData = z.infer<typeof createTariffItemSchema>;

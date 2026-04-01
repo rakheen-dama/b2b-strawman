@@ -16,6 +16,7 @@ import {
   Scale,
   Gavel,
   ShieldAlert,
+  FileSpreadsheet,
   type LucideIcon,
 } from "lucide-react";
 import type { CAPABILITIES } from "@/lib/capabilities";
@@ -192,6 +193,13 @@ export const NAV_GROUPS: NavGroup[] = [
         exact: true,
         requiredCapability: "FINANCIAL_VISIBILITY",
         requiredModule: "trust_accounting",
+      },
+      {
+        label: "Tariffs",
+        href: (slug) => `/org/${slug}/legal/tariffs`,
+        icon: FileSpreadsheet,
+        exact: true,
+        requiredModule: "lssa_tariff",
       },
     ],
   },

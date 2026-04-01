@@ -465,7 +465,7 @@
 | 409 | Multi-Vertical Coexistence Tests | Backend + Frontend | 397-408 | S | 409A | |
 | **Phase 56 — Production Infrastructure & Deployment Pipeline** | | | | | | See [tasks/phase56-production-infrastructure.md](tasks/phase56-production-infrastructure.md) |
 | 410 | Terraform Foundation: Naming, Secrets, State Bucket & Bootstrap | Infra | -- | M | 410A, 410B | **Done** (PR #854) |
-| 411 | Data Layer: RDS PostgreSQL + ElastiCache Redis | Infra | 410 | M | 411A, 411B | 411A Done (PR #855) |
+| 411 | Data Layer: RDS PostgreSQL + ElastiCache Redis | Infra | 410 | M | 411A, 411B | **Done** (PR #855, #856) |
 | 412 | Service Extension: ECR, Security Groups, IAM for 5 Services | Infra | 410 | L | 412A, 412B, 412C | |
 | 413 | ECS Services + ALB Routing Restructure | Infra | 411, 412 | L | 413A, 413B | |
 | 414 | Keycloak Deployment: ECS Task, Database, Realm Import | Infra + Config | 411, 413 | M | 414A, 414B | |

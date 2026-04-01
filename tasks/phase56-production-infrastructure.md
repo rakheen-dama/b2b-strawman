@@ -26,7 +26,7 @@ Phase 56 updates and extends the existing (stale) AWS infrastructure and CI/CD p
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 410 | Terraform Foundation: Naming, Secrets, State Bucket & Bootstrap | Infra | -- | M | 410A, 410B | **Done** (PR #854) |
-| 411 | Data Layer: RDS PostgreSQL + ElastiCache Redis | Infra | 410 | M | 411A, 411B | |
+| 411 | Data Layer: RDS PostgreSQL + ElastiCache Redis | Infra | 410 | M | 411A, 411B | **Done** (PR #855, #856) |
 | 412 | Service Extension: ECR, Security Groups, IAM for 5 Services | Infra | 410 | L | 412A, 412B, 412C | |
 | 413 | ECS Services + ALB Routing Restructure | Infra | 411, 412 | L | 413A, 413B | |
 | 414 | Keycloak Deployment: ECS Task, Database, Realm Import | Infra + Config | 411, 413 | M | 414A, 414B | |
@@ -143,7 +143,7 @@ KEYCLOAK           CI/CD PIPELINE     OBSERVABILITY
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 2a (parallel) | 411 | 411B | Add ElastiCache Redis to `infra/modules/data/` module. Redis 7, `cache.t4g.micro`, single node, private subnet group, auth token in Secrets Manager. Outputs: Redis endpoint, Redis port, Redis auth token ARN. Infra only. | |
+| 2a (parallel) | 411 | 411B | Add ElastiCache Redis to `infra/modules/data/` module. Redis 7, `cache.t4g.micro`, single node, private subnet group, auth token in Secrets Manager. Outputs: Redis endpoint, Redis port, Redis auth token ARN. Infra only. | **Done** (PR #856) |
 | 2b (parallel) | 412 | 412B | Extend security-groups module: add 5 new security groups (gateway: port 8443, portal: port 3002, keycloak: port 8080, RDS: port 5432 from `ecs-sg` only, Redis: port 6379 from `ecs-sg` only). Refactor existing SGs to use `for_each` where possible. Infra only. | |
 
 ### Stage 3: Service Extension -- IAM (sequential after SGs)
@@ -299,7 +299,7 @@ Note: Stage 5 can run in parallel with Stages 1-4 (Dockerfiles are independent).
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **411A** | 411.1--411.5 | Create `infra/modules/data/` module with RDS PostgreSQL 16. Resources: `aws_db_subnet_group`, `aws_db_parameter_group`, `aws_db_instance`, `aws_secretsmanager_secret` (auto-generated master credentials). Configurable: instance class, Multi-AZ, storage, backup retention, deletion protection. Outputs: endpoint, port, credentials secret ARN. Infra only. | **Done** (PR #855) |
-| **411B** | 411.6--411.9 | Add ElastiCache Redis to `infra/modules/data/` module. Resources: `aws_elasticache_subnet_group`, `aws_elasticache_replication_group` (single-node, Redis 7). Outputs: primary endpoint, port, auth token ARN. Infra only. | |
+| **411B** | 411.6--411.9 | Add ElastiCache Redis to `infra/modules/data/` module. Resources: `aws_elasticache_subnet_group`, `aws_elasticache_replication_group` (single-node, Redis 7). Outputs: primary endpoint, port, auth token ARN. Infra only. | **Done** (PR #856) |
 
 ### Tasks
 

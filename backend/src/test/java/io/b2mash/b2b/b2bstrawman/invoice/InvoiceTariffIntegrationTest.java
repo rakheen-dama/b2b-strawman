@@ -10,6 +10,7 @@ import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ModuleNotEnabledException;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.AddLineItemRequest;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
@@ -176,8 +177,7 @@ class InvoiceTariffIntegrationTest {
                           null, // unitPrice from tariff item
                           0,
                           null,
-                          tariffItemId,
-                          InvoiceLineType.TARIFF);
+                          tariffItemId);
 
                   var response = invoiceService.addLineItem(invoice.getId(), request);
 
@@ -207,8 +207,7 @@ class InvoiceTariffIntegrationTest {
                           null, // use tariff item amount
                           0,
                           null,
-                          tariffItemId,
-                          InvoiceLineType.TARIFF);
+                          tariffItemId);
 
                   var response = invoiceService.addLineItem(invoice.getId(), request);
 
@@ -235,8 +234,7 @@ class InvoiceTariffIntegrationTest {
                           new BigDecimal("750.00"), // override amount
                           0,
                           null,
-                          tariffItemId,
-                          InvoiceLineType.TARIFF);
+                          tariffItemId);
 
                   var response = invoiceService.addLineItem(invoice.getId(), request);
 
@@ -285,18 +283,35 @@ class InvoiceTariffIntegrationTest {
             () -> {
               var request =
                   new AddLineItemRequest(
-                      null,
-                      null,
-                      new BigDecimal("1"),
-                      null,
-                      0,
-                      null,
-                      UUID.randomUUID(),
-                      InvoiceLineType.TARIFF);
+                      null, null, new BigDecimal("1"), null, 0, null, UUID.randomUUID());
 
               assertThatThrownBy(() -> invoiceService.addLineItem(invoiceIdHolder[0], request))
                   .isInstanceOf(ModuleNotEnabledException.class);
             });
+  }
+
+  @Test
+  void addTariffLine_throwsWhenTariffItemNotFound() {
+    // Create invoice in a separate transaction first
+    final UUID[] invoiceIdHolder = new UUID[1];
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var invoice = createDraftInvoice();
+                  invoiceIdHolder[0] = invoice.getId();
+                }));
+
+    // Now test the not-found case outside the transaction
+    runInTenant(
+        () -> {
+          var nonExistentId = UUID.randomUUID();
+          var request =
+              new AddLineItemRequest(null, null, new BigDecimal("1"), null, 0, null, nonExistentId);
+
+          assertThatThrownBy(() -> invoiceService.addLineItem(invoiceIdHolder[0], request))
+              .isInstanceOf(ResourceNotFoundException.class);
+        });
   }
 
   @Test
@@ -315,8 +330,7 @@ class InvoiceTariffIntegrationTest {
                           new BigDecimal("100.00"),
                           0,
                           null,
-                          null, // no tariffItemId
-                          null); // no lineType
+                          null); // no tariffItemId
 
                   var response = invoiceService.addLineItem(invoice.getId(), request);
 

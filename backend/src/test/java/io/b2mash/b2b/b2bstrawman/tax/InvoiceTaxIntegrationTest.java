@@ -172,7 +172,6 @@ class InvoiceTaxIntegrationTest {
                           new BigDecimal("100.00"),
                           0,
                           null,
-                          null,
                           null);
 
                   var response = invoiceService.addLineItem(invoice.getId(), request);
@@ -210,7 +209,6 @@ class InvoiceTaxIntegrationTest {
                           new BigDecimal("200.00"),
                           0,
                           customRate.getId(),
-                          null,
                           null);
 
                   var response = invoiceService.addLineItem(invoice.getId(), request);
@@ -239,7 +237,6 @@ class InvoiceTaxIntegrationTest {
                           BigDecimal.ONE,
                           new BigDecimal("100.00"),
                           0,
-                          null,
                           null,
                           null);
 
@@ -284,14 +281,7 @@ class InvoiceTaxIntegrationTest {
         () -> {
           var request =
               new AddLineItemRequest(
-                  projectId,
-                  "Test",
-                  BigDecimal.ONE,
-                  new BigDecimal("100.00"),
-                  0,
-                  rateId[0],
-                  null,
-                  null);
+                  projectId, "Test", BigDecimal.ONE, new BigDecimal("100.00"), 0, rateId[0], null);
 
           assertThatThrownBy(() -> invoiceService.addLineItem(invoiceId[0], request))
               .isInstanceOf(ResourceNotFoundException.class);
@@ -320,7 +310,6 @@ class InvoiceTaxIntegrationTest {
                               BigDecimal.ONE,
                               new BigDecimal("100.00"),
                               0,
-                              null,
                               null,
                               null));
 
@@ -367,7 +356,6 @@ class InvoiceTaxIntegrationTest {
                               new BigDecimal("100.00"),
                               0,
                               null,
-                              null,
                               null));
 
                   var lineId = addResponse.lines().getFirst().id();
@@ -407,7 +395,6 @@ class InvoiceTaxIntegrationTest {
                               BigDecimal.ONE,
                               new BigDecimal("200.00"),
                               0,
-                              null,
                               null,
                               null));
 
@@ -510,7 +497,6 @@ class InvoiceTaxIntegrationTest {
                           new BigDecimal("100.00"),
                           0,
                           null,
-                          null,
                           null));
                   invoiceId[0] = invoice.getId();
                 }));
@@ -541,7 +527,6 @@ class InvoiceTaxIntegrationTest {
                           BigDecimal.ONE,
                           new BigDecimal("100.00"),
                           0,
-                          null,
                           null,
                           null));
 
@@ -574,7 +559,6 @@ class InvoiceTaxIntegrationTest {
                               BigDecimal.ONE,
                               new BigDecimal("100.00"),
                               0,
-                              null,
                               null,
                               null));
 
@@ -629,7 +613,6 @@ class InvoiceTaxIntegrationTest {
                           new BigDecimal("100.00"),
                           0,
                           null,
-                          null,
                           null));
                   var response =
                       invoiceService.addLineItem(
@@ -640,7 +623,6 @@ class InvoiceTaxIntegrationTest {
                               BigDecimal.ONE,
                               new BigDecimal("200.00"),
                               1,
-                              null,
                               null,
                               null));
 

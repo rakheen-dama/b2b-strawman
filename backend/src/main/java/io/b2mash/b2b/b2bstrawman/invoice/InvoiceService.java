@@ -688,6 +688,8 @@ public class InvoiceService {
               .orElseThrow(
                   () -> new ResourceNotFoundException("TariffItem", request.tariffItemId()));
 
+      Objects.requireNonNull(tariffItem.getAmount(), "Tariff item amount must not be null");
+
       String description =
           (request.description() != null && !request.description().isBlank())
               ? request.description()
@@ -710,11 +712,11 @@ public class InvoiceService {
     } else {
       // Manual line — existing behavior
       if (request.description() == null || request.description().isBlank()) {
-        throw new ResourceConflictException(
+        throw new InvalidStateException(
             "Description required", "Manual line items require a description");
       }
       if (request.unitPrice() == null) {
-        throw new ResourceConflictException(
+        throw new InvalidStateException(
             "Unit price required", "Manual line items require a unit price");
       }
       line =

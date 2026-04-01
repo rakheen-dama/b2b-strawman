@@ -463,6 +463,16 @@
 | 407 | Frontend: Tariff Pages + Invoice Tariff Selector | Frontend | 402, 403 | M | 407A, 407B | |
 | 408 | Frontend: Project Detail Tabs + Sidebar + Dashboard Widget | Frontend | 405, 406, 407 | M | 408A | |
 | 409 | Multi-Vertical Coexistence Tests | Backend + Frontend | 397-408 | S | 409A | |
+| **Phase 56 — Production Infrastructure & Deployment Pipeline** | | | | | | See [tasks/phase56-production-infrastructure.md](tasks/phase56-production-infrastructure.md) |
+| 410 | Terraform Foundation: Naming, Secrets, State Bucket & Bootstrap | Infra | -- | M | 410A, 410B | |
+| 411 | Data Layer: RDS PostgreSQL + ElastiCache Redis | Infra | 410 | M | 411A, 411B | |
+| 412 | Service Extension: ECR, Security Groups, IAM for 5 Services | Infra | 410 | L | 412A, 412B, 412C | |
+| 413 | ECS Services + ALB Routing Restructure | Infra | 411, 412 | L | 413A, 413B | |
+| 414 | Keycloak Deployment: ECS Task, Database, Realm Import | Infra + Config | 411, 413 | M | 414A, 414B | |
+| 415 | Dockerfile Hardening: Health Checks, JAR Fixes, Build Args | Docker | -- | S | 415A | |
+| 416 | CI/CD Pipeline: OIDC, Image Promotion, Terraform Workflow | CI/CD | 412 | L | 416A, 416B, 416C | |
+| 417 | Observability: Alarms, SNS, Dashboards, Structured Logging | Infra + Config | 413 | M | 417A, 417B | |
+| 418 | DNS, SSL & Production Cutover | Infra | 413, 416, 417 | M | 418A, 418B | |
 
 ---
 

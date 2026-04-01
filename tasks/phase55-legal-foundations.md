@@ -37,7 +37,7 @@ Phase 55 is the multi-vertical architecture stress test. It builds three real le
 | 405 | Frontend: Court Calendar + Prescription Pages | Frontend | 398, 399 | L | 405A, 405B | **Done** (PR #849) |
 | 406 | Frontend: Conflict Check + Adverse Party Pages | Frontend | 400, 401 | L | 406A, 406B | **Done** (PR #850) |
 | 407 | Frontend: Tariff Pages + Invoice Tariff Selector | Frontend | 402, 403 | M | 407A, 407B | **Done** (PR #851) |
-| 408 | Frontend: Project Detail Tabs + Sidebar + Dashboard Widget | Frontend | 405, 406, 407 | M | 408A | |
+| 408 | Frontend: Project Detail Tabs + Sidebar + Dashboard Widget | Frontend | 405, 406, 407 | M | 408A | **Done** (PR #852) |
 | 409 | Multi-Vertical Coexistence Tests | Backend + Frontend | 397-408 | S | 409A | |
 
 ---
@@ -206,7 +206,7 @@ FRONTEND (requires backend epics)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 8a | 408 | 408A | Project detail page: module-gated "Court Dates" and "Adverse Parties" tabs. Sidebar nav: module-gated legal items in Clients group. Dashboard: "Upcoming Court Dates" widget (module-gated). Frontend tests (~5). Frontend only. |  |
+| 8a | 408 | 408A | Project detail page: module-gated "Court Dates" and "Adverse Parties" tabs. Sidebar nav: module-gated legal items in Clients group. Dashboard: "Upcoming Court Dates" widget (module-gated). Frontend tests (~5). Frontend only. | **Done** (PR #852) |
 
 ### Stage 9: Coexistence Tests
 
@@ -937,7 +937,7 @@ Stage 9:  [409A]                                                        <- coexi
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **408A** | 408.1--408.7 | Project detail: module-gated "Court Dates" tab (reusing CourtDateListView filtered by projectId) + "Adverse Parties" tab (list with link/unlink actions). Sidebar: module-gated legal nav items. Dashboard: "Upcoming Court Dates" widget (compact list from `/api/court-calendar/upcoming`). Frontend tests (~5). Frontend only. |  |
+| **408A** | 408.1--408.7 | Project detail: module-gated "Court Dates" tab (reusing CourtDateListView filtered by projectId) + "Adverse Parties" tab (list with link/unlink actions). Sidebar: module-gated legal nav items. Dashboard: "Upcoming Court Dates" widget (compact list from `/api/court-calendar/upcoming`). Frontend tests (~5). Frontend only. | **Done** (PR #852) |
 
 ### Tasks
 

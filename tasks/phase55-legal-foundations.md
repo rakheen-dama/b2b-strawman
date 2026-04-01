@@ -33,7 +33,7 @@ Phase 55 is the multi-vertical architecture stress test. It builds three real le
 | 401 | Conflict Check Service + Search Algorithm | Backend | 400 | M | 401A, 401B | **Done** (PR #845) |
 | 402 | Tariff Schedule Entity + Service + CRUD | Backend | 397 | M | 402A, 402B | **Done** (PR #846) |
 | 403 | Invoice Tariff Integration + InvoiceLine Extension | Backend | 402 | S | 403A | **Done** (PR #847) |
-| 404 | Legal Pack Content + Tariff Seed Data | Backend | 397 | M | 404A, 404B | |
+| 404 | Legal Pack Content + Tariff Seed Data | Backend | 397 | M | 404A, 404B | **Done** (PR #848) |
 | 405 | Frontend: Court Calendar + Prescription Pages | Frontend | 398, 399 | L | 405A, 405B | |
 | 406 | Frontend: Conflict Check + Adverse Party Pages | Frontend | 400, 401 | L | 406A, 406B | |
 | 407 | Frontend: Tariff Pages + Invoice Tariff Selector | Frontend | 402, 403 | M | 407A, 407B | |
@@ -155,7 +155,7 @@ FRONTEND (requires backend epics)
 | 1a (parallel) | 398 | 398A | `CourtDate` entity + `CourtDateRepository` + `CourtCalendarService` (create, update, postpone, cancel, recordOutcome, list, getById, module guard integration) + audit events. Integration tests (~8). Backend only. | **Done** (PR #842) |
 | 1b (parallel) | 400 | 400A | `AdverseParty` entity + `AdversePartyLink` entity + repos + `AdversePartyService` (CRUD, link/unlink, listForProject, search by name, module guard) + audit events. Integration tests (~6). Backend only. | **Done** (PR #844) |
 | 1c (parallel) | 402 | 402A | `TariffSchedule` entity + `TariffItem` entity + repos + `TariffService` (schedule CRUD, item CRUD, clone, search, active lookup, module guard, isSystem protection) + audit events. Integration tests (~6). Backend only. | **Done** (PR #846) |
-| 1d (parallel) | 404 | 404A | `LegalFieldPackSeeder` + `LegalTemplatePackSeeder` + `LegalClausePackSeeder` + `LegalCompliancePackSeeder` + `LegalAutomationPackSeeder`. JSON resources: `field-packs/legal-za-customer.json`, `field-packs/legal-za-project.json`, `template-packs/legal-za/pack.json`, `clause-packs/legal-za-clauses/pack.json`, `compliance-packs/legal-za-onboarding/pack.json`, `automation-templates/legal-za.json`. Integration tests (~4). Backend only. |  |
+| 1d (parallel) | 404 | 404A | `LegalFieldPackSeeder` + `LegalTemplatePackSeeder` + `LegalClausePackSeeder` + `LegalCompliancePackSeeder` + `LegalAutomationPackSeeder`. JSON resources: `field-packs/legal-za-customer.json`, `field-packs/legal-za-project.json`, `template-packs/legal-za/pack.json`, `clause-packs/legal-za-clauses/pack.json`, `compliance-packs/legal-za-onboarding/pack.json`, `automation-templates/legal-za.json`. Integration tests (~4). Backend only. | **Done** (PR #848) |
 
 ### Stage 2: Backend Controllers + Advanced Features (parallel tracks)
 
@@ -164,7 +164,7 @@ FRONTEND (requires backend epics)
 | 2a (parallel) | 398 | 398B | `CourtCalendarController` (7 endpoints: list, get, create, update, postpone, cancel, outcome) replacing stub. `@RequiresCapability` with `VIEW_LEGAL`/`MANAGE_LEGAL`. Integration tests (~6). Backend only. | **Done** (PR #842) |
 | 2b (parallel) | 400 | 400B | `AdversePartyController` (8 endpoints: list, get, create, update, delete, link, unlink, listForProject) replacing stub. Integration tests (~5). Backend only. | **Done** (PR #844) |
 | 2c (parallel) | 402 | 402B | `TariffController` (11 endpoints: schedule list/get/create/update/clone/active, item list/get/create/update/delete). Integration tests (~5). Backend only. | **Done** (PR #846) |
-| 2d (parallel) | 404 | 404B | `LegalTariffSeeder` (LSSA 2024/2025 High Court P&P schedule, 18 items, `isSystem = true`). JSON resource: `tariff-seed/lssa-2024-2025-hc-pp.json`. Provisioning integration (legal-za profile triggers tariff seeding). Integration tests (~3). Backend only. |  |
+| 2d (parallel) | 404 | 404B | `LegalTariffSeeder` (LSSA 2024/2025 High Court P&P schedule, 18 items, `isSystem = true`). JSON resource: `tariff-seed/lssa-2024-2025-hc-pp.json`. Provisioning integration (legal-za profile triggers tariff seeding). Integration tests (~3). Backend only. | **Done** (PR #848) |
 
 ### Stage 3: Backend Dependent Features (parallel tracks)
 
@@ -678,8 +678,8 @@ Stage 9:  [409A]                                                        <- coexi
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **404A** | 404.1--404.7 | 5 pack seeders + 6 JSON resource files for legal-za packs (field, template, clause, compliance, automation). Provisioning integration. Integration tests (~4). Backend only. |  |
-| **404B** | 404.8--404.12 | `LegalTariffSeeder` + LSSA 2024/2025 tariff JSON seed data (18 items). Provisioning integration (legal-za profile triggers tariff seeding). Integration tests (~3). Backend only. |  |
+| **404A** | 404.1--404.7 | 5 pack seeders + 6 JSON resource files for legal-za packs (field, template, clause, compliance, automation). Provisioning integration. Integration tests (~4). Backend only. | **Done** (PR #848) |
+| **404B** | 404.8--404.12 | `LegalTariffSeeder` + LSSA 2024/2025 tariff JSON seed data (18 items). Provisioning integration (legal-za profile triggers tariff seeding). Integration tests (~3). Backend only. | **Done** (PR #848) |
 
 ### Tasks
 

@@ -30,7 +30,7 @@ Phase 55 is the multi-vertical architecture stress test. It builds three real le
 | 398 | Court Date Entity + Service + Controller | Backend | 397 | M | 398A, 398B | **Done** (PR #842) |
 | 399 | Prescription Tracker + Reminder Job | Backend | 398 | M | 399A, 399B | **Done** (PR #843) |
 | 400 | Adverse Party Registry + CRUD | Backend | 397 | M | 400A, 400B | **Done** (PR #844) |
-| 401 | Conflict Check Service + Search Algorithm | Backend | 400 | M | 401A, 401B | |
+| 401 | Conflict Check Service + Search Algorithm | Backend | 400 | M | 401A, 401B | **Done** (PR #845) |
 | 402 | Tariff Schedule Entity + Service + CRUD | Backend | 397 | M | 402A, 402B | |
 | 403 | Invoice Tariff Integration + InvoiceLine Extension | Backend | 402 | S | 403A | |
 | 404 | Legal Pack Content + Tariff Seed Data | Backend | 397 | M | 404A, 404B | |
@@ -171,7 +171,7 @@ FRONTEND (requires backend epics)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 3a (parallel) | 399 | 399A | `PrescriptionTracker` entity + `PrescriptionTrackerRepository` + `PrescriptionRuleRegistry` static utility + `PrescriptionTrackerService` (create with date calculation, update, interrupt, list) + `PrescriptionTrackerController` (5 endpoints) + audit events. Integration tests (~8). Backend only. | **Done** (PR #843) |
-| 3b (parallel) | 401 | 401A | `ConflictCheck` entity + `ConflictCheckRepository` + `ConflictCheckService` (performCheck with pg_trgm fuzzy search + exact ID match + result classification + JSONB conflict details + audit trail). Native SQL queries for `similarity()`. Integration tests (~8). Backend only. |  |
+| 3b (parallel) | 401 | 401A | `ConflictCheck` entity + `ConflictCheckRepository` + `ConflictCheckService` (performCheck with pg_trgm fuzzy search + exact ID match + result classification + JSONB conflict details + audit trail). Native SQL queries for `similarity()`. Integration tests (~8). Backend only. | **Done** (PR #845) |
 | 3c (parallel) | 403 | 403A | Extend `InvoiceLine` entity with `tariffItemId` (UUID) + `lineSource` (String). Add `TARIFF` to `InvoiceLineType` enum. Extend `InvoiceService.addLine()` for tariff lines with module guard. Extend `InvoiceLineResponse` DTO. Integration tests (~5). Backend only. |  |
 
 ### Stage 4: Backend Remaining Features
@@ -179,7 +179,7 @@ FRONTEND (requires backend epics)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 4a (parallel) | 399 | 399B | `CourtDateReminderJob` (daily scheduled: iterate tenants, check module enabled, query upcoming court dates + expiring prescriptions, create notifications, update tracker status). `/api/court-calendar/upcoming` endpoint (combined dashboard data). Integration tests (~5). Backend only. | **Done** (PR #843) |
-| 4b (parallel) | 401 | 401B | `ConflictCheckController` (4 endpoints: perform, list, get, resolve). Integration tests (~4). Backend only. |  |
+| 4b (parallel) | 401 | 401B | `ConflictCheckController` (4 endpoints: perform, list, get, resolve). Integration tests (~4). Backend only. | **Done** (PR #845) |
 
 ### Stage 5: Frontend Court Calendar + Prescription (sequential)
 
@@ -504,8 +504,8 @@ Stage 9:  [409A]                                                        <- coexi
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **401A** | 401.1--401.7 | `ConflictCheck` entity + `ConflictCheckRepository` + `ConflictCheckService` (performCheck with pg_trgm fuzzy search, exact ID matching, result classification CONFLICT_FOUND/POTENTIAL_CONFLICT/NO_CONFLICT, JSONB conflict detail assembly, resolve with resolution tracking, list history). Native SQL queries for `similarity()`. Integration tests (~8). Backend only. |  |
-| **401B** | 401.8--401.12 | Replace stub `ConflictCheckController` (4 endpoints: POST perform, GET list, GET by id, POST resolve). `@RequiresCapability` on all endpoints. Integration tests (~4). Backend only. |  |
+| **401A** | 401.1--401.7 | `ConflictCheck` entity + `ConflictCheckRepository` + `ConflictCheckService` (performCheck with pg_trgm fuzzy search, exact ID matching, result classification CONFLICT_FOUND/POTENTIAL_CONFLICT/NO_CONFLICT, JSONB conflict detail assembly, resolve with resolution tracking, list history). Native SQL queries for `similarity()`. Integration tests (~8). Backend only. | **Done** (PR #845) |
+| **401B** | 401.8--401.12 | Replace stub `ConflictCheckController` (4 endpoints: POST perform, GET list, GET by id, POST resolve). `@RequiresCapability` on all endpoints. Integration tests (~4). Backend only. | **Done** (PR #845) |
 
 ### Tasks
 

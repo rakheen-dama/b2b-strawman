@@ -142,8 +142,15 @@ resource "aws_iam_role" "keycloak_task" {
 }
 
 # -----------------------------------------------------------------------------
+# Data sources for scoping IAM policies to this account/region
+# -----------------------------------------------------------------------------
+
+data "aws_caller_identity" "current" {}
+data "aws_region" "current" {}
+
+# -----------------------------------------------------------------------------
 # GitHub OIDC Provider — enables GitHub Actions to assume AWS roles
-# Thumbprint: GitHub's OIDC certificate SHA1 fingerprint (stable)
+# Thumbprint: Required by AWS but no longer validated for GitHub OIDC
 # -----------------------------------------------------------------------------
 
 resource "aws_iam_openid_connect_provider" "github" {
@@ -154,11 +161,10 @@ resource "aws_iam_openid_connect_provider" "github" {
 
 # -----------------------------------------------------------------------------
 # GitHub Actions Role — assumed by CI/CD workflows via OIDC
-# Named heykazi-github-actions (no env prefix — global, customer-facing per ADR-218)
 # -----------------------------------------------------------------------------
 
 resource "aws_iam_role" "github_actions" {
-  name = "heykazi-github-actions"
+  name = "${var.project}-${var.environment}-github-actions"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -203,14 +209,23 @@ data "aws_iam_policy_document" "github_actions_policy" {
     actions = [
       "ecs:UpdateService",
       "ecs:DescribeServices",
-      "ecs:DescribeTaskDefinition",
       "ecs:RegisterTaskDefinition",
       "ecs:DeregisterTaskDefinition",
+      "ecs:DescribeTasks",
+      "ecs:ListTasks",
     ]
     resources = [
-      "arn:aws:ecs:*:*:service/${var.project}-*",
-      "arn:aws:ecs:*:*:task-definition/${var.project}-*",
+      "arn:aws:ecs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:service/${var.project}-*",
+      "arn:aws:ecs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:task-definition/${var.project}-*",
+      "arn:aws:ecs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:task/${var.project}-*",
     ]
+  }
+
+  # ECS: DescribeTaskDefinition does not support resource-level permissions
+  statement {
+    sid       = "ECSDescribeTaskDef"
+    actions   = ["ecs:DescribeTaskDefinition"]
+    resources = ["*"]
   }
 
   # S3: Terraform state bucket read/write
@@ -238,7 +253,7 @@ data "aws_iam_policy_document" "github_actions_policy" {
       "dynamodb:PutItem",
       "dynamodb:DeleteItem",
     ]
-    resources = [var.terraform_lock_table_arn]
+    resources = ["arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/${var.terraform_lock_table_name}"]
   }
 
   # IAM: Pass task/execution roles to ECS when registering task definitions
@@ -253,11 +268,16 @@ data "aws_iam_policy_document" "github_actions_policy" {
       aws_iam_role.portal_task.arn,
       aws_iam_role.keycloak_task.arn,
     ]
+    condition {
+      test     = "StringEquals"
+      variable = "iam:PassedToService"
+      values   = ["ecs-tasks.amazonaws.com"]
+    }
   }
 }
 
 resource "aws_iam_role_policy" "github_actions" {
-  name   = "heykazi-github-actions"
+  name   = "${var.project}-${var.environment}-github-actions"
   role   = aws_iam_role.github_actions.id
   policy = data.aws_iam_policy_document.github_actions_policy.json
 }

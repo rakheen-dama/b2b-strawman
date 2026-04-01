@@ -132,7 +132,7 @@ module "iam" {
   keycloak_log_group_arn      = module.monitoring.keycloak_log_group_arn
   github_repo                 = var.github_repo
   terraform_state_bucket_name = var.terraform_state_bucket_name
-  terraform_lock_table_arn    = var.terraform_lock_table_arn
+  terraform_lock_table_name   = var.terraform_lock_table_name
 }
 
 # -----------------------------------------------------------------------------

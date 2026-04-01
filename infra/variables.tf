@@ -203,8 +203,8 @@ variable "terraform_state_bucket_name" {
   default     = "heykazi-terraform-state"
 }
 
-variable "terraform_lock_table_arn" {
-  description = "ARN of the DynamoDB table used for Terraform state locking"
+variable "terraform_lock_table_name" {
+  description = "Name of the DynamoDB table used for Terraform state locking"
   type        = string
-  default     = "arn:aws:dynamodb:af-south-1:*:table/heykazi-terraform-locks"
+  default     = "heykazi-terraform-locks"
 }

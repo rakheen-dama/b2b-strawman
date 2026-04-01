@@ -60,7 +60,8 @@ variable "terraform_state_bucket_name" {
   default     = "heykazi-terraform-state"
 }
 
-variable "terraform_lock_table_arn" {
-  description = "ARN of the DynamoDB table used for Terraform state locking (for GitHub Actions policy)"
+variable "terraform_lock_table_name" {
+  description = "Name of the DynamoDB table used for Terraform state locking (ARN constructed from data sources)"
   type        = string
+  default     = "heykazi-terraform-locks"
 }

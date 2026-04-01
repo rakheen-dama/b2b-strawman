@@ -110,3 +110,27 @@ output "app_url" {
   description = "Application URL (DNS or ALB)"
   value       = var.create_dns ? "https://${module.dns.app_fqdn}" : "http://${module.alb.public_alb_dns_name}"
 }
+
+# -----------------------------------------------------------------------------
+# RDS
+# -----------------------------------------------------------------------------
+
+output "rds_endpoint" {
+  description = "RDS PostgreSQL endpoint"
+  value       = module.data.rds_endpoint
+}
+
+output "rds_port" {
+  description = "RDS PostgreSQL port"
+  value       = module.data.rds_port
+}
+
+output "rds_master_credentials_secret_arn" {
+  description = "ARN of the RDS master credentials secret in Secrets Manager"
+  value       = module.data.rds_master_credentials_secret_arn
+}
+
+output "rds_instance_identifier" {
+  description = "Identifier of the RDS instance"
+  value       = module.data.rds_instance_identifier
+}

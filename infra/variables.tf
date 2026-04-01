@@ -42,6 +42,52 @@ variable "private_subnet_cidrs" {
 }
 
 # -----------------------------------------------------------------------------
+# RDS
+# -----------------------------------------------------------------------------
+
+variable "rds_instance_class" {
+  description = "RDS instance class"
+  type        = string
+  default     = "db.t4g.micro"
+}
+
+variable "rds_multi_az" {
+  description = "Enable Multi-AZ for RDS"
+  type        = bool
+  default     = false
+}
+
+variable "rds_storage_gb" {
+  description = "Initial allocated storage for RDS (GB)"
+  type        = number
+  default     = 20
+}
+
+variable "rds_max_storage_gb" {
+  description = "Maximum storage for RDS autoscaling (GB)"
+  type        = number
+  default     = 100
+}
+
+variable "rds_backup_retention" {
+  description = "RDS automated backup retention days"
+  type        = number
+  default     = 1
+}
+
+variable "rds_deletion_protection" {
+  description = "Enable deletion protection for RDS"
+  type        = bool
+  default     = false
+}
+
+variable "rds_skip_final_snapshot" {
+  description = "Skip final snapshot on RDS deletion (true for staging, false for production)"
+  type        = bool
+  default     = true
+}
+
+# -----------------------------------------------------------------------------
 # Container Images
 # -----------------------------------------------------------------------------
 

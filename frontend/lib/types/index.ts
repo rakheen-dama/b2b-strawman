@@ -15,3 +15,4 @@ export * from "./expense";
 export * from "./proposal";
 export * from "./data-protection";
 export * from "./deadline";
+export * from "./legal";

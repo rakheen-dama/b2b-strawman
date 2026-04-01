@@ -18,3 +18,20 @@ export type { LogDsarRequestFormData, DsarStatusTransitionFormData, ProcessingAc
 
 export { filingStatusSchema } from "./deadline";
 export type { FilingStatusFormData } from "./deadline";
+
+export {
+  createCourtDateSchema,
+  postponeCourtDateSchema,
+  cancelCourtDateSchema,
+  outcomeSchema,
+  createPrescriptionTrackerSchema,
+  interruptPrescriptionSchema,
+} from "./legal";
+export type {
+  CreateCourtDateFormData,
+  PostponeCourtDateFormData,
+  CancelCourtDateFormData,
+  OutcomeFormData,
+  CreatePrescriptionTrackerFormData,
+  InterruptPrescriptionFormData,
+} from "./legal";

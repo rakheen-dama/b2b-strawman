@@ -136,7 +136,7 @@ KEYCLOAK           CI/CD PIPELINE     OBSERVABILITY
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 1a (parallel) | 411 | 411A | Create new `infra/modules/data/` module with RDS PostgreSQL 16 (Multi-AZ variable, `db.t4g.medium`/`db.t4g.micro`, 20GB gp3, auto-scaling to 100GB, automated backups, parameter group, two databases: `kazi` + `kazi_keycloak`). Outputs: RDS endpoint, RDS port, security group ID. Infra only. | |
+| 1a (parallel) | 411 | 411A | Create new `infra/modules/data/` module with RDS PostgreSQL 16 (Multi-AZ variable, `db.t4g.medium`/`db.t4g.micro`, 20GB gp3, auto-scaling to 100GB, automated backups, parameter group, two databases: `kazi` + `kazi_keycloak`). Outputs: RDS endpoint, RDS port, security group ID. Infra only. | **Done** (PR #855) |
 | 1b (parallel) | 412 | 412A | Extend ECR module: refactor from 2 hardcoded repos to `for_each` over service list `["backend", "gateway", "frontend", "portal", "keycloak"]`. Use `kazi/{service}` naming per ADR-218. Add image scanning on push, lifecycle policy (keep 10 tagged, expire untagged after 7 days). Infra only. | |
 
 ### Stage 2: Data Layer -- Redis + Service Extension -- SGs, IAM (parallel tracks)
@@ -298,7 +298,7 @@ Note: Stage 5 can run in parallel with Stages 1-4 (Dockerfiles are independent).
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **411A** | 411.1--411.5 | Create `infra/modules/data/` module with RDS PostgreSQL 16. Resources: `aws_db_subnet_group`, `aws_db_parameter_group`, `aws_db_instance`, `aws_secretsmanager_secret` (auto-generated master credentials). Configurable: instance class, Multi-AZ, storage, backup retention, deletion protection. Outputs: endpoint, port, credentials secret ARN. Infra only. | |
+| **411A** | 411.1--411.5 | Create `infra/modules/data/` module with RDS PostgreSQL 16. Resources: `aws_db_subnet_group`, `aws_db_parameter_group`, `aws_db_instance`, `aws_secretsmanager_secret` (auto-generated master credentials). Configurable: instance class, Multi-AZ, storage, backup retention, deletion protection. Outputs: endpoint, port, credentials secret ARN. Infra only. | **Done** (PR #855) |
 | **411B** | 411.6--411.9 | Add ElastiCache Redis to `infra/modules/data/` module. Resources: `aws_elasticache_subnet_group`, `aws_elasticache_replication_group` (single-node, Redis 7). Outputs: primary endpoint, port, auth token ARN. Infra only. | |
 
 ### Tasks

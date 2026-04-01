@@ -34,6 +34,7 @@ export interface CourtDateFilters {
   status?: CourtDateStatus;
   dateType?: CourtDateType;
   customerId?: string;
+  projectId?: string;
 }
 
 // ── Court Date actions ─────────────────────────────────────────────
@@ -47,6 +48,7 @@ export async function fetchCourtDates(
   if (filters?.status) params.set("status", filters.status);
   if (filters?.dateType) params.set("dateType", filters.dateType);
   if (filters?.customerId) params.set("customerId", filters.customerId);
+  if (filters?.projectId) params.set("projectId", filters.projectId);
   params.set("size", "100");
 
   return api.get<PaginatedResponse<CourtDate>>(

@@ -10,6 +10,7 @@ import { RecentActivityWidget } from "@/components/dashboard/recent-activity-wid
 import { AdminStatsColumn } from "@/components/dashboard/admin-stats-column";
 import { MyWeekColumn } from "@/components/dashboard/my-week-column";
 import { DeadlineWidget } from "@/components/dashboard/deadline-widget";
+import { UpcomingCourtDatesWidget } from "@/components/legal/upcoming-court-dates-widget";
 import { ModuleGate } from "@/components/module-gate";
 import {
   fetchDashboardKpis,
@@ -142,6 +143,13 @@ export default async function OrgDashboardPage({
           />
         )}
       </div>
+
+      {/* Legal widgets row */}
+      <ModuleGate module="court_calendar">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <UpcomingCourtDatesWidget orgSlug={slug} />
+        </div>
+      </ModuleGate>
     </div>
   );
 }

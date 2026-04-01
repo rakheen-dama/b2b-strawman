@@ -44,6 +44,8 @@ import { SaveAsTemplateDialog } from "@/components/templates/SaveAsTemplateDialo
 import { ProjectLifecycleActions } from "@/components/projects/project-lifecycle-actions";
 import { ArchivedProjectBanner } from "@/components/projects/archived-project-banner";
 import { ProjectStaffingTab } from "@/components/capacity/project-staffing-tab";
+import { ProjectCourtDatesTab } from "@/components/legal/project-court-dates-tab";
+import { ProjectAdversePartiesTab } from "@/components/legal/project-adverse-parties-tab";
 import { getProjectStaffing, type ProjectStaffingResponse } from "@/lib/api/capacity";
 import { getCurrentMonday, formatDate as formatDateUtil, addWeeks } from "@/lib/date-utils";
 import { createSavedViewAction } from "./view-actions";
@@ -738,6 +740,12 @@ export default async function ProjectDetailPage({
         }
         staffingPanel={
           <ProjectStaffingTab staffing={projectStaffing} />
+        }
+        courtDatesPanel={
+          <ProjectCourtDatesTab projectId={id} slug={slug} />
+        }
+        adversePartiesPanel={
+          <ProjectAdversePartiesTab projectId={id} slug={slug} />
         }
         activityPanel={
           <ActivityFeed projectId={id} orgSlug={slug} />

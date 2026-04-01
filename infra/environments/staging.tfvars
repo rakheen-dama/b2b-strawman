@@ -35,3 +35,4 @@ rds_instance_class      = "db.t4g.micro"
 rds_multi_az            = false
 rds_backup_retention    = 1
 rds_deletion_protection = false
+rds_skip_final_snapshot = true

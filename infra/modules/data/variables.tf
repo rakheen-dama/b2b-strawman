@@ -24,11 +24,6 @@ variable "rds_sg_id" {
   type        = string
 }
 
-variable "redis_sg_id" {
-  description = "Security group ID for Redis (used in 411B)"
-  type        = string
-}
-
 variable "rds_instance_class" {
   description = "RDS instance type"
   type        = string
@@ -63,4 +58,10 @@ variable "rds_deletion_protection" {
   description = "Enable deletion protection"
   type        = bool
   default     = false
+}
+
+variable "rds_skip_final_snapshot" {
+  description = "Skip final snapshot on deletion (true for staging, false for production)"
+  type        = bool
+  default     = true
 }

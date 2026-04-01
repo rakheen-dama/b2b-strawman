@@ -81,6 +81,12 @@ variable "rds_deletion_protection" {
   default     = false
 }
 
+variable "rds_skip_final_snapshot" {
+  description = "Skip final snapshot on RDS deletion (true for staging, false for production)"
+  type        = bool
+  default     = true
+}
+
 # -----------------------------------------------------------------------------
 # Container Images
 # -----------------------------------------------------------------------------

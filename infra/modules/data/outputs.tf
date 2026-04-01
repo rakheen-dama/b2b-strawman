@@ -17,3 +17,8 @@ output "rds_database_name" {
   description = "Name of the application database"
   value       = aws_db_instance.main.db_name
 }
+
+output "rds_instance_identifier" {
+  description = "Identifier of the RDS instance"
+  value       = aws_db_instance.main.identifier
+}

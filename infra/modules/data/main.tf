@@ -28,8 +28,9 @@ resource "aws_db_parameter_group" "main" {
   }
 
   parameter {
-    name  = "shared_preload_libraries"
-    value = "pg_stat_statements"
+    name         = "shared_preload_libraries"
+    value        = "pg_stat_statements"
+    apply_method = "pending-reboot"
   }
 
   tags = {
@@ -58,6 +59,7 @@ resource "aws_db_instance" "main" {
   storage_type          = "gp3"
   allocated_storage     = var.rds_storage_gb
   max_allocated_storage = var.rds_max_storage_gb
+  storage_encrypted     = true
 
   manage_master_user_password = true
 
@@ -65,9 +67,18 @@ resource "aws_db_instance" "main" {
   parameter_group_name   = aws_db_parameter_group.main.name
   vpc_security_group_ids = [var.rds_sg_id]
 
-  backup_retention_period = var.rds_backup_retention
-  deletion_protection     = var.rds_deletion_protection
-  skip_final_snapshot     = true
+  publicly_accessible = false
+
+  backup_retention_period   = var.rds_backup_retention
+  copy_tags_to_snapshot     = true
+  deletion_protection       = var.rds_deletion_protection
+  skip_final_snapshot       = var.rds_skip_final_snapshot
+  final_snapshot_identifier = var.rds_skip_final_snapshot ? null : "heykazi-${var.environment}-postgres-final"
+
+  performance_insights_enabled          = true
+  performance_insights_retention_period = 7
+
+  enabled_cloudwatch_logs_exports = ["postgresql", "upgrade"]
 
   tags = {
     Name        = "heykazi-${var.environment}-postgres"
@@ -82,20 +93,19 @@ resource "aws_db_instance" "main" {
 # -----------------------------------------------------------------------------
 # The RDS instance creates the 'kazi' database automatically via db_name.
 # The 'kazi_keycloak' database (ADR-215) must be created as a manual
-# post-provisioning step. This null_resource prints a reminder on apply.
+# post-provisioning step.
+#
+# To create it, retrieve credentials from Secrets Manager using the ARN in
+# the rds_master_credentials_secret_arn output, then run:
+#   psql -h <endpoint> -U <master_user> -d kazi -c 'CREATE DATABASE kazi_keycloak;'
+# See infra/RUNBOOK.md for details.
 # -----------------------------------------------------------------------------
 
-resource "null_resource" "keycloak_db" {
-  triggers = {
-    rds_endpoint = aws_db_instance.main.address
-  }
-
-  provisioner "local-exec" {
-    command = <<-EOT
-      echo "Manual step: Create kazi_keycloak database"
-      echo "Run: psql postgresql://MASTER_USER:MASTER_PASS@${aws_db_instance.main.address}:5432/kazi -c 'CREATE DATABASE kazi_keycloak;'"
-      echo "See infra/RUNBOOK.md for details"
-    EOT
+resource "terraform_data" "keycloak_db_reminder" {
+  input = {
+    rds_endpoint    = aws_db_instance.main.address
+    credentials_arn = aws_db_instance.main.master_user_secret[0].secret_arn
+    message         = "Manual step: create kazi_keycloak database. Retrieve credentials from Secrets Manager ARN above, then run CREATE DATABASE kazi_keycloak. See infra/RUNBOOK.md."
   }
 
   depends_on = [aws_db_instance.main]

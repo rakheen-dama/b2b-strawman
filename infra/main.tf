@@ -48,8 +48,7 @@ module "data" {
   private_subnet_ids = module.vpc.private_subnet_ids
 
   # Security Groups (rds_sg_id comes from Epic 412B; pass a placeholder for now)
-  rds_sg_id   = module.security_groups.backend_sg_id # TODO: replace with rds_sg_id in 412B
-  redis_sg_id = module.security_groups.backend_sg_id # TODO: replace with redis_sg_id in 412B
+  rds_sg_id = module.security_groups.backend_sg_id # TODO: replace with rds_sg_id in 412B
 
   # RDS Configuration
   rds_instance_class      = var.rds_instance_class
@@ -58,6 +57,7 @@ module "data" {
   rds_max_storage_gb      = var.rds_max_storage_gb
   rds_backup_retention    = var.rds_backup_retention
   rds_deletion_protection = var.rds_deletion_protection
+  rds_skip_final_snapshot = var.rds_skip_final_snapshot
 }
 
 # -----------------------------------------------------------------------------

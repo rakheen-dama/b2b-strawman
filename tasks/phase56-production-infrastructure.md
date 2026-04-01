@@ -137,7 +137,7 @@ KEYCLOAK           CI/CD PIPELINE     OBSERVABILITY
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 1a (parallel) | 411 | 411A | Create new `infra/modules/data/` module with RDS PostgreSQL 16 (Multi-AZ variable, `db.t4g.medium`/`db.t4g.micro`, 20GB gp3, auto-scaling to 100GB, automated backups, parameter group, two databases: `kazi` + `kazi_keycloak`). Outputs: RDS endpoint, RDS port, security group ID. Infra only. | **Done** (PR #855) |
-| 1b (parallel) | 412 | 412A | Extend ECR module: refactor from 2 hardcoded repos to `for_each` over service list `["backend", "gateway", "frontend", "portal", "keycloak"]`. Use `kazi/{service}` naming per ADR-218. Add image scanning on push, lifecycle policy (keep 10 tagged, expire untagged after 7 days). Infra only. | |
+| 1b (parallel) | 412 | 412A | Extend ECR module: refactor from 2 hardcoded repos to `for_each` over service list `["backend", "gateway", "frontend", "portal", "keycloak"]`. Use `kazi/{service}` naming per ADR-218. Add image scanning on push, lifecycle policy (keep 10 tagged, expire untagged after 7 days). Infra only. | **Done** (PR #857) |
 
 ### Stage 2: Data Layer -- Redis + Service Extension -- SGs, IAM (parallel tracks)
 
@@ -359,7 +359,7 @@ Note: Stage 5 can run in parallel with Stages 1-4 (Dockerfiles are independent).
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **412A** | 412.1--412.3 | Refactor ECR module from 2 hardcoded repos to `for_each` over 5-service list. Use `kazi/{service}` naming per ADR-218. Image scanning, lifecycle policies. Infra only. | |
+| **412A** | 412.1--412.3 | Refactor ECR module from 2 hardcoded repos to `for_each` over 5-service list. Use `kazi/{service}` naming per ADR-218. Image scanning, lifecycle policies. Infra only. | **Done** (PR #857) |
 | **412B** | 412.4--412.7 | Extend security-groups module: add gateway (8443), portal (3002), keycloak (8080), RDS (5432), Redis (6379) security groups. Update internal ALB SG to allow gateway ingress. Infra only. | |
 | **412C** | 412.8--412.12 | Extend IAM module: add task roles for gateway, portal, keycloak. Add GitHub OIDC provider + `heykazi-github-actions` role. Extend ECS execution role to read new secrets. Infra only. | |
 

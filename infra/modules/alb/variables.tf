@@ -57,3 +57,35 @@ variable "deregistration_delay" {
   type        = number
   default     = 30
 }
+
+# -----------------------------------------------------------------------------
+# Domain Variables (for host-based routing)
+# -----------------------------------------------------------------------------
+
+variable "app_domain" {
+  description = "Domain name for the main application (e.g., app.heykazi.com)"
+  type        = string
+  default     = ""
+}
+
+variable "portal_domain" {
+  description = "Domain name for the customer portal (e.g., portal.heykazi.com)"
+  type        = string
+  default     = ""
+}
+
+variable "auth_domain" {
+  description = "Domain name for the auth server / Keycloak (e.g., auth.heykazi.com)"
+  type        = string
+  default     = ""
+}
+
+# -----------------------------------------------------------------------------
+# ALB Protection
+# -----------------------------------------------------------------------------
+
+variable "alb_deletion_protection" {
+  description = "Enable deletion protection for the public ALB"
+  type        = bool
+  default     = false
+}

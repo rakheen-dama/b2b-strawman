@@ -166,6 +166,14 @@ module "alb" {
   public_alb_sg_id   = module.security_groups.public_alb_sg_id
   internal_alb_sg_id = module.security_groups.internal_alb_sg_id
   certificate_arn    = module.dns.certificate_arn
+
+  # Domain routing (host-based rules on HTTPS listener)
+  app_domain    = var.app_domain
+  portal_domain = var.portal_domain
+  auth_domain   = var.auth_domain
+
+  # ALB protection
+  alb_deletion_protection = var.alb_deletion_protection
 }
 
 # -----------------------------------------------------------------------------
@@ -192,9 +200,9 @@ module "ecs" {
   frontend_target_group_arn = module.alb.frontend_target_group_arn
   backend_target_group_arn  = module.alb.backend_target_group_arn
   backend_internal_tg_arn   = module.alb.backend_internal_target_group_arn
-  gateway_target_group_arn  = ""
-  portal_target_group_arn   = ""
-  keycloak_target_group_arn = ""
+  gateway_target_group_arn  = module.alb.gateway_target_group_arn
+  portal_target_group_arn   = module.alb.portal_target_group_arn
+  keycloak_target_group_arn = module.alb.keycloak_target_group_arn
 
   # IAM
   ecs_execution_role_arn = module.iam.ecs_execution_role_arn

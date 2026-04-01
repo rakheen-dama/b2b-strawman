@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.tariff;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -9,6 +10,16 @@ import org.springframework.data.repository.query.Param;
 public interface TariffItemRepository extends JpaRepository<TariffItem, UUID> {
 
   List<TariffItem> findByScheduleIdOrderBySortOrderAsc(UUID scheduleId);
+
+  long countByScheduleId(UUID scheduleId);
+
+  @Query(
+      """
+      SELECT ti.schedule.id, COUNT(ti) FROM TariffItem ti
+      WHERE ti.schedule.id IN :scheduleIds
+      GROUP BY ti.schedule.id
+      """)
+  List<Object[]> countByScheduleIdIn(@Param("scheduleIds") Collection<UUID> scheduleIds);
 
   @Query(
       value =

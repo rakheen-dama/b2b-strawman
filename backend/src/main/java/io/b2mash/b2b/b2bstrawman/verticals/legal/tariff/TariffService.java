@@ -13,6 +13,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -103,24 +104,40 @@ public class TariffService {
 
   @Transactional(readOnly = true)
   public List<ScheduleResponse> listSchedules() {
-    return scheduleRepository.findAll().stream().map(this::toScheduleResponse).toList();
+    moduleGuard.requireModule(MODULE_ID);
+
+    var schedules = scheduleRepository.findAll();
+    var scheduleIds = schedules.stream().map(TariffSchedule::getId).toList();
+    var countMap = buildItemCountMap(scheduleIds);
+
+    return schedules.stream()
+        .map(s -> toScheduleResponse(s, countMap.getOrDefault(s.getId(), 0L).intValue()))
+        .toList();
   }
 
   @Transactional(readOnly = true)
   public ScheduleResponse getSchedule(UUID id) {
+    moduleGuard.requireModule(MODULE_ID);
+
     var schedule =
         scheduleRepository
             .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("TariffSchedule", id));
-    return toScheduleResponse(schedule);
+    int count = (int) itemRepository.countByScheduleId(id);
+    return toScheduleResponse(schedule, count);
   }
 
   @Transactional(readOnly = true)
   public List<ScheduleResponse> getActiveSchedule(String category, String courtLevel) {
-    return scheduleRepository
-        .findByCategoryAndCourtLevelAndIsActiveTrue(category, courtLevel)
-        .stream()
-        .map(this::toScheduleResponse)
+    moduleGuard.requireModule(MODULE_ID);
+
+    var schedules =
+        scheduleRepository.findByCategoryAndCourtLevelAndIsActiveTrue(category, courtLevel);
+    var scheduleIds = schedules.stream().map(TariffSchedule::getId).toList();
+    var countMap = buildItemCountMap(scheduleIds);
+
+    return schedules.stream()
+        .map(s -> toScheduleResponse(s, countMap.getOrDefault(s.getId(), 0L).intValue()))
         .toList();
   }
 
@@ -151,7 +168,7 @@ public class TariffService {
                     "court_level", saved.getCourtLevel()))
             .build());
 
-    return toScheduleResponse(saved);
+    return toScheduleResponse(saved, 0);
   }
 
   @Transactional
@@ -188,7 +205,8 @@ public class TariffService {
             .details(Map.of("name", saved.getName(), "category", saved.getCategory()))
             .build());
 
-    return toScheduleResponse(saved);
+    int count = (int) itemRepository.countByScheduleId(id);
+    return toScheduleResponse(saved, count);
   }
 
   @Transactional
@@ -197,7 +215,7 @@ public class TariffService {
 
     var source =
         scheduleRepository
-            .findById(id)
+            .findWithItemsById(id)
             .orElseThrow(() -> new ResourceNotFoundException("TariffSchedule", id));
 
     var clone =
@@ -225,6 +243,7 @@ public class TariffService {
     }
 
     var saved = scheduleRepository.save(clone);
+    int itemCount = saved.getItems().size();
 
     auditService.log(
         AuditEventBuilder.builder()
@@ -235,16 +254,46 @@ public class TariffService {
                 Map.of(
                     "source_id", source.getId().toString(),
                     "name", saved.getName(),
-                    "items_count", saved.getItems().size()))
+                    "items_count", itemCount))
             .build());
 
-    return toScheduleResponse(saved);
+    return toScheduleResponse(saved, itemCount);
+  }
+
+  @Transactional
+  public void deleteSchedule(UUID id) {
+    moduleGuard.requireModule(MODULE_ID);
+
+    var schedule =
+        scheduleRepository
+            .findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("TariffSchedule", id));
+
+    if (schedule.isSystem()) {
+      throw new InvalidStateException(
+          "System schedule is read-only", "Cannot delete system tariff schedule.");
+    }
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("tariff_schedule.deleted")
+            .entityType("tariff_schedule")
+            .entityId(schedule.getId())
+            .details(
+                Map.of(
+                    "name", schedule.getName(),
+                    "category", schedule.getCategory()))
+            .build());
+
+    scheduleRepository.delete(schedule);
   }
 
   // --- Item Methods ---
 
   @Transactional(readOnly = true)
   public TariffItemResponse getItem(UUID id) {
+    moduleGuard.requireModule(MODULE_ID);
+
     var item =
         itemRepository
             .findById(id)
@@ -365,6 +414,8 @@ public class TariffService {
 
   @Transactional(readOnly = true)
   public List<TariffItemResponse> searchItems(UUID scheduleId, String search, String section) {
+    moduleGuard.requireModule(MODULE_ID);
+
     if (search != null && !search.isBlank()) {
       return itemRepository.searchByDescription(scheduleId, search).stream()
           .map(this::toItemResponse)
@@ -384,7 +435,7 @@ public class TariffService {
 
   // --- Mappers ---
 
-  private ScheduleResponse toScheduleResponse(TariffSchedule schedule) {
+  private ScheduleResponse toScheduleResponse(TariffSchedule schedule, int itemCount) {
     return new ScheduleResponse(
         schedule.getId(),
         schedule.getName(),
@@ -395,7 +446,7 @@ public class TariffService {
         schedule.isActive(),
         schedule.isSystem(),
         schedule.getSource(),
-        schedule.getItems().size(),
+        itemCount,
         schedule.getCreatedAt(),
         schedule.getUpdatedAt());
   }
@@ -411,5 +462,13 @@ public class TariffService {
         item.getUnit(),
         item.getNotes(),
         item.getSortOrder());
+  }
+
+  private Map<UUID, Long> buildItemCountMap(List<UUID> scheduleIds) {
+    if (scheduleIds.isEmpty()) {
+      return Map.of();
+    }
+    return itemRepository.countByScheduleIdIn(scheduleIds).stream()
+        .collect(Collectors.toMap(row -> (UUID) row[0], row -> (Long) row[1]));
   }
 }

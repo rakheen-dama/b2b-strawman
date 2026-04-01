@@ -32,7 +32,7 @@ Phase 55 is the multi-vertical architecture stress test. It builds three real le
 | 400 | Adverse Party Registry + CRUD | Backend | 397 | M | 400A, 400B | **Done** (PR #844) |
 | 401 | Conflict Check Service + Search Algorithm | Backend | 400 | M | 401A, 401B | **Done** (PR #845) |
 | 402 | Tariff Schedule Entity + Service + CRUD | Backend | 397 | M | 402A, 402B | **Done** (PR #846) |
-| 403 | Invoice Tariff Integration + InvoiceLine Extension | Backend | 402 | S | 403A | |
+| 403 | Invoice Tariff Integration + InvoiceLine Extension | Backend | 402 | S | 403A | **Done** (PR #847) |
 | 404 | Legal Pack Content + Tariff Seed Data | Backend | 397 | M | 404A, 404B | |
 | 405 | Frontend: Court Calendar + Prescription Pages | Frontend | 398, 399 | L | 405A, 405B | |
 | 406 | Frontend: Conflict Check + Adverse Party Pages | Frontend | 400, 401 | L | 406A, 406B | |
@@ -172,7 +172,7 @@ FRONTEND (requires backend epics)
 |-------|------|-------|---------|--------|
 | 3a (parallel) | 399 | 399A | `PrescriptionTracker` entity + `PrescriptionTrackerRepository` + `PrescriptionRuleRegistry` static utility + `PrescriptionTrackerService` (create with date calculation, update, interrupt, list) + `PrescriptionTrackerController` (5 endpoints) + audit events. Integration tests (~8). Backend only. | **Done** (PR #843) |
 | 3b (parallel) | 401 | 401A | `ConflictCheck` entity + `ConflictCheckRepository` + `ConflictCheckService` (performCheck with pg_trgm fuzzy search + exact ID match + result classification + JSONB conflict details + audit trail). Native SQL queries for `similarity()`. Integration tests (~8). Backend only. | **Done** (PR #845) |
-| 3c (parallel) | 403 | 403A | Extend `InvoiceLine` entity with `tariffItemId` (UUID) + `lineSource` (String). Add `TARIFF` to `InvoiceLineType` enum. Extend `InvoiceService.addLine()` for tariff lines with module guard. Extend `InvoiceLineResponse` DTO. Integration tests (~5). Backend only. |  |
+| 3c (parallel) | 403 | 403A | Extend `InvoiceLine` entity with `tariffItemId` (UUID) + `lineSource` (String). Add `TARIFF` to `InvoiceLineType` enum. Extend `InvoiceService.addLine()` for tariff lines with module guard. Extend `InvoiceLineResponse` DTO. Integration tests (~5). Backend only. | **Done** (PR #847) |
 
 ### Stage 4: Backend Remaining Features
 
@@ -628,7 +628,7 @@ Stage 9:  [409A]                                                        <- coexi
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **403A** | 403.1--403.6 | Extend `InvoiceLine` entity with `tariffItemId` + `lineSource`. Add `TARIFF` to `InvoiceLineType`. Extend `InvoiceService.addLine()` for tariff lines with module guard + tariff item resolution. Extend `InvoiceLineResponse` DTO. Integration tests (~5). Backend only. |  |
+| **403A** | 403.1--403.6 | Extend `InvoiceLine` entity with `tariffItemId` + `lineSource`. Add `TARIFF` to `InvoiceLineType`. Extend `InvoiceService.addLine()` for tariff lines with module guard + tariff item resolution. Extend `InvoiceLineResponse` DTO. Integration tests (~5). Backend only. | **Done** (PR #847) |
 
 ### Tasks
 

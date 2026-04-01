@@ -27,7 +27,7 @@ Phase 56 updates and extends the existing (stale) AWS infrastructure and CI/CD p
 |------|------|-------|------|--------|--------|--------|
 | 410 | Terraform Foundation: Naming, Secrets, State Bucket & Bootstrap | Infra | -- | M | 410A, 410B | **Done** (PR #854) |
 | 411 | Data Layer: RDS PostgreSQL + ElastiCache Redis | Infra | 410 | M | 411A, 411B | **Done** (PR #855, #856) |
-| 412 | Service Extension: ECR, Security Groups, IAM for 5 Services | Infra | 410 | L | 412A, 412B, 412C | |
+| 412 | Service Extension: ECR, Security Groups, IAM for 5 Services | Infra | 410 | L | 412A, 412B, 412C | **Done** (PRs #857, #858, #859) |
 | 413 | ECS Services + ALB Routing Restructure | Infra | 411, 412 | L | 413A, 413B | |
 | 414 | Keycloak Deployment: ECS Task, Database, Realm Import | Infra + Config | 411, 413 | M | 414A, 414B | |
 | 415 | Dockerfile Hardening: Health Checks, JAR Fixes, Build Args | Docker | -- | S | 415A | |
@@ -150,7 +150,7 @@ KEYCLOAK           CI/CD PIPELINE     OBSERVABILITY
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 3a | 412 | 412C | Extend IAM module: add task roles for gateway (no extra AWS perms), portal (no extra AWS perms), keycloak (no extra AWS perms). Add GitHub OIDC provider (`aws_iam_openid_connect_provider` for `token.actions.githubusercontent.com`). Create `heykazi-github-actions` IAM role with trust policy scoped to repo. Role permissions: ECR push, ECS update, S3 state access, Secrets Manager read, CloudWatch Logs write. Infra only. | |
+| 3a | 412 | 412C | Extend IAM module: add task roles for gateway (no extra AWS perms), portal (no extra AWS perms), keycloak (no extra AWS perms). Add GitHub OIDC provider (`aws_iam_openid_connect_provider` for `token.actions.githubusercontent.com`). Create `heykazi-github-actions` IAM role with trust policy scoped to repo. Role permissions: ECR push, ECS update, S3 state access, Secrets Manager read, CloudWatch Logs write. Infra only. | **Done** (PR #859) |
 
 ### Stage 4: ECS + ALB (sequential, depends on data + service extension)
 
@@ -361,7 +361,7 @@ Note: Stage 5 can run in parallel with Stages 1-4 (Dockerfiles are independent).
 |-------|-------|---------|--------|
 | **412A** | 412.1--412.3 | Refactor ECR module from 2 hardcoded repos to `for_each` over 5-service list. Use `kazi/{service}` naming per ADR-218. Image scanning, lifecycle policies. Infra only. | **Done** (PR #857) |
 | **412B** | 412.4--412.7 | Extend security-groups module: add gateway (8443), portal (3002), keycloak (8080), RDS (5432), Redis (6379) security groups. Update internal ALB SG to allow gateway ingress. Infra only. | **Done** (PR #858) |
-| **412C** | 412.8--412.12 | Extend IAM module: add task roles for gateway, portal, keycloak. Add GitHub OIDC provider + `heykazi-github-actions` role. Extend ECS execution role to read new secrets. Infra only. | |
+| **412C** | 412.8--412.12 | Extend IAM module: add task roles for gateway, portal, keycloak. Add GitHub OIDC provider + `heykazi-github-actions` role. Extend ECS execution role to read new secrets. Infra only. | **Done** (PR #859) |
 
 ### Tasks
 

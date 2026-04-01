@@ -37,6 +37,12 @@ public class InvoiceLine {
   @Column(name = "expense_id")
   private UUID expenseId;
 
+  @Column(name = "tariff_item_id")
+  private UUID tariffItemId;
+
+  @Column(name = "line_source", length = 20)
+  private String lineSource;
+
   @Enumerated(EnumType.STRING)
   @Column(name = "line_type", nullable = false, length = 20)
   private InvoiceLineType lineType;
@@ -188,6 +194,22 @@ public class InvoiceLine {
 
   public void setExpenseId(UUID expenseId) {
     this.expenseId = expenseId;
+  }
+
+  public UUID getTariffItemId() {
+    return tariffItemId;
+  }
+
+  public void setTariffItemId(UUID tariffItemId) {
+    this.tariffItemId = tariffItemId;
+  }
+
+  public String getLineSource() {
+    return lineSource;
+  }
+
+  public void setLineSource(String lineSource) {
+    this.lineSource = lineSource;
   }
 
   public InvoiceLineType getLineType() {

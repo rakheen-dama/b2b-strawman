@@ -47,6 +47,9 @@ data "aws_iam_policy_document" "execution_policy" {
     resources = [
       "${var.frontend_log_group_arn}:*",
       "${var.backend_log_group_arn}:*",
+      "${var.gateway_log_group_arn}:*",
+      "${var.portal_log_group_arn}:*",
+      "${var.keycloak_log_group_arn}:*",
     ]
   }
 
@@ -109,4 +112,152 @@ resource "aws_iam_role_policy" "backend_task" {
 resource "aws_iam_role" "frontend_task" {
   name               = "${var.project}-${var.environment}-frontend-task"
   assume_role_policy = data.aws_iam_policy_document.ecs_assume_role.json
+}
+
+# -----------------------------------------------------------------------------
+# Gateway Task Role — minimal (network access via SGs only)
+# -----------------------------------------------------------------------------
+
+resource "aws_iam_role" "gateway_task" {
+  name               = "${var.project}-${var.environment}-gateway-task"
+  assume_role_policy = data.aws_iam_policy_document.ecs_assume_role.json
+}
+
+# -----------------------------------------------------------------------------
+# Portal Task Role — minimal (network access via SGs only)
+# -----------------------------------------------------------------------------
+
+resource "aws_iam_role" "portal_task" {
+  name               = "${var.project}-${var.environment}-portal-task"
+  assume_role_policy = data.aws_iam_policy_document.ecs_assume_role.json
+}
+
+# -----------------------------------------------------------------------------
+# Keycloak Task Role — minimal (DB access via SGs, SMTP via network)
+# -----------------------------------------------------------------------------
+
+resource "aws_iam_role" "keycloak_task" {
+  name               = "${var.project}-${var.environment}-keycloak-task"
+  assume_role_policy = data.aws_iam_policy_document.ecs_assume_role.json
+}
+
+# -----------------------------------------------------------------------------
+# GitHub OIDC Provider — enables GitHub Actions to assume AWS roles
+# Thumbprint: GitHub's OIDC certificate SHA1 fingerprint (stable)
+# -----------------------------------------------------------------------------
+
+resource "aws_iam_openid_connect_provider" "github" {
+  url             = "https://token.actions.githubusercontent.com"
+  client_id_list  = ["sts.amazonaws.com"]
+  thumbprint_list = ["6938fd4d98bab03faadb97b34396831e3780aea1"]
+}
+
+# -----------------------------------------------------------------------------
+# GitHub Actions Role — assumed by CI/CD workflows via OIDC
+# Named heykazi-github-actions (no env prefix — global, customer-facing per ADR-218)
+# -----------------------------------------------------------------------------
+
+resource "aws_iam_role" "github_actions" {
+  name = "heykazi-github-actions"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect    = "Allow"
+      Principal = { Federated = aws_iam_openid_connect_provider.github.arn }
+      Action    = "sts:AssumeRoleWithWebIdentity"
+      Condition = {
+        StringEquals = { "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com" }
+        StringLike   = { "token.actions.githubusercontent.com:sub" = "repo:${var.github_repo}:*" }
+      }
+    }]
+  })
+}
+
+data "aws_iam_policy_document" "github_actions_policy" {
+  # ECR: GetAuthorizationToken is account-level (mandatory wildcard)
+  statement {
+    sid       = "ECRAuth"
+    actions   = ["ecr:GetAuthorizationToken"]
+    resources = ["*"]
+  }
+
+  # ECR: Push and pull images to/from all service repositories
+  statement {
+    sid = "ECRPushPull"
+    actions = [
+      "ecr:BatchCheckLayerAvailability",
+      "ecr:PutImage",
+      "ecr:InitiateLayerUpload",
+      "ecr:UploadLayerPart",
+      "ecr:CompleteLayerUpload",
+      "ecr:BatchGetImage",
+      "ecr:GetDownloadUrlForLayer",
+    ]
+    resources = var.ecr_repo_arns
+  }
+
+  # ECS: Manage services and task definitions for all services
+  statement {
+    sid = "ECSManage"
+    actions = [
+      "ecs:UpdateService",
+      "ecs:DescribeServices",
+      "ecs:DescribeTaskDefinition",
+      "ecs:RegisterTaskDefinition",
+      "ecs:DeregisterTaskDefinition",
+    ]
+    resources = [
+      "arn:aws:ecs:*:*:service/${var.project}-*",
+      "arn:aws:ecs:*:*:task-definition/${var.project}-*",
+    ]
+  }
+
+  # S3: Terraform state bucket read/write
+  statement {
+    sid = "TerraformStateObjects"
+    actions = [
+      "s3:GetObject",
+      "s3:PutObject",
+      "s3:DeleteObject",
+    ]
+    resources = ["arn:aws:s3:::${var.terraform_state_bucket_name}/*"]
+  }
+
+  statement {
+    sid       = "TerraformStateBucket"
+    actions   = ["s3:ListBucket"]
+    resources = ["arn:aws:s3:::${var.terraform_state_bucket_name}"]
+  }
+
+  # DynamoDB: Terraform state locking
+  statement {
+    sid = "TerraformStateLock"
+    actions = [
+      "dynamodb:GetItem",
+      "dynamodb:PutItem",
+      "dynamodb:DeleteItem",
+    ]
+    resources = [var.terraform_lock_table_arn]
+  }
+
+  # IAM: Pass task/execution roles to ECS when registering task definitions
+  statement {
+    sid     = "IAMPassRole"
+    actions = ["iam:PassRole"]
+    resources = [
+      aws_iam_role.execution.arn,
+      aws_iam_role.backend_task.arn,
+      aws_iam_role.frontend_task.arn,
+      aws_iam_role.gateway_task.arn,
+      aws_iam_role.portal_task.arn,
+      aws_iam_role.keycloak_task.arn,
+    ]
+  }
+}
+
+resource "aws_iam_role_policy" "github_actions" {
+  name   = "heykazi-github-actions"
+  role   = aws_iam_role.github_actions.id
+  policy = data.aws_iam_policy_document.github_actions_policy.json
 }

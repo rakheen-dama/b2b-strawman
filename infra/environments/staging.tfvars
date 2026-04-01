@@ -39,3 +39,7 @@ rds_skip_final_snapshot = true
 
 # Redis
 redis_node_type = "cache.t4g.micro"
+
+# GitHub OIDC
+github_repo              = "heykazi/kazi"
+terraform_lock_table_arn = "arn:aws:dynamodb:af-south-1:ACCOUNT_ID:table/heykazi-terraform-locks"

@@ -33,3 +33,34 @@ variable "backend_log_group_arn" {
   description = "ARN of the backend CloudWatch log group"
   type        = string
 }
+
+variable "gateway_log_group_arn" {
+  description = "ARN of the gateway CloudWatch log group"
+  type        = string
+}
+
+variable "portal_log_group_arn" {
+  description = "ARN of the portal CloudWatch log group"
+  type        = string
+}
+
+variable "keycloak_log_group_arn" {
+  description = "ARN of the keycloak CloudWatch log group"
+  type        = string
+}
+
+variable "github_repo" {
+  description = "GitHub repository in OWNER/REPO format for OIDC trust policy (e.g. heykazi/kazi)"
+  type        = string
+}
+
+variable "terraform_state_bucket_name" {
+  description = "Name of the S3 bucket used for Terraform state (for GitHub Actions policy)"
+  type        = string
+  default     = "heykazi-terraform-state"
+}
+
+variable "terraform_lock_table_arn" {
+  description = "ARN of the DynamoDB table used for Terraform state locking (for GitHub Actions policy)"
+  type        = string
+}

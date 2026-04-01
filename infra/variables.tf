@@ -182,3 +182,29 @@ variable "autoscaling_max_capacity" {
   type        = number
   default     = 10
 }
+
+# -----------------------------------------------------------------------------
+# GitHub OIDC
+# -----------------------------------------------------------------------------
+
+variable "github_repo" {
+  description = "GitHub repository in OWNER/REPO format for OIDC trust policy"
+  type        = string
+  default     = "heykazi/kazi"
+}
+
+# -----------------------------------------------------------------------------
+# Terraform State (for GitHub Actions IAM policy)
+# -----------------------------------------------------------------------------
+
+variable "terraform_state_bucket_name" {
+  description = "Name of the S3 bucket used for Terraform state"
+  type        = string
+  default     = "heykazi-terraform-state"
+}
+
+variable "terraform_lock_table_arn" {
+  description = "ARN of the DynamoDB table used for Terraform state locking"
+  type        = string
+  default     = "arn:aws:dynamodb:af-south-1:*:table/heykazi-terraform-locks"
+}

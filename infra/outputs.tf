@@ -173,3 +173,27 @@ output "redis_auth_token_secret_arn" {
   description = "ARN of the Redis auth token secret in Secrets Manager"
   value       = module.data.redis_auth_token_secret_arn
 }
+
+# -----------------------------------------------------------------------------
+# IAM
+# -----------------------------------------------------------------------------
+
+output "gateway_task_role_arn" {
+  description = "ARN of the gateway ECS task role"
+  value       = module.iam.gateway_task_role_arn
+}
+
+output "portal_task_role_arn" {
+  description = "ARN of the portal ECS task role"
+  value       = module.iam.portal_task_role_arn
+}
+
+output "keycloak_task_role_arn" {
+  description = "ARN of the keycloak ECS task role"
+  value       = module.iam.keycloak_task_role_arn
+}
+
+output "github_actions_role_arn" {
+  description = "ARN of the GitHub Actions IAM role (used in CI/CD workflows)"
+  value       = module.iam.github_actions_role_arn
+}

@@ -38,7 +38,7 @@ Phase 55 is the multi-vertical architecture stress test. It builds three real le
 | 406 | Frontend: Conflict Check + Adverse Party Pages | Frontend | 400, 401 | L | 406A, 406B | **Done** (PR #850) |
 | 407 | Frontend: Tariff Pages + Invoice Tariff Selector | Frontend | 402, 403 | M | 407A, 407B | **Done** (PR #851) |
 | 408 | Frontend: Project Detail Tabs + Sidebar + Dashboard Widget | Frontend | 405, 406, 407 | M | 408A | **Done** (PR #852) |
-| 409 | Multi-Vertical Coexistence Tests | Backend + Frontend | 397-408 | S | 409A | |
+| 409 | Multi-Vertical Coexistence Tests | Backend + Frontend | 397-408 | S | 409A | **Done** (PR #853) |
 
 ---
 
@@ -212,7 +212,7 @@ FRONTEND (requires backend epics)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 9a | 409 | 409A | 7 backend integration tests (accounting + legal tenant coexistence: independent provisioning, no cross-contamination, module guard isolation, InvoiceLine tariff FK null for accounting). 4 frontend tests (module-gated UI visibility, no legal nav for accounting profile, no accounting nav for legal profile, profile switch updates visible modules). Tests only. |  |
+| 9a | 409 | 409A | 7 backend integration tests (accounting + legal tenant coexistence: independent provisioning, no cross-contamination, module guard isolation, InvoiceLine tariff FK null for accounting). 4 frontend tests (module-gated UI visibility, no legal nav for accounting profile, no accounting nav for legal profile, profile switch updates visible modules). Tests only. | **Done** (PR #853) |
 
 ### Timeline
 
@@ -991,7 +991,7 @@ Stage 9:  [409A]                                                        <- coexi
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **409A** | 409.1--409.5 | 7 backend integration tests (independent provisioning, module isolation, InvoiceLine FK null for accounting, no pack cross-contamination, concurrent tenant operations) + 4 frontend tests (UI visibility by profile, nav isolation, profile switch). Tests only. |  |
+| **409A** | 409.1--409.5 | 7 backend integration tests (independent provisioning, module isolation, InvoiceLine FK null for accounting, no pack cross-contamination, concurrent tenant operations) + 4 frontend tests (UI visibility by profile, nav isolation, profile switch). Tests only. | **Done** (PR #853) |
 
 ### Tasks
 

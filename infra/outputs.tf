@@ -46,6 +46,31 @@ output "backend_sg_id" {
   value       = module.security_groups.backend_sg_id
 }
 
+output "gateway_sg_id" {
+  description = "Security group ID for gateway ECS tasks"
+  value       = module.security_groups.gateway_sg_id
+}
+
+output "portal_sg_id" {
+  description = "Security group ID for portal ECS tasks"
+  value       = module.security_groups.portal_sg_id
+}
+
+output "keycloak_sg_id" {
+  description = "Security group ID for Keycloak ECS tasks"
+  value       = module.security_groups.keycloak_sg_id
+}
+
+output "rds_sg_id" {
+  description = "Security group ID for RDS PostgreSQL"
+  value       = module.security_groups.rds_sg_id
+}
+
+output "redis_sg_id" {
+  description = "Security group ID for ElastiCache Redis"
+  value       = module.security_groups.redis_sg_id
+}
+
 # -----------------------------------------------------------------------------
 # ECR
 # -----------------------------------------------------------------------------

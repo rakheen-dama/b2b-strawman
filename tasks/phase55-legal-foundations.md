@@ -34,7 +34,7 @@ Phase 55 is the multi-vertical architecture stress test. It builds three real le
 | 402 | Tariff Schedule Entity + Service + CRUD | Backend | 397 | M | 402A, 402B | **Done** (PR #846) |
 | 403 | Invoice Tariff Integration + InvoiceLine Extension | Backend | 402 | S | 403A | **Done** (PR #847) |
 | 404 | Legal Pack Content + Tariff Seed Data | Backend | 397 | M | 404A, 404B | **Done** (PR #848) |
-| 405 | Frontend: Court Calendar + Prescription Pages | Frontend | 398, 399 | L | 405A, 405B | |
+| 405 | Frontend: Court Calendar + Prescription Pages | Frontend | 398, 399 | L | 405A, 405B | **Done** (PR #849) |
 | 406 | Frontend: Conflict Check + Adverse Party Pages | Frontend | 400, 401 | L | 406A, 406B | |
 | 407 | Frontend: Tariff Pages + Invoice Tariff Selector | Frontend | 402, 403 | M | 407A, 407B | |
 | 408 | Frontend: Project Detail Tabs + Sidebar + Dashboard Widget | Frontend | 405, 406, 407 | M | 408A | |
@@ -185,8 +185,8 @@ FRONTEND (requires backend epics)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 5a | 405 | 405A | Court calendar page (`court-calendar/page.tsx`) replacing stub. Calendar/list views, TypeScript types, Zod schemas, server actions, nav item update in `nav-items.ts` with `requiredModule: "court_calendar"`. Frontend tests (~5). Frontend only. |  |
-| 5b | 405 | 405B | `CreateCourtDateDialog`, `PostponeDialog`, `CancelDialog`, `OutcomeDialog`, `PrescriptionTab` (list + create + interrupt). Frontend tests (~5). Frontend only. |  |
+| 5a | 405 | 405A | Court calendar page (`court-calendar/page.tsx`) replacing stub. Calendar/list views, TypeScript types, Zod schemas, server actions, nav item update in `nav-items.ts` with `requiredModule: "court_calendar"`. Frontend tests (~5). Frontend only. | **Done** (PR #849) |
+| 5b | 405 | 405B | `CreateCourtDateDialog`, `PostponeDialog`, `CancelDialog`, `OutcomeDialog`, `PrescriptionTab` (list + create + interrupt). Frontend tests (~5). Frontend only. | **Done** (PR #849) |
 
 ### Stage 6: Frontend Conflict Check + Adverse Party + Tariffs (parallel)
 
@@ -745,8 +745,8 @@ Stage 9:  [409A]                                                        <- coexi
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **405A** | 405.1--405.7 | Court calendar page (`court-calendar/page.tsx`) replacing stub. Calendar month view + list view with filters (date range, type, status, customer). TypeScript types, Zod schemas, server actions for court date CRUD + upcoming data. Nav item update with `requiredModule: "court_calendar"`. Frontend tests (~5). Frontend only. |  |
-| **405B** | 405.8--405.13 | `CreateCourtDateDialog`, `PostponeDialog`, `CancelDialog`, `OutcomeDialog`. `PrescriptionTab` component (list + `CreatePrescriptionDialog` + `InterruptDialog`). Court date detail view. Frontend tests (~5). Frontend only. |  |
+| **405A** | 405.1--405.7 | Court calendar page (`court-calendar/page.tsx`) replacing stub. Calendar month view + list view with filters (date range, type, status, customer). TypeScript types, Zod schemas, server actions for court date CRUD + upcoming data. Nav item update with `requiredModule: "court_calendar"`. Frontend tests (~5). Frontend only. | **Done** (PR #849) |
+| **405B** | 405.8--405.13 | `CreateCourtDateDialog`, `PostponeDialog`, `CancelDialog`, `OutcomeDialog`. `PrescriptionTab` component (list + `CreatePrescriptionDialog` + `InterruptDialog`). Court date detail view. Frontend tests (~5). Frontend only. | **Done** (PR #849) |
 
 ### Tasks
 

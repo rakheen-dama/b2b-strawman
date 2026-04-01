@@ -25,7 +25,7 @@ Phase 56 updates and extends the existing (stale) AWS infrastructure and CI/CD p
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 410 | Terraform Foundation: Naming, Secrets, State Bucket & Bootstrap | Infra | -- | M | 410A, 410B | |
+| 410 | Terraform Foundation: Naming, Secrets, State Bucket & Bootstrap | Infra | -- | M | 410A, 410B | **Done** (PR #854) |
 | 411 | Data Layer: RDS PostgreSQL + ElastiCache Redis | Infra | 410 | M | 411A, 411B | |
 | 412 | Service Extension: ECR, Security Groups, IAM for 5 Services | Infra | 410 | L | 412A, 412B, 412C | |
 | 413 | ECS Services + ALB Routing Restructure | Infra | 411, 412 | L | 413A, 413B | |
@@ -129,8 +129,8 @@ KEYCLOAK           CI/CD PIPELINE     OBSERVABILITY
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 0a | 410 | 410A | Rename state bucket from `docteams-terraform-state` to `heykazi-terraform-state`. Create `infra/bootstrap/` directory with standalone Terraform config (local state) for S3 bucket + DynamoDB lock table. Replace 3 stale Clerk secrets with 10 Keycloak-era secrets in secrets module. Update resource tags to `Project = kazi`. Infra only. | |
-| 0b | 410 | 410B | Flatten environment structure: collapse `environments/dev/`, `environments/staging/`, `environments/prod/` into root-level `main.tf`, `variables.tf`, `outputs.tf`, `providers.tf`, `versions.tf` with `environments/staging.tfvars` and `environments/production.tfvars`. Pin provider versions. Remove `dev` environment (only staging + production per requirements). Infra only. | |
+| 0a | 410 | 410A | Rename state bucket from `docteams-terraform-state` to `heykazi-terraform-state`. Create `infra/bootstrap/` directory with standalone Terraform config (local state) for S3 bucket + DynamoDB lock table. Replace 3 stale Clerk secrets with 10 Keycloak-era secrets in secrets module. Update resource tags to `Project = kazi`. Infra only. | **Done** (PR #854) |
+| 0b | 410 | 410B | Flatten environment structure: collapse `environments/dev/`, `environments/staging/`, `environments/prod/` into root-level `main.tf`, `variables.tf`, `outputs.tf`, `providers.tf`, `versions.tf` with `environments/staging.tfvars` and `environments/production.tfvars`. Pin provider versions. Remove `dev` environment (only staging + production per requirements). Infra only. | **Done** (PR #854) |
 
 ### Stage 1: Data Layer + Service Extension -- ECR (parallel tracks)
 
@@ -226,8 +226,8 @@ Note: Stage 5 can run in parallel with Stages 1-4 (Dockerfiles are independent).
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **410A** | 410.1--410.5 | Create `infra/bootstrap/` directory with standalone Terraform config (local state) for S3 state bucket (`heykazi-terraform-state`) + DynamoDB lock table (`heykazi-terraform-locks`). Replace 3 stale Clerk secrets with 10 Keycloak/portal/SMTP secrets in secrets module. Update `project` variable default to `kazi`. Update resource tags to `Project = kazi`. Infra only. | |
-| **410B** | 410.6--410.10 | Flatten environment structure: create root-level `infra/main.tf`, `infra/variables.tf`, `infra/outputs.tf`, `infra/providers.tf`, `infra/versions.tf` that compose all modules. Create `infra/environments/staging.tfvars` and `infra/environments/production.tfvars`. Remove `dev` environment. Pin Terraform >= 1.9 and AWS provider >= 5.0. Infra only. | |
+| **410A** | 410.1--410.5 | Create `infra/bootstrap/` directory with standalone Terraform config (local state) for S3 state bucket (`heykazi-terraform-state`) + DynamoDB lock table (`heykazi-terraform-locks`). Replace 3 stale Clerk secrets with 10 Keycloak/portal/SMTP secrets in secrets module. Update `project` variable default to `kazi`. Update resource tags to `Project = kazi`. Infra only. | **Done** (PR #854) |
+| **410B** | 410.6--410.10 | Flatten environment structure: create root-level `infra/main.tf`, `infra/variables.tf`, `infra/outputs.tf`, `infra/providers.tf`, `infra/versions.tf` that compose all modules. Create `infra/environments/staging.tfvars` and `infra/environments/production.tfvars`. Remove `dev` environment. Pin Terraform >= 1.9 and AWS provider >= 5.0. Infra only. | **Done** (PR #854) |
 
 ### Tasks
 

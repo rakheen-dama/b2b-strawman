@@ -156,7 +156,7 @@ KEYCLOAK           CI/CD PIPELINE     OBSERVABILITY
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 4a | 413 | 413A | Extend ECS module: add 3 new task definitions (gateway, portal, keycloak) following existing frontend/backend pattern. Add 3 new ECS services. Replace Clerk env vars with Keycloak env vars in frontend/backend task definitions. Add Cloud Map namespace (`kazi.internal`) for service discovery (`backend.kazi.internal`). Extend autoscaling module for gateway, portal. Set `health_check_grace_period_seconds = 180` on backend service (ADR-216). Infra only. | |
+| 4a | 413 | 413A | Extend ECS module: add 3 new task definitions (gateway, portal, keycloak) following existing frontend/backend pattern. Add 3 new ECS services. Replace Clerk env vars with Keycloak env vars in frontend/backend task definitions. Add Cloud Map namespace (`kazi.internal`) for service discovery (`backend.kazi.internal`). Extend autoscaling module for gateway, portal. Set `health_check_grace_period_seconds = 180` on backend service (ADR-216). Infra only. | **Done** (PR #860) |
 | 4b | 413 | 413B | Restructure ALB module per ADR-214: add 3 new target groups (gateway on 8443, portal on 3002, keycloak on 8080). Replace existing listener rules with priority-ordered rules (auth.heykazi.com -> keycloak-tg at priority 10, portal.heykazi.com -> portal-tg at 20, app.heykazi.com/bff/* -> gateway-tg at 30, app.heykazi.com/api/* -> gateway-tg at 40, app.heykazi.com -> frontend-tg at 50, default -> 404). Add `enable_deletion_protection = true` for production. Infra only. | |
 
 ### Stage 5: Keycloak Deployment + Dockerfile Hardening (parallel tracks)
@@ -426,7 +426,7 @@ Note: Stage 5 can run in parallel with Stages 1-4 (Dockerfiles are independent).
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **413A** | 413.1--413.8 | Extend ECS module: add 3 new task definitions (gateway, portal, keycloak) with correct env vars and secrets. Replace Clerk env vars in frontend/backend task defs. Add 3 new ECS services. Add Cloud Map namespace `kazi.internal` with `backend.kazi.internal` service discovery. Extend autoscaling for gateway + portal. Set backend health check grace period to 180s. Infra only. | |
+| **413A** | 413.1--413.8 | Extend ECS module: add 3 new task definitions (gateway, portal, keycloak) with correct env vars and secrets. Replace Clerk env vars in frontend/backend task defs. Add 3 new ECS services. Add Cloud Map namespace `kazi.internal` with `backend.kazi.internal` service discovery. Extend autoscaling for gateway + portal. Set backend health check grace period to 180s. Infra only. | **Done** (PR #860) |
 | **413B** | 413.9--413.14 | Restructure ALB module: add 3 new target groups (gateway-tg on 8443, portal-tg on 3002, keycloak-tg on 8080). Replace existing listener rules with priority-ordered host-based + path-based rules per ADR-214 (keycloak at priority 10, portal at 20, /bff/* at 30, /api/* at 40, frontend at 50, default 404 at 99). Enable deletion protection for production. Infra only. | |
 
 ### Tasks

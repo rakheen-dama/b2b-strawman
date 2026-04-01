@@ -34,7 +34,7 @@ module "security_groups" {
 }
 
 # -----------------------------------------------------------------------------
-# Data (RDS PostgreSQL)
+# Data (RDS PostgreSQL + ElastiCache Redis)
 # -----------------------------------------------------------------------------
 
 module "data" {
@@ -47,7 +47,7 @@ module "data" {
   vpc_id             = module.vpc.vpc_id
   private_subnet_ids = module.vpc.private_subnet_ids
 
-  # Security Groups (rds_sg_id comes from Epic 412B; pass a placeholder for now)
+  # Security Groups (rds_sg_id and redis_sg_id come from Epic 412B; pass placeholder for now)
   rds_sg_id = module.security_groups.backend_sg_id # TODO: replace with rds_sg_id in 412B
 
   # RDS Configuration
@@ -58,6 +58,13 @@ module "data" {
   rds_backup_retention    = var.rds_backup_retention
   rds_deletion_protection = var.rds_deletion_protection
   rds_skip_final_snapshot = var.rds_skip_final_snapshot
+
+  # Redis Configuration
+  redis_sg_id                 = module.security_groups.backend_sg_id # TODO: replace with redis_sg_id in 412B
+  redis_node_type             = var.redis_node_type
+  redis_engine_version        = var.redis_engine_version
+  create_redis                = var.create_redis
+  redis_auth_token_secret_arn = module.secrets.redis_auth_token_arn
 }
 
 # -----------------------------------------------------------------------------

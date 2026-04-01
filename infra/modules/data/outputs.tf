@@ -22,3 +22,22 @@ output "rds_instance_identifier" {
   description = "Identifier of the RDS instance"
   value       = aws_db_instance.main.identifier
 }
+
+# -----------------------------------------------------------------------------
+# Redis
+# -----------------------------------------------------------------------------
+
+output "redis_endpoint" {
+  description = "ElastiCache Redis primary endpoint address"
+  value       = var.create_redis ? aws_elasticache_replication_group.main[0].primary_endpoint_address : null
+}
+
+output "redis_port" {
+  description = "ElastiCache Redis port"
+  value       = var.create_redis ? aws_elasticache_replication_group.main[0].port : null
+}
+
+output "redis_auth_token_secret_arn" {
+  description = "ARN of the Redis auth token secret in Secrets Manager"
+  value       = var.redis_auth_token_secret_arn
+}

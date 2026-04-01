@@ -36,3 +36,6 @@ rds_multi_az            = true
 rds_backup_retention    = 7
 rds_deletion_protection = true
 rds_skip_final_snapshot = false
+
+# Redis
+redis_node_type = "cache.t4g.micro"

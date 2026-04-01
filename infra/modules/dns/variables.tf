@@ -16,7 +16,7 @@ variable "create_dns" {
 }
 
 variable "domain_name" {
-  description = "Domain name for the application (e.g., app.docteams.com)"
+  description = "Domain name for the application (e.g., app.heykazi.com)"
   type        = string
   default     = ""
 }

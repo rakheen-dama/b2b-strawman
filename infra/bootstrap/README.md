@@ -20,7 +20,7 @@ terraform apply
 ```
 
 This creates:
-- **S3 bucket**: `heykazi-terraform-state` with versioning and SSE-S3 encryption
+- **S3 bucket**: `heykazi-terraform-state` with versioning and SSE-KMS encryption
 - **DynamoDB table**: `heykazi-terraform-locks` with `LockID` partition key
 
 ## State Migration (from docteams-terraform-state)

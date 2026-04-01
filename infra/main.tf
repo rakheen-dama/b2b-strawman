@@ -47,8 +47,8 @@ module "data" {
   vpc_id             = module.vpc.vpc_id
   private_subnet_ids = module.vpc.private_subnet_ids
 
-  # Security Groups (rds_sg_id and redis_sg_id come from Epic 412B; pass placeholder for now)
-  rds_sg_id = module.security_groups.backend_sg_id # TODO: replace with rds_sg_id in 412B
+  # Security Groups
+  rds_sg_id = module.security_groups.rds_sg_id
 
   # RDS Configuration
   rds_instance_class      = var.rds_instance_class
@@ -60,7 +60,7 @@ module "data" {
   rds_skip_final_snapshot = var.rds_skip_final_snapshot
 
   # Redis Configuration
-  redis_sg_id                 = module.security_groups.backend_sg_id # TODO: replace with redis_sg_id in 412B
+  redis_sg_id                 = module.security_groups.redis_sg_id
   redis_node_type             = var.redis_node_type
   redis_engine_version        = var.redis_engine_version
   create_redis                = var.create_redis

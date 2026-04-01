@@ -110,3 +110,65 @@ resource "terraform_data" "keycloak_db_reminder" {
 
   depends_on = [aws_db_instance.main]
 }
+
+# -----------------------------------------------------------------------------
+# Retrieve Redis auth token value from Secrets Manager
+# -----------------------------------------------------------------------------
+
+data "aws_secretsmanager_secret_version" "redis_auth_token" {
+  count     = var.create_redis ? 1 : 0
+  secret_id = var.redis_auth_token_secret_arn
+}
+
+# -----------------------------------------------------------------------------
+# ElastiCache Subnet Group — place Redis in private subnets
+# -----------------------------------------------------------------------------
+
+resource "aws_elasticache_subnet_group" "main" {
+  count = var.create_redis ? 1 : 0
+
+  name       = "heykazi-${var.environment}-redis-subnet-group"
+  subnet_ids = var.private_subnet_ids
+
+  tags = {
+    Name        = "heykazi-${var.environment}-redis-subnet-group"
+    Project     = var.project
+    Environment = var.environment
+    ManagedBy   = "terraform"
+  }
+}
+
+# -----------------------------------------------------------------------------
+# ElastiCache Redis Replication Group — single-node Redis 7.1
+# -----------------------------------------------------------------------------
+
+resource "aws_elasticache_replication_group" "main" {
+  count = var.create_redis ? 1 : 0
+
+  replication_group_id = "heykazi-${var.environment}-redis"
+  description          = "heykazi-${var.environment}-redis"
+
+  engine         = "redis"
+  engine_version = var.redis_engine_version
+  node_type      = var.redis_node_type
+  port           = 6379
+
+  num_cache_clusters         = 1
+  automatic_failover_enabled = false
+
+  at_rest_encryption_enabled = true
+  transit_encryption_enabled = true
+  auth_token                 = data.aws_secretsmanager_secret_version.redis_auth_token[0].secret_string
+
+  subnet_group_name  = aws_elasticache_subnet_group.main[0].name
+  security_group_ids = [var.redis_sg_id]
+
+  apply_immediately = true
+
+  tags = {
+    Name        = "heykazi-${var.environment}-redis"
+    Project     = var.project
+    Environment = var.environment
+    ManagedBy   = "terraform"
+  }
+}

@@ -88,6 +88,28 @@ variable "rds_skip_final_snapshot" {
 }
 
 # -----------------------------------------------------------------------------
+# Redis
+# -----------------------------------------------------------------------------
+
+variable "redis_node_type" {
+  description = "ElastiCache node type"
+  type        = string
+  default     = "cache.t4g.micro"
+}
+
+variable "redis_engine_version" {
+  description = "Redis engine version"
+  type        = string
+  default     = "7.1"
+}
+
+variable "create_redis" {
+  description = "Whether to create ElastiCache Redis resources"
+  type        = bool
+  default     = true
+}
+
+# -----------------------------------------------------------------------------
 # Container Images
 # -----------------------------------------------------------------------------
 

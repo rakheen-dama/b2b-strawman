@@ -65,3 +65,35 @@ variable "rds_skip_final_snapshot" {
   type        = bool
   default     = true
 }
+
+# -----------------------------------------------------------------------------
+# Redis
+# -----------------------------------------------------------------------------
+
+variable "redis_sg_id" {
+  description = "Security group ID for ElastiCache Redis"
+  type        = string
+}
+
+variable "redis_node_type" {
+  description = "ElastiCache node type"
+  type        = string
+  default     = "cache.t4g.micro"
+}
+
+variable "redis_engine_version" {
+  description = "Redis engine version"
+  type        = string
+  default     = "7.1"
+}
+
+variable "create_redis" {
+  description = "Whether to create ElastiCache Redis resources"
+  type        = bool
+  default     = true
+}
+
+variable "redis_auth_token_secret_arn" {
+  description = "ARN of the Redis auth token secret in Secrets Manager"
+  type        = string
+}

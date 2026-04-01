@@ -134,3 +134,22 @@ output "rds_instance_identifier" {
   description = "Identifier of the RDS instance"
   value       = module.data.rds_instance_identifier
 }
+
+# -----------------------------------------------------------------------------
+# Redis
+# -----------------------------------------------------------------------------
+
+output "redis_endpoint" {
+  description = "ElastiCache Redis primary endpoint"
+  value       = module.data.redis_endpoint
+}
+
+output "redis_port" {
+  description = "ElastiCache Redis port"
+  value       = module.data.redis_port
+}
+
+output "redis_auth_token_secret_arn" {
+  description = "ARN of the Redis auth token secret in Secrets Manager"
+  value       = module.data.redis_auth_token_secret_arn
+}

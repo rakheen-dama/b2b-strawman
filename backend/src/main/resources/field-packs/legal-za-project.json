@@ -1,0 +1,89 @@
+{
+  "packId": "legal-za-project",
+  "version": 1,
+  "verticalProfile": "legal-za",
+  "entityType": "PROJECT",
+  "group": {
+    "slug": "legal_za_matter",
+    "name": "SA Legal — Matter Details",
+    "description": "South African legal-specific fields for matter (project) entities",
+    "autoApply": true
+  },
+  "fields": [
+    {
+      "slug": "matter_type",
+      "name": "Matter Type",
+      "fieldType": "DROPDOWN",
+      "description": "Classification of the legal matter",
+      "required": true,
+      "options": [
+        { "value": "LITIGATION", "label": "Litigation" },
+        { "value": "CONVEYANCING", "label": "Conveyancing" },
+        { "value": "COMMERCIAL", "label": "Commercial" },
+        { "value": "FAMILY_LAW", "label": "Family Law" },
+        { "value": "ESTATES", "label": "Estates" },
+        { "value": "LABOUR", "label": "Labour" },
+        { "value": "CRIMINAL", "label": "Criminal" },
+        { "value": "COLLECTIONS", "label": "Collections" },
+        { "value": "NOTARIAL", "label": "Notarial" }
+      ],
+      "sortOrder": 1
+    },
+    {
+      "slug": "case_number",
+      "name": "Case Number",
+      "fieldType": "TEXT",
+      "description": "Court-assigned case number for the matter",
+      "required": false,
+      "sortOrder": 2
+    },
+    {
+      "slug": "court_name",
+      "name": "Court",
+      "fieldType": "TEXT",
+      "description": "Name of the court in which the matter is heard",
+      "required": false,
+      "sortOrder": 3
+    },
+    {
+      "slug": "opposing_party",
+      "name": "Opposing Party",
+      "fieldType": "TEXT",
+      "description": "Name of the primary opposing party",
+      "required": false,
+      "sortOrder": 4
+    },
+    {
+      "slug": "opposing_attorney",
+      "name": "Opposing Attorney",
+      "fieldType": "TEXT",
+      "description": "Name of the opposing attorney or firm",
+      "required": false,
+      "sortOrder": 5
+    },
+    {
+      "slug": "advocate_name",
+      "name": "Advocate",
+      "fieldType": "TEXT",
+      "description": "Name of the instructed advocate (if briefed)",
+      "required": false,
+      "sortOrder": 6
+    },
+    {
+      "slug": "date_of_instruction",
+      "name": "Date of Instruction",
+      "fieldType": "DATE",
+      "description": "Date on which the firm was instructed on the matter",
+      "required": false,
+      "sortOrder": 7
+    },
+    {
+      "slug": "estimated_value",
+      "name": "Estimated Value",
+      "fieldType": "NUMBER",
+      "description": "Estimated monetary value of the claim or matter",
+      "required": false,
+      "sortOrder": 8
+    }
+  ]
+}

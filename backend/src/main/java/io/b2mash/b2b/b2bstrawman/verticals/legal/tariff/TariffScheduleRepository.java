@@ -13,4 +13,6 @@ public interface TariffScheduleRepository extends JpaRepository<TariffSchedule, 
 
   @EntityGraph(attributePaths = "items")
   Optional<TariffSchedule> findWithItemsById(UUID id);
+
+  Optional<TariffSchedule> findByNameAndIsSystemTrue(String name);
 }

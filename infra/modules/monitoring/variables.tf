@@ -1,6 +1,7 @@
 variable "project" {
   description = "Project name"
   type        = string
+  default     = "kazi"
 }
 
 variable "environment" {

@@ -1,0 +1,117 @@
+{
+  "packId": "legal-za-onboarding",
+  "name": "SA Legal — Client Onboarding",
+  "description": "South African legal compliance checklist for client onboarding, covering FICA/KYC, engagement formalities, and risk assessment",
+  "version": "1.0.0",
+  "verticalProfile": "legal-za",
+  "jurisdiction": "ZA",
+  "customerType": "ALL",
+  "checklistTemplate": {
+    "name": "Legal Client Onboarding",
+    "slug": "legal-za-client-onboarding",
+    "autoInstantiate": false,
+    "items": [
+      {
+        "name": "Proof of Identity",
+        "description": "SA ID document or passport — certified copy required per FICA regulations.",
+        "sortOrder": 1,
+        "required": true,
+        "requiresDocument": true,
+        "requiredDocumentLabel": "Certified copy of SA ID / passport",
+        "dependsOnItemKey": null
+      },
+      {
+        "name": "Proof of Address",
+        "description": "Proof of residential or business address, not older than 3 months (utility bill, bank statement, or municipal account).",
+        "sortOrder": 2,
+        "required": true,
+        "requiresDocument": true,
+        "requiredDocumentLabel": "Proof of address (not older than 3 months)",
+        "dependsOnItemKey": null
+      },
+      {
+        "name": "Company Registration Docs",
+        "description": "CIPC registration certificate for company, CC, or trust clients.",
+        "sortOrder": 3,
+        "required": false,
+        "requiresDocument": true,
+        "requiredDocumentLabel": "CIPC registration certificate",
+        "dependsOnItemKey": null
+      },
+      {
+        "name": "Trust Deed",
+        "description": "Certified copy of the trust deed for trust clients, including any amendments.",
+        "sortOrder": 4,
+        "required": false,
+        "requiresDocument": true,
+        "requiredDocumentLabel": "Certified copy of trust deed",
+        "dependsOnItemKey": null
+      },
+      {
+        "name": "Beneficial Ownership Declaration",
+        "description": "Declaration of beneficial ownership per PCC Rule 59 requirements — identify all persons with 25% or more ownership or control.",
+        "sortOrder": 5,
+        "required": true,
+        "requiresDocument": true,
+        "requiredDocumentLabel": "Beneficial ownership declaration form",
+        "dependsOnItemKey": null
+      },
+      {
+        "name": "Source of Funds Declaration",
+        "description": "Declaration of the origin and source of funds for the transaction, as required by FICA.",
+        "sortOrder": 6,
+        "required": true,
+        "requiresDocument": true,
+        "requiredDocumentLabel": "Source of funds declaration",
+        "dependsOnItemKey": null
+      },
+      {
+        "name": "Engagement Letter Signed",
+        "description": "Engagement letter signed by the client, confirming mandate and fee arrangement.",
+        "sortOrder": 7,
+        "required": true,
+        "requiresDocument": true,
+        "requiredDocumentLabel": "Signed engagement letter",
+        "dependsOnItemKey": null
+      },
+      {
+        "name": "Conflict Check Performed",
+        "description": "Documented conflict of interest check completed and cleared before accepting the mandate.",
+        "sortOrder": 8,
+        "required": true,
+        "requiresDocument": false,
+        "requiredDocumentLabel": null,
+        "dependsOnItemKey": null
+      },
+      {
+        "name": "Power of Attorney Signed",
+        "description": "Power of attorney signed by the client, if applicable to the matter type (e.g., litigation).",
+        "sortOrder": 9,
+        "required": false,
+        "requiresDocument": true,
+        "requiredDocumentLabel": "Signed power of attorney",
+        "dependsOnItemKey": "engagement-letter-signed"
+      },
+      {
+        "name": "FICA Risk Assessment",
+        "description": "Client risk rating assessment (low/medium/high) based on FICA risk matrix and client profile.",
+        "sortOrder": 10,
+        "required": true,
+        "requiresDocument": false,
+        "requiredDocumentLabel": null,
+        "dependsOnItemKey": "proof-of-identity"
+      },
+      {
+        "name": "Sanctions Screening",
+        "description": "Client screened against South African and international sanctions lists (UN, EU, OFAC).",
+        "sortOrder": 11,
+        "required": true,
+        "requiresDocument": false,
+        "requiredDocumentLabel": null,
+        "dependsOnItemKey": "proof-of-identity"
+      }
+    ]
+  },
+  "fieldDefinitions": [],
+  "retentionOverrides": null
+}

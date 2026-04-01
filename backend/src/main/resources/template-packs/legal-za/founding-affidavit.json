@@ -1,0 +1,187 @@
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "heading",
+      "attrs": { "level": 1 },
+      "content": [
+        { "type": "text", "text": "Founding Affidavit" }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "IN THE " },
+        { "type": "variable", "attrs": { "key": "project.customFields.court_name" } }
+      ]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": {
+        "fieldKey": "project.customFields.case_number",
+        "operator": "isNotEmpty"
+      },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "marks": [{ "type": "bold" }], "text": "Case Number: " },
+            { "type": "variable", "attrs": { "key": "project.customFields.case_number" } }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "In the matter between:" }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "variable", "attrs": { "key": "customer.name" } },
+        { "type": "text", "text": " ............................. Applicant" }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "and" }
+      ]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": {
+        "fieldKey": "project.customFields.opposing_party",
+        "operator": "isNotEmpty"
+      },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "variable", "attrs": { "key": "project.customFields.opposing_party" } },
+            { "type": "text", "text": " ............................. Respondent" }
+          ]
+        }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "heading",
+      "attrs": { "level": 2 },
+      "content": [
+        { "type": "text", "text": "FOUNDING AFFIDAVIT" }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "I, the undersigned," }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "variable", "attrs": { "key": "customer.name" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "do hereby make oath and state:" }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [
+        { "type": "text", "text": "1. Introduction" }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "I am the Applicant in this matter. The facts deposed to herein are within my personal knowledge, unless otherwise indicated, and are to the best of my knowledge both true and correct." }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [
+        { "type": "text", "text": "2. Background" }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "[Background facts to be inserted]" }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [
+        { "type": "text", "text": "3. Relief Sought" }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "[Details of relief sought to be inserted]" }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [
+        { "type": "text", "text": "4. Conclusion" }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "In the circumstances, I respectfully submit that the Applicant is entitled to the relief as set out in the Notice of Motion." }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "____________________________" }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "DEPONENT" }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "I certify that the deponent has acknowledged that he/she knows and understands the contents of this affidavit and that it is to the best of his/her knowledge both true and correct. This affidavit was signed and sworn to before me at _________________ on this _____ day of ______________ 20___, the regulations contained in Government Notice No. R1258 of 21 July 1972 having been complied with." }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "____________________________" }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "COMMISSIONER OF OATHS" }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "variable", "attrs": { "key": "org.documentFooterText" } }
+      ]
+    }
+  ]
+}

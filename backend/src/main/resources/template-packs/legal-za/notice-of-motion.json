@@ -1,0 +1,139 @@
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "heading",
+      "attrs": { "level": 1 },
+      "content": [
+        { "type": "text", "text": "Notice of Motion" }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "IN THE " },
+        { "type": "variable", "attrs": { "key": "project.customFields.court_name" } }
+      ]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": {
+        "fieldKey": "project.customFields.case_number",
+        "operator": "isNotEmpty"
+      },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "marks": [{ "type": "bold" }], "text": "Case Number: " },
+            { "type": "variable", "attrs": { "key": "project.customFields.case_number" } }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "In the matter between:" }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "variable", "attrs": { "key": "customer.name" } },
+        { "type": "text", "text": " ............................. Applicant" }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "and" }
+      ]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": {
+        "fieldKey": "project.customFields.opposing_party",
+        "operator": "isNotEmpty"
+      },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "variable", "attrs": { "key": "project.customFields.opposing_party" } },
+            { "type": "text", "text": " ............................. Respondent" }
+          ]
+        }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "heading",
+      "attrs": { "level": 2 },
+      "content": [
+        { "type": "text", "text": "NOTICE OF MOTION" }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "KINDLY TAKE NOTICE that " },
+        { "type": "variable", "attrs": { "key": "customer.name" } },
+        { "type": "text", "text": " (\"the Applicant\") intends to make application to the above Honourable Court on a date and time to be arranged with the Registrar for an order in the following terms:" }
+      ]
+    },
+    {
+      "type": "bulletList",
+      "content": [
+        { "type": "listItem", "content": [{ "type": "paragraph", "content": [{ "type": "text", "text": "[Relief sought to be inserted]" }] }] }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "KINDLY TAKE NOTICE FURTHER that the founding affidavit of the Applicant and the annexures thereto will be used in support of this application." }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "KINDLY TAKE NOTICE FURTHER that the Applicant has appointed " },
+        { "type": "variable", "attrs": { "key": "org.name" } },
+        { "type": "text", "text": " as attorneys of record." }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "Dated at _________________ on this _____ day of ______________ 20___." }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "____________________________" }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "variable", "attrs": { "key": "org.name" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "text": "Attorneys for the Applicant" }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "variable", "attrs": { "key": "org.documentFooterText" } }
+      ]
+    }
+  ]
+}

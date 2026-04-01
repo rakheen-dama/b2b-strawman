@@ -1,0 +1,51 @@
+{
+  "packId": "automation-legal-za",
+  "version": 1,
+  "verticalProfile": "legal-za",
+  "templates": [
+    {
+      "slug": "matter-onboarding-reminder",
+      "name": "Matter Onboarding Reminder",
+      "description": "Sends notification to complete the onboarding checklist when a client transitions to ONBOARDING status",
+      "category": "compliance",
+      "triggerType": "CUSTOMER_STATUS_CHANGED",
+      "triggerConfig": { "toStatus": "ONBOARDING" },
+      "conditions": [],
+      "actions": [
+        {
+          "actionType": "SEND_NOTIFICATION",
+          "actionConfig": {
+            "recipientType": "ORG_ADMINS",
+            "title": "Complete onboarding: {{customer.name}}",
+            "message": "Client {{customer.name}} has entered the onboarding phase. Please complete the onboarding checklist, including FICA verification, conflict check, and engagement letter."
+          },
+          "delayDuration": null,
+          "delayUnit": null,
+          "sortOrder": 0
+        }
+      ]
+    },
+    {
+      "slug": "engagement-letter-followup",
+      "name": "Engagement Letter Follow-up",
+      "description": "Creates a follow-up task when an engagement letter (proposal) is sent to the client",
+      "category": "engagement",
+      "triggerType": "PROPOSAL_SENT",
+      "triggerConfig": {},
+      "conditions": [],
+      "actions": [
+        {
+          "actionType": "CREATE_TASK",
+          "actionConfig": {
+            "title": "Follow up on engagement letter: {{customer.name}}",
+            "description": "The engagement letter for {{customer.name}} was sent. Follow up to confirm receipt and obtain signed copy.",
+            "assignToType": "PROJECT_OWNER"
+          },
+          "delayDuration": 7,
+          "delayUnit": "DAYS",
+          "sortOrder": 0
+        }
+      ]
+    }
+  ]
+}

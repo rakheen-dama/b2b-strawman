@@ -1,0 +1,85 @@
+{
+  "packId": "legal-za-customer",
+  "version": 1,
+  "verticalProfile": "legal-za",
+  "entityType": "CUSTOMER",
+  "group": {
+    "slug": "legal_za_client",
+    "name": "SA Legal — Client Details",
+    "description": "South African legal-specific fields for client entities",
+    "autoApply": true
+  },
+  "fields": [
+    {
+      "slug": "client_type",
+      "name": "Client Type",
+      "fieldType": "DROPDOWN",
+      "description": "Legal entity classification for the client",
+      "required": true,
+      "options": [
+        { "value": "INDIVIDUAL", "label": "Individual" },
+        { "value": "COMPANY", "label": "Company" },
+        { "value": "TRUST", "label": "Trust" },
+        { "value": "CLOSE_CORPORATION", "label": "Close Corporation" },
+        { "value": "PARTNERSHIP", "label": "Partnership" },
+        { "value": "ESTATE", "label": "Estate" },
+        { "value": "GOVERNMENT", "label": "Government" }
+      ],
+      "sortOrder": 1
+    },
+    {
+      "slug": "id_passport_number",
+      "name": "ID / Passport Number",
+      "fieldType": "TEXT",
+      "description": "South African ID number or passport number for natural persons",
+      "required": false,
+      "sortOrder": 2
+    },
+    {
+      "slug": "registration_number",
+      "name": "Registration Number",
+      "fieldType": "TEXT",
+      "description": "CIPC registration number for companies, CCs, and trusts",
+      "required": false,
+      "sortOrder": 3
+    },
+    {
+      "slug": "physical_address",
+      "name": "Physical Address",
+      "fieldType": "TEXT",
+      "description": "Domicilium citandi et executandi address for service of legal documents",
+      "required": false,
+      "requiredForContexts": ["PROPOSAL_SEND"],
+      "sortOrder": 4
+    },
+    {
+      "slug": "postal_address",
+      "name": "Postal Address",
+      "fieldType": "TEXT",
+      "description": "Postal address if different from physical address",
+      "required": false,
+      "sortOrder": 5
+    },
+    {
+      "slug": "preferred_correspondence",
+      "name": "Preferred Correspondence",
+      "fieldType": "DROPDOWN",
+      "description": "Preferred method of correspondence with the client",
+      "required": false,
+      "options": [
+        { "value": "EMAIL", "label": "Email" },
+        { "value": "POST", "label": "Post" },
+        { "value": "HAND_DELIVERY", "label": "Hand Delivery" }
+      ],
+      "sortOrder": 6
+    },
+    {
+      "slug": "referred_by",
+      "name": "Referred By",
+      "fieldType": "TEXT",
+      "description": "Source of client referral for tracking",
+      "required": false,
+      "sortOrder": 7
+    }
+  ]
+}

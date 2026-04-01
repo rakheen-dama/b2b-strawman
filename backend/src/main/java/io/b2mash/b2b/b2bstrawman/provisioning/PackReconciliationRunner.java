@@ -10,6 +10,7 @@ import io.b2mash.b2b.b2bstrawman.reporting.StandardReportPackSeeder;
 import io.b2mash.b2b.b2bstrawman.seeder.RatePackSeeder;
 import io.b2mash.b2b.b2bstrawman.seeder.SchedulePackSeeder;
 import io.b2mash.b2b.b2bstrawman.template.TemplatePackSeeder;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.tariff.LegalTariffSeeder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
@@ -41,6 +42,7 @@ public class PackReconciliationRunner implements ApplicationRunner {
   private final AutomationTemplateSeeder automationTemplateSeeder;
   private final RatePackSeeder ratePackSeeder;
   private final SchedulePackSeeder schedulePackSeeder;
+  private final LegalTariffSeeder legalTariffSeeder;
 
   public PackReconciliationRunner(
       OrgSchemaMappingRepository mappingRepository,
@@ -52,7 +54,8 @@ public class PackReconciliationRunner implements ApplicationRunner {
       RequestPackSeeder requestPackSeeder,
       AutomationTemplateSeeder automationTemplateSeeder,
       RatePackSeeder ratePackSeeder,
-      SchedulePackSeeder schedulePackSeeder) {
+      SchedulePackSeeder schedulePackSeeder,
+      LegalTariffSeeder legalTariffSeeder) {
     this.mappingRepository = mappingRepository;
     this.fieldPackSeeder = fieldPackSeeder;
     this.templatePackSeeder = templatePackSeeder;
@@ -63,6 +66,7 @@ public class PackReconciliationRunner implements ApplicationRunner {
     this.automationTemplateSeeder = automationTemplateSeeder;
     this.ratePackSeeder = ratePackSeeder;
     this.schedulePackSeeder = schedulePackSeeder;
+    this.legalTariffSeeder = legalTariffSeeder;
   }
 
   @Override
@@ -91,6 +95,7 @@ public class PackReconciliationRunner implements ApplicationRunner {
         automationTemplateSeeder.seedPacksForTenant(schemaName, clerkOrgId);
         ratePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
         schedulePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
+        legalTariffSeeder.seedForTenant(schemaName, clerkOrgId);
 
         succeeded++;
       } catch (Exception e) {

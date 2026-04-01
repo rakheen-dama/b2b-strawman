@@ -16,6 +16,7 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.template.TemplatePackSeeder;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalProfileRegistry;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.tariff.LegalTariffSeeder;
 import java.sql.SQLException;
 import javax.sql.DataSource;
 import org.flywaydb.core.Flyway;
@@ -44,6 +45,7 @@ public class TenantProvisioningService {
   private final AutomationTemplateSeeder automationTemplateSeeder;
   private final RatePackSeeder ratePackSeeder;
   private final SchedulePackSeeder schedulePackSeeder;
+  private final LegalTariffSeeder legalTariffSeeder;
   private final TenantTransactionHelper tenantTransactionHelper;
   private final OrgSettingsRepository orgSettingsRepository;
   private final VerticalProfileRegistry verticalProfileRegistry;
@@ -62,6 +64,7 @@ public class TenantProvisioningService {
       AutomationTemplateSeeder automationTemplateSeeder,
       RatePackSeeder ratePackSeeder,
       SchedulePackSeeder schedulePackSeeder,
+      LegalTariffSeeder legalTariffSeeder,
       TenantTransactionHelper tenantTransactionHelper,
       OrgSettingsRepository orgSettingsRepository,
       VerticalProfileRegistry verticalProfileRegistry) {
@@ -78,6 +81,7 @@ public class TenantProvisioningService {
     this.automationTemplateSeeder = automationTemplateSeeder;
     this.ratePackSeeder = ratePackSeeder;
     this.schedulePackSeeder = schedulePackSeeder;
+    this.legalTariffSeeder = legalTariffSeeder;
     this.tenantTransactionHelper = tenantTransactionHelper;
     this.orgSettingsRepository = orgSettingsRepository;
     this.verticalProfileRegistry = verticalProfileRegistry;
@@ -128,6 +132,7 @@ public class TenantProvisioningService {
       automationTemplateSeeder.seedPacksForTenant(schemaName, clerkOrgId);
       ratePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
       schedulePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
+      legalTariffSeeder.seedForTenant(schemaName, clerkOrgId);
       createMapping(clerkOrgId, schemaName);
       String planSlug = org.getPlanSlug() != null ? org.getPlanSlug() : "starter";
       subscriptionService.createSubscription(org.getId(), planSlug);

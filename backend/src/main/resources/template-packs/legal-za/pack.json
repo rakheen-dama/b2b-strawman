@@ -1,0 +1,79 @@
+{
+  "packId": "legal-za",
+  "version": 1,
+  "verticalProfile": "legal-za",
+  "name": "SA Legal Templates",
+  "description": "Document templates for South African law firms: engagement letters, court filings, and correspondence",
+  "templates": [
+    {
+      "templateKey": "engagement-letter-litigation",
+      "name": "Engagement Letter — Litigation",
+      "category": "ENGAGEMENT_LETTER",
+      "primaryEntityType": "PROJECT",
+      "contentFile": "engagement-letter-litigation.json",
+      "cssFile": null,
+      "description": "Standard litigation engagement letter covering scope, fees, and court procedures.",
+      "sortOrder": 1
+    },
+    {
+      "templateKey": "engagement-letter-conveyancing",
+      "name": "Engagement Letter — Conveyancing",
+      "category": "ENGAGEMENT_LETTER",
+      "primaryEntityType": "PROJECT",
+      "contentFile": "engagement-letter-conveyancing.json",
+      "cssFile": null,
+      "description": "Conveyancing engagement letter for property transfer matters.",
+      "sortOrder": 2
+    },
+    {
+      "templateKey": "engagement-letter-general",
+      "name": "Engagement Letter — General",
+      "category": "ENGAGEMENT_LETTER",
+      "primaryEntityType": "PROJECT",
+      "contentFile": "engagement-letter-general.json",
+      "cssFile": null,
+      "description": "General legal engagement letter for advisory and non-litigation matters.",
+      "sortOrder": 3
+    },
+    {
+      "templateKey": "power-of-attorney",
+      "name": "Power of Attorney",
+      "category": "OTHER",
+      "primaryEntityType": "CUSTOMER",
+      "contentFile": "power-of-attorney.json",
+      "cssFile": null,
+      "description": "Standard power of attorney template for authorising legal representation.",
+      "sortOrder": 4
+    },
+    {
+      "templateKey": "notice-of-motion",
+      "name": "Notice of Motion",
+      "category": "OTHER",
+      "primaryEntityType": "PROJECT",
+      "contentFile": "notice-of-motion.json",
+      "cssFile": null,
+      "description": "Court filing template for notice of motion applications.",
+      "sortOrder": 5
+    },
+    {
+      "templateKey": "founding-affidavit",
+      "name": "Founding Affidavit",
+      "category": "OTHER",
+      "primaryEntityType": "PROJECT",
+      "contentFile": "founding-affidavit.json",
+      "cssFile": null,
+      "description": "Court filing template for founding affidavit in motion proceedings.",
+      "sortOrder": 6
+    },
+    {
+      "templateKey": "letter-of-demand",
+      "name": "Letter of Demand",
+      "category": "OTHER",
+      "primaryEntityType": "CUSTOMER",
+      "contentFile": "letter-of-demand.json",
+      "cssFile": null,
+      "description": "Demand letter for collections and debt recovery matters.",
+      "sortOrder": 7
+    }
+  ]
+}

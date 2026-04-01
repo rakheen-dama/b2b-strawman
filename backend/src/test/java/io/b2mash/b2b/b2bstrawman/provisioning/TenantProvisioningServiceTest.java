@@ -29,6 +29,7 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.template.TemplatePackSeeder;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalProfileRegistry;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.tariff.LegalTariffSeeder;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -64,6 +65,7 @@ class TenantProvisioningServiceTest {
   @Mock private AutomationTemplateSeeder automationTemplateSeeder;
   @Mock private RatePackSeeder ratePackSeeder;
   @Mock private SchedulePackSeeder schedulePackSeeder;
+  @Mock private LegalTariffSeeder legalTariffSeeder;
   @Mock private TenantTransactionHelper tenantTransactionHelper;
   @Mock private OrgSettingsRepository orgSettingsRepository;
   @Mock private VerticalProfileRegistry verticalProfileRegistry;

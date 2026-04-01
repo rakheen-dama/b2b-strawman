@@ -1,0 +1,180 @@
+{
+  "name": "LSSA 2024/2025 High Court Party-and-Party",
+  "category": "PARTY_AND_PARTY",
+  "courtLevel": "HIGH_COURT",
+  "effectiveFrom": "2024-04-01",
+  "source": "LSSA Gazette 2024",
+  "items": [
+    {
+      "itemNumber": "1(a)",
+      "section": "Instructions and consultations",
+      "description": "Instructions to sue or defend",
+      "amount": 780.00,
+      "unit": "PER_ITEM",
+      "notes": null,
+      "sortOrder": 1
+    },
+    {
+      "itemNumber": "1(b)",
+      "section": "Instructions and consultations",
+      "description": "Consultation with client (per quarter-hour)",
+      "amount": 780.00,
+      "unit": "PER_QUARTER_HOUR",
+      "notes": null,
+      "sortOrder": 2
+    },
+    {
+      "itemNumber": "1(c)",
+      "section": "Instructions and consultations",
+      "description": "Consultation with advocate (per quarter-hour)",
+      "amount": 780.00,
+      "unit": "PER_QUARTER_HOUR",
+      "notes": null,
+      "sortOrder": 3
+    },
+    {
+      "itemNumber": "2(a)",
+      "section": "Pleadings and documents",
+      "description": "Drawing of summons",
+      "amount": 1250.00,
+      "unit": "PER_ITEM",
+      "notes": null,
+      "sortOrder": 4
+    },
+    {
+      "itemNumber": "2(b)",
+      "section": "Pleadings and documents",
+      "description": "Drawing of plea or exception",
+      "amount": 1250.00,
+      "unit": "PER_ITEM",
+      "notes": null,
+      "sortOrder": 5
+    },
+    {
+      "itemNumber": "2(c)",
+      "section": "Pleadings and documents",
+      "description": "Drawing of notice of motion",
+      "amount": 1250.00,
+      "unit": "PER_ITEM",
+      "notes": null,
+      "sortOrder": 6
+    },
+    {
+      "itemNumber": "2(d)",
+      "section": "Pleadings and documents",
+      "description": "Drawing of affidavit (per folio)",
+      "amount": 195.00,
+      "unit": "PER_FOLIO",
+      "notes": null,
+      "sortOrder": 7
+    },
+    {
+      "itemNumber": "3(a)",
+      "section": "Correspondence",
+      "description": "Letters written (per folio)",
+      "amount": 195.00,
+      "unit": "PER_FOLIO",
+      "notes": null,
+      "sortOrder": 8
+    },
+    {
+      "itemNumber": "3(b)",
+      "section": "Correspondence",
+      "description": "Letters received and perused (per folio)",
+      "amount": 130.00,
+      "unit": "PER_FOLIO",
+      "notes": null,
+      "sortOrder": 9
+    },
+    {
+      "itemNumber": "3(c)",
+      "section": "Correspondence",
+      "description": "Telephone calls (per call)",
+      "amount": 195.00,
+      "unit": "PER_ITEM",
+      "notes": null,
+      "sortOrder": 10
+    },
+    {
+      "itemNumber": "3(d)",
+      "section": "Correspondence",
+      "description": "Emails sent (per email)",
+      "amount": 130.00,
+      "unit": "PER_ITEM",
+      "notes": null,
+      "sortOrder": 11
+    },
+    {
+      "itemNumber": "4(a)",
+      "section": "Attendances",
+      "description": "Attendance at court (per day)",
+      "amount": 7800.00,
+      "unit": "PER_DAY",
+      "notes": null,
+      "sortOrder": 12
+    },
+    {
+      "itemNumber": "4(b)",
+      "section": "Attendances",
+      "description": "Attendance at court (per half day)",
+      "amount": 4680.00,
+      "unit": "PER_ITEM",
+      "notes": null,
+      "sortOrder": 13
+    },
+    {
+      "itemNumber": "4(c)",
+      "section": "Attendances",
+      "description": "Waiting time at court (per hour)",
+      "amount": 780.00,
+      "unit": "PER_HOUR",
+      "notes": null,
+      "sortOrder": 14
+    },
+    {
+      "itemNumber": "5(a)",
+      "section": "Discovery and inspection",
+      "description": "Preparation of discovery affidavit",
+      "amount": 1250.00,
+      "unit": "PER_ITEM",
+      "notes": null,
+      "sortOrder": 15
+    },
+    {
+      "itemNumber": "5(b)",
+      "section": "Discovery and inspection",
+      "description": "Inspection of documents (per hour)",
+      "amount": 780.00,
+      "unit": "PER_HOUR",
+      "notes": null,
+      "sortOrder": 16
+    },
+    {
+      "itemNumber": "6(a)",
+      "section": "Trial preparation",
+      "description": "Preparation for trial (per day)",
+      "amount": 7800.00,
+      "unit": "PER_DAY",
+      "notes": null,
+      "sortOrder": 17
+    },
+    {
+      "itemNumber": "6(b)",
+      "section": "Trial preparation",
+      "description": "Preparation of heads of argument (per folio)",
+      "amount": 260.00,
+      "unit": "PER_FOLIO",
+      "notes": null,
+      "sortOrder": 18
+    },
+    {
+      "itemNumber": "7(a)",
+      "section": "Service and execution",
+      "description": "Service of process (per service)",
+      "amount": 390.00,
+      "unit": "PER_ITEM",
+      "notes": null,
+      "sortOrder": 19
+    }
+  ]
+}

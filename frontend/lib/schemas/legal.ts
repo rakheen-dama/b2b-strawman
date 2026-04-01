@@ -47,23 +47,30 @@ export const outcomeSchema = z.object({
 
 export type OutcomeFormData = z.infer<typeof outcomeSchema>;
 
-export const createPrescriptionTrackerSchema = z.object({
-  projectId: z.string().uuid("Please select a matter"),
-  causeOfActionDate: z.string().min(1, "Cause of action date is required"),
-  prescriptionType: z.enum(
-    [
-      "GENERAL_3Y",
-      "DEBT_6Y",
-      "MORTGAGE_30Y",
-      "DELICT_3Y",
-      "CONTRACT_3Y",
-      "CUSTOM",
-    ],
-    { message: "Prescription type is required" }
-  ),
-  customYears: z.number().int().min(1).max(100).optional(),
-  notes: z.string().max(2000).optional().or(z.literal("")),
-});
+export const createPrescriptionTrackerSchema = z
+  .object({
+    projectId: z.string().uuid("Please select a matter"),
+    causeOfActionDate: z.string().min(1, "Cause of action date is required"),
+    prescriptionType: z.enum(
+      [
+        "GENERAL_3Y",
+        "DEBT_6Y",
+        "MORTGAGE_30Y",
+        "DELICT_3Y",
+        "CONTRACT_3Y",
+        "CUSTOM",
+      ],
+      { message: "Prescription type is required" }
+    ),
+    customYears: z.number().int().min(1).max(100).optional(),
+    notes: z.string().max(2000).optional().or(z.literal("")),
+  })
+  .refine(
+    (data) =>
+      data.prescriptionType !== "CUSTOM" ||
+      (data.customYears != null && data.customYears >= 1),
+    { message: "Custom years is required for Custom type", path: ["customYears"] }
+  );
 
 export type CreatePrescriptionTrackerFormData = z.infer<
   typeof createPrescriptionTrackerSchema

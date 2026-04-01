@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useCallback } from "react";
+import { useState, useTransition, useCallback, useEffect, useRef } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -91,9 +91,15 @@ export function CourtCalendarClient({
     });
   }, []);
 
-  function handleFilterChange() {
+  // Refetch when filters change (avoids stale closure from setTimeout)
+  const isInitialMount = useRef(true);
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
     refetchCourtDates();
-  }
+  }, [statusFilter, dateTypeFilter, refetchCourtDates]);
 
   function handleViewChange(v: string) {
     if (v === "list" || v === "calendar" || v === "prescriptions") {
@@ -147,7 +153,6 @@ export function CourtCalendarClient({
           value={statusFilter}
           onChange={(e) => {
             setStatusFilter(e.target.value as CourtDateStatus | "");
-            setTimeout(handleFilterChange, 0);
           }}
           className="flex h-9 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm dark:border-slate-800"
         >
@@ -162,7 +167,6 @@ export function CourtCalendarClient({
           value={dateTypeFilter}
           onChange={(e) => {
             setDateTypeFilter(e.target.value as CourtDateType | "");
-            setTimeout(handleFilterChange, 0);
           }}
           className="flex h-9 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm dark:border-slate-800"
         >

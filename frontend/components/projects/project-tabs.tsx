@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { Tabs as TabsPrimitive } from "radix-ui";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
+import { useOrgProfile } from "@/lib/org-profile";
 
 interface ProjectTabsProps {
   overviewPanel: ReactNode;
@@ -22,9 +23,11 @@ interface ProjectTabsProps {
   requestsPanel?: ReactNode;
   customerCommentsPanel?: ReactNode;
   staffingPanel?: ReactNode;
+  courtDatesPanel?: ReactNode;
+  adversePartiesPanel?: ReactNode;
 }
 
-type TabId = "overview" | "documents" | "members" | "customers" | "tasks" | "time" | "expenses" | "budget" | "financials" | "staffing" | "activity" | "rates" | "generated" | "requests" | "customer-comments";
+type TabId = "overview" | "documents" | "members" | "customers" | "tasks" | "time" | "expenses" | "budget" | "financials" | "staffing" | "activity" | "rates" | "generated" | "requests" | "customer-comments" | "court-dates" | "adverse-parties";
 
 interface TabDef {
   id: TabId;
@@ -46,19 +49,26 @@ const baseTabs: TabDef[] = [
   { id: "generated", label: "Generated Docs" },
   { id: "requests", label: "Requests" },
   { id: "customer-comments", label: "Customer Comments" },
+  { id: "court-dates", label: "Court Dates" },
+  { id: "adverse-parties", label: "Adverse Parties" },
   { id: "activity", label: "Activity" },
 ];
 
-const validTabIds = new Set<string>(["overview", "documents", "members", "customers", "tasks", "time", "expenses", "budget", "financials", "staffing", "activity", "rates", "generated", "requests", "customer-comments"]);
+const validTabIds = new Set<string>(["overview", "documents", "members", "customers", "tasks", "time", "expenses", "budget", "financials", "staffing", "activity", "rates", "generated", "requests", "customer-comments", "court-dates", "adverse-parties"]);
 
-export function ProjectTabs({ overviewPanel, documentsPanel, membersPanel, customersPanel, tasksPanel, timePanel, activityPanel, ratesPanel, budgetPanel, financialsPanel, expensesPanel, generatedPanel, requestsPanel, customerCommentsPanel, staffingPanel }: ProjectTabsProps) {
+export function ProjectTabs({ overviewPanel, documentsPanel, membersPanel, customersPanel, tasksPanel, timePanel, activityPanel, ratesPanel, budgetPanel, financialsPanel, expensesPanel, generatedPanel, requestsPanel, customerCommentsPanel, staffingPanel, courtDatesPanel, adversePartiesPanel }: ProjectTabsProps) {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab");
   const urlTab = tabParam && validTabIds.has(tabParam) ? (tabParam as TabId) : null;
   const [userTab, setUserTab] = useState<TabId | null>(null);
+  const { isModuleEnabled } = useOrgProfile();
 
   // URL param takes precedence, then user's manual selection, then default
   const activeTab = urlTab ?? userTab ?? "overview";
+
+  // Module-gated tabs: only show when both the panel is provided and the module is enabled
+  const showCourtDates = !!courtDatesPanel && isModuleEnabled("court_calendar");
+  const showAdverseParties = !!adversePartiesPanel && isModuleEnabled("conflict_check");
 
   const tabs = useMemo(() => {
     let filtered = baseTabs;
@@ -69,8 +79,10 @@ export function ProjectTabs({ overviewPanel, documentsPanel, membersPanel, custo
     if (!requestsPanel) filtered = filtered.filter((t) => t.id !== "requests");
     if (!customerCommentsPanel) filtered = filtered.filter((t) => t.id !== "customer-comments");
     if (!staffingPanel) filtered = filtered.filter((t) => t.id !== "staffing");
+    if (!showCourtDates) filtered = filtered.filter((t) => t.id !== "court-dates");
+    if (!showAdverseParties) filtered = filtered.filter((t) => t.id !== "adverse-parties");
     return filtered;
-  }, [ratesPanel, financialsPanel, expensesPanel, generatedPanel, requestsPanel, customerCommentsPanel, staffingPanel]);
+  }, [ratesPanel, financialsPanel, expensesPanel, generatedPanel, requestsPanel, customerCommentsPanel, staffingPanel, showCourtDates, showAdverseParties]);
 
   return (
     <TabsPrimitive.Root value={activeTab} onValueChange={(v) => setUserTab(v as TabId)}>
@@ -155,6 +167,16 @@ export function ProjectTabs({ overviewPanel, documentsPanel, membersPanel, custo
       {customerCommentsPanel && (
         <TabsPrimitive.Content value="customer-comments" className="pt-6 outline-none">
           {customerCommentsPanel}
+        </TabsPrimitive.Content>
+      )}
+      {showCourtDates && (
+        <TabsPrimitive.Content value="court-dates" className="pt-6 outline-none">
+          {courtDatesPanel}
+        </TabsPrimitive.Content>
+      )}
+      {showAdverseParties && (
+        <TabsPrimitive.Content value="adverse-parties" className="pt-6 outline-none">
+          {adversePartiesPanel}
         </TabsPrimitive.Content>
       )}
       <TabsPrimitive.Content value="activity" className="pt-6 outline-none">

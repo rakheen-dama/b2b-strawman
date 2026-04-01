@@ -41,6 +41,14 @@ vi.mock("@/app/(app)/org/[slug]/legal/adverse-parties/actions", () => ({
   fetchCustomers: vi.fn().mockResolvedValue([]),
 }));
 
+vi.mock("sonner", () => ({
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+    warning: vi.fn(),
+  },
+}));
+
 vi.mock("@/lib/api", () => ({
   api: {
     get: vi.fn().mockResolvedValue({ content: [] }),
@@ -81,6 +89,7 @@ function makeAdverseParty(
     partyType: "COMPANY",
     aliases: null,
     notes: null,
+    linkedMatterCount: 0,
     createdAt: "2026-03-01T00:00:00Z",
     updatedAt: "2026-03-01T00:00:00Z",
     ...overrides,
@@ -159,7 +168,7 @@ describe("AdversePartyDialog", () => {
 describe("Delete button behavior", () => {
   it("delete option disabled when party has active links", () => {
     // Parties with links should not be deletable
-    // This is tested via the registry client with linkCounts > 0
+    // This is tested via the registry client with linkedMatterCount > 0
     const parties = [
       makeAdverseParty({ id: "ap-linked", name: "Linked Party" }),
     ];
@@ -174,7 +183,7 @@ describe("Delete button behavior", () => {
 
     // Party should be in the table
     expect(screen.getByText("Linked Party")).toBeInTheDocument();
-    // The delete button behavior is disabled via linkCounts check in the component
+    // The delete button behavior is disabled via linkedMatterCount check in the component
   });
 });
 

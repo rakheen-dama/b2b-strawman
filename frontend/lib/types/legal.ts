@@ -136,6 +136,7 @@ export interface AdverseParty {
   partyType: AdversePartyType;
   aliases: string | null;
   notes: string | null;
+  linkedMatterCount: number;
   createdAt: string;
   updatedAt: string;
 }

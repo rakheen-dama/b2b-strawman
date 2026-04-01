@@ -16,15 +16,22 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { MoreHorizontal, Search, Link2, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { AdversePartyDialog } from "@/components/legal/adverse-party-dialog";
 import { LinkAdversePartyDialog } from "@/components/legal/link-adverse-party-dialog";
-import {
-  fetchAdverseParties,
-  deleteAdverseParty,
-  fetchAdverseParty,
-} from "./actions";
+import { fetchAdverseParties, deleteAdverseParty } from "./actions";
 import type { AdverseParty, AdversePartyType } from "@/lib/types";
 
 function partyTypeBadge(partyType: AdversePartyType) {
@@ -84,9 +91,7 @@ export function AdversePartyRegistryClient({
 
   // Delete state
   const [deleting, setDeleting] = useState<string | null>(null);
-
-  // Link counts (fetched on mount for each party)
-  const [linkCounts, setLinkCounts] = useState<Record<string, number>>({});
+  const [deleteTarget, setDeleteTarget] = useState<AdverseParty | null>(null);
 
   const refetch = useCallback(() => {
     startTransition(async () => {
@@ -97,32 +102,18 @@ export function AdversePartyRegistryClient({
         );
         setParties(result.content);
         setTotal(result.page.totalElements);
-
-        // Fetch link counts for each party
-        const counts: Record<string, number> = {};
-        for (const party of result.content) {
-          try {
-            const detail = await fetchAdverseParty(party.id);
-            counts[party.id] = detail.links?.length ?? 0;
-          } catch {
-            counts[party.id] = 0;
-          }
-        }
-        setLinkCounts(counts);
       } catch (err) {
         console.error("Failed to refetch adverse parties:", err);
       }
     });
   }, [search, typeFilter]);
 
-  // Debounced refetch on search/filter change
+  // Debounced refetch on search/filter change (skip initial mount — use initialParties)
   const isInitialMount = useRef(true);
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     if (isInitialMount.current) {
       isInitialMount.current = false;
-      // Fetch initial link counts
-      refetch();
       return;
     }
     if (searchTimeoutRef.current) {
@@ -137,17 +128,20 @@ export function AdversePartyRegistryClient({
   }, [search, typeFilter, refetch]);
 
   async function handleDelete(party: AdverseParty) {
-    if (linkCounts[party.id] && linkCounts[party.id] > 0) return;
+    if (party.linkedMatterCount > 0) return;
     setDeleting(party.id);
     try {
       const result = await deleteAdverseParty(slug, party.id);
       if (result.success) {
         refetch();
+      } else {
+        toast.error(result.error ?? "Failed to delete adverse party.");
       }
     } catch {
-      // Error handled silently; refetch will show correct state
+      toast.error("An unexpected error occurred while deleting.");
     } finally {
       setDeleting(null);
+      setDeleteTarget(null);
     }
   }
 
@@ -247,7 +241,7 @@ export function AdversePartyRegistryClient({
                     {partyTypeBadge(party.partyType)}
                   </td>
                   <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">
-                    {linkCounts[party.id] ?? 0}
+                    {party.linkedMatterCount}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <DropdownMenu>
@@ -269,10 +263,10 @@ export function AdversePartyRegistryClient({
                           Link to Matter
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          onClick={() => handleDelete(party)}
+                          onClick={() => setDeleteTarget(party)}
                           disabled={
                             deleting === party.id ||
-                            (linkCounts[party.id] ?? 0) > 0
+                            party.linkedMatterCount > 0
                           }
                           className="text-red-600 focus:text-red-600"
                         >
@@ -304,6 +298,36 @@ export function AdversePartyRegistryClient({
           }}
         />
       )}
+
+      {/* Delete confirmation dialog */}
+      <AlertDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Adverse Party</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete &quot;{deleteTarget?.name}&quot;?
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={!!deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              onClick={() => {
+                if (deleteTarget) handleDelete(deleteTarget);
+              }}
+              disabled={!!deleting}
+            >
+              {deleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

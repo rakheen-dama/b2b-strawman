@@ -36,7 +36,7 @@ Phase 55 is the multi-vertical architecture stress test. It builds three real le
 | 404 | Legal Pack Content + Tariff Seed Data | Backend | 397 | M | 404A, 404B | **Done** (PR #848) |
 | 405 | Frontend: Court Calendar + Prescription Pages | Frontend | 398, 399 | L | 405A, 405B | **Done** (PR #849) |
 | 406 | Frontend: Conflict Check + Adverse Party Pages | Frontend | 400, 401 | L | 406A, 406B | **Done** (PR #850) |
-| 407 | Frontend: Tariff Pages + Invoice Tariff Selector | Frontend | 402, 403 | M | 407A, 407B | |
+| 407 | Frontend: Tariff Pages + Invoice Tariff Selector | Frontend | 402, 403 | M | 407A, 407B | **Done** (PR #851) |
 | 408 | Frontend: Project Detail Tabs + Sidebar + Dashboard Widget | Frontend | 405, 406, 407 | M | 408A | |
 | 409 | Multi-Vertical Coexistence Tests | Backend + Frontend | 397-408 | S | 409A | |
 
@@ -193,14 +193,14 @@ FRONTEND (requires backend epics)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 6a (parallel) | 406 | 406A | Conflict check page (`conflict-check/page.tsx`) replacing stub. Run-check form, result display (green/amber/red), check history list. TypeScript types, Zod schemas, server actions, nav item. Frontend tests (~5). Frontend only. | **Done** (PR #850) |
-| 6b (parallel) | 407 | 407A | Tariff schedule browser page (new: `legal/tariffs/page.tsx`). Schedule list, item browser with section grouping, search. TypeScript types, Zod schemas, server actions, nav item. Frontend tests (~4). Frontend only. |  |
+| 6b (parallel) | 407 | 407A | Tariff schedule browser page (new: `legal/tariffs/page.tsx`). Schedule list, item browser with section grouping, search. TypeScript types, Zod schemas, server actions, nav item. Frontend tests (~4). Frontend only. | **Done** (PR #851) |
 
 ### Stage 7: Frontend Remaining Pages (parallel)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 7a (parallel) | 406 | 406B | Adverse party registry page (new: `legal/adverse-parties/page.tsx`). CRUD table, link/unlink dialog, party detail view with linked matters. Frontend tests (~4). Frontend only. | **Done** (PR #850) |
-| 7b (parallel) | 407 | 407B | Invoice tariff selector: `TariffLineDialog` component (schedule picker, item browser, quantity input), "Add Tariff Items" button in invoice editor (module-gated). `ResolveConflictDialog` component for conflict check resolution. Frontend tests (~4). Frontend only. |  |
+| 7b (parallel) | 407 | 407B | Invoice tariff selector: `TariffLineDialog` component (schedule picker, item browser, quantity input), "Add Tariff Items" button in invoice editor (module-gated). `ResolveConflictDialog` component for conflict check resolution. Frontend tests (~4). Frontend only. | **Done** (PR #851) |
 
 ### Stage 8: Frontend Integration + Dashboard
 

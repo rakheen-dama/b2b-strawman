@@ -34,10 +34,7 @@ data "aws_iam_policy_document" "execution_policy" {
       "ecr:GetDownloadUrlForLayer",
       "ecr:BatchGetImage",
     ]
-    resources = [
-      var.frontend_ecr_repo_arn,
-      var.backend_ecr_repo_arn,
-    ]
+    resources = var.ecr_repo_arns
   }
 
   # CloudWatch: Write logs to specific log groups

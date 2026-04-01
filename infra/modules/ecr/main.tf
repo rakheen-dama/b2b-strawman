@@ -1,9 +1,13 @@
 # -----------------------------------------------------------------------------
-# ECR Repositories — frontend + backend
+# ECR Repositories — one per service, environment-agnostic naming
+# Images are promoted across environments via tag mutation (ADR-217)
+# Repo naming: kazi/{service} (no environment prefix per ADR-218)
 # -----------------------------------------------------------------------------
 
-resource "aws_ecr_repository" "frontend" {
-  name                 = "${var.project}-${var.environment}-frontend"
+resource "aws_ecr_repository" "repos" {
+  for_each = toset(var.services)
+
+  name                 = "${var.project}/${each.key}"
   image_tag_mutability = var.image_tag_mutability
 
   image_scanning_configuration {
@@ -13,23 +17,17 @@ resource "aws_ecr_repository" "frontend" {
   encryption_configuration {
     encryption_type = "AES256"
   }
-}
 
-resource "aws_ecr_repository" "backend" {
-  name                 = "${var.project}-${var.environment}-backend"
-  image_tag_mutability = var.image_tag_mutability
-
-  image_scanning_configuration {
-    scan_on_push = true
-  }
-
-  encryption_configuration {
-    encryption_type = "AES256"
+  tags = {
+    Name        = "${var.project}/${each.key}"
+    Project     = var.project
+    Environment = var.environment
+    ManagedBy   = "terraform"
   }
 }
 
 # -----------------------------------------------------------------------------
-# Lifecycle Policies — keep last N images, expire untagged after 1 day
+# Lifecycle Policies — keep last N tagged images, expire untagged after 7 days
 # -----------------------------------------------------------------------------
 
 locals {
@@ -37,12 +35,12 @@ locals {
     rules = [
       {
         rulePriority = 1
-        description  = "Expire untagged images after 1 day"
+        description  = "Expire untagged images after 7 days"
         selection = {
           tagStatus   = "untagged"
           countType   = "sinceImagePushed"
           countUnit   = "days"
-          countNumber = 1
+          countNumber = 7
         }
         action = {
           type = "expire"
@@ -64,12 +62,9 @@ locals {
   })
 }
 
-resource "aws_ecr_lifecycle_policy" "frontend" {
-  repository = aws_ecr_repository.frontend.name
-  policy     = local.lifecycle_policy
-}
+resource "aws_ecr_lifecycle_policy" "repos" {
+  for_each = aws_ecr_repository.repos
 
-resource "aws_ecr_lifecycle_policy" "backend" {
-  repository = aws_ecr_repository.backend.name
+  repository = each.value.name
   policy     = local.lifecycle_policy
 }

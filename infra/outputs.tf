@@ -50,14 +50,9 @@ output "backend_sg_id" {
 # ECR
 # -----------------------------------------------------------------------------
 
-output "frontend_ecr_url" {
-  description = "URL of the frontend ECR repository"
-  value       = module.ecr.frontend_repository_url
-}
-
-output "backend_ecr_url" {
-  description = "URL of the backend ECR repository"
-  value       = module.ecr.backend_repository_url
+output "ecr_repository_urls" {
+  description = "Map of service name to ECR repository URL"
+  value       = module.ecr.ecr_repository_urls
 }
 
 # -----------------------------------------------------------------------------

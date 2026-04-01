@@ -171,12 +171,6 @@ module "alb" {
 # -----------------------------------------------------------------------------
 # ECS Cluster + Services
 # -----------------------------------------------------------------------------
-# NOTE: The ECS module still expects Clerk-era variable names
-# (clerk_secret_key_arn, clerk_webhook_secret_arn, etc.) which will be
-# updated in Epic 412/413 when task definitions are rewritten for the
-# 5-service architecture. For now, pass empty strings for the deprecated
-# Clerk variables to allow validation to pass.
-# -----------------------------------------------------------------------------
 
 module "ecs" {
   source = "./modules/ecs"
@@ -186,43 +180,59 @@ module "ecs" {
   aws_region  = var.aws_region
 
   # Networking
+  vpc_id             = module.vpc.vpc_id
   private_subnet_ids = module.vpc.private_subnet_ids
   frontend_sg_id     = module.security_groups.frontend_sg_id
   backend_sg_id      = module.security_groups.backend_sg_id
+  gateway_sg_id      = module.security_groups.gateway_sg_id
+  portal_sg_id       = module.security_groups.portal_sg_id
+  keycloak_sg_id     = module.security_groups.keycloak_sg_id
 
   # ALB Target Groups
   frontend_target_group_arn = module.alb.frontend_target_group_arn
   backend_target_group_arn  = module.alb.backend_target_group_arn
   backend_internal_tg_arn   = module.alb.backend_internal_target_group_arn
+  gateway_target_group_arn  = ""
+  portal_target_group_arn   = ""
+  keycloak_target_group_arn = ""
 
   # IAM
   ecs_execution_role_arn = module.iam.ecs_execution_role_arn
   frontend_task_role_arn = module.iam.frontend_task_role_arn
   backend_task_role_arn  = module.iam.backend_task_role_arn
+  gateway_task_role_arn  = module.iam.gateway_task_role_arn
+  portal_task_role_arn   = module.iam.portal_task_role_arn
+  keycloak_task_role_arn = module.iam.keycloak_task_role_arn
 
   # Container Images
   frontend_image = var.frontend_image
   backend_image  = var.backend_image
+  gateway_image  = var.gateway_image
+  portal_image   = var.portal_image
+  keycloak_image = var.keycloak_image
 
   # Monitoring
   frontend_log_group_name = module.monitoring.frontend_log_group_name
   backend_log_group_name  = module.monitoring.backend_log_group_name
+  gateway_log_group_name  = module.monitoring.gateway_log_group_name
+  portal_log_group_name   = module.monitoring.portal_log_group_name
+  keycloak_log_group_name = module.monitoring.keycloak_log_group_name
 
-  # Secrets — current secrets
+  # Secrets
   database_url_secret_arn           = module.secrets.database_url_arn
   database_migration_url_secret_arn = module.secrets.database_migration_url_arn
   internal_api_key_arn              = module.secrets.internal_api_key_arn
+  keycloak_client_secret_arn        = module.secrets.keycloak_client_secret_arn
+  keycloak_admin_username_arn       = module.secrets.keycloak_admin_username_arn
+  keycloak_admin_password_arn       = module.secrets.keycloak_admin_password_arn
+  redis_auth_token_arn              = module.secrets.redis_auth_token_arn
 
-  # Secrets — deprecated Clerk variables (will be removed in E412/E413)
-  clerk_secret_key_arn      = ""
-  clerk_webhook_secret_arn  = ""
-  clerk_publishable_key_arn = ""
+  # Infrastructure endpoints
+  redis_host   = module.data.redis_endpoint
+  rds_endpoint = module.data.rds_endpoint
 
   # App Config
-  internal_alb_dns_name = module.alb.internal_alb_dns_name
-  clerk_issuer          = ""
-  clerk_jwks_uri        = ""
-  s3_bucket_name        = module.s3.bucket_name
+  s3_bucket_name = module.s3.bucket_name
 }
 
 # -----------------------------------------------------------------------------
@@ -239,4 +249,12 @@ module "autoscaling" {
   backend_service_name  = module.ecs.backend_service_name
   min_capacity          = var.autoscaling_min_capacity
   max_capacity          = var.autoscaling_max_capacity
+
+  # New services
+  gateway_service_name = module.ecs.gateway_service_name
+  portal_service_name  = module.ecs.portal_service_name
+  gateway_min_capacity = 1
+  gateway_max_capacity = 2
+  portal_min_capacity  = 1
+  portal_max_capacity  = 2
 }

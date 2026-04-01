@@ -14,6 +14,9 @@ private_subnet_cidrs = ["10.2.10.0/24", "10.2.20.0/24"]
 # Container images — updated by CI/CD pipeline
 frontend_image = "public.ecr.aws/nginx/nginx:latest"
 backend_image  = "public.ecr.aws/nginx/nginx:latest"
+gateway_image  = "public.ecr.aws/nginx/nginx:latest"
+portal_image   = "public.ecr.aws/nginx/nginx:latest"
+keycloak_image = "public.ecr.aws/nginx/nginx:latest"
 
 # DNS (set to true and fill in values when domain is available)
 create_dns     = false

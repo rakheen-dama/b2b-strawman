@@ -9,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -64,7 +65,12 @@ public class ConflictCheckService {
       @NotBlank String checkedName,
       String checkedIdNumber,
       String checkedRegistrationNumber,
-      @NotBlank String checkType,
+      @NotBlank
+          @Pattern(
+              regexp = "NEW_CLIENT|NEW_MATTER|PERIODIC_REVIEW|LATERAL_HIRE|RELATED_PARTY",
+              message =
+                  "checkType must be one of: NEW_CLIENT, NEW_MATTER, PERIODIC_REVIEW, LATERAL_HIRE, RELATED_PARTY")
+          String checkType,
       UUID customerId,
       UUID projectId) {}
 
@@ -125,10 +131,11 @@ public class ConflictCheckService {
         } else {
           for (var link : links) {
             conflicts.add(
-                buildAdversePartyConflictFromLink(
+                buildAdversePartyConflict(
                     ap, link, "ID_NUMBER_EXACT", 1.0, request.checkedIdNumber()));
           }
         }
+        hasExactIdMatch = true;
       }
 
       // Search customers by ID number
@@ -137,9 +144,6 @@ public class ConflictCheckService {
         conflicts.add(
             buildCustomerConflict(
                 custMatch.get(), "ID_NUMBER_EXACT", 1.0, request.checkedIdNumber()));
-      }
-
-      if (!conflicts.isEmpty()) {
         hasExactIdMatch = true;
       }
     }
@@ -149,7 +153,8 @@ public class ConflictCheckService {
       // Search adverse parties by registration number
       var apMatch =
           adversePartyRepository.findByRegistrationNumber(request.checkedRegistrationNumber());
-      if (apMatch.isPresent()) {
+      boolean regMatched = apMatch.isPresent();
+      if (regMatched) {
         var ap = apMatch.get();
         var links = adversePartyLinkRepository.findByAdversePartyId(ap.getId());
         if (links.isEmpty()) {
@@ -159,7 +164,7 @@ public class ConflictCheckService {
         } else {
           for (var link : links) {
             conflicts.add(
-                buildAdversePartyConflictFromLink(
+                buildAdversePartyConflict(
                     ap,
                     link,
                     "REGISTRATION_NUMBER_EXACT",
@@ -169,17 +174,44 @@ public class ConflictCheckService {
         }
       }
 
-      if (!conflicts.isEmpty()) {
-        hasExactIdMatch = true;
-      }
+      hasExactIdMatch |= regMatched;
     }
 
-    // Step 2: Fuzzy name matching
+    // Step 2: Fuzzy name matching — batch-fetch all adverse party links to avoid N+1
     var adverseNameMatches =
         adversePartyRepository.findBySimilarName(
             request.checkedName(), FUZZY_THRESHOLD, MAX_SEARCH_RESULTS);
+
+    // Step 2b: Alias matches
+    var aliasMatches =
+        adversePartyRepository.findByAliasContaining(
+            request.checkedName(), FUZZY_THRESHOLD, MAX_SEARCH_RESULTS);
+
+    // Collect all adverse party IDs from fuzzy + alias matches for batch link fetch
+    var fuzzyPartyIds =
+        adverseNameMatches.stream()
+            .filter(ap -> !isAdversePartyAlreadyFound(conflicts, ap.getId()))
+            .map(AdverseParty::getId)
+            .collect(Collectors.toSet());
+    var aliasPartyIds =
+        aliasMatches.stream()
+            .filter(ap -> !isAdversePartyAlreadyFound(conflicts, ap.getId()))
+            .filter(ap -> !fuzzyPartyIds.contains(ap.getId()))
+            .map(AdverseParty::getId)
+            .collect(Collectors.toSet());
+
+    var allPartyIds = new java.util.HashSet<>(fuzzyPartyIds);
+    allPartyIds.addAll(aliasPartyIds);
+
+    // Batch-fetch all links in one query
+    Map<UUID, List<AdversePartyLink>> linksByPartyId = Map.of();
+    if (!allPartyIds.isEmpty()) {
+      linksByPartyId =
+          adversePartyLinkRepository.findByAdversePartyIdIn(allPartyIds).stream()
+              .collect(Collectors.groupingBy(AdversePartyLink::getAdversePartyId));
+    }
+
     for (var ap : adverseNameMatches) {
-      // Skip if already found via exact ID match
       if (isAdversePartyAlreadyFound(conflicts, ap.getId())) {
         continue;
       }
@@ -187,15 +219,14 @@ public class ConflictCheckService {
       if (score > highestScore) {
         highestScore = score;
       }
-      var links = adversePartyLinkRepository.findByAdversePartyId(ap.getId());
+      var links = linksByPartyId.getOrDefault(ap.getId(), List.of());
       if (links.isEmpty()) {
         conflicts.add(
             buildAdversePartyConflict(ap, null, "NAME_SIMILARITY", score, request.checkedName()));
       } else {
         for (var link : links) {
           conflicts.add(
-              buildAdversePartyConflictFromLink(
-                  ap, link, "NAME_SIMILARITY", score, request.checkedName()));
+              buildAdversePartyConflict(ap, link, "NAME_SIMILARITY", score, request.checkedName()));
         }
       }
     }
@@ -213,26 +244,20 @@ public class ConflictCheckService {
           buildCustomerConflict(customer, "NAME_SIMILARITY", score, request.checkedName()));
     }
 
-    // Step 2b: Alias matches
-    var aliasMatches =
-        adversePartyRepository.findByAliasContaining(
-            request.checkedName(), FUZZY_THRESHOLD, MAX_SEARCH_RESULTS);
     for (var ap : aliasMatches) {
-      // Skip if already found
       if (isAdversePartyAlreadyFound(conflicts, ap.getId())) {
         continue;
       }
       hasAliasMatch = true;
       double score = estimateSimilarity(ap.getAliases(), request.checkedName());
-      var links = adversePartyLinkRepository.findByAdversePartyId(ap.getId());
+      var links = linksByPartyId.getOrDefault(ap.getId(), List.of());
       if (links.isEmpty()) {
         conflicts.add(
             buildAdversePartyConflict(ap, null, "ALIAS_MATCH", score, request.checkedName()));
       } else {
         for (var link : links) {
           conflicts.add(
-              buildAdversePartyConflictFromLink(
-                  ap, link, "ALIAS_MATCH", score, request.checkedName()));
+              buildAdversePartyConflict(ap, link, "ALIAS_MATCH", score, request.checkedName()));
         }
       }
     }
@@ -361,11 +386,6 @@ public class ConflictCheckService {
         matchType,
         score,
         buildExplanation(matchType, ap.getName(), searchTerm, score));
-  }
-
-  private ConflictDetail buildAdversePartyConflictFromLink(
-      AdverseParty ap, AdversePartyLink link, String matchType, double score, String searchTerm) {
-    return buildAdversePartyConflict(ap, link, matchType, score, searchTerm);
   }
 
   private ConflictDetail buildCustomerConflict(

@@ -14,6 +14,8 @@ public interface AdversePartyLinkRepository extends JpaRepository<AdversePartyLi
 
   List<AdversePartyLink> findByAdversePartyId(UUID adversePartyId);
 
+  List<AdversePartyLink> findByAdversePartyIdIn(Collection<UUID> adversePartyIds);
+
   long countByAdversePartyId(UUID adversePartyId);
 
   boolean existsByAdversePartyId(UUID adversePartyId);

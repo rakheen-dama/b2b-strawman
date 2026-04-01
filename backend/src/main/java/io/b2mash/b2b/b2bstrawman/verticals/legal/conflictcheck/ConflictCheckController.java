@@ -35,7 +35,7 @@ public class ConflictCheckController {
   public ResponseEntity<ConflictCheckResponse> performCheck(
       @Valid @RequestBody PerformConflictCheckRequest request) {
     return ResponseEntity.status(HttpStatus.CREATED)
-        .body(conflictCheckService.performCheck(request, RequestScopes.MEMBER_ID.get()));
+        .body(conflictCheckService.performCheck(request, RequestScopes.requireMemberId()));
   }
 
   @GetMapping
@@ -62,6 +62,6 @@ public class ConflictCheckController {
   public ResponseEntity<ConflictCheckResponse> resolve(
       @PathVariable UUID id, @Valid @RequestBody ResolveRequest request) {
     return ResponseEntity.ok(
-        conflictCheckService.resolve(id, request, RequestScopes.MEMBER_ID.get()));
+        conflictCheckService.resolve(id, request, RequestScopes.requireMemberId()));
   }
 }

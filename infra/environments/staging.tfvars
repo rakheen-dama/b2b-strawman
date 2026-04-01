@@ -29,3 +29,9 @@ secrets_recovery_window = 7
 # Auto Scaling
 autoscaling_min_capacity = 1
 autoscaling_max_capacity = 4
+
+# RDS
+rds_instance_class      = "db.t4g.micro"
+rds_multi_az            = false
+rds_backup_retention    = 1
+rds_deletion_protection = false

@@ -39,3 +39,7 @@ rds_skip_final_snapshot = false
 
 # Redis
 redis_node_type = "cache.t4g.micro"
+
+# GitHub OIDC
+github_repo               = "heykazi/kazi"
+terraform_lock_table_name = "heykazi-terraform-locks"

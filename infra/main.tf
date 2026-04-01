@@ -120,13 +120,19 @@ module "secrets" {
 module "iam" {
   source = "./modules/iam"
 
-  project                = var.project
-  environment            = var.environment
-  ecr_repo_arns          = values(module.ecr.ecr_repository_arns)
-  s3_bucket_arn          = module.s3.bucket_arn
-  secret_arns            = values(module.secrets.secret_arns)
-  frontend_log_group_arn = module.monitoring.frontend_log_group_arn
-  backend_log_group_arn  = module.monitoring.backend_log_group_arn
+  project                     = var.project
+  environment                 = var.environment
+  ecr_repo_arns               = values(module.ecr.ecr_repository_arns)
+  s3_bucket_arn               = module.s3.bucket_arn
+  secret_arns                 = values(module.secrets.secret_arns)
+  frontend_log_group_arn      = module.monitoring.frontend_log_group_arn
+  backend_log_group_arn       = module.monitoring.backend_log_group_arn
+  gateway_log_group_arn       = module.monitoring.gateway_log_group_arn
+  portal_log_group_arn        = module.monitoring.portal_log_group_arn
+  keycloak_log_group_arn      = module.monitoring.keycloak_log_group_arn
+  github_repo                 = var.github_repo
+  terraform_state_bucket_name = var.terraform_state_bucket_name
+  terraform_lock_table_name   = var.terraform_lock_table_name
 }
 
 # -----------------------------------------------------------------------------

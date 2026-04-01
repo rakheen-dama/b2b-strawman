@@ -151,15 +151,19 @@ resource "aws_elasticache_replication_group" "main" {
   engine         = "redis"
   engine_version = var.redis_engine_version
   node_type      = var.redis_node_type
+  port           = 6379
 
   num_cache_clusters         = 1
   automatic_failover_enabled = false
 
+  at_rest_encryption_enabled = true
   transit_encryption_enabled = true
   auth_token                 = data.aws_secretsmanager_secret_version.redis_auth_token[0].secret_string
 
   subnet_group_name  = aws_elasticache_subnet_group.main[0].name
   security_group_ids = [var.redis_sg_id]
+
+  apply_immediately = true
 
   tags = {
     Name        = "heykazi-${var.environment}-redis"

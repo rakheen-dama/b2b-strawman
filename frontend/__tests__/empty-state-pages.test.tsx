@@ -29,7 +29,7 @@ vi.mock("next/link", () => ({
 import { EmptyState } from "@/components/empty-state";
 import { createMessages } from "@/lib/messages";
 
-describe("Empty State Page Integrations (Tier 3-4)", () => {
+describe("Empty State Page Integrations", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });

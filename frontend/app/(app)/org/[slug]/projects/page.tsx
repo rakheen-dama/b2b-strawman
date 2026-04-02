@@ -1,5 +1,4 @@
 import { Suspense } from "react";
-import { hasPlan } from "@/lib/auth";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { RequiresCapability } from "@/lib/capabilities";
 import { api, handleApiError, getFieldDefinitions, getViews, getTags } from "@/lib/api";
@@ -50,8 +49,6 @@ export default async function ProjectsPage({
   const caps = await fetchMyCapabilities();
 
   const isAdmin = caps.isAdmin || caps.isOwner;
-  const isPro = await hasPlan("pro");
-
   const currentViewId = typeof resolvedSearchParams.view === "string" ? resolvedSearchParams.view : null;
 
   // Fetch saved views for project entity type
@@ -197,23 +194,6 @@ export default async function ProjectsPage({
           </div>
         </RequiresCapability>
       </div>
-
-      {/* Upgrade Prompt (Starter only) */}
-      {!isPro && (
-        <div data-testid="upgrade-prompt" className="flex items-start gap-4 rounded-lg border-l-4 border-teal-500 bg-slate-100 p-4 dark:bg-slate-900">
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
-              Upgrade to Pro for dedicated infrastructure and schema isolation
-            </p>
-            <Link
-              href={`/org/${slug}/settings/billing`}
-              className="mt-1 inline-block text-sm text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300"
-            >
-              Learn more
-            </Link>
-          </div>
-        </div>
-      )}
 
       {/* Saved View Selector */}
       <Suspense fallback={null}>

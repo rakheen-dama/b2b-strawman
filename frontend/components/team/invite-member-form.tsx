@@ -39,7 +39,6 @@ const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "keycloak";
 interface InviteMemberFormProps {
   maxMembers: number;
   currentMembers: number;
-  planTier: string;
   orgSlug: string;
   roles: OrgRole[];
 }
@@ -47,7 +46,6 @@ interface InviteMemberFormProps {
 function MockInviteMemberForm({
   maxMembers,
   currentMembers,
-  planTier,
   orgSlug,
   roles,
 }: InviteMemberFormProps) {
@@ -56,7 +54,6 @@ function MockInviteMemberForm({
       maxMembers={maxMembers}
       currentMembers={currentMembers}
       pendingInvitations={0}
-      planTier={planTier}
       orgSlug={orgSlug}
       roles={roles}
       onInviteSent={() => {}}
@@ -68,7 +65,6 @@ function MockInviteMemberForm({
 function KeycloakBffInviteMemberForm({
   maxMembers,
   currentMembers,
-  planTier,
   orgSlug,
   roles,
 }: InviteMemberFormProps) {
@@ -92,7 +88,6 @@ function KeycloakBffInviteMemberForm({
       maxMembers={maxMembers}
       currentMembers={currentMembers}
       pendingInvitations={pendingCount}
-      planTier={planTier}
       orgSlug={orgSlug}
       roles={roles}
       onInviteSent={handleInviteSent}
@@ -105,7 +100,6 @@ function InviteFormUI({
   maxMembers,
   currentMembers,
   pendingInvitations,
-  planTier,
   orgSlug,
   roles,
   onInviteSent,
@@ -114,7 +108,6 @@ function InviteFormUI({
   maxMembers: number;
   currentMembers: number;
   pendingInvitations: number;
-  planTier: string;
   orgSlug: string;
   roles: OrgRole[];
   onInviteSent: () => void;
@@ -150,7 +143,6 @@ function InviteFormUI({
   const isAtLimit = maxMembers > 0 && totalUsed >= maxMembers;
   const fillPercent =
     maxMembers > 0 ? Math.min((totalUsed / maxMembers) * 100, 100) : 0;
-  const isPro = planTier === "DEDICATED";
 
   function handleRoleSelectChange(value: string) {
     // Reset overrides and close customize section when role changes
@@ -397,7 +389,7 @@ function InviteFormUI({
           </p>
           <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
             <div
-              className={`h-full rounded-full transition-all ${isPro ? "bg-teal-500" : "bg-slate-500"}`}
+              className="h-full rounded-full bg-teal-500 transition-all"
               style={{ width: `${fillPercent}%` }}
             />
           </div>

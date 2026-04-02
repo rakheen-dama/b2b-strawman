@@ -44,8 +44,6 @@ export default async function TeamPage({
           <InviteMemberForm
             maxMembers={billing.limits.maxMembers}
             currentMembers={billing.limits.currentMembers}
-            // All tenants use dedicated schemas (Phase 13, ADR-064) — always DEDICATED
-            planTier="DEDICATED"
             orgSlug={slug}
             roles={roles}
           />

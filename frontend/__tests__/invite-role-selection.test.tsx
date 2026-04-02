@@ -59,7 +59,6 @@ function makeCustomRole(overrides: Partial<OrgRole> = {}): OrgRole {
 const defaultProps = {
   maxMembers: 10,
   currentMembers: 2,
-  planTier: "SHARED",
   orgSlug: "acme",
 };
 

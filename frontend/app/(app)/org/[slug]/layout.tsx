@@ -6,7 +6,6 @@ import { getSubscription } from "@/app/(app)/org/[slug]/settings/billing/actions
 import { DesktopSidebar } from "@/components/desktop-sidebar";
 import { MobileSidebar } from "@/components/mobile-sidebar";
 import { Breadcrumbs } from "@/components/breadcrumbs";
-import { PlanBadge } from "@/components/billing/plan-badge";
 import { SubscriptionBanner } from "@/components/billing/subscription-banner";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 import { PageTransition } from "@/components/page-transition";
@@ -135,7 +134,6 @@ export default async function OrgLayout({
               <Breadcrumbs slug={slug} />
               <div className="ml-auto flex items-center gap-3">
                 <AuthHeaderControls />
-                <PlanBadge />
                 <NotificationBell orgSlug={slug} />
               </div>
             </header>

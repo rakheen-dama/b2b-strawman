@@ -6,12 +6,10 @@ import type { Project } from "@/lib/types";
 // Mock server-only before any imports that pull it in
 vi.mock("server-only", () => ({}));
 
-// Mock auth — getAuthContext() returns context, hasPlan() returns boolean
+// Mock auth — getAuthContext() returns context
 const mockGetAuthContext = vi.fn();
-const mockHasPlan = vi.fn();
 vi.mock("@/lib/auth", () => ({
   getAuthContext: () => mockGetAuthContext(),
-  hasPlan: (plan: string) => mockHasPlan(plan),
   AUTH_MODE: "mock",
 }));
 
@@ -24,7 +22,6 @@ const mockAuth = {
       userId: val.userId,
       groups: [],
     });
-    mockHasPlan.mockResolvedValue(val.has?.() ?? false);
     // Derive capabilities from orgRole for backward compatibility
     const role = val.orgRole?.replace("org:", "") ?? "member";
     mockFetchCaps.mockResolvedValue({
@@ -107,8 +104,6 @@ vi.mock("@/components/projects/create-project-dialog", () => ({
     </button>
   ),
 }));
-
-// UpgradePrompt no longer used (inline upgrade banner in page)
 
 // Mock next/link
 vi.mock("next/link", () => ({
@@ -256,25 +251,4 @@ describe("ProjectsPage", () => {
     });
   });
 
-  describe("plan-aware feature gating", () => {
-    it("shows upgrade prompt for starter orgs", async () => {
-      mockAuth.mockResolvedValue({ orgId: "org_1", orgSlug: "acme", userId: "user_1", orgRole: "org:member", has: () => false });
-      mockApiGet.mockResolvedValue([makeProject()]);
-
-      const jsx = await ProjectsPage({ params, searchParams });
-      render(jsx);
-
-      expect(screen.getByTestId("upgrade-prompt")).toBeInTheDocument();
-    });
-
-    it("hides upgrade prompt for pro orgs", async () => {
-      mockAuth.mockResolvedValue({ orgId: "org_1", orgSlug: "acme", userId: "user_1", orgRole: "org:member", has: () => true });
-      mockApiGet.mockResolvedValue([makeProject()]);
-
-      const jsx = await ProjectsPage({ params, searchParams });
-      render(jsx);
-
-      expect(screen.queryByTestId("upgrade-prompt")).not.toBeInTheDocument();
-    });
-  });
 });

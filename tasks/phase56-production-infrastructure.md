@@ -163,7 +163,7 @@ KEYCLOAK           CI/CD PIPELINE     OBSERVABILITY
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 5a (parallel) | 414 | 414A | Create Keycloak production Dockerfile at `compose/keycloak/Dockerfile.production`. Based on `quay.io/keycloak/keycloak:26.5`. Copy custom theme JAR + realm import JSON. Set `KC_DB=postgres`, `KC_HEALTH_ENABLED=true`. Add `HEALTHCHECK` instruction. Create Keycloak-specific ECS configuration in task definition (env vars: `KC_DB_URL`, `KC_HOSTNAME`, `KC_PROXY_HEADERS=xforwarded`, `KC_HTTP_ENABLED=true`). Docker + Infra. | |
+| 5a (parallel) | 414 | 414A | Create Keycloak production Dockerfile at `compose/keycloak/Dockerfile.production`. Based on `quay.io/keycloak/keycloak:26.5`. Copy custom theme JAR + realm import JSON. Set `KC_DB=postgres`, `KC_HEALTH_ENABLED=true`. Add `HEALTHCHECK` instruction. Create Keycloak-specific ECS configuration in task definition (env vars: `KC_DB_URL`, `KC_HOSTNAME`, `KC_PROXY_HEADERS=xforwarded`, `KC_HTTP_ENABLED=true`). Docker + Infra. | **Done** (PR #862) |
 | 5b (parallel) | 415 | 415A | Add `HEALTHCHECK` to all 4 Dockerfiles (backend: `curl -f http://localhost:8080/actuator/health`, gateway: `curl -f http://localhost:8443/actuator/health`, frontend: `curl -f http://localhost:3000/`, portal: `curl -f http://localhost:3002/`). Fix hardcoded JAR names in backend + gateway Dockerfiles (use wildcard or build arg). Fix portal Dockerfile missing `public/` copy. Update frontend Dockerfile: remove Clerk build args, add `NEXT_PUBLIC_AUTH_MODE` and `NEXT_PUBLIC_GATEWAY_URL`. Docker only. | |
 | 5c (parallel) | 414 | 414B | Create `gateway/src/main/resources/application-production.yml` for gateway: switch session store from JDBC to Redis (`spring.session.store-type=redis`), set `cookie.secure=true`, configure Redis connection via env vars. Create `backend/src/main/resources/application-production.yml` update: re-enable Flyway (`spring.flyway.enabled: true` per ADR-216), add structured JSON logging pattern, set `SPRING_PROFILES_ACTIVE=production,keycloak`. Config only. | |
 
@@ -492,7 +492,7 @@ Note: Stage 5 can run in parallel with Stages 1-4 (Dockerfiles are independent).
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **414A** | 414.1--414.4 | Create Keycloak production Dockerfile (`compose/keycloak/Dockerfile.production`). Multi-stage build: base Keycloak 26.5 image + custom theme JAR + realm import JSON. Add `HEALTHCHECK`. Configure for production mode (optimized, HTTP enabled for ALB termination). Docker + Infra. | |
+| **414A** | 414.1--414.4 | Create Keycloak production Dockerfile (`compose/keycloak/Dockerfile.production`). Multi-stage build: base Keycloak 26.5 image + custom theme JAR + realm import JSON. Add `HEALTHCHECK`. Configure for production mode (optimized, HTTP enabled for ALB termination). Docker + Infra. | **Done** (PR #862) |
 | **414B** | 414.5--414.8 | Create gateway `application-production.yml`: switch session store from JDBC to Redis, set `cookie.secure=true`. Update backend `application-prod.yml`: re-enable Flyway (`spring.flyway.enabled: true`), add `keycloak` to active profiles default. Config only. | |
 
 ### Tasks

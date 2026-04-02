@@ -253,7 +253,7 @@ public class Subscription {
     /** Returns true if this status allows write operations (creating projects, tasks, etc.). */
     public boolean isWriteEnabled() {
       return switch (this) {
-        case TRIALING, ACTIVE, PENDING_CANCELLATION, PAST_DUE, GRACE_PERIOD -> true;
+        case TRIALING, ACTIVE, PENDING_CANCELLATION, PAST_DUE -> true;
         default -> false;
       };
     }

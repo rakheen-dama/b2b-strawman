@@ -476,7 +476,7 @@
 | **Phase 57 — Tenant Subscription Payments** | | | | | | See [tasks/phase57-tenant-subscription-payments.md](tasks/phase57-tenant-subscription-payments.md) |
 | 419 | Data Model & Config Foundation | Backend | -- | M | 419A, 419B | **Done** (PRs #872, #873) |
 | 420 | Subscription Lifecycle Service & Billing API | Backend | 419 | L | 420A, 420B | **Done** (PRs #874, #875) |
-| 421 | PayFast Platform Integration | Backend | 419, 420 | M | 421A, 421B | |
+| 421 | PayFast Platform Integration | Backend | 419, 420 | M | 421A, 421B | 421A **Done** (PR #876) |
 | 422 | Read-Only Enforcement & Scheduled Jobs | Backend | 419, 420 | M | 422A, 422B | |
 | 423 | Frontend Billing Page & Components | Frontend | 420 | M | 423A, 423B | |
 | 424 | Frontend Banner, Context & Error Interceptor | Frontend | 423 | M | 424A, 424B | |

@@ -54,7 +54,7 @@ Phase 57 replaces HeyKazi's simulated billing system with real subscription paym
 
 | Order | Epic | Rationale |
 |-------|------|-----------|
-| 3a | Epic 421: PayFast Platform Integration | Depends on entity model (419) and lifecycle service (420) for state transitions. Independent of 422 and 423. |
+| 3a | Epic 421: PayFast Platform Integration | Depends on entity model (419) and lifecycle service (420) for state transitions. Independent of 422 and 423. **421A Done** (PR #876) |
 | 3b | Epic 422: Read-Only Enforcement & Scheduled Jobs | Depends on entity model (419) and lifecycle service (420) for status resolution. Independent of 421 and 423. |
 | 3c | Epic 423: Frontend Billing Page & Components | Depends on API endpoints from Epic 420. Independent of 421 and 422. |
 
@@ -244,7 +244,7 @@ Stage 5:  [E425] [E426]                            <- parallel cleanup (after al
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **421A** | 421.1--421.5 | `PlatformPayFastService` (form generation, MD5 signature, sandbox/prod URL), wire into `SubscriptionService.subscribe()`, `PlatformPayFastServiceTest` | |
+| **421A** | 421.1--421.5 | `PlatformPayFastService` (form generation, MD5 signature, sandbox/prod URL), wire into `SubscriptionService.subscribe()`, `PlatformPayFastServiceTest` | **Done** (PR #876) |
 | **421B** | 421.6--421.11 | `SubscriptionItnController` + `SubscriptionItnService` (webhook endpoint, IP validation, signature verification, ITN processing, idempotency), PayFast cancellation API client, `SecurityConfig` webhook path permit, `SubscriptionItnIntegrationTest` | |
 
 ### Tasks

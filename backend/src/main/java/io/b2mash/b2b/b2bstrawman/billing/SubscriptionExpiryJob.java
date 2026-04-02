@@ -147,6 +147,10 @@ public class SubscriptionExpiryJob {
     int count = 0;
     for (var sub : ended) {
       try {
+        if (sub.getCurrentPeriodEnd() == null) {
+          log.warn("Subscription {} has null currentPeriodEnd, skipping", sub.getId());
+          continue;
+        }
         sub.transitionTo(Subscription.SubscriptionStatus.GRACE_PERIOD);
         sub.setGraceEndsAt(
             sub.getCurrentPeriodEnd().plus(Duration.ofDays(billingProperties.gracePeriodDays())));
@@ -173,36 +177,43 @@ public class SubscriptionExpiryJob {
   }
 
   private void logAuditEvent(Subscription sub, String eventType, Map<String, Object> details) {
-    organizationRepository
-        .findById(sub.getOrganizationId())
-        .ifPresent(
-            org -> {
-              orgSchemaMappingRepository
-                  .findByExternalOrgId(org.getExternalOrgId())
-                  .ifPresent(
-                      mapping -> {
-                        try {
-                          ScopedValue.where(RequestScopes.TENANT_ID, mapping.getSchemaName())
-                              .where(RequestScopes.ORG_ID, mapping.getExternalOrgId())
-                              .run(
-                                  () -> {
-                                    auditService.log(
-                                        AuditEventBuilder.builder()
-                                            .eventType(eventType)
-                                            .entityType("subscription")
-                                            .entityId(sub.getId())
-                                            .actorType("SYSTEM")
-                                            .source("SCHEDULED")
-                                            .details(details)
-                                            .build());
-                                  });
-                        } catch (Exception e) {
-                          log.warn(
-                              "Failed to create audit event for subscription {}: {}",
-                              sub.getId(),
-                              e.getMessage());
-                        }
-                      });
-            });
+    var orgOpt = organizationRepository.findById(sub.getOrganizationId());
+    if (orgOpt.isEmpty()) {
+      log.debug(
+          "Organization {} not found, skipping audit for subscription {}",
+          sub.getOrganizationId(),
+          sub.getId());
+      return;
+    }
+
+    var mappingOpt =
+        orgSchemaMappingRepository.findByExternalOrgId(orgOpt.get().getExternalOrgId());
+    if (mappingOpt.isEmpty()) {
+      log.debug(
+          "Schema mapping not found for org {}, skipping audit for subscription {}",
+          orgOpt.get().getExternalOrgId(),
+          sub.getId());
+      return;
+    }
+
+    var mapping = mappingOpt.get();
+    try {
+      ScopedValue.where(RequestScopes.TENANT_ID, mapping.getSchemaName())
+          .where(RequestScopes.ORG_ID, mapping.getExternalOrgId())
+          .run(
+              () -> {
+                auditService.log(
+                    AuditEventBuilder.builder()
+                        .eventType(eventType)
+                        .entityType("subscription")
+                        .entityId(sub.getId())
+                        .actorType("SYSTEM")
+                        .source("SCHEDULED")
+                        .details(details)
+                        .build());
+              });
+    } catch (Exception e) {
+      log.warn("Failed to create audit event for subscription {}: {}", sub.getId(), e.getMessage());
+    }
   }
 }

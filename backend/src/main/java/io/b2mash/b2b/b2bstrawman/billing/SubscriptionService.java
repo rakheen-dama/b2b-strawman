@@ -131,6 +131,8 @@ public class SubscriptionService {
     subscription.setCancelledAt(Instant.now());
     subscriptionRepository.save(subscription);
 
+    // Cache eviction before commit — acceptable tradeoff; DB is authoritative and Caffeine TTL
+    // is 5 min
     statusCache.evict(org.getId());
 
     if (subscription.getPayfastToken() != null) {

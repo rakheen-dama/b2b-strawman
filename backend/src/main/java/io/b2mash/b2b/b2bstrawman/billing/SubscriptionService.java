@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.billing;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
+import io.b2mash.b2b.b2bstrawman.provisioning.PlanLimits;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,8 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class SubscriptionService {
 
   private static final Logger log = LoggerFactory.getLogger(SubscriptionService.class);
-
-  private static final int DEFAULT_MAX_MEMBERS = 10;
 
   private final SubscriptionRepository subscriptionRepository;
   private final OrganizationRepository organizationRepository;
@@ -58,15 +57,24 @@ public class SubscriptionService {
       var sub = subscription.get();
       return new BillingResponse(
           sub.getSubscriptionStatus().name(),
-          new BillingResponse.Limits(DEFAULT_MAX_MEMBERS, currentMembers));
+          new BillingResponse.Limits(PlanLimits.DEFAULT_MAX_MEMBERS, currentMembers));
     }
 
     // Defensive: synthetic TRIALING response if subscription row is missing
     return new BillingResponse(
-        "TRIALING", new BillingResponse.Limits(DEFAULT_MAX_MEMBERS, currentMembers));
+        "TRIALING", new BillingResponse.Limits(PlanLimits.DEFAULT_MAX_MEMBERS, currentMembers));
   }
 
-  public record BillingResponse(String status, Limits limits) {
+  /**
+   * Billing response DTO. The {@code tier} and {@code planSlug} fields are retained for
+   * backward-compatibility with the frontend until Epic 426 (Frontend Cleanup) removes them.
+   */
+  public record BillingResponse(String status, Limits limits, String tier, String planSlug) {
+
+    /** Compact constructor — fills backward-compat fields with sensible defaults. */
+    public BillingResponse(String status, Limits limits) {
+      this(status, limits, "pro", "pro");
+    }
 
     public record Limits(int maxMembers, long currentMembers) {}
   }

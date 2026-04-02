@@ -2,15 +2,15 @@
 -- Restructure subscriptions table for PayFast lifecycle model and create subscription_payments audit trail.
 
 -- 1. Add new lifecycle columns to subscriptions (all nullable initially for data migration)
-ALTER TABLE subscriptions ADD COLUMN subscription_status VARCHAR(30);
-ALTER TABLE subscriptions ADD COLUMN payfast_token VARCHAR(255);
-ALTER TABLE subscriptions ADD COLUMN trial_ends_at TIMESTAMPTZ;
-ALTER TABLE subscriptions ADD COLUMN grace_ends_at TIMESTAMPTZ;
-ALTER TABLE subscriptions ADD COLUMN monthly_amount_cents INTEGER;
-ALTER TABLE subscriptions ADD COLUMN currency VARCHAR(3) DEFAULT 'ZAR';
-ALTER TABLE subscriptions ADD COLUMN last_payment_at TIMESTAMPTZ;
-ALTER TABLE subscriptions ADD COLUMN next_billing_at TIMESTAMPTZ;
-ALTER TABLE subscriptions ADD COLUMN payfast_payment_id VARCHAR(255);
+ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS subscription_status VARCHAR(30);
+ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS payfast_token VARCHAR(255);
+ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS trial_ends_at TIMESTAMPTZ;
+ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS grace_ends_at TIMESTAMPTZ;
+ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS monthly_amount_cents INTEGER;
+ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS currency VARCHAR(3) DEFAULT 'ZAR';
+ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS last_payment_at TIMESTAMPTZ;
+ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS next_billing_at TIMESTAMPTZ;
+ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS payfast_payment_id VARCHAR(255);
 
 -- 2. Migrate existing data based on plan_slug
 UPDATE subscriptions SET subscription_status = 'ACTIVE' WHERE plan_slug = 'pro';

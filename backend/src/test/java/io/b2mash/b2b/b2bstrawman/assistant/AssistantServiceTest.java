@@ -56,7 +56,6 @@ class AssistantServiceTest {
 
   private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_assistant_service_test";
-  private static final String ORG_ID_STARTER = "org_assistant_starter_test";
   private static final String ORG_ID_NO_AI = "org_assistant_no_ai_test";
   private static final String ORG_ID_NO_KEY = "org_assistant_no_key_test";
 
@@ -77,8 +76,6 @@ class AssistantServiceTest {
 
   private String tenantSchema;
   private UUID memberIdOwner;
-  private String tenantSchemaStarter;
-  private UUID memberIdStarter;
   private String tenantSchemaNoAi;
   private UUID memberIdNoAi;
   private String tenantSchemaNoKey;
@@ -109,15 +106,6 @@ class AssistantServiceTest {
                   IntegrationDomain.AI, "anthropic", "{\"model\": \"claude-sonnet-4-6\"}");
               secretStore.store("ai:anthropic:api_key", "sk-test-key-12345");
             });
-
-    // === STARTER tier tenant ===
-    provisioningService.provisionTenant(ORG_ID_STARTER, "Starter Tier Org", null);
-    var memberIdStarterStr =
-        syncMember(
-            ORG_ID_STARTER, "user_ast_starter", "ast_starter@test.com", "AST Starter", "owner");
-    memberIdStarter = UUID.fromString(memberIdStarterStr);
-    tenantSchemaStarter =
-        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID_STARTER).orElseThrow().getSchemaName();
 
     // === PRO tenant with AI NOT enabled ===
     provisioningService.provisionTenant(ORG_ID_NO_AI, "No AI Org", null);

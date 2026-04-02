@@ -30,7 +30,7 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
   flyway:
-    enabled: false
+    enabled: true
 
   security:
     oauth2:
@@ -54,7 +54,19 @@ portal:
   magic-link:
     secret: ${PORTAL_MAGIC_LINK_SECRET}
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+  health:
+    db:
+      enabled: true
+
 logging:
   level:
-    root: INFO
+    root: WARN
     io.b2mash.b2b.b2bstrawman: INFO

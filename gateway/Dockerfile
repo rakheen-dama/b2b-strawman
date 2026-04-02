@@ -15,6 +15,7 @@ RUN ./mvnw clean package -DskipTests -B
 
 # Extract (Spring Boot 4 format — flat extraction, not layered)
 RUN java -Djarmode=tools -jar target/*.jar extract --destination extracted
+RUN mv extracted/*.jar extracted/app.jar
 
 # ---- Stage 2: Production runner ----
 FROM eclipse-temurin:25-jre-alpine AS runner
@@ -23,10 +24,15 @@ WORKDIR /app
 RUN addgroup --system --gid 1001 spring && \
     adduser --system --uid 1001 spring
 
+RUN apk add --no-cache curl
+
 COPY --from=builder --chown=spring:spring /build/extracted/ ./
 
 USER spring
 
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 --start-period=60s \
+  CMD curl -f http://localhost:8443/actuator/health || exit 1
+
 EXPOSE 8443
 
-ENTRYPOINT ["java", "-jar", "b2b-strawman-gateway-0.0.1-SNAPSHOT.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]

@@ -19,11 +19,9 @@ COPY . .
 # NEXT_PUBLIC_ vars are inlined at build time. Pass via --build-arg or
 # provide a placeholder so the build succeeds (real values at runtime
 # won't override these — rebuild with correct keys for production).
-ARG NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 ARG NEXT_PUBLIC_AUTH_MODE
 ARG NEXT_PUBLIC_MOCK_IDP_URL
 ARG NEXT_PUBLIC_BACKEND_URL
-ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
 ENV NEXT_PUBLIC_AUTH_MODE=$NEXT_PUBLIC_AUTH_MODE
 ENV NEXT_PUBLIC_MOCK_IDP_URL=$NEXT_PUBLIC_MOCK_IDP_URL
 ENV NEXT_PUBLIC_BACKEND_URL=$NEXT_PUBLIC_BACKEND_URL
@@ -43,11 +41,16 @@ ENV PORT=3000
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
+RUN apk add --no-cache curl
+
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs
+
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 --start-period=30s \
+  CMD curl -f http://localhost:3000/ || exit 1
 
 EXPOSE 3000
 

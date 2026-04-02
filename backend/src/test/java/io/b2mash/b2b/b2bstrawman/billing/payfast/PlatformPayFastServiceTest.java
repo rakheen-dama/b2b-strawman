@@ -9,8 +9,6 @@ import static org.mockito.Mockito.when;
 import io.b2mash.b2b.b2bstrawman.billing.BillingProperties;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import java.lang.reflect.Field;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -201,17 +199,16 @@ class PlatformPayFastServiceTest {
         .isInstanceOf(InvalidStateException.class);
   }
 
-  private static String md5(String input) {
-    try {
-      var md = MessageDigest.getInstance("MD5");
-      var digest = md.digest(input.getBytes(StandardCharsets.UTF_8));
-      var sb = new StringBuilder();
-      for (byte b : digest) {
-        sb.append(String.format("%02x", b));
-      }
-      return sb.toString();
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+  @Test
+  void generateCheckoutForm_signatureMatchesExpectedGoldenValue() {
+    stubFormGenerationProperties();
+    var orgId = UUID.fromString("11111111-1111-1111-1111-111111111111");
+
+    var response = service.generateCheckoutForm(orgId);
+
+    // Pre-computed MD5 of the alphabetically-sorted, URL-encoded param string
+    // with passphrase "jt7NOE43FZPn" appended
+    assertThat(response.formFields().get("signature"))
+        .isEqualTo("df17f1d2b11fe8f7d73f10c34ce72eae");
   }
 }

@@ -13,8 +13,11 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * Platform-level PayFast service for subscription checkout form generation and cancellation.
@@ -26,10 +29,12 @@ import org.springframework.web.client.RestClient;
 @Service
 public class PlatformPayFastService {
 
+  private static final Logger log = LoggerFactory.getLogger(PlatformPayFastService.class);
+
   private static final String SANDBOX_CHECKOUT_URL = "https://sandbox.payfast.co.za/eng/process";
   private static final String PRODUCTION_CHECKOUT_URL = "https://www.payfast.co.za/eng/process";
-  private static final String SANDBOX_API_URL = "https://sandbox.payfast.co.za/subscriptions/";
-  private static final String PRODUCTION_API_URL = "https://api.payfast.co.za/subscriptions/";
+  private static final String SANDBOX_API_URL = "https://sandbox.payfast.co.za/subscriptions";
+  private static final String PRODUCTION_API_URL = "https://api.payfast.co.za/subscriptions";
 
   private final PayFastBillingProperties payfastProperties;
   private final BillingProperties billingProperties;
@@ -73,7 +78,10 @@ public class PlatformPayFastService {
    */
   public void cancelPayFastSubscription(String payfastToken) {
     String baseUrl = payfastProperties.sandbox() ? SANDBOX_API_URL : PRODUCTION_API_URL;
-    String url = baseUrl + payfastToken + "/cancel";
+    String url =
+        UriComponentsBuilder.fromUriString(baseUrl)
+            .pathSegment(payfastToken, "cancel")
+            .toUriString();
 
     String timestamp = Instant.now().toString();
     String signature = generateCancellationSignature(timestamp);
@@ -89,8 +97,10 @@ public class PlatformPayFastService {
           .retrieve()
           .toBodilessEntity();
     } catch (Exception e) {
+      log.error("PayFast cancellation failed for token: {}", payfastToken, e);
       throw new InvalidStateException(
-          "PayFast cancellation failed", "HTTP error from PayFast cancellation API");
+          "PayFast cancellation failed",
+          "HTTP error from PayFast cancellation API: " + e.getMessage());
     }
   }
 

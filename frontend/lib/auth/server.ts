@@ -38,8 +38,3 @@ export async function getCurrentUserInfo(): Promise<{
   if (AUTH_MODE === "mock") return mockProvider.getCurrentUserInfo();
   return keycloakBffProvider.getCurrentUserInfo();
 }
-
-export async function hasPlan(plan: string): Promise<boolean> {
-  if (AUTH_MODE === "mock") return mockProvider.hasPlan(plan);
-  return keycloakBffProvider.hasPlan(plan);
-}

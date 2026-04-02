@@ -16,7 +16,6 @@ import {
   getAuthContext,
   getAuthToken,
   getCurrentUserEmail,
-  hasPlan,
 } from "@/lib/auth/providers/keycloak-bff";
 import { cookies } from "next/headers";
 
@@ -105,8 +104,4 @@ describe("Keycloak BFF auth provider", () => {
     expect(email).toBeNull();
   });
 
-  it("hasPlan() always returns true", async () => {
-    const result = await hasPlan("pro");
-    expect(result).toBe(true);
-  });
 });

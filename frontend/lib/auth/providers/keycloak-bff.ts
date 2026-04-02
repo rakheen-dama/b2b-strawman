@@ -124,8 +124,3 @@ export async function getCurrentUserInfo(): Promise<{
   }
 }
 
-export async function hasPlan(_plan: string): Promise<boolean> {
-  // Keycloak BFF mode always returns true — billing not yet wired for Keycloak
-  return true;
-}
-

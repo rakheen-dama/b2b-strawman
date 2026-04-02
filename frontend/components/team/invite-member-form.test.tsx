@@ -30,7 +30,6 @@ describe("InviteMemberForm", () => {
   async function renderForm(props: {
     maxMembers: number;
     currentMembers: number;
-    planTier: string;
     orgSlug: string;
   }) {
     const { InviteMemberForm } = await import("./invite-member-form");
@@ -44,7 +43,7 @@ describe("InviteMemberForm", () => {
 
   it("renders form when under member limit", async () => {
     mockListInvitations.mockResolvedValue([]);
-    await renderForm({ maxMembers: 2, currentMembers: 1, planTier: "SHARED", orgSlug: "acme" });
+    await renderForm({ maxMembers: 2, currentMembers: 1, orgSlug: "acme" });
 
     expect(screen.getByLabelText("Email address")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Send Invite" })).toBeInTheDocument();
@@ -52,7 +51,7 @@ describe("InviteMemberForm", () => {
 
   it("shows upgrade message when at member limit", async () => {
     mockListInvitations.mockResolvedValue([]);
-    await renderForm({ maxMembers: 2, currentMembers: 2, planTier: "SHARED", orgSlug: "acme" });
+    await renderForm({ maxMembers: 2, currentMembers: 2, orgSlug: "acme" });
 
     expect(screen.queryByLabelText("Email address")).not.toBeInTheDocument();
     expect(screen.getByText(/Member limit reached/)).toBeInTheDocument();
@@ -60,14 +59,14 @@ describe("InviteMemberForm", () => {
 
   it("renders form when maxMembers is 0 (unlimited)", async () => {
     mockListInvitations.mockResolvedValue([]);
-    await renderForm({ maxMembers: 0, currentMembers: 50, planTier: "DEDICATED", orgSlug: "acme" });
+    await renderForm({ maxMembers: 0, currentMembers: 50, orgSlug: "acme" });
 
     expect(screen.getByLabelText("Email address")).toBeInTheDocument();
   });
 
   it("shows billing link with correct slug", async () => {
     mockListInvitations.mockResolvedValue([]);
-    await renderForm({ maxMembers: 2, currentMembers: 2, planTier: "SHARED", orgSlug: "my-org" });
+    await renderForm({ maxMembers: 2, currentMembers: 2, orgSlug: "my-org" });
 
     const link = screen.getByRole("link", { name: "Upgrade" });
     expect(link).toHaveAttribute("href", "/org/my-org/settings/billing");
@@ -75,7 +74,7 @@ describe("InviteMemberForm", () => {
 
   it("shows progress bar with member count", async () => {
     mockListInvitations.mockResolvedValue([]);
-    await renderForm({ maxMembers: 10, currentMembers: 3, planTier: "SHARED", orgSlug: "acme" });
+    await renderForm({ maxMembers: 10, currentMembers: 3, orgSlug: "acme" });
 
     expect(screen.getByText("3 of 10 members")).toBeInTheDocument();
   });
@@ -85,7 +84,7 @@ describe("InviteMemberForm", () => {
     mockListInvitations.mockResolvedValue([]);
     mockInviteMember.mockResolvedValue({ success: true });
 
-    await renderForm({ maxMembers: 10, currentMembers: 1, planTier: "SHARED", orgSlug: "acme" });
+    await renderForm({ maxMembers: 10, currentMembers: 1, orgSlug: "acme" });
 
     await user.type(screen.getByLabelText("Email address"), "test@example.com");
     await user.click(screen.getByRole("button", { name: "Send Invite" }));
@@ -101,7 +100,7 @@ describe("InviteMemberForm", () => {
     mockListInvitations.mockResolvedValue([]);
     mockInviteMember.mockResolvedValue({ success: false, error: "Already invited" });
 
-    await renderForm({ maxMembers: 10, currentMembers: 1, planTier: "SHARED", orgSlug: "acme" });
+    await renderForm({ maxMembers: 10, currentMembers: 1, orgSlug: "acme" });
 
     await user.type(screen.getByLabelText("Email address"), "dup@example.com");
     await user.click(screen.getByRole("button", { name: "Send Invite" }));

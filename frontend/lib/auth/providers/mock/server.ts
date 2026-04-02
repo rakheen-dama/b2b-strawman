@@ -112,8 +112,3 @@ export async function getCurrentUserInfo(): Promise<{
     return { name: null, email: null };
   }
 }
-
-export async function hasPlan(_plan: string): Promise<boolean> {
-  // Mock mode always returns true — E2E tests run with full Pro features
-  return true;
-}

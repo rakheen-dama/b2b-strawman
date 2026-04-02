@@ -4,7 +4,7 @@ import IntegrationsSettingsPage from "@/app/(app)/org/[slug]/settings/integratio
 
 vi.mock("@/lib/api", () => ({
   api: {
-    get: vi.fn().mockResolvedValue({ planSlug: "pro", tier: "PRO", status: "active", limits: { maxMembers: 10, currentMembers: 1 } }),
+    get: vi.fn().mockResolvedValue({ status: "ACTIVE", limits: { maxMembers: 10, currentMembers: 1 } }),
   },
 }));
 

@@ -33,7 +33,7 @@ Phase 56 updates and extends the existing (stale) AWS infrastructure and CI/CD p
 | 415 | Dockerfile Hardening: Health Checks, JAR Fixes, Build Args | Docker | -- | S | 415A | **Done** (PR #864) |
 | 416 | CI/CD Pipeline: OIDC, Image Promotion, Terraform Workflow | CI/CD | 412 | L | 416A, 416B, 416C | **Done** (PRs #865, #866, #867) |
 | 417 | Observability: Alarms, SNS, Dashboards, Structured Logging | Infra + Config | 413 | M | 417A, 417B | **Done** (PRs #868, #869) |
-| 418 | DNS, SSL & Production Cutover | Infra | 413, 416, 417 | M | 418A, 418B | |
+| 418 | DNS, SSL & Production Cutover | Infra | 413, 416, 417 | M | 418A, 418B | **Done** (PRs #870, #871) |
 
 ---
 
@@ -187,7 +187,7 @@ KEYCLOAK           CI/CD PIPELINE     OBSERVABILITY
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 8a | 418 | 418A | Extend DNS module: wildcard ACM certificate for `*.heykazi.com` with DNS validation. Route 53 A-record aliases for `app.heykazi.com`, `portal.heykazi.com`, `auth.heykazi.com` pointing to ALB. Staging variants (`staging-app.heykazi.com`, etc.). ALB HTTPS listener with ACM cert, HTTP-to-HTTPS redirect, TLS 1.3 security policy. Infra only. | **Done** (PR #870) |
-| 8b | 418 | 418B | Create `infra/RUNBOOK.md` covering: first-time setup, deploying a new version, provisioning a new tenant, database operations, viewing logs, responding to alerts, rollback procedure, Keycloak operations, cost monitoring, disaster recovery. Create production cutover checklist script (`infra/scripts/smoke-test.sh`) that verifies all 5 services are healthy. Docs only. | |
+| 8b | 418 | 418B | Create `infra/RUNBOOK.md` covering: first-time setup, deploying a new version, provisioning a new tenant, database operations, viewing logs, responding to alerts, rollback procedure, Keycloak operations, cost monitoring, disaster recovery. Create production cutover checklist script (`infra/scripts/smoke-test.sh`) that verifies all 5 services are healthy. Docs only. | **Done** (PR #871) |
 
 ### Timeline
 
@@ -729,7 +729,7 @@ Note: Stage 5 can run in parallel with Stages 1-4 (Dockerfiles are independent).
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **418A** | 418.1--418.5 | Extend DNS module: wildcard ACM certificate for `*.heykazi.com` with DNS validation. Route 53 A-record aliases for `app.heykazi.com`, `portal.heykazi.com`, `auth.heykazi.com` (and staging variants). Update ALB HTTPS listener with ACM cert ARN. TLS 1.3 security policy. Infra only. | **Done** (PR #870) |
-| **418B** | 418.6--418.8 | Create `infra/RUNBOOK.md` (10-section operational runbook). Create `infra/scripts/smoke-test.sh` (automated smoke test for all 5 services). Create production cutover checklist. Docs only. | |
+| **418B** | 418.6--418.8 | Create `infra/RUNBOOK.md` (10-section operational runbook). Create `infra/scripts/smoke-test.sh` (automated smoke test for all 5 services). Create production cutover checklist. Docs only. | **Done** (PR #871) |
 
 ### Tasks
 

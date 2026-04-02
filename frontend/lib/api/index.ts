@@ -5,6 +5,7 @@ export {
   apiClient,
   ApiError,
   handleApiError,
+  isSubscriptionError,
   getAuthFetchOptions,
   API_BASE,
 } from "./client";

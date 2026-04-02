@@ -134,11 +134,35 @@ export async function apiRequest<T>(endpoint: string, options: ApiRequestOptions
 }
 
 /**
+ * Detects whether an ApiError is a subscription-related 403.
+ * Returns "required" when the org needs a subscription to perform the action,
+ * "locked" when the subscription is fully locked (e.g. SUSPENDED/LOCKED),
+ * or null for regular permission-based 403s.
+ *
+ * Extracted as a pure function for testability (client.ts is server-only).
+ */
+export function isSubscriptionError(
+  error: unknown,
+): "required" | "locked" | null {
+  if (
+    error instanceof ApiError &&
+    error.status === 403 &&
+    error.detail?.type
+  ) {
+    if (error.detail.type === "subscription_required") return "required";
+    if (error.detail.type === "subscription_locked") return "locked";
+  }
+  return null;
+}
+
+/**
  * Handles ApiError by performing appropriate navigation for
  * known HTTP error statuses. Call this in catch blocks of
  * server components and server actions.
  *
  * - 401 → redirect to sign-in
+ * - 403 with subscription_required/subscription_locked → re-throw with
+ *   descriptive message (client-side error handlers detect via detail.type)
  * - 404 → trigger Next.js not-found page
  * - All others → re-throws the error
  */
@@ -147,6 +171,25 @@ export function handleApiError(error: unknown): never {
     if (error.status === 401) {
       redirect("/sign-in");
     }
+
+    // Subscription-related 403s: re-throw with a user-friendly message
+    // while preserving detail.type for client-side detection
+    const subscriptionKind = isSubscriptionError(error);
+    if (subscriptionKind === "locked") {
+      throw new ApiError(
+        403,
+        "Your subscription is inactive. Please subscribe to regain access.",
+        error.detail,
+      );
+    }
+    if (subscriptionKind === "required") {
+      throw new ApiError(
+        403,
+        "A subscription is required to perform this action.",
+        error.detail,
+      );
+    }
+
     if (error.status === 404) {
       notFound();
     }

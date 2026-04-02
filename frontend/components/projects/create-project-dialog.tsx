@@ -11,7 +11,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -29,8 +28,15 @@ import { Plus, ShieldAlert } from "lucide-react";
 import { createMessages } from "@/lib/messages";
 import { scrollToFirstError } from "@/lib/error-handler";
 import { useTerminology } from "@/lib/terminology";
+import { useSubscription } from "@/lib/subscription-context";
 import { ModuleGate } from "@/components/module-gate";
 import { Badge } from "@/components/ui/badge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   createProjectSchema,
   type CreateProjectFormData,
@@ -42,6 +48,7 @@ interface CreateProjectDialogProps {
 
 export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
   const { t } = useTerminology();
+  const { isWriteEnabled } = useSubscription();
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -103,12 +110,21 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button size="sm">
-          <Plus className="mr-1.5 size-4" />
-          New {t("Project")}
-        </Button>
-      </DialogTrigger>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span tabIndex={0} className="inline-flex">
+              <Button size="sm" disabled={!isWriteEnabled} onClick={() => setOpen(true)}>
+                <Plus className="mr-1.5 size-4" />
+                New {t("Project")}
+              </Button>
+            </span>
+          </TooltipTrigger>
+          {!isWriteEnabled && (
+            <TooltipContent>Subscribe to enable this action</TooltipContent>
+          )}
+        </Tooltip>
+      </TooltipProvider>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Create Project</DialogTitle>

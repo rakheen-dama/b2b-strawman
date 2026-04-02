@@ -6,6 +6,8 @@ import { createMessages, type MessageNamespace } from "@/lib/messages";
 export type ErrorCategory =
   | "validation"
   | "forbidden"
+  | "subscriptionRequired"
+  | "subscriptionLocked"
   | "notFound"
   | "conflict"
   | "serverError"
@@ -16,7 +18,7 @@ export interface ClassifiedError {
   category: ErrorCategory;
   messageCode: string;
   retryable: boolean;
-  action?: "retry" | "refresh" | "goBack" | "contactAdmin";
+  action?: "retry" | "refresh" | "goBack" | "contactAdmin" | "subscribeBilling";
 }
 
 // --- classifyError ---
@@ -50,6 +52,25 @@ function getStatusCode(error: unknown): number | undefined {
   return undefined;
 }
 
+function getDetailType(error: unknown): string | undefined {
+  if (
+    error &&
+    typeof error === "object" &&
+    "detail" in error &&
+    (error as Record<string, unknown>).detail &&
+    typeof (error as Record<string, unknown>).detail === "object"
+  ) {
+    const detail = (error as Record<string, unknown>).detail as Record<
+      string,
+      unknown
+    >;
+    if (typeof detail.type === "string") {
+      return detail.type;
+    }
+  }
+  return undefined;
+}
+
 export function classifyError(error: unknown): ClassifiedError {
   const status = getStatusCode(error);
 
@@ -71,6 +92,23 @@ export function classifyError(error: unknown): ClassifiedError {
   }
 
   if (status === 403) {
+    const detailType = getDetailType(error);
+    if (detailType === "subscription_required") {
+      return {
+        category: "subscriptionRequired",
+        messageCode: "api.subscriptionRequired",
+        retryable: false,
+        action: "subscribeBilling",
+      };
+    }
+    if (detailType === "subscription_locked") {
+      return {
+        category: "subscriptionLocked",
+        messageCode: "api.subscriptionLocked",
+        retryable: false,
+        action: "subscribeBilling",
+      };
+    }
     return {
       category: "forbidden",
       messageCode: "api.forbidden",

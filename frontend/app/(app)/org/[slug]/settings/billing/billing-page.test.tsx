@@ -6,6 +6,7 @@ import type { BillingResponse } from "@/lib/internal-api";
 
 vi.mock("@/app/(app)/org/[slug]/settings/billing/actions", () => ({
   getSubscription: vi.fn(),
+  getPayments: vi.fn(),
 }));
 
 vi.mock("@/components/ui/badge", () => ({
@@ -79,6 +80,36 @@ vi.mock("@/components/billing/cancel-confirm-dialog", () => ({
   ),
 }));
 
+vi.mock("@/components/billing/payment-history", () => ({
+  PaymentHistory: () => (
+    <div data-testid="payment-history">Payment History Table</div>
+  ),
+}));
+
+vi.mock("@/components/billing/trial-countdown", () => ({
+  TrialCountdown: ({ trialEndsAt }: { trialEndsAt: string }) => (
+    <div data-testid="trial-countdown" data-trial-ends-at={trialEndsAt}>
+      Trial Countdown
+    </div>
+  ),
+}));
+
+vi.mock("@/components/billing/grace-countdown", () => ({
+  GraceCountdown: ({ graceEndsAt }: { graceEndsAt: string }) => (
+    <div data-testid="grace-countdown" data-grace-ends-at={graceEndsAt}>
+      Grace Countdown
+    </div>
+  ),
+}));
+
+vi.mock("@/components/billing/payfast-result-poller", () => ({
+  PayFastResultPoller: ({ initialStatus }: { initialStatus: string }) => (
+    <div data-testid="payfast-result-poller" data-status={initialStatus}>
+      PayFast Poller
+    </div>
+  ),
+}));
+
 afterEach(() => cleanup());
 
 const { getSubscription } = await import(
@@ -86,7 +117,9 @@ const { getSubscription } = await import(
 );
 const mockGetSubscription = getSubscription as ReturnType<typeof vi.fn>;
 
-function makeBilling(overrides: Partial<BillingResponse> = {}): BillingResponse {
+function makeBilling(
+  overrides: Partial<BillingResponse> = {}
+): BillingResponse {
   return {
     status: "ACTIVE",
     trialEndsAt: null,
@@ -103,52 +136,7 @@ function makeBilling(overrides: Partial<BillingResponse> = {}): BillingResponse 
 }
 
 describe("BillingPage", () => {
-  it("renders back link to settings", async () => {
-    mockGetSubscription.mockResolvedValue(makeBilling());
-
-    const page = await BillingPage({
-      params: Promise.resolve({ slug: "acme" }),
-      searchParams: Promise.resolve({}),
-    });
-    render(page);
-
-    const backLink = screen.getByRole("link", { name: /Settings/ });
-    expect(backLink).toHaveAttribute("href", "/org/acme/settings");
-  });
-
-  it("renders page header with status badge for ACTIVE", async () => {
-    mockGetSubscription.mockResolvedValue(makeBilling());
-
-    const page = await BillingPage({
-      params: Promise.resolve({ slug: "acme" }),
-      searchParams: Promise.resolve({}),
-    });
-    render(page);
-
-    expect(screen.getByText("Billing")).toBeInTheDocument();
-    const badge = screen.getAllByTestId("badge").find(
-      (el) => el.getAttribute("data-variant") === "success"
-    );
-    expect(badge).toBeInTheDocument();
-    expect(badge?.textContent).toBe("Active");
-  });
-
-  it("shows active subscription card with member count and cancel option", async () => {
-    mockGetSubscription.mockResolvedValue(makeBilling());
-
-    const page = await BillingPage({
-      params: Promise.resolve({ slug: "acme" }),
-      searchParams: Promise.resolve({}),
-    });
-    render(page);
-
-    expect(screen.getByText("Active Subscription")).toBeInTheDocument();
-    expect(screen.getByText(/3 of 10 members/)).toBeInTheDocument();
-    expect(screen.getByText("R499.00")).toBeInTheDocument();
-    expect(screen.getByTestId("cancel-dialog")).toBeInTheDocument();
-  });
-
-  it("shows trial card with days remaining for TRIALING status", async () => {
+  it("renders trial countdown for TRIALING status", async () => {
     const trialEnd = new Date(Date.now() + 7 * 86_400_000).toISOString();
     mockGetSubscription.mockResolvedValue(
       makeBilling({
@@ -168,12 +156,67 @@ describe("BillingPage", () => {
     render(page);
 
     expect(screen.getByText("Trial Period")).toBeInTheDocument();
-    expect(screen.getByText(/7 days/)).toBeInTheDocument();
+    expect(screen.getByTestId("trial-countdown")).toBeInTheDocument();
+    expect(
+      screen.getByTestId("trial-countdown").getAttribute("data-trial-ends-at")
+    ).toBe(trialEnd);
+  });
+
+  it("renders subscribe CTA for TRIALING", async () => {
+    const trialEnd = new Date(Date.now() + 7 * 86_400_000).toISOString();
+    mockGetSubscription.mockResolvedValue(
+      makeBilling({
+        status: "TRIALING",
+        trialEndsAt: trialEnd,
+        currentPeriodEnd: null,
+        nextBillingAt: null,
+        canSubscribe: true,
+        canCancel: false,
+      })
+    );
+
+    const page = await BillingPage({
+      params: Promise.resolve({ slug: "acme" }),
+      searchParams: Promise.resolve({}),
+    });
+    render(page);
+
     expect(screen.getByTestId("subscribe-button")).toBeInTheDocument();
     expect(screen.queryByTestId("cancel-dialog")).not.toBeInTheDocument();
   });
 
-  it("shows cancellation card for PENDING_CANCELLATION status", async () => {
+  it("renders active subscription details for ACTIVE", async () => {
+    mockGetSubscription.mockResolvedValue(makeBilling());
+
+    const page = await BillingPage({
+      params: Promise.resolve({ slug: "acme" }),
+      searchParams: Promise.resolve({}),
+    });
+    render(page);
+
+    expect(screen.getByText("Active Subscription")).toBeInTheDocument();
+    expect(screen.getByText(/3 of 10 members/)).toBeInTheDocument();
+    expect(screen.getByText("R499.00")).toBeInTheDocument();
+    const badge = screen
+      .getAllByTestId("badge")
+      .find((el) => el.getAttribute("data-variant") === "success");
+    expect(badge).toBeInTheDocument();
+    expect(badge?.textContent).toBe("Active");
+  });
+
+  it("renders cancel link for ACTIVE", async () => {
+    mockGetSubscription.mockResolvedValue(makeBilling());
+
+    const page = await BillingPage({
+      params: Promise.resolve({ slug: "acme" }),
+      searchParams: Promise.resolve({}),
+    });
+    render(page);
+
+    expect(screen.getByTestId("cancel-dialog")).toBeInTheDocument();
+  });
+
+  it("renders cancellation notice for PENDING_CANCELLATION", async () => {
     mockGetSubscription.mockResolvedValue(
       makeBilling({
         status: "PENDING_CANCELLATION",
@@ -193,7 +236,55 @@ describe("BillingPage", () => {
     expect(screen.getByTestId("subscribe-button")).toBeInTheDocument();
   });
 
-  it("shows locked card for LOCKED status", async () => {
+  it("renders payment failed warning for PAST_DUE", async () => {
+    mockGetSubscription.mockResolvedValue(
+      makeBilling({
+        status: "PAST_DUE",
+        canSubscribe: true,
+        canCancel: false,
+      })
+    );
+
+    const page = await BillingPage({
+      params: Promise.resolve({ slug: "acme" }),
+      searchParams: Promise.resolve({}),
+    });
+    render(page);
+
+    expect(screen.getByText("Payment Failed")).toBeInTheDocument();
+    expect(screen.getByText(/latest payment failed/)).toBeInTheDocument();
+    expect(screen.getByTestId("subscribe-button")).toBeInTheDocument();
+  });
+
+  it("renders grace countdown for GRACE_PERIOD", async () => {
+    const graceEnd = new Date(Date.now() + 14 * 86_400_000).toISOString();
+    mockGetSubscription.mockResolvedValue(
+      makeBilling({
+        status: "GRACE_PERIOD",
+        graceEndsAt: graceEnd,
+        currentPeriodEnd: null,
+        nextBillingAt: null,
+        canSubscribe: true,
+        canCancel: false,
+      })
+    );
+
+    const page = await BillingPage({
+      params: Promise.resolve({ slug: "acme" }),
+      searchParams: Promise.resolve({}),
+    });
+    render(page);
+
+    // "Grace Period" appears in both the badge and card title
+    expect(screen.getAllByText("Grace Period").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByTestId("grace-countdown")).toBeInTheDocument();
+    expect(
+      screen.getByTestId("grace-countdown").getAttribute("data-grace-ends-at")
+    ).toBe(graceEnd);
+    expect(screen.getByText(/read-only mode/)).toBeInTheDocument();
+  });
+
+  it("renders full-page resubscribe for LOCKED", async () => {
     mockGetSubscription.mockResolvedValue(
       makeBilling({
         status: "LOCKED",
@@ -213,29 +304,7 @@ describe("BillingPage", () => {
     expect(screen.getByText("Account Locked")).toBeInTheDocument();
     expect(screen.getByText(/data is preserved/)).toBeInTheDocument();
     expect(screen.getByTestId("subscribe-button")).toBeInTheDocument();
-  });
-
-  it("shows success notice when result=success in searchParams", async () => {
-    mockGetSubscription.mockResolvedValue(makeBilling());
-
-    const page = await BillingPage({
-      params: Promise.resolve({ slug: "acme" }),
-      searchParams: Promise.resolve({ result: "success" }),
-    });
-    render(page);
-
-    expect(screen.getByText(/Payment successful/)).toBeInTheDocument();
-  });
-
-  it("shows cancelled notice when result=cancelled in searchParams", async () => {
-    mockGetSubscription.mockResolvedValue(makeBilling());
-
-    const page = await BillingPage({
-      params: Promise.resolve({ slug: "acme" }),
-      searchParams: Promise.resolve({ result: "cancelled" }),
-    });
-    render(page);
-
-    expect(screen.getByText(/Payment was cancelled/)).toBeInTheDocument();
+    // Payment history should NOT render for LOCKED status
+    expect(screen.queryByTestId("payment-history")).not.toBeInTheDocument();
   });
 });

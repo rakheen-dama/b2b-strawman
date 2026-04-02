@@ -122,9 +122,15 @@ public class SubscriptionService {
           "Cannot cancel", "Only ACTIVE subscriptions can be cancelled");
     }
 
+    // Persist PENDING_CANCELLATION before calling PayFast — if the API call fails,
+    // local state is safely PENDING_CANCELLATION (can be retried or reconciled).
     subscription.transitionTo(Subscription.SubscriptionStatus.PENDING_CANCELLATION);
     subscription.setCancelledAt(Instant.now());
     subscriptionRepository.save(subscription);
+
+    if (subscription.getPayfastToken() != null) {
+      platformPayFastService.cancelPayFastSubscription(subscription.getPayfastToken());
+    }
 
     long currentMembers = memberRepository.count();
     return BillingResponse.from(subscription, currentMembers, billingProperties);

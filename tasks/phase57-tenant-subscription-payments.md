@@ -99,7 +99,7 @@ Stage 5:  [E425] [E426]                            <- parallel cleanup (after al
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **419A** | 419.1--419.5 | V17 global migration, `SubscriptionStatus` enum, restructured `Subscription` entity, `SubscriptionPayment` entity + repository, migration integration test | |
+| **419A** | 419.1--419.5 | V17 global migration, `SubscriptionStatus` enum, restructured `Subscription` entity, `SubscriptionPayment` entity + repository, migration integration test | **Done** (PR #872) |
 | **419B** | 419.6--419.10 | `BillingProperties` + `PayFastBillingProperties` config records, application config additions, updated `SubscriptionRepository` queries, config binding test, entity persistence test | |
 
 ### Tasks

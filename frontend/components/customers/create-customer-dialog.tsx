@@ -11,7 +11,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,6 +27,13 @@ import { createCustomer } from "@/app/(app)/org/[slug]/customers/actions";
 import { createMessages } from "@/lib/messages";
 import { scrollToFirstError } from "@/lib/error-handler";
 import { useTerminology } from "@/lib/terminology";
+import { useSubscription } from "@/lib/subscription-context";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { fetchIntakeFields } from "@/app/(app)/org/[slug]/customers/intake-actions";
 import {
   IntakeFieldsSection,
@@ -53,6 +59,7 @@ interface CreateCustomerDialogProps {
 
 export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
   const { t } = useTerminology();
+  const { isWriteEnabled } = useSubscription();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -182,12 +189,21 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button size="sm">
-          <Plus className="mr-1.5 size-4" />
-          New {t("Customer")}
-        </Button>
-      </DialogTrigger>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span tabIndex={0} className="inline-flex">
+              <Button size="sm" disabled={!isWriteEnabled} onClick={() => isWriteEnabled && setOpen(true)}>
+                <Plus className="mr-1.5 size-4" />
+                New {t("Customer")}
+              </Button>
+            </span>
+          </TooltipTrigger>
+          {!isWriteEnabled && (
+            <TooltipContent>Subscribe to enable this action</TooltipContent>
+          )}
+        </Tooltip>
+      </TooltipProvider>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>

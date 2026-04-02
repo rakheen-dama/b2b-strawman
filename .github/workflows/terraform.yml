@@ -18,6 +18,10 @@ on:
         options:
           - production
 
+concurrency:
+  group: terraform-${{ github.event_name }}
+  cancel-in-progress: false
+
 permissions:
   contents: read
   id-token: write
@@ -35,6 +39,7 @@ jobs:
     name: Terraform Plan (Staging)
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: infra
@@ -111,6 +116,8 @@ jobs:
     name: Terraform Apply (Staging)
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: staging
     defaults:
       run:
         working-directory: infra
@@ -140,6 +147,7 @@ jobs:
     name: Terraform Apply (Production)
     if: github.event_name == 'workflow_dispatch' && inputs.environment == 'production'
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     environment: production
     defaults:
       run:
@@ -161,7 +169,7 @@ jobs:
         run: terraform init -backend-config="key=production/terraform.tfstate"
 
       - name: Terraform Plan
-        run: terraform plan -var-file=environments/production.tfvars -no-color
+        run: terraform plan -var-file=environments/production.tfvars -no-color -out=tfplan
 
       - name: Terraform Apply
-        run: terraform apply -auto-approve -var-file=environments/production.tfvars
+        run: terraform apply tfplan

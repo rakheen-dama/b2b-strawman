@@ -4,6 +4,10 @@ on:
   push:
     branches: [main]
 
+concurrency:
+  group: deploy-staging
+  cancel-in-progress: true
+
 permissions:
   contents: read
   id-token: write
@@ -51,6 +55,7 @@ jobs:
     needs: changes
     if: needs.changes.outputs.frontend == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -86,6 +91,7 @@ jobs:
     needs: changes
     if: needs.changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -118,6 +124,7 @@ jobs:
     needs: changes
     if: needs.changes.outputs.gateway == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -150,6 +157,7 @@ jobs:
     needs: changes
     if: needs.changes.outputs.portal == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -184,6 +192,7 @@ jobs:
     needs: changes
     if: needs.changes.outputs.keycloak == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
 
@@ -218,6 +227,7 @@ jobs:
     needs: [changes, build-frontend, build-backend, build-gateway, build-portal, build-keycloak]
     if: always() && !cancelled() && !contains(needs.*.result, 'failure')
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     environment: staging
     steps:
       - uses: actions/checkout@v4

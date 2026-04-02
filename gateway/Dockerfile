@@ -15,6 +15,7 @@ RUN ./mvnw clean package -DskipTests -B
 
 # Extract (Spring Boot 4 format — flat extraction, not layered)
 RUN java -Djarmode=tools -jar target/*.jar extract --destination extracted
+RUN mv extracted/*.jar extracted/app.jar
 
 # ---- Stage 2: Production runner ----
 FROM eclipse-temurin:25-jre-alpine AS runner

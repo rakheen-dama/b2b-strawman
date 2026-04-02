@@ -473,6 +473,15 @@
 | 416 | CI/CD Pipeline: OIDC, Image Promotion, Terraform Workflow | CI/CD | 412 | L | 416A, 416B, 416C | **Done** (PRs #865, #866, #867) |
 | 417 | Observability: Alarms, SNS, Dashboards, Structured Logging | Infra + Config | 413 | M | 417A, 417B | **Done** (PRs #868, #869) |
 | 418 | DNS, SSL & Production Cutover | Infra | 413, 416, 417 | M | 418A, 418B | **Done** (PRs #870, #871) |
+| **Phase 57 — Tenant Subscription Payments** | | | | | | See [tasks/phase57-tenant-subscription-payments.md](tasks/phase57-tenant-subscription-payments.md) |
+| 419 | Data Model & Config Foundation | Backend | -- | M | 419A, 419B | |
+| 420 | Subscription Lifecycle Service & Billing API | Backend | 419 | L | 420A, 420B | |
+| 421 | PayFast Platform Integration | Backend | 419, 420 | M | 421A, 421B | |
+| 422 | Read-Only Enforcement & Scheduled Jobs | Backend | 419, 420 | M | 422A, 422B | |
+| 423 | Frontend Billing Page & Components | Frontend | 420 | M | 423A, 423B | |
+| 424 | Frontend Banner, Context & Error Interceptor | Frontend | 423 | M | 424A, 424B | |
+| 425 | Backend Cleanup — Dead Tier Code | Backend | 419-422 | M | 425A, 425B | |
+| 426 | Frontend Cleanup — Dead Tier Components & Test Refs | Frontend | 423, 424 | S | 426A | |
 
 ---
 

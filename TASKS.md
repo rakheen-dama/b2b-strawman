@@ -479,7 +479,7 @@
 | 421 | PayFast Platform Integration | Backend | 419, 420 | M | 421A, 421B | **Done** (PRs #876, #877) |
 | 422 | Read-Only Enforcement & Scheduled Jobs | Backend | 419, 420 | M | 422A, 422B | **Done** (PRs #878, #879) |
 | 423 | Frontend Billing Page & Components | Frontend | 420 | M | 423A, 423B | **Done** (PRs #880, #881) |
-| 424 | Frontend Banner, Context & Error Interceptor | Frontend | 423 | M | 424A, 424B | 424A **Done** (PR #882) |
+| 424 | Frontend Banner, Context & Error Interceptor | Frontend | 423 | M | 424A, 424B | **Done** (PRs #882, #883) |
 | 425 | Backend Cleanup — Dead Tier Code | Backend | 419-422 | M | 425A, 425B | |
 | 426 | Frontend Cleanup — Dead Tier Components & Test Refs | Frontend | 423, 424 | S | 426A | |
 | **Phase 58 — Demo Readiness & Admin Billing Controls** | | | | | | See [tasks/phase58-demo-readiness-admin-billing.md](tasks/phase58-demo-readiness-admin-billing.md) |

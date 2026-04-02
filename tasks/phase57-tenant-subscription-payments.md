@@ -11,7 +11,7 @@ Phase 57 replaces HeyKazi's simulated billing system with real subscription paym
 | 421 | PayFast Platform Integration | Backend | 419, 420 | M | 421A, 421B | **Done** (PRs #876, #877) |
 | 422 | Read-Only Enforcement & Scheduled Jobs | Backend | 419, 420 | M | 422A, 422B | **Done** (PRs #878, #879) |
 | 423 | Frontend Billing Page & Components | Frontend | 420 | M | 423A, 423B | **Done** (PRs #880, #881) |
-| 424 | Frontend Banner, Context & Error Interceptor | Frontend | 423 | M | 424A, 424B | |
+| 424 | Frontend Banner, Context & Error Interceptor | Frontend | 423 | M | 424A, 424B | **Done** (PRs #882, #883) |
 | 425 | Backend Cleanup -- Dead Tier Code | Backend | 419-422 | M | 425A, 425B | |
 | 426 | Frontend Cleanup -- Dead Tier Components & Test Refs | Frontend | 423, 424 | S | 426A | |
 
@@ -62,7 +62,7 @@ Phase 57 replaces HeyKazi's simulated billing system with real subscription paym
 
 | Order | Epic | Rationale |
 |-------|------|-----------|
-| 4 | Epic 424: Frontend Banner, Context & Error Interceptor | Depends on billing page components from Epic 423. Adds cross-cutting frontend infrastructure. 424A **Done** (PR #882) |
+| 4 | Epic 424: Frontend Banner, Context & Error Interceptor | Depends on billing page components from Epic 423. Adds cross-cutting frontend infrastructure. 424A **Done** (PR #882) 424B **Done** (PR #883) |
 
 ### Stage 5: Cleanup (After All Feature Epics)
 
@@ -460,7 +460,7 @@ Stage 5:  [E425] [E426]                            <- parallel cleanup (after al
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **424A** | 424.1--424.5 | `SubscriptionContext` provider + `useSubscription()` hook, `SubscriptionBanner` component, layout integration, `subscription-context.test.tsx` | **Done** (PR #882) |
-| **424B** | 424.6--424.9 | API error interceptor for `subscription_required`/`subscription_locked` 403 responses, write-action gating examples (disable mutation buttons), `subscription-banner.test.tsx`, `api-error-interceptor.test.tsx` | |
+| **424B** | 424.6--424.9 | API error interceptor for `subscription_required`/`subscription_locked` 403 responses, write-action gating examples (disable mutation buttons), `subscription-banner.test.tsx`, `api-error-interceptor.test.tsx` | **Done** (PR #883) |
 
 ### Tasks
 

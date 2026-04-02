@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.security;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditAuthenticationEntryPoint;
+import io.b2mash.b2b.b2bstrawman.billing.SubscriptionGuardFilter;
 import io.b2mash.b2b.b2bstrawman.member.MemberFilter;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantFilter;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantLoggingFilter;
@@ -38,6 +39,7 @@ public class SecurityConfig {
   private final ApiKeyAuthFilter apiKeyAuthFilter;
   private final TenantFilter tenantFilter;
   private final MemberFilter memberFilter;
+  private final SubscriptionGuardFilter subscriptionGuardFilter;
   private final TenantLoggingFilter tenantLoggingFilter;
   private final PlatformAdminFilter platformAdminFilter;
   private final CustomerAuthFilter customerAuthFilter;
@@ -49,6 +51,7 @@ public class SecurityConfig {
       ApiKeyAuthFilter apiKeyAuthFilter,
       TenantFilter tenantFilter,
       MemberFilter memberFilter,
+      SubscriptionGuardFilter subscriptionGuardFilter,
       TenantLoggingFilter tenantLoggingFilter,
       PlatformAdminFilter platformAdminFilter,
       CustomerAuthFilter customerAuthFilter,
@@ -58,6 +61,7 @@ public class SecurityConfig {
     this.apiKeyAuthFilter = apiKeyAuthFilter;
     this.tenantFilter = tenantFilter;
     this.memberFilter = memberFilter;
+    this.subscriptionGuardFilter = subscriptionGuardFilter;
     this.tenantLoggingFilter = tenantLoggingFilter;
     this.platformAdminFilter = platformAdminFilter;
     this.customerAuthFilter = customerAuthFilter;
@@ -136,7 +140,8 @@ public class SecurityConfig {
         .addFilterBefore(apiKeyAuthFilter, BearerTokenAuthenticationFilter.class)
         .addFilterAfter(tenantFilter, BearerTokenAuthenticationFilter.class)
         .addFilterAfter(memberFilter, TenantFilter.class)
-        .addFilterAfter(platformAdminFilter, MemberFilter.class)
+        .addFilterAfter(subscriptionGuardFilter, MemberFilter.class)
+        .addFilterAfter(platformAdminFilter, SubscriptionGuardFilter.class)
         .addFilterAfter(tenantLoggingFilter, PlatformAdminFilter.class);
 
     return http.build();

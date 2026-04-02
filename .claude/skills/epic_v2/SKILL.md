@@ -314,15 +314,20 @@ If the brief is genuinely missing critical info, note it in the PR description
 and make your best judgment call.
 ```
 
-## Step 4 — Code Review
+## Step 4 — Combined Code Review (Internal + CodeRabbit)
 
-Extract the PR number from the builder's response. Write the diff to a file, then dispatch review:
+CodeRabbit is the **primary quality gate**. The internal Claude review supplements it.
+Both reviews run in parallel, findings are merged, and a single fixer addresses everything.
+
+### 4.1 — Start Internal Review (non-blocking)
+
+Extract the PR number from the builder's response. Write the diff to a file:
 
 ```bash
 gh pr diff {PR_NUMBER} > /tmp/pr-{PR_NUMBER}.diff
 ```
 
-Launch a **blocking** `general-purpose` subagent:
+Launch a `general-purpose` subagent **in the background** (`run_in_background: true`):
 
 ```
 You are reviewing PR #{PR_NUMBER} for the DocTeams multi-tenant SaaS platform.
@@ -368,15 +373,100 @@ Return structured findings:
 Only report issues you're >80% confident about. Include file:line for every finding.
 ```
 
-If critical or high issues are found, dispatch another `general-purpose` subagent to fix them in the worktree. Pass the review findings AND the brief file path so the fixer has full context.
+### 4.2 — Wait for CodeRabbit (while internal review runs)
+
+Poll for CodeRabbit's review (it typically posts within 1-3 minutes of PR creation).
+This runs concurrently with the internal review above.
+
+```bash
+# Poll every 30s for up to 5 minutes
+for i in $(seq 1 10); do
+  CR_COMMENTS=$(gh api repos/{owner}/{repo}/pulls/{PR_NUMBER}/comments \
+    --jq '[.[] | select(.user.login == "coderabbitai[bot]")] | length')
+  CR_REVIEWS=$(gh api repos/{owner}/{repo}/pulls/{PR_NUMBER}/reviews \
+    --jq '[.[] | select(.user.login == "coderabbitai[bot]")] | length')
+  if [ "$CR_COMMENTS" -gt 0 ] || [ "$CR_REVIEWS" -gt 0 ]; then
+    echo "CodeRabbit review found: $CR_COMMENTS inline comments, $CR_REVIEWS reviews"
+    break
+  fi
+  echo "Waiting for CodeRabbit... ($i/10)"
+  sleep 30
+done
+```
+
+If CodeRabbit hasn't posted after 5 minutes, proceed with internal review findings only.
+
+### 4.3 — Collect CodeRabbit Findings
+
+```bash
+# Get all CodeRabbit inline comments with file paths, severity, and full body
+gh api repos/{owner}/{repo}/pulls/{PR_NUMBER}/comments \
+  --jq '.[] | select(.user.login == "coderabbitai[bot]") | "[\(.path):\(.line // .original_line)] \(.body)"'
+
+# Also check for a summary review comment (posted as an issue comment, not a review comment)
+gh api repos/{owner}/{repo}/issues/{PR_NUMBER}/comments \
+  --jq '.[] | select(.user.login == "coderabbitai[bot]") | .body' | head -200
+```
+
+### 4.4 — Merge Findings & Dispatch Fixer
+
+Wait for the internal review agent to complete. Combine **both** sets of findings into a
+single deduplicated list. If a finding appears in both reviews, keep the more detailed version.
+
+If ANY findings exist (from either source), dispatch a **blocking** `general-purpose` subagent
+to fix them all in one pass:
+
+```
+You are fixing code review findings for PR #{PR_NUMBER} in worktree:
+  /Users/rakheendama/Projects/2026/worktree-epic-{SLICE}
+
+## CodeRabbit Findings (PRIMARY — address ALL of these)
+{Paste ALL CodeRabbit inline comments here — file paths, line numbers, full descriptions.
+ Include severity labels (Critical 🔴, Major 🟠, Minor 🟡).
+ If CodeRabbit posted no comments, write "None".}
+
+## Internal Review Findings (SECONDARY — address critical and high only)
+{Paste internal review findings here. If verdict was APPROVE with no findings, write "None".}
+
+## Implementation Brief (for context)
+Read: /Users/rakheendama/Projects/2026/worktree-epic-{SLICE}/.epic-brief.md
+
+## Instructions
+1. Read each finding carefully. Verify the issue exists in the current code before fixing.
+2. For CodeRabbit findings: fix ALL valid Critical, Major, and Minor issues.
+   If a finding is a false positive, explain WHY with evidence (e.g., "separate enums in
+   different packages", "already handled by filter X at line Y").
+3. For internal review findings: fix Critical and High issues only.
+4. After fixing, run the appropriate build tier to verify you didn't break anything:
+   - Format: cd /Users/rakheendama/Projects/2026/worktree-epic-{SLICE}/backend && ./mvnw spotless:apply 2>&1 | tail -3
+   - Compile check: ./mvnw compile test-compile -q > /tmp/mvn-fix-{SLICE}.log 2>&1; echo $?
+   - Full verify (once): ./mvnw clean verify -q > /tmp/mvn-fix-{SLICE}.log 2>&1; echo $?
+5. Commit: git commit -m "fix: address review findings for Epic {SLICE}"
+6. Push: git push
+
+## Report Format
+For EACH finding, report one of:
+- ✅ FIXED — {what you changed}
+- ⏭️ FALSE POSITIVE — {evidence why this is not a real issue}
+- ⚠️ DEFERRED — {why this can't be fixed in this PR, e.g., requires architectural change}
+```
+
+After the fixer pushes, check once more for new CodeRabbit comments on the fix commit.
+If new findings appear, run ONE more fix cycle (max 2 total to avoid infinite loops).
+If findings persist after 2 fix cycles, note them in the PR description and proceed.
 
 ## Step 5 — Merge
 
 ### Auto-Merge Mode (prompt contains "auto-merge")
 
-If the review verdict is **APPROVE** (after any fix cycles): merge immediately, no confirmation needed.
+Merge immediately if ALL of the following are true (after fix cycles):
+- Internal review verdict is **APPROVE** (or all critical/high findings were fixed)
+- All CodeRabbit Critical and Major findings were fixed or confirmed false positive
+- Build is green
 
-If the review verdict is **REQUEST_CHANGES** and the fix cycle did not resolve all critical/high issues: **STOP** and report the unresolved issues. Do not merge. Exit with a clear error message so the wrapper script knows this slice failed.
+If any Critical or Major finding from **either** review remains unresolved after 2 fix cycles:
+**STOP** and report the unresolved issues. Do not merge. Exit with a clear error message
+so the wrapper script knows this slice failed.
 
 ### Manual Mode (no "auto-merge" in prompt)
 

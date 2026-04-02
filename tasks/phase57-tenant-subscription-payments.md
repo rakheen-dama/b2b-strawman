@@ -6,7 +6,7 @@ Phase 57 replaces HeyKazi's simulated billing system with real subscription paym
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 419 | Data Model & Config Foundation | Backend | -- | M | 419A, 419B | |
+| 419 | Data Model & Config Foundation | Backend | -- | M | 419A, 419B | **Done** (PRs #872, #873) |
 | 420 | Subscription Lifecycle Service & Billing API | Backend | 419 | L | 420A, 420B | |
 | 421 | PayFast Platform Integration | Backend | 419, 420 | M | 421A, 421B | |
 | 422 | Read-Only Enforcement & Scheduled Jobs | Backend | 419, 420 | M | 422A, 422B | |
@@ -100,7 +100,7 @@ Stage 5:  [E425] [E426]                            <- parallel cleanup (after al
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **419A** | 419.1--419.5 | V17 global migration, `SubscriptionStatus` enum, restructured `Subscription` entity, `SubscriptionPayment` entity + repository, migration integration test | **Done** (PR #872) |
-| **419B** | 419.6--419.10 | `BillingProperties` + `PayFastBillingProperties` config records, application config additions, updated `SubscriptionRepository` queries, config binding test, entity persistence test | |
+| **419B** | 419.6--419.10 | `BillingProperties` + `PayFastBillingProperties` config records, application config additions, updated `SubscriptionRepository` queries, config binding test, entity persistence test | **Done** (PR #873) |
 
 ### Tasks
 

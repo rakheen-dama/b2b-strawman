@@ -13,6 +13,12 @@ import org.springframework.web.bind.annotation.RestController;
  * Webhook endpoint for PayFast subscription ITN (Instant Transaction Notification). Always returns
  * HTTP 200 as required by PayFast — validation and error handling happen in the service layer via
  * early returns, not exceptions.
+ *
+ * <p><b>IP trust assumption:</b> {@link ClientIpResolver#resolve} reads X-Forwarded-For which can
+ * be spoofed by the original client. The primary security layer is PayFast's MD5 signature
+ * validation (performed in {@link SubscriptionItnService}), so IP filtering is defense-in-depth
+ * only. In production the ALB overwrites X-Forwarded-For with the true client IP; locally this
+ * header is untrusted.
  */
 @RestController
 public class SubscriptionItnController {

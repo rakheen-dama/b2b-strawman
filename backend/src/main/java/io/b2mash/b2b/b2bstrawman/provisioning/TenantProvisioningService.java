@@ -116,8 +116,10 @@ public class TenantProvisioningService {
       log.info("Provisioning tenant schema {} for org {}", schemaName, clerkOrgId);
 
       // Each step is idempotent — safe to retry after partial failure.
+      // Subscription is created before the mapping so that if it fails,
+      // retries won't see the mapping and short-circuit via "alreadyProvisioned".
       // Mapping is created LAST so TenantFilter only resolves to this
-      // schema once all tables exist (prevents race with first request).
+      // schema once all tables and the subscription exist (prevents race).
       createSchema(schemaName);
       runTenantMigrations(schemaName);
       if (verticalProfile != null) {
@@ -133,8 +135,8 @@ public class TenantProvisioningService {
       ratePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
       schedulePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
       legalTariffSeeder.seedForTenant(schemaName, clerkOrgId);
-      createMapping(clerkOrgId, schemaName);
       subscriptionService.createSubscription(org.getId());
+      createMapping(clerkOrgId, schemaName);
 
       org.markCompleted();
       organizationRepository.save(org);

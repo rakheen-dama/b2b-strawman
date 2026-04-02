@@ -155,7 +155,7 @@ public class PlatformPayFastService {
 
   /** Formats cents to rands with 2 decimal places (e.g. 49900 -> "499.00"). */
   String formatCentsToRands(int cents) {
-    return String.format("%.2f", cents / 100.0);
+    return String.format("%d.%02d", cents / 100, cents % 100);
   }
 
   private String md5Hash(String input) {

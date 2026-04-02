@@ -10,7 +10,7 @@ public final class PlanLimits {
 
   private PlanLimits() {}
 
-  /** Returns the member limit. Tier parameter is ignored (retained for source compatibility). */
+  /** Returns the flat member limit used for all organizations. */
   public static int maxMembers() {
     return DEFAULT_MAX_MEMBERS;
   }

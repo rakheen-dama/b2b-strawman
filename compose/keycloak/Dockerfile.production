@@ -1,0 +1,102 @@
+# =============================================================================
+# Keycloak Production Dockerfile
+# =============================================================================
+# Produces an optimized Keycloak 26.5 image with:
+#   - Custom Keycloakify login theme (JAR provider)
+#   - Custom email templates (docteams theme)
+#   - Realm configuration for first-boot import
+#   - Health endpoint enabled for ALB/ECS health checks
+#
+# Build:
+#   docker build -f compose/keycloak/Dockerfile.production \
+#     -t kazi/keycloak:latest compose/keycloak/
+#
+# Runtime environment variables (injected by ECS task definition):
+#   KC_DB_URL, KC_DB_USERNAME, KC_DB_PASSWORD, KC_HOSTNAME,
+#   KC_PROXY_HEADERS, KC_HTTP_ENABLED, KC_HOSTNAME_STRICT,
+#   KEYCLOAK_ADMIN, KEYCLOAK_ADMIN_PASSWORD
+# =============================================================================
+
+FROM quay.io/keycloak/keycloak:26.5.0
+
+# ---------------------------------------------------------------------------
+# Build-time environment defaults
+# ---------------------------------------------------------------------------
+# These are needed by `kc.sh build` to compile the correct database provider
+# and enable features that must be baked in at build time.
+ENV KC_DB=postgres \
+    KC_HEALTH_ENABLED=true \
+    KC_METRICS_ENABLED=true
+
+# ---------------------------------------------------------------------------
+# Copy custom providers (theme JAR)
+# ---------------------------------------------------------------------------
+# The Keycloakify theme JAR provides the custom login/registration theme.
+# Keycloak discovers providers by scanning /opt/keycloak/providers/ at build.
+COPY providers/keycloak-theme.jar /opt/keycloak/providers/keycloak-theme.jar
+
+# ---------------------------------------------------------------------------
+# Copy email templates (docteams theme)
+# ---------------------------------------------------------------------------
+# Custom FTL email templates for verification, password reset, org invites.
+COPY themes/docteams/ /opt/keycloak/themes/docteams/
+
+# ---------------------------------------------------------------------------
+# Copy realm export for first-boot import
+# ---------------------------------------------------------------------------
+# The realm-export.json defines the "docteams" realm with:
+#   - gateway-bff client (OIDC, confidential)
+#   - Protocol mappers (groups, org_role)
+#   - Organization support enabled
+#   - Default roles and groups (platform-admins)
+#
+# REALM IMPORT STRATEGY:
+#   - The --import-realm flag imports JSON files from /opt/keycloak/data/import/
+#     on FIRST BOOT only (when the realm does not yet exist).
+#   - Subsequent boots skip import if the "docteams" realm already exists.
+#   - The exported JSON contains local-dev defaults (localhost URLs, mailpit SMTP).
+#     Production configuration (redirect URIs, SMTP, etc.) is applied via the
+#     Keycloak Admin API after initial import. The realm import provides the
+#     baseline structure: clients, protocol mappers, roles, organization settings.
+#   - To update realm config in production:
+#       Option A: Use the Keycloak Admin API (preferred for running instances)
+#       Option B: Update realm-export.json, delete the realm, and redeploy
+#                 (destructive -- only for fresh environments)
+COPY realm-export.json /opt/keycloak/data/import/realm-export.json
+
+# ---------------------------------------------------------------------------
+# Build optimized Keycloak server
+# ---------------------------------------------------------------------------
+# `kc.sh build` pre-compiles providers, themes, and server configuration.
+# This creates a production-optimized server that starts significantly faster.
+# Must run AFTER copying providers and themes so they are included in the build.
+RUN /opt/keycloak/bin/kc.sh build
+
+# ---------------------------------------------------------------------------
+# Runtime configuration
+# ---------------------------------------------------------------------------
+EXPOSE 8080
+
+# Health check for Docker-level monitoring (ALB/ECS also checks /health/ready)
+HEALTHCHECK --interval=30s --timeout=5s --start-period=90s --retries=3 \
+  CMD exec 3<>/dev/tcp/localhost/8080 && echo done || exit 1
+
+# Production mode with realm import on first boot
+ENTRYPOINT ["/opt/keycloak/bin/kc.sh"]
+CMD ["start", "--import-realm"]
+
+# =============================================================================
+# THEME UPDATE PROCESS
+# =============================================================================
+# The Keycloakify login theme JAR is baked into this image. To update it:
+#
+#   1. cd compose/keycloak/theme/
+#   2. pnpm install && pnpm run build-keycloak-theme
+#   3. The JAR is output to: compose/keycloak/theme/dist_keycloak/keycloak-theme.jar
+#   4. cp compose/keycloak/theme/dist_keycloak/keycloak-theme.jar \
+#        compose/keycloak/providers/keycloak-theme.jar
+#   5. Rebuild this Docker image and redeploy to ECS
+#
+# The email templates in themes/docteams/ can be edited directly and also
+# require an image rebuild + redeploy to take effect.
+# =============================================================================

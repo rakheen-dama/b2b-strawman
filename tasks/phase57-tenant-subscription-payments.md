@@ -13,7 +13,7 @@ Phase 57 replaces HeyKazi's simulated billing system with real subscription paym
 | 423 | Frontend Billing Page & Components | Frontend | 420 | M | 423A, 423B | **Done** (PRs #880, #881) |
 | 424 | Frontend Banner, Context & Error Interceptor | Frontend | 423 | M | 424A, 424B | **Done** (PRs #882, #883) |
 | 425 | Backend Cleanup -- Dead Tier Code | Backend | 419-422 | M | 425A, 425B | **Done** (PRs #884, #885) |
-| 426 | Frontend Cleanup -- Dead Tier Components & Test Refs | Frontend | 423, 424 | S | 426A | |
+| 426 | Frontend Cleanup -- Dead Tier Components & Test Refs | Frontend | 423, 424 | S | 426A | **Done** (PR #886) |
 
 ## Dependency Graph
 
@@ -69,7 +69,7 @@ Phase 57 replaces HeyKazi's simulated billing system with real subscription paym
 | Order | Epic | Rationale |
 |-------|------|-----------|
 | 5a | Epic 425: Backend Cleanup -- Dead Tier Code | Removes `Tier`, `PlanLimits`, `PlanSyncService`, updates 50+ test files. Must run after all backend epics (419-422) are stable. **Done** (PRs #884, #885) |
-| 5b | Epic 426: Frontend Cleanup -- Dead Tier Components | Removes `plan-badge`, `upgrade-*` components and frontend tier references. Must run after 423 and 424 are stable. |
+| 5b | Epic 426: Frontend Cleanup -- Dead Tier Components | Removes `plan-badge`, `upgrade-*` components and frontend tier references. Must run after 423 and 424 are stable. **Done** (PR #886) |
 
 ### Timeline
 
@@ -590,7 +590,7 @@ Stage 5:  [E425] [E426]                            <- parallel cleanup (after al
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **426A** | 426.1--426.5 | Delete dead components and their tests, update files with tier/planSlug references, verify no remaining references | |
+| **426A** | 426.1--426.5 | Delete dead components and their tests, update files with tier/planSlug references, verify no remaining references | **Done** (PR #886) |
 
 ### Tasks
 

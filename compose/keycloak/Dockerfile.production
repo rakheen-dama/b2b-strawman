@@ -17,16 +17,16 @@
 #   KEYCLOAK_ADMIN, KEYCLOAK_ADMIN_PASSWORD
 # =============================================================================
 
-FROM quay.io/keycloak/keycloak:26.5
+FROM quay.io/keycloak/keycloak:26.5.0
 
 # ---------------------------------------------------------------------------
 # Build-time environment defaults
 # ---------------------------------------------------------------------------
 # These are needed by `kc.sh build` to compile the correct database provider
 # and enable features that must be baked in at build time.
-ENV KC_DB=postgres
-ENV KC_HEALTH_ENABLED=true
-ENV KC_METRICS_ENABLED=true
+ENV KC_DB=postgres \
+    KC_HEALTH_ENABLED=true \
+    KC_METRICS_ENABLED=true
 
 # ---------------------------------------------------------------------------
 # Copy custom providers (theme JAR)
@@ -79,7 +79,7 @@ EXPOSE 8080
 
 # Health check for Docker-level monitoring (ALB/ECS also checks /health/ready)
 HEALTHCHECK --interval=30s --timeout=5s --start-period=90s --retries=3 \
-  CMD curl -f http://localhost:8080/health/ready || exit 1
+  CMD exec 3<>/dev/tcp/localhost/8080 && echo done || exit 1
 
 # Production mode with realm import on first boot
 ENTRYPOINT ["/opt/keycloak/bin/kc.sh"]

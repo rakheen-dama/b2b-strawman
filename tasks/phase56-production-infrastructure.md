@@ -30,7 +30,7 @@ Phase 56 updates and extends the existing (stale) AWS infrastructure and CI/CD p
 | 412 | Service Extension: ECR, Security Groups, IAM for 5 Services | Infra | 410 | L | 412A, 412B, 412C | **Done** (PRs #857, #858, #859) |
 | 413 | ECS Services + ALB Routing Restructure | Infra | 411, 412 | L | 413A, 413B | **Done** (PRs #860, #861) |
 | 414 | Keycloak Deployment: ECS Task, Database, Realm Import | Infra + Config | 411, 413 | M | 414A, 414B | **Done** (PRs #862, #863) |
-| 415 | Dockerfile Hardening: Health Checks, JAR Fixes, Build Args | Docker | -- | S | 415A | |
+| 415 | Dockerfile Hardening: Health Checks, JAR Fixes, Build Args | Docker | -- | S | 415A | **Done** (PR #864) |
 | 416 | CI/CD Pipeline: OIDC, Image Promotion, Terraform Workflow | CI/CD | 412 | L | 416A, 416B, 416C | |
 | 417 | Observability: Alarms, SNS, Dashboards, Structured Logging | Infra + Config | 413 | M | 417A, 417B | |
 | 418 | DNS, SSL & Production Cutover | Infra | 413, 416, 417 | M | 418A, 418B | |
@@ -164,7 +164,7 @@ KEYCLOAK           CI/CD PIPELINE     OBSERVABILITY
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 5a (parallel) | 414 | 414A | Create Keycloak production Dockerfile at `compose/keycloak/Dockerfile.production`. Based on `quay.io/keycloak/keycloak:26.5`. Copy custom theme JAR + realm import JSON. Set `KC_DB=postgres`, `KC_HEALTH_ENABLED=true`. Add `HEALTHCHECK` instruction. Create Keycloak-specific ECS configuration in task definition (env vars: `KC_DB_URL`, `KC_HOSTNAME`, `KC_PROXY_HEADERS=xforwarded`, `KC_HTTP_ENABLED=true`). Docker + Infra. | **Done** (PR #862) |
-| 5b (parallel) | 415 | 415A | Add `HEALTHCHECK` to all 4 Dockerfiles (backend: `curl -f http://localhost:8080/actuator/health`, gateway: `curl -f http://localhost:8443/actuator/health`, frontend: `curl -f http://localhost:3000/`, portal: `curl -f http://localhost:3002/`). Fix hardcoded JAR names in backend + gateway Dockerfiles (use wildcard or build arg). Fix portal Dockerfile missing `public/` copy. Update frontend Dockerfile: remove Clerk build args, add `NEXT_PUBLIC_AUTH_MODE` and `NEXT_PUBLIC_GATEWAY_URL`. Docker only. | |
+| 5b (parallel) | 415 | 415A | Add `HEALTHCHECK` to all 4 Dockerfiles (backend: `curl -f http://localhost:8080/actuator/health`, gateway: `curl -f http://localhost:8443/actuator/health`, frontend: `curl -f http://localhost:3000/`, portal: `curl -f http://localhost:3002/`). Fix hardcoded JAR names in backend + gateway Dockerfiles (use wildcard or build arg). Fix portal Dockerfile missing `public/` copy. Update frontend Dockerfile: remove Clerk build args, add `NEXT_PUBLIC_AUTH_MODE` and `NEXT_PUBLIC_GATEWAY_URL`. Docker only. | **Done** (PR #864) |
 | 5c (parallel) | 414 | 414B | Create `gateway/src/main/resources/application-production.yml` for gateway: switch session store from JDBC to Redis (`spring.session.store-type=redis`), set `cookie.secure=true`, configure Redis connection via env vars. Create `backend/src/main/resources/application-production.yml` update: re-enable Flyway (`spring.flyway.enabled: true` per ADR-216), add structured JSON logging pattern, set `SPRING_PROFILES_ACTIVE=production,keycloak`. Config only. | **Done** (PR #863) |
 
 ### Stage 6: CI/CD Pipeline (sequential slices, parallel with Stage 5)
@@ -551,7 +551,7 @@ Note: Stage 5 can run in parallel with Stages 1-4 (Dockerfiles are independent).
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **415A** | 415.1--415.6 | Add `HEALTHCHECK` to all 4 Dockerfiles. Fix hardcoded JAR names in backend + gateway (use wildcard glob or build arg). Update frontend Dockerfile: remove Clerk build args. Fix portal Dockerfile: add `public/` copy. Docker only. | |
+| **415A** | 415.1--415.6 | Add `HEALTHCHECK` to all 4 Dockerfiles. Fix hardcoded JAR names in backend + gateway (use wildcard glob or build arg). Update frontend Dockerfile: remove Clerk build args. Fix portal Dockerfile: add `public/` copy. Docker only. | **Done** (PR #864) |
 
 ### Tasks
 

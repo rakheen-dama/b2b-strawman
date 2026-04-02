@@ -16,25 +16,25 @@ variable "create_dns" {
 }
 
 variable "domain_name" {
-  description = "Domain name for the application (e.g., app.heykazi.com)"
+  description = "Root domain name (e.g., heykazi.com). Wildcard cert covers *.heykazi.com."
   type        = string
-  default     = ""
+  default     = "heykazi.com"
 }
 
 variable "hosted_zone_id" {
-  description = "Route 53 hosted zone ID for DNS validation and alias record"
+  description = "Route 53 hosted zone ID for DNS validation and alias records"
   type        = string
   default     = ""
 }
 
 variable "alb_dns_name" {
-  description = "DNS name of the public ALB (for alias record)"
+  description = "DNS name of the public ALB (for alias records)"
   type        = string
   default     = ""
 }
 
 variable "alb_zone_id" {
-  description = "Zone ID of the public ALB (for alias record)"
+  description = "Zone ID of the public ALB (for alias records — this is the ALB's own hosted zone ID, not the heykazi.com zone)"
   type        = string
   default     = ""
 }

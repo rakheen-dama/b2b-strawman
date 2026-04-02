@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.member;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.billing.BillingProperties;
 import io.b2mash.b2b.b2bstrawman.exception.PlanLimitExceededException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
@@ -9,7 +10,6 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRole;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanLimits;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -32,6 +32,7 @@ public class MemberSyncService {
   private final TransactionTemplate txTemplate;
   private final AuditService auditService;
   private final OrgRoleRepository orgRoleRepository;
+  private final BillingProperties billingProperties;
 
   public MemberSyncService(
       MemberRepository memberRepository,
@@ -40,7 +41,8 @@ public class MemberSyncService {
       MemberFilter memberFilter,
       PlatformTransactionManager txManager,
       AuditService auditService,
-      OrgRoleRepository orgRoleRepository) {
+      OrgRoleRepository orgRoleRepository,
+      BillingProperties billingProperties) {
     this.memberRepository = memberRepository;
     this.mappingRepository = mappingRepository;
     this.organizationRepository = organizationRepository;
@@ -49,6 +51,7 @@ public class MemberSyncService {
     this.txTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     this.auditService = auditService;
     this.orgRoleRepository = orgRoleRepository;
+    this.billingProperties = billingProperties;
   }
 
   public SyncResult syncMember(
@@ -184,7 +187,7 @@ public class MemberSyncService {
   }
 
   private void enforceMemberLimit(String clerkOrgId) {
-    int limit = PlanLimits.maxMembers();
+    int limit = billingProperties.maxMembers();
     long currentCount = memberRepository.count();
     if (currentCount >= limit) {
       throw new PlanLimitExceededException(

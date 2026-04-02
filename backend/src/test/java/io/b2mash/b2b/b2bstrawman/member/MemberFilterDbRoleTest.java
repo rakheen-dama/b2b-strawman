@@ -10,7 +10,6 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMapping;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
@@ -40,7 +39,6 @@ class MemberFilterDbRoleTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private MemberRepository memberRepository;
   @Autowired private OrgSchemaMappingRepository mappingRepository;
   @Autowired private MemberFilter memberFilter;
@@ -50,7 +48,6 @@ class MemberFilterDbRoleTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "DB Role Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     schemaName =
         mappingRepository
             .findByClerkOrgId(ORG_ID)

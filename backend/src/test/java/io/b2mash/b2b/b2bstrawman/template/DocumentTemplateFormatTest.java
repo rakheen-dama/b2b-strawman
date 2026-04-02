@@ -10,7 +10,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.List;
 import java.util.Map;
@@ -43,7 +42,6 @@ class DocumentTemplateFormatTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private ObjectMapper objectMapper;
   @Autowired private DocumentTemplateRepository documentTemplateRepository;
 
@@ -53,7 +51,6 @@ class DocumentTemplateFormatTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "DT Format Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     syncMember(
         ORG_ID, "user_dt_format_owner", "dt_format_owner@test.com", "DT Format Owner", "owner");

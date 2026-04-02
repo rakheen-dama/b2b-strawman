@@ -11,7 +11,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
@@ -46,15 +45,12 @@ class MyWorkIsolationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
 
   @BeforeAll
   void provisionAndSeed() throws Exception {
     // Pro tenants (dedicated schema)
     provisioningService.provisionTenant(ORG_PRO_A_ID, "Pro Iso A", null);
-    planSyncService.syncPlan(ORG_PRO_A_ID, "pro-plan");
     provisioningService.provisionTenant(ORG_PRO_B_ID, "Pro Iso B", null);
-    planSyncService.syncPlan(ORG_PRO_B_ID, "pro-plan");
 
     // Starter tenants (shared schema)
     provisioningService.provisionTenant(ORG_STARTER_A_ID, "Starter Iso A", null);

@@ -12,7 +12,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
@@ -47,7 +46,6 @@ class VerticalProfileControllerTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private OrgSettingsService orgSettingsService;
   @Autowired private TransactionTemplate transactionTemplate;
@@ -58,7 +56,6 @@ class VerticalProfileControllerTest {
   void provisionTenantAndSeedData() throws Exception {
     tenantSchema =
         provisioningService.provisionTenant(ORG_ID, "Vertical Profile Test Org", null).schemaName();
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     syncMember(ORG_ID, "user_vp_owner", "vp_owner@test.com", "VP Owner", "owner");
     syncMember(ORG_ID, "user_vp_admin", "vp_admin@test.com", "VP Admin", "admin");

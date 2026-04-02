@@ -10,7 +10,6 @@ import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.integration.storage.PresignedUrl;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.time.Instant;
 import java.util.List;
@@ -42,7 +41,6 @@ class AnonymizationControllerTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
 
   @MockitoBean private StorageService storageService;
 
@@ -55,7 +53,6 @@ class AnonymizationControllerTest {
     setupMocks();
 
     provisioningService.provisionTenant(ORG_ID, "Anon Controller Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     syncMember(ORG_ID, "user_anon_owner", "anon_owner@test.com", "Anon Owner", "owner");
     syncMember(ORG_ID, "user_anon_admin", "anon_admin@test.com", "Anon Admin", "admin");
 

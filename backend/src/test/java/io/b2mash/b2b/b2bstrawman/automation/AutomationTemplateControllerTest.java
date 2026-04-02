@@ -18,7 +18,6 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +47,6 @@ class AutomationTemplateControllerTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private AutomationTemplateSeeder automationTemplateSeeder;
   @Autowired private AutomationRuleRepository ruleRepository;
@@ -64,7 +62,6 @@ class AutomationTemplateControllerTest {
   @BeforeAll
   void provisionTenantAndSeedData() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Automation Template Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     memberIdOwner = syncMember("user_tmpl_owner", "tmpl_owner@test.com", "Tmpl Owner", "owner");
     syncMember("user_tmpl_member", "tmpl_member@test.com", "Tmpl Member", "member");
     tenantSchema =

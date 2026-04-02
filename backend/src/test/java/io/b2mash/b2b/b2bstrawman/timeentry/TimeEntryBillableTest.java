@@ -14,7 +14,6 @@ import io.b2mash.b2b.b2bstrawman.costrate.CostRateService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -49,7 +48,6 @@ class TimeEntryBillableTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private BillingRateService billingRateService;
   @Autowired private CostRateService costRateService;
@@ -65,7 +63,6 @@ class TimeEntryBillableTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Billable Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =
         UUID.fromString(

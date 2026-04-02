@@ -10,7 +10,6 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.Map;
 import java.util.Set;
@@ -52,7 +51,6 @@ class CapabilityEndpointTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private MemberRepository memberRepository;
   @Autowired private OrgRoleRepository orgRoleRepository;
@@ -69,7 +67,6 @@ class CapabilityEndpointTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Cap Endpoint Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     ownerMemberId =
         UUID.fromString(

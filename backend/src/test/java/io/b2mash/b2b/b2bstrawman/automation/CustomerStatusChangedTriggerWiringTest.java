@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.event.CustomerStatusChangedEvent;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.time.Instant;
 import java.util.Map;
@@ -32,7 +31,6 @@ class CustomerStatusChangedTriggerWiringTest {
   @Autowired private AutomationRuleRepository ruleRepository;
   @Autowired private AutomationExecutionRepository executionRepository;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private ApplicationEventPublisher eventPublisher;
 
   private String schemaName;
@@ -41,7 +39,6 @@ class CustomerStatusChangedTriggerWiringTest {
   void provisionTenant() {
     schemaName =
         provisioningService.provisionTenant(ORG_ID, "CSC Trigger Test Org", null).schemaName();
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
   }
 
   @Test

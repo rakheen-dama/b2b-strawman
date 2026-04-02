@@ -11,7 +11,6 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.Map;
 import java.util.Set;
@@ -44,7 +43,6 @@ class BillingRunControllerTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private OrgRoleService orgRoleService;
   @Autowired private OrgRoleRepository orgRoleRepository;
@@ -59,7 +57,6 @@ class BillingRunControllerTest {
   @BeforeAll
   void provisionAndSeed() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner = syncMember(ORG_ID, "user_br_owner", "browner@test.com", "Owner", "owner");
     memberIdMember = syncMember(ORG_ID, "user_br_member", "brmember@test.com", "Member", "member");

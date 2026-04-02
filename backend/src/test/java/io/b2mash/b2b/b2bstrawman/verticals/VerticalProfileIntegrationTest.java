@@ -14,7 +14,6 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventFilter;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
@@ -53,7 +52,6 @@ class VerticalProfileIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private AuditService auditService;
 
   private String lifecycleTenantSchema;
@@ -66,7 +64,6 @@ class VerticalProfileIntegrationTest {
         provisioningService
             .provisionTenant(LIFECYCLE_ORG_ID, "Lifecycle Test Org", null)
             .schemaName();
-    planSyncService.syncPlan(LIFECYCLE_ORG_ID, "pro-plan");
     syncMember(
         LIFECYCLE_ORG_ID,
         "user_vpi_lifecycle_owner",
@@ -79,7 +76,6 @@ class VerticalProfileIntegrationTest {
         provisioningService
             .provisionTenant(GUARD_ORG_ID, "Guard Test Org", "consulting-generic")
             .schemaName();
-    planSyncService.syncPlan(GUARD_ORG_ID, "pro-plan");
     syncMember(GUARD_ORG_ID, "user_vpi_guard_owner", "vpi_guard@test.com", "Guard Owner", "owner");
   }
 

@@ -6,7 +6,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
@@ -36,14 +35,12 @@ class TenantFilterJitProvisioningTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository mappingRepository;
   @Autowired private TenantFilter tenantFilter;
 
   @BeforeAll
   void setup() {
     provisioningService.provisionTenant(PRE_PROVISIONED_ORG_ID, "Pre-Provisioned Org", null);
-    planSyncService.syncPlan(PRE_PROVISIONED_ORG_ID, "pro-plan");
   }
 
   @Test

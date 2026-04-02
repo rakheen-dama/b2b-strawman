@@ -10,7 +10,6 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.Base64;
 import java.util.UUID;
@@ -41,7 +40,6 @@ class EncryptedDatabaseSecretStoreIntegrationTest {
   @Autowired private SecretStore secretStore;
   @Autowired private OrgSecretRepository orgSecretRepository;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
 
@@ -53,7 +51,6 @@ class EncryptedDatabaseSecretStoreIntegrationTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID_A, "Secret Test Org A", null);
-    planSyncService.syncPlan(ORG_ID_A, "pro-plan");
     memberIdA =
         UUID.fromString(
             syncMember(ORG_ID_A, "user_secret_a", "secret_a@test.com", "Secret A", "owner"));
@@ -61,7 +58,6 @@ class EncryptedDatabaseSecretStoreIntegrationTest {
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID_A).orElseThrow().getSchemaName();
 
     provisioningService.provisionTenant(ORG_ID_B, "Secret Test Org B", null);
-    planSyncService.syncPlan(ORG_ID_B, "pro-plan");
     memberIdB =
         UUID.fromString(
             syncMember(ORG_ID_B, "user_secret_b", "secret_b@test.com", "Secret B", "owner"));

@@ -9,7 +9,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.SchemaNameGenerator;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestChecklistHelper;
@@ -44,7 +43,6 @@ class InformationRequestNotificationAuditIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
 
   private String memberIdOwner;
@@ -58,7 +56,6 @@ class InformationRequestNotificationAuditIntegrationTest {
   @BeforeAll
   void provisionTenantAndSeedData() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "InfoReq Notif Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     schema = SchemaNameGenerator.generateSchemaName(ORG_ID);
 
     memberIdOwner = syncMember("user_notif_owner", "notif_owner@test.com", "Notif Owner", "owner");

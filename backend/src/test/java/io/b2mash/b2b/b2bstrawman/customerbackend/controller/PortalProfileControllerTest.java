@@ -13,7 +13,6 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactService;
 import io.b2mash.b2b.b2bstrawman.portal.PortalJwtService;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -39,7 +38,6 @@ class PortalProfileControllerTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private CustomerService customerService;
   @Autowired private PortalContactService portalContactService;
   @Autowired private PortalJwtService portalJwtService;
@@ -51,7 +49,6 @@ class PortalProfileControllerTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Portal Profile Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     // Sync a member
     var syncResult =

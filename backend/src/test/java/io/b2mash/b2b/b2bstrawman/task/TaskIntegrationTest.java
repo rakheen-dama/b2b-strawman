@@ -12,7 +12,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
@@ -41,7 +40,6 @@ class TaskIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
 
   private String projectId;
   private String projectBId;
@@ -51,9 +49,7 @@ class TaskIntegrationTest {
   @BeforeAll
   void provisionTenantsAndProject() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Task Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     provisioningService.provisionTenant(ORG_B_ID, "Task Test Org B", null);
-    planSyncService.syncPlan(ORG_B_ID, "pro-plan");
 
     memberIdOwner =
         syncMember(ORG_ID, "user_task_owner", "task_owner@test.com", "Task Owner", "owner");

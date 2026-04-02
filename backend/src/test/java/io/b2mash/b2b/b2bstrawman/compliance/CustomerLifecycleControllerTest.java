@@ -8,7 +8,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestChecklistHelper;
 import java.util.Map;
@@ -36,14 +35,12 @@ class CustomerLifecycleControllerTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
 
   private int emailCounter = 0;
 
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Lifecycle Controller Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     syncMember(ORG_ID, "user_lc_owner", "lc_owner@test.com", "LC Owner", "owner");
     syncMember(ORG_ID, "user_lc_member", "lc_member@test.com", "LC Member", "member");
   }

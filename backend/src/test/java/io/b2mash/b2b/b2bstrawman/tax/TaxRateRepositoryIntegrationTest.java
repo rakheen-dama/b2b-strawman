@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.math.BigDecimal;
 import org.junit.jupiter.api.BeforeAll;
@@ -25,7 +24,6 @@ class TaxRateRepositoryIntegrationTest {
   private static final String ORG_ID = "org_tax_rate_test";
 
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private TaxRateRepository taxRateRepository;
   @Autowired private TransactionTemplate transactionTemplate;
 
@@ -35,7 +33,6 @@ class TaxRateRepositoryIntegrationTest {
   void provisionTenant() {
     tenantSchema =
         provisioningService.provisionTenant(ORG_ID, "Tax Rate Test Org", null).schemaName();
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
   }
 
   @Test

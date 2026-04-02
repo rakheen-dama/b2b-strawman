@@ -9,7 +9,6 @@ import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationPreferenceRepository;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -35,7 +34,6 @@ class UnsubscribeControllerIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private UnsubscribeService unsubscribeService;
   @Autowired private NotificationPreferenceRepository notificationPreferenceRepository;
 
@@ -45,7 +43,6 @@ class UnsubscribeControllerIntegrationTest {
   @BeforeAll
   void provisionTenantAndMember() throws Exception {
     tenantSchema = provisioningService.provisionTenant(ORG_ID, "Unsub Test Org", null).schemaName();
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     // Sync a member via internal API
     var result =

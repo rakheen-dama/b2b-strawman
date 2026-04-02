@@ -15,7 +15,6 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.Map;
 import java.util.Set;
@@ -52,7 +51,6 @@ class AcceptanceControllerIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private OrgRoleService orgRoleService;
   @Autowired private MemberRepository memberRepository;
@@ -74,7 +72,6 @@ class AcceptanceControllerIntegrationTest {
   @BeforeAll
   void provisionAndSeed() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Acceptance Ctrl Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     ownerMemberId =
         syncMember(ORG_ID, "user_acc_ctrl_owner", "acc_ctrl_owner@test.com", "Acc Owner", "owner");
@@ -367,7 +364,6 @@ class AcceptanceControllerIntegrationTest {
     // Provision a second, completely separate tenant
     String otherOrgId = "org_acceptance_other_tenant";
     provisioningService.provisionTenant(otherOrgId, "Other Tenant Org", null);
-    planSyncService.syncPlan(otherOrgId, "pro-plan");
 
     syncMember(otherOrgId, "user_other_owner", "other_owner@test.com", "Other Owner", "owner");
 

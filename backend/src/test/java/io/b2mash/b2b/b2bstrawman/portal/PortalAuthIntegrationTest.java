@@ -12,7 +12,6 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.Map;
 import java.util.UUID;
@@ -42,7 +41,6 @@ class PortalAuthIntegrationTest {
   @Autowired private MagicLinkService magicLinkService;
   @Autowired private PortalJwtService portalJwtService;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private CustomerService customerService;
   @Autowired private PortalContactService portalContactService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
@@ -58,7 +56,6 @@ class PortalAuthIntegrationTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Portal Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     // Sync a member for creating customers
     var syncResult =

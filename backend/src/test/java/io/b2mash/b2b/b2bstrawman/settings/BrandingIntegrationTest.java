@@ -10,7 +10,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.Map;
 import org.junit.jupiter.api.MethodOrderer;
@@ -39,14 +38,12 @@ class BrandingIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
 
   private static boolean provisioned = false;
 
   void ensureProvisioned() throws Exception {
     if (!provisioned) {
       provisioningService.provisionTenant(ORG_ID, "Branding Test Org", null);
-      planSyncService.syncPlan(ORG_ID, "pro-plan");
       syncMember(ORG_ID, "user_brand_owner", "brand_owner@test.com", "Brand Owner", "owner");
       syncMember(ORG_ID, "user_brand_member", "brand_member@test.com", "Brand Member", "member");
       provisioned = true;

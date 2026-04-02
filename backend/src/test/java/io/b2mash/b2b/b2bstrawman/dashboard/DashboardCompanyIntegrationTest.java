@@ -16,7 +16,6 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.TaskService;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryService;
@@ -57,7 +56,6 @@ class DashboardCompanyIntegrationTest {
   @Autowired private TimeEntryService timeEntryService;
   @Autowired private ProjectMemberService projectMemberService;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
 
   private String tenantSchema;
@@ -81,7 +79,6 @@ class DashboardCompanyIntegrationTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Company Dashboard Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     adminMemberId =
         UUID.fromString(

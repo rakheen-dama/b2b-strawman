@@ -8,7 +8,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
@@ -35,7 +34,6 @@ class TaskTagIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
 
   private String tagId1;
   private String tagId2;
@@ -45,7 +43,6 @@ class TaskTagIntegrationTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Task Tag Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     syncMember(ORG_ID, "user_tt_owner", "tt_owner@test.com", "TT Owner", "owner");
 
     // Create tags

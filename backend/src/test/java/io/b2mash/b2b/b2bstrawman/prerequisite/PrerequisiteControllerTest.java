@@ -19,7 +19,6 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldType;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +49,6 @@ class PrerequisiteControllerTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private FieldDefinitionRepository fieldDefinitionRepository;
   @Autowired private FieldGroupRepository fieldGroupRepository;
   @Autowired private FieldGroupMemberRepository fieldGroupMemberRepository;
@@ -66,7 +64,6 @@ class PrerequisiteControllerTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Prereq Controller Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     syncMember("user_prc_owner", "prc_owner@test.com", "PRC Owner", "owner");
     syncMember("user_prc_admin", "prc_admin@test.com", "PRC Admin", "admin");

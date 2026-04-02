@@ -7,7 +7,6 @@ import io.b2mash.b2b.b2bstrawman.checklist.ChecklistTemplateItemRepository;
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistTemplateRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -29,7 +28,6 @@ class FicaKycZaPackTest {
   private static final String GENERIC_ORG_ID = "org_fica_generic";
 
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private ChecklistTemplateRepository checklistTemplateRepository;
   @Autowired private ChecklistTemplateItemRepository checklistTemplateItemRepository;
@@ -42,7 +40,6 @@ class FicaKycZaPackTest {
   void setup() {
     provisioningService.provisionTenant(
         ACCOUNTING_ORG_ID, "FICA Accounting Test Org", "accounting-za");
-    planSyncService.syncPlan(ACCOUNTING_ORG_ID, "pro-plan");
     accountingSchema =
         orgSchemaMappingRepository
             .findByClerkOrgId(ACCOUNTING_ORG_ID)
@@ -50,7 +47,6 @@ class FicaKycZaPackTest {
             .getSchemaName();
 
     provisioningService.provisionTenant(GENERIC_ORG_ID, "FICA Generic Test Org", null);
-    planSyncService.syncPlan(GENERIC_ORG_ID, "pro-plan");
     genericSchema =
         orgSchemaMappingRepository.findByClerkOrgId(GENERIC_ORG_ID).orElseThrow().getSchemaName();
   }

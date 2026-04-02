@@ -6,7 +6,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -37,7 +36,6 @@ class LegalMigrationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private DataSource dataSource;
 
@@ -46,7 +44,6 @@ class LegalMigrationTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "V83 Migration Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     syncMember(ORG_ID, "user_v83_owner", "v83_owner@test.com", "V83 Owner", "owner");
 

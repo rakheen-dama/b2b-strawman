@@ -17,7 +17,6 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -55,7 +54,6 @@ class DocumentGenerationIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private DocumentTemplateRepository documentTemplateRepository;
   @Autowired private GeneratedDocumentRepository generatedDocumentRepository;
@@ -74,7 +72,6 @@ class DocumentGenerationIntegrationTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Doc Gen Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =
         syncMember(ORG_ID, "user_docgen_owner", "docgen_owner@test.com", "DocGen Owner", "owner");

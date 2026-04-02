@@ -8,7 +8,6 @@ import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -42,7 +41,6 @@ class V48MigrationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private DataSource dataSource;
 
@@ -51,7 +49,6 @@ class V48MigrationTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "V48 Migration Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     syncMember(ORG_ID, "user_v48_owner", "v48_owner@test.com", "V48 Owner", "owner");
 

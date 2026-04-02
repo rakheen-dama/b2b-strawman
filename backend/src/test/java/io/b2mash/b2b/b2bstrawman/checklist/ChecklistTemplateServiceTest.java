@@ -9,7 +9,6 @@ import io.b2mash.b2b.b2bstrawman.checklist.ChecklistTemplateDtos.UpdateChecklist
 import io.b2mash.b2b.b2bstrawman.member.MemberSyncService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.Collections;
 import java.util.List;
@@ -39,7 +38,6 @@ class ChecklistTemplateServiceTest {
   @Autowired private ChecklistTemplateRepository templateRepository;
   @Autowired private ChecklistTemplateItemRepository templateItemRepository;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private MemberSyncService memberSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
@@ -50,7 +48,6 @@ class ChecklistTemplateServiceTest {
   @BeforeAll
   void setup() {
     provisioningService.provisionTenant(ORG_ID, "Checklist Service Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
 

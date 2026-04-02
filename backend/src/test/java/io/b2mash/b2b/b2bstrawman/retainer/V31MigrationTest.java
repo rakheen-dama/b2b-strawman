@@ -15,7 +15,6 @@ import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -45,7 +44,6 @@ class V31MigrationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
   @Autowired private CustomerRepository customerRepository;
@@ -60,7 +58,6 @@ class V31MigrationTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "V31 Migration Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberId =
         UUID.fromString(

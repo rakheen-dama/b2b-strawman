@@ -29,7 +29,6 @@ import io.b2mash.b2b.b2bstrawman.member.MemberSyncService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationRepository;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import java.util.List;
@@ -74,7 +73,6 @@ class CustomerLifecyclePrerequisiteTest {
   @Autowired private ChecklistInstanceItemRepository instanceItemRepository;
   @Autowired private NotificationRepository notificationRepository;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private MemberSyncService memberSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
@@ -87,7 +85,6 @@ class CustomerLifecyclePrerequisiteTest {
   @BeforeAll
   void setup() {
     provisioningService.provisionTenant(ORG_ID, "Prerequisite Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
 

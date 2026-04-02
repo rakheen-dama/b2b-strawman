@@ -17,7 +17,6 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationRepository;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -45,7 +44,6 @@ class CapacityNotificationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private ResourceAllocationService allocationService;
   @Autowired private LeaveBlockService leaveBlockService;
@@ -62,7 +60,6 @@ class CapacityNotificationTest {
   @BeforeAll
   void provisionAndSeed() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Cap Notif Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     String ownerIdStr =
         syncMember(ORG_ID, "user_cn_owner", "cn_owner@test.com", "CN Owner", "owner");
     memberIdOwner = UUID.fromString(ownerIdStr);

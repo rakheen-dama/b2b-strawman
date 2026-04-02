@@ -11,7 +11,6 @@ import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalReadModelRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestChecklistHelper;
 import java.util.Map;
@@ -42,7 +41,6 @@ class PortalResyncIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private PortalResyncService resyncService;
   @Autowired private PortalReadModelRepository readModelRepo;
 
@@ -54,12 +52,10 @@ class PortalResyncIntegrationTest {
   @BeforeAll
   void provisionAndSeedData() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Resync Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     syncMember(ORG_ID, "user_resync_owner", "resync_owner@test.com", "Resync Owner", "owner");
 
     // Provision a separate empty org (no projects, customers, or documents)
     provisioningService.provisionTenant(EMPTY_ORG_ID, "Resync Empty Org", null);
-    planSyncService.syncPlan(EMPTY_ORG_ID, "pro-plan");
 
     // Create two projects
     projectId = createProject("Resync Project A", "First project for resync");

@@ -12,7 +12,6 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.Map;
 import java.util.UUID;
@@ -48,7 +47,6 @@ class DocumentAuditNotificationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private DocumentTemplateRepository documentTemplateRepository;
   @Autowired private AuditEventRepository auditEventRepository;
@@ -63,7 +61,6 @@ class DocumentAuditNotificationTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Audit Notif Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =
         syncMember(ORG_ID, "user_audit_owner", "audit_owner@test.com", "Audit Owner", "owner");

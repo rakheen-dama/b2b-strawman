@@ -7,7 +7,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.SchemaNameGenerator;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
@@ -41,7 +40,6 @@ class RequestReminderSchedulerTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
   @Autowired private RequestReminderScheduler scheduler;
@@ -59,7 +57,6 @@ class RequestReminderSchedulerTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Request Reminder Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     memberId =
         UUID.fromString(
             syncMember("user_reminder_owner", "req-reminder@test.com", "Reminder Owner", "owner"));

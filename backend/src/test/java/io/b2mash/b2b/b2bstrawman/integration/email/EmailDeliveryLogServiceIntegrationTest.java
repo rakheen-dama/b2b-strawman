@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -27,7 +26,6 @@ class EmailDeliveryLogServiceIntegrationTest {
   private static final String ORG_ID = "org_email_delivery_test";
 
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private EmailDeliveryLogService deliveryLogService;
   @Autowired private EmailDeliveryLogRepository deliveryLogRepository;
 
@@ -37,7 +35,6 @@ class EmailDeliveryLogServiceIntegrationTest {
   void provisionTenant() {
     tenantSchema =
         provisioningService.provisionTenant(ORG_ID, "Email Delivery Test Org", null).schemaName();
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
   }
 
   @Test

@@ -6,7 +6,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplate;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateRepository;
@@ -41,7 +40,6 @@ class TemplateClauseSyncTest {
   @Autowired private ClauseRepository clauseRepository;
   @Autowired private DocumentTemplateRepository documentTemplateRepository;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
 
@@ -54,7 +52,6 @@ class TemplateClauseSyncTest {
   @BeforeAll
   void setup() {
     provisioningService.provisionTenant(ORG_ID, "TC Sync Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
 

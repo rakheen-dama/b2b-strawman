@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.event.TaskStatusChangedEvent;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -38,7 +37,6 @@ class AutomationSchedulerTest {
   @Autowired private ActionExecutionRepository actionExecutionRepository;
   @Autowired private AutomationScheduler automationScheduler;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private ApplicationEventPublisher eventPublisher;
 
   @Autowired
@@ -51,12 +49,10 @@ class AutomationSchedulerTest {
   void provisionTenants() {
     schemaName =
         provisioningService.provisionTenant(ORG_ID, "Scheduler Test Org", null).schemaName();
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     disableSeededRules(schemaName, ORG_ID);
 
     schemaName2 =
         provisioningService.provisionTenant(ORG_ID_2, "Scheduler Test Org 2", null).schemaName();
-    planSyncService.syncPlan(ORG_ID_2, "pro-plan");
     disableSeededRules(schemaName2, ORG_ID_2);
   }
 

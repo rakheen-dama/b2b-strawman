@@ -10,7 +10,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
@@ -41,7 +40,6 @@ class NotificationPreferenceControllerTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
 
   private String tenantSchema;
   private String memberIdOwner;
@@ -53,7 +51,6 @@ class NotificationPreferenceControllerTest {
         provisioningService
             .provisionTenant(ORG_ID, "Notif Pref Controller Test Org", null)
             .schemaName();
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =
         syncMember(ORG_ID, "user_npc_owner", "npc_owner@test.com", "NPC Owner", "owner");

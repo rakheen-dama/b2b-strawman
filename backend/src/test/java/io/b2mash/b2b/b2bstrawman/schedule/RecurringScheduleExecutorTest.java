@@ -16,7 +16,6 @@ import io.b2mash.b2b.b2bstrawman.projecttemplate.ProjectTemplate;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.ProjectTemplateRepository;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.TemplateTask;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.TemplateTaskRepository;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
@@ -49,7 +48,6 @@ class RecurringScheduleExecutorTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
   @Autowired private RecurringScheduleExecutor executor;
@@ -74,7 +72,6 @@ class RecurringScheduleExecutorTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Executor Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     memberId =
         UUID.fromString(
             syncMember(ORG_ID, "user_exec_owner", "exec@test.com", "Exec Owner", "owner"));
@@ -568,7 +565,6 @@ class RecurringScheduleExecutorTest {
   void executeSchedules_multipleTenants_processedIndependently() throws Exception {
     var orgId2 = "org_executor_test2";
     provisioningService.provisionTenant(orgId2, "Executor Test Org 2", null);
-    planSyncService.syncPlan(orgId2, "pro-plan");
     var memberId2 =
         UUID.fromString(
             syncMember(orgId2, "user_exec_owner2", "exec2@test.com", "Exec Owner 2", "owner"));

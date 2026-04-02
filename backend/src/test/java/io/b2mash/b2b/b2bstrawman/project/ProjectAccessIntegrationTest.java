@@ -13,7 +13,6 @@ import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.Map;
 import java.util.UUID;
@@ -41,7 +40,6 @@ class ProjectAccessIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private OrgRoleRepository orgRoleRepository;
   @Autowired private MemberRepository memberRepository;
@@ -55,7 +53,6 @@ class ProjectAccessIntegrationTest {
   @BeforeAll
   void setUp() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Access Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     ownerMemberId =
         syncMember(ORG_ID, "user_access_owner", "access_owner@test.com", "Owner", "owner");

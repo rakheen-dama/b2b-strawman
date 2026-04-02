@@ -19,7 +19,6 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.Map;
 import java.util.Set;
@@ -52,7 +51,6 @@ class CustomerIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private OrgRoleService orgRoleService;
   @Autowired private MemberRepository memberRepository;
@@ -66,9 +64,7 @@ class CustomerIntegrationTest {
   @BeforeAll
   void provisionTenants() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Customer Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     provisioningService.provisionTenant(ORG_B_ID, "Customer Test Org B", null);
-    planSyncService.syncPlan(ORG_B_ID, "pro-plan");
 
     memberIdOwner =
         UUID.fromString(

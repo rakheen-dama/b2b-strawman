@@ -14,7 +14,6 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationRepository;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.time.Instant;
 import java.util.List;
@@ -47,7 +46,6 @@ class RoleAuditNotificationTest {
   @Autowired private AuditService auditService;
   @Autowired private NotificationRepository notificationRepository;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
 
   private String tenantSchema;
@@ -57,7 +55,6 @@ class RoleAuditNotificationTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Role Audit Notif Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
 

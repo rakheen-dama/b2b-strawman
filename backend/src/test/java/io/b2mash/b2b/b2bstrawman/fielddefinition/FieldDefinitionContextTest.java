@@ -10,7 +10,6 @@ import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +44,6 @@ class FieldDefinitionContextTest {
   @Autowired private FieldGroupMemberRepository fieldGroupMemberRepository;
   @Autowired private FieldDefinitionService fieldDefinitionService;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
 
@@ -55,7 +53,6 @@ class FieldDefinitionContextTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "FD Context Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     memberIdOwner =
         UUID.fromString(
             syncMember(ORG_ID, "user_fdc_owner", "fdc_owner@test.com", "FDC Owner", "owner"));

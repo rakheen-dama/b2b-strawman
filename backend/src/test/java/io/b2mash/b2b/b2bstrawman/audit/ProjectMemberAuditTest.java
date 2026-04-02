@@ -10,7 +10,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
@@ -44,7 +43,6 @@ class ProjectMemberAuditTest {
   @Autowired private MockMvc mockMvc;
   @Autowired private AuditService auditService;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
 
   private String schemaName;
   private String ownerMemberId;
@@ -54,7 +52,6 @@ class ProjectMemberAuditTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "PM Audit Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     schemaName =
         provisioningService.provisionTenant(ORG_ID, "PM Audit Test Org", null).schemaName();
 

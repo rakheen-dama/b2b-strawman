@@ -15,7 +15,6 @@ import io.b2mash.b2b.b2bstrawman.automation.config.SendNotificationActionConfig;
 import io.b2mash.b2b.b2bstrawman.automation.config.StatusChangeTriggerConfig;
 import io.b2mash.b2b.b2bstrawman.automation.config.UpdateStatusActionConfig;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.time.Instant;
 import java.util.List;
@@ -43,7 +42,6 @@ class AutomationEntityTest {
   @Autowired private ActionExecutionRepository actionExecutionRepository;
   @Autowired private AutomationConfigDeserializer configDeserializer;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
 
   private String schemaName;
 
@@ -53,7 +51,6 @@ class AutomationEntityTest {
         provisioningService
             .provisionTenant(ORG_ID, "Automation Entity Test Org", null)
             .schemaName();
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
   }
 
   @Test

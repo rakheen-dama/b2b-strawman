@@ -24,7 +24,6 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.InstantiateTemplateRequest;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.Map;
 import java.util.UUID;
@@ -54,7 +53,6 @@ class AutoDraftInformationRequestTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
   @Autowired private ProjectTemplateService templateService;
@@ -72,7 +70,6 @@ class AutoDraftInformationRequestTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Auto-Draft Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     memberId =
         UUID.fromString(
             syncMember(

@@ -16,7 +16,6 @@ import io.b2mash.b2b.b2bstrawman.notification.NotificationRepository;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
@@ -48,7 +47,6 @@ class AutomationActionExecutorTest {
   @Autowired private ActionExecutionRepository actionExecutionRepository;
   @Autowired private AutomationActionExecutor automationActionExecutor;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private ProjectRepository projectRepository;
   @Autowired private MemberRepository memberRepository;
   @Autowired private OrgRoleRepository orgRoleRepository;
@@ -68,7 +66,6 @@ class AutomationActionExecutorTest {
         provisioningService
             .provisionTenant(ORG_ID, "Automation Action Test Org", null)
             .schemaName();
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
         .where(RequestScopes.ORG_ID, ORG_ID)

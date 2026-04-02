@@ -15,7 +15,6 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldType;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,7 +45,6 @@ class CompletenessQueryTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private FieldDefinitionRepository fieldDefinitionRepository;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
@@ -60,7 +58,6 @@ class CompletenessQueryTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Completeness Query Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     syncMember("user_cqt_owner", "cqt_owner@test.com", "CQT Owner", "owner");
 

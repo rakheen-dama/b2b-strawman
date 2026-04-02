@@ -12,7 +12,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.Map;
 import java.util.UUID;
@@ -44,7 +43,6 @@ class NotificationControllerTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private NotificationService notificationService;
 
   private String tenantSchema;
@@ -62,7 +60,6 @@ class NotificationControllerTest {
   void provisionTenantAndSeedData() throws Exception {
     tenantSchema =
         provisioningService.provisionTenant(ORG_ID, "Notif Controller Test Org", null).schemaName();
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner = syncMember(ORG_ID, "user_nc_owner", "nc_owner@test.com", "NC Owner", "owner");
     memberIdMember =

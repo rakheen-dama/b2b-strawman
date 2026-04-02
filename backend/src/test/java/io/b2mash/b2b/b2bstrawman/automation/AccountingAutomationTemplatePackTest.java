@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -26,7 +25,6 @@ class AccountingAutomationTemplatePackTest {
   private static final String ORG_ID = "org_aatp_test";
 
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private AutomationRuleRepository ruleRepository;
   @Autowired private AutomationActionRepository actionRepository;
@@ -38,7 +36,6 @@ class AccountingAutomationTemplatePackTest {
   void setup() {
     provisioningService.provisionTenant(
         ORG_ID, "Accounting Automation Pack Test Org", "accounting-za");
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
   }

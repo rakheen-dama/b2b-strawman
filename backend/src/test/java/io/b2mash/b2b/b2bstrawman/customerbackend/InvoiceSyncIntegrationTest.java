@@ -8,7 +8,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalReadModelRepository;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestChecklistHelper;
 import java.util.Map;
@@ -46,7 +45,6 @@ class InvoiceSyncIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private PortalReadModelRepository readModelRepo;
 
   private String projectId;
@@ -57,7 +55,6 @@ class InvoiceSyncIntegrationTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Invoice Sync Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     syncMember(ORG_ID, "user_inv_owner", "inv_owner@test.com", "Inv Owner", "owner");
 
     projectId = createProject("Invoice Test Project", "For invoice sync tests");

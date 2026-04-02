@@ -12,7 +12,6 @@ import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -51,7 +50,6 @@ class PortalAcceptanceControllerIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private JdbcTemplate jdbcTemplate;
   @Autowired private StorageService storageService;
@@ -74,7 +72,6 @@ class PortalAcceptanceControllerIntegrationTest {
   @BeforeAll
   void provisionAndSeed() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Portal Accept Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     ownerMemberId =
         syncMember(

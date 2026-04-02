@@ -13,7 +13,6 @@ import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.SchemaNameGenerator;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.sql.Timestamp;
@@ -47,7 +46,6 @@ class ProposalSummaryIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private OrgRoleRepository orgRoleRepository;
@@ -60,7 +58,6 @@ class ProposalSummaryIntegrationTest {
   @BeforeAll
   void provisionTenantAndSeedData() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Proposal Summary Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner = syncMember("user_sum_owner", "sum_owner@test.com", "Summary Owner", "owner");
     syncMember("user_sum_member", "sum_member@test.com", "Summary Member", "member");
@@ -202,7 +199,6 @@ class ProposalSummaryIntegrationTest {
     // Provision a separate tenant with no proposals
     String isolatedOrgId = "org_proposal_isolation_test";
     provisioningService.provisionTenant(isolatedOrgId, "Isolation Test Org", null);
-    planSyncService.syncPlan(isolatedOrgId, "pro-plan");
 
     String isolatedMemberId =
         syncMemberForOrg(

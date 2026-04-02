@@ -7,7 +7,6 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.ProjectTemplate;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.ProjectTemplateRepository;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.schedule.RecurringScheduleRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
@@ -34,7 +33,6 @@ class SchedulePackSeederTest {
   private static final String ORG_ID = "org_schedule_pack_seeder_test";
 
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private RecurringScheduleRepository recurringScheduleRepository;
@@ -50,7 +48,6 @@ class SchedulePackSeederTest {
     // during provisioning. This allows us to create project templates first, then set the profile
     // and call the seeder explicitly in the test.
     provisioningService.provisionTenant(ORG_ID, "Schedule Pack Seeder Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
 

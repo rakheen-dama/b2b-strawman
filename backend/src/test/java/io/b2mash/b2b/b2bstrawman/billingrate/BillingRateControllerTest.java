@@ -10,7 +10,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestChecklistHelper;
 import java.util.Map;
@@ -44,7 +43,6 @@ class BillingRateControllerTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
 
   private String memberIdOwner;
   private String memberIdAdmin;
@@ -62,7 +60,6 @@ class BillingRateControllerTest {
   void provisionAndSeed() throws Exception {
     // Provision tenant A
     provisioningService.provisionTenant(ORG_ID, "Billing Ctrl Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =
         syncMember(ORG_ID, "user_brc_owner", "brc_owner@test.com", "BRC Owner", "owner");
@@ -112,7 +109,6 @@ class BillingRateControllerTest {
 
     // Provision tenant B for isolation tests
     provisioningService.provisionTenant(ORG_ID_B, "Billing Ctrl Test Org B", null);
-    planSyncService.syncPlan(ORG_ID_B, "pro-plan");
     memberIdOwnerB =
         syncMember(ORG_ID_B, "user_brc_owner_b", "brc_owner_b@test.com", "BRC Owner B", "owner");
   }

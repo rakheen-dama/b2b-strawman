@@ -11,7 +11,6 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -43,7 +42,6 @@ class InvoiceIntegrationTest {
   @Autowired private InvoiceRepository invoiceRepository;
   @Autowired private CustomerRepository customerRepository;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
 
@@ -58,7 +56,6 @@ class InvoiceIntegrationTest {
   void setup() throws Exception {
     // --- Tenant A ---
     provisioningService.provisionTenant(ORG_ID, "Invoice Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =
         UUID.fromString(
@@ -85,7 +82,6 @@ class InvoiceIntegrationTest {
 
     // --- Tenant B ---
     provisioningService.provisionTenant(ORG_ID_B, "Invoice Test Org B", null);
-    planSyncService.syncPlan(ORG_ID_B, "pro-plan");
 
     memberIdOwnerB =
         UUID.fromString(

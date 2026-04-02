@@ -13,7 +13,6 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.Map;
 import java.util.Set;
@@ -42,7 +41,6 @@ class DataRequestControllerTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private OrgRoleService orgRoleService;
   @Autowired private MemberRepository memberRepository;
@@ -57,7 +55,6 @@ class DataRequestControllerTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "DSR Controller Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     memberIdOwner =
         UUID.fromString(
             syncMember(ORG_ID, "user_dsr_owner", "dsr_owner@test.com", "DSR Owner", "owner"));

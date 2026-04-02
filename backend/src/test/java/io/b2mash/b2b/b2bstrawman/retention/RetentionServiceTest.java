@@ -15,7 +15,6 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationRepository;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
@@ -54,7 +53,6 @@ class RetentionServiceTest {
   @Autowired private CustomerRepository customerRepository;
   @Autowired private AuditEventRepository auditEventRepository;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private MemberSyncService memberSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
@@ -70,7 +68,6 @@ class RetentionServiceTest {
   @BeforeAll
   void setup() {
     provisioningService.provisionTenant(ORG_ID, "Retention Service Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
     var syncResult =

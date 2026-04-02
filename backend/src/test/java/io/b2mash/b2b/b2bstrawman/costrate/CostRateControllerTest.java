@@ -15,7 +15,6 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.Map;
 import java.util.Set;
@@ -49,7 +48,6 @@ class CostRateControllerTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private OrgRoleService orgRoleService;
   @Autowired private OrgRoleRepository orgRoleRepository;
@@ -73,7 +71,6 @@ class CostRateControllerTest {
   void provisionAndSeed() throws Exception {
     // Provision tenant A
     provisioningService.provisionTenant(ORG_ID, "Cost Ctrl Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =
         syncMember(ORG_ID, "user_crc_owner", "crc_owner@test.com", "CRC Owner", "owner");
@@ -84,7 +81,6 @@ class CostRateControllerTest {
 
     // Provision tenant B for isolation tests
     provisioningService.provisionTenant(ORG_ID_B, "Cost Ctrl Test Org B", null);
-    planSyncService.syncPlan(ORG_ID_B, "pro-plan");
     memberIdOwnerB =
         syncMember(ORG_ID_B, "user_crc_owner_b", "crc_owner_b@test.com", "CRC Owner B", "owner");
 

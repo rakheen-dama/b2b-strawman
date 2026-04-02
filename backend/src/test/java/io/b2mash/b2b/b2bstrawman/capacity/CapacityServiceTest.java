@@ -9,7 +9,6 @@ import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -38,7 +37,6 @@ class CapacityServiceTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private CapacityService capacityService;
   @Autowired private MemberCapacityRepository memberCapacityRepository;
@@ -60,7 +58,6 @@ class CapacityServiceTest {
   @BeforeAll
   void provisionAndSeed() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Capacity Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     memberIdOwnerStr = syncMember(ORG_ID, "user_cap_owner", "cap_owner@test.com", "Owner", "owner");
     memberIdOwner = UUID.fromString(memberIdOwnerStr);
     tenantSchema =

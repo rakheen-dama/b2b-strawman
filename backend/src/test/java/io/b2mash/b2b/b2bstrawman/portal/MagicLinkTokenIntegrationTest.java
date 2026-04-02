@@ -12,7 +12,6 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -53,7 +52,6 @@ class MagicLinkTokenIntegrationTest {
   @Autowired private MagicLinkTokenRepository magicLinkTokenRepository;
   @Autowired private PortalJwtService portalJwtService;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private CustomerService customerService;
   @Autowired private PortalContactService portalContactService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
@@ -78,11 +76,9 @@ class MagicLinkTokenIntegrationTest {
   void setup() throws Exception {
     // Provision tenant A
     provisioningService.provisionTenant(ORG_ID_A, "MLT Test Org A", null);
-    planSyncService.syncPlan(ORG_ID_A, "pro-plan");
 
     // Provision tenant B
     provisioningService.provisionTenant(ORG_ID_B, "MLT Test Org B", null);
-    planSyncService.syncPlan(ORG_ID_B, "pro-plan");
 
     // Sync member for org A
     var syncResultA =

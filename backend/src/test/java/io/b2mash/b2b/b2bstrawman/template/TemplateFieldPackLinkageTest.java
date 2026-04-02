@@ -13,7 +13,6 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldType;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
@@ -41,7 +40,6 @@ class TemplateFieldPackLinkageTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private ObjectMapper objectMapper;
   @Autowired private FieldDefinitionRepository fieldDefinitionRepository;
 
@@ -51,7 +49,6 @@ class TemplateFieldPackLinkageTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "FPL Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     syncMember(ORG_ID, "user_fpl_owner", "fpl_owner@test.com", "FPL Owner", "owner");
 
     // Create field definitions with packId in tenant context

@@ -13,7 +13,6 @@ import io.b2mash.b2b.b2bstrawman.clause.Clause;
 import io.b2mash.b2b.b2bstrawman.clause.ClauseRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplate;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateRepository;
@@ -50,7 +49,6 @@ class FieldUsageEndpointTest {
   @Autowired private DocumentTemplateRepository documentTemplateRepository;
   @Autowired private ClauseRepository clauseRepository;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
 
@@ -60,7 +58,6 @@ class FieldUsageEndpointTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Field Usage Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =
         UUID.fromString(

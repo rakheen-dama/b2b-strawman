@@ -18,7 +18,6 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.TaskService;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryService;
@@ -66,7 +65,6 @@ class OrgProfitabilityTest {
   private io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleService customerLifecycleService;
 
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
 
   private String tenantSchema;
@@ -80,7 +78,6 @@ class OrgProfitabilityTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Org Profitability Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =
         UUID.fromString(

@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -35,14 +34,12 @@ class AuditServiceIntegrationTest {
   @Autowired private AuditService auditService;
   @Autowired private AuditEventRepository auditEventRepository;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
 
   private String schemaName;
 
   @BeforeAll
   void provisionTenant() {
     provisioningService.provisionTenant(ORG_ID, "Audit Service Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     // Resolve the schema name for this Pro org
     schemaName =

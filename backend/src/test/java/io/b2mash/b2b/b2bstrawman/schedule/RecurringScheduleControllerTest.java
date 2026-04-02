@@ -20,7 +20,6 @@ import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.ProjectTemplate;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.ProjectTemplateRepository;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.time.LocalDate;
 import java.util.Map;
@@ -55,7 +54,6 @@ class RecurringScheduleControllerTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
   @Autowired private RecurringScheduleRepository scheduleRepository;
@@ -79,7 +77,6 @@ class RecurringScheduleControllerTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Schedule Controller Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     ownerMemberId =
         UUID.fromString(
             syncMember(

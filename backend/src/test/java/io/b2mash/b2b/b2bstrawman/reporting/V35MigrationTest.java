@@ -9,7 +9,6 @@ import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import java.util.List;
@@ -39,7 +38,6 @@ class V35MigrationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
   @Autowired private ReportDefinitionRepository reportDefinitionRepository;
@@ -50,7 +48,6 @@ class V35MigrationTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "V35 Migration Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     syncMember(ORG_ID, "user_v35_owner", "v35_owner@test.com", "V35 Owner", "owner");
 

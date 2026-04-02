@@ -8,7 +8,6 @@ import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -47,7 +46,6 @@ class InvoiceNumberServiceIntegrationTest {
   @Autowired private MockMvc mockMvc;
   @Autowired private InvoiceNumberService invoiceNumberService;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
 
@@ -140,7 +138,6 @@ class InvoiceNumberServiceIntegrationTest {
   private String provisionAndGetSchema(String orgId, String orgName, String userPrefix)
       throws Exception {
     provisioningService.provisionTenant(orgId, orgName, null);
-    planSyncService.syncPlan(orgId, "pro-plan");
     syncMember(orgId, userPrefix, userPrefix + "@test.com", orgName + " Owner", "owner");
     return orgSchemaMappingRepository.findByClerkOrgId(orgId).orElseThrow().getSchemaName();
   }

@@ -11,7 +11,6 @@ import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationRepository;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
@@ -72,7 +71,6 @@ class EmailWebhookControllerIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private EmailDeliveryLogService deliveryLogService;
   @Autowired private EmailDeliveryLogRepository deliveryLogRepository;
   @Autowired private AuditEventRepository auditEventRepository;
@@ -86,7 +84,6 @@ class EmailWebhookControllerIntegrationTest {
   void provisionTenant() {
     tenantSchema =
         provisioningService.provisionTenant(ORG_ID, "Webhook Test Org", null).schemaName();
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     // Create an admin member so notifyAdminsAndOwners can find recipients
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)

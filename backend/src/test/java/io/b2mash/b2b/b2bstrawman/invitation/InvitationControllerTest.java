@@ -11,7 +11,6 @@ import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.Map;
 import java.util.UUID;
@@ -39,7 +38,6 @@ class InvitationControllerTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgRoleRepository orgRoleRepository;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private PendingInvitationRepository invitationRepository;
@@ -53,7 +51,6 @@ class InvitationControllerTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Invitation Ctrl Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     ownerMemberId = syncMember("user_inv_owner", "inv_owner@test.com", "Inv Owner", "owner");
     adminMemberId = syncMember("user_inv_admin", "inv_admin@test.com", "Inv Admin", "admin");

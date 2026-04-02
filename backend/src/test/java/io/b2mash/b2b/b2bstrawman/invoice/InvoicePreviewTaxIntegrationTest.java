@@ -18,7 +18,6 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.tax.TaxCalculationService;
@@ -55,7 +54,6 @@ class InvoicePreviewTaxIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private CustomerRepository customerRepository;
   @Autowired private CustomerProjectRepository customerProjectRepository;
@@ -86,7 +84,6 @@ class InvoicePreviewTaxIntegrationTest {
   void setUp() throws Exception {
     // --- Tenant 1: Exclusive tax ---
     provisioningService.provisionTenant(ORG_ID, "Tax Preview Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =
         UUID.fromString(
@@ -225,7 +222,6 @@ class InvoicePreviewTaxIntegrationTest {
 
     // --- Tenant 2: Inclusive tax ---
     provisioningService.provisionTenant(ORG_ID_INCLUSIVE, "Tax Inclusive Org", null);
-    planSyncService.syncPlan(ORG_ID_INCLUSIVE, "pro-plan");
 
     memberIdInclusive =
         UUID.fromString(

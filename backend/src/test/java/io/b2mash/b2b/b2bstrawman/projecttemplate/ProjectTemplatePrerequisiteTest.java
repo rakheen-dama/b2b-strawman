@@ -18,7 +18,6 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldType;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationRepository;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.schedule.RecurringSchedule;
 import io.b2mash.b2b.b2bstrawman.schedule.RecurringScheduleRepository;
@@ -52,7 +51,6 @@ class ProjectTemplatePrerequisiteTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
   @Autowired private ProjectTemplateRepository templateRepository;
@@ -69,7 +67,6 @@ class ProjectTemplatePrerequisiteTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Template Prereq 243B Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     ownerMemberId =
         UUID.fromString(syncMember("user_tpq243_owner", "tpq243_owner@test.com", "Owner", "owner"));
     memberMemberId =

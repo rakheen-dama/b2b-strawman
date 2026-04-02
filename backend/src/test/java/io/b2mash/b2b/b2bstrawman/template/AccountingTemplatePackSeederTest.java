@@ -8,7 +8,6 @@ import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +36,6 @@ class AccountingTemplatePackSeederTest {
   @Autowired private MockMvc mockMvc;
   @Autowired private DocumentTemplateRepository documentTemplateRepository;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
 
@@ -47,7 +45,6 @@ class AccountingTemplatePackSeederTest {
   void setup() throws Exception {
     provisioningService.provisionTenant(
         ORG_ID, "Accounting Template Pack Test Org", "accounting-za");
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     syncMember(ORG_ID, "user_atps_owner", "atps_owner@test.com", "ATPS Owner", "owner");
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();

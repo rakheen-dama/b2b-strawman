@@ -11,7 +11,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalReadModelRepository;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestChecklistHelper;
 import java.util.Map;
@@ -50,7 +49,6 @@ class EventProjectionIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private PortalReadModelRepository readModelRepo;
 
   private String projectId;
@@ -60,7 +58,6 @@ class EventProjectionIntegrationTest {
   @BeforeAll
   void provisionAndSeedData() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Event Projection Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     syncMember(ORG_ID, "user_ep_owner", "ep_owner@test.com", "EP Owner", "owner");
 
     // Create a project

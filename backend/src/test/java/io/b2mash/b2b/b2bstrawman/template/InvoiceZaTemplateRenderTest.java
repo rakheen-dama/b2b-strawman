@@ -14,7 +14,6 @@ import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.tax.TaxRate;
@@ -54,7 +53,6 @@ class InvoiceZaTemplateRenderTest {
   @Autowired private TaxRateRepository taxRateRepository;
   @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
 
@@ -67,7 +65,6 @@ class InvoiceZaTemplateRenderTest {
   void setup() throws Exception {
     // Provision with accounting-za to seed the invoice-za template
     provisioningService.provisionTenant(ORG_ID, "Invoice ZA Render Test Org", "accounting-za");
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =
         UUID.fromString(

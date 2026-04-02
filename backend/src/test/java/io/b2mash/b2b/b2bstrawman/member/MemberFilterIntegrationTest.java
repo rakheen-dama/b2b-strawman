@@ -10,7 +10,6 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMapping;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
@@ -37,7 +36,6 @@ class MemberFilterIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private MemberSyncService memberSyncService;
   @Autowired private MemberRepository memberRepository;
   @Autowired private OrgSchemaMappingRepository mappingRepository;
@@ -47,7 +45,6 @@ class MemberFilterIntegrationTest {
   @BeforeAll
   void setup() {
     provisioningService.provisionTenant(ORG_ID, "MemberFilter Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     schemaName =
         mappingRepository
             .findByClerkOrgId(ORG_ID)

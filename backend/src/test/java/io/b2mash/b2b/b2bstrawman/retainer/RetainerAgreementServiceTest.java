@@ -14,7 +14,6 @@ import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.retainer.dto.CreateRetainerRequest;
 import io.b2mash.b2b.b2bstrawman.retainer.dto.UpdateRetainerRequest;
@@ -51,7 +50,6 @@ class RetainerAgreementServiceTest {
   @Autowired private RetainerPeriodRepository retainerPeriodRepository;
   @Autowired private CustomerRepository customerRepository;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
 
@@ -61,7 +59,6 @@ class RetainerAgreementServiceTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Retainer Service Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberId =
         UUID.fromString(

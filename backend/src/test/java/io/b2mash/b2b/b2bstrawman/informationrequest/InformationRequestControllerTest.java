@@ -15,7 +15,6 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.SchemaNameGenerator;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestChecklistHelper;
@@ -47,7 +46,6 @@ class InformationRequestControllerTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private OrgRoleService orgRoleService;
   @Autowired private MemberRepository memberRepository;
@@ -68,7 +66,6 @@ class InformationRequestControllerTest {
   @BeforeAll
   void provisionTenantAndSeedData() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "InfoReq Controller Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     memberIdOwner =
         syncMember("user_inforeq_owner", "inforeq_owner@test.com", "InfoReq Owner", "owner");
     memberIdOwnerUuid = UUID.fromString(memberIdOwner);

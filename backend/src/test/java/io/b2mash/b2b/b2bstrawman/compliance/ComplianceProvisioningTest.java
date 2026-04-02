@@ -14,7 +14,6 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
 import io.b2mash.b2b.b2bstrawman.member.MemberSyncService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import java.util.UUID;
@@ -37,7 +36,6 @@ class ComplianceProvisioningTest {
   private static final String ORG_ID = "org_compliance_provisioning_test";
 
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private MemberSyncService memberSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private ChecklistTemplateRepository templateRepository;
@@ -55,7 +53,6 @@ class ComplianceProvisioningTest {
   @BeforeAll
   void setup() {
     provisioningService.provisionTenant(ORG_ID, "Compliance Provisioning Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
 

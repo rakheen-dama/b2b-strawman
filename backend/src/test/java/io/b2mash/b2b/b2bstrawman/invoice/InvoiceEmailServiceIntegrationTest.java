@@ -13,7 +13,6 @@ import io.b2mash.b2b.b2bstrawman.integration.email.EmailDeliveryStatus;
 import io.b2mash.b2b.b2bstrawman.integration.email.EmailRateLimiter;
 import io.b2mash.b2b.b2bstrawman.member.MemberSyncService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateRepository;
 import io.b2mash.b2b.b2bstrawman.template.TemplatePackSeeder;
@@ -63,7 +62,6 @@ class InvoiceEmailServiceIntegrationTest {
   private static final String RECIPIENT_EMAIL = "customer@test.com";
 
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private MemberSyncService memberSyncService;
   @Autowired private InvoiceEmailService invoiceEmailService;
   @Autowired private InvoiceRepository invoiceRepository;
@@ -84,7 +82,6 @@ class InvoiceEmailServiceIntegrationTest {
   void provisionTenant() {
     tenantSchema =
         provisioningService.provisionTenant(ORG_ID, "Invoice Email Test Org", null).schemaName();
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     memberId =
         memberSyncService
             .syncMember(
@@ -194,7 +191,6 @@ class InvoiceEmailServiceIntegrationTest {
     String rlOrgId = "org_inv_email_rl_test";
     String rlTenantSchema =
         provisioningService.provisionTenant(rlOrgId, "Rate Limit Test Org", null).schemaName();
-    planSyncService.syncPlan(rlOrgId, "pro-plan");
     var rlMemberId =
         memberSyncService
             .syncMember(

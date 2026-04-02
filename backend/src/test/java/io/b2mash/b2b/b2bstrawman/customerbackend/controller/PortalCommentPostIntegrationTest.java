@@ -19,7 +19,6 @@ import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactService;
 import io.b2mash.b2b.b2bstrawman.portal.PortalJwtService;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.time.Instant;
 import java.util.UUID;
@@ -47,7 +46,6 @@ class PortalCommentPostIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private CustomerService customerService;
   @Autowired private PortalContactService portalContactService;
   @Autowired private PortalJwtService portalJwtService;
@@ -65,7 +63,6 @@ class PortalCommentPostIntegrationTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Portal Comment Post Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     var syncResult =
         mockMvc

@@ -13,7 +13,6 @@ import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import java.time.LocalDate;
@@ -45,7 +44,6 @@ class FieldDateScannerJobTest {
   @Autowired private CustomerRepository customerRepository;
   @Autowired private FieldDateNotificationLogRepository notificationLogRepository;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private MemberRepository memberRepository;
   @Autowired private OrgRoleRepository orgRoleRepository;
   @Autowired private TransactionTemplate transactionTemplate;
@@ -60,11 +58,9 @@ class FieldDateScannerJobTest {
   void provisionTenants() {
     schemaName1 =
         provisioningService.provisionTenant(ORG_ID_1, "Scanner Test Org 1", null).schemaName();
-    planSyncService.syncPlan(ORG_ID_1, "pro-plan");
 
     schemaName2 =
         provisioningService.provisionTenant(ORG_ID_2, "Scanner Test Org 2", null).schemaName();
-    planSyncService.syncPlan(ORG_ID_2, "pro-plan");
 
     // Create a member in tenant 1
     ScopedValue.where(RequestScopes.TENANT_ID, schemaName1)

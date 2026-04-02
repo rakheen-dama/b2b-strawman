@@ -17,7 +17,6 @@ import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
@@ -58,7 +57,6 @@ class OnboardingControllerTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private ProjectRepository projectRepository;
   @Autowired private CustomerRepository customerRepository;
   @Autowired private TaskRepository taskRepository;
@@ -79,14 +77,12 @@ class OnboardingControllerTest {
         provisioningService
             .provisionTenant(EMPTY_ORG_ID, "Empty Onboarding Org", null)
             .schemaName();
-    planSyncService.syncPlan(EMPTY_ORG_ID, "pro-plan");
     emptyOwnerMemberId =
         syncMember(
             EMPTY_ORG_ID, "user_onb_empty_owner", "onb_empty@test.com", "Empty Owner", "owner");
 
     // Admin test tenant — owner + admin to test admin dismiss capability
     provisioningService.provisionTenant(ADMIN_ORG_ID, "Admin Test Org", null);
-    planSyncService.syncPlan(ADMIN_ORG_ID, "pro-plan");
     syncMember(ADMIN_ORG_ID, "user_onb_adm_owner", "onb_adm_owner@test.com", "Adm Owner", "owner");
     adminMemberId =
         syncMember(ADMIN_ORG_ID, "user_onb_admin", "onb_admin@test.com", "Admin User", "admin");
@@ -96,7 +92,6 @@ class OnboardingControllerTest {
         provisioningService
             .provisionTenant(POPULATED_ORG_ID, "Populated Onboarding Org", null)
             .schemaName();
-    planSyncService.syncPlan(POPULATED_ORG_ID, "pro-plan");
     populatedOwnerMemberId =
         syncMember(
             POPULATED_ORG_ID, "user_onb_pop_owner", "onb_pop@test.com", "Pop Owner", "owner");

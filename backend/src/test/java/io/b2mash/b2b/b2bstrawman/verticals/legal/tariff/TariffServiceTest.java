@@ -9,7 +9,6 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ModuleNotEnabledException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
@@ -45,7 +44,6 @@ class TariffServiceTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private OrgSettingsService orgSettingsService;
   @Autowired private TransactionTemplate transactionTemplate;
@@ -61,7 +59,6 @@ class TariffServiceTest {
     // Provision enabled tenant
     tenantSchema =
         provisioningService.provisionTenant(ORG_ID, "Tariff Service Test Org", null).schemaName();
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     memberId =
         UUID.fromString(
             syncMember(
@@ -87,7 +84,6 @@ class TariffServiceTest {
         provisioningService
             .provisionTenant(DISABLED_ORG_ID, "Tariff Disabled Org", null)
             .schemaName();
-    planSyncService.syncPlan(DISABLED_ORG_ID, "pro-plan");
     syncMember(
         DISABLED_ORG_ID,
         "user_tariff_svc_dis",

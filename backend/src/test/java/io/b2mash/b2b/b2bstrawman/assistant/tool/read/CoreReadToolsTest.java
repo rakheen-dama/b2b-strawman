@@ -13,7 +13,6 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.TaskService;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryService;
@@ -45,7 +44,6 @@ class CoreReadToolsTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private ProjectService projectService;
   @Autowired private CustomerService customerService;
@@ -70,7 +68,6 @@ class CoreReadToolsTest {
   @BeforeAll
   void provisionAndSeedData() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Core Read Tools Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     var memberIdStr =
         syncMember(ORG_ID, "user_crt_owner", "crt_owner@test.com", "CRT Owner", "owner");

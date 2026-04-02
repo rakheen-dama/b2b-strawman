@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +29,6 @@ class ClauseRepositoryIntegrationTest {
   private static final String ORG_ID = "org_clause_test";
 
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private ClauseRepository clauseRepository;
   @Autowired private TransactionTemplate transactionTemplate;
 
@@ -40,7 +38,6 @@ class ClauseRepositoryIntegrationTest {
   void provisionTenant() {
     tenantSchema =
         provisioningService.provisionTenant(ORG_ID, "Clause Test Org", null).schemaName();
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
   }
 
   @Test

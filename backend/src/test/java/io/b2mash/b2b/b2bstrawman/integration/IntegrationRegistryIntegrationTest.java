@@ -13,7 +13,6 @@ import io.b2mash.b2b.b2bstrawman.integration.accounting.LineItem;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.NoOpAccountingProvider;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -43,7 +42,6 @@ class IntegrationRegistryIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
   @Autowired private IntegrationRegistry integrationRegistry;
@@ -55,7 +53,6 @@ class IntegrationRegistryIntegrationTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Registry Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     memberId =
         UUID.fromString(
             syncMember(

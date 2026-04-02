@@ -10,7 +10,6 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import java.math.BigDecimal;
@@ -44,7 +43,6 @@ class ProposalExpiryProcessorTest {
   @Autowired private CustomerRepository customerRepository;
   @Autowired private PortalContactRepository portalContactRepository;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private MemberSyncService memberSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private ProposalPortalSyncService proposalPortalSyncService;
@@ -60,7 +58,6 @@ class ProposalExpiryProcessorTest {
   @BeforeAll
   void setup() {
     provisioningService.provisionTenant(ORG_ID, "Expiry Processor Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
 

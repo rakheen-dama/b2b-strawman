@@ -12,7 +12,6 @@ import io.b2mash.b2b.b2bstrawman.integration.storage.PresignedUrl;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.time.Instant;
 import java.util.List;
@@ -45,7 +44,6 @@ class DataExportControllerTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private MemberRepository memberRepository;
 
@@ -58,7 +56,6 @@ class DataExportControllerTest {
     setupMocks();
 
     provisioningService.provisionTenant(ORG_ID, "Data Export Controller Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     syncMember(ORG_ID, "user_dex_owner", "dex_owner@test.com", "DEX Owner", "owner");
     syncMember(ORG_ID, "user_dex_member", "dex_member@test.com", "DEX Member", "member");
 

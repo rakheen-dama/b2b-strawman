@@ -8,12 +8,32 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.Duration;
 import java.time.Instant;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
 @Table(name = "subscriptions", schema = "public")
 public class Subscription {
+
+  private static final Map<SubscriptionStatus, Set<SubscriptionStatus>> VALID_TRANSITIONS =
+      Map.of(
+          SubscriptionStatus.TRIALING,
+              Set.of(SubscriptionStatus.ACTIVE, SubscriptionStatus.EXPIRED),
+          SubscriptionStatus.ACTIVE,
+              Set.of(SubscriptionStatus.PENDING_CANCELLATION, SubscriptionStatus.PAST_DUE),
+          SubscriptionStatus.PENDING_CANCELLATION,
+              Set.of(SubscriptionStatus.GRACE_PERIOD, SubscriptionStatus.ACTIVE),
+          SubscriptionStatus.PAST_DUE,
+              Set.of(SubscriptionStatus.ACTIVE, SubscriptionStatus.SUSPENDED),
+          SubscriptionStatus.SUSPENDED,
+              Set.of(SubscriptionStatus.ACTIVE, SubscriptionStatus.LOCKED),
+          SubscriptionStatus.EXPIRED, Set.of(SubscriptionStatus.ACTIVE, SubscriptionStatus.LOCKED),
+          SubscriptionStatus.GRACE_PERIOD,
+              Set.of(SubscriptionStatus.ACTIVE, SubscriptionStatus.LOCKED),
+          SubscriptionStatus.LOCKED, Set.of(SubscriptionStatus.ACTIVE));
 
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
@@ -22,12 +42,33 @@ public class Subscription {
   @Column(name = "organization_id", nullable = false, unique = true)
   private UUID organizationId;
 
-  @Column(name = "plan_slug", nullable = false)
-  private String planSlug;
-
   @Enumerated(EnumType.STRING)
-  @Column(name = "status", nullable = false)
-  private SubscriptionStatus status;
+  @Column(name = "subscription_status", nullable = false)
+  private SubscriptionStatus subscriptionStatus;
+
+  @Column(name = "payfast_token")
+  private String payfastToken;
+
+  @Column(name = "trial_ends_at")
+  private Instant trialEndsAt;
+
+  @Column(name = "grace_ends_at")
+  private Instant graceEndsAt;
+
+  @Column(name = "monthly_amount_cents")
+  private Integer monthlyAmountCents;
+
+  @Column(name = "currency", length = 3)
+  private String currency;
+
+  @Column(name = "last_payment_at")
+  private Instant lastPaymentAt;
+
+  @Column(name = "next_billing_at")
+  private Instant nextBillingAt;
+
+  @Column(name = "payfast_payment_id")
+  private String payfastPaymentId;
 
   @Column(name = "current_period_start")
   private Instant currentPeriodStart;
@@ -46,13 +87,29 @@ public class Subscription {
 
   protected Subscription() {}
 
-  public Subscription(UUID organizationId, String planSlug) {
+  public Subscription(UUID organizationId) {
     this.organizationId = organizationId;
-    this.planSlug = planSlug;
-    this.status = SubscriptionStatus.ACTIVE;
+    this.subscriptionStatus = SubscriptionStatus.TRIALING;
+    this.trialEndsAt = Instant.now().plus(Duration.ofDays(14));
     this.createdAt = Instant.now();
     this.updatedAt = Instant.now();
   }
+
+  public void transitionTo(SubscriptionStatus newStatus) {
+    validateTransition(this.subscriptionStatus, newStatus);
+    this.subscriptionStatus = newStatus;
+    this.updatedAt = Instant.now();
+  }
+
+  private void validateTransition(SubscriptionStatus from, SubscriptionStatus to) {
+    Set<SubscriptionStatus> allowed = VALID_TRANSITIONS.get(from);
+    if (allowed == null || !allowed.contains(to)) {
+      throw new IllegalStateException(
+          "Invalid subscription status transition: %s -> %s".formatted(from, to));
+    }
+  }
+
+  // --- Getters ---
 
   public UUID getId() {
     return id;
@@ -62,12 +119,40 @@ public class Subscription {
     return organizationId;
   }
 
-  public String getPlanSlug() {
-    return planSlug;
+  public SubscriptionStatus getSubscriptionStatus() {
+    return subscriptionStatus;
   }
 
-  public SubscriptionStatus getStatus() {
-    return status;
+  public String getPayfastToken() {
+    return payfastToken;
+  }
+
+  public Instant getTrialEndsAt() {
+    return trialEndsAt;
+  }
+
+  public Instant getGraceEndsAt() {
+    return graceEndsAt;
+  }
+
+  public Integer getMonthlyAmountCents() {
+    return monthlyAmountCents;
+  }
+
+  public String getCurrency() {
+    return currency;
+  }
+
+  public Instant getLastPaymentAt() {
+    return lastPaymentAt;
+  }
+
+  public Instant getNextBillingAt() {
+    return nextBillingAt;
+  }
+
+  public String getPayfastPaymentId() {
+    return payfastPaymentId;
   }
 
   public Instant getCurrentPeriodStart() {
@@ -90,13 +175,48 @@ public class Subscription {
     return updatedAt;
   }
 
-  public void changePlan(String planSlug) {
-    this.planSlug = planSlug;
-    this.updatedAt = Instant.now();
+  // --- Setters for mutable fields ---
+
+  public void setPayfastToken(String payfastToken) {
+    this.payfastToken = payfastToken;
+  }
+
+  public void setTrialEndsAt(Instant trialEndsAt) {
+    this.trialEndsAt = trialEndsAt;
+  }
+
+  public void setGraceEndsAt(Instant graceEndsAt) {
+    this.graceEndsAt = graceEndsAt;
+  }
+
+  public void setMonthlyAmountCents(Integer monthlyAmountCents) {
+    this.monthlyAmountCents = monthlyAmountCents;
+  }
+
+  public void setCurrency(String currency) {
+    this.currency = currency;
+  }
+
+  public void setLastPaymentAt(Instant lastPaymentAt) {
+    this.lastPaymentAt = lastPaymentAt;
+  }
+
+  public void setNextBillingAt(Instant nextBillingAt) {
+    this.nextBillingAt = nextBillingAt;
+  }
+
+  public void setPayfastPaymentId(String payfastPaymentId) {
+    this.payfastPaymentId = payfastPaymentId;
   }
 
   public enum SubscriptionStatus {
+    TRIALING,
     ACTIVE,
-    CANCELLED
+    PENDING_CANCELLATION,
+    PAST_DUE,
+    SUSPENDED,
+    GRACE_PERIOD,
+    EXPIRED,
+    LOCKED
   }
 }

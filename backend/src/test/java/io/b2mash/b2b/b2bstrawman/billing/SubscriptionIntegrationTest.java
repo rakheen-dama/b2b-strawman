@@ -10,7 +10,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import io.b2mash.b2b.b2bstrawman.provisioning.Tier;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -59,28 +58,26 @@ class SubscriptionIntegrationTest {
     var subscription = subscriptionRepository.findByOrganizationId(org.getId());
 
     assertThat(subscription).isPresent();
-    assertThat(subscription.get().getPlanSlug()).isEqualTo("starter");
-    assertThat(subscription.get().getStatus()).isEqualTo(Subscription.SubscriptionStatus.ACTIVE);
+    assertThat(subscription.get().getSubscriptionStatus())
+        .isEqualTo(Subscription.SubscriptionStatus.TRIALING);
   }
 
-  // --- 2. GET /api/billing/subscription returns correct plan + limits ---
+  // --- 2. GET /api/billing/subscription returns correct status + limits ---
 
   @Test
-  void shouldReturnStarterPlanAndLimits() throws Exception {
+  void shouldReturnTrialingStatusAndLimits() throws Exception {
     mockMvc
         .perform(get("/api/billing/subscription").with(memberJwt()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.planSlug").value("starter"))
-        .andExpect(jsonPath("$.tier").value("STARTER"))
-        .andExpect(jsonPath("$.status").value("ACTIVE"))
-        .andExpect(jsonPath("$.limits.maxMembers").value(2))
+        .andExpect(jsonPath("$.status").value("TRIALING"))
+        .andExpect(jsonPath("$.limits.maxMembers").value(10))
         .andExpect(jsonPath("$.limits.currentMembers").value(1));
   }
 
-  // --- 3. POST /internal/billing/set-plan updates subscription + org tier ---
+  // --- 3. POST /internal/billing/set-plan is accepted (no-op after Tier removal) ---
 
   @Test
-  void shouldUpdatePlanToProViaBillingEndpoint() throws Exception {
+  void shouldAcceptSetPlanAsNoOp() throws Exception {
     mockMvc
         .perform(
             post("/internal/billing/set-plan")
@@ -95,80 +92,12 @@ class SubscriptionIntegrationTest {
                     """
                         .formatted(ORG_A)))
         .andExpect(status().isOk());
-
-    var org = organizationRepository.findByClerkOrgId(ORG_A).orElseThrow();
-    assertThat(org.getTier()).isEqualTo(Tier.PRO);
-    assertThat(org.getPlanSlug()).isEqualTo("pro");
-
-    var subscription = subscriptionRepository.findByOrganizationId(org.getId()).orElseThrow();
-    assertThat(subscription.getPlanSlug()).isEqualTo("pro");
   }
 
-  // --- 4. GET /api/billing/subscription reflects PRO after plan change ---
+  // --- 4. Set-plan for unknown org still returns 200 (endpoint is now a no-op) ---
 
   @Test
-  void shouldReflectProAfterPlanChange() throws Exception {
-    // Ensure plan is PRO (may already be from test 3, but tests should be independent)
-    mockMvc
-        .perform(
-            post("/internal/billing/set-plan")
-                .header("X-API-KEY", API_KEY)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {
-                      "clerkOrgId": "%s",
-                      "planSlug": "pro"
-                    }
-                    """
-                        .formatted(ORG_A)))
-        .andExpect(status().isOk());
-
-    mockMvc
-        .perform(get("/api/billing/subscription").with(memberJwt()))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.planSlug").value("pro"))
-        .andExpect(jsonPath("$.tier").value("PRO"))
-        .andExpect(jsonPath("$.status").value("ACTIVE"))
-        .andExpect(jsonPath("$.limits.maxMembers").value(10));
-  }
-
-  // --- 5. Admin set-plan triggers Starter→Pro upgrade ---
-
-  @Test
-  void shouldTriggerUpgradeOnStarterToProTransition() throws Exception {
-    String upgradeOrg = "org_billing_upgrade";
-    provisioningService.provisionTenant(upgradeOrg, "Upgrade Test Org", null);
-
-    // Verify starts as STARTER
-    var org = organizationRepository.findByClerkOrgId(upgradeOrg).orElseThrow();
-    assertThat(org.getTier()).isEqualTo(Tier.STARTER);
-
-    // Trigger plan change → should trigger upgrade (Starter→Pro schema migration)
-    mockMvc
-        .perform(
-            post("/internal/billing/set-plan")
-                .header("X-API-KEY", API_KEY)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {
-                      "clerkOrgId": "%s",
-                      "planSlug": "pro"
-                    }
-                    """
-                        .formatted(upgradeOrg)))
-        .andExpect(status().isOk());
-
-    // After upgrade, org should be PRO
-    org = organizationRepository.findByClerkOrgId(upgradeOrg).orElseThrow();
-    assertThat(org.getTier()).isEqualTo(Tier.PRO);
-  }
-
-  // --- 6. Set-plan for unknown org returns 404 ---
-
-  @Test
-  void shouldReturn404ForUnknownOrg() throws Exception {
+  void shouldReturn200ForSetPlanUnknownOrg() throws Exception {
     mockMvc
         .perform(
             post("/internal/billing/set-plan")
@@ -181,10 +110,10 @@ class SubscriptionIntegrationTest {
                       "planSlug": "pro"
                     }
                     """))
-        .andExpect(status().isNotFound());
+        .andExpect(status().isOk());
   }
 
-  // --- 7. API key required for internal endpoint ---
+  // --- 5. API key required for internal endpoint ---
 
   @Test
   void shouldReject401WithoutApiKey() throws Exception {

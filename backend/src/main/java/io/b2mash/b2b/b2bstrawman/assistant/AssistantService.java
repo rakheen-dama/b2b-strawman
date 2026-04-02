@@ -18,7 +18,6 @@ import io.b2mash.b2b.b2bstrawman.integration.OrgIntegrationRepository;
 import io.b2mash.b2b.b2bstrawman.integration.secret.SecretStore;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
-import io.b2mash.b2b.b2bstrawman.provisioning.Tier;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -283,13 +282,7 @@ public class AssistantService {
       throw new PreflightFailedException();
     }
 
-    // Check 2: PRO tier required
-    if (org.getTier() != Tier.PRO) {
-      emitError(emitter, emitterCompleted, "AI assistant requires the PRO plan.");
-      throw new PreflightFailedException();
-    }
-
-    // Check 3: AI integration enabled
+    // Check 2: AI integration enabled (Tier check removed — subscription lifecycle replaces it)
     try {
       integrationGuardService.requireEnabled(IntegrationDomain.AI);
     } catch (IntegrationDisabledException e) {

@@ -184,12 +184,7 @@ public class MemberSyncService {
   }
 
   private void enforceMemberLimit(String clerkOrgId) {
-    var org =
-        organizationRepository
-            .findByClerkOrgId(clerkOrgId)
-            .orElseThrow(
-                () -> new IllegalArgumentException("No organization found for org: " + clerkOrgId));
-    int limit = PlanLimits.maxMembers(org.getTier());
+    int limit = PlanLimits.maxMembers();
     long currentCount = memberRepository.count();
     if (currentCount >= limit) {
       throw new PlanLimitExceededException(

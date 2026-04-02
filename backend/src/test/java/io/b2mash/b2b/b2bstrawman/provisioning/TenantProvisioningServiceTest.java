@@ -113,11 +113,10 @@ class TenantProvisioningServiceTest {
   }
 
   @Test
-  void provisionTenant_proCreatesNewDedicatedSchema() throws SQLException {
+  void provisionTenant_existingOrgGetsDedicatedSchema() throws SQLException {
     when(mappingRepository.findByClerkOrgId("org_pro")).thenReturn(Optional.empty());
 
     var org = new Organization("org_pro", "Pro Org");
-    org.updatePlan(Tier.PRO, "pro_plan");
     when(organizationRepository.findByClerkOrgId("org_pro")).thenReturn(Optional.of(org));
     when(organizationRepository.save(org)).thenReturn(org);
 
@@ -141,11 +140,10 @@ class TenantProvisioningServiceTest {
   }
 
   @Test
-  void provisionTenant_proMarksOrgFailedOnSchemaCreationError() throws SQLException {
+  void provisionTenant_marksOrgFailedOnSchemaCreationError() throws SQLException {
     when(mappingRepository.findByClerkOrgId("org_fail")).thenReturn(Optional.empty());
 
     var org = new Organization("org_fail", "Fail Org");
-    org.updatePlan(Tier.PRO, "pro_plan");
     when(organizationRepository.findByClerkOrgId("org_fail")).thenReturn(Optional.of(org));
     when(organizationRepository.save(any(Organization.class))).thenReturn(org);
 

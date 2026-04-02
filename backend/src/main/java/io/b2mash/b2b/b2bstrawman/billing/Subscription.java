@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.billing;
 
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -108,8 +109,9 @@ public class Subscription {
   private void validateTransition(SubscriptionStatus from, SubscriptionStatus to) {
     Set<SubscriptionStatus> allowed = VALID_TRANSITIONS.get(from);
     if (allowed == null || !allowed.contains(to)) {
-      throw new IllegalStateException(
-          "Invalid subscription status transition: %s -> %s".formatted(from, to));
+      throw new InvalidStateException(
+          "Invalid subscription status transition",
+          "Cannot transition from %s to %s".formatted(from, to));
     }
   }
 

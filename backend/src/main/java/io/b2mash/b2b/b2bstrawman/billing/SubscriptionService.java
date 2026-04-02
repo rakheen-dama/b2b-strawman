@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
@@ -150,5 +151,61 @@ public class SubscriptionService {
     return subscriptionPaymentRepository
         .findBySubscriptionId(subscription.getId(), pageable)
         .map(PaymentResponse::from);
+  }
+
+  /**
+   * Extends the trial period for a TRIALING subscription. Admin-only operation. Throws
+   * InvalidStateException if subscription is not TRIALING.
+   */
+  @Transactional
+  public BillingResponse extendTrial(UUID organizationId, int additionalDays) {
+    var subscription =
+        subscriptionRepository
+            .findByOrganizationId(organizationId)
+            .orElseThrow(
+                () -> new ResourceNotFoundException("Subscription", organizationId.toString()));
+
+    if (subscription.getSubscriptionStatus() != Subscription.SubscriptionStatus.TRIALING) {
+      throw new InvalidStateException(
+          "Cannot extend trial",
+          "Subscription must be in TRIALING status, current: "
+              + subscription.getSubscriptionStatus());
+    }
+
+    var current = subscription.getTrialEndsAt();
+    var extended =
+        current != null
+            ? current.plus(Duration.ofDays(additionalDays))
+            : Instant.now().plus(Duration.ofDays(additionalDays));
+    subscription.setTrialEndsAt(extended);
+    subscriptionRepository.save(subscription);
+
+    log.info(
+        "Extended trial for organization {} by {} days, new end: {}",
+        organizationId,
+        additionalDays,
+        extended);
+    // Admin endpoints run without tenant context — member count unavailable
+    return BillingResponse.from(subscription, 0, billingProperties);
+  }
+
+  /**
+   * Manually activates a subscription. Admin-only operation. Uses transitionTo() which enforces
+   * valid transition rules.
+   */
+  @Transactional
+  public BillingResponse activate(UUID organizationId) {
+    var subscription =
+        subscriptionRepository
+            .findByOrganizationId(organizationId)
+            .orElseThrow(
+                () -> new ResourceNotFoundException("Subscription", organizationId.toString()));
+
+    subscription.transitionTo(Subscription.SubscriptionStatus.ACTIVE);
+    subscriptionRepository.save(subscription);
+
+    log.info("Manually activated subscription for organization {}", organizationId);
+    // Admin endpoints run without tenant context — member count unavailable
+    return BillingResponse.from(subscription, 0, billingProperties);
   }
 }

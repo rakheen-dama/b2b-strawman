@@ -11,18 +11,21 @@ on:
         description: 'Type "deploy-prod" to confirm production deployment'
         required: true
 
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
 permissions:
   contents: read
   id-token: write
 
 env:
-  AWS_REGION: us-east-1
-  ENVIRONMENT: prod
-  ECS_CLUSTER: docteams-prod
+  AWS_REGION: af-south-1
+  ECS_CLUSTER: kazi-production
 
 jobs:
   # ---------------------------------------------------------------------------
-  # Safety check: require explicit confirmation
+  # Safety check: require explicit confirmation and resolve Git SHA
   # ---------------------------------------------------------------------------
   validate:
     name: Validate confirmation
@@ -49,14 +52,45 @@ jobs:
         run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
   # ---------------------------------------------------------------------------
-  # Build and push frontend Docker image to prod ECR
+  # Promote 4 images from staging by re-tagging (no rebuild)
+  # ---------------------------------------------------------------------------
+  promote-images:
+    name: Promote Images
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-session-name: GitHubActions-PromoteImages
+          aws-region: ${{ env.AWS_REGION }}
+
+      - id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Promote backend, gateway, portal, keycloak
+        env:
+          REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+          SHA: ${{ needs.validate.outputs.sha }}
+        run: |
+          for svc in backend gateway portal keycloak; do
+            echo "--- Promoting ${svc} ---"
+            docker pull "${REGISTRY}/kazi/${svc}:staging"
+            docker tag "${REGISTRY}/kazi/${svc}:staging" "${REGISTRY}/kazi/${svc}:production"
+            docker tag "${REGISTRY}/kazi/${svc}:staging" "${REGISTRY}/kazi/${svc}:${SHA}"
+            docker push "${REGISTRY}/kazi/${svc}:production"
+            docker push "${REGISTRY}/kazi/${svc}:${SHA}"
+            echo "${svc} promoted to production and ${SHA}."
+          done
+
+  # ---------------------------------------------------------------------------
+  # Rebuild frontend with production NEXT_PUBLIC_* build args
   # ---------------------------------------------------------------------------
   build-frontend:
     name: Build Frontend
     needs: validate
     runs-on: ubuntu-latest
-    outputs:
-      image: ${{ steps.meta.outputs.image }}
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:
@@ -64,21 +98,12 @@ jobs:
 
       - uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-session-name: GitHubActions-BuildFrontendProd
           aws-region: ${{ env.AWS_REGION }}
 
       - id: ecr-login
         uses: aws-actions/amazon-ecr-login@v2
-
-      - id: meta
-        env:
-          ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
-          SHA: ${{ needs.validate.outputs.sha }}
-        run: |
-          IMAGE="${ECR_REGISTRY}/docteams-${ENVIRONMENT}-frontend"
-          echo "image=${IMAGE}:${SHA}" >> "$GITHUB_OUTPUT"
-          echo "repository=${IMAGE}" >> "$GITHUB_OUTPUT"
 
       - uses: docker/setup-buildx-action@v3
 
@@ -87,72 +112,30 @@ jobs:
           context: frontend
           push: true
           tags: |
-            ${{ steps.meta.outputs.repository }}:${{ needs.validate.outputs.sha }}
-            ${{ steps.meta.outputs.repository }}:latest
+            ${{ steps.ecr-login.outputs.registry }}/kazi/frontend:${{ needs.validate.outputs.sha }}
+            ${{ steps.ecr-login.outputs.registry }}/kazi/frontend:production
           build-args: |
-            NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+            NEXT_PUBLIC_AUTH_MODE=keycloak
+            NEXT_PUBLIC_GATEWAY_URL=https://app.heykazi.com/bff
           cache-from: type=gha,scope=frontend-prod
           cache-to: type=gha,mode=max,scope=frontend-prod
 
   # ---------------------------------------------------------------------------
-  # Build and push backend Docker image to prod ECR
+  # Deploy all 5 services to production ECS cluster
   # ---------------------------------------------------------------------------
-  build-backend:
-    name: Build Backend
-    needs: validate
+  deploy:
+    name: Deploy to ECS
+    needs: [validate, promote-images, build-frontend]
     runs-on: ubuntu-latest
-    outputs:
-      image: ${{ steps.meta.outputs.image }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ needs.validate.outputs.sha }}
-
-      - uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - id: ecr-login
-        uses: aws-actions/amazon-ecr-login@v2
-
-      - id: meta
-        env:
-          ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
-          SHA: ${{ needs.validate.outputs.sha }}
-        run: |
-          IMAGE="${ECR_REGISTRY}/docteams-${ENVIRONMENT}-backend"
-          echo "image=${IMAGE}:${SHA}" >> "$GITHUB_OUTPUT"
-          echo "repository=${IMAGE}" >> "$GITHUB_OUTPUT"
-
-      - uses: docker/setup-buildx-action@v3
-
-      - uses: docker/build-push-action@v6
-        with:
-          context: backend
-          push: true
-          tags: |
-            ${{ steps.meta.outputs.repository }}:${{ needs.validate.outputs.sha }}
-            ${{ steps.meta.outputs.repository }}:latest
-          cache-from: type=gha,scope=backend-prod
-          cache-to: type=gha,mode=max,scope=backend-prod
-
-  # ---------------------------------------------------------------------------
-  # Deploy frontend to ECS (triggers GitHub environment approval + wait timer)
-  # ---------------------------------------------------------------------------
-  deploy-frontend:
-    name: Deploy Frontend
-    needs: [validate, build-frontend]
-    runs-on: ubuntu-latest
-    environment: prod
+    timeout-minutes: 30
+    environment: production
     steps:
       - uses: actions/checkout@v4
 
       - uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-session-name: GitHubActions-DeployProduction
           aws-region: ${{ env.AWS_REGION }}
 
       - id: ecr-login
@@ -162,87 +145,101 @@ jobs:
         uses: ./.github/actions/ecs-deploy
         with:
           cluster: ${{ env.ECS_CLUSTER }}
-          service: docteams-${{ env.ENVIRONMENT }}-frontend
-          task-definition-family: docteams-${{ env.ENVIRONMENT }}-frontend
+          service: kazi-production-frontend
+          task-definition-family: kazi-production-frontend
           container-name: frontend
-          image: ${{ steps.ecr-login.outputs.registry }}/docteams-${{ env.ENVIRONMENT }}-frontend:${{ needs.validate.outputs.sha }}
-
-  # ---------------------------------------------------------------------------
-  # Deploy backend to ECS (triggers GitHub environment approval + wait timer)
-  # ---------------------------------------------------------------------------
-  deploy-backend:
-    name: Deploy Backend
-    needs: [validate, build-backend]
-    runs-on: ubuntu-latest
-    environment: prod
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - id: ecr-login
-        uses: aws-actions/amazon-ecr-login@v2
+          image: ${{ steps.ecr-login.outputs.registry }}/kazi/frontend:${{ needs.validate.outputs.sha }}
 
       - name: Deploy backend
         uses: ./.github/actions/ecs-deploy
         with:
           cluster: ${{ env.ECS_CLUSTER }}
-          service: docteams-${{ env.ENVIRONMENT }}-backend
-          task-definition-family: docteams-${{ env.ENVIRONMENT }}-backend
+          service: kazi-production-backend
+          task-definition-family: kazi-production-backend
           container-name: backend
-          image: ${{ steps.ecr-login.outputs.registry }}/docteams-${{ env.ENVIRONMENT }}-backend:${{ needs.validate.outputs.sha }}
+          image: ${{ steps.ecr-login.outputs.registry }}/kazi/backend:${{ needs.validate.outputs.sha }}
+
+      - name: Deploy gateway
+        uses: ./.github/actions/ecs-deploy
+        with:
+          cluster: ${{ env.ECS_CLUSTER }}
+          service: kazi-production-gateway
+          task-definition-family: kazi-production-gateway
+          container-name: gateway
+          image: ${{ steps.ecr-login.outputs.registry }}/kazi/gateway:${{ needs.validate.outputs.sha }}
+
+      - name: Deploy portal
+        uses: ./.github/actions/ecs-deploy
+        with:
+          cluster: ${{ env.ECS_CLUSTER }}
+          service: kazi-production-portal
+          task-definition-family: kazi-production-portal
+          container-name: portal
+          image: ${{ steps.ecr-login.outputs.registry }}/kazi/portal:${{ needs.validate.outputs.sha }}
+
+      - name: Deploy keycloak
+        uses: ./.github/actions/ecs-deploy
+        with:
+          cluster: ${{ env.ECS_CLUSTER }}
+          service: kazi-production-keycloak
+          task-definition-family: kazi-production-keycloak
+          container-name: keycloak
+          image: ${{ steps.ecr-login.outputs.registry }}/kazi/keycloak:${{ needs.validate.outputs.sha }}
 
   # ---------------------------------------------------------------------------
-  # Smoke tests after deployment
+  # Production smoke tests — verify URLs respond after deployment
   # ---------------------------------------------------------------------------
   smoke-test:
     name: Smoke Test
-    needs: [deploy-frontend, deploy-backend]
+    needs: deploy
     runs-on: ubuntu-latest
     steps:
-      - uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Get ALB DNS name
-        id: alb
-        env:
-          ENV: ${{ env.ENVIRONMENT }}
+      - name: Check frontend (200 OK)
         run: |
-          ALB_DNS=$(aws elbv2 describe-load-balancers \
-            --names "docteams-${ENV}-public" \
-            --query 'LoadBalancers[0].DNSName' \
-            --output text 2>/dev/null || echo "")
-
-          if [ -z "$ALB_DNS" ] || [ "$ALB_DNS" = "None" ]; then
-            echo "::warning::Could not find ALB DNS name — skipping smoke tests"
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "dns=${ALB_DNS}" >> "$GITHUB_OUTPUT"
-            echo "skip=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Check frontend health
-        if: steps.alb.outputs.skip != 'true'
-        env:
-          ALB_DNS: ${{ steps.alb.outputs.dns }}
-        run: |
-          echo "Checking frontend at http://${ALB_DNS}/ ..."
-          curl -sf --retry 3 --retry-delay 10 --max-time 30 "http://${ALB_DNS}/" > /dev/null
+          echo "Checking frontend at https://app.heykazi.com/ ..."
+          curl -sf --retry 5 --retry-delay 15 --max-time 30 "https://app.heykazi.com/" > /dev/null
           echo "Frontend is healthy."
 
-      - name: Check backend health
-        if: steps.alb.outputs.skip != 'true'
-        env:
-          ALB_DNS: ${{ steps.alb.outputs.dns }}
+      - name: Check gateway (expect 401 — gateway is working)
         run: |
-          echo "Checking backend at http://${ALB_DNS}/actuator/health ..."
-          curl -sf --retry 3 --retry-delay 10 --max-time 30 "http://${ALB_DNS}/actuator/health"
-          echo ""
-          echo "Backend is healthy."
+          echo "Checking gateway at https://app.heykazi.com/bff/me ..."
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --retry 5 --retry-delay 15 --max-time 30 "https://app.heykazi.com/bff/me")
+          if [ "$HTTP_CODE" = "401" ] || [ "$HTTP_CODE" = "200" ]; then
+            echo "Gateway is healthy (HTTP ${HTTP_CODE})."
+          else
+            echo "::error::Gateway returned unexpected HTTP ${HTTP_CODE}"
+            exit 1
+          fi
+
+      - name: Check keycloak health
+        run: |
+          echo "Checking keycloak at https://auth.heykazi.com/health/ready ..."
+          curl -sf --retry 5 --retry-delay 15 --max-time 30 "https://auth.heykazi.com/health/ready" > /dev/null
+          echo "Keycloak is healthy."
+
+      - name: Check portal (200 OK)
+        run: |
+          echo "Checking portal at https://portal.heykazi.com/ ..."
+          curl -sf --retry 5 --retry-delay 15 --max-time 30 "https://portal.heykazi.com/" > /dev/null
+          echo "Portal is healthy."
+
+      - name: Post smoke test results to summary
+        if: always()
+        run: |
+          echo "## Production Smoke Test Results" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Service | URL | Status |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|---------|-----|--------|" >> "$GITHUB_STEP_SUMMARY"
+
+          for url in \
+            "https://app.heykazi.com/" \
+            "https://app.heykazi.com/bff/me" \
+            "https://auth.heykazi.com/health/ready" \
+            "https://portal.heykazi.com/"; do
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "$url" 2>/dev/null || echo "ERR")
+            if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "401" ]; then
+              echo "| ${url} | ${url} | :white_check_mark: ${HTTP_CODE} |" >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "| ${url} | ${url} | :x: ${HTTP_CODE} |" >> "$GITHUB_STEP_SUMMARY"
+            fi
+          done

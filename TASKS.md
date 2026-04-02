@@ -477,7 +477,7 @@
 | 419 | Data Model & Config Foundation | Backend | -- | M | 419A, 419B | **Done** (PRs #872, #873) |
 | 420 | Subscription Lifecycle Service & Billing API | Backend | 419 | L | 420A, 420B | **Done** (PRs #874, #875) |
 | 421 | PayFast Platform Integration | Backend | 419, 420 | M | 421A, 421B | **Done** (PRs #876, #877) |
-| 422 | Read-Only Enforcement & Scheduled Jobs | Backend | 419, 420 | M | 422A, 422B | 422A **Done** (PR #878) |
+| 422 | Read-Only Enforcement & Scheduled Jobs | Backend | 419, 420 | M | 422A, 422B | **Done** (PRs #878, #879) |
 | 423 | Frontend Billing Page & Components | Frontend | 420 | M | 423A, 423B | |
 | 424 | Frontend Banner, Context & Error Interceptor | Frontend | 423 | M | 424A, 424B | |
 | 425 | Backend Cleanup — Dead Tier Code | Backend | 419-422 | M | 425A, 425B | |

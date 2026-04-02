@@ -4,6 +4,8 @@ import java.time.Instant;
 
 public record BillingResponse(
     String status,
+    String tier,
+    String planSlug,
     Instant trialEndsAt,
     Instant currentPeriodEnd,
     Instant graceEndsAt,
@@ -14,14 +16,20 @@ public record BillingResponse(
     boolean canSubscribe,
     boolean canCancel) {
 
+  /** Backwards-compatible tier value. Always "PRO" since the tier system was removed. */
+  private static final String DEFAULT_TIER = "PRO";
+
+  /** Backwards-compatible planSlug. Always "pro" since the tier system was removed. */
+  private static final String DEFAULT_PLAN_SLUG = "pro";
+
   public record LimitsResponse(int maxMembers, long currentMembers) {}
 
   public static BillingResponse from(Subscription sub, long memberCount, BillingProperties props) {
     var status = sub.getSubscriptionStatus();
-    boolean canSubscribe = canSubscribe(status);
-    boolean canCancel = status == Subscription.SubscriptionStatus.ACTIVE;
     return new BillingResponse(
         status.name(),
+        DEFAULT_TIER,
+        DEFAULT_PLAN_SLUG,
         sub.getTrialEndsAt(),
         sub.getCurrentPeriodEnd(),
         sub.getGraceEndsAt(),
@@ -29,8 +37,8 @@ public record BillingResponse(
         props.monthlyPriceCents(),
         props.currency(),
         new LimitsResponse(props.maxMembers(), memberCount),
-        canSubscribe,
-        canCancel);
+        status.isSubscribable(),
+        status.isCancellable());
   }
 
   /**
@@ -40,6 +48,8 @@ public record BillingResponse(
   public static BillingResponse syntheticTrialing(long memberCount, BillingProperties props) {
     return new BillingResponse(
         "TRIALING",
+        DEFAULT_TIER,
+        DEFAULT_PLAN_SLUG,
         null,
         null,
         null,
@@ -49,12 +59,5 @@ public record BillingResponse(
         new LimitsResponse(props.maxMembers(), memberCount),
         true,
         false);
-  }
-
-  private static boolean canSubscribe(Subscription.SubscriptionStatus status) {
-    return switch (status) {
-      case TRIALING, EXPIRED, GRACE_PERIOD, SUSPENDED, LOCKED -> true;
-      default -> false;
-    };
   }
 }

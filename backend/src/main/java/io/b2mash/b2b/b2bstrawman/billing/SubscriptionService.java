@@ -10,7 +10,8 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class SubscriptionService {
 
   private static final Logger log = LoggerFactory.getLogger(SubscriptionService.class);
+  private static final int MAX_PAGE_SIZE = 200;
 
   private final SubscriptionRepository subscriptionRepository;
   private final SubscriptionPaymentRepository subscriptionPaymentRepository;
@@ -89,13 +91,7 @@ public class SubscriptionService {
                 () -> new ResourceNotFoundException("Subscription", "organization " + org.getId()));
 
     var status = subscription.getSubscriptionStatus();
-    boolean allowed =
-        switch (status) {
-          case TRIALING, EXPIRED, GRACE_PERIOD, SUSPENDED, LOCKED -> true;
-          default -> false;
-        };
-
-    if (!allowed) {
+    if (!status.isSubscribable()) {
       throw new InvalidStateException(
           "Cannot subscribe", "Subscription status does not allow subscribing: " + status);
     }
@@ -118,7 +114,7 @@ public class SubscriptionService {
             .orElseThrow(
                 () -> new ResourceNotFoundException("Subscription", "organization " + org.getId()));
 
-    if (subscription.getSubscriptionStatus() != Subscription.SubscriptionStatus.ACTIVE) {
+    if (!subscription.getSubscriptionStatus().isCancellable()) {
       throw new InvalidStateException(
           "Cannot cancel", "Only ACTIVE subscriptions can be cancelled");
     }
@@ -131,9 +127,12 @@ public class SubscriptionService {
     return BillingResponse.from(subscription, currentMembers, billingProperties);
   }
 
-  /** Returns paginated payment history for an org's subscription. */
+  /**
+   * Returns paginated payment history for an org's subscription. Handles pageable construction,
+   * size capping, default sort, and DTO mapping.
+   */
   @Transactional(readOnly = true)
-  public Page<SubscriptionPayment> getPayments(String clerkOrgId, Pageable pageable) {
+  public Page<PaymentResponse> getPayments(String clerkOrgId, int page, int size) {
     var org =
         organizationRepository
             .findByClerkOrgId(clerkOrgId)
@@ -145,6 +144,11 @@ public class SubscriptionService {
             .orElseThrow(
                 () -> new ResourceNotFoundException("Subscription", "organization " + org.getId()));
 
-    return subscriptionPaymentRepository.findBySubscriptionId(subscription.getId(), pageable);
+    var pageable =
+        PageRequest.of(
+            page, Math.min(size, MAX_PAGE_SIZE), Sort.by(Sort.Direction.DESC, "paymentDate"));
+    return subscriptionPaymentRepository
+        .findBySubscriptionId(subscription.getId(), pageable)
+        .map(PaymentResponse::from);
   }
 }

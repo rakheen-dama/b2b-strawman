@@ -62,7 +62,7 @@ Phase 57 replaces HeyKazi's simulated billing system with real subscription paym
 
 | Order | Epic | Rationale |
 |-------|------|-----------|
-| 4 | Epic 424: Frontend Banner, Context & Error Interceptor | Depends on billing page components from Epic 423. Adds cross-cutting frontend infrastructure. |
+| 4 | Epic 424: Frontend Banner, Context & Error Interceptor | Depends on billing page components from Epic 423. Adds cross-cutting frontend infrastructure. 424A **Done** (PR #882) |
 
 ### Stage 5: Cleanup (After All Feature Epics)
 
@@ -459,7 +459,7 @@ Stage 5:  [E425] [E426]                            <- parallel cleanup (after al
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **424A** | 424.1--424.5 | `SubscriptionContext` provider + `useSubscription()` hook, `SubscriptionBanner` component, layout integration, `subscription-context.test.tsx` | |
+| **424A** | 424.1--424.5 | `SubscriptionContext` provider + `useSubscription()` hook, `SubscriptionBanner` component, layout integration, `subscription-context.test.tsx` | **Done** (PR #882) |
 | **424B** | 424.6--424.9 | API error interceptor for `subscription_required`/`subscription_locked` 403 responses, write-action gating examples (disable mutation buttons), `subscription-banner.test.tsx`, `api-error-interceptor.test.tsx` | |
 
 ### Tasks

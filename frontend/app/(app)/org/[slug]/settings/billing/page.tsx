@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import {
   AlertTriangle,
@@ -12,28 +13,25 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { SubscribeButton } from "@/components/billing/subscribe-button";
 import { CancelConfirmDialog } from "@/components/billing/cancel-confirm-dialog";
+import { PaymentHistory } from "@/components/billing/payment-history";
+import { TrialCountdown } from "@/components/billing/trial-countdown";
+import { GraceCountdown } from "@/components/billing/grace-countdown";
+import { PayFastResultPoller } from "@/components/billing/payfast-result-poller";
 import { getSubscription } from "@/app/(app)/org/[slug]/settings/billing/actions";
+import {
+  formatAmount,
+  formatDate,
+  computeDaysRemaining,
+} from "@/lib/billing-utils";
 
-function formatAmount(cents: number, currency: string): string {
-  if (currency === "ZAR") {
-    return `R${(cents / 100).toFixed(2)}`;
-  }
-  return `${currency} ${(cents / 100).toFixed(2)}`;
-}
-
-function formatDate(isoString: string | null): string {
+function formatDateNullable(isoString: string | null): string {
   if (!isoString) return "\u2014";
-  return new Date(isoString).toLocaleDateString("en-ZA", {
-    dateStyle: "long",
-  });
+  return formatDate(isoString);
 }
 
 function daysRemaining(isoString: string | null): number {
   if (!isoString) return 0;
-  return Math.max(
-    0,
-    Math.ceil((new Date(isoString).getTime() - Date.now()) / 86_400_000)
-  );
+  return computeDaysRemaining(isoString);
 }
 
 type BadgeVariant = "neutral" | "success" | "warning" | "destructive";
@@ -115,20 +113,11 @@ export default async function BillingPage({
         </Badge>
       </div>
 
-      {/* PayFast redirect notices */}
-      {result === "success" && (
-        <div className="rounded-lg border border-teal-200 bg-teal-50 p-4 text-sm text-teal-800 dark:border-teal-800 dark:bg-teal-950 dark:text-teal-200">
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="size-4 shrink-0" />
-            <p>Payment successful! Your subscription is being activated.</p>
-          </div>
-        </div>
-      )}
-
-      {result === "cancelled" && (
-        <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
-          <p>Payment was cancelled. You can try again when you are ready.</p>
-        </div>
+      {/* PayFast redirect handling with polling */}
+      {(result === "success" || result === "cancelled") && (
+        <Suspense fallback={null}>
+          <PayFastResultPoller initialStatus={billing.status} />
+        </Suspense>
       )}
 
       {/* TRIALING */}
@@ -141,13 +130,12 @@ export default async function BillingPage({
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {billing.trialEndsAt && (
+              <TrialCountdown trialEndsAt={billing.trialEndsAt} />
+            )}
             <p className="text-sm text-slate-600 dark:text-slate-400">
-              You have{" "}
-              <span className="font-semibold text-slate-950 dark:text-slate-50">
-                {daysRemaining(billing.trialEndsAt)} days
-              </span>{" "}
-              remaining in your trial. Subscribe to continue using all features
-              after your trial ends on {formatDate(billing.trialEndsAt)}.
+              Subscribe to continue using all features after your trial ends on{" "}
+              {formatDateNullable(billing.trialEndsAt)}.
             </p>
             <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
               <Users className="size-4" />
@@ -177,7 +165,7 @@ export default async function BillingPage({
             <p className="text-sm text-slate-600 dark:text-slate-400">
               Your subscription is active. Next billing date:{" "}
               <span className="font-semibold text-slate-950 dark:text-slate-50">
-                {formatDate(billing.nextBillingAt)}
+                {formatDateNullable(billing.nextBillingAt)}
               </span>
             </p>
             <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
@@ -212,7 +200,7 @@ export default async function BillingPage({
             <p className="text-sm text-slate-600 dark:text-slate-400">
               Your subscription will end on{" "}
               <span className="font-semibold text-slate-950 dark:text-slate-50">
-                {formatDate(billing.currentPeriodEnd)}
+                {formatDateNullable(billing.currentPeriodEnd)}
               </span>
               . You will retain full access until then. After that, your account
               enters a read-only grace period.
@@ -269,16 +257,14 @@ export default async function BillingPage({
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {billing.graceEndsAt && (
+              <GraceCountdown graceEndsAt={billing.graceEndsAt} />
+            )}
             <div className="rounded-lg bg-red-50 p-3 text-sm text-red-800 dark:bg-red-950 dark:text-red-200">
               Your account is in read-only mode.{" "}
               {billing.graceEndsAt && (
                 <>
-                  You have{" "}
-                  <span className="font-semibold">
-                    {daysRemaining(billing.graceEndsAt)} days
-                  </span>{" "}
-                  before your account is locked. Grace period ends{" "}
-                  {formatDate(billing.graceEndsAt)}.
+                  Grace period ends {formatDate(billing.graceEndsAt)}.
                 </>
               )}
             </div>
@@ -351,6 +337,24 @@ export default async function BillingPage({
             </CardContent>
           </Card>
         </div>
+      )}
+
+      {/* Payment History */}
+      {billing.status !== "LOCKED" && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Payment History</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Suspense
+              fallback={
+                <p className="text-sm text-slate-500">Loading payments...</p>
+              }
+            >
+              <PaymentHistory />
+            </Suspense>
+          </CardContent>
+        </Card>
       )}
     </div>
   );

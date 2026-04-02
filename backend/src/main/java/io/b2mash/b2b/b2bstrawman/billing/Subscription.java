@@ -88,9 +88,13 @@ public class Subscription {
   protected Subscription() {}
 
   public Subscription(UUID organizationId) {
+    this(organizationId, 14);
+  }
+
+  public Subscription(UUID organizationId, int trialDays) {
     this.organizationId = organizationId;
     this.subscriptionStatus = SubscriptionStatus.TRIALING;
-    this.trialEndsAt = Instant.now().plus(Duration.ofDays(14));
+    this.trialEndsAt = Instant.now().plus(Duration.ofDays(trialDays));
     this.createdAt = Instant.now();
     this.updatedAt = Instant.now();
   }
@@ -229,6 +233,27 @@ public class Subscription {
     SUSPENDED,
     GRACE_PERIOD,
     EXPIRED,
-    LOCKED
+    LOCKED;
+
+    /** Returns true if this status allows initiating a new subscription. */
+    public boolean isSubscribable() {
+      return switch (this) {
+        case TRIALING, EXPIRED, GRACE_PERIOD, SUSPENDED, LOCKED -> true;
+        default -> false;
+      };
+    }
+
+    /** Returns true if this status allows cancellation. */
+    public boolean isCancellable() {
+      return this == ACTIVE;
+    }
+
+    /** Returns true if this status allows write operations (creating projects, tasks, etc.). */
+    public boolean isWriteEnabled() {
+      return switch (this) {
+        case TRIALING, ACTIVE, PENDING_CANCELLATION, PAST_DUE, GRACE_PERIOD -> true;
+        default -> false;
+      };
+    }
   }
 }

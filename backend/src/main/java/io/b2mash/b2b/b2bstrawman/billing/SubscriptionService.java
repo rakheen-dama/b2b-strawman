@@ -122,6 +122,10 @@ public class SubscriptionService {
           "Cannot cancel", "Only ACTIVE subscriptions can be cancelled");
     }
 
+    if (subscription.getPayfastToken() != null) {
+      platformPayFastService.cancelPayFastSubscription(subscription.getPayfastToken());
+    }
+
     subscription.transitionTo(Subscription.SubscriptionStatus.PENDING_CANCELLATION);
     subscription.setCancelledAt(Instant.now());
     subscriptionRepository.save(subscription);

@@ -35,10 +35,16 @@ ENV PORT=3001
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
+RUN apk add --no-cache curl
+
+COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs
+
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 --start-period=30s \
+  CMD curl -f http://localhost:3001/ || exit 1
 
 EXPOSE 3001
 

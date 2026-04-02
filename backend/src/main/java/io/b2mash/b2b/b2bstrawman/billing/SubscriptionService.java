@@ -1,12 +1,12 @@
 package io.b2mash.b2b.b2bstrawman.billing;
 
+import io.b2mash.b2b.b2bstrawman.billing.payfast.PlatformPayFastService;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,18 +27,21 @@ public class SubscriptionService {
   private final OrganizationRepository organizationRepository;
   private final MemberRepository memberRepository;
   private final BillingProperties billingProperties;
+  private final PlatformPayFastService platformPayFastService;
 
   public SubscriptionService(
       SubscriptionRepository subscriptionRepository,
       SubscriptionPaymentRepository subscriptionPaymentRepository,
       OrganizationRepository organizationRepository,
       MemberRepository memberRepository,
-      BillingProperties billingProperties) {
+      BillingProperties billingProperties,
+      PlatformPayFastService platformPayFastService) {
     this.subscriptionRepository = subscriptionRepository;
     this.subscriptionPaymentRepository = subscriptionPaymentRepository;
     this.organizationRepository = organizationRepository;
     this.memberRepository = memberRepository;
     this.billingProperties = billingProperties;
+    this.platformPayFastService = platformPayFastService;
   }
 
   /** Creates a TRIALING subscription for a newly provisioned org. Idempotent. */
@@ -75,8 +78,8 @@ public class SubscriptionService {
   }
 
   /**
-   * Initiates a subscription for an org. Returns a placeholder response — full PayFast wiring comes
-   * in Epic 421.
+   * Initiates a subscription for an org. Generates a PayFast checkout form with all required fields
+   * and MD5 signature.
    */
   @Transactional
   public SubscribeResponse initiateSubscribe(String clerkOrgId) {
@@ -97,8 +100,7 @@ public class SubscriptionService {
           "Cannot subscribe", "Subscription status does not allow subscribing: " + status);
     }
 
-    // Placeholder — full PayFast form data wiring is Epic 421
-    return new SubscribeResponse(null, Map.of());
+    return platformPayFastService.generateCheckoutForm(org.getId());
   }
 
   /** Cancels an ACTIVE subscription by transitioning to PENDING_CANCELLATION. */

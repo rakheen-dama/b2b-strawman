@@ -64,28 +64,46 @@ public class SubscriptionItnService {
     String token = params.get("token");
     String amountGross = params.get("amount_gross");
 
-    // Step 4 — Idempotency check
+    // Step 4 — Validate required fields
+    if (paymentStatus == null || paymentStatus.isBlank()) {
+      log.warn("PayFast subscription ITN: missing payment_status");
+      return;
+    }
+
+    UUID orgId;
+    try {
+      if (customStr1 == null || customStr1.isBlank()) {
+        log.warn("PayFast subscription ITN: missing custom_str1 (organization ID)");
+        return;
+      }
+      orgId = UUID.fromString(customStr1);
+    } catch (IllegalArgumentException e) {
+      log.warn("PayFast subscription ITN: invalid custom_str1 UUID: {}", customStr1);
+      return;
+    }
+
+    // Step 5 — Idempotency check
     if (mPaymentId != null && subscriptionPaymentRepository.existsByPayfastPaymentId(mPaymentId)) {
       log.info("Duplicate ITN received for payment ID: {}, skipping", mPaymentId);
       return;
     }
 
-    // Step 5 — Route by payment_status
-    switch (paymentStatus) {
-      case "COMPLETE" -> handleComplete(mPaymentId, customStr1, token, amountGross, params);
-      case "FAILED" -> handleFailed(mPaymentId, customStr1, amountGross, params);
-      case "CANCELLED" -> handleCancelled(customStr1);
-      default -> log.warn("Unknown payment_status in ITN: {}", paymentStatus);
+    // Step 6 — Route by payment_status (wrapped in try-catch to guarantee 200)
+    try {
+      switch (paymentStatus) {
+        case "COMPLETE" -> handleComplete(mPaymentId, orgId, token, amountGross, params);
+        case "FAILED" -> handleFailed(mPaymentId, orgId, amountGross, params);
+        case "CANCELLED" -> handleCancelled(orgId);
+        default -> log.warn("Unknown payment_status in ITN: {}", paymentStatus);
+      }
+    } catch (Exception e) {
+      log.error(
+          "Unexpected error processing ITN for organization {}: {}", orgId, e.getMessage(), e);
     }
   }
 
   private void handleComplete(
-      String mPaymentId,
-      String customStr1,
-      String token,
-      String amountGross,
-      Map<String, String> params) {
-    var orgId = UUID.fromString(customStr1);
+      String mPaymentId, UUID orgId, String token, String amountGross, Map<String, String> params) {
     var subscription =
         subscriptionRepository
             .findByOrganizationId(orgId)
@@ -102,11 +120,12 @@ public class SubscriptionItnService {
     }
 
     subscription.setLastPaymentAt(Instant.now());
+    // TODO: make billing cycle duration configurable if non-monthly plans are introduced
     subscription.setNextBillingAt(Instant.now().plus(Duration.ofDays(30)));
     subscription.setGraceEndsAt(null);
     subscriptionRepository.save(subscription);
 
-    int amountCents = (int) Math.round(Double.parseDouble(amountGross) * 100);
+    int amountCents = parseAmountCents(amountGross, orgId);
     var payment =
         new SubscriptionPayment(
             subscription.getId(),
@@ -124,8 +143,7 @@ public class SubscriptionItnService {
   }
 
   private void handleFailed(
-      String mPaymentId, String customStr1, String amountGross, Map<String, String> params) {
-    var orgId = UUID.fromString(customStr1);
+      String mPaymentId, UUID orgId, String amountGross, Map<String, String> params) {
     var subscription =
         subscriptionRepository
             .findByOrganizationId(orgId)
@@ -140,7 +158,7 @@ public class SubscriptionItnService {
     }
     subscriptionRepository.save(subscription);
 
-    int amountCents = (int) Math.round(Double.parseDouble(amountGross) * 100);
+    int amountCents = parseAmountCents(amountGross, orgId);
     var payment =
         new SubscriptionPayment(
             subscription.getId(),
@@ -157,8 +175,7 @@ public class SubscriptionItnService {
     log.warn("FAILED ITN processed for organization {}, payment {}", orgId, mPaymentId);
   }
 
-  private void handleCancelled(String customStr1) {
-    var orgId = UUID.fromString(customStr1);
+  private void handleCancelled(UUID orgId) {
     var subscription =
         subscriptionRepository
             .findByOrganizationId(orgId)
@@ -190,8 +207,8 @@ public class SubscriptionItnService {
       return false;
     }
 
-    // Handle X-Forwarded-For with multiple IPs
-    var ip = sourceIp.split(",")[0].trim();
+    // ClientIpResolver already extracts the first IP from X-Forwarded-For
+    var ip = sourceIp.trim();
 
     // In sandbox mode, allow localhost
     if (payfastProperties.sandbox()) {
@@ -237,12 +254,22 @@ public class SubscriptionItnService {
     }
 
     String computed = md5Hash(paramString);
-    if (!computed.equals(receivedSignature)) {
+    if (!MessageDigest.isEqual(
+        computed.getBytes(StandardCharsets.UTF_8),
+        receivedSignature.getBytes(StandardCharsets.UTF_8))) {
       log.warn("PayFast subscription ITN: signature mismatch");
       return false;
     }
 
     return true;
+  }
+
+  private static int parseAmountCents(String amountGross, UUID orgId) {
+    if (amountGross == null || amountGross.isBlank()) {
+      log.warn("PayFast subscription ITN: missing amount_gross for organization {}", orgId);
+      return 0;
+    }
+    return (int) Math.round(Double.parseDouble(amountGross) * 100);
   }
 
   private static long ipToLong(String ip) {

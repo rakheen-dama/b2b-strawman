@@ -55,7 +55,7 @@ Phase 57 replaces HeyKazi's simulated billing system with real subscription paym
 | Order | Epic | Rationale |
 |-------|------|-----------|
 | 3a | Epic 421: PayFast Platform Integration | Depends on entity model (419) and lifecycle service (420) for state transitions. Independent of 422 and 423. **Done** (PRs #876, #877) |
-| 3b | Epic 422: Read-Only Enforcement & Scheduled Jobs | Depends on entity model (419) and lifecycle service (420) for status resolution. Independent of 421 and 423. |
+| 3b | Epic 422: Read-Only Enforcement & Scheduled Jobs | Depends on entity model (419) and lifecycle service (420) for status resolution. Independent of 421 and 423. **422A Done** (PR #878) |
 | 3c | Epic 423: Frontend Billing Page & Components | Depends on API endpoints from Epic 420. Independent of 421 and 422. |
 
 ### Stage 4: Frontend Banner + Context (After Billing Page)
@@ -314,7 +314,7 @@ Stage 5:  [E425] [E426]                            <- parallel cleanup (after al
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **422A** | 422.1--422.5 | `SubscriptionStatusCache` (Caffeine), `SubscriptionGuardFilter`, `SecurityConfig` filter chain update, `SubscriptionGuardFilterTest` | |
+| **422A** | 422.1--422.5 | `SubscriptionStatusCache` (Caffeine), `SubscriptionGuardFilter`, `SecurityConfig` filter chain update, `SubscriptionGuardFilterTest` | **Done** (PR #878) |
 | **422B** | 422.6--422.10 | `SubscriptionExpiryJob` (3 scheduled methods), cache eviction wiring from ITN service, `SubscriptionExpiryJobTest` | |
 
 ### Tasks

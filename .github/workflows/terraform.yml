@@ -1,0 +1,167 @@
+name: Terraform
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'infra/**'
+  push:
+    branches: [main]
+    paths:
+      - 'infra/**'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment for apply"
+        required: true
+        type: choice
+        options:
+          - production
+
+permissions:
+  contents: read
+  id-token: write
+  pull-requests: write
+
+env:
+  AWS_REGION: af-south-1
+  TF_VERSION: "1.9.0"
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Terraform Plan — runs on PRs that touch infra/**
+  # ---------------------------------------------------------------------------
+  plan:
+    name: Terraform Plan (Staging)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-session-name: GitHubActions-TerraformPlan
+          aws-region: ${{ env.AWS_REGION }}
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform Init
+        run: terraform init -backend-config="key=staging/terraform.tfstate"
+
+      - name: Terraform Plan
+        id: plan
+        run: |
+          terraform plan -var-file=environments/staging.tfvars -no-color -out=tfplan 2>&1 | tee /tmp/plan-output.txt
+
+      - name: Post plan output as PR comment
+        uses: actions/github-script@v7
+        env:
+          ACTOR: ${{ github.actor }}
+          EVENT_NAME: ${{ github.event_name }}
+        with:
+          script: |
+            const fs = require('fs');
+            const planOutput = fs.readFileSync('/tmp/plan-output.txt', 'utf8');
+
+            // Truncate if too long for a comment (max ~65000 chars)
+            const maxLength = 60000;
+            const truncated = planOutput.length > maxLength
+              ? planOutput.substring(0, maxLength) + '\n\n... (truncated)'
+              : planOutput;
+
+            const body = `### Terraform Plan (Staging)\n\n\`\`\`\n${truncated}\n\`\`\`\n\n*Pusher: @${process.env.ACTOR}, Action: \`${process.env.EVENT_NAME}\`*`;
+
+            // Find existing comment to update
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(c =>
+              c.user.type === 'Bot' && c.body.includes('### Terraform Plan (Staging)')
+            );
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+
+  # ---------------------------------------------------------------------------
+  # Terraform Apply (Staging) — auto-apply on merge to main
+  # ---------------------------------------------------------------------------
+  apply-staging:
+    name: Terraform Apply (Staging)
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infra
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-session-name: GitHubActions-TerraformApplyStaging
+          aws-region: ${{ env.AWS_REGION }}
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform Init
+        run: terraform init -backend-config="key=staging/terraform.tfstate"
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve -var-file=environments/staging.tfvars
+
+  # ---------------------------------------------------------------------------
+  # Terraform Apply (Production) — manual workflow_dispatch with environment gate
+  # ---------------------------------------------------------------------------
+  apply-production:
+    name: Terraform Apply (Production)
+    if: github.event_name == 'workflow_dispatch' && inputs.environment == 'production'
+    runs-on: ubuntu-latest
+    environment: production
+    defaults:
+      run:
+        working-directory: infra
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-session-name: GitHubActions-TerraformApplyProduction
+          aws-region: ${{ env.AWS_REGION }}
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform Init
+        run: terraform init -backend-config="key=production/terraform.tfstate"
+
+      - name: Terraform Plan
+        run: terraform plan -var-file=environments/production.tfvars -no-color
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve -var-file=environments/production.tfvars

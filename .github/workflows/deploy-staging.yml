@@ -1,71 +1,67 @@
 name: Deploy Staging
 
 on:
-  workflow_dispatch:
-    inputs:
-      ref:
-        description: "Git ref to deploy (SHA, branch, or tag)"
-        required: false
-        default: "main"
+  push:
+    branches: [main]
 
 permissions:
   contents: read
   id-token: write
 
 env:
-  AWS_REGION: us-east-1
-  ENVIRONMENT: staging
-  ECS_CLUSTER: docteams-staging
+  AWS_REGION: af-south-1
+  ECS_CLUSTER: kazi-staging
 
 jobs:
   # ---------------------------------------------------------------------------
-  # Resolve the ref to a full SHA for consistent image tagging
+  # Detect which services changed to skip unnecessary builds
   # ---------------------------------------------------------------------------
-  resolve:
-    name: Resolve ref
+  changes:
+    name: Detect changes
     runs-on: ubuntu-latest
     outputs:
-      sha: ${{ steps.sha.outputs.sha }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+      backend: ${{ steps.filter.outputs.backend }}
+      gateway: ${{ steps.filter.outputs.gateway }}
+      portal: ${{ steps.filter.outputs.portal }}
+      keycloak: ${{ steps.filter.outputs.keycloak }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.ref }}
 
-      - name: Get full SHA
-        id: sha
-        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            frontend:
+              - 'frontend/**'
+            backend:
+              - 'backend/**'
+            gateway:
+              - 'gateway/**'
+            portal:
+              - 'portal/**'
+            keycloak:
+              - 'compose/keycloak/**'
 
   # ---------------------------------------------------------------------------
-  # Build and push frontend Docker image to staging ECR
+  # Build and push frontend Docker image to ECR
   # ---------------------------------------------------------------------------
   build-frontend:
     name: Build Frontend
-    needs: resolve
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
     runs-on: ubuntu-latest
-    outputs:
-      image: ${{ steps.meta.outputs.image }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ needs.resolve.outputs.sha }}
 
       - uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-session-name: GitHubActions-BuildFrontend
           aws-region: ${{ env.AWS_REGION }}
 
       - id: ecr-login
         uses: aws-actions/amazon-ecr-login@v2
-
-      - id: meta
-        env:
-          ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
-          SHA: ${{ needs.resolve.outputs.sha }}
-        run: |
-          IMAGE="${ECR_REGISTRY}/docteams-${ENVIRONMENT}-frontend"
-          echo "image=${IMAGE}:${SHA}" >> "$GITHUB_OUTPUT"
-          echo "repository=${IMAGE}" >> "$GITHUB_OUTPUT"
 
       - uses: docker/setup-buildx-action@v3
 
@@ -74,44 +70,33 @@ jobs:
           context: frontend
           push: true
           tags: |
-            ${{ steps.meta.outputs.repository }}:${{ needs.resolve.outputs.sha }}
-            ${{ steps.meta.outputs.repository }}:latest
+            ${{ steps.ecr-login.outputs.registry }}/kazi/frontend:${{ github.sha }}
+            ${{ steps.ecr-login.outputs.registry }}/kazi/frontend:staging
           build-args: |
-            NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+            NEXT_PUBLIC_AUTH_MODE=keycloak
+            NEXT_PUBLIC_GATEWAY_URL=https://staging-app.heykazi.com/bff
           cache-from: type=gha,scope=frontend-staging
           cache-to: type=gha,mode=max,scope=frontend-staging
 
   # ---------------------------------------------------------------------------
-  # Build and push backend Docker image to staging ECR
+  # Build and push backend Docker image to ECR
   # ---------------------------------------------------------------------------
   build-backend:
     name: Build Backend
-    needs: resolve
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
-    outputs:
-      image: ${{ steps.meta.outputs.image }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ needs.resolve.outputs.sha }}
 
       - uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-session-name: GitHubActions-BuildBackend
           aws-region: ${{ env.AWS_REGION }}
 
       - id: ecr-login
         uses: aws-actions/amazon-ecr-login@v2
-
-      - id: meta
-        env:
-          ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
-          SHA: ${{ needs.resolve.outputs.sha }}
-        run: |
-          IMAGE="${ECR_REGISTRY}/docteams-${ENVIRONMENT}-backend"
-          echo "image=${IMAGE}:${SHA}" >> "$GITHUB_OUTPUT"
-          echo "repository=${IMAGE}" >> "$GITHUB_OUTPUT"
 
       - uses: docker/setup-buildx-action@v3
 
@@ -120,17 +105,118 @@ jobs:
           context: backend
           push: true
           tags: |
-            ${{ steps.meta.outputs.repository }}:${{ needs.resolve.outputs.sha }}
-            ${{ steps.meta.outputs.repository }}:latest
+            ${{ steps.ecr-login.outputs.registry }}/kazi/backend:${{ github.sha }}
+            ${{ steps.ecr-login.outputs.registry }}/kazi/backend:staging
           cache-from: type=gha,scope=backend-staging
           cache-to: type=gha,mode=max,scope=backend-staging
 
   # ---------------------------------------------------------------------------
-  # Deploy frontend to ECS (triggers GitHub environment approval)
+  # Build and push gateway Docker image to ECR
   # ---------------------------------------------------------------------------
-  deploy-frontend:
-    name: Deploy Frontend
-    needs: [resolve, build-frontend]
+  build-gateway:
+    name: Build Gateway
+    needs: changes
+    if: needs.changes.outputs.gateway == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-session-name: GitHubActions-BuildGateway
+          aws-region: ${{ env.AWS_REGION }}
+
+      - id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: gateway
+          push: true
+          tags: |
+            ${{ steps.ecr-login.outputs.registry }}/kazi/gateway:${{ github.sha }}
+            ${{ steps.ecr-login.outputs.registry }}/kazi/gateway:staging
+          cache-from: type=gha,scope=gateway-staging
+          cache-to: type=gha,mode=max,scope=gateway-staging
+
+  # ---------------------------------------------------------------------------
+  # Build and push portal Docker image to ECR
+  # ---------------------------------------------------------------------------
+  build-portal:
+    name: Build Portal
+    needs: changes
+    if: needs.changes.outputs.portal == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-session-name: GitHubActions-BuildPortal
+          aws-region: ${{ env.AWS_REGION }}
+
+      - id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: portal
+          push: true
+          tags: |
+            ${{ steps.ecr-login.outputs.registry }}/kazi/portal:${{ github.sha }}
+            ${{ steps.ecr-login.outputs.registry }}/kazi/portal:staging
+          build-args: |
+            NEXT_PUBLIC_PORTAL_API_URL=https://staging-portal.heykazi.com/api
+          cache-from: type=gha,scope=portal-staging
+          cache-to: type=gha,mode=max,scope=portal-staging
+
+  # ---------------------------------------------------------------------------
+  # Build and push keycloak Docker image to ECR
+  # ---------------------------------------------------------------------------
+  build-keycloak:
+    name: Build Keycloak
+    needs: changes
+    if: needs.changes.outputs.keycloak == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-session-name: GitHubActions-BuildKeycloak
+          aws-region: ${{ env.AWS_REGION }}
+
+      - id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: compose/keycloak
+          file: compose/keycloak/Dockerfile.production
+          push: true
+          tags: |
+            ${{ steps.ecr-login.outputs.registry }}/kazi/keycloak:${{ github.sha }}
+            ${{ steps.ecr-login.outputs.registry }}/kazi/keycloak:staging
+          cache-from: type=gha,scope=keycloak-staging
+          cache-to: type=gha,mode=max,scope=keycloak-staging
+
+  # ---------------------------------------------------------------------------
+  # Deploy all 5 services to ECS (always runs, even if build was skipped)
+  # Uses github.sha tag for rebuilt services, staging tag for unchanged ones
+  # ---------------------------------------------------------------------------
+  deploy:
+    name: Deploy to ECS
+    needs: [changes, build-frontend, build-backend, build-gateway, build-portal, build-keycloak]
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure')
     runs-on: ubuntu-latest
     environment: staging
     steps:
@@ -138,98 +224,134 @@ jobs:
 
       - uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-session-name: GitHubActions-DeployStaging
           aws-region: ${{ env.AWS_REGION }}
 
       - id: ecr-login
         uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Resolve image tags
+        id: tags
+        env:
+          REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+          SHA: ${{ github.sha }}
+          FRONTEND_CHANGED: ${{ needs.changes.outputs.frontend }}
+          BACKEND_CHANGED: ${{ needs.changes.outputs.backend }}
+          GATEWAY_CHANGED: ${{ needs.changes.outputs.gateway }}
+          PORTAL_CHANGED: ${{ needs.changes.outputs.portal }}
+          KEYCLOAK_CHANGED: ${{ needs.changes.outputs.keycloak }}
+        run: |
+          # Use SHA tag for rebuilt services, staging tag for unchanged ones
+          for svc in frontend backend gateway portal keycloak; do
+            var_name="${svc^^}_CHANGED"
+            changed="${!var_name}"
+            if [ "$changed" = "true" ]; then
+              echo "${svc}=${REGISTRY}/kazi/${svc}:${SHA}" >> "$GITHUB_OUTPUT"
+            else
+              echo "${svc}=${REGISTRY}/kazi/${svc}:staging" >> "$GITHUB_OUTPUT"
+            fi
+          done
 
       - name: Deploy frontend
         uses: ./.github/actions/ecs-deploy
         with:
           cluster: ${{ env.ECS_CLUSTER }}
-          service: docteams-${{ env.ENVIRONMENT }}-frontend
-          task-definition-family: docteams-${{ env.ENVIRONMENT }}-frontend
+          service: kazi-staging-frontend
+          task-definition-family: kazi-staging-frontend
           container-name: frontend
-          image: ${{ steps.ecr-login.outputs.registry }}/docteams-${{ env.ENVIRONMENT }}-frontend:${{ needs.resolve.outputs.sha }}
-
-  # ---------------------------------------------------------------------------
-  # Deploy backend to ECS (triggers GitHub environment approval)
-  # ---------------------------------------------------------------------------
-  deploy-backend:
-    name: Deploy Backend
-    needs: [resolve, build-backend]
-    runs-on: ubuntu-latest
-    environment: staging
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - id: ecr-login
-        uses: aws-actions/amazon-ecr-login@v2
+          image: ${{ steps.tags.outputs.frontend }}
 
       - name: Deploy backend
         uses: ./.github/actions/ecs-deploy
         with:
           cluster: ${{ env.ECS_CLUSTER }}
-          service: docteams-${{ env.ENVIRONMENT }}-backend
-          task-definition-family: docteams-${{ env.ENVIRONMENT }}-backend
+          service: kazi-staging-backend
+          task-definition-family: kazi-staging-backend
           container-name: backend
-          image: ${{ steps.ecr-login.outputs.registry }}/docteams-${{ env.ENVIRONMENT }}-backend:${{ needs.resolve.outputs.sha }}
+          image: ${{ steps.tags.outputs.backend }}
+
+      - name: Deploy gateway
+        uses: ./.github/actions/ecs-deploy
+        with:
+          cluster: ${{ env.ECS_CLUSTER }}
+          service: kazi-staging-gateway
+          task-definition-family: kazi-staging-gateway
+          container-name: gateway
+          image: ${{ steps.tags.outputs.gateway }}
+
+      - name: Deploy portal
+        uses: ./.github/actions/ecs-deploy
+        with:
+          cluster: ${{ env.ECS_CLUSTER }}
+          service: kazi-staging-portal
+          task-definition-family: kazi-staging-portal
+          container-name: portal
+          image: ${{ steps.tags.outputs.portal }}
+
+      - name: Deploy keycloak
+        uses: ./.github/actions/ecs-deploy
+        with:
+          cluster: ${{ env.ECS_CLUSTER }}
+          service: kazi-staging-keycloak
+          task-definition-family: kazi-staging-keycloak
+          container-name: keycloak
+          image: ${{ steps.tags.outputs.keycloak }}
 
   # ---------------------------------------------------------------------------
-  # Smoke tests after deployment
+  # Smoke tests — verify staging URLs respond after deployment
   # ---------------------------------------------------------------------------
   smoke-test:
     name: Smoke Test
-    needs: [deploy-frontend, deploy-backend]
+    needs: deploy
     runs-on: ubuntu-latest
     steps:
-      - uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Get ALB DNS name
-        id: alb
-        env:
-          ENV: ${{ env.ENVIRONMENT }}
+      - name: Check frontend (200 OK)
         run: |
-          ALB_DNS=$(aws elbv2 describe-load-balancers \
-            --names "docteams-${ENV}-public" \
-            --query 'LoadBalancers[0].DNSName' \
-            --output text 2>/dev/null || echo "")
-
-          if [ -z "$ALB_DNS" ] || [ "$ALB_DNS" = "None" ]; then
-            echo "::warning::Could not find ALB DNS name — skipping smoke tests"
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "dns=${ALB_DNS}" >> "$GITHUB_OUTPUT"
-            echo "skip=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Check frontend health
-        if: steps.alb.outputs.skip != 'true'
-        env:
-          ALB_DNS: ${{ steps.alb.outputs.dns }}
-        run: |
-          echo "Checking frontend at http://${ALB_DNS}/ ..."
-          curl -sf --retry 3 --retry-delay 10 --max-time 30 "http://${ALB_DNS}/" > /dev/null
+          echo "Checking frontend at https://staging-app.heykazi.com/ ..."
+          curl -sf --retry 5 --retry-delay 15 --max-time 30 "https://staging-app.heykazi.com/" > /dev/null
           echo "Frontend is healthy."
 
-      - name: Check backend health
-        if: steps.alb.outputs.skip != 'true'
-        env:
-          ALB_DNS: ${{ steps.alb.outputs.dns }}
+      - name: Check gateway (expect 401 — gateway is working)
         run: |
-          echo "Checking backend at http://${ALB_DNS}/actuator/health ..."
-          curl -sf --retry 3 --retry-delay 10 --max-time 30 "http://${ALB_DNS}/actuator/health"
-          echo ""
-          echo "Backend is healthy."
+          echo "Checking gateway at https://staging-app.heykazi.com/bff/me ..."
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --retry 5 --retry-delay 15 --max-time 30 "https://staging-app.heykazi.com/bff/me")
+          if [ "$HTTP_CODE" = "401" ] || [ "$HTTP_CODE" = "200" ]; then
+            echo "Gateway is healthy (HTTP ${HTTP_CODE})."
+          else
+            echo "::error::Gateway returned unexpected HTTP ${HTTP_CODE}"
+            exit 1
+          fi
+
+      - name: Check keycloak health
+        run: |
+          echo "Checking keycloak at https://staging-auth.heykazi.com/health/ready ..."
+          curl -sf --retry 5 --retry-delay 15 --max-time 30 "https://staging-auth.heykazi.com/health/ready" > /dev/null
+          echo "Keycloak is healthy."
+
+      - name: Check portal (200 OK)
+        run: |
+          echo "Checking portal at https://staging-portal.heykazi.com/ ..."
+          curl -sf --retry 5 --retry-delay 15 --max-time 30 "https://staging-portal.heykazi.com/" > /dev/null
+          echo "Portal is healthy."
+
+      - name: Post smoke test results to summary
+        if: always()
+        run: |
+          echo "## Staging Smoke Test Results" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Service | URL | Status |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|---------|-----|--------|" >> "$GITHUB_STEP_SUMMARY"
+
+          for url in \
+            "https://staging-app.heykazi.com/" \
+            "https://staging-app.heykazi.com/bff/me" \
+            "https://staging-auth.heykazi.com/health/ready" \
+            "https://staging-portal.heykazi.com/"; do
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "$url" 2>/dev/null || echo "ERR")
+            if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "401" ]; then
+              echo "| ${url} | ${url} | :white_check_mark: ${HTTP_CODE} |" >> "$GITHUB_STEP_SUMMARY"
+            else
+              echo "| ${url} | ${url} | :x: ${HTTP_CODE} |" >> "$GITHUB_STEP_SUMMARY"
+            fi
+          done

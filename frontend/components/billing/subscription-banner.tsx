@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { Info, AlertTriangle, XCircle, X } from "lucide-react";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { useSubscription } from "@/lib/subscription-context";
 import { computeDaysRemaining, formatDate } from "@/lib/billing-utils";
 import { cn } from "@/lib/utils";
 import type { BillingResponse } from "@/lib/internal-api";
@@ -53,7 +52,7 @@ function getBannerConfig(
           </>
         ),
         dismissible: true,
-        storageKey: "banner-dismissed-TRIALING",
+        storageKey: `banner-dismissed-${slug}-TRIALING`,
       };
     }
 
@@ -90,10 +89,13 @@ function getBannerConfig(
           </>
         ),
         dismissible: true,
-        storageKey: "banner-dismissed-PENDING_CANCELLATION",
+        storageKey: `banner-dismissed-${slug}-PENDING_CANCELLATION`,
       };
     }
 
+    // PAST_DUE requires payment action — intentionally non-dismissible despite
+    // being "warning" variant (not "destructive") because the account is still
+    // write-enabled but needs urgent attention.
     case "PAST_DUE":
       return {
         variant: "warning",
@@ -111,7 +113,7 @@ function getBannerConfig(
           </>
         ),
         dismissible: false,
-        storageKey: "banner-dismissed-PAST_DUE",
+        storageKey: `banner-dismissed-${slug}-PAST_DUE`,
       };
 
     case "GRACE_PERIOD":
@@ -133,7 +135,7 @@ function getBannerConfig(
           </>
         ),
         dismissible: false,
-        storageKey: `banner-dismissed-${status}`,
+        storageKey: `banner-dismissed-${slug}-${status}`,
       };
 
     case "LOCKED":
@@ -148,26 +150,26 @@ export function SubscriptionBanner({
   billingResponse,
   slug,
 }: SubscriptionBannerProps) {
-  // Read status from context for consistency (context recomputes derived values)
-  const { status } = useSubscription();
+  const config = getBannerConfig(billingResponse, slug);
 
-  const config = getBannerConfig({ ...billingResponse, status }, slug);
+  // Track the storage key that the user last dismissed in this session.
+  // When config changes (e.g. status transition), the new key won't match,
+  // so the banner reappears — critical for non-dismissible transitions.
+  const [dismissedKey, setDismissedKey] = useState<string | null>(null);
 
-  const [dismissed, setDismissed] = useState(() => {
-    if (!config?.dismissible) return false;
-    return (
-      typeof window !== "undefined" &&
-      sessionStorage.getItem(config.storageKey) === "1"
-    );
-  });
+  const isDismissed =
+    config?.dismissible === true &&
+    (dismissedKey === config.storageKey ||
+      (typeof window !== "undefined" &&
+        sessionStorage.getItem(config.storageKey) === "1"));
 
-  if (!config || dismissed) return null;
+  if (!config || isDismissed) return null;
 
   function handleDismiss() {
     if (config) {
       sessionStorage.setItem(config.storageKey, "1");
+      setDismissedKey(config.storageKey);
     }
-    setDismissed(true);
   }
 
   return (

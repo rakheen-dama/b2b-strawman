@@ -30,14 +30,6 @@ const WRITE_ENABLED_STATUSES = new Set([
   "PAST_DUE",
 ]);
 
-const CAN_SUBSCRIBE_STATUSES = new Set([
-  "TRIALING",
-  "EXPIRED",
-  "GRACE_PERIOD",
-  "SUSPENDED",
-  "LOCKED",
-]);
-
 // ---- Provider ----
 
 interface SubscriptionProviderProps {
@@ -49,16 +41,16 @@ export function SubscriptionProvider({
   billingResponse,
   children,
 }: SubscriptionProviderProps) {
-  const status = billingResponse.status;
+  const { status, canSubscribe, canCancel } = billingResponse;
 
   const value = useMemo<SubscriptionContextValue>(
     () => ({
       status,
       isWriteEnabled: WRITE_ENABLED_STATUSES.has(status),
-      canSubscribe: CAN_SUBSCRIBE_STATUSES.has(status),
-      canCancel: status === "ACTIVE",
+      canSubscribe,
+      canCancel,
     }),
-    [status],
+    [status, canSubscribe, canCancel],
   );
 
   return (

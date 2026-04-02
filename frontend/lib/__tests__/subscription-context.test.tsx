@@ -10,7 +10,10 @@ afterEach(() => {
   cleanup();
 });
 
-function makeBillingResponse(status: string): BillingResponse {
+function makeBillingResponse(
+  status: string,
+  overrides?: Partial<BillingResponse>,
+): BillingResponse {
   return {
     status,
     trialEndsAt: null,
@@ -22,6 +25,7 @@ function makeBillingResponse(status: string): BillingResponse {
     limits: { maxMembers: 5, currentMembers: 1 },
     canSubscribe: false,
     canCancel: false,
+    ...overrides,
   };
 }
 
@@ -94,17 +98,48 @@ describe("SubscriptionContext", () => {
     });
   });
 
-  describe("canSubscribe", () => {
+  describe("canSubscribe (passthrough from API)", () => {
     it("is true for TRIALING", () => {
       const { result } = renderHook(() => useSubscription(), {
-        wrapper: wrapper(makeBillingResponse("TRIALING")),
+        wrapper: wrapper(
+          makeBillingResponse("TRIALING", { canSubscribe: true }),
+        ),
       });
       expect(result.current.canSubscribe).toBe(true);
     });
 
     it("is true for EXPIRED", () => {
       const { result } = renderHook(() => useSubscription(), {
-        wrapper: wrapper(makeBillingResponse("EXPIRED")),
+        wrapper: wrapper(
+          makeBillingResponse("EXPIRED", { canSubscribe: true }),
+        ),
+      });
+      expect(result.current.canSubscribe).toBe(true);
+    });
+
+    it("is true for GRACE_PERIOD", () => {
+      const { result } = renderHook(() => useSubscription(), {
+        wrapper: wrapper(
+          makeBillingResponse("GRACE_PERIOD", { canSubscribe: true }),
+        ),
+      });
+      expect(result.current.canSubscribe).toBe(true);
+    });
+
+    it("is true for SUSPENDED", () => {
+      const { result } = renderHook(() => useSubscription(), {
+        wrapper: wrapper(
+          makeBillingResponse("SUSPENDED", { canSubscribe: true }),
+        ),
+      });
+      expect(result.current.canSubscribe).toBe(true);
+    });
+
+    it("is true for LOCKED", () => {
+      const { result } = renderHook(() => useSubscription(), {
+        wrapper: wrapper(
+          makeBillingResponse("LOCKED", { canSubscribe: true }),
+        ),
       });
       expect(result.current.canSubscribe).toBe(true);
     });
@@ -115,17 +150,33 @@ describe("SubscriptionContext", () => {
       });
       expect(result.current.canSubscribe).toBe(false);
     });
+
+    it("is false for PENDING_CANCELLATION", () => {
+      const { result } = renderHook(() => useSubscription(), {
+        wrapper: wrapper(makeBillingResponse("PENDING_CANCELLATION")),
+      });
+      expect(result.current.canSubscribe).toBe(false);
+    });
+
+    it("is false for PAST_DUE", () => {
+      const { result } = renderHook(() => useSubscription(), {
+        wrapper: wrapper(makeBillingResponse("PAST_DUE")),
+      });
+      expect(result.current.canSubscribe).toBe(false);
+    });
   });
 
-  describe("canCancel", () => {
-    it("is true only for ACTIVE", () => {
+  describe("canCancel (passthrough from API)", () => {
+    it("is true when API says true", () => {
       const { result } = renderHook(() => useSubscription(), {
-        wrapper: wrapper(makeBillingResponse("ACTIVE")),
+        wrapper: wrapper(
+          makeBillingResponse("ACTIVE", { canCancel: true }),
+        ),
       });
       expect(result.current.canCancel).toBe(true);
     });
 
-    it("is false for TRIALING", () => {
+    it("is false when API says false", () => {
       const { result } = renderHook(() => useSubscription(), {
         wrapper: wrapper(makeBillingResponse("TRIALING")),
       });

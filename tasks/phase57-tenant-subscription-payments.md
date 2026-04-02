@@ -7,7 +7,7 @@ Phase 57 replaces HeyKazi's simulated billing system with real subscription paym
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 419 | Data Model & Config Foundation | Backend | -- | M | 419A, 419B | **Done** (PRs #872, #873) |
-| 420 | Subscription Lifecycle Service & Billing API | Backend | 419 | L | 420A, 420B | |
+| 420 | Subscription Lifecycle Service & Billing API | Backend | 419 | L | 420A, 420B | **Done** (PRs #874, #875) |
 | 421 | PayFast Platform Integration | Backend | 419, 420 | M | 421A, 421B | |
 | 422 | Read-Only Enforcement & Scheduled Jobs | Backend | 419, 420 | M | 422A, 422B | |
 | 423 | Frontend Billing Page & Components | Frontend | 420 | M | 423A, 423B | |
@@ -48,7 +48,7 @@ Phase 57 replaces HeyKazi's simulated billing system with real subscription paym
 
 | Order | Epic | Rationale |
 |-------|------|-----------|
-| 2 | Epic 420: Subscription Lifecycle Service & Billing API | Service layer + API endpoints build on top of the data model. All other epics depend on the subscription lifecycle being operational. |
+| 2 | Epic 420: Subscription Lifecycle Service & Billing API | Service layer + API endpoints build on top of the data model. All other epics depend on the subscription lifecycle being operational. **Done** (PRs #874, #875) |
 
 ### Stage 3: PayFast + Guard + Frontend Billing (Parallel Tracks)
 
@@ -174,7 +174,7 @@ Stage 5:  [E425] [E426]                            <- parallel cleanup (after al
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **420A** | 420.1--420.5 | Rewritten `SubscriptionService` with lifecycle methods, `BillingResponse` + `SubscribeResponse` DTOs, rewritten `BillingController` with subscribe/cancel/payments/status endpoints, updated `TenantProvisioningService` | **Done** (PR #874) |
-| **420B** | 420.6--420.10 | Internal admin endpoints (extend-trial, activate), `AdminBillingController` refactor, `BillingControllerIntegrationTest`, `SubscriptionLifecycleTest` | |
+| **420B** | 420.6--420.10 | Internal admin endpoints (extend-trial, activate), `AdminBillingController` refactor, `BillingControllerIntegrationTest`, `SubscriptionLifecycleTest` | **Done** (PR #875) |
 
 ### Tasks
 

@@ -8,12 +8,16 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.URI;
 import java.util.Optional;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ProblemDetail;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import tools.jackson.databind.ObjectMapper;
 
 @Component
 public class SubscriptionGuardFilter extends OncePerRequestFilter {
@@ -29,11 +33,15 @@ public class SubscriptionGuardFilter extends OncePerRequestFilter {
 
   private final OrganizationRepository organizationRepository;
   private final SubscriptionStatusCache statusCache;
+  private final ObjectMapper objectMapper;
 
   public SubscriptionGuardFilter(
-      OrganizationRepository organizationRepository, SubscriptionStatusCache statusCache) {
+      OrganizationRepository organizationRepository,
+      SubscriptionStatusCache statusCache,
+      ObjectMapper objectMapper) {
     this.organizationRepository = organizationRepository;
     this.statusCache = statusCache;
+    this.objectMapper = objectMapper;
   }
 
   @Override
@@ -95,39 +103,30 @@ public class SubscriptionGuardFilter extends OncePerRequestFilter {
 
   private void writeSubscriptionRequiredResponse(
       HttpServletRequest request, HttpServletResponse response) throws IOException {
-    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-    response.setContentType("application/problem+json");
-    response
-        .getWriter()
-        .write(
-            """
-        {
-          "type": "subscription_required",
-          "title": "Subscription required",
-          "detail": "Your subscription has expired. Subscribe to regain full access.",
-          "instance": "%s",
-          "resubscribeUrl": "/settings/billing"
-        }
-        """
-                .formatted(request.getRequestURI()));
+    var problem = ProblemDetail.forStatus(HttpStatus.FORBIDDEN);
+    problem.setType(URI.create("subscription_required"));
+    problem.setTitle("Subscription required");
+    problem.setDetail("Your subscription has expired. Subscribe to regain full access.");
+    problem.setInstance(URI.create(request.getRequestURI()));
+    problem.setProperty("resubscribeUrl", "/settings/billing");
+    writeProblemDetail(response, problem);
   }
 
   private void writeLockedResponse(HttpServletRequest request, HttpServletResponse response)
       throws IOException {
-    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+    var problem = ProblemDetail.forStatus(HttpStatus.FORBIDDEN);
+    problem.setType(URI.create("subscription_locked"));
+    problem.setTitle("Account locked");
+    problem.setDetail("Your account has been locked. Resubscribe to access your data.");
+    problem.setInstance(URI.create(request.getRequestURI()));
+    problem.setProperty("resubscribeUrl", "/settings/billing");
+    writeProblemDetail(response, problem);
+  }
+
+  private void writeProblemDetail(HttpServletResponse response, ProblemDetail problem)
+      throws IOException {
+    response.setStatus(problem.getStatus());
     response.setContentType("application/problem+json");
-    response
-        .getWriter()
-        .write(
-            """
-        {
-          "type": "subscription_locked",
-          "title": "Account locked",
-          "detail": "Your account has been locked. Resubscribe to access your data.",
-          "instance": "%s",
-          "resubscribeUrl": "/settings/billing"
-        }
-        """
-                .formatted(request.getRequestURI()));
+    response.getOutputStream().write(objectMapper.writeValueAsBytes(problem));
   }
 }

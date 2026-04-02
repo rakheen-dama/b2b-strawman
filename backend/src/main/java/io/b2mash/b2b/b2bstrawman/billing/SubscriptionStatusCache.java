@@ -24,13 +24,7 @@ public class SubscriptionStatusCache {
    * subscription row exists.
    */
   public Subscription.SubscriptionStatus getStatus(UUID organizationId) {
-    Subscription.SubscriptionStatus cached = cache.getIfPresent(organizationId);
-    if (cached != null) {
-      return cached;
-    }
-    Subscription.SubscriptionStatus status = loadFromDb(organizationId);
-    cache.put(organizationId, status);
-    return status;
+    return cache.get(organizationId, this::loadFromDb);
   }
 
   /** Evicts the cached status for the given organization, forcing a reload on the next access. */

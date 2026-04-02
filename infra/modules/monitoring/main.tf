@@ -1,6 +1,6 @@
 # -----------------------------------------------------------------------------
 # CloudWatch Log Groups for ECS services
-# Naming: /kazi/{env}/{service} per ADR-218
+# Naming: /{project}/{env}/{service} per project naming convention
 # -----------------------------------------------------------------------------
 
 resource "aws_cloudwatch_log_group" "frontend" {
@@ -32,11 +32,14 @@ resource "aws_cloudwatch_log_group" "keycloak" {
 # SNS Topic for CloudWatch Alarm notifications
 # -----------------------------------------------------------------------------
 
+data "aws_caller_identity" "current" {}
+
 resource "aws_sns_topic" "alerts" {
-  name = "heykazi-${var.environment}-alerts"
+  name = "${var.project}-${var.environment}-alerts"
 }
 
 resource "aws_sns_topic_subscription" "alert_email" {
+  count     = var.alert_email != "" ? 1 : 0
   topic_arn = aws_sns_topic.alerts.arn
   protocol  = "email"
   endpoint  = var.alert_email
@@ -52,6 +55,12 @@ data "aws_iam_policy_document" "sns_alerts_policy" {
     }
 
     resources = [aws_sns_topic.alerts.arn]
+
+    condition {
+      test     = "StringEquals"
+      variable = "aws:SourceAccount"
+      values   = [data.aws_caller_identity.current.account_id]
+    }
   }
 }
 
@@ -81,8 +90,8 @@ resource "aws_cloudwatch_metric_alarm" "backend_unhealthy_hosts" {
     TargetGroup  = var.backend_tg_arn_suffix
   }
 
-  alarm_actions = [aws_sns_topic.alerts.arn]
-  ok_actions    = [aws_sns_topic.alerts.arn]
+  alarm_actions = var.alert_email != "" ? [aws_sns_topic.alerts.arn] : []
+  ok_actions    = var.alert_email != "" ? [aws_sns_topic.alerts.arn] : []
 }
 
 resource "aws_cloudwatch_metric_alarm" "gateway_unhealthy_hosts" {
@@ -102,8 +111,8 @@ resource "aws_cloudwatch_metric_alarm" "gateway_unhealthy_hosts" {
     TargetGroup  = var.gateway_tg_arn_suffix
   }
 
-  alarm_actions = [aws_sns_topic.alerts.arn]
-  ok_actions    = [aws_sns_topic.alerts.arn]
+  alarm_actions = var.alert_email != "" ? [aws_sns_topic.alerts.arn] : []
+  ok_actions    = var.alert_email != "" ? [aws_sns_topic.alerts.arn] : []
 }
 
 resource "aws_cloudwatch_metric_alarm" "keycloak_unhealthy_hosts" {
@@ -123,8 +132,8 @@ resource "aws_cloudwatch_metric_alarm" "keycloak_unhealthy_hosts" {
     TargetGroup  = var.keycloak_tg_arn_suffix
   }
 
-  alarm_actions = [aws_sns_topic.alerts.arn]
-  ok_actions    = [aws_sns_topic.alerts.arn]
+  alarm_actions = var.alert_email != "" ? [aws_sns_topic.alerts.arn] : []
+  ok_actions    = var.alert_email != "" ? [aws_sns_topic.alerts.arn] : []
 }
 
 # -----------------------------------------------------------------------------
@@ -132,8 +141,8 @@ resource "aws_cloudwatch_metric_alarm" "keycloak_unhealthy_hosts" {
 # -----------------------------------------------------------------------------
 
 resource "aws_cloudwatch_metric_alarm" "high_5xx" {
-  alarm_name          = "${var.environment}-high-5xx"
-  alarm_description   = "ALB is returning high 5xx error rate"
+  alarm_name          = "${var.environment}-high-target-5xx"
+  alarm_description   = "Target groups are returning high 5xx error rate"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = 1
   metric_name         = "HTTPCode_Target_5XX_Count"
@@ -147,8 +156,28 @@ resource "aws_cloudwatch_metric_alarm" "high_5xx" {
     LoadBalancer = var.alb_arn_suffix
   }
 
-  alarm_actions = [aws_sns_topic.alerts.arn]
-  ok_actions    = [aws_sns_topic.alerts.arn]
+  alarm_actions = var.alert_email != "" ? [aws_sns_topic.alerts.arn] : []
+  ok_actions    = var.alert_email != "" ? [aws_sns_topic.alerts.arn] : []
+}
+
+resource "aws_cloudwatch_metric_alarm" "high_elb_5xx" {
+  alarm_name          = "${var.environment}-high-elb-5xx"
+  alarm_description   = "ALB is generating high 5xx error rate (502/503/504)"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = 1
+  metric_name         = "HTTPCode_ELB_5XX_Count"
+  namespace           = "AWS/ApplicationELB"
+  period              = 300
+  statistic           = "Sum"
+  threshold           = 10
+  treat_missing_data  = "notBreaching"
+
+  dimensions = {
+    LoadBalancer = var.alb_arn_suffix
+  }
+
+  alarm_actions = var.alert_email != "" ? [aws_sns_topic.alerts.arn] : []
+  ok_actions    = var.alert_email != "" ? [aws_sns_topic.alerts.arn] : []
 }
 
 # -----------------------------------------------------------------------------
@@ -171,8 +200,8 @@ resource "aws_cloudwatch_metric_alarm" "rds_cpu_high" {
     DBInstanceIdentifier = var.rds_instance_identifier
   }
 
-  alarm_actions = [aws_sns_topic.alerts.arn]
-  ok_actions    = [aws_sns_topic.alerts.arn]
+  alarm_actions = var.alert_email != "" ? [aws_sns_topic.alerts.arn] : []
+  ok_actions    = var.alert_email != "" ? [aws_sns_topic.alerts.arn] : []
 }
 
 resource "aws_cloudwatch_metric_alarm" "rds_storage_low" {
@@ -191,8 +220,8 @@ resource "aws_cloudwatch_metric_alarm" "rds_storage_low" {
     DBInstanceIdentifier = var.rds_instance_identifier
   }
 
-  alarm_actions = [aws_sns_topic.alerts.arn]
-  ok_actions    = [aws_sns_topic.alerts.arn]
+  alarm_actions = var.alert_email != "" ? [aws_sns_topic.alerts.arn] : []
+  ok_actions    = var.alert_email != "" ? [aws_sns_topic.alerts.arn] : []
 }
 
 resource "aws_cloudwatch_metric_alarm" "rds_connections_high" {
@@ -211,8 +240,8 @@ resource "aws_cloudwatch_metric_alarm" "rds_connections_high" {
     DBInstanceIdentifier = var.rds_instance_identifier
   }
 
-  alarm_actions = [aws_sns_topic.alerts.arn]
-  ok_actions    = [aws_sns_topic.alerts.arn]
+  alarm_actions = var.alert_email != "" ? [aws_sns_topic.alerts.arn] : []
+  ok_actions    = var.alert_email != "" ? [aws_sns_topic.alerts.arn] : []
 }
 
 # -----------------------------------------------------------------------------
@@ -223,7 +252,7 @@ resource "aws_cloudwatch_metric_alarm" "backend_cpu_high" {
   alarm_name          = "${var.environment}-backend-cpu-high"
   alarm_description   = "Backend ECS service CPU utilization is high"
   comparison_operator = "GreaterThanThreshold"
-  evaluation_periods  = var.alarm_evaluation_periods
+  evaluation_periods  = var.ecs_cpu_alarm_evaluation_periods
   metric_name         = "CPUUtilization"
   namespace           = "AWS/ECS"
   period              = 300
@@ -236,6 +265,6 @@ resource "aws_cloudwatch_metric_alarm" "backend_cpu_high" {
     ServiceName = var.backend_service_name
   }
 
-  alarm_actions = [aws_sns_topic.alerts.arn]
-  ok_actions    = [aws_sns_topic.alerts.arn]
+  alarm_actions = var.alert_email != "" ? [aws_sns_topic.alerts.arn] : []
+  ok_actions    = var.alert_email != "" ? [aws_sns_topic.alerts.arn] : []
 }

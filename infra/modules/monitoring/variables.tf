@@ -61,7 +61,7 @@ variable "alarm_cpu_threshold" {
   default     = 80
 }
 
-variable "alarm_evaluation_periods" {
+variable "ecs_cpu_alarm_evaluation_periods" {
   description = "Number of evaluation periods for ECS CPU alarm"
   type        = number
   default     = 1

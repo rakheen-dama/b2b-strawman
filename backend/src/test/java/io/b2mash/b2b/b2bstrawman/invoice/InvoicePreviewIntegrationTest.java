@@ -17,7 +17,6 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
@@ -53,7 +52,6 @@ class InvoicePreviewIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private CustomerRepository customerRepository;
   @Autowired private CustomerProjectRepository customerProjectRepository;
@@ -73,7 +71,6 @@ class InvoicePreviewIntegrationTest {
   @BeforeAll
   void setUp() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Preview Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =
         UUID.fromString(
@@ -187,7 +184,6 @@ class InvoicePreviewIntegrationTest {
 
     // --- Tenant B (for cross-tenant isolation test) ---
     provisioningService.provisionTenant(ORG_ID_B, "Preview Test Org B", null);
-    planSyncService.syncPlan(ORG_ID_B, "pro-plan");
     syncMember(
         ORG_ID_B,
         "user_inv_preview_owner_b",

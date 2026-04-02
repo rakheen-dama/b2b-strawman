@@ -16,7 +16,6 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
@@ -49,7 +48,6 @@ class ReportingControllerTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private ProjectRepository projectRepository;
   @Autowired private TaskRepository taskRepository;
@@ -65,7 +63,6 @@ class ReportingControllerTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Reporting Controller Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     ownerMemberId =
         UUID.fromString(
             syncMember(ORG_ID, "user_rc_owner", "rc_owner@test.com", "RC Owner", "owner"));

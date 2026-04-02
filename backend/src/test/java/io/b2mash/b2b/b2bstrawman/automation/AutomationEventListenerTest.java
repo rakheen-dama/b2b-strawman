@@ -16,7 +16,6 @@ import io.b2mash.b2b.b2bstrawman.event.ProjectReopenedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskStatusChangedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TimeEntryChangedEvent;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.time.Instant;
 import java.util.LinkedHashMap;
@@ -44,7 +43,6 @@ class AutomationEventListenerTest {
   @Autowired private AutomationRuleRepository ruleRepository;
   @Autowired private AutomationExecutionRepository executionRepository;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private ApplicationEventPublisher eventPublisher;
 
   @Autowired
@@ -58,7 +56,6 @@ class AutomationEventListenerTest {
         provisioningService
             .provisionTenant(ORG_ID, "Automation Listener Test Org", null)
             .schemaName();
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     // Disable seeded template rules so they don't interfere with test-created rules
     disableSeededRules(schemaName);
   }

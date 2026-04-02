@@ -37,7 +37,6 @@ class OrgCreationControllerTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
 
   @MockitoBean private KeycloakAdminClient keycloakAdminClient;
 
@@ -45,7 +44,6 @@ class OrgCreationControllerTest {
   void setup() {
     // Provision a tenant so there's a valid org context for JWT-authenticated requests
     provisioningService.provisionTenant(EXISTING_ORG_ID, "OrgCtrl Test Org", null);
-    planSyncService.syncPlan(EXISTING_ORG_ID, "pro-plan");
   }
 
   @Test

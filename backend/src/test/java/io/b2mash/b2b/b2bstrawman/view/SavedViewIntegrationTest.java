@@ -13,7 +13,6 @@ import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.List;
 import java.util.Map;
@@ -45,7 +44,6 @@ class SavedViewIntegrationTest {
   @Autowired private MockMvc mockMvc;
   @Autowired private SavedViewRepository savedViewRepository;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
 
@@ -59,7 +57,6 @@ class SavedViewIntegrationTest {
   void setup() throws Exception {
     // --- Tenant A ---
     provisioningService.provisionTenant(ORG_ID, "View Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =
         UUID.fromString(
@@ -74,7 +71,6 @@ class SavedViewIntegrationTest {
 
     // --- Tenant B ---
     provisioningService.provisionTenant(ORG_ID_B, "View Test Org B", null);
-    planSyncService.syncPlan(ORG_ID_B, "pro-plan");
 
     memberIdOwnerB =
         UUID.fromString(

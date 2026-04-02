@@ -9,7 +9,6 @@ import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -31,7 +30,6 @@ class PaymentEventRepositoryIntegrationTest {
   private static final String ORG_ID = "org_payment_event_test";
 
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private PaymentEventRepository paymentEventRepository;
   @Autowired private InvoiceRepository invoiceRepository;
   @Autowired private CustomerRepository customerRepository;
@@ -46,7 +44,6 @@ class PaymentEventRepositoryIntegrationTest {
   void provisionTenant() {
     tenantSchema =
         provisioningService.provisionTenant(ORG_ID, "Payment Event Test Org", null).schemaName();
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     // Create a member, customer, and invoice to reference from payment events
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)

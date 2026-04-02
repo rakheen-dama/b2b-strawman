@@ -19,7 +19,6 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import jakarta.persistence.EntityManager;
 import java.util.Map;
@@ -54,7 +53,6 @@ class CustomerReadinessControllerTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private CustomerRepository customerRepository;
   @Autowired private CustomerProjectRepository customerProjectRepository;
@@ -76,7 +74,6 @@ class CustomerReadinessControllerTest {
   void setup() throws Exception {
     // --- Tenant A ---
     provisioningService.provisionTenant(ORG_ID, "Readiness Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =
         UUID.fromString(
@@ -154,7 +151,6 @@ class CustomerReadinessControllerTest {
 
     // --- Tenant B (isolation) ---
     provisioningService.provisionTenant(ORG_ID_B, "Readiness Test Org B", null);
-    planSyncService.syncPlan(ORG_ID_B, "pro-plan");
 
     memberIdOwnerB =
         UUID.fromString(

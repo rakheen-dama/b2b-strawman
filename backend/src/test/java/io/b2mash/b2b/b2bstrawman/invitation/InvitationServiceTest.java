@@ -13,7 +13,6 @@ import io.b2mash.b2b.b2bstrawman.invitation.dto.InvitationDtos.CreateInvitationR
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient;
 import java.util.UUID;
@@ -36,7 +35,6 @@ class InvitationServiceTest {
 
   @Autowired private InvitationService invitationService;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private OrgRoleRepository orgRoleRepository;
   @Autowired private io.b2mash.b2b.b2bstrawman.member.MemberRepository memberRepository;
@@ -50,7 +48,6 @@ class InvitationServiceTest {
   @BeforeAll
   void setup() {
     provisioningService.provisionTenant(ORG_ID, "Inv Svc Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();

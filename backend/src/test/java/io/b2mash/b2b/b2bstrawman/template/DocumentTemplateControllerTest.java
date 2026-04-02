@@ -10,7 +10,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -44,7 +43,6 @@ class DocumentTemplateControllerTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private ObjectMapper objectMapper;
 
   private String memberIdOwner;
@@ -54,7 +52,6 @@ class DocumentTemplateControllerTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "DT Controller Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =
         syncMember(
@@ -64,7 +61,6 @@ class DocumentTemplateControllerTest {
 
     // Provision tenant B for isolation tests
     provisioningService.provisionTenant(ORG_ID_B, "DT Controller Test Org B", null);
-    planSyncService.syncPlan(ORG_ID_B, "pro-plan");
     memberIdOwnerB =
         syncMember(
             ORG_ID_B,

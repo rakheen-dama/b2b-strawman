@@ -30,7 +30,6 @@ class PackReconciliationRunnerTest {
   private static final String ORG_ID = "org_pack_reconciliation_test";
 
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private PackReconciliationRunner reconciliationRunner;
   @Autowired private ChecklistTemplateRepository templateRepository;
@@ -44,7 +43,6 @@ class PackReconciliationRunnerTest {
   @BeforeAll
   void setup() {
     provisioningService.provisionTenant(ORG_ID, "Pack Reconciliation Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
   }
@@ -104,7 +102,6 @@ class PackReconciliationRunnerTest {
     String acctOrgId = "org_pack_reconciliation_acct_test";
     provisioningService.provisionTenant(
         acctOrgId, "Accounting Reconciliation Test Org", "accounting-za");
-    planSyncService.syncPlan(acctOrgId, "pro-plan");
     String acctSchema =
         orgSchemaMappingRepository.findByClerkOrgId(acctOrgId).orElseThrow().getSchemaName();
 

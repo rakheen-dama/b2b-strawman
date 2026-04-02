@@ -10,7 +10,6 @@ import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.tax.TaxRateRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestChecklistHelper;
@@ -45,7 +44,6 @@ class RetainerPeriodControllerTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private TaxRateRepository taxRateRepository;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
 
@@ -59,7 +57,6 @@ class RetainerPeriodControllerTest {
   @BeforeAll
   void provisionAndSeed() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Retainer Period Ctrl Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     syncMember(ORG_ID, "user_rpc_owner", "rpc_owner@test.com", "RPC Owner", "owner");
     syncMember(ORG_ID, "user_rpc_admin", "rpc_admin@test.com", "RPC Admin", "admin");

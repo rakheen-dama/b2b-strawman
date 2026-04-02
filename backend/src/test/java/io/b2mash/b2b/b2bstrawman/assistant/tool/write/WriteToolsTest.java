@@ -15,7 +15,6 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.task.TaskService;
@@ -48,7 +47,6 @@ class WriteToolsTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private ProjectService projectService;
   @Autowired private CustomerService customerService;
@@ -74,7 +72,6 @@ class WriteToolsTest {
   @BeforeAll
   void provisionTenant() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Write Tools Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     var memberIdStr = syncMember(ORG_ID, "user_wt_owner", "wt_owner@test.com", "WT Owner", "owner");
     memberIdOwner = UUID.fromString(memberIdStr);

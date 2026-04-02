@@ -16,7 +16,6 @@ import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -46,7 +45,6 @@ class CapacityControllerTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private ResourceAllocationService allocationService;
   @Autowired private ProjectService projectService;
@@ -67,7 +65,6 @@ class CapacityControllerTest {
   @BeforeAll
   void provisionAndSeed() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Cap Ctrl Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     memberIdOwnerStr =
         syncMember(ORG_ID, "user_cap_ctrl_owner", "cap_ctrl_owner@test.com", "Cap Owner", "owner");
     memberIdOwner = UUID.fromString(memberIdOwnerStr);

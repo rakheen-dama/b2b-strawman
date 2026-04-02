@@ -43,7 +43,6 @@ class TenantProvisioningServiceIntegrationTest {
       Set.of("enabled_modules", "terminology_namespace", "default_currency", "vertical_profile");
 
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private MockMvc mockMvc;
 
   @Autowired
@@ -58,7 +57,6 @@ class TenantProvisioningServiceIntegrationTest {
     assertThat(result.success()).isTrue();
     tenantSchema = result.schemaName();
 
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     syncMember(ORG_ID, "user_tpsi_owner", "tpsi_owner@test.com", "TPSI Owner", "owner");
   }
 

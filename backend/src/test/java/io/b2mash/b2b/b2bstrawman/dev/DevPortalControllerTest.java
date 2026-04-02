@@ -16,7 +16,6 @@ import io.b2mash.b2b.b2bstrawman.portal.MagicLinkService;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactService;
 import io.b2mash.b2b.b2bstrawman.portal.PortalJwtService;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -58,7 +57,6 @@ class DevPortalControllerTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private CustomerService customerService;
   @Autowired private PortalContactService portalContactService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
@@ -71,7 +69,6 @@ class DevPortalControllerTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Dev Harness Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     // Sync a member for creating customers
     var syncResult =

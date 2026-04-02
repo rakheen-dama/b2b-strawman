@@ -6,7 +6,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.Map;
 import java.util.UUID;
@@ -34,12 +33,10 @@ class ProcessingActivityControllerTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
 
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Processing Activity Controller Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     syncMember(ORG_ID, "user_pa_owner", "pa_owner@test.com", "PA Owner", "owner");
     syncMember(ORG_ID, "user_pa_member", "pa_member@test.com", "PA Member", "member");
   }
@@ -148,7 +145,6 @@ class ProcessingActivityControllerTest {
     // Use a separate org to avoid cross-test contamination
     String seedOrgId = "org_pa_seed_test_" + UUID.randomUUID().toString().substring(0, 8);
     provisioningService.provisionTenant(seedOrgId, "Seed Test Org", null);
-    planSyncService.syncPlan(seedOrgId, "pro-plan");
     syncMember(
         seedOrgId,
         "user_seed_owner_" + seedOrgId,

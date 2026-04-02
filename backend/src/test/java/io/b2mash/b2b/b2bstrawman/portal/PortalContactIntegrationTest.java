@@ -12,7 +12,6 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -39,7 +38,6 @@ class PortalContactIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private CustomerService customerService;
   @Autowired private PortalContactService portalContactService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
@@ -56,11 +54,9 @@ class PortalContactIntegrationTest {
   void setup() throws Exception {
     // Provision tenant A
     provisioningService.provisionTenant(ORG_ID_A, "Contact Test Org A", null);
-    planSyncService.syncPlan(ORG_ID_A, "pro-plan");
 
     // Provision tenant B
     provisioningService.provisionTenant(ORG_ID_B, "Contact Test Org B", null);
-    planSyncService.syncPlan(ORG_ID_B, "pro-plan");
 
     // Sync member for org A
     var syncResultA =

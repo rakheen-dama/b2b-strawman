@@ -9,7 +9,6 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.tax.dto.CreateTaxRateRequest;
 import io.b2mash.b2b.b2bstrawman.tax.dto.UpdateTaxRateRequest;
@@ -36,7 +35,6 @@ class TaxRateServiceTest {
   @Autowired private TaxRateService taxRateService;
   @Autowired private TaxRateRepository taxRateRepository;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
 
@@ -45,7 +43,6 @@ class TaxRateServiceTest {
   @BeforeAll
   void setup() {
     provisioningService.provisionTenant(ORG_ID, "Tax Rate Service Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
   }

@@ -20,7 +20,6 @@ import io.b2mash.b2b.b2bstrawman.integration.secret.SecretStore;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import java.io.IOException;
@@ -67,7 +66,6 @@ class AssistantServiceTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private OrgSettingsService orgSettingsService;
   @Autowired private IntegrationService integrationService;
@@ -85,7 +83,6 @@ class AssistantServiceTest {
   void setUp() throws Exception {
     // === Fully configured PRO tenant with AI ===
     provisioningService.provisionTenant(ORG_ID, "AI Service Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     var memberIdStr =
         syncMember(ORG_ID, "user_ast_owner", "ast_owner@test.com", "AST Owner", "owner");
     memberIdOwner = UUID.fromString(memberIdStr);
@@ -109,7 +106,6 @@ class AssistantServiceTest {
 
     // === PRO tenant with AI NOT enabled ===
     provisioningService.provisionTenant(ORG_ID_NO_AI, "No AI Org", null);
-    planSyncService.syncPlan(ORG_ID_NO_AI, "pro-plan");
     var memberIdNoAiStr =
         syncMember(ORG_ID_NO_AI, "user_ast_noai", "ast_noai@test.com", "AST NoAI", "owner");
     memberIdNoAi = UUID.fromString(memberIdNoAiStr);
@@ -118,7 +114,6 @@ class AssistantServiceTest {
 
     // === PRO tenant with AI enabled but NO API key ===
     provisioningService.provisionTenant(ORG_ID_NO_KEY, "No Key Org", null);
-    planSyncService.syncPlan(ORG_ID_NO_KEY, "pro-plan");
     var memberIdNoKeyStr =
         syncMember(ORG_ID_NO_KEY, "user_ast_nokey", "ast_nokey@test.com", "AST NoKey", "owner");
     memberIdNoKey = UUID.fromString(memberIdNoKeyStr);

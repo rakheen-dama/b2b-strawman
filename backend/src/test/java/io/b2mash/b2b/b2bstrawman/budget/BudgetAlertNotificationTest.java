@@ -15,7 +15,6 @@ import io.b2mash.b2b.b2bstrawman.notification.NotificationPreference;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationPreferenceRepository;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationRepository;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.TaskService;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryService;
@@ -63,7 +62,6 @@ class BudgetAlertNotificationTest {
   @Autowired private BillingRateService billingRateService;
   @Autowired private ProjectBudgetService budgetService;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private NotificationRepository notificationRepository;
   @Autowired private NotificationPreferenceRepository notificationPreferenceRepository;
@@ -80,7 +78,6 @@ class BudgetAlertNotificationTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Budget Alert Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =
         UUID.fromString(

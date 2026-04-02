@@ -8,7 +8,6 @@ import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -37,7 +36,6 @@ class VerticalTemplateSelectionTest {
   @Autowired private MockMvc mockMvc;
   @Autowired private GeneratedDocumentService generatedDocumentService;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
 
@@ -50,7 +48,6 @@ class VerticalTemplateSelectionTest {
   void setup() throws Exception {
     // Org 1: accounting-za vertical profile
     provisioningService.provisionTenant(ORG_ID_ZA, "Vertical ZA Org", "accounting-za");
-    planSyncService.syncPlan(ORG_ID_ZA, "pro-plan");
     memberIdZa =
         UUID.fromString(
             syncMember(
@@ -60,7 +57,6 @@ class VerticalTemplateSelectionTest {
 
     // Org 2: no vertical profile (default)
     provisioningService.provisionTenant(ORG_ID_DEFAULT, "Vertical Default Org", null);
-    planSyncService.syncPlan(ORG_ID_DEFAULT, "pro-plan");
     memberIdDefault =
         UUID.fromString(
             syncMember(

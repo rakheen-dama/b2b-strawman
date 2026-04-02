@@ -14,7 +14,6 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.Map;
 import java.util.UUID;
@@ -46,7 +45,6 @@ class ActivityServiceIntegrationTest {
   @Autowired private OrgRoleRepository orgRoleRepository;
   @Autowired private ProjectRepository projectRepository;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
 
   private String tenantSchema;
   private UUID memberId;
@@ -58,7 +56,6 @@ class ActivityServiceIntegrationTest {
   void provisionTenantAndSeed() {
     tenantSchema =
         provisioningService.provisionTenant(ORG_ID, "Activity Svc Test Org", null).schemaName();
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     unknownActorId = UUID.randomUUID();
 

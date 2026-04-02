@@ -7,7 +7,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -44,7 +43,6 @@ class V50TaskRecurrenceMigrationTest {
 
   private final MockMvc mockMvc;
   private final TenantProvisioningService provisioningService;
-  private final PlanSyncService planSyncService;
   private final OrgSchemaMappingRepository orgSchemaMappingRepository;
   private final DataSource dataSource;
 
@@ -54,12 +52,10 @@ class V50TaskRecurrenceMigrationTest {
   V50TaskRecurrenceMigrationTest(
       MockMvc mockMvc,
       TenantProvisioningService provisioningService,
-      PlanSyncService planSyncService,
       OrgSchemaMappingRepository orgSchemaMappingRepository,
       DataSource dataSource) {
     this.mockMvc = mockMvc;
     this.provisioningService = provisioningService;
-    this.planSyncService = planSyncService;
     this.orgSchemaMappingRepository = orgSchemaMappingRepository;
     this.dataSource = dataSource;
   }
@@ -67,7 +63,6 @@ class V50TaskRecurrenceMigrationTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "V50 Migration Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     // Return value intentionally discarded — we only need the member to exist
     syncMember(ORG_ID, "user_v50_owner", "v50_owner@test.com", "V50 Owner", "owner");

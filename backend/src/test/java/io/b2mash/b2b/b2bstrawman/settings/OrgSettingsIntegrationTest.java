@@ -11,7 +11,6 @@ import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.List;
 import java.util.Map;
@@ -44,7 +43,6 @@ class OrgSettingsIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
@@ -56,7 +54,6 @@ class OrgSettingsIntegrationTest {
   @BeforeAll
   void provisionTenant() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "OrgSettings Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =
         syncMember(ORG_ID, "user_settings_owner", "settings_owner@test.com", "Owner", "owner");
@@ -589,7 +586,6 @@ class OrgSettingsIntegrationTest {
   void getSettings_returnsEnabledModulesAfterProvisioning() throws Exception {
     String verticalOrgId = "org_settings_vertical_test";
     provisioningService.provisionTenant(verticalOrgId, "Vertical Test Org", null);
-    planSyncService.syncPlan(verticalOrgId, "pro-plan");
 
     syncMember(verticalOrgId, "user_vert_owner", "vert_owner@test.com", "Vert Owner", "owner");
 
@@ -613,7 +609,6 @@ class OrgSettingsIntegrationTest {
   void getSettings_returnsPopulatedEnabledModulesAndVerticalFields() throws Exception {
     String vertOrgId = "org_settings_vert_populated";
     provisioningService.provisionTenant(vertOrgId, "Vertical Populated Org", null);
-    planSyncService.syncPlan(vertOrgId, "pro-plan");
 
     syncMember(vertOrgId, "user_vert_pop", "vert_pop@test.com", "Vert Pop Owner", "owner");
 

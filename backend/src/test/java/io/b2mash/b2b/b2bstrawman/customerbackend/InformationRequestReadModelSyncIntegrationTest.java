@@ -19,7 +19,6 @@ import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -45,7 +44,6 @@ class InformationRequestReadModelSyncIntegrationTest {
   private static final String CLERK_USER_ID = "user_info_sync";
 
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private MemberSyncService memberSyncService;
   @Autowired private InformationRequestService informationRequestService;
   @Autowired private InformationRequestRepository informationRequestRepository;
@@ -74,7 +72,6 @@ class InformationRequestReadModelSyncIntegrationTest {
   void provisionTenantAndSetupData() {
     tenantSchema =
         provisioningService.provisionTenant(ORG_ID, "Info Request Sync Org", null).schemaName();
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     var syncResult =
         memberSyncService.syncMember(

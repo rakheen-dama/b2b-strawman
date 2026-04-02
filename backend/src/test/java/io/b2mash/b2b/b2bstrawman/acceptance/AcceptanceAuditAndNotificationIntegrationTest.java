@@ -13,7 +13,6 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationRepository;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplate;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateRepository;
@@ -52,7 +51,6 @@ class AcceptanceAuditAndNotificationIntegrationTest {
   private final AtomicInteger contactCounter = new AtomicInteger(0);
 
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private MemberSyncService memberSyncService;
   @Autowired private AcceptanceService acceptanceService;
   @Autowired private AcceptanceRequestRepository acceptanceRequestRepository;
@@ -73,7 +71,6 @@ class AcceptanceAuditAndNotificationIntegrationTest {
   void provisionTenantAndSetupData() {
     tenantSchema =
         provisioningService.provisionTenant(ORG_ID, "Accept Audit Test Org", null).schemaName();
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     var syncResult =
         memberSyncService.syncMember(

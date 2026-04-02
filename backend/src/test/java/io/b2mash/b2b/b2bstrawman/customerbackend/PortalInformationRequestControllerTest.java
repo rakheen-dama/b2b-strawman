@@ -25,7 +25,6 @@ import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.portal.PortalJwtService;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -56,7 +55,6 @@ class PortalInformationRequestControllerTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private MemberSyncService memberSyncService;
   @Autowired private PortalJwtService portalJwtService;
   @Autowired private InformationRequestService informationRequestService;
@@ -90,7 +88,6 @@ class PortalInformationRequestControllerTest {
   void setup() {
     tenantSchema =
         provisioningService.provisionTenant(ORG_ID, "Portal Info Request Org", null).schemaName();
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     var syncResult =
         memberSyncService.syncMember(

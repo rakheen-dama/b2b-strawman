@@ -13,7 +13,6 @@ import io.b2mash.b2b.b2bstrawman.event.TaskAssignedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskClaimedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskStatusChangedEvent;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.Map;
 import java.util.UUID;
@@ -50,7 +49,6 @@ class NotificationEventHandlerIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private ApplicationEvents events;
   @Autowired private NotificationRepository notificationRepository;
 
@@ -63,7 +61,6 @@ class NotificationEventHandlerIntegrationTest {
   void provisionTenantAndSeedData() throws Exception {
     tenantSchema =
         provisioningService.provisionTenant(ORG_ID, "Notif Handler Test Org", null).schemaName();
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =
         UUID.fromString(

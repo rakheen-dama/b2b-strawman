@@ -13,7 +13,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestChecklistHelper;
 import java.util.List;
@@ -52,7 +51,6 @@ class CustomerProjectIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
 
   private String projectId;
   private String projectLeadMemberId;
@@ -61,9 +59,7 @@ class CustomerProjectIntegrationTest {
   void provisionTenants() throws Exception {
     // Pro-tier orgs for main linking tests
     provisioningService.provisionTenant(ORG_ID, "CustProj Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     provisioningService.provisionTenant(ORG_B_ID, "CustProj Test Org B", null);
-    planSyncService.syncPlan(ORG_B_ID, "pro-plan");
 
     syncMember(ORG_ID, "user_cp_owner", "cp_owner@test.com", "Owner", "owner");
     syncMember(ORG_ID, "user_cp_admin", "cp_admin@test.com", "Admin", "admin");

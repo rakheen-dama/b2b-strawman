@@ -8,7 +8,6 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateRepository;
 import java.util.UUID;
@@ -31,7 +30,6 @@ class LegalPackSeederIntegrationTest {
   private static final String ACCOUNTING_ORG_ID = "org_lps_accounting";
 
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private FieldDefinitionRepository fieldDefinitionRepository;
   @Autowired private DocumentTemplateRepository documentTemplateRepository;
@@ -44,12 +42,10 @@ class LegalPackSeederIntegrationTest {
   @BeforeAll
   void setup() {
     provisioningService.provisionTenant(LEGAL_ORG_ID, "Law Firm", "legal-za");
-    planSyncService.syncPlan(LEGAL_ORG_ID, "pro-plan");
     legalSchema =
         orgSchemaMappingRepository.findByClerkOrgId(LEGAL_ORG_ID).orElseThrow().getSchemaName();
 
     provisioningService.provisionTenant(ACCOUNTING_ORG_ID, "Accounting Firm", "accounting-za");
-    planSyncService.syncPlan(ACCOUNTING_ORG_ID, "pro-plan");
     accountingSchema =
         orgSchemaMappingRepository
             .findByClerkOrgId(ACCOUNTING_ORG_ID)

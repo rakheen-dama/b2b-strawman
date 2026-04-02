@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import java.util.List;
@@ -31,7 +30,6 @@ class FieldPackSeederIntegrationTest {
   private static final String ORG_ID = "org_fps_test";
 
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private FieldDefinitionRepository fieldDefinitionRepository;
   @Autowired private FieldGroupRepository fieldGroupRepository;
@@ -46,7 +44,6 @@ class FieldPackSeederIntegrationTest {
   void setup() {
     // provisionTenant now calls fieldPackSeeder.seedPacksForTenant internally
     provisioningService.provisionTenant(ORG_ID, "FPS Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
   }

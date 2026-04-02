@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -27,7 +26,6 @@ class LegalTariffSeederIntegrationTest {
   private static final String ACCOUNTING_ORG_ID = "org_lts_accounting";
 
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TariffScheduleRepository tariffScheduleRepository;
   @Autowired private LegalTariffSeeder legalTariffSeeder;
@@ -39,12 +37,10 @@ class LegalTariffSeederIntegrationTest {
   @BeforeAll
   void setup() {
     provisioningService.provisionTenant(LEGAL_ORG_ID, "Law Firm", "legal-za");
-    planSyncService.syncPlan(LEGAL_ORG_ID, "pro-plan");
     legalSchema =
         orgSchemaMappingRepository.findByClerkOrgId(LEGAL_ORG_ID).orElseThrow().getSchemaName();
 
     provisioningService.provisionTenant(ACCOUNTING_ORG_ID, "Accounting Firm", "accounting-za");
-    planSyncService.syncPlan(ACCOUNTING_ORG_ID, "pro-plan");
     accountingSchema =
         orgSchemaMappingRepository
             .findByClerkOrgId(ACCOUNTING_ORG_ID)

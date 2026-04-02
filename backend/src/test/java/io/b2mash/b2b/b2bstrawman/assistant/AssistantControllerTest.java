@@ -24,7 +24,6 @@ import io.b2mash.b2b.b2bstrawman.integration.secret.SecretStore;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import java.util.List;
@@ -63,7 +62,6 @@ class AssistantControllerTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private OrgSettingsService orgSettingsService;
   @Autowired private IntegrationService integrationService;
@@ -76,7 +74,6 @@ class AssistantControllerTest {
   @BeforeAll
   void setUp() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Controller Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     var memberIdStr =
         syncMember(ORG_ID, "user_actrl_owner", "actrl_owner@test.com", "ACTrl Owner", "owner");
     memberIdOwner = UUID.fromString(memberIdStr);

@@ -8,7 +8,6 @@ import io.b2mash.b2b.b2bstrawman.clause.dto.CreateClauseRequest;
 import io.b2mash.b2b.b2bstrawman.clause.dto.UpdateClauseRequest;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.List;
 import java.util.Map;
@@ -50,7 +49,6 @@ class ClauseServiceTest {
   @Autowired private ClauseService clauseService;
   @Autowired private ClauseRepository clauseRepository;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
   @Autowired private JdbcTemplate jdbcTemplate;
@@ -60,7 +58,6 @@ class ClauseServiceTest {
   @BeforeAll
   void setup() {
     provisioningService.provisionTenant(ORG_ID, "Clause Service Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
   }

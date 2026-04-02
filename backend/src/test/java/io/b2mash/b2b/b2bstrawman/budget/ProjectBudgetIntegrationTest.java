@@ -19,7 +19,6 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.TaskService;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryService;
@@ -61,7 +60,6 @@ class ProjectBudgetIntegrationTest {
   @Autowired private TimeEntryService timeEntryService;
   @Autowired private BillingRateService billingRateService;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
 
   private String tenantSchema;
@@ -79,7 +77,6 @@ class ProjectBudgetIntegrationTest {
   void setup() throws Exception {
     // --- Tenant A ---
     provisioningService.provisionTenant(ORG_ID, "Budget Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =
         UUID.fromString(
@@ -163,7 +160,6 @@ class ProjectBudgetIntegrationTest {
 
     // --- Tenant B (for isolation tests) ---
     provisioningService.provisionTenant(ORG_ID_B, "Budget Test Org B", null);
-    planSyncService.syncPlan(ORG_ID_B, "pro-plan");
 
     memberIdOwnerB =
         UUID.fromString(

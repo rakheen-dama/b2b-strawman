@@ -18,7 +18,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.SchemaNameGenerator;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
@@ -55,7 +54,6 @@ class ActionPointPrerequisiteTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private JdbcTemplate jdbcTemplate;
 
   private String schemaName;
@@ -84,7 +82,6 @@ class ActionPointPrerequisiteTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Action Prereq Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     schemaName = SchemaNameGenerator.generateSchemaName(ORG_ID);
 
     ownerMemberId = syncMember("user_ap_owner", "ap_owner@test.com", "AP Owner", "owner");

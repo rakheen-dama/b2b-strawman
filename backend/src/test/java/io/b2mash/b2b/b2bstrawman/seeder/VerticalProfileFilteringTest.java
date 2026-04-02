@@ -8,7 +8,6 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldPackSeeder;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import java.util.UUID;
@@ -32,7 +31,6 @@ class VerticalProfileFilteringTest {
   private static final String LAW_ORG_ID = "org_vpf_law";
 
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private FieldDefinitionRepository fieldDefinitionRepository;
   @Autowired private OrgSettingsRepository orgSettingsRepository;
@@ -46,7 +44,6 @@ class VerticalProfileFilteringTest {
   @BeforeAll
   void setup() {
     provisioningService.provisionTenant(ACCOUNTING_ORG_ID, "Accounting Firm", "accounting-za");
-    planSyncService.syncPlan(ACCOUNTING_ORG_ID, "pro-plan");
     accountingSchema =
         orgSchemaMappingRepository
             .findByClerkOrgId(ACCOUNTING_ORG_ID)
@@ -54,12 +51,10 @@ class VerticalProfileFilteringTest {
             .getSchemaName();
 
     provisioningService.provisionTenant(GENERIC_ORG_ID, "Generic Org", null);
-    planSyncService.syncPlan(GENERIC_ORG_ID, "pro-plan");
     genericSchema =
         orgSchemaMappingRepository.findByClerkOrgId(GENERIC_ORG_ID).orElseThrow().getSchemaName();
 
     provisioningService.provisionTenant(LAW_ORG_ID, "Law Firm", "law-za");
-    planSyncService.syncPlan(LAW_ORG_ID, "pro-plan");
     lawSchema =
         orgSchemaMappingRepository.findByClerkOrgId(LAW_ORG_ID).orElseThrow().getSchemaName();
   }

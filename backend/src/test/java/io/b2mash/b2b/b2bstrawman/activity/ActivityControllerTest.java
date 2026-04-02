@@ -12,7 +12,6 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventRecord;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -48,7 +47,6 @@ class ActivityControllerTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private AuditService auditService;
 
   private String tenantSchema;
@@ -64,7 +62,6 @@ class ActivityControllerTest {
   void provisionTenantAndSeedData() throws Exception {
     tenantSchema =
         provisioningService.provisionTenant(ORG_ID, "Activity Ctrl Test Org", null).schemaName();
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner = syncMember(ORG_ID, "user_ac_owner", "ac_owner@test.com", "AC Owner", "owner");
     memberIdMember =
@@ -245,7 +242,6 @@ class ActivityControllerTest {
     // Create a different org with a different member who is NOT on this project
     String otherOrgId = "org_activity_other";
     provisioningService.provisionTenant(otherOrgId, "Other Org", null);
-    planSyncService.syncPlan(otherOrgId, "pro-plan");
 
     String otherMemberId =
         syncMember(otherOrgId, "user_ac_other", "ac_other@test.com", "AC Other", "member");

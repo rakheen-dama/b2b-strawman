@@ -11,7 +11,6 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.Map;
 import java.util.UUID;
@@ -45,7 +44,6 @@ class ProjectSetupStatusControllerTest {
   @Autowired private MockMvc mockMvc;
   @Autowired private ProjectService projectService;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
 
   private String tenantSchema;
@@ -60,7 +58,6 @@ class ProjectSetupStatusControllerTest {
   void setup() throws Exception {
     // --- Tenant A ---
     provisioningService.provisionTenant(ORG_ID, "Setup Status Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberIdOwner =
         UUID.fromString(
@@ -87,7 +84,6 @@ class ProjectSetupStatusControllerTest {
 
     // --- Tenant B (isolation) ---
     provisioningService.provisionTenant(ORG_ID_B, "Setup Status Test Org B", null);
-    planSyncService.syncPlan(ORG_ID_B, "pro-plan");
 
     memberIdOwnerB =
         UUID.fromString(

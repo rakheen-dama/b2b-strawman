@@ -12,7 +12,6 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventFilter;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.SchemaNameGenerator;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
@@ -46,7 +45,6 @@ class ProposalAuditTest {
   @Autowired private MockMvc mockMvc;
   @Autowired private AuditService auditService;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private JdbcTemplate jdbcTemplate;
 
   private String schemaName;
@@ -57,7 +55,6 @@ class ProposalAuditTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Proposal Audit Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     schemaName = SchemaNameGenerator.generateSchemaName(ORG_ID);
 
     ownerMemberId = syncMember("user_pa_owner", "pa_owner@test.com", "PA Owner", "owner");

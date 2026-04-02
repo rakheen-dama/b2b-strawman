@@ -18,7 +18,6 @@ import io.b2mash.b2b.b2bstrawman.member.MemberSyncService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
@@ -64,7 +63,6 @@ class AcceptanceServiceIntegrationTest {
   private final AtomicInteger contactCounter = new AtomicInteger(0);
 
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private MemberSyncService memberSyncService;
   @Autowired private AcceptanceService acceptanceService;
   @Autowired private AcceptanceRequestRepository acceptanceRequestRepository;
@@ -87,7 +85,6 @@ class AcceptanceServiceIntegrationTest {
         provisioningService
             .provisionTenant(ORG_ID, "Acceptance Service Test Org", null)
             .schemaName();
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     // Create member
     var syncResult =

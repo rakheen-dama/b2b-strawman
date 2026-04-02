@@ -9,7 +9,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
@@ -37,14 +36,12 @@ class DocumentScopeIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
 
   private String customerId;
 
   @BeforeAll
   void provisionTenantAndCustomer() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Doc Scope Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     // Sync members
     syncMember(ORG_ID, "user_scope_owner", "scope_owner@test.com", "Owner", "owner");

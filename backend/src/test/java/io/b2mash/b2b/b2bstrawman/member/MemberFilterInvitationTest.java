@@ -15,7 +15,6 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRole;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -48,7 +47,6 @@ class MemberFilterInvitationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private MemberRepository memberRepository;
   @Autowired private OrgSchemaMappingRepository mappingRepository;
   @Autowired private OrgRoleRepository orgRoleRepository;
@@ -59,7 +57,6 @@ class MemberFilterInvitationTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Invitation Flow Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     schemaName =
         mappingRepository
             .findByClerkOrgId(ORG_ID)

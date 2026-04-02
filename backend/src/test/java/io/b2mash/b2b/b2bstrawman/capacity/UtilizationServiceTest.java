@@ -16,7 +16,6 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskService;
@@ -48,7 +47,6 @@ class UtilizationServiceTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private UtilizationService utilizationService;
   @Autowired private ResourceAllocationService allocationService;
@@ -71,7 +69,6 @@ class UtilizationServiceTest {
   @BeforeAll
   void provisionAndSeed() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Util Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     String ownerStr =
         syncMember(ORG_ID, "user_util_owner", "util_owner@test.com", "Util Owner", "owner");
     memberIdOwner = UUID.fromString(ownerStr);

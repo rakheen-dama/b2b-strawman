@@ -14,7 +14,6 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactService;
 import io.b2mash.b2b.b2bstrawman.portal.PortalJwtService;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -48,7 +47,6 @@ class CrossTenantPortalIsolationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private CustomerService customerService;
   @Autowired private PortalContactService portalContactService;
   @Autowired private PortalJwtService portalJwtService;
@@ -62,7 +60,6 @@ class CrossTenantPortalIsolationTest {
   void setup() throws Exception {
     // Provision Org A
     provisioningService.provisionTenant(ORG_A_ID, "Isolation Org A", null);
-    planSyncService.syncPlan(ORG_A_ID, "pro-plan");
 
     var syncA =
         mockMvc
@@ -130,7 +127,6 @@ class CrossTenantPortalIsolationTest {
 
     // Provision Org B
     provisioningService.provisionTenant(ORG_B_ID, "Isolation Org B", null);
-    planSyncService.syncPlan(ORG_B_ID, "pro-plan");
 
     var syncB =
         mockMvc

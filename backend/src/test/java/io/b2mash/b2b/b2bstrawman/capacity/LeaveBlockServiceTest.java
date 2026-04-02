@@ -11,7 +11,6 @@ import io.b2mash.b2b.b2bstrawman.capacity.dto.LeaveDtos.CreateLeaveRequest;
 import io.b2mash.b2b.b2bstrawman.capacity.dto.LeaveDtos.LeaveBlockResponse;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.time.LocalDate;
 import java.util.List;
@@ -40,7 +39,6 @@ class LeaveBlockServiceTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private LeaveBlockService leaveBlockService;
   @Autowired private LeaveBlockRepository leaveBlockRepository;
@@ -55,7 +53,6 @@ class LeaveBlockServiceTest {
   @BeforeAll
   void provisionAndSeed() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Leave Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     memberIdOwnerStr =
         syncMember(ORG_ID, "user_leave_owner", "leave_owner@test.com", "Owner", "owner");
     memberIdOwner = UUID.fromString(memberIdOwnerStr);

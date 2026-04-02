@@ -10,7 +10,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestChecklistHelper;
 import java.util.List;
@@ -39,7 +38,6 @@ class ProjectCustomerLinkIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
 
   private String activeCustomerId;
   private String prospectCustomerId;
@@ -49,7 +47,6 @@ class ProjectCustomerLinkIntegrationTest {
   @BeforeAll
   void provisionTenantAndMembers() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Project Customer Link Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     syncMember(ORG_ID, "user_pcl_owner", "pcl_owner@test.com", "PCL Owner", "owner");
 

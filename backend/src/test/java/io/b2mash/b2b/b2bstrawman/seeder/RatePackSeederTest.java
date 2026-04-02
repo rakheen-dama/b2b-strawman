@@ -6,7 +6,6 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.billingrate.BillingRateRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import java.util.UUID;
@@ -32,7 +31,6 @@ class RatePackSeederTest {
   private static final String ORG_ID = "org_rate_pack_seeder_test";
 
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private BillingRateRepository billingRateRepository;
@@ -44,7 +42,6 @@ class RatePackSeederTest {
   @BeforeAll
   void setup() {
     provisioningService.provisionTenant(ORG_ID, "Rate Pack Seeder Test Org", "accounting-za");
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
   }
@@ -97,7 +94,6 @@ class RatePackSeederTest {
   void nonMatchingVerticalProfileSkipsPack() {
     String nonMatchingOrgId = "org_rate_pack_no_match";
     provisioningService.provisionTenant(nonMatchingOrgId, "No Match Org", null);
-    planSyncService.syncPlan(nonMatchingOrgId, "pro-plan");
     var schema =
         orgSchemaMappingRepository.findByClerkOrgId(nonMatchingOrgId).orElseThrow().getSchemaName();
 

@@ -13,7 +13,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -43,7 +42,6 @@ class EmailAdminControllerIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private EmailDeliveryLogRepository deliveryLogRepository;
 
   private String tenantSchema;
@@ -53,7 +51,6 @@ class EmailAdminControllerIntegrationTest {
   void provisionTenantAndMembers() throws Exception {
     tenantSchema =
         provisioningService.provisionTenant(ORG_ID, "Email Admin Test Org", null).schemaName();
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     // Sync owner member
     ownerMemberId = syncMember("user_ea_owner", "ea_owner@test.com", "EA Owner", "owner");

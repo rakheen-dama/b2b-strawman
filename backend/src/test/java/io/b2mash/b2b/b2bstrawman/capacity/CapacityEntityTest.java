@@ -10,7 +10,6 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import java.math.BigDecimal;
@@ -34,7 +33,6 @@ class CapacityEntityTest {
   private static final String ORG_ID = "org_capacity_entity_test";
 
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private MemberRepository memberRepository;
   @Autowired private OrgRoleRepository orgRoleRepository;
   @Autowired private MemberCapacityRepository capacityRepository;
@@ -51,7 +49,6 @@ class CapacityEntityTest {
   void provisionTenant() {
     schemaName =
         provisioningService.provisionTenant(ORG_ID, "Capacity Entity Test Org", null).schemaName();
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
         .run(

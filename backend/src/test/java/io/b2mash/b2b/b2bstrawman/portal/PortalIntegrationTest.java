@@ -21,7 +21,6 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -50,7 +49,6 @@ class PortalIntegrationTest {
   @Autowired private MockMvc mockMvc;
   @Autowired private PortalJwtService portalJwtService;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private CustomerService customerService;
   @Autowired private CustomerRepository customerRepository;
   @Autowired private PortalContactService portalContactService;
@@ -78,11 +76,9 @@ class PortalIntegrationTest {
   void setup() throws Exception {
     // Provision org A
     provisioningService.provisionTenant(ORG_ID, "Portal Integ Org A", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     // Provision org B (for cross-tenant isolation tests)
     provisioningService.provisionTenant(ORG_ID_B, "Portal Integ Org B", null);
-    planSyncService.syncPlan(ORG_ID_B, "pro-plan");
 
     // Sync a member for creating test data
     var syncResult =

@@ -12,7 +12,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
@@ -44,14 +43,12 @@ class TaxRateControllerIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
 
   private String createdRateId;
 
   @BeforeAll
   void provisionAndSeed() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Tax Rate Ctrl Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     // Sync members
     syncMember(ORG_ID, "user_tax_owner", "tax_owner@test.com", "Tax Owner", "owner");
@@ -60,7 +57,6 @@ class TaxRateControllerIntegrationTest {
 
     // Provision Tenant B for isolation test
     provisioningService.provisionTenant(ORG_ID_B, "Tax Rate Ctrl Test Org B", null);
-    planSyncService.syncPlan(ORG_ID_B, "pro-plan");
     syncMember(ORG_ID_B, "user_tax_owner_b", "tax_owner_b@test.com", "Tax Owner B", "owner");
   }
 

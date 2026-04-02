@@ -12,7 +12,6 @@ import io.b2mash.b2b.b2bstrawman.member.MemberSyncService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.Notification;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationRepository;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.UUID;
 import org.junit.jupiter.api.AfterAll;
@@ -56,7 +55,6 @@ class EmailNotificationChannelIntegrationTest {
   private static final String RECIPIENT_EMAIL = "alice@test.com";
 
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private MemberSyncService memberSyncService;
   @Autowired private EmailNotificationChannel emailChannel;
   @Autowired private EmailDeliveryLogRepository deliveryLogRepository;
@@ -72,7 +70,6 @@ class EmailNotificationChannelIntegrationTest {
   void provisionTenant() {
     tenantSchema =
         provisioningService.provisionTenant(ORG_ID, "Email Channel Test Org", null).schemaName();
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     memberId =
         memberSyncService
             .syncMember(ORG_ID, "user_ec_alice", RECIPIENT_EMAIL, "Alice Test", null, "owner")
@@ -82,7 +79,6 @@ class EmailNotificationChannelIntegrationTest {
         provisioningService
             .provisionTenant(RATE_LIMIT_ORG_ID, "Rate Limit Test Org", null)
             .schemaName();
-    planSyncService.syncPlan(RATE_LIMIT_ORG_ID, "pro-plan");
     rateLimitMemberId =
         memberSyncService
             .syncMember(

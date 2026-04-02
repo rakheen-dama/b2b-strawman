@@ -12,7 +12,6 @@ import io.b2mash.b2b.b2bstrawman.integration.storage.PresignedUrl;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
@@ -40,7 +39,6 @@ class PortalBrandingControllerIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private OrgSettingsRepository orgSettingsRepository;
   @MockitoBean private StorageService storageService;
@@ -49,7 +47,6 @@ class PortalBrandingControllerIntegrationTest {
   void setup() {
     // Org without logo
     provisioningService.provisionTenant(ORG_ID, "Branding Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     var schema = orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).get().getSchemaName();
     ScopedValue.where(RequestScopes.TENANT_ID, schema)
@@ -65,7 +62,6 @@ class PortalBrandingControllerIntegrationTest {
 
     // Org with logo
     provisioningService.provisionTenant(ORG_WITH_LOGO_ID, "Branding Logo Test Org", null);
-    planSyncService.syncPlan(ORG_WITH_LOGO_ID, "pro-plan");
 
     var logoSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_WITH_LOGO_ID).get().getSchemaName();

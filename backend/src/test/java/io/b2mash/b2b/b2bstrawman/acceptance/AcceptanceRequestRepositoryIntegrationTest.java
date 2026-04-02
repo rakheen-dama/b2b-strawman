@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -34,7 +33,6 @@ class AcceptanceRequestRepositoryIntegrationTest {
   private static final UUID MEMBER_ID = UUID.randomUUID();
 
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private AcceptanceRequestRepository repository;
   @Autowired private TransactionTemplate transactionTemplate;
 
@@ -44,7 +42,6 @@ class AcceptanceRequestRepositoryIntegrationTest {
   void provisionTenant() {
     tenantSchema =
         provisioningService.provisionTenant(ORG_ID, "Acceptance Repo Test Org", null).schemaName();
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
   }
 
   private void runInTenant(Runnable action) {

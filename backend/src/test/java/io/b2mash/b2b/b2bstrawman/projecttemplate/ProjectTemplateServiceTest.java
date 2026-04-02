@@ -21,7 +21,6 @@ import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.CreateTemplateRequest;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.SaveFromProjectRequest;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.TemplateTaskRequest;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.UpdateTemplateRequest;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.schedule.RecurringSchedule;
 import io.b2mash.b2b.b2bstrawman.schedule.RecurringScheduleRepository;
@@ -58,7 +57,6 @@ class ProjectTemplateServiceTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
   @Autowired private ProjectTemplateService templateService;
@@ -79,7 +77,6 @@ class ProjectTemplateServiceTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Template Service Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     memberId =
         UUID.fromString(
             syncMember(ORG_ID, "user_svc_owner", "svc_owner@test.com", "Svc Owner", "owner"));

@@ -12,7 +12,6 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
@@ -45,7 +44,6 @@ class DeadlineControllerTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private OrgSettingsService orgSettingsService;
@@ -63,7 +61,6 @@ class DeadlineControllerTest {
         provisioningService
             .provisionTenant(ENABLED_ORG_ID, "Deadline Ctrl Enabled Org", null)
             .schemaName();
-    planSyncService.syncPlan(ENABLED_ORG_ID, "pro-plan");
     memberId =
         UUID.fromString(
             syncMember(
@@ -106,7 +103,6 @@ class DeadlineControllerTest {
 
     // Provision tenant with no modules enabled (default empty list)
     provisioningService.provisionTenant(DISABLED_ORG_ID, "Deadline Ctrl Disabled Org", null);
-    planSyncService.syncPlan(DISABLED_ORG_ID, "pro-plan");
     syncMember(
         DISABLED_ORG_ID, "user_dctrl_dis_owner", "dctrl_dis@test.com", "DCtrl Dis Owner", "owner");
   }

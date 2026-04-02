@@ -15,7 +15,6 @@ import io.b2mash.b2b.b2bstrawman.automation.AutomationRuleRepository;
 import io.b2mash.b2b.b2bstrawman.automation.RuleSource;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
@@ -43,7 +42,6 @@ class ProjectLifecycleIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private AutomationRuleRepository automationRuleRepository;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
 
@@ -57,7 +55,6 @@ class ProjectLifecycleIntegrationTest {
   @BeforeAll
   void provisionTenantAndMembers() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Project Lifecycle Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     disableSeededRules();
 
     memberIdOwner =

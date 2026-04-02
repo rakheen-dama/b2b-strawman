@@ -13,7 +13,6 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
@@ -51,7 +50,6 @@ class ProjectProfitabilityReportQueryTest {
   @Autowired private ProjectProfitabilityReportQuery profitabilityReportQuery;
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private ProjectRepository projectRepository;
   @Autowired private TaskRepository taskRepository;
@@ -70,7 +68,6 @@ class ProjectProfitabilityReportQueryTest {
   @BeforeAll
   void setUp() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Profitability Query Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
 
     memberId =
         UUID.fromString(syncMember("user_ppq_owner", "ppq_owner@test.com", "John Doe", "owner"));

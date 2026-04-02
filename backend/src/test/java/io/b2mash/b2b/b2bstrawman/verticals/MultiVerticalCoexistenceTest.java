@@ -37,7 +37,6 @@ import io.b2mash.b2b.b2bstrawman.invoice.dto.AddLineItemRequest;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
@@ -84,7 +83,6 @@ class MultiVerticalCoexistenceTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSettingsService orgSettingsService;
   @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private TransactionTemplate transactionTemplate;
@@ -118,7 +116,6 @@ class MultiVerticalCoexistenceTest {
         provisioningService
             .provisionTenant(LEGAL_ORG_ID, "Legal Coexistence Firm", "legal-za")
             .schemaName();
-    planSyncService.syncPlan(LEGAL_ORG_ID, "pro-plan");
     legalMemberId =
         UUID.fromString(
             syncMember(
@@ -186,7 +183,6 @@ class MultiVerticalCoexistenceTest {
         provisioningService
             .provisionTenant(ACCOUNTING_ORG_ID, "Accounting Coexistence Firm", "accounting-za")
             .schemaName();
-    planSyncService.syncPlan(ACCOUNTING_ORG_ID, "pro-plan");
     accountingMemberId =
         UUID.fromString(
             syncMember(

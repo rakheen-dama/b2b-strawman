@@ -9,7 +9,6 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.retention.RetentionPolicyRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
@@ -32,7 +31,6 @@ class CompliancePackSeederTest {
   private static final String ORG_ID = "org_compliance_seeder_test";
 
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private ChecklistTemplateRepository templateRepository;
   @Autowired private ChecklistTemplateItemRepository templateItemRepository;
@@ -47,7 +45,6 @@ class CompliancePackSeederTest {
   @BeforeAll
   void setup() {
     provisioningService.provisionTenant(ORG_ID, "Compliance Seeder Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
   }

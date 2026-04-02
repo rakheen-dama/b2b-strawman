@@ -8,7 +8,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
@@ -40,7 +39,6 @@ class LegalModuleStubControllerTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSettingsRepository orgSettingsRepository;
   @Autowired private OrgSettingsService orgSettingsService;
   @Autowired private TransactionTemplate transactionTemplate;
@@ -53,7 +51,6 @@ class LegalModuleStubControllerTest {
     // Provision tenant with legal modules enabled
     enabledTenantSchema =
         provisioningService.provisionTenant(ENABLED_ORG_ID, "Legal Enabled Org", null).schemaName();
-    planSyncService.syncPlan(ENABLED_ORG_ID, "pro-plan");
     syncMember(
         ENABLED_ORG_ID,
         "user_legal_enabled_owner",
@@ -77,7 +74,6 @@ class LegalModuleStubControllerTest {
         provisioningService
             .provisionTenant(DISABLED_ORG_ID, "Legal Disabled Org", null)
             .schemaName();
-    planSyncService.syncPlan(DISABLED_ORG_ID, "pro-plan");
     syncMember(
         DISABLED_ORG_ID,
         "user_legal_disabled_owner",

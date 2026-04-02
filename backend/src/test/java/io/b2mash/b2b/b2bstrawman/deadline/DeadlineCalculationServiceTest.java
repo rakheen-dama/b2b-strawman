@@ -14,7 +14,6 @@ import io.b2mash.b2b.b2bstrawman.deadline.DeadlineCalculationService.DeadlineSum
 import io.b2mash.b2b.b2bstrawman.deadline.FilingStatusService.CreateFilingStatusRequest;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.PlanSyncService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.time.LocalDate;
 import java.util.Map;
@@ -43,7 +42,6 @@ class DeadlineCalculationServiceTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private PlanSyncService planSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
   @Autowired private DeadlineCalculationService deadlineCalculationService;
@@ -62,7 +60,6 @@ class DeadlineCalculationServiceTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Deadline Calc Test Org", null);
-    planSyncService.syncPlan(ORG_ID, "pro-plan");
     memberId =
         UUID.fromString(
             syncMember(ORG_ID, "user_dcalc_owner", "dcalc@test.com", "DCalc Owner", "owner"));

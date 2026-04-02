@@ -173,7 +173,7 @@ Stage 5:  [E425] [E426]                            <- parallel cleanup (after al
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **420A** | 420.1--420.5 | Rewritten `SubscriptionService` with lifecycle methods, `BillingResponse` + `SubscribeResponse` DTOs, rewritten `BillingController` with subscribe/cancel/payments/status endpoints, updated `TenantProvisioningService` | |
+| **420A** | 420.1--420.5 | Rewritten `SubscriptionService` with lifecycle methods, `BillingResponse` + `SubscribeResponse` DTOs, rewritten `BillingController` with subscribe/cancel/payments/status endpoints, updated `TenantProvisioningService` | **Done** (PR #874) |
 | **420B** | 420.6--420.10 | Internal admin endpoints (extend-trial, activate), `AdminBillingController` refactor, `BillingControllerIntegrationTest`, `SubscriptionLifecycleTest` | |
 
 ### Tasks

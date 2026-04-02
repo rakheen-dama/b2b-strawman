@@ -475,7 +475,7 @@
 | 418 | DNS, SSL & Production Cutover | Infra | 413, 416, 417 | M | 418A, 418B | **Done** (PRs #870, #871) |
 | **Phase 57 — Tenant Subscription Payments** | | | | | | See [tasks/phase57-tenant-subscription-payments.md](tasks/phase57-tenant-subscription-payments.md) |
 | 419 | Data Model & Config Foundation | Backend | -- | M | 419A, 419B | **Done** (PRs #872, #873) |
-| 420 | Subscription Lifecycle Service & Billing API | Backend | 419 | L | 420A, 420B | |
+| 420 | Subscription Lifecycle Service & Billing API | Backend | 419 | L | 420A, 420B | 420A Done (PR #874) |
 | 421 | PayFast Platform Integration | Backend | 419, 420 | M | 421A, 421B | |
 | 422 | Read-Only Enforcement & Scheduled Jobs | Backend | 419, 420 | M | 422A, 422B | |
 | 423 | Frontend Billing Page & Components | Frontend | 420 | M | 423A, 423B | |

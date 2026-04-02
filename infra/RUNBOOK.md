@@ -409,12 +409,14 @@ LIMIT 10;
 DO $$
 DECLARE
   s TEXT;
+  cnt INTEGER;
 BEGIN
   FOR s IN
     SELECT schema_name FROM information_schema.schemata
     WHERE schema_name NOT IN ('public', 'information_schema', 'pg_catalog', 'pg_toast')
   LOOP
-    EXECUTE format('SELECT %L AS schema, version, description FROM %I.flyway_schema_history WHERE success = false', s, s);
+    EXECUTE format('SELECT count(*) FROM %I.flyway_schema_history WHERE success = false', s) INTO cnt;
+    IF cnt > 0 THEN RAISE NOTICE 'Schema % has % failed migrations', s, cnt; END IF;
   END LOOP;
 END $$;
 ```
@@ -564,6 +566,7 @@ All alarms send notifications to SNS topic `kazi-{env}-alerts`, which emails `fo
 | `{env}-keycloak-unhealthy` | Keycloak failing `/health/ready` | Check Keycloak logs. Verify its database credentials. Check if the Keycloak database has disk space. |
 | `{env}-high-target-5xx` | >10 target 5xx errors in 5 minutes | Check backend/gateway logs for exceptions. Look for a pattern (specific endpoint, tenant, or user). May indicate a code bug deployed recently. |
 | `{env}-high-elb-5xx` | >10 ALB-level 5xx errors (502/503/504) in 5 minutes | 502 = backend not responding (crashed or starting). 503 = no healthy targets. 504 = timeout (backend taking too long). Check ECS service events and container health. |
+| `{env}-backend-cpu-high` | Backend CPU utilization alarm | Check for hot loops or expensive request handlers. Review recent deployments. Scale out ECS tasks or optimize code. |
 | `{env}-rds-cpu-high` | RDS CPU >80% for 2 consecutive periods | Identify expensive queries via `pg_stat_activity`. Check if a migration is running. Consider scaling up the instance class. |
 | `{env}-rds-storage-low` | Less than 5 GB free storage | Check for bloated tables, run `VACUUM FULL` on large tables. Increase allocated storage via Terraform (`allocated_storage` variable). |
 | `{env}-rds-connections-high` | More than 80 active database connections | Check HikariCP metrics (Section 5). A connection leak or too many concurrent tenants may be the cause. Restart the backend service as a short-term fix. |
@@ -739,7 +742,7 @@ RDS automated backups allow restoring to any point within the retention window:
 ```bash
 # Check available restore window
 aws rds describe-db-instances \
-  --query 'DBInstances[?contains(DBInstanceIdentifier, `kazi-production`)].{id:DBInstanceIdentifier,earliest:LatestRestorableTime}'
+  --query 'DBInstances[?contains(DBInstanceIdentifier, `kazi-production`)].{id:DBInstanceIdentifier,earliest:EarliestRestorableTime,latest:LatestRestorableTime}'
 
 # Restore to a specific point in time (creates a NEW instance)
 aws rds restore-db-instance-to-point-in-time \

@@ -2,13 +2,7 @@
 
 import { useState } from "react";
 import { Progress } from "@/components/ui/progress";
-
-function computeDaysRemaining(trialEndsAt: string): number {
-  return Math.max(
-    0,
-    Math.ceil((new Date(trialEndsAt).getTime() - Date.now()) / 86_400_000)
-  );
-}
+import { computeDaysRemaining } from "@/lib/billing-utils";
 
 interface TrialCountdownProps {
   trialEndsAt: string;

@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Loader2, CheckCircle2 } from "lucide-react";
+import { Loader2, CheckCircle2, Clock } from "lucide-react";
 import { getSubscription } from "@/app/(app)/org/[slug]/settings/billing/actions";
 
 interface PayFastResultPollerProps {
@@ -19,6 +19,9 @@ function computeInitialState(
   return "idle";
 }
 
+const POLL_INTERVAL_MS = 2000;
+const POLL_TIMEOUT_MS = 30000;
+
 export function PayFastResultPoller({
   initialStatus,
 }: PayFastResultPollerProps) {
@@ -30,33 +33,52 @@ export function PayFastResultPoller({
     computeInitialState(result, initialStatus)
   );
 
+  const cancelledRef = useRef(false);
+
   useEffect(() => {
     if (result !== "success" || initialStatus === "ACTIVE") {
       return;
     }
 
-    let elapsed = 0;
-    const interval = setInterval(async () => {
-      elapsed += 2000;
+    cancelledRef.current = false;
+    const startTime = Date.now();
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+    async function poll() {
+      if (cancelledRef.current) return;
+
+      const elapsed = Date.now() - startTime;
+      if (elapsed >= POLL_TIMEOUT_MS) {
+        setPollingState("timeout");
+        return;
+      }
 
       try {
         const billing = await getSubscription();
+        if (cancelledRef.current) return;
         if (billing.status === "ACTIVE") {
-          clearInterval(interval);
           setPollingState("success");
           router.refresh();
+          return;
         }
       } catch {
         // Ignore polling errors, keep trying
       }
 
-      if (elapsed >= 30000) {
-        clearInterval(interval);
-        setPollingState("timeout");
-      }
-    }, 2000);
+      if (cancelledRef.current) return;
+      // Schedule next poll only after this one completes
+      timeoutId = setTimeout(poll, POLL_INTERVAL_MS);
+    }
 
-    return () => clearInterval(interval);
+    // Start first poll after an interval
+    timeoutId = setTimeout(poll, POLL_INTERVAL_MS);
+
+    return () => {
+      cancelledRef.current = true;
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
   }, [result, initialStatus, router]);
 
   if (pollingState === "idle") {
@@ -89,7 +111,7 @@ export function PayFastResultPoller({
     return (
       <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
         <div className="flex items-center gap-2">
-          <Loader2 className="size-4 shrink-0" />
+          <Clock className="size-4 shrink-0" />
           <p>
             Your payment is still being processed. This may take a few minutes.
             Please refresh the page shortly.

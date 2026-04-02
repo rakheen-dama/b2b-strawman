@@ -1,13 +1,7 @@
 "use client";
 
 import { useState } from "react";
-
-function computeDaysRemaining(graceEndsAt: string): number {
-  return Math.max(
-    0,
-    Math.ceil((new Date(graceEndsAt).getTime() - Date.now()) / 86_400_000)
-  );
-}
+import { computeDaysRemaining } from "@/lib/billing-utils";
 
 interface GraceCountdownProps {
   graceEndsAt: string;

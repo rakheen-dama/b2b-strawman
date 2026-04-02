@@ -8,19 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { getPayments } from "@/app/(app)/org/[slug]/settings/billing/actions";
-
-function formatAmount(cents: number, currency: string): string {
-  if (currency === "ZAR") {
-    return `R${(cents / 100).toFixed(2)}`;
-  }
-  return `${currency} ${(cents / 100).toFixed(2)}`;
-}
-
-function formatDate(isoString: string): string {
-  return new Date(isoString).toLocaleDateString("en-ZA", {
-    dateStyle: "long",
-  });
-}
+import { formatAmount, formatDate } from "@/lib/billing-utils";
 
 type BadgeVariant = "success" | "destructive" | "warning" | "neutral";
 

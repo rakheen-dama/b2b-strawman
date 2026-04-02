@@ -7,6 +7,7 @@ import io.b2mash.b2b.b2bstrawman.assistant.provider.StreamEvent;
 import io.b2mash.b2b.b2bstrawman.assistant.provider.ToolResult;
 import io.b2mash.b2b.b2bstrawman.assistant.tool.AssistantToolRegistry;
 import io.b2mash.b2b.b2bstrawman.assistant.tool.TenantToolContext;
+import io.b2mash.b2b.b2bstrawman.billing.SubscriptionStatusCache;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.IntegrationDisabledException;
@@ -56,6 +57,7 @@ public class AssistantService {
   private final IntegrationGuardService integrationGuardService;
   private final OrgIntegrationRepository orgIntegrationRepository;
   private final OrganizationRepository organizationRepository;
+  private final SubscriptionStatusCache subscriptionStatusCache;
   private final ObjectMapper objectMapper;
   private final String systemGuide;
   private final ConcurrentHashMap<String, PendingConfirmation> pendingConfirmations;
@@ -70,6 +72,7 @@ public class AssistantService {
       IntegrationGuardService integrationGuardService,
       OrgIntegrationRepository orgIntegrationRepository,
       OrganizationRepository organizationRepository,
+      SubscriptionStatusCache subscriptionStatusCache,
       ObjectMapper objectMapper,
       @Value("classpath:assistant/system-guide.md") Resource systemGuideResource) {
     this.providerRegistry = providerRegistry;
@@ -78,6 +81,7 @@ public class AssistantService {
     this.integrationGuardService = integrationGuardService;
     this.orgIntegrationRepository = orgIntegrationRepository;
     this.organizationRepository = organizationRepository;
+    this.subscriptionStatusCache = subscriptionStatusCache;
     this.objectMapper = objectMapper;
     this.pendingConfirmations = new ConcurrentHashMap<>();
     try {
@@ -271,8 +275,10 @@ public class AssistantService {
   }
 
   /**
-   * Validates pre-flight conditions (org exists, PRO tier, AI integration enabled). Emits an error
-   * to the SSE emitter and throws {@link PreflightFailedException} if any check fails.
+   * Validates pre-flight conditions (org exists, subscription write-enabled, AI integration
+   * enabled). Emits an error to the SSE emitter and throws {@link PreflightFailedException} if any
+   * check fails. The subscription check uses {@code isWriteEnabled()}, which permits TRIALING,
+   * ACTIVE, PENDING_CANCELLATION, and PAST_DUE statuses.
    */
   private void validatePreflight(SseEmitter emitter, AtomicBoolean emitterCompleted) {
     // Check 1: Organization lookup
@@ -282,7 +288,17 @@ public class AssistantService {
       throw new PreflightFailedException();
     }
 
-    // Check 2: AI integration enabled (Tier check removed — subscription lifecycle replaces it)
+    // Check 2: Subscription status allows AI usage
+    var status = subscriptionStatusCache.getStatus(org.getId());
+    if (!status.isWriteEnabled()) {
+      emitError(
+          emitter,
+          emitterCompleted,
+          "Your subscription is inactive. Please renew to use the AI assistant.");
+      throw new PreflightFailedException();
+    }
+
+    // Check 3: AI integration enabled
     try {
       integrationGuardService.requireEnabled(IntegrationDomain.AI);
     } catch (IntegrationDisabledException e) {

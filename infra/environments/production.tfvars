@@ -32,7 +32,8 @@ auth_domain   = "auth.heykazi.com"
 alb_deletion_protection = true
 
 # Monitoring
-log_retention_days = 30
+log_retention_days = 90
+alert_email        = "founder@heykazi.com"
 
 # Secrets
 secrets_recovery_window = 30

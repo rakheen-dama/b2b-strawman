@@ -52,3 +52,23 @@ output "keycloak_target_group_arn" {
   description = "ARN of the keycloak target group"
   value       = aws_lb_target_group.keycloak.arn
 }
+
+output "public_alb_arn_suffix" {
+  description = "ARN suffix of the public ALB (for CloudWatch alarm dimensions)"
+  value       = aws_lb.public.arn_suffix
+}
+
+output "backend_tg_arn_suffix" {
+  description = "ARN suffix of the backend target group (for CloudWatch alarm dimensions)"
+  value       = aws_lb_target_group.backend.arn_suffix
+}
+
+output "gateway_tg_arn_suffix" {
+  description = "ARN suffix of the gateway target group (for CloudWatch alarm dimensions)"
+  value       = aws_lb_target_group.gateway.arn_suffix
+}
+
+output "keycloak_tg_arn_suffix" {
+  description = "ARN suffix of the keycloak target group (for CloudWatch alarm dimensions)"
+  value       = aws_lb_target_group.keycloak.arn_suffix
+}

@@ -32,7 +32,8 @@ auth_domain   = "staging-auth.heykazi.com"
 alb_deletion_protection = false
 
 # Monitoring
-log_retention_days = 14
+log_retention_days = 30
+alert_email        = "founder@heykazi.com"
 
 # Secrets
 secrets_recovery_window = 7

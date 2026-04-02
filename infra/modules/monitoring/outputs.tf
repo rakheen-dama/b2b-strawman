@@ -47,3 +47,8 @@ output "keycloak_log_group_arn" {
   description = "ARN of the keycloak CloudWatch log group"
   value       = aws_cloudwatch_log_group.keycloak.arn
 }
+
+output "sns_topic_arn" {
+  description = "ARN of the alerts SNS topic"
+  value       = aws_sns_topic.alerts.arn
+}

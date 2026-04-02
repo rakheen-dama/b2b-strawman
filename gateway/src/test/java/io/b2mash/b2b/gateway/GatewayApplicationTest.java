@@ -19,7 +19,10 @@ import org.springframework.test.context.TestPropertySource;
       "spring.cloud.gateway.server.webmvc.routes[0].uri=http://localhost:8080",
       "spring.cloud.gateway.server.webmvc.routes[0].predicates[0]=Path=/test/**",
       "spring.autoconfigure.exclude="
-          + "org.springframework.boot.security.oauth2.client.autoconfigure.OAuth2ClientAutoConfiguration"
+          + "org.springframework.boot.security.oauth2.client.autoconfigure.OAuth2ClientAutoConfiguration,"
+          + "org.springframework.boot.data.redis.autoconfigure.DataRedisAutoConfiguration,"
+          + "org.springframework.boot.data.redis.autoconfigure.DataRedisReactiveAutoConfiguration,"
+          + "org.springframework.boot.data.redis.autoconfigure.DataRedisRepositoriesAutoConfiguration"
     })
 @Import(GatewayApplicationTest.MockOAuth2Config.class)
 class GatewayApplicationTest {

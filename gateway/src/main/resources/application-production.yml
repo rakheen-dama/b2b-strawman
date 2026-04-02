@@ -1,0 +1,18 @@
+spring:
+  session:
+    store-type: redis
+
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST}
+      port: 6379
+      password: ${SPRING_DATA_REDIS_PASSWORD}
+      ssl:
+        enabled: true
+
+server:
+  servlet:
+    session:
+      cookie:
+        secure: true
+        same-site: lax

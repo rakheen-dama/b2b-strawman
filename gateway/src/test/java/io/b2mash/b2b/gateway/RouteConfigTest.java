@@ -36,7 +36,10 @@ import org.springframework.test.web.servlet.MockMvc;
       "spring.cloud.gateway.server.webmvc.routes[0].predicates[0]=Path=/api/**",
       "gateway.frontend-url=http://localhost:3000",
       "spring.autoconfigure.exclude="
-          + "org.springframework.boot.security.oauth2.client.autoconfigure.OAuth2ClientAutoConfiguration"
+          + "org.springframework.boot.security.oauth2.client.autoconfigure.OAuth2ClientAutoConfiguration,"
+          + "org.springframework.boot.data.redis.autoconfigure.DataRedisAutoConfiguration,"
+          + "org.springframework.boot.data.redis.autoconfigure.DataRedisReactiveAutoConfiguration,"
+          + "org.springframework.boot.data.redis.autoconfigure.DataRedisRepositoriesAutoConfiguration"
     })
 @Import(RouteConfigTest.MockOAuth2Config.class)
 class RouteConfigTest {

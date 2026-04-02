@@ -59,7 +59,10 @@ import org.springframework.test.web.servlet.MockMvc;
       "spring.session.jdbc.table-name=SPRING_SESSION",
       "spring.session.timeout=8h",
       "spring.autoconfigure.exclude="
-          + "org.springframework.boot.security.oauth2.client.autoconfigure.OAuth2ClientAutoConfiguration"
+          + "org.springframework.boot.security.oauth2.client.autoconfigure.OAuth2ClientAutoConfiguration,"
+          + "org.springframework.boot.data.redis.autoconfigure.DataRedisAutoConfiguration,"
+          + "org.springframework.boot.data.redis.autoconfigure.DataRedisReactiveAutoConfiguration,"
+          + "org.springframework.boot.data.redis.autoconfigure.DataRedisRepositoriesAutoConfiguration"
     })
 @Import(GatewayIntegrationTestBase.IntegrationTestConfig.class)
 abstract class GatewayIntegrationTestBase {

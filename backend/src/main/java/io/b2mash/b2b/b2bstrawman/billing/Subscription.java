@@ -88,9 +88,13 @@ public class Subscription {
   protected Subscription() {}
 
   public Subscription(UUID organizationId) {
+    this(organizationId, 14);
+  }
+
+  public Subscription(UUID organizationId, int trialDays) {
     this.organizationId = organizationId;
     this.subscriptionStatus = SubscriptionStatus.TRIALING;
-    this.trialEndsAt = Instant.now().plus(Duration.ofDays(14));
+    this.trialEndsAt = Instant.now().plus(Duration.ofDays(trialDays));
     this.createdAt = Instant.now();
     this.updatedAt = Instant.now();
   }

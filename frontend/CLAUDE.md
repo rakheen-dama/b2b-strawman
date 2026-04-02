@@ -49,7 +49,7 @@ frontend/
 │   ├── projects/                     # Project-specific components
 │   ├── documents/                    # Document-specific components
 │   ├── team/                         # Team management components
-│   ├── billing/                      # Plan badge, upgrade prompt/dialog
+│   ├── billing/                      # Subscription lifecycle, payment history
 │   ├── marketing/                    # Landing page section components
 │   ├── desktop-sidebar.tsx           # Dark slate-950 sidebar with Motion indicator
 │   ├── mobile-sidebar.tsx            # Sheet-based mobile sidebar

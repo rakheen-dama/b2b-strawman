@@ -188,6 +188,10 @@ public class MemberSyncService {
 
   private void enforceMemberLimit(String clerkOrgId) {
     int limit = billingProperties.maxMembers();
+    if (limit <= 0) {
+      throw new IllegalStateException(
+          "Invalid maxMembers configuration: %d. Must be a positive integer.".formatted(limit));
+    }
     long currentCount = memberRepository.count();
     if (currentCount >= limit) {
       throw new PlanLimitExceededException(

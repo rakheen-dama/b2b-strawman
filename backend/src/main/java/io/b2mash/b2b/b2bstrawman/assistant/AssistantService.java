@@ -275,9 +275,10 @@ public class AssistantService {
   }
 
   /**
-   * Validates pre-flight conditions (org exists, subscription active, AI integration enabled).
-   * Emits an error to the SSE emitter and throws {@link PreflightFailedException} if any check
-   * fails.
+   * Validates pre-flight conditions (org exists, subscription write-enabled, AI integration
+   * enabled). Emits an error to the SSE emitter and throws {@link PreflightFailedException} if any
+   * check fails. The subscription check uses {@code isWriteEnabled()}, which permits TRIALING,
+   * ACTIVE, PENDING_CANCELLATION, and PAST_DUE statuses.
    */
   private void validatePreflight(SseEmitter emitter, AtomicBoolean emitterCompleted) {
     // Check 1: Organization lookup
@@ -293,7 +294,7 @@ public class AssistantService {
       emitError(
           emitter,
           emitterCompleted,
-          "Your subscription does not include AI assistant access. Please upgrade or renew.");
+          "Your subscription is inactive. Please renew to use the AI assistant.");
       throw new PreflightFailedException();
     }
 

@@ -56,7 +56,7 @@ Phase 57 replaces HeyKazi's simulated billing system with real subscription paym
 |-------|------|-----------|
 | 3a | Epic 421: PayFast Platform Integration | Depends on entity model (419) and lifecycle service (420) for state transitions. Independent of 422 and 423. **Done** (PRs #876, #877) |
 | 3b | Epic 422: Read-Only Enforcement & Scheduled Jobs | Depends on entity model (419) and lifecycle service (420) for status resolution. Independent of 421 and 423. **Done** (PRs #878, #879) |
-| 3c | Epic 423: Frontend Billing Page & Components | Depends on API endpoints from Epic 420. Independent of 421 and 422. |
+| 3c | Epic 423: Frontend Billing Page & Components | Depends on API endpoints from Epic 420. Independent of 421 and 422. **423A Done** (PR #880) |
 
 ### Stage 4: Frontend Banner + Context (After Billing Page)
 
@@ -385,7 +385,7 @@ Stage 5:  [E425] [E426]                            <- parallel cleanup (after al
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **423A** | 423.1--423.5 | Updated `BillingResponse` type in `internal-api.ts`, rewritten `billing/actions.ts` (subscribe, cancel, payments server actions), `SubscribeButton` + `CancelConfirmDialog` components, rewritten `billing/page.tsx` (lifecycle-aware rendering for 8 states) | |
+| **423A** | 423.1--423.5 | Updated `BillingResponse` type in `internal-api.ts`, rewritten `billing/actions.ts` (subscribe, cancel, payments server actions), `SubscribeButton` + `CancelConfirmDialog` components, rewritten `billing/page.tsx` (lifecycle-aware rendering for 8 states) | **Done** (PR #880) |
 | **423B** | 423.6--423.10 | `PaymentHistory`, `TrialCountdown`, `GraceCountdown` components, PayFast redirect handling (`?result=success` polling), `billing-page.test.tsx` rewrite, `subscribe-button.test.tsx`, `cancel-confirm-dialog.test.tsx` | |
 
 ### Tasks

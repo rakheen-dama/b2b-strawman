@@ -5,10 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.provisioning.Organization;
-import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import io.b2mash.b2b.b2bstrawman.provisioning.Tier;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.UUID;
@@ -42,7 +39,6 @@ class AuditTenantIsolationTest {
   @Autowired private AuditService auditService;
   @Autowired private AuditEventRepository auditEventRepository;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private OrganizationRepository organizationRepository;
   @Autowired private JdbcTemplate jdbcTemplate;
 
   private String proSchemaA;
@@ -52,29 +48,19 @@ class AuditTenantIsolationTest {
 
   @BeforeAll
   void provisionTenants() {
-    // Pro org A — dedicated schema
-    var proOrgA = new Organization(PRO_ORG_A_ID, "Pro Audit Iso A");
-    proOrgA.updatePlan(Tier.PRO, "pro_plan");
-    organizationRepository.save(proOrgA);
-    var resultA = provisioningService.provisionTenant(PRO_ORG_A_ID, "Pro Audit Iso A", null);
+    // Org A — dedicated schema
+    var resultA = provisioningService.provisionTenant(PRO_ORG_A_ID, "Audit Iso A", null);
     proSchemaA = resultA.schemaName();
 
-    // Pro org B — dedicated schema
-    var proOrgB = new Organization(PRO_ORG_B_ID, "Pro Audit Iso B");
-    proOrgB.updatePlan(Tier.PRO, "pro_plan");
-    organizationRepository.save(proOrgB);
-    var resultB = provisioningService.provisionTenant(PRO_ORG_B_ID, "Pro Audit Iso B", null);
+    // Org B — dedicated schema
+    var resultB = provisioningService.provisionTenant(PRO_ORG_B_ID, "Audit Iso B", null);
     proSchemaB = resultB.schemaName();
 
-    // Starter orgs — each gets its own dedicated schema
+    // Additional orgs — each gets its own dedicated schema
     starterSchemaA =
-        provisioningService
-            .provisionTenant(STARTER_ORG_A_ID, "Starter Audit Iso A", null)
-            .schemaName();
+        provisioningService.provisionTenant(STARTER_ORG_A_ID, "Audit Iso C", null).schemaName();
     starterSchemaB =
-        provisioningService
-            .provisionTenant(STARTER_ORG_B_ID, "Starter Audit Iso B", null)
-            .schemaName();
+        provisioningService.provisionTenant(STARTER_ORG_B_ID, "Audit Iso D", null).schemaName();
   }
 
   @Test

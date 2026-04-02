@@ -43,7 +43,6 @@ class ProvisioningIntegrationTest {
     assertThat(org).isPresent();
     assertThat(org.get().getProvisioningStatus())
         .isEqualTo(Organization.ProvisioningStatus.COMPLETED);
-    assertThat(org.get().getTier()).isEqualTo(Tier.STARTER);
 
     var mapping = mappingRepository.findByClerkOrgId(clerkOrgId);
     assertThat(mapping).isPresent();
@@ -66,10 +65,9 @@ class ProvisioningIntegrationTest {
   }
 
   @Test
-  void shouldProvisionProTenantWithDedicatedSchema() throws SQLException {
-    // Set up a Pro org first
+  void shouldProvisionExistingOrgWithDedicatedSchema() throws SQLException {
+    // Set up an org first
     var org = new Organization("org_pro_test", "Pro Org");
-    org.updatePlan(Tier.PRO, "pro_plan");
     organizationRepository.save(org);
 
     var result = provisioningService.provisionTenant("org_pro_test", "Pro Org", null);

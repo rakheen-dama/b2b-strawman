@@ -134,8 +134,7 @@ public class TenantProvisioningService {
       schedulePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
       legalTariffSeeder.seedForTenant(schemaName, clerkOrgId);
       createMapping(clerkOrgId, schemaName);
-      String planSlug = org.getPlanSlug() != null ? org.getPlanSlug() : "starter";
-      subscriptionService.createSubscription(org.getId(), planSlug);
+      subscriptionService.createSubscription(org.getId());
 
       org.markCompleted();
       organizationRepository.save(org);

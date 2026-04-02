@@ -1,17 +1,17 @@
 package io.b2mash.b2b.b2bstrawman.provisioning;
 
-/** Tier-based plan limit constants. Consumed by plan enforcement services. */
+/**
+ * Plan limit constants. Previously Tier-based; now returns a flat default since the Tier model was
+ * removed in Epic 419A. Full subscription-aware limits will be implemented in Epic 420.
+ */
 public final class PlanLimits {
 
-  public static final int STARTER_MAX_MEMBERS = 2;
-  public static final int PRO_MAX_MEMBERS = 10;
+  public static final int DEFAULT_MAX_MEMBERS = 10;
 
   private PlanLimits() {}
 
-  public static int maxMembers(Tier tier) {
-    return switch (tier) {
-      case STARTER -> STARTER_MAX_MEMBERS;
-      case PRO -> PRO_MAX_MEMBERS;
-    };
+  /** Returns the member limit. Tier parameter is ignored (retained for source compatibility). */
+  public static int maxMembers() {
+    return DEFAULT_MAX_MEMBERS;
   }
 }

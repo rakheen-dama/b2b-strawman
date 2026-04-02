@@ -264,12 +264,8 @@ class AssistantServiceTest {
         .anyMatch(e -> e.contains("error") && e.contains("AI assistant is not enabled"));
   }
 
-  @Test
-  void errorWhenStarterTier() {
-    var events = runChatInScope(tenantSchemaStarter, ORG_ID_STARTER, memberIdStarter);
-
-    assertThat(events).anyMatch(e -> e.contains("error") && e.contains("PRO plan"));
-  }
+  // Test removed: errorWhenStarterTier — Tier model was removed in Epic 419A.
+  // Subscription lifecycle (not Tier) now governs feature access (Epic 420).
 
   @Test
   void errorWhenNoApiKey() {

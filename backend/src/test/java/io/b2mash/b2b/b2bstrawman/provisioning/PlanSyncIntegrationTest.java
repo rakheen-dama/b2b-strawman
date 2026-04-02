@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.provisioning;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -16,6 +15,10 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+/**
+ * PlanSync is now a no-op stub (Tier model removed in Epic 419A). These tests verify the endpoint
+ * still accepts requests and returns 200 (backward compatibility).
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)
@@ -28,17 +31,16 @@ class PlanSyncIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private OrganizationRepository organizationRepository;
 
   @BeforeAll
   void provisionTenants() {
     provisioningService.provisionTenant(ORG_A, "Plan Sync Test Org A", null);
   }
 
-  // --- Happy path ---
+  // --- Happy path (now no-op) ---
 
   @Test
-  void shouldUpdatePlanToProTier() throws Exception {
+  void shouldAcceptPlanSyncRequest() throws Exception {
     mockMvc
         .perform(
             post("/internal/orgs/plan-sync")
@@ -53,14 +55,10 @@ class PlanSyncIntegrationTest {
                     """
                         .formatted(ORG_A)))
         .andExpect(status().isOk());
-
-    var org = organizationRepository.findByClerkOrgId(ORG_A).orElseThrow();
-    assertThat(org.getTier()).isEqualTo(Tier.PRO);
-    assertThat(org.getPlanSlug()).isEqualTo("pro");
   }
 
   @Test
-  void shouldUpdatePlanToStarterTier() throws Exception {
+  void shouldAcceptStarterPlanSyncRequest() throws Exception {
     mockMvc
         .perform(
             post("/internal/orgs/plan-sync")
@@ -75,38 +73,12 @@ class PlanSyncIntegrationTest {
                     """
                         .formatted(ORG_A)))
         .andExpect(status().isOk());
-
-    var org = organizationRepository.findByClerkOrgId(ORG_A).orElseThrow();
-    assertThat(org.getTier()).isEqualTo(Tier.STARTER);
-    assertThat(org.getPlanSlug()).isEqualTo("starter-monthly");
   }
 
-  @Test
-  void shouldDeriveTierFromPlanSlugContainingPro() throws Exception {
-    mockMvc
-        .perform(
-            post("/internal/orgs/plan-sync")
-                .header("X-API-KEY", API_KEY)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {
-                      "clerkOrgId": "%s",
-                      "planSlug": "pro-annual"
-                    }
-                    """
-                        .formatted(ORG_A)))
-        .andExpect(status().isOk());
-
-    var org = organizationRepository.findByClerkOrgId(ORG_A).orElseThrow();
-    assertThat(org.getTier()).isEqualTo(Tier.PRO);
-    assertThat(org.getPlanSlug()).isEqualTo("pro-annual");
-  }
-
-  // --- Not found ---
+  // --- Not found (now returns 200 since plan-sync is a no-op) ---
 
   @Test
-  void shouldReturn404ForUnknownOrg() throws Exception {
+  void shouldReturn200ForUnknownOrgSincePlanSyncIsNoOp() throws Exception {
     mockMvc
         .perform(
             post("/internal/orgs/plan-sync")
@@ -119,7 +91,7 @@ class PlanSyncIntegrationTest {
                       "planSlug": "pro"
                     }
                     """))
-        .andExpect(status().isNotFound());
+        .andExpect(status().isOk());
   }
 
   // --- Validation ---

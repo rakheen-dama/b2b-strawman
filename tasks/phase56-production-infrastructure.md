@@ -31,7 +31,7 @@ Phase 56 updates and extends the existing (stale) AWS infrastructure and CI/CD p
 | 413 | ECS Services + ALB Routing Restructure | Infra | 411, 412 | L | 413A, 413B | **Done** (PRs #860, #861) |
 | 414 | Keycloak Deployment: ECS Task, Database, Realm Import | Infra + Config | 411, 413 | M | 414A, 414B | **Done** (PRs #862, #863) |
 | 415 | Dockerfile Hardening: Health Checks, JAR Fixes, Build Args | Docker | -- | S | 415A | **Done** (PR #864) |
-| 416 | CI/CD Pipeline: OIDC, Image Promotion, Terraform Workflow | CI/CD | 412 | L | 416A, 416B, 416C | |
+| 416 | CI/CD Pipeline: OIDC, Image Promotion, Terraform Workflow | CI/CD | 412 | L | 416A, 416B, 416C | **Done** (PRs #865, #866, #867) |
 | 417 | Observability: Alarms, SNS, Dashboards, Structured Logging | Infra + Config | 413 | M | 417A, 417B | |
 | 418 | DNS, SSL & Production Cutover | Infra | 413, 416, 417 | M | 418A, 418B | |
 
@@ -173,7 +173,7 @@ KEYCLOAK           CI/CD PIPELINE     OBSERVABILITY
 |-------|------|-------|---------|--------|
 | 6a | 416 | 416A | Update `.github/workflows/ci.yml`: add gateway test job, portal test job, terraform-validate job. Replace Clerk build args with Keycloak build args in frontend test job. Switch all jobs from IAM keys to OIDC (`aws-actions/configure-aws-credentials` with `role-to-assume`). Add change detection for `gateway/` and `portal/` paths. CI/CD only. | **Done** (PR #865) |
 | 6b | 416 | 416B | Create `.github/workflows/terraform.yml`: plan on PR (comment on PR), apply to staging on merge to main (only when `infra/` changes), apply to production on `workflow_dispatch` with environment protection. Create `.github/workflows/deploy-staging.yml` rewrite: build 5 services (with change detection), tag with Git SHA, deploy to staging ECS, smoke test. Implement image promotion per ADR-217 (build once, tag-promote for backend/gateway/portal/keycloak; environment-specific build for frontend). CI/CD only. | **Done** (PR #866) |
-| 6c | 416 | 416C | Update `.github/workflows/deploy-prod.yml`: promote images from staging (re-tag, no rebuild) except frontend (env-specific build). Add environment protection rules. Update `.github/workflows/rollback.yml`: extend to support all 5 services. Update `.github/actions/ecs-deploy/action.yml` if needed. CI/CD only. | |
+| 6c | 416 | 416C | Update `.github/workflows/deploy-prod.yml`: promote images from staging (re-tag, no rebuild) except frontend (env-specific build). Add environment protection rules. Update `.github/workflows/rollback.yml`: extend to support all 5 services. Update `.github/actions/ecs-deploy/action.yml` if needed. CI/CD only. | **Done** (PR #867) |
 
 ### Stage 7: Observability (parallel with Stage 6)
 
@@ -600,7 +600,7 @@ Note: Stage 5 can run in parallel with Stages 1-4 (Dockerfiles are independent).
 |-------|-------|---------|--------|
 | **416A** | 416.1--416.5 | Update `.github/workflows/ci.yml`: add gateway, portal, and terraform-validate jobs. Replace Clerk build args. Switch to OIDC auth. Add change detection for new service paths. CI/CD only. | **Done** (PR #865) |
 | **416B** | 416.6--416.11 | Create `.github/workflows/terraform.yml` (plan on PR, apply on merge). Rewrite `.github/workflows/deploy-staging.yml` (build 5 services, image promotion, deploy to staging ECS, smoke tests). CI/CD only. | **Done** (PR #866) |
-| **416C** | 416.12--416.16 | Rewrite `.github/workflows/deploy-prod.yml` (promote images, environment protection). Update `.github/workflows/rollback.yml` (5 services). Update composite action if needed. CI/CD only. | |
+| **416C** | 416.12--416.16 | Rewrite `.github/workflows/deploy-prod.yml` (promote images, environment protection). Update `.github/workflows/rollback.yml` (5 services). Update composite action if needed. CI/CD only. | **Done** (PR #867) |
 
 ### Tasks
 

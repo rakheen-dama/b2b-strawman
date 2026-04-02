@@ -179,7 +179,7 @@ KEYCLOAK           CI/CD PIPELINE     OBSERVABILITY
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 7a (parallel) | 417 | 417A | Extend monitoring module: add 3 new CloudWatch log groups (gateway, portal, keycloak) with `/kazi/{env}/{service}` naming. Add SNS topic `heykazi-{env}-alerts` with email subscription variable. Add 8 CloudWatch alarms (backend/gateway/keycloak unhealthy, high 5xx rate, RDS CPU high, RDS storage low, RDS connections high, ECS backend CPU). Infra only. | |
+| 7a (parallel) | 417 | 417A | Extend monitoring module: add 3 new CloudWatch log groups (gateway, portal, keycloak) with `/kazi/{env}/{service}` naming. Add SNS topic `heykazi-{env}-alerts` with email subscription variable. Add 8 CloudWatch alarms (backend/gateway/keycloak unhealthy, high 5xx rate, RDS CPU high, RDS storage low, RDS connections high, ECS backend CPU). Infra only. | **Done** (PR #868) |
 | 7b (parallel) | 417 | 417B | Create `backend/src/main/resources/application-production.yml` structured logging section: JSON pattern for CloudWatch Logs Insights. Configure actuator endpoints for production (health, info, metrics). Add health indicator configuration for DB and Redis. Config only. | |
 
 ### Stage 8: DNS, SSL & Production Cutover (final)
@@ -672,7 +672,7 @@ Note: Stage 5 can run in parallel with Stages 1-4 (Dockerfiles are independent).
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **417A** | 417.1--417.6 | Extend monitoring module: add 3 new CloudWatch log groups (gateway, portal, keycloak) with `/kazi/{env}/{service}` naming. Create SNS topic `heykazi-{env}-alerts` with email subscription. Add 8 CloudWatch alarms (ALB unhealthy hosts, 5xx rate, RDS CPU/storage/connections, ECS CPU). Infra only. | |
+| **417A** | 417.1--417.6 | Extend monitoring module: add 3 new CloudWatch log groups (gateway, portal, keycloak) with `/kazi/{env}/{service}` naming. Create SNS topic `heykazi-{env}-alerts` with email subscription. Add 8 CloudWatch alarms (ALB unhealthy hosts, 5xx rate, RDS CPU/storage/connections, ECS CPU). Infra only. | **Done** (PR #868) |
 | **417B** | 417.7--417.8 | Consolidate structured logging and actuator production config in backend `application-prod.yml`. This overlaps with E414B tasks 414.7 and 414.8 -- if those were completed, this slice verifies and extends. If not, this slice performs the config. Config only. | |
 
 ### Tasks

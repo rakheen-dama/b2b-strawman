@@ -471,7 +471,7 @@
 | 414 | Keycloak Deployment: ECS Task, Database, Realm Import | Infra + Config | 411, 413 | M | 414A, 414B | **Done** (PRs #862, #863) |
 | 415 | Dockerfile Hardening: Health Checks, JAR Fixes, Build Args | Docker | -- | S | 415A | **Done** (PR #864) |
 | 416 | CI/CD Pipeline: OIDC, Image Promotion, Terraform Workflow | CI/CD | 412 | L | 416A, 416B, 416C | **Done** (PRs #865, #866, #867) |
-| 417 | Observability: Alarms, SNS, Dashboards, Structured Logging | Infra + Config | 413 | M | 417A, 417B | |
+| 417 | Observability: Alarms, SNS, Dashboards, Structured Logging | Infra + Config | 413 | M | 417A, 417B | 417A **Done** (PR #868) |
 | 418 | DNS, SSL & Production Cutover | Infra | 413, 416, 417 | M | 418A, 418B | |
 
 ---

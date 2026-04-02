@@ -33,16 +33,19 @@ public class SubscriptionItnService {
   private final SubscriptionPaymentRepository subscriptionPaymentRepository;
   private final PayFastBillingProperties payfastProperties;
   private final BillingProperties billingProperties;
+  private final SubscriptionStatusCache statusCache;
 
   public SubscriptionItnService(
       SubscriptionRepository subscriptionRepository,
       SubscriptionPaymentRepository subscriptionPaymentRepository,
       PayFastBillingProperties payfastProperties,
-      BillingProperties billingProperties) {
+      BillingProperties billingProperties,
+      SubscriptionStatusCache statusCache) {
     this.subscriptionRepository = subscriptionRepository;
     this.subscriptionPaymentRepository = subscriptionPaymentRepository;
     this.payfastProperties = payfastProperties;
     this.billingProperties = billingProperties;
+    this.statusCache = statusCache;
   }
 
   @Transactional
@@ -137,7 +140,7 @@ public class SubscriptionItnService {
             Map.copyOf(params));
     subscriptionPaymentRepository.save(payment);
 
-    // TODO(422): evict SubscriptionStatusCache for orgId after status change
+    statusCache.evict(orgId);
 
     log.info("COMPLETE ITN processed for organization {}, payment {}", orgId, mPaymentId);
   }
@@ -170,7 +173,7 @@ public class SubscriptionItnService {
             Map.copyOf(params));
     subscriptionPaymentRepository.save(payment);
 
-    // TODO(422): evict SubscriptionStatusCache for orgId after status change
+    statusCache.evict(orgId);
 
     log.warn("FAILED ITN processed for organization {}, payment {}", orgId, mPaymentId);
   }
@@ -196,7 +199,7 @@ public class SubscriptionItnService {
     }
     subscriptionRepository.save(subscription);
 
-    // TODO(422): evict SubscriptionStatusCache for orgId after status change
+    statusCache.evict(orgId);
 
     log.info("CANCELLED ITN processed for organization {}", orgId);
   }

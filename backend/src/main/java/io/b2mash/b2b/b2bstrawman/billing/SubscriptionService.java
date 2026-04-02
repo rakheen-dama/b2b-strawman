@@ -28,6 +28,7 @@ public class SubscriptionService {
   private final MemberRepository memberRepository;
   private final BillingProperties billingProperties;
   private final PlatformPayFastService platformPayFastService;
+  private final SubscriptionStatusCache statusCache;
 
   public SubscriptionService(
       SubscriptionRepository subscriptionRepository,
@@ -35,13 +36,15 @@ public class SubscriptionService {
       OrganizationRepository organizationRepository,
       MemberRepository memberRepository,
       BillingProperties billingProperties,
-      PlatformPayFastService platformPayFastService) {
+      PlatformPayFastService platformPayFastService,
+      SubscriptionStatusCache statusCache) {
     this.subscriptionRepository = subscriptionRepository;
     this.subscriptionPaymentRepository = subscriptionPaymentRepository;
     this.organizationRepository = organizationRepository;
     this.memberRepository = memberRepository;
     this.billingProperties = billingProperties;
     this.platformPayFastService = platformPayFastService;
+    this.statusCache = statusCache;
   }
 
   /** Creates a TRIALING subscription for a newly provisioned org. Idempotent. */
@@ -128,6 +131,8 @@ public class SubscriptionService {
     subscription.setCancelledAt(Instant.now());
     subscriptionRepository.save(subscription);
 
+    statusCache.evict(org.getId());
+
     if (subscription.getPayfastToken() != null) {
       platformPayFastService.cancelPayFastSubscription(subscription.getPayfastToken());
     }
@@ -187,6 +192,7 @@ public class SubscriptionService {
             : Instant.now().plus(Duration.ofDays(additionalDays));
     subscription.setTrialEndsAt(extended);
     subscriptionRepository.save(subscription);
+    statusCache.evict(organizationId);
 
     log.info(
         "Extended trial for organization {} by {} days, new end: {}",
@@ -211,6 +217,7 @@ public class SubscriptionService {
 
     subscription.transitionTo(Subscription.SubscriptionStatus.ACTIVE);
     subscriptionRepository.save(subscription);
+    statusCache.evict(organizationId);
 
     log.info("Manually activated subscription for organization {}", organizationId);
     // Admin endpoints run without tenant context — member count unavailable

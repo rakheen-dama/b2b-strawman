@@ -64,7 +64,9 @@ export default async function IntegrationsSettingsPage({
 
   try {
     const billing = await api.get<BillingResponse>("/api/billing/subscription");
-    tier = billing.status === "LOCKED" ? "STARTER" : "DEDICATED";
+    tier = ["ACTIVE", "TRIALING", "PENDING_CANCELLATION"].includes(billing.status)
+      ? "DEDICATED"
+      : "STARTER";
   } catch {
     // Non-fatal: default to STARTER
   }

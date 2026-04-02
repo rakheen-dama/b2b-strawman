@@ -9,7 +9,7 @@ afterEach(() => {
 });
 
 function makeBillingResponse(
-  status: string,
+  status: BillingResponse["status"],
   overrides?: Partial<BillingResponse>,
 ): BillingResponse {
   return {
@@ -86,7 +86,7 @@ describe("SubscriptionBanner", () => {
     expect(screen.getByText("Resubscribe")).toBeInTheDocument();
   });
 
-  it("shows warning banner for PAST_DUE", () => {
+  it("shows warning banner for PAST_DUE and is not dismissible", () => {
     render(
       <SubscriptionBanner
         billingResponse={makeBillingResponse("PAST_DUE")}
@@ -97,6 +97,10 @@ describe("SubscriptionBanner", () => {
     expect(
       screen.getByText("update your payment method"),
     ).toBeInTheDocument();
+    // PAST_DUE requires payment action — must not be dismissible
+    expect(
+      screen.queryByRole("button", { name: "Dismiss banner" }),
+    ).not.toBeInTheDocument();
   });
 
   it("shows error banner for GRACE_PERIOD", () => {

@@ -193,7 +193,7 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
         <Tooltip>
           <TooltipTrigger asChild>
             <span tabIndex={0} className="inline-flex">
-              <Button size="sm" disabled={!isWriteEnabled} onClick={() => isWriteEnabled && setOpen(true)}>
+              <Button size="sm" disabled={!isWriteEnabled} onClick={() => setOpen(true)}>
                 <Plus className="mr-1.5 size-4" />
                 New {t("Customer")}
               </Button>

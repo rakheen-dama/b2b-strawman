@@ -1,33 +1,36 @@
 "use server";
 
-import { fetchMyCapabilities } from "@/lib/api/capabilities";
-import { api, ApiError } from "@/lib/api";
-import { revalidatePath } from "next/cache";
-import type { BillingResponse, UpgradeRequest } from "@/lib/internal-api";
+import { api } from "@/lib/api";
+import type {
+  BillingResponse,
+  SubscribeResponse,
+  PaymentResponse,
+} from "@/lib/internal-api";
 
-interface UpgradeResult {
-  success: boolean;
-  billing?: BillingResponse;
-  error?: string;
+interface PaginatedResponse<T> {
+  content: T[];
+  page: {
+    totalElements: number;
+    totalPages: number;
+    size: number;
+    number: number;
+  };
 }
 
-export async function upgradeToPro(slug: string): Promise<UpgradeResult> {
-  const caps = await fetchMyCapabilities();
-  if (!caps.isAdmin && !caps.isOwner) {
-    return { success: false, error: "Only admins and owners can upgrade plans." };
-  }
+export async function getSubscription(): Promise<BillingResponse> {
+  return api.get<BillingResponse>("/api/billing/subscription");
+}
 
-  const body: UpgradeRequest = { planSlug: "pro" };
+export async function subscribe(): Promise<SubscribeResponse> {
+  return api.post<SubscribeResponse>("/api/billing/subscribe");
+}
 
-  try {
-    const billing = await api.post<BillingResponse>("/api/billing/upgrade", body);
-    revalidatePath(`/org/${slug}/settings/billing`);
-    revalidatePath(`/org/${slug}/dashboard`);
-    return { success: true, billing };
-  } catch (error) {
-    if (error instanceof ApiError && error.status === 403) {
-      return { success: false, error: "You don't have permission to upgrade this plan." };
-    }
-    return { success: false, error: "Something went wrong. Please try again later." };
-  }
+export async function cancelSubscription(): Promise<BillingResponse> {
+  return api.post<BillingResponse>("/api/billing/cancel");
+}
+
+export async function getPayments(): Promise<
+  PaginatedResponse<PaymentResponse>
+> {
+  return api.get<PaginatedResponse<PaymentResponse>>("/api/billing/payments");
 }

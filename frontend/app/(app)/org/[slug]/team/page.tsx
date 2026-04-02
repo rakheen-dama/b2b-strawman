@@ -44,7 +44,7 @@ export default async function TeamPage({
           <InviteMemberForm
             maxMembers={billing.limits.maxMembers}
             currentMembers={billing.limits.currentMembers}
-            planTier={billing.tier}
+            planTier="DEDICATED"
             orgSlug={slug}
             roles={roles}
           />

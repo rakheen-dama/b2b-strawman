@@ -1,50 +1,98 @@
 import Link from "next/link";
-import { Check, ChevronLeft, Sparkles, Users } from "lucide-react";
-import { api } from "@/lib/api";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  ChevronLeft,
+  Clock,
+  Lock,
+  Users,
+  XCircle,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { UpgradeButton } from "@/components/billing/upgrade-button";
-import type { BillingResponse } from "@/lib/internal-api";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { SubscribeButton } from "@/components/billing/subscribe-button";
+import { CancelConfirmDialog } from "@/components/billing/cancel-confirm-dialog";
+import { getSubscription } from "@/app/(app)/org/[slug]/settings/billing/actions";
 
-const PLANS = [
-  {
-    name: "Starter",
-    price: "Free",
-    subtitle: "For small teams getting started",
-    features: [
-      "2 team members",
-      "Shared infrastructure",
-      "Row-level data isolation",
-      "Community support",
-    ],
-    highlighted: false,
-  },
-  {
-    name: "Pro",
-    price: "$29/month",
-    subtitle: "For growing teams that need more",
-    features: [
-      "10 team members",
-      "Dedicated infrastructure",
-      "Schema-level data isolation",
-      "Priority support",
-    ],
-    highlighted: true,
-  },
-];
+function formatAmount(cents: number, currency: string): string {
+  if (currency === "ZAR") {
+    return `R${(cents / 100).toFixed(2)}`;
+  }
+  return `${currency} ${(cents / 100).toFixed(2)}`;
+}
+
+function formatDate(isoString: string | null): string {
+  if (!isoString) return "\u2014";
+  return new Date(isoString).toLocaleDateString("en-ZA", {
+    dateStyle: "long",
+  });
+}
+
+function daysRemaining(isoString: string | null): number {
+  if (!isoString) return 0;
+  return Math.max(
+    0,
+    Math.ceil((new Date(isoString).getTime() - Date.now()) / 86_400_000)
+  );
+}
+
+type BadgeVariant = "neutral" | "success" | "warning" | "destructive";
+
+function statusBadgeVariant(status: string): BadgeVariant {
+  switch (status) {
+    case "TRIALING":
+      return "neutral";
+    case "ACTIVE":
+      return "success";
+    case "PENDING_CANCELLATION":
+    case "PAST_DUE":
+      return "warning";
+    case "GRACE_PERIOD":
+    case "EXPIRED":
+    case "SUSPENDED":
+    case "LOCKED":
+      return "destructive";
+    default:
+      return "neutral";
+  }
+}
+
+function statusLabel(status: string): string {
+  switch (status) {
+    case "TRIALING":
+      return "Trial";
+    case "ACTIVE":
+      return "Active";
+    case "PENDING_CANCELLATION":
+      return "Cancelling";
+    case "PAST_DUE":
+      return "Past Due";
+    case "GRACE_PERIOD":
+      return "Grace Period";
+    case "EXPIRED":
+      return "Expired";
+    case "SUSPENDED":
+      return "Suspended";
+    case "LOCKED":
+      return "Locked";
+    default:
+      return status;
+  }
+}
 
 export default async function BillingPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ result?: string }>;
 }) {
   const { slug } = await params;
-  const billing = await api.get<BillingResponse>("/api/billing/subscription");
+  const { result } = await searchParams;
+  const billing = await getSubscription();
 
-  const isPro = billing.tier === "PRO";
   const { maxMembers, currentMembers } = billing.limits;
-  const usagePercent =
-    maxMembers > 0 ? Math.round((currentMembers / maxMembers) * 100) : 0;
+  const amount = formatAmount(billing.monthlyAmountCents, billing.currency);
 
   return (
     <div className="space-y-8">
@@ -58,120 +106,251 @@ export default async function BillingPage({
       </Link>
 
       {/* Page header */}
-      <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Billing</h1>
-
-      {/* Current Plan card */}
-      <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-        <div className="flex items-center gap-3">
-          <h2 className="font-display text-xl text-slate-950 dark:text-slate-50">
-            {isPro ? "Pro" : "Starter"} Plan
-          </h2>
-          <Badge variant={isPro ? "pro" : "starter"}>
-            {isPro ? "Pro" : "Starter"}
-          </Badge>
-        </div>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          {isPro
-            ? "You\u2019re on the Pro plan with dedicated infrastructure and higher limits."
-            : "You\u2019re on the Starter plan with shared infrastructure."}
-        </p>
-
-        <div className="mt-6 space-y-2">
-          <div className="flex items-center justify-between text-sm">
-            <span className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
-              <Users className="size-4 text-slate-500" />
-              Members
-            </span>
-            <span className="text-slate-600 dark:text-slate-400">
-              {currentMembers} of {maxMembers}
-            </span>
-          </div>
-          <div
-            className={
-              isPro
-                ? "[&_[data-slot=progress-indicator]]:bg-teal-500"
-                : "[&_[data-slot=progress-indicator]]:bg-slate-500"
-            }
-          >
-            <Progress value={usagePercent} />
-          </div>
-        </div>
+      <div className="flex items-center gap-3">
+        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
+          Billing
+        </h1>
+        <Badge variant={statusBadgeVariant(billing.status)}>
+          {statusLabel(billing.status)}
+        </Badge>
       </div>
 
-      {/* Plan comparison + Upgrade CTA (Starter only) */}
-      {!isPro && (
-        <>
-          {/* Pricing cards */}
-          <div>
-            <h2 className="font-display text-xl text-slate-950 dark:text-slate-50">
-              Compare Plans
-            </h2>
-            <div className="mt-6 grid grid-cols-1 gap-8 md:grid-cols-2">
-              {PLANS.map((plan) => (
-                <div
-                  key={plan.name}
-                  className={`relative rounded-lg bg-slate-950/[0.025] p-8 dark:bg-slate-50/[0.05] ${
-                    plan.highlighted ? "border-2 border-teal-200" : ""
-                  }`}
-                >
-                  {plan.highlighted && (
-                    <span className="absolute -top-3 right-6 rounded-full bg-teal-100 px-3 py-1 text-xs font-semibold text-teal-700">
-                      Most popular
-                    </span>
-                  )}
-
-                  <p className="font-semibold text-slate-950 dark:text-slate-50">{plan.name}</p>
-                  <p className="mt-2 font-display text-3xl text-slate-950 dark:text-slate-50">
-                    {plan.price}
-                  </p>
-                  <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-                    {plan.subtitle}
-                  </p>
-
-                  <ul className="mt-6 space-y-3">
-                    {plan.features.map((feature) => (
-                      <li key={feature} className="flex items-start gap-2">
-                        <Check
-                          className={`mt-0.5 size-4 shrink-0 ${
-                            plan.highlighted
-                              ? "text-teal-500"
-                              : "text-slate-500"
-                          }`}
-                        />
-                        <span className="text-sm text-slate-700 dark:text-slate-300">
-                          {feature}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  <div className="mt-8">
-                    {plan.highlighted ? (
-                      <UpgradeButton slug={slug} className="w-full" />
-                    ) : (
-                      <Badge variant="starter">Current plan</Badge>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
+      {/* PayFast redirect notices */}
+      {result === "success" && (
+        <div className="rounded-lg border border-teal-200 bg-teal-50 p-4 text-sm text-teal-800 dark:border-teal-800 dark:bg-teal-950 dark:text-teal-200">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="size-4 shrink-0" />
+            <p>Payment successful! Your subscription is being activated.</p>
           </div>
+        </div>
+      )}
 
-          {/* Upgrade CTA section */}
-          <div className="rounded-lg bg-slate-100 p-8 text-center dark:bg-slate-900">
-            <Sparkles className="mx-auto size-8 text-teal-500" />
-            <h2 className="mt-4 font-display text-xl text-slate-950 dark:text-slate-50">
-              Ready for dedicated infrastructure?
-            </h2>
-            <p className="mx-auto mt-2 max-w-md text-sm text-slate-600 dark:text-slate-400">
-              Upgrade to Pro for schema isolation, more members, and priority
-              support.
+      {result === "cancelled" && (
+        <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
+          <p>Payment was cancelled. You can try again when you are ready.</p>
+        </div>
+      )}
+
+      {/* TRIALING */}
+      {billing.status === "TRIALING" && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="size-5 text-teal-600" />
+              Trial Period
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              You have{" "}
+              <span className="font-semibold text-slate-950 dark:text-slate-50">
+                {daysRemaining(billing.trialEndsAt)} days
+              </span>{" "}
+              remaining in your trial. Subscribe to continue using all features
+              after your trial ends on {formatDate(billing.trialEndsAt)}.
             </p>
-            <div className="mt-6">
-              <UpgradeButton slug={slug} />
+            <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+              <Users className="size-4" />
+              {currentMembers} of {maxMembers} members
             </div>
-          </div>
-        </>
+            <p className="text-lg font-semibold text-slate-950 dark:text-slate-50">
+              {amount}
+              <span className="text-sm font-normal text-slate-500">
+                /month
+              </span>
+            </p>
+            {billing.canSubscribe && <SubscribeButton />}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ACTIVE */}
+      {billing.status === "ACTIVE" && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CheckCircle2 className="size-5 text-teal-600" />
+              Active Subscription
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              Your subscription is active. Next billing date:{" "}
+              <span className="font-semibold text-slate-950 dark:text-slate-50">
+                {formatDate(billing.nextBillingAt)}
+              </span>
+            </p>
+            <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+              <Users className="size-4" />
+              {currentMembers} of {maxMembers} members
+            </div>
+            <p className="text-lg font-semibold text-slate-950 dark:text-slate-50">
+              {amount}
+              <span className="text-sm font-normal text-slate-500">
+                /month
+              </span>
+            </p>
+            {billing.canCancel && billing.currentPeriodEnd && (
+              <CancelConfirmDialog
+                currentPeriodEnd={billing.currentPeriodEnd}
+              />
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* PENDING_CANCELLATION */}
+      {billing.status === "PENDING_CANCELLATION" && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertTriangle className="size-5 text-amber-500" />
+              Subscription Cancelling
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              Your subscription will end on{" "}
+              <span className="font-semibold text-slate-950 dark:text-slate-50">
+                {formatDate(billing.currentPeriodEnd)}
+              </span>
+              . You will retain full access until then. After that, your account
+              enters a read-only grace period.
+            </p>
+            <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+              <Users className="size-4" />
+              {currentMembers} of {maxMembers} members
+            </div>
+            {billing.canSubscribe && (
+              <div>
+                <p className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Changed your mind? Resubscribe to keep your account active.
+                </p>
+                <SubscribeButton />
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* PAST_DUE */}
+      {billing.status === "PAST_DUE" && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertTriangle className="size-5 text-amber-500" />
+              Payment Failed
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              Your latest payment failed. Please update your payment method
+              through PayFast or subscribe again to maintain access.
+            </p>
+            <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+              <Users className="size-4" />
+              {currentMembers} of {maxMembers} members
+            </div>
+            {billing.canSubscribe && <SubscribeButton />}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* GRACE_PERIOD / EXPIRED */}
+      {(billing.status === "GRACE_PERIOD" ||
+        billing.status === "EXPIRED") && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <XCircle className="size-5 text-red-500" />
+              {billing.status === "GRACE_PERIOD"
+                ? "Grace Period"
+                : "Subscription Expired"}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="rounded-lg bg-red-50 p-3 text-sm text-red-800 dark:bg-red-950 dark:text-red-200">
+              Your account is in read-only mode.{" "}
+              {billing.graceEndsAt && (
+                <>
+                  You have{" "}
+                  <span className="font-semibold">
+                    {daysRemaining(billing.graceEndsAt)} days
+                  </span>{" "}
+                  before your account is locked. Grace period ends{" "}
+                  {formatDate(billing.graceEndsAt)}.
+                </>
+              )}
+            </div>
+            <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+              <Users className="size-4" />
+              {currentMembers} of {maxMembers} members
+            </div>
+            <p className="text-lg font-semibold text-slate-950 dark:text-slate-50">
+              {amount}
+              <span className="text-sm font-normal text-slate-500">
+                /month
+              </span>
+            </p>
+            {billing.canSubscribe && <SubscribeButton />}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* SUSPENDED */}
+      {billing.status === "SUSPENDED" && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <XCircle className="size-5 text-red-500" />
+              Account Suspended
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="rounded-lg bg-red-50 p-3 text-sm text-red-800 dark:bg-red-950 dark:text-red-200">
+              Your account has been suspended.{" "}
+              {billing.graceEndsAt && (
+                <>
+                  Grace period ends {formatDate(billing.graceEndsAt)} (
+                  {daysRemaining(billing.graceEndsAt)} days remaining).
+                </>
+              )}
+            </div>
+            <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+              <Users className="size-4" />
+              {currentMembers} of {maxMembers} members
+            </div>
+            {billing.canSubscribe && <SubscribeButton />}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* LOCKED */}
+      {billing.status === "LOCKED" && (
+        <div className="flex min-h-[50vh] items-center justify-center">
+          <Card className="max-w-md text-center">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-center gap-2">
+                <Lock className="size-5 text-red-500" />
+                Account Locked
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                Your account has been locked due to an expired subscription.
+                Your data is preserved and will be accessible once you
+                resubscribe.
+              </p>
+              <p className="text-lg font-semibold text-slate-950 dark:text-slate-50">
+                {amount}
+                <span className="text-sm font-normal text-slate-500">
+                  /month
+                </span>
+              </p>
+              {billing.canSubscribe && <SubscribeButton />}
+            </CardContent>
+          </Card>
+        </div>
       )}
     </div>
   );

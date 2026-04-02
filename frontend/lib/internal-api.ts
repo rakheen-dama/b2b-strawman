@@ -14,22 +14,33 @@ export class InternalApiError extends Error {
   }
 }
 
-// ---- Billing (from BillingController.java / AdminBillingController.java) ----
-
-export interface BillingLimits {
-  maxMembers: number;
-  currentMembers: number;
-}
+// ---- Billing (from BillingController.java — Phase 57 lifecycle model) ----
 
 export interface BillingResponse {
-  planSlug: string;
-  tier: string;
   status: string;
-  limits: BillingLimits;
+  trialEndsAt: string | null;
+  currentPeriodEnd: string | null;
+  graceEndsAt: string | null;
+  nextBillingAt: string | null;
+  monthlyAmountCents: number;
+  currency: string;
+  limits: { maxMembers: number; currentMembers: number };
+  canSubscribe: boolean;
+  canCancel: boolean;
 }
 
-export interface UpgradeRequest {
-  planSlug: string;
+export interface SubscribeResponse {
+  paymentUrl: string;
+  formFields: Record<string, string>;
+}
+
+export interface PaymentResponse {
+  id: string;
+  payfastPaymentId: string;
+  amountCents: number;
+  currency: string;
+  status: string;
+  paymentDate: string;
 }
 
 /**

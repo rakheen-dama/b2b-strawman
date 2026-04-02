@@ -4,9 +4,8 @@ import { cleanup, render, screen } from "@testing-library/react";
 import BillingPage from "./page";
 import type { BillingResponse } from "@/lib/internal-api";
 
-const mockGet = vi.fn();
-vi.mock("@/lib/api", () => ({
-  api: { get: (...args: unknown[]) => mockGet(...args) },
+vi.mock("@/app/(app)/org/[slug]/settings/billing/actions", () => ({
+  getSubscription: vi.fn(),
 }));
 
 vi.mock("@/components/ui/badge", () => ({
@@ -23,122 +22,220 @@ vi.mock("@/components/ui/badge", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/progress", () => ({
-  Progress: ({ value }: { value: number }) => (
-    <div data-testid="progress" data-value={value} />
+vi.mock("@/components/ui/card", () => ({
+  Card: ({
+    children,
+    className,
+  }: {
+    children: React.ReactNode;
+    className?: string;
+  }) => (
+    <div data-testid="card" className={className}>
+      {children}
+    </div>
+  ),
+  CardHeader: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="card-header">{children}</div>
+  ),
+  CardTitle: ({
+    children,
+    className,
+  }: {
+    children: React.ReactNode;
+    className?: string;
+  }) => (
+    <h2 data-testid="card-title" className={className}>
+      {children}
+    </h2>
+  ),
+  CardContent: ({
+    children,
+    className,
+  }: {
+    children: React.ReactNode;
+    className?: string;
+  }) => (
+    <div data-testid="card-content" className={className}>
+      {children}
+    </div>
   ),
 }));
 
-vi.mock("@/components/billing/upgrade-button", () => ({
-  UpgradeButton: ({ slug, className }: { slug: string; className?: string }) => (
-    <button data-testid="upgrade-button" data-slug={slug} className={className}>
-      Upgrade to Pro
+vi.mock("@/components/billing/subscribe-button", () => ({
+  SubscribeButton: () => (
+    <button data-testid="subscribe-button">Subscribe</button>
+  ),
+}));
+
+vi.mock("@/components/billing/cancel-confirm-dialog", () => ({
+  CancelConfirmDialog: ({
+    currentPeriodEnd,
+  }: {
+    currentPeriodEnd: string;
+  }) => (
+    <button data-testid="cancel-dialog" data-period-end={currentPeriodEnd}>
+      Cancel Subscription
     </button>
   ),
 }));
 
 afterEach(() => cleanup());
 
-function starterBilling(): BillingResponse {
-  return {
-    planSlug: "starter",
-    tier: "STARTER",
-    status: "ACTIVE",
-    limits: { maxMembers: 2, currentMembers: 1 },
-  };
-}
+const { getSubscription } = await import(
+  "@/app/(app)/org/[slug]/settings/billing/actions"
+);
+const mockGetSubscription = getSubscription as ReturnType<typeof vi.fn>;
 
-function proBilling(): BillingResponse {
+function makeBilling(overrides: Partial<BillingResponse> = {}): BillingResponse {
   return {
-    planSlug: "pro",
-    tier: "PRO",
     status: "ACTIVE",
-    limits: { maxMembers: 10, currentMembers: 5 },
+    trialEndsAt: null,
+    currentPeriodEnd: "2026-05-01T00:00:00Z",
+    graceEndsAt: null,
+    nextBillingAt: "2026-05-01T00:00:00Z",
+    monthlyAmountCents: 49900,
+    currency: "ZAR",
+    limits: { maxMembers: 10, currentMembers: 3 },
+    canSubscribe: false,
+    canCancel: true,
+    ...overrides,
   };
 }
 
 describe("BillingPage", () => {
-  it("renders plan name, badge, and member usage for Starter org", async () => {
-    mockGet.mockResolvedValue(starterBilling());
-
-    const page = await BillingPage({ params: Promise.resolve({ slug: "acme" }) });
-    render(page);
-
-    expect(screen.getByText("Billing")).toBeInTheDocument();
-    expect(screen.getByText("Starter Plan")).toBeInTheDocument();
-    expect(screen.getByText("1 of 2")).toBeInTheDocument();
-
-    const starterBadge = screen.getAllByTestId("badge").find(
-      (el) => el.getAttribute("data-variant") === "starter" && el.textContent === "Starter"
-    );
-    expect(starterBadge).toBeInTheDocument();
-  });
-
   it("renders back link to settings", async () => {
-    mockGet.mockResolvedValue(starterBilling());
+    mockGetSubscription.mockResolvedValue(makeBilling());
 
-    const page = await BillingPage({ params: Promise.resolve({ slug: "acme" }) });
+    const page = await BillingPage({
+      params: Promise.resolve({ slug: "acme" }),
+      searchParams: Promise.resolve({}),
+    });
     render(page);
 
     const backLink = screen.getByRole("link", { name: /Settings/ });
     expect(backLink).toHaveAttribute("href", "/org/acme/settings");
   });
 
-  it("shows pricing cards and upgrade buttons for Starter orgs", async () => {
-    mockGet.mockResolvedValue(starterBilling());
+  it("renders page header with status badge for ACTIVE", async () => {
+    mockGetSubscription.mockResolvedValue(makeBilling());
 
-    const page = await BillingPage({ params: Promise.resolve({ slug: "acme" }) });
+    const page = await BillingPage({
+      params: Promise.resolve({ slug: "acme" }),
+      searchParams: Promise.resolve({}),
+    });
     render(page);
 
-    expect(screen.getByText("Compare Plans")).toBeInTheDocument();
-    expect(screen.getByText("Free")).toBeInTheDocument();
-    expect(screen.getByText("$29/month")).toBeInTheDocument();
-    expect(screen.getByText("Most popular")).toBeInTheDocument();
-
-    // Current plan badge on Starter card
-    const currentPlanBadge = screen.getAllByTestId("badge").find(
-      (el) => el.textContent === "Current plan"
+    expect(screen.getByText("Billing")).toBeInTheDocument();
+    const badge = screen.getAllByTestId("badge").find(
+      (el) => el.getAttribute("data-variant") === "success"
     );
-    expect(currentPlanBadge).toBeInTheDocument();
-
-    // Upgrade buttons (one on Pro card, one in CTA section)
-    const upgradeButtons = screen.getAllByTestId("upgrade-button");
-    expect(upgradeButtons).toHaveLength(2);
-    expect(upgradeButtons[0]).toHaveAttribute("data-slug", "acme");
+    expect(badge).toBeInTheDocument();
+    expect(badge?.textContent).toBe("Active");
   });
 
-  it("shows upgrade CTA section for Starter orgs", async () => {
-    mockGet.mockResolvedValue(starterBilling());
+  it("shows active subscription card with member count and cancel option", async () => {
+    mockGetSubscription.mockResolvedValue(makeBilling());
 
-    const page = await BillingPage({ params: Promise.resolve({ slug: "acme" }) });
+    const page = await BillingPage({
+      params: Promise.resolve({ slug: "acme" }),
+      searchParams: Promise.resolve({}),
+    });
     render(page);
 
-    expect(
-      screen.getByText("Ready for dedicated infrastructure?")
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(/schema isolation, more members/)
-    ).toBeInTheDocument();
+    expect(screen.getByText("Active Subscription")).toBeInTheDocument();
+    expect(screen.getByText(/3 of 10 members/)).toBeInTheDocument();
+    expect(screen.getByText("R499.00")).toBeInTheDocument();
+    expect(screen.getByTestId("cancel-dialog")).toBeInTheDocument();
   });
 
-  it("hides upgrade section, pricing cards, and CTA for Pro orgs", async () => {
-    mockGet.mockResolvedValue(proBilling());
+  it("shows trial card with days remaining for TRIALING status", async () => {
+    const trialEnd = new Date(Date.now() + 7 * 86_400_000).toISOString();
+    mockGetSubscription.mockResolvedValue(
+      makeBilling({
+        status: "TRIALING",
+        trialEndsAt: trialEnd,
+        currentPeriodEnd: null,
+        nextBillingAt: null,
+        canSubscribe: true,
+        canCancel: false,
+      })
+    );
 
-    const page = await BillingPage({ params: Promise.resolve({ slug: "acme" }) });
+    const page = await BillingPage({
+      params: Promise.resolve({ slug: "acme" }),
+      searchParams: Promise.resolve({}),
+    });
     render(page);
 
-    expect(screen.getByText("Pro Plan")).toBeInTheDocument();
-    expect(screen.getByText("5 of 10")).toBeInTheDocument();
+    expect(screen.getByText("Trial Period")).toBeInTheDocument();
+    expect(screen.getByText(/7 days/)).toBeInTheDocument();
+    expect(screen.getByTestId("subscribe-button")).toBeInTheDocument();
+    expect(screen.queryByTestId("cancel-dialog")).not.toBeInTheDocument();
+  });
 
-    const proBadge = screen.getAllByTestId("badge").find(
-      (el) => el.getAttribute("data-variant") === "pro" && el.textContent === "Pro"
+  it("shows cancellation card for PENDING_CANCELLATION status", async () => {
+    mockGetSubscription.mockResolvedValue(
+      makeBilling({
+        status: "PENDING_CANCELLATION",
+        canSubscribe: true,
+        canCancel: false,
+      })
     );
-    expect(proBadge).toBeInTheDocument();
 
-    expect(screen.queryByText("Compare Plans")).not.toBeInTheDocument();
-    expect(screen.queryByTestId("upgrade-button")).not.toBeInTheDocument();
-    expect(
-      screen.queryByText("Ready for dedicated infrastructure?")
-    ).not.toBeInTheDocument();
+    const page = await BillingPage({
+      params: Promise.resolve({ slug: "acme" }),
+      searchParams: Promise.resolve({}),
+    });
+    render(page);
+
+    expect(screen.getByText("Subscription Cancelling")).toBeInTheDocument();
+    expect(screen.getByText(/Changed your mind/)).toBeInTheDocument();
+    expect(screen.getByTestId("subscribe-button")).toBeInTheDocument();
+  });
+
+  it("shows locked card for LOCKED status", async () => {
+    mockGetSubscription.mockResolvedValue(
+      makeBilling({
+        status: "LOCKED",
+        currentPeriodEnd: null,
+        nextBillingAt: null,
+        canSubscribe: true,
+        canCancel: false,
+      })
+    );
+
+    const page = await BillingPage({
+      params: Promise.resolve({ slug: "acme" }),
+      searchParams: Promise.resolve({}),
+    });
+    render(page);
+
+    expect(screen.getByText("Account Locked")).toBeInTheDocument();
+    expect(screen.getByText(/data is preserved/)).toBeInTheDocument();
+    expect(screen.getByTestId("subscribe-button")).toBeInTheDocument();
+  });
+
+  it("shows success notice when result=success in searchParams", async () => {
+    mockGetSubscription.mockResolvedValue(makeBilling());
+
+    const page = await BillingPage({
+      params: Promise.resolve({ slug: "acme" }),
+      searchParams: Promise.resolve({ result: "success" }),
+    });
+    render(page);
+
+    expect(screen.getByText(/Payment successful/)).toBeInTheDocument();
+  });
+
+  it("shows cancelled notice when result=cancelled in searchParams", async () => {
+    mockGetSubscription.mockResolvedValue(makeBilling());
+
+    const page = await BillingPage({
+      params: Promise.resolve({ slug: "acme" }),
+      searchParams: Promise.resolve({ result: "cancelled" }),
+    });
+    render(page);
+
+    expect(screen.getByText(/Payment was cancelled/)).toBeInTheDocument();
   });
 });

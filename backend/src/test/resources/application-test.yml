@@ -47,3 +47,14 @@ docteams:
 
 # Webhook verification key intentionally NOT set here — fail-closed by default.
 # Tests that need webhook access use @DynamicPropertySource to inject a test ECDSA key.
+
+heykazi:
+  billing:
+    notify-url: http://localhost:8080/api/webhooks/subscription
+    return-url: http://localhost:3000/settings/billing?result=success
+    cancel-url: http://localhost:3000/settings/billing?result=cancelled
+    payfast:
+      merchant-id: test-merchant-id
+      merchant-key: test-merchant-key
+      passphrase: test-passphrase
+      sandbox: true

@@ -114,3 +114,20 @@ app:
 
 # keycloak.admin.* properties are defined in application-keycloak.yml
 # The KeycloakProvisioningClient bean is only created when that profile is active.
+
+heykazi:
+  billing:
+    monthly-price-cents: 49900
+    trial-days: 14
+    grace-period-days: 60
+    currency: ZAR
+    item-name: "HeyKazi Professional"
+    max-members: 10
+    notify-url: ${HEYKAZI_BASE_URL}/api/webhooks/subscription
+    return-url: ${HEYKAZI_FRONTEND_URL}/settings/billing?result=success
+    cancel-url: ${HEYKAZI_FRONTEND_URL}/settings/billing?result=cancelled
+    payfast:
+      merchant-id: ${PAYFAST_MERCHANT_ID}
+      merchant-key: ${PAYFAST_MERCHANT_KEY}
+      passphrase: ${PAYFAST_PASSPHRASE}
+      sandbox: ${PAYFAST_SANDBOX:true}

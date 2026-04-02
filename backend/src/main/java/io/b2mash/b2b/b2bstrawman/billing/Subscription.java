@@ -209,6 +209,18 @@ public class Subscription {
     this.payfastPaymentId = payfastPaymentId;
   }
 
+  public void setCurrentPeriodStart(Instant currentPeriodStart) {
+    this.currentPeriodStart = currentPeriodStart;
+  }
+
+  public void setCurrentPeriodEnd(Instant currentPeriodEnd) {
+    this.currentPeriodEnd = currentPeriodEnd;
+  }
+
+  public void setCancelledAt(Instant cancelledAt) {
+    this.cancelledAt = cancelledAt;
+  }
+
   public enum SubscriptionStatus {
     TRIALING,
     ACTIVE,

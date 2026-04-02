@@ -96,3 +96,14 @@ logging:
     org.hibernate.SQL: INFO
     org.hibernate.orm.jdbc.bind: INFO
     org.flywaydb: INFO
+
+heykazi:
+  billing:
+    notify-url: http://localhost:8080/api/webhooks/subscription
+    return-url: http://localhost:3000/settings/billing?result=success
+    cancel-url: http://localhost:3000/settings/billing?result=cancelled
+    payfast:
+      merchant-id: ${PAYFAST_MERCHANT_ID:10000100}
+      merchant-key: ${PAYFAST_MERCHANT_KEY:46f0cd694581a}
+      passphrase: ${PAYFAST_PASSPHRASE:jt7NOE43FZPn}
+      sandbox: true

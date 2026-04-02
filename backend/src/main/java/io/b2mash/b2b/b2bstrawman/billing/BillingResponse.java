@@ -14,7 +14,10 @@ public record BillingResponse(
     String currency,
     LimitsResponse limits,
     boolean canSubscribe,
-    boolean canCancel) {
+    boolean canCancel,
+    String billingMethod,
+    boolean adminManaged,
+    String adminNote) {
 
   /** Backwards-compatible tier value. Always "PRO" since the tier system was removed. */
   private static final String DEFAULT_TIER = "PRO";
@@ -26,6 +29,11 @@ public record BillingResponse(
 
   public static BillingResponse from(Subscription sub, long memberCount, BillingProperties props) {
     var status = sub.getSubscriptionStatus();
+    var billing = sub.getBillingMethod();
+    boolean subscribable =
+        status.isSubscribable()
+            && (billing == BillingMethod.PAYFAST || billing == BillingMethod.MANUAL);
+    boolean cancellable = status.isCancellable() && billing == BillingMethod.PAYFAST;
     return new BillingResponse(
         status.name(),
         DEFAULT_TIER,
@@ -37,8 +45,11 @@ public record BillingResponse(
         props.monthlyPriceCents(),
         props.currency(),
         new LimitsResponse(props.maxMembers(), memberCount),
-        status.isSubscribable(),
-        status.isCancellable());
+        subscribable,
+        cancellable,
+        billing.name(),
+        billing.isAdminManaged(),
+        sub.getAdminNote());
   }
 
   /**
@@ -58,6 +69,9 @@ public record BillingResponse(
         props.currency(),
         new LimitsResponse(props.maxMembers(), memberCount),
         true,
-        false);
+        false,
+        BillingMethod.MANUAL.name(),
+        true,
+        null);
   }
 }

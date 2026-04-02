@@ -8,6 +8,9 @@ output "app_fqdn" {
   value       = var.create_dns ? aws_route53_record.app[0].fqdn : ""
 }
 
+# These output keys ("app", "portal", "auth") must match the keys in local.dns_records.
+# If you rename a key there, update the lookup key here too.
+
 output "app_domain" {
   description = "FQDN of the app subdomain (empty if DNS is disabled)"
   value       = var.create_dns ? aws_route53_record.subdomains["app"].fqdn : ""

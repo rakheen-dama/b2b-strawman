@@ -51,6 +51,10 @@ resource "aws_acm_certificate_validation" "main" {
 # -----------------------------------------------------------------------------
 # Route 53 alias record for apex domain (heykazi.com -> ALB)
 # Kept for completeness; no ECS service uses apex directly.
+# NOTE: This resource is named "app" for historical reasons but creates the
+# APEX record (heykazi.com), not the app subdomain. The app subdomain is
+# created by aws_route53_record.subdomains["app"]. Renaming this resource
+# would require a `moved` block and state migration, so we keep the name.
 # -----------------------------------------------------------------------------
 
 resource "aws_route53_record" "app" {
@@ -68,22 +72,20 @@ resource "aws_route53_record" "app" {
 }
 
 # -----------------------------------------------------------------------------
-# Route 53 A-record aliases for all subdomains
-# Production: app, portal, auth
-# Staging: staging-app, staging-portal, staging-auth
-# All point to the environment's public ALB (each environment has its own ALB).
+# Route 53 A-record aliases for environment-scoped subdomains
+# Production: app, portal, auth  (no prefix)
+# Staging:    staging-app, staging-portal, staging-auth
+# Each environment creates ONLY its own records, pointing at its own ALB.
 # Staging subdomains use flat prefix (staging-app) not nested (app.staging)
 # so a single *.heykazi.com wildcard cert covers both environments.
 # -----------------------------------------------------------------------------
 
 locals {
+  subdomain_prefix = var.environment == "production" ? "" : "${var.environment}-"
   dns_records = var.create_dns ? {
-    "app"            = "app.${var.domain_name}"
-    "portal"         = "portal.${var.domain_name}"
-    "auth"           = "auth.${var.domain_name}"
-    "staging-app"    = "staging-app.${var.domain_name}"
-    "staging-portal" = "staging-portal.${var.domain_name}"
-    "staging-auth"   = "staging-auth.${var.domain_name}"
+    "app"    = "${local.subdomain_prefix}app.${var.domain_name}"
+    "portal" = "${local.subdomain_prefix}portal.${var.domain_name}"
+    "auth"   = "${local.subdomain_prefix}auth.${var.domain_name}"
   } : {}
 }
 

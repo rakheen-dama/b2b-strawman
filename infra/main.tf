@@ -182,9 +182,11 @@ module "alb" {
   certificate_arn    = module.dns.certificate_arn
 
   # Domain routing (host-based rules on HTTPS listener)
-  app_domain    = var.app_domain
-  portal_domain = var.portal_domain
-  auth_domain   = var.auth_domain
+  # When DNS is managed by the dns module, use its outputs as the source of truth
+  # to avoid drift between Route 53 records and ALB listener rules.
+  app_domain    = var.create_dns ? module.dns.app_domain : var.app_domain
+  portal_domain = var.create_dns ? module.dns.portal_domain : var.portal_domain
+  auth_domain   = var.create_dns ? module.dns.auth_domain : var.auth_domain
 
   # ALB protection
   alb_deletion_protection = var.alb_deletion_protection

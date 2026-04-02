@@ -79,7 +79,7 @@ module "ecr" {
 }
 
 # -----------------------------------------------------------------------------
-# Monitoring (CloudWatch Log Groups)
+# Monitoring (CloudWatch Log Groups, SNS, Alarms)
 # -----------------------------------------------------------------------------
 
 module "monitoring" {
@@ -88,6 +88,20 @@ module "monitoring" {
   project            = var.project
   environment        = var.environment
   log_retention_days = var.log_retention_days
+  alert_email        = var.alert_email
+
+  # ALB dimensions for alarms
+  alb_arn_suffix         = module.alb.public_alb_arn_suffix
+  backend_tg_arn_suffix  = module.alb.backend_tg_arn_suffix
+  gateway_tg_arn_suffix  = module.alb.gateway_tg_arn_suffix
+  keycloak_tg_arn_suffix = module.alb.keycloak_tg_arn_suffix
+
+  # RDS dimension for alarms
+  rds_instance_identifier = module.data.rds_instance_identifier
+
+  # ECS dimensions for alarms
+  ecs_cluster_name     = module.ecs.cluster_name
+  backend_service_name = module.ecs.backend_service_name
 }
 
 # -----------------------------------------------------------------------------

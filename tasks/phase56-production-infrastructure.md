@@ -186,7 +186,7 @@ KEYCLOAK           CI/CD PIPELINE     OBSERVABILITY
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 8a | 418 | 418A | Extend DNS module: wildcard ACM certificate for `*.heykazi.com` with DNS validation. Route 53 A-record aliases for `app.heykazi.com`, `portal.heykazi.com`, `auth.heykazi.com` pointing to ALB. Staging variants (`staging-app.heykazi.com`, etc.). ALB HTTPS listener with ACM cert, HTTP-to-HTTPS redirect, TLS 1.3 security policy. Infra only. | |
+| 8a | 418 | 418A | Extend DNS module: wildcard ACM certificate for `*.heykazi.com` with DNS validation. Route 53 A-record aliases for `app.heykazi.com`, `portal.heykazi.com`, `auth.heykazi.com` pointing to ALB. Staging variants (`staging-app.heykazi.com`, etc.). ALB HTTPS listener with ACM cert, HTTP-to-HTTPS redirect, TLS 1.3 security policy. Infra only. | **Done** (PR #870) |
 | 8b | 418 | 418B | Create `infra/RUNBOOK.md` covering: first-time setup, deploying a new version, provisioning a new tenant, database operations, viewing logs, responding to alerts, rollback procedure, Keycloak operations, cost monitoring, disaster recovery. Create production cutover checklist script (`infra/scripts/smoke-test.sh`) that verifies all 5 services are healthy. Docs only. | |
 
 ### Timeline
@@ -728,7 +728,7 @@ Note: Stage 5 can run in parallel with Stages 1-4 (Dockerfiles are independent).
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **418A** | 418.1--418.5 | Extend DNS module: wildcard ACM certificate for `*.heykazi.com` with DNS validation. Route 53 A-record aliases for `app.heykazi.com`, `portal.heykazi.com`, `auth.heykazi.com` (and staging variants). Update ALB HTTPS listener with ACM cert ARN. TLS 1.3 security policy. Infra only. | |
+| **418A** | 418.1--418.5 | Extend DNS module: wildcard ACM certificate for `*.heykazi.com` with DNS validation. Route 53 A-record aliases for `app.heykazi.com`, `portal.heykazi.com`, `auth.heykazi.com` (and staging variants). Update ALB HTTPS listener with ACM cert ARN. TLS 1.3 security policy. Infra only. | **Done** (PR #870) |
 | **418B** | 418.6--418.8 | Create `infra/RUNBOOK.md` (10-section operational runbook). Create `infra/scripts/smoke-test.sh` (automated smoke test for all 5 services). Create production cutover checklist. Docs only. | |
 
 ### Tasks

@@ -65,12 +65,8 @@ management:
   health:
     db:
       enabled: true
-    redis:
-      enabled: true
 
 logging:
-  pattern:
-    console: '{"timestamp":"%d","level":"%p","logger":"%c","message":"%m","thread":"%t"}%n'
   level:
     root: WARN
-    com.kazi: INFO
+    io.b2mash.b2b.b2bstrawman: INFO

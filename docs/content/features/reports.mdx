@@ -1,8 +1,90 @@
 ---
 title: "Reports & Data Export"
-description: "Generate reports on profitability, utilization, and project performance."
+description: "Generate reports on profitability, utilisation, and project performance, then export the data as CSV or PDF."
 ---
+
+import { Callout, Steps } from "nextra/components"
 
 # Reports & Data Export
 
-Content coming soon.
+Reports give you a consolidated view of your practice's financial and operational data. Instead of manually pulling numbers from individual projects, customers, or invoices, you run a report with the parameters you need and get a formatted result in seconds — complete with summary cards, a sortable data table, and one-click export.
+
+HeyKazi ships with a catalogue of system-defined reports organised into categories. Each report has its own parameter form, column layout, and summary metrics, so the output is tailored to the question you are asking. Whether you need a timesheet breakdown for last month, an invoice aging snapshot, or a profitability comparison across customers, the reports module has you covered.
+
+## Key Concepts
+
+### Report Categories
+
+Reports are grouped into categories on the reports landing page. Each category appears as a section heading with a grid of report cards beneath it. Common categories include **Timesheet** reports, **Invoice Aging** reports, **Project Profitability** reports, and **Utilisation** reports. Click any card to open that report's dedicated page.
+
+### Parameter Types
+
+Every report accepts a set of parameters that control the data it returns. There are three parameter types:
+
+| Type | Control | Example |
+|------|---------|---------|
+| **Date** | Date picker | Start date, End date |
+| **Enum** | Dropdown selector | Status filter, Category filter |
+| **Entity** | Searchable combobox | Project picker, Customer picker |
+
+Entity pickers lazy-load options as you type, showing a primary label and a secondary label for disambiguation. Required parameters are marked with a red asterisk.
+
+### Report Results
+
+After running a report, the results page displays two sections. **Summary cards** appear at the top in a four-column grid, each showing a key-value metric (for example, "Total Revenue — R125,400" or "Billable Hours — 312"). Below the summary sits the **data table** with columns defined by the report — text and date columns are left-aligned, while decimal, currency, and integer columns are right-aligned for easy scanning. Results are paginated at 25 rows per page.
+
+## Running a Report
+
+<Steps>
+### Step 1 — Open the Reports page
+
+Navigate to **Reports** from the main sidebar. You will see report categories with individual report cards underneath.
+
+### Step 2 — Select a report
+
+Click the **Run Report** link on any report card. The report detail page opens with the parameter form at the top.
+
+### Step 3 — Fill in parameters
+
+Complete the required fields — dates, dropdowns, or entity pickers — and optionally set any additional filters. Click **Run Report** to execute.
+
+### Step 4 — Review results
+
+Summary cards appear at the top of the page and the data table loads below. Use the **Previous** and **Next** buttons to page through results.
+</Steps>
+
+## Exporting Data
+
+Once a report has been run, two export buttons become available:
+
+- **CSV** — downloads a file named `{report-slug}-report.csv` containing all rows and columns from the result set. Open in any spreadsheet application for further analysis.
+- **PDF** — downloads a formatted `{report-slug}-report.pdf` suitable for sharing with clients or attaching to emails.
+
+Both buttons remain disabled until you have run the report at least once.
+
+<Callout type="info">
+  Exports include the full result set, not just the current page. If your report returns 200 rows, the CSV and PDF will contain all 200.
+</Callout>
+
+## Permissions
+
+Access to reports requires the **Admin** or **Owner** organisation role, or the **Financial Visibility** capability. Team members without this permission will not see the Reports item in the sidebar.
+
+<Callout type="warning">
+  Reports reflect real-time data. If you need a point-in-time snapshot, export the results immediately after running the report.
+</Callout>
+
+## Tips and Best Practices
+
+- **Use date ranges consistently** — align report periods with your invoicing cycle so the numbers tie out.
+- **Export before meetings** — download the PDF version to share with stakeholders who do not have platform access.
+- **Combine filters for precision** — narrow a profitability report to a single customer and date range to isolate engagement-level margins.
+- **Bookmark frequently used reports** — the report detail URL includes the slug, so you can bookmark it for quick access.
+
+## Related Features
+
+- [Time Tracking](/features/time-tracking) — timesheet reports pull from logged time entries
+- [Invoicing](/features/invoicing) — invoice aging reports reflect outstanding and overdue invoices
+- [Rate Cards and Budgets](/features/rate-cards-budgets) — profitability reports use billing and cost rates to calculate margins
+- [Projects](/features/projects) — project-level reports aggregate time, expenses, and budget data
+- [Expenses](/features/expenses) — expense data feeds into project profitability calculations

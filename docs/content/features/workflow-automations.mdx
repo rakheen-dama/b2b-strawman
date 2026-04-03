@@ -1,8 +1,132 @@
 ---
 title: "Workflow Automations"
-description: "Set up automated triggers and actions to streamline repetitive tasks."
+description: "Create event-driven rules that trigger actions automatically when conditions are met."
 ---
+
+import { Callout, Steps } from "nextra/components"
 
 # Workflow Automations
 
-Content coming soon.
+Workflow automations let you define rules that fire automatically when something happens in your practice — a task status changes, a budget threshold is reached, or a proposal is sent. Each rule combines a trigger, optional conditions, and one or more actions, removing the need for manual follow-up on routine processes.
+
+Automations live under **Settings > Automations** and are available to users with management permissions. Once enabled, a rule runs silently in the background, executing its actions whenever the trigger event occurs and any conditions are satisfied. You can monitor every execution in the log, test rules before going live, and toggle them on or off at any time.
+
+## Key Concepts
+
+### Trigger Types
+
+A trigger defines the event that starts a rule. HeyKazi supports ten trigger types:
+
+| Trigger | Description | Configuration |
+|---------|-------------|---------------|
+| **Task Status Changed** | Fires when a task moves between statuses | From/To status selectors (Open, In Progress, Done, Cancelled) |
+| **Project Status Changed** | Fires when a project status changes | From/To status selectors (Active, Completed, Archived) |
+| **Customer Status Changed** | Fires when a customer status changes | From/To status selectors (Active, Archived) |
+| **Invoice Status Changed** | Fires when an invoice status changes | From/To status selectors (Draft, Approved, Sent, Paid, Void) |
+| **Time Entry Created** | Fires when a new time entry is logged | No additional configuration |
+| **Budget Threshold Reached** | Fires when a project budget hits a percentage | Threshold percentage (default 80%) |
+| **Document Accepted** | Fires when a client accepts a document | No additional configuration |
+| **Information Request Completed** | Fires when all request items are fulfilled | No additional configuration |
+| **Proposal Sent** | Fires when a proposal is sent to a client | No additional configuration |
+| **Date Approaching** | Fires as a configured date draws near | No additional configuration |
+
+Status-change triggers include "Any" as an option for both the from and to fields, so you can match all transitions or only specific ones.
+
+### Conditions
+
+Conditions narrow when a rule executes. Each condition specifies a **field**, an **operator**, and a **value**. Available operators include:
+
+`EQUALS`, `NOT_EQUALS`, `IN`, `NOT_IN`, `GREATER_THAN`, `LESS_THAN`, `CONTAINS`, `IS_NULL`, `IS_NOT_NULL`
+
+Conditions are optional — if you leave them empty, the rule fires on every matching trigger event.
+
+### Action Types
+
+Actions define what happens when the trigger fires and conditions pass. You can add multiple actions to a single rule, and each action runs in the order you specify.
+
+| Action | What it does |
+|--------|-------------|
+| **Create Task** | Creates a new task with a name, description, and assignee (Trigger Actor, Project Owner, Specific Member, or Unassigned) |
+| **Send Notification** | Sends an in-app notification to a recipient (Trigger Actor, Project Owner, All Project Members, or All Admins) |
+| **Send Email** | Sends an email to a recipient (Trigger Actor, Project Owner, or Customer Contact) |
+| **Update Status** | Changes the status of a related entity (Task, Project, Customer, or Invoice) |
+| **Create Project** | Creates a new project from a project template |
+| **Assign Member** | Assigns a member to the related project with a specified role (Lead or Member) |
+
+### Variable Insertion
+
+Text fields in **Create Task**, **Send Notification**, and **Send Email** actions support the `{{variable}}` syntax. Variables are resolved at execution time based on the trigger context — for example, `{{projectName}}` inserts the name of the project that triggered the rule.
+
+### Action Delays
+
+Each action can include an optional delay before execution. Specify a duration and unit (**Minutes**, **Hours**, or **Days**) to stagger actions — useful when you want to send a reminder email 24 hours after an initial notification.
+
+## Creating an Automation Rule
+
+<Steps>
+### Step 1 — Open the Automations page
+
+Navigate to **Settings > Automations**. You will see a table of existing rules (or an empty state if none exist yet).
+
+### Step 2 — Click New Automation
+
+Click **New Automation** to open the rule form. The form has three sections: Trigger, Conditions, and Actions.
+
+### Step 3 — Configure the trigger
+
+Enter a **name** and optional **description** for the rule. Select a **trigger type** from the dropdown and complete any trigger-specific configuration (for example, choose the from and to statuses for a status-change trigger, or set the threshold percentage for a budget trigger).
+
+### Step 4 — Add conditions (optional)
+
+If you need to narrow when the rule fires, add one or more conditions. Select a field, choose an operator, and enter the comparison value.
+
+### Step 5 — Add actions
+
+Click **Add Action** and select an action type. Fill in the action-specific fields, insert variables where needed, and optionally set a delay. Repeat to add multiple actions — drag to reorder if the sequence matters.
+
+### Step 6 — Save the rule
+
+Click **Save**. The rule appears in the automations table with its trigger badge and an enabled toggle.
+</Steps>
+
+## Template Gallery
+
+Rather than building rules from scratch, you can browse the **Template Gallery** — a curated set of pre-built automations organised by category. Each template card shows the template name, a description, the trigger type, and the number of actions. Click **Activate** to create a rule from the template instantly. Templates that have already been activated display a green **Activated** badge.
+
+<Callout type="info">
+  Templates are a starting point. After activating a template, you can edit the resulting rule to adjust conditions, actions, or delays to match your workflow.
+</Callout>
+
+## Execution Log
+
+The execution log provides a complete audit trail of every automation run. Filter by **rule** and **status** (Running, Completed, Failed, or Skipped) to find specific executions. The table shows the rule name, trigger type, timestamp, status badge, whether conditions were met, the number of actions executed, and the duration.
+
+Click any row to drill into the execution detail, which shows each action's result individually — helpful for diagnosing why a rule produced unexpected outcomes.
+
+<Callout type="warning">
+  A rule with status **Skipped** means the trigger fired but the conditions were not met. Check the condition configuration if rules are skipping more often than expected.
+</Callout>
+
+## Testing Rules
+
+Before enabling a rule in production, use the **Test** feature to validate it. Submit sample event data and the system returns whether the conditions would have been met along with detailed evaluation results. This lets you iterate on condition logic without generating real notifications or tasks.
+
+## Enabling and Disabling Rules
+
+Each rule has a toggle switch in the automations table. Disabled rules remain configured but do not fire — useful for pausing a rule during a busy period or while you refine its conditions.
+
+## Tips and Best Practices
+
+- **Start with templates** — the gallery covers common patterns like "notify on budget alert" or "create follow-up task when a project completes".
+- **Test before enabling** — use the test endpoint to verify condition logic with sample data.
+- **Use delays strategically** — stagger actions to avoid notification fatigue; for example, send an email reminder only if a task is still open after 48 hours.
+- **Review the execution log regularly** — failed executions may indicate misconfigured actions or missing data.
+- **Keep rule names descriptive** — a name like "Notify admins when budget hits 90%" is easier to manage than "Rule 7".
+
+## Related Features
+
+- [Projects](/features/projects) — project status changes and budget thresholds are common automation triggers
+- [Tasks](/features/tasks) — task status changes can trigger follow-up actions automatically
+- [Invoicing](/features/invoicing) — invoice lifecycle events (sent, paid, void) can drive notification rules
+- [Information Requests](/features/information-requests) — automate follow-ups when information requests are completed
+- [Customer Portal](/features/customer-portal) — document acceptance and proposal events originate from portal interactions

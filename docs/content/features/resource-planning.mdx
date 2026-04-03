@@ -1,8 +1,104 @@
 ---
 title: "Resource Planning"
-description: "Plan team capacity, allocate resources to projects, and track utilization."
+description: "Plan team capacity, allocate members to projects, and track utilisation across your organisation."
 ---
+
+import { Callout, Steps } from "nextra/components"
 
 # Resource Planning
 
-Content coming soon.
+Resource planning helps you see who is available, who is overloaded, and where you need to shift work. The module centres on a weekly allocation grid that shows every team member's capacity alongside their project commitments, giving managers a single view to balance workloads before problems surface.
+
+Capacity planning is essential for professional-services firms where billable utilisation directly impacts revenue. By tracking planned versus actual hours, you can spot under-utilised team members, prevent burnout from over-allocation, and make informed decisions about hiring or outsourcing.
+
+## Key Concepts
+
+### The Allocation Grid
+
+The grid displays team members as rows and weeks as columns. Each cell is colour-coded by utilisation:
+
+| Colour | Utilisation | Meaning |
+|--------|-------------|---------|
+| **Green** | Below 80% | Capacity available |
+| **Amber** | 80–100% | Nearing full capacity |
+| **Red** | Above 100% | Over-allocated |
+
+Cells show allocated hours against capacity (for example, "24/40h") along with coloured project bars proportional to each allocation. If a member has leave recorded for that week, a leave indicator appears in the cell. Empty cells display a dashed border with a "+" icon — click to add an allocation directly.
+
+A **Team Total** row at the bottom aggregates hours per week and shows the team-wide utilisation badge.
+
+### Capacity Configuration
+
+Each member has a capacity history — a list of records specifying weekly hours and an effective-from date. When a team member moves from full-time to part-time, you add a new capacity record rather than editing the existing one, preserving the historical baseline for utilisation calculations.
+
+### Leave Management
+
+Leave blocks record periods when a member is unavailable. Each block has a start date, end date, and optional note. Leave days reduce the effective capacity for the affected weeks, so utilisation percentages remain accurate even during holidays or sick leave.
+
+## Allocating Team Members
+
+<Steps>
+### Step 1 — Open the Resources page
+
+Navigate to **Resources** from the main sidebar. The allocation grid loads with the current week plus the next four weeks.
+
+### Step 2 — Click a cell
+
+Click on any cell in the grid — either an existing allocation cell or an empty one. An allocation popover opens showing the member name and "Week of [date]".
+
+### Step 3 — Add or edit an allocation
+
+Select a project from the dropdown, enter the number of hours, and optionally add a note. If the member is already allocated to projects that week, those allocations appear above the form with inline edit and delete controls.
+
+### Step 4 — Save the allocation
+
+Click **Save**. The cell updates with the new hours and a coloured project bar. If the total exceeds capacity, the cell turns red and an over-allocation warning appears.
+</Steps>
+
+<Callout type="warning">
+  Over-allocating a team member does not block the save — HeyKazi displays an amber warning banner so you can make a conscious decision about the trade-off.
+</Callout>
+
+## Managing Member Capacity
+
+Click a member's name in the grid to open the **Member Detail Panel** — a slide-out sheet with three sections:
+
+- **Utilisation Summary** — allocated hours, capacity hours, and a utilisation badge.
+- **Capacity History** — a list of capacity records showing weekly hours and effective dates. Add new records to reflect changes in working hours; delete records that were entered in error.
+- **Leave Blocks** — upcoming and past leave periods. Add, edit, or delete leave blocks to keep the grid accurate.
+
+## Utilisation View
+
+For a higher-level picture, click **View Utilisation** on the Resources page. The utilisation page shows a sortable table with columns for each member:
+
+**Capacity**, **Planned Hours**, **Actual Hours**, **Billable Hours**, **Planned %**, **Actual %**, **Billable %**, and **Over-Allocated Weeks**. Each percentage column displays a colour-coded badge (green, amber, or red). A utilisation chart provides a visual summary across the team.
+
+<Callout type="info">
+  Utilisation measures the percentage of total tracked time that is billable. Industry benchmarks typically range from 60% to 80%.
+</Callout>
+
+## Adjusting the Planning Horizon
+
+The **Week Range Selector** at the top of both the allocation grid and the utilisation page lets you change the start week and the number of weeks displayed. Extend the range to plan further ahead, or narrow it to focus on the immediate workload.
+
+## Project Staffing
+
+The **Staffing** tab on a project detail page provides a project-centric view of allocations — showing which members are assigned, their planned hours, and how those hours compare to the project budget.
+
+## Permissions
+
+Access to resource planning requires the **Admin** or **Owner** organisation role, or the **Resource Planning** capability.
+
+## Tips and Best Practices
+
+- **Review the grid weekly** — a Monday-morning check catches over-allocations before the week begins.
+- **Record leave proactively** — entering leave blocks as soon as they are approved keeps capacity forecasts reliable.
+- **Use the utilisation page for trend analysis** — compare planned versus actual percentages to identify estimation gaps.
+- **Filter by project** — use the grid filter to see only members allocated to a specific project and spot coverage gaps.
+
+## Related Features
+
+- [Projects](/features/projects) — allocations are linked to projects; the staffing tab shows the project-side view
+- [Time Tracking](/features/time-tracking) — actual hours feed into utilisation calculations
+- [Rate Cards and Budgets](/features/rate-cards-budgets) — budget hours provide the benchmark for staffing decisions
+- [Reports](/features/reports) — utilisation and profitability reports draw on capacity and allocation data

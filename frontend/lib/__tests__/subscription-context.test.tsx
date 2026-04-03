@@ -25,6 +25,9 @@ function makeBillingResponse(
     limits: { maxMembers: 5, currentMembers: 1 },
     canSubscribe: false,
     canCancel: false,
+    billingMethod: "PAYFAST",
+    adminManaged: false,
+    adminNote: null,
     ...overrides,
   };
 }

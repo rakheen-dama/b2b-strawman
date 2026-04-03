@@ -131,6 +131,9 @@ function makeBilling(
     limits: { maxMembers: 10, currentMembers: 3 },
     canSubscribe: false,
     canCancel: true,
+    billingMethod: "PAYFAST",
+    adminManaged: false,
+    adminNote: null,
     ...overrides,
   };
 }

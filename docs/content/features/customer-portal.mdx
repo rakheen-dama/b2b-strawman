@@ -1,8 +1,108 @@
 ---
 title: "Customer Portal"
-description: "Give your clients a self-service portal to view projects, invoices, and documents."
+description: "Give your clients a self-service portal to view projects, documents, proposals, and respond to requests."
 ---
+
+import { Callout, Steps } from "nextra/components"
 
 # Customer Portal
 
-Content coming soon.
+The Customer Portal is a separate, client-facing interface where your customers can view their projects, download documents, review proposals, respond to information requests, and accept documents — all without needing access to your internal workspace. It gives clients transparency into the work you are doing for them while keeping your internal data private.
+
+Portal access is token-based and independent of your organisation's authentication. Each portal contact receives their own credentials, and the portal displays only the data associated with their customer record. This makes it safe to share with external stakeholders who should see deliverables and status updates but not your team's internal notes, rates, or financials.
+
+## Key Concepts
+
+### Portal Navigation
+
+Once signed in, customers see a navigation bar with six sections:
+
+| Section | What it shows |
+|---------|--------------|
+| **Projects** | All projects the customer has access to, with detail pages for documents, tasks, and comments |
+| **Proposals** | Proposals sent to the customer, with status and fee details |
+| **Requests** | Information requests awaiting the customer's input |
+| **Acceptances** | Documents requiring the customer's formal acceptance |
+| **Documents** | All shared documents across every project |
+| **Profile** | The customer's display name, email, and role |
+
+### Portal Contacts
+
+Before a customer can access the portal, you must configure **portal contacts** on their customer record in your workspace. Each contact has a display name, email address, and role. Portal contacts are the recipients of proposals, information requests, and acceptance requests — without at least one contact, these features cannot be used for that customer.
+
+### Authentication
+
+The portal uses token-based authentication. Customers sign in on the portal login page, and their session is managed independently from your organisation's identity provider. An auth guard protects all portal pages, redirecting unauthenticated visitors to the login screen.
+
+## What Customers See
+
+### Projects
+
+The **Projects** page displays a grid of project cards showing the project name, description, and document count. Clicking a card opens the project detail page with summary cards for **Total Hours**, **Billable Hours**, and **Last Activity**, plus three tabs:
+
+- **Documents** — a table of shared files with name, size, upload date, and a download button.
+- **Tasks** — a sorted list showing task name, assignee, and status badge (Open, In Progress, Done, or Cancelled).
+- **Comments** — a discussion thread where the customer can view existing comments and post new ones (up to 2,000 characters each).
+
+### Documents
+
+The **Documents** page aggregates all shared documents across every project. Each row shows the file name, project name, file size, and upload date. Downloads use presigned URLs — secure, time-limited links that grant access without exposing your storage credentials.
+
+### Proposals
+
+The **Proposals** page lists all proposals sent to the customer. Each entry shows the proposal title, status badge (**Pending**, **Accepted**, **Declined**, or **Expired**), proposal number, fee model (Fixed Fee, Hourly Rate, Retainer, or Milestone), fee amount, and sent date. Click through to a detail page for a full review.
+
+### Information Requests
+
+The **Requests** page separates items into **Open** and **Completed** tabs. Each request card shows the request number, status badge (**Draft**, **Sent**, **In Progress**, **Completed**, or **Cancelled**), project name, a progress bar indicating how many items have been accepted out of the total, and the sent date.
+
+### Acceptances
+
+The **Acceptances** page lists documents that require the customer's formal acceptance. Each card shows the document title, status badge (**Pending**, **Accepted**, or **Expired**), sent date, and expiry date. If a document expires within 48 hours, the expiry date is highlighted in amber as an urgency indicator. Click **Review & Accept** to open the acceptance page.
+
+<Callout type="warning">
+  Expired acceptances can no longer be actioned. If a customer misses the deadline, you will need to re-send the acceptance request from your workspace.
+</Callout>
+
+### Profile
+
+The **Profile** page displays the contact's name, email address, associated customer name, and role. This data is read-only and managed by your team on the customer record.
+
+## Setting Up Portal Access
+
+<Steps>
+### Step 1 — Open the customer record
+
+Navigate to **Customers** and select the customer you want to grant portal access to.
+
+### Step 2 — Add a portal contact
+
+In the customer detail page, add a **portal contact** with the person's display name and email address.
+
+### Step 3 — Send a proposal or request
+
+Once a portal contact exists, you can send proposals, information requests, or acceptance requests to that customer. The contact receives a notification with a link to the portal.
+
+### Step 4 — Customer signs in
+
+The customer follows the link, signs in to the portal, and can view their projects, documents, proposals, and requests from a single dashboard.
+</Steps>
+
+<Callout type="info">
+  Portal contacts must be configured before you can send proposals or information requests. If the contacts section is empty, the send action will be unavailable.
+</Callout>
+
+## Tips and Best Practices
+
+- **Add portal contacts early** — configure contacts when onboarding a new customer so proposals and requests can be sent immediately.
+- **Use project comments for client communication** — portal comments create a documented thread that your whole team can see, reducing reliance on email.
+- **Monitor acceptance expiry dates** — check the Acceptances page or set up a [workflow automation](/features/workflow-automations) to notify you when a deadline approaches.
+- **Share documents proactively** — upload deliverables to the project so customers can self-serve downloads without requesting files by email.
+
+## Related Features
+
+- [Customers](/features/customers) — portal contacts are configured on the customer record
+- [Proposals](/features/proposals) — proposals are sent to portal contacts and reviewed in the portal
+- [Information Requests](/features/information-requests) — requests appear in the portal for customers to complete
+- [Documents & Templates](/features/documents) — shared documents are downloadable from the portal
+- [Projects](/features/projects) — customers view project details, tasks, and comments through the portal

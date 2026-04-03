@@ -53,12 +53,38 @@ class BillingControllerIntegrationTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("TRIALING"))
         .andExpect(jsonPath("$.canSubscribe").value(true))
-        .andExpect(jsonPath("$.canCancel").value(false));
+        .andExpect(jsonPath("$.canCancel").value(false))
+        .andExpect(jsonPath("$.billingMethod").value("MANUAL"))
+        .andExpect(jsonPath("$.adminManaged").value(true))
+        .andExpect(jsonPath("$.adminNote").isEmpty());
   }
 
   @Test
   void getSubscription_withoutJwt_returns401() throws Exception {
     mockMvc.perform(get("/api/billing/subscription")).andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void getSubscription_pilotCannotSubscribe() throws Exception {
+    // Set billing method to PILOT — canSubscribe should be false
+    var org = organizationRepository.findByClerkOrgId(ORG_ID).orElseThrow();
+    var sub = subscriptionRepository.findByOrganizationId(org.getId()).orElseThrow();
+    var originalMethod = sub.getBillingMethod();
+    sub.setBillingMethod(BillingMethod.PILOT);
+    subscriptionRepository.saveAndFlush(sub);
+
+    try {
+      mockMvc
+          .perform(get("/api/billing/subscription").with(ownerJwt()))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.billingMethod").value("PILOT"))
+          .andExpect(jsonPath("$.adminManaged").value(true))
+          .andExpect(jsonPath("$.canSubscribe").value(false));
+    } finally {
+      // Restore original billing method
+      sub.setBillingMethod(originalMethod);
+      subscriptionRepository.saveAndFlush(sub);
+    }
   }
 
   // --- POST /api/billing/subscribe ---

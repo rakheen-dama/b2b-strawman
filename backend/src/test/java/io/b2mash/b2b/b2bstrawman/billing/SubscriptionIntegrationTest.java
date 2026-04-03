@@ -60,6 +60,7 @@ class SubscriptionIntegrationTest {
     assertThat(subscription).isPresent();
     assertThat(subscription.get().getSubscriptionStatus())
         .isEqualTo(Subscription.SubscriptionStatus.TRIALING);
+    assertThat(subscription.get().getBillingMethod()).isEqualTo(BillingMethod.MANUAL);
   }
 
   // --- 2. GET /api/billing/subscription returns correct status + limits ---
@@ -71,7 +72,9 @@ class SubscriptionIntegrationTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("TRIALING"))
         .andExpect(jsonPath("$.limits.maxMembers").value(10))
-        .andExpect(jsonPath("$.limits.currentMembers").value(1));
+        .andExpect(jsonPath("$.limits.currentMembers").value(1))
+        .andExpect(jsonPath("$.billingMethod").value("MANUAL"))
+        .andExpect(jsonPath("$.adminManaged").value(true));
   }
 
   // --- 3. POST /internal/billing/set-plan is accepted (no-op after Tier removal) ---

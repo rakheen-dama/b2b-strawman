@@ -56,8 +56,10 @@ public class SubscriptionExpiryJob {
     log.info("Trial expiry job started");
     var now = Instant.now();
     var expired =
-        subscriptionRepository.findBySubscriptionStatusAndTrialEndsAtBefore(
-            Subscription.SubscriptionStatus.TRIALING, now);
+        subscriptionRepository.findBySubscriptionStatusAndBillingMethodInAndTrialEndsAtBefore(
+            Subscription.SubscriptionStatus.TRIALING,
+            List.of(BillingMethod.PAYFAST, BillingMethod.MANUAL),
+            now);
 
     int count = 0;
     for (var sub : expired) {

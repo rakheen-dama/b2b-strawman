@@ -17,6 +17,7 @@ import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleRegistry;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,35 +26,41 @@ import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 /**
- * Demo data seeder for generic agency/consultancy verticals. Creates a realistic marketing agency
- * scenario with 5 customers, 8 projects, ~50 tasks, ~200 time entries, and 10 invoices.
+ * Demo data seeder for SA law firm verticals. Creates a realistic legal practice scenario with 5
+ * customers, 4+ projects, tasks, time entries, and invoices. Rates range from R1,200/hr (Candidate
+ * Attorney) to R3,500/hr (Partner). Legal-specific entities (court dates, adverse parties, tariff
+ * items) are only seeded if Phase 55 modules exist; otherwise gracefully skipped.
  */
 @Component
-public class GenericDemoDataSeeder extends BaseDemoDataSeeder {
+public class LegalDemoDataSeeder extends BaseDemoDataSeeder {
 
-  private static final String ORG_NAME = "Demo Agency (Pty) Ltd";
+  private static final String ORG_NAME = "Demo Legal Practice (Pty) Ltd";
 
-  private static final BigDecimal RATE_JUNIOR = new BigDecimal("850.00");
-  private static final BigDecimal RATE_MID = new BigDecimal("1100.00");
-  private static final BigDecimal RATE_SENIOR = new BigDecimal("1350.00");
-  private static final BigDecimal RATE_DIRECTOR = new BigDecimal("1500.00");
+  private static final BigDecimal RATE_CANDIDATE_ATTORNEY = new BigDecimal("1200.00");
+  private static final BigDecimal RATE_ASSOCIATE = new BigDecimal("1800.00");
+  private static final BigDecimal RATE_SENIOR_ASSOCIATE = new BigDecimal("2500.00");
+  private static final BigDecimal RATE_PARTNER = new BigDecimal("3500.00");
 
-  private static final BigDecimal[] RATES = {RATE_JUNIOR, RATE_MID, RATE_SENIOR, RATE_DIRECTOR};
-
-  private static final String[] TASK_TITLES = {
-    "Design brief",
-    "Content creation",
-    "Client review",
-    "Strategy workshop",
-    "Creative direction",
-    "Revisions",
-    "Final delivery",
-    "Kick-off meeting",
-    "Market research",
-    "Competitor analysis"
+  private static final BigDecimal[] RATES = {
+    RATE_CANDIDATE_ATTORNEY, RATE_ASSOCIATE, RATE_SENIOR_ASSOCIATE, RATE_PARTNER
   };
 
-  public GenericDemoDataSeeder(
+  private static final String[] TASK_TITLES = {
+    "Due diligence",
+    "Contract drafting",
+    "FICA verification",
+    "Settlement negotiation",
+    "Court preparation",
+    "Title deed search",
+    "Client consultation",
+    "Legal opinion",
+    "Compliance review",
+    "Document discovery"
+  };
+
+  private final VerticalModuleRegistry verticalModuleRegistry;
+
+  public LegalDemoDataSeeder(
       TenantTransactionHelper tenantTransactionHelper,
       MemberRepository memberRepository,
       OrgRoleRepository orgRoleRepository,
@@ -63,7 +70,8 @@ public class GenericDemoDataSeeder extends BaseDemoDataSeeder {
       TimeEntryRepository timeEntryRepository,
       InvoiceRepository invoiceRepository,
       InvoiceLineRepository invoiceLineRepository,
-      ProjectMemberRepository projectMemberRepository) {
+      ProjectMemberRepository projectMemberRepository,
+      VerticalModuleRegistry verticalModuleRegistry) {
     super(
         tenantTransactionHelper,
         memberRepository,
@@ -75,16 +83,17 @@ public class GenericDemoDataSeeder extends BaseDemoDataSeeder {
         invoiceRepository,
         invoiceLineRepository,
         projectMemberRepository);
+    this.verticalModuleRegistry = verticalModuleRegistry;
   }
 
   @Override
   protected void seedProfileData(String schemaName, UUID orgId) {
     Random rand = seededRandom(orgId);
 
-    // 1. Members (4: 1 owner, 1 admin, 2 members)
-    List<UUID> ownerIds = createMembers("owner", 1, 1);
-    List<UUID> adminIds = createMembers("admin", 1, 2);
-    List<UUID> memberIds = createMembers("member", 2, 3);
+    // 1. Members (4: 1 owner/partner, 1 admin/senior associate, 2 members/associates)
+    List<UUID> ownerIds = createMembers("owner", 1, 20);
+    List<UUID> adminIds = createMembers("admin", 1, 21);
+    List<UUID> memberIds = createMembers("member", 2, 22);
 
     List<UUID> allMemberIds = new ArrayList<>();
     allMemberIds.addAll(ownerIds);
@@ -96,7 +105,7 @@ public class GenericDemoDataSeeder extends BaseDemoDataSeeder {
     // 2. Customers (5, mix of lifecycle statuses)
     List<CustomerInfo> customers = createCustomers(primaryMemberId);
 
-    // 3. Projects (8, linked to ACTIVE customers)
+    // 3. Projects (linked to ACTIVE customers)
     List<ProjectInfo> projects = createProjects(customers, primaryMemberId, rand);
 
     // 4. ProjectMembers (all 4 members on each project)
@@ -117,13 +126,37 @@ public class GenericDemoDataSeeder extends BaseDemoDataSeeder {
     // 7. Invoices (10) from unbilled time entries
     createInvoices(customers, timeEntries, primaryMemberId, rand);
 
+    // 8. Legal-specific entities (court dates, adverse parties, tariff items)
+    seedLegalSpecificEntities();
+
     log.info(
-        "Generic demo data seeded: {} members, {} customers, {} projects, {} tasks, {} time entries",
+        "Legal demo data seeded: {} members, {} customers, {} projects, {} tasks, {} time entries",
         allMemberIds.size(),
         customers.size(),
         projects.size(),
         taskIds.size(),
         timeEntries.size());
+  }
+
+  /**
+   * Attempts to seed legal-specific entities (court dates, adverse parties, tariff items). Checks
+   * for the existence of Phase 55 module infrastructure and gracefully skips if not available.
+   */
+  private void seedLegalSpecificEntities() {
+    boolean courtCalendarRegistered =
+        verticalModuleRegistry.getModule("court_calendar").isPresent();
+
+    if (courtCalendarRegistered) {
+      // The court_calendar module is registered but the actual entity infrastructure
+      // (court date entities, repositories) does not yet exist in the codebase.
+      // When Phase 55 adds the entity layer, this block can be extended to seed
+      // court dates, adverse parties, and tariff items.
+      log.info(
+          "Court calendar module registered but entity infrastructure not yet available"
+              + " -- skipping legal-specific entities");
+    } else {
+      log.info("Court calendar module not registered -- skipping legal-specific entities");
+    }
   }
 
   private List<CustomerInfo> createCustomers(UUID createdBy) {
@@ -132,29 +165,29 @@ public class GenericDemoDataSeeder extends BaseDemoDataSeeder {
     List<CustomerSpec> specs =
         List.of(
             new CustomerSpec(
-                "Acme Holdings (Pty) Ltd",
-                "accounts@acmeholdings.co.za",
-                "+27 11 555 0001",
+                "Dlamini Property Trust",
+                "admin@dlaminitrust.co.za",
+                "+27 11 555 0201",
                 LifecycleStatus.ACTIVE),
             new CustomerSpec(
-                "Cape Digital Solutions",
-                "info@capedigital.co.za",
-                "+27 21 555 0002",
+                "Naidoo & Partners Developers",
+                "legal@naidoopartners.co.za",
+                "+27 31 555 0202",
                 LifecycleStatus.ACTIVE),
             new CustomerSpec(
-                "Highveld Manufacturing",
-                "procurement@highveldmfg.co.za",
-                "+27 11 555 0003",
+                "Botha Family Estate",
+                "estate@bothafamily.co.za",
+                "+27 12 555 0203",
                 LifecycleStatus.ACTIVE),
             new CustomerSpec(
-                "Karoo Wine Estate",
-                "admin@karoowines.co.za",
-                "+27 23 555 0004",
+                "Msimang Transport (Pty) Ltd",
+                "operations@msimangtransport.co.za",
+                "+27 11 555 0204",
                 LifecycleStatus.ONBOARDING),
             new CustomerSpec(
-                "Sandton Retail Group",
-                "hello@sandtonretail.co.za",
-                "+27 11 555 0005",
+                "Cele Holdings",
+                "info@celeholdings.co.za",
+                "+27 31 555 0205",
                 LifecycleStatus.PROSPECT));
 
     List<CustomerInfo> results = new ArrayList<>();
@@ -183,25 +216,34 @@ public class GenericDemoDataSeeder extends BaseDemoDataSeeder {
 
     record ProjectSpec(String name, String description, boolean completed) {}
 
+    // Projects ordered so names align with modulo customer assignment (i % 3):
+    // i=0 -> Dlamini, i=1 -> Naidoo, i=2 -> Botha, i=3 -> Dlamini, etc.
     List<ProjectSpec> specs =
         List.of(
             new ProjectSpec(
-                "Website Redesign", "Full website redesign for improved UX and conversion", false),
+                "Dlamini -- Property Transfer DE-2026-001",
+                "Conveyancing matter for property transfer in Sandton",
+                false),
             new ProjectSpec(
-                "Q1 Strategy Review", "Quarterly strategic planning and performance review", false),
+                "Naidoo -- Commercial Lease Review",
+                "Review and negotiation of commercial lease agreements for new development",
+                false),
             new ProjectSpec(
-                "Brand Identity Refresh", "Modernize brand assets and style guide", false),
+                "Botha -- Estate Administration",
+                "Administration of deceased estate including asset distribution",
+                false),
             new ProjectSpec(
-                "Social Media Campaign", "Multi-platform social media campaign for Q2", false),
+                "Dlamini -- Labour Dispute",
+                "Labour dispute representation at CCMA and Labour Court",
+                false),
             new ProjectSpec(
-                "Annual Report Design", "Design and layout of 2025 annual report", true),
-            new ProjectSpec(
-                "Product Launch Strategy", "Go-to-market strategy for new product line", false),
-            new ProjectSpec(
-                "Customer Research Study",
-                "In-depth customer behavior research and insights",
+                "Naidoo -- Sectional Title Registration",
+                "Sectional title registration for residential complex",
                 true),
-            new ProjectSpec("UX Audit", "Comprehensive UX audit and recommendations", false));
+            new ProjectSpec(
+                "Botha -- Company Formation",
+                "CIPC registration and shareholder agreement drafting",
+                true));
 
     List<ProjectInfo> results = new ArrayList<>();
     for (int i = 0; i < specs.size(); i++) {
@@ -231,7 +273,7 @@ public class GenericDemoDataSeeder extends BaseDemoDataSeeder {
 
     String[] priorities = {"LOW", "MEDIUM", "HIGH", "URGENT"};
     List<UUID> allTaskIds = new ArrayList<>();
-    int tasksPerProject = 50 / activeProjects.size(); // ~8 per active project
+    int tasksPerProject = 50 / activeProjects.size();
     int remainder = 50 - (tasksPerProject * activeProjects.size());
 
     for (int p = 0; p < activeProjects.size(); p++) {
@@ -247,7 +289,7 @@ public class GenericDemoDataSeeder extends BaseDemoDataSeeder {
             new Task(
                 project.id(),
                 title,
-                "Demo task for " + project.name(),
+                "Legal task for " + project.name(),
                 priority,
                 null,
                 null,
@@ -257,7 +299,7 @@ public class GenericDemoDataSeeder extends BaseDemoDataSeeder {
         int statusRoll = rand.nextInt(10);
         task = taskRepository.save(task);
         if (statusRoll < 4) {
-          // Keep OPEN — assign via update
+          // Keep OPEN -- assign via update
           task.update(
               task.getTitle(),
               task.getDescription(),
@@ -290,8 +332,7 @@ public class GenericDemoDataSeeder extends BaseDemoDataSeeder {
         String title = TASK_TITLES[rand.nextInt(TASK_TITLES.length)];
         UUID assignee = memberIds.get(rand.nextInt(memberIds.size()));
         Task task =
-            new Task(
-                project.id(), title, "Completed project task", "MEDIUM", null, null, createdBy);
+            new Task(project.id(), title, "Completed legal task", "MEDIUM", null, null, createdBy);
         task = taskRepository.save(task);
         task.claim(assignee);
         task = taskRepository.save(task);
@@ -315,8 +356,6 @@ public class GenericDemoDataSeeder extends BaseDemoDataSeeder {
     int entriesPerInvoice = Math.max(1, unbilled.size() / 10);
 
     // Invoice status distribution: 2 DRAFT, 4 SENT, 3 PAID, 1 VOID
-    // DRAFT = just created, SENT = approved + sent, PAID = approved + sent + paid, VOID = approved
-    // + sent + voided
     String[] statusTargets = {
       "DRAFT", "DRAFT", "SENT", "SENT", "SENT", "SENT", "PAID", "PAID", "PAID", "VOID"
     };
@@ -332,7 +371,7 @@ public class GenericDemoDataSeeder extends BaseDemoDataSeeder {
 
       CustomerInfo customer = activeCustomers.get(i % activeCustomers.size());
       invoiceCount++;
-      String invoiceNumber = "INV-2026-%03d".formatted(invoiceCount);
+      String invoiceNumber = "LEG-2026-%03d".formatted(invoiceCount);
       String targetStatus = statusTargets[i];
 
       UUID invoiceId =
@@ -353,7 +392,7 @@ public class GenericDemoDataSeeder extends BaseDemoDataSeeder {
           case "SENT" -> invoice.markSent();
           case "PAID" -> {
             invoice.markSent();
-            invoice.recordPayment("PAY-DEMO-%03d".formatted(invoiceCount));
+            invoice.recordPayment("PAY-LEG-%03d".formatted(invoiceCount));
           }
           case "VOID" -> {
             invoice.markSent();

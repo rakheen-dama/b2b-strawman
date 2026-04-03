@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.demo.seed;
 
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLine;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
@@ -255,4 +256,10 @@ public abstract class BaseDemoDataSeeder {
     if (s == null || s.isEmpty()) return s;
     return s.substring(0, 1).toUpperCase() + s.substring(1);
   }
+
+  /** Shared record for tracking customer data during seeding. */
+  protected record CustomerInfo(UUID id, String name, String email, LifecycleStatus status) {}
+
+  /** Shared record for tracking project data during seeding. */
+  protected record ProjectInfo(UUID id, String name, boolean completed) {}
 }

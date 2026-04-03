@@ -25,35 +25,38 @@ import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 /**
- * Demo data seeder for generic agency/consultancy verticals. Creates a realistic marketing agency
- * scenario with 5 customers, 8 projects, ~50 tasks, ~200 time entries, and 10 invoices.
+ * Demo data seeder for SA accounting firm verticals. Creates a realistic accounting practice
+ * scenario with 5 customers, 8 projects, ~50 tasks, ~200 time entries, and 10 invoices. Rates range
+ * from R650/hr (Clerk) to R1,200/hr (Partner).
  */
 @Component
-public class GenericDemoDataSeeder extends BaseDemoDataSeeder {
+public class AccountingDemoDataSeeder extends BaseDemoDataSeeder {
 
-  private static final String ORG_NAME = "Demo Agency (Pty) Ltd";
+  private static final String ORG_NAME = "Demo Accounting Practice (Pty) Ltd";
 
-  private static final BigDecimal RATE_JUNIOR = new BigDecimal("850.00");
-  private static final BigDecimal RATE_MID = new BigDecimal("1100.00");
-  private static final BigDecimal RATE_SENIOR = new BigDecimal("1350.00");
-  private static final BigDecimal RATE_DIRECTOR = new BigDecimal("1500.00");
+  private static final BigDecimal RATE_CLERK = new BigDecimal("650.00");
+  private static final BigDecimal RATE_ACCOUNTANT = new BigDecimal("850.00");
+  private static final BigDecimal RATE_SENIOR_ACCOUNTANT = new BigDecimal("1000.00");
+  private static final BigDecimal RATE_PARTNER = new BigDecimal("1200.00");
 
-  private static final BigDecimal[] RATES = {RATE_JUNIOR, RATE_MID, RATE_SENIOR, RATE_DIRECTOR};
-
-  private static final String[] TASK_TITLES = {
-    "Design brief",
-    "Content creation",
-    "Client review",
-    "Strategy workshop",
-    "Creative direction",
-    "Revisions",
-    "Final delivery",
-    "Kick-off meeting",
-    "Market research",
-    "Competitor analysis"
+  private static final BigDecimal[] RATES = {
+    RATE_CLERK, RATE_ACCOUNTANT, RATE_SENIOR_ACCOUNTANT, RATE_PARTNER
   };
 
-  public GenericDemoDataSeeder(
+  private static final String[] TASK_TITLES = {
+    "Tax return preparation",
+    "Financial statement review",
+    "SARS submission",
+    "Bank reconciliation",
+    "CIPC annual return",
+    "VAT return filing",
+    "Payroll processing",
+    "Audit working papers",
+    "Management accounts",
+    "Trial balance review"
+  };
+
+  public AccountingDemoDataSeeder(
       TenantTransactionHelper tenantTransactionHelper,
       MemberRepository memberRepository,
       OrgRoleRepository orgRoleRepository,
@@ -81,10 +84,10 @@ public class GenericDemoDataSeeder extends BaseDemoDataSeeder {
   protected void seedProfileData(String schemaName, UUID orgId) {
     Random rand = seededRandom(orgId);
 
-    // 1. Members (4: 1 owner, 1 admin, 2 members)
-    List<UUID> ownerIds = createMembers("owner", 1, 1);
-    List<UUID> adminIds = createMembers("admin", 1, 2);
-    List<UUID> memberIds = createMembers("member", 2, 3);
+    // 1. Members (4: 1 owner/partner, 1 admin/senior, 2 members/accountants)
+    List<UUID> ownerIds = createMembers("owner", 1, 10);
+    List<UUID> adminIds = createMembers("admin", 1, 11);
+    List<UUID> memberIds = createMembers("member", 2, 12);
 
     List<UUID> allMemberIds = new ArrayList<>();
     allMemberIds.addAll(ownerIds);
@@ -118,7 +121,8 @@ public class GenericDemoDataSeeder extends BaseDemoDataSeeder {
     createInvoices(customers, timeEntries, primaryMemberId, rand);
 
     log.info(
-        "Generic demo data seeded: {} members, {} customers, {} projects, {} tasks, {} time entries",
+        "Accounting demo data seeded: {} members, {} customers, {} projects, {} tasks, {} time"
+            + " entries",
         allMemberIds.size(),
         customers.size(),
         projects.size(),
@@ -132,29 +136,29 @@ public class GenericDemoDataSeeder extends BaseDemoDataSeeder {
     List<CustomerSpec> specs =
         List.of(
             new CustomerSpec(
-                "Acme Holdings (Pty) Ltd",
-                "accounts@acmeholdings.co.za",
-                "+27 11 555 0001",
+                "Van der Merwe & Associates",
+                "accounts@vdmassociates.co.za",
+                "+27 12 555 0101",
                 LifecycleStatus.ACTIVE),
             new CustomerSpec(
-                "Cape Digital Solutions",
-                "info@capedigital.co.za",
-                "+27 21 555 0002",
+                "Protea Trading (Pty) Ltd",
+                "finance@proteatrading.co.za",
+                "+27 11 555 0102",
                 LifecycleStatus.ACTIVE),
             new CustomerSpec(
-                "Highveld Manufacturing",
-                "procurement@highveldmfg.co.za",
-                "+27 11 555 0003",
+                "Karoo Investments",
+                "admin@karooinvest.co.za",
+                "+27 23 555 0103",
                 LifecycleStatus.ACTIVE),
             new CustomerSpec(
-                "Karoo Wine Estate",
-                "admin@karoowines.co.za",
-                "+27 23 555 0004",
+                "Disa Financial Services",
+                "info@disafinancial.co.za",
+                "+27 21 555 0104",
                 LifecycleStatus.ONBOARDING),
             new CustomerSpec(
-                "Sandton Retail Group",
-                "hello@sandtonretail.co.za",
-                "+27 11 555 0005",
+                "Berg & Berg Attorneys",
+                "office@bergberg.co.za",
+                "+27 11 555 0105",
                 LifecycleStatus.PROSPECT));
 
     List<CustomerInfo> results = new ArrayList<>();
@@ -183,25 +187,42 @@ public class GenericDemoDataSeeder extends BaseDemoDataSeeder {
 
     record ProjectSpec(String name, String description, boolean completed) {}
 
+    // Projects ordered so names align with modulo customer assignment (i % 3):
+    // i=0 -> Van der Merwe, i=1 -> Protea, i=2 -> Karoo, i=3 -> Van der Merwe, etc.
     List<ProjectSpec> specs =
         List.of(
             new ProjectSpec(
-                "Website Redesign", "Full website redesign for improved UX and conversion", false),
+                "BBBEE Audit -- Van der Merwe",
+                "Broad-Based BEE verification and scorecard preparation",
+                false),
             new ProjectSpec(
-                "Q1 Strategy Review", "Quarterly strategic planning and performance review", false),
+                "2025 Annual Financials -- Protea Trading",
+                "Full annual financial statement preparation and audit for Protea Trading",
+                false),
             new ProjectSpec(
-                "Brand Identity Refresh", "Modernize brand assets and style guide", false),
+                "Monthly Bookkeeping -- Karoo Investments",
+                "Recurring monthly bookkeeping and management accounts",
+                false),
             new ProjectSpec(
-                "Social Media Campaign", "Multi-platform social media campaign for Q2", false),
+                "CIPC Compliance -- Van der Merwe",
+                "Annual CIPC return filing and company secretarial compliance",
+                false),
             new ProjectSpec(
-                "Annual Report Design", "Design and layout of 2025 annual report", true),
+                "Payroll Setup -- Protea Trading",
+                "PAYE registration and monthly payroll processing setup",
+                false),
             new ProjectSpec(
-                "Product Launch Strategy", "Go-to-market strategy for new product line", false),
+                "Tax Advisory -- Karoo Investments",
+                "Strategic tax planning and advisory engagement",
+                false),
             new ProjectSpec(
-                "Customer Research Study",
-                "In-depth customer behavior research and insights",
+                "SARS ITR14 -- Van der Merwe",
+                "Corporate income tax return preparation and submission",
                 true),
-            new ProjectSpec("UX Audit", "Comprehensive UX audit and recommendations", false));
+            new ProjectSpec(
+                "VAT Registration -- Protea Trading",
+                "VAT vendor registration and first return filing",
+                true));
 
     List<ProjectInfo> results = new ArrayList<>();
     for (int i = 0; i < specs.size(); i++) {
@@ -231,7 +252,7 @@ public class GenericDemoDataSeeder extends BaseDemoDataSeeder {
 
     String[] priorities = {"LOW", "MEDIUM", "HIGH", "URGENT"};
     List<UUID> allTaskIds = new ArrayList<>();
-    int tasksPerProject = 50 / activeProjects.size(); // ~8 per active project
+    int tasksPerProject = 50 / activeProjects.size();
     int remainder = 50 - (tasksPerProject * activeProjects.size());
 
     for (int p = 0; p < activeProjects.size(); p++) {
@@ -247,7 +268,7 @@ public class GenericDemoDataSeeder extends BaseDemoDataSeeder {
             new Task(
                 project.id(),
                 title,
-                "Demo task for " + project.name(),
+                "Accounting task for " + project.name(),
                 priority,
                 null,
                 null,
@@ -257,7 +278,7 @@ public class GenericDemoDataSeeder extends BaseDemoDataSeeder {
         int statusRoll = rand.nextInt(10);
         task = taskRepository.save(task);
         if (statusRoll < 4) {
-          // Keep OPEN — assign via update
+          // Keep OPEN -- assign via update
           task.update(
               task.getTitle(),
               task.getDescription(),
@@ -291,7 +312,7 @@ public class GenericDemoDataSeeder extends BaseDemoDataSeeder {
         UUID assignee = memberIds.get(rand.nextInt(memberIds.size()));
         Task task =
             new Task(
-                project.id(), title, "Completed project task", "MEDIUM", null, null, createdBy);
+                project.id(), title, "Completed accounting task", "MEDIUM", null, null, createdBy);
         task = taskRepository.save(task);
         task.claim(assignee);
         task = taskRepository.save(task);
@@ -315,8 +336,6 @@ public class GenericDemoDataSeeder extends BaseDemoDataSeeder {
     int entriesPerInvoice = Math.max(1, unbilled.size() / 10);
 
     // Invoice status distribution: 2 DRAFT, 4 SENT, 3 PAID, 1 VOID
-    // DRAFT = just created, SENT = approved + sent, PAID = approved + sent + paid, VOID = approved
-    // + sent + voided
     String[] statusTargets = {
       "DRAFT", "DRAFT", "SENT", "SENT", "SENT", "SENT", "PAID", "PAID", "PAID", "VOID"
     };
@@ -332,7 +351,7 @@ public class GenericDemoDataSeeder extends BaseDemoDataSeeder {
 
       CustomerInfo customer = activeCustomers.get(i % activeCustomers.size());
       invoiceCount++;
-      String invoiceNumber = "INV-2026-%03d".formatted(invoiceCount);
+      String invoiceNumber = "ACC-2026-%03d".formatted(invoiceCount);
       String targetStatus = statusTargets[i];
 
       UUID invoiceId =
@@ -353,7 +372,7 @@ public class GenericDemoDataSeeder extends BaseDemoDataSeeder {
           case "SENT" -> invoice.markSent();
           case "PAID" -> {
             invoice.markSent();
-            invoice.recordPayment("PAY-DEMO-%03d".formatted(invoiceCount));
+            invoice.recordPayment("PAY-ACC-%03d".formatted(invoiceCount));
           }
           case "VOID" -> {
             invoice.markSent();

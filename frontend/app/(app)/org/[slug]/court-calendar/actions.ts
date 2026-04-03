@@ -233,5 +233,5 @@ export interface UpcomingResponse {
 }
 
 export async function fetchUpcoming(): Promise<UpcomingResponse> {
-  return api.get<UpcomingResponse>("/api/court-calendar/upcoming");
+  return api.get<UpcomingResponse>("/api/court-dates/upcoming");
 }

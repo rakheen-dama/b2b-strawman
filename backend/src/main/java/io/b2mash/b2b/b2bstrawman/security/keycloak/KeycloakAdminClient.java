@@ -410,6 +410,45 @@ public class KeycloakAdminClient {
     return userId;
   }
 
+  /** Returns the user IDs of all members in the given Keycloak organization. */
+  public List<String> listOrgMemberIds(String kcOrgId) {
+    List<Map<String, Object>> members = listOrgMembers(kcOrgId);
+    if (members == null) {
+      return List.of();
+    }
+    return members.stream().map(m -> (String) m.get("id")).filter(id -> id != null).toList();
+  }
+
+  /** Returns the organizations a user belongs to. */
+  public List<Map<String, Object>> getUserOrganizations(String userId) {
+    return restClient
+        .get()
+        .uri("/users/{userId}/organizations", userId)
+        .header("Authorization", "Bearer " + getAdminToken())
+        .retrieve()
+        .body(new ParameterizedTypeReference<>() {});
+  }
+
+  /** Removes a user from a Keycloak organization (without deleting the user). */
+  public void removeOrgMember(String kcOrgId, String userId) {
+    restClient
+        .delete()
+        .uri("/organizations/{orgId}/members/{userId}", kcOrgId, userId)
+        .header("Authorization", "Bearer " + getAdminToken())
+        .retrieve()
+        .toBodilessEntity();
+  }
+
+  /** Deletes a Keycloak user entirely. */
+  public void deleteUser(String userId) {
+    restClient
+        .delete()
+        .uri("/users/{userId}", userId)
+        .header("Authorization", "Bearer " + getAdminToken())
+        .retrieve()
+        .toBodilessEntity();
+  }
+
   @SuppressWarnings("unchecked")
   private synchronized String getAdminToken() {
     if (Instant.now().isBefore(tokenExpiry)) {

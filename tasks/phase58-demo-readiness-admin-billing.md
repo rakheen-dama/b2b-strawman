@@ -9,7 +9,7 @@ Phase 58 closes the gap between "the platform can process payments" (Phase 57) a
 | 427 | Billing Method Dimension | Backend | -- | M | 427A, 427B | **Done** (PRs #887, #888) |
 | 428 | Admin Billing Management | Backend + Frontend | 427 | L | 428A, 428B | **Done** (PRs #889, #890) |
 | 429 | Demo Tenant Provisioning | Backend + Frontend | 427 | L | 429A, 429B | **Done** (PRs #891, #892) |
-| 430 | Demo Data Seeding | Backend | 429 | L | 430A, 430B, 430C | 430A Done (PR #893), 430B Done (PR #894) |
+| 430 | Demo Data Seeding | Backend | 429 | L | 430A, 430B, 430C | **Done** (PRs #893, #894, #895) |
 | 431 | Demo Tenant Cleanup | Backend + Frontend | 427 | L | 431A, 431B | |
 
 ## Dependency Graph
@@ -59,7 +59,7 @@ Phase 58 closes the gap between "the platform can process payments" (Phase 57) a
 |-------|------|-----------|
 | 3a | Epic 430A: Base + Generic Seeder | BaseDemoDataSeeder + GenericDemoDataSeeder. Must exist before provisioning can seed data. | **Done** (PR #893) |
 | 3b | Epic 430B: Accounting + Legal Seeders | Profile-specific seeders. Can begin after 430A provides the base class. | **Done** (PR #894) |
-| 3c | Epic 430C: Reseed Endpoint + Integration Tests | Reseed endpoint on DemoAdminController + comprehensive data consistency tests. After 430A and 430B. |
+| 3c | Epic 430C: Reseed Endpoint + Integration Tests | Reseed endpoint on DemoAdminController + comprehensive data consistency tests. After 430A and 430B. | **Done** (PR #895) |
 
 ### Stage 4: Frontend (After Respective Backend Slices)
 
@@ -331,7 +331,7 @@ Stage 4:  [E428B] [E429B] [E431B]                       <- parallel frontend (af
 |-------|-------|---------|--------|
 | **430A** | 430.1--430.5 | `BaseDemoDataSeeder` abstract base with utilities, `GenericDemoDataSeeder` (agency/consultancy), wire into `DemoProvisionService`, basic seeder unit test | **Done** (PR #893) |
 | **430B** | 430.6--430.9 | `AccountingDemoDataSeeder` (SA accounting firm), `LegalDemoDataSeeder` (SA law firm, conditional), profile-specific unit tests | **Done** (PR #894) |
-| **430C** | 430.10--430.14 | Reseed endpoint + `DemoReseedResponse` DTO, reseed service method (truncate transactional data, preserve config, re-seed), `DemoDataSeederTest` (integration -- data consistency), `DemoReseedTest` | |
+| **430C** | 430.10--430.14 | Reseed endpoint + `DemoReseedResponse` DTO, reseed service method (truncate transactional data, preserve config, re-seed), `DemoDataSeederTest` (integration -- data consistency), `DemoReseedTest` | **Done** (PR #895) |
 
 ### Tasks
 

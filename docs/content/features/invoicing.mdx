@@ -25,7 +25,7 @@ Every invoice moves through a series of statuses that reflect where it is in the
 | **Paid** | Green | Payment has been received and recorded. |
 | **Void** | Red | The invoice has been cancelled. No payment is expected. |
 
-The typical path is **Draft** to **Approved** to **Sent** to **Paid**. You can void an invoice at the Draft, Approved, or Sent stage if it is no longer valid.
+The typical path is **Draft** to **Approved** to **Sent** to **Paid**. You can void an invoice at the **Approved** or **Sent** stage if it is no longer valid. Draft invoices can be deleted instead.
 
 <Callout type="info">
   Only **Draft** invoices can be modified. Once an invoice moves to Approved or beyond, it is locked to preserve a reliable audit trail. If you need to make changes after approval, void the invoice and create a new one.
@@ -115,10 +115,10 @@ Each line shows the description, quantity, unit price, tax rate, and calculated 
 
 | Status | Available actions |
 |--------|------------------|
-| **Draft** | Edit, Preview PDF, Approve, Delete |
-| **Approved** | Preview PDF, Send, Void |
-| **Sent** | Record Payment, Void |
-| **Paid** | View payment details |
+| **Draft** | Edit, Preview PDF, Approve, Delete Draft |
+| **Approved** | Preview PDF, Send Invoice, Void |
+| **Sent** | Preview PDF, Record Payment, Void |
+| **Paid** | Preview PDF, View payment details |
 
 ### Recording a Payment
 

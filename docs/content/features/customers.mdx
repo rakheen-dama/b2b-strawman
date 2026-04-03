@@ -39,6 +39,7 @@ Every customer moves through a lifecycle that tracks the business relationship f
 | **Dormant** | No recent activity. The relationship is on hold but not ended. |
 | **Offboarding** | The relationship is winding down. Final deliverables and handovers are in progress. |
 | **Offboarded** | The relationship has ended. The record is preserved for reference and compliance. |
+| **Anonymized** | Customer data has been anonymized for compliance purposes (e.g., GDPR, POPIA). This is a terminal state. |
 
 <Callout type="info">
   Lifecycle status is separate from the record status (Active or Archived). The lifecycle tracks the business relationship, while the record status controls whether the customer appears in your default list views.
@@ -106,7 +107,7 @@ Open the customer detail page and update any field directly. Changes are saved i
 
 ### Transitioning Through the Lifecycle
 
-Admins can move a customer through lifecycle stages using the status dropdown on the detail page. The typical path is **Prospect** to **Onboarding** to **Active**, but you can transition to any status that fits your workflow. Moving a customer to **Onboarding** activates the onboarding checklist, and completing all checklist items transitions the customer to **Active** automatically.
+Admins can move a customer through lifecycle stages using the status dropdown on the detail page. Transitions follow defined rules — each status has specific allowed next statuses. The typical path is **Prospect → Onboarding → Active**, but other valid transitions exist (for example, Active → Dormant, or Active → Offboarding). Moving a customer to **Onboarding** activates the onboarding checklist, and completing all checklist items transitions the customer to **Active** automatically.
 
 ### Archiving and Restoring
 
@@ -122,7 +123,7 @@ You can link a project to a customer when creating the project or by editing an 
 
 ## Tags and Saved Views
 
-**Tags** are colour-coded labels you can attach to customers to categorise them — by industry, service type, priority, or any system that suits your firm. Tags appear as coloured badges on the customer list and are shared across projects, tasks, and customers.
+**Tags** are colour-coded labels you can attach to customers to categorise them — by industry, service type, priority, or any system that suits your firm. These labels appear as coloured badges on the customer list and are shared across projects, tasks, and customers.
 
 **Saved views** let you save your current filter, sort, and column configuration as a named view. This is useful when you regularly check a specific subset of customers, such as "Active Companies" or "Prospects This Month."
 

@@ -49,7 +49,7 @@ Phase 58 closes the gap between "the platform can process payments" (Phase 57) a
 
 | Order | Epic | Rationale |
 |-------|------|-----------|
-| 2a | Epic 428A: Admin Billing Backend | Admin billing service + controller + DTOs. Depends on billing method entity from 427. Independent of 429, 431. |
+| 2a | Epic 428A: Admin Billing Backend | Admin billing service + controller + DTOs. Depends on billing method entity from 427. Independent of 429, 431. | **Done** (PR #889) |
 | 2b | Epic 429A: Demo Provisioning Backend | Demo provision service + controller + KeycloakAdminClient extensions. Depends on PILOT billing method from 427. Independent of 428, 431. |
 | 2c | Epic 431A: Demo Cleanup Backend | Cleanup service + controller + safety validation. Depends on `isCleanupEligible()` from 427. Independent of 428, 429. |
 
@@ -173,7 +173,7 @@ Stage 4:  [E428B] [E429B] [E431B]                       <- parallel frontend (af
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **428A** | 428.1--428.6 | `AdminBillingService`, `AdminBillingController`, admin DTOs (`AdminBillingOverrideRequest`, `AdminTenantBillingResponse`, `ExtendTrialRequest`), audit event integration, `AdminBillingEndpointTest` | |
+| **428A** | 428.1--428.6 | `AdminBillingService`, `AdminBillingController`, admin DTOs (`AdminBillingOverrideRequest`, `AdminTenantBillingResponse`, `ExtendTrialRequest`), audit event integration, `AdminBillingEndpointTest` | **Done** (PR #889) |
 | **428B** | 428.7--428.12 | Platform admin billing page (tenant list with badges, filters, search), billing detail slide-over (status/method changes, trial extension, admin note), layout update with "Billing" nav, frontend tests | |
 
 ### Tasks

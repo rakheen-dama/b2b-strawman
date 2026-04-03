@@ -17,9 +17,11 @@ import {
   Gavel,
   ShieldAlert,
   FileSpreadsheet,
+  BookOpen,
   type LucideIcon,
 } from "lucide-react";
 import type { CAPABILITIES } from "@/lib/capabilities";
+import { docsLink } from "@/lib/docs";
 
 /** Union of all known capability strings */
 type CapabilityName = (typeof CAPABILITIES)[keyof typeof CAPABILITIES];
@@ -36,6 +38,8 @@ export interface NavItem {
   requiredModule?: string;
   /** Optional keywords for future command palette fuzzy search */
   keywords?: string[];
+  /** If true, the sidebar renders an <a target="_blank"> instead of <Link> */
+  external?: boolean;
 }
 
 export interface NavGroup {
@@ -240,6 +244,12 @@ export const UTILITY_ITEMS: NavItem[] = [
     label: "Settings",
     href: (slug) => `/org/${slug}/settings/general`,
     icon: Settings,
+  },
+  {
+    label: "Help",
+    href: () => docsLink(""),
+    icon: BookOpen,
+    external: true,
   },
 ];
 

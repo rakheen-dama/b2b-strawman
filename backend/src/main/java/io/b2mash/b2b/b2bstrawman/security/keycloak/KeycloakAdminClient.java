@@ -6,6 +6,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpClient.Version;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -408,6 +409,68 @@ public class KeycloakAdminClient {
         .toBodilessEntity();
     log.info("Created Keycloak user {} ({})", userId, email);
     return userId;
+  }
+
+  /**
+   * Returns the user IDs of all members in the given Keycloak organization. Uses pagination to
+   * handle organizations with more than the Keycloak default page size (10).
+   */
+  public List<String> listOrgMemberIds(String kcOrgId) {
+    List<String> allIds = new ArrayList<>();
+    int first = 0;
+    int max = 100;
+
+    while (true) {
+      List<Map<String, Object>> page = listOrgMembersPage(kcOrgId, first, max);
+      if (page == null || page.isEmpty()) {
+        break;
+      }
+      page.stream().map(m -> (String) m.get("id")).filter(id -> id != null).forEach(allIds::add);
+      if (page.size() < max) {
+        break;
+      }
+      first += max;
+    }
+    return allIds;
+  }
+
+  private List<Map<String, Object>> listOrgMembersPage(String orgId, int first, int max) {
+    return restClient
+        .get()
+        .uri("/organizations/{orgId}/members?first={first}&max={max}", orgId, first, max)
+        .header("Authorization", "Bearer " + getAdminToken())
+        .retrieve()
+        .body(new ParameterizedTypeReference<>() {});
+  }
+
+  /** Returns the organizations a user belongs to. */
+  public List<Map<String, Object>> getUserOrganizations(String userId) {
+    return restClient
+        .get()
+        .uri("/users/{userId}/organizations", userId)
+        .header("Authorization", "Bearer " + getAdminToken())
+        .retrieve()
+        .body(new ParameterizedTypeReference<>() {});
+  }
+
+  /** Removes a user from a Keycloak organization (without deleting the user). */
+  public void removeOrgMember(String kcOrgId, String userId) {
+    restClient
+        .delete()
+        .uri("/organizations/{orgId}/members/{userId}", kcOrgId, userId)
+        .header("Authorization", "Bearer " + getAdminToken())
+        .retrieve()
+        .toBodilessEntity();
+  }
+
+  /** Deletes a Keycloak user entirely. */
+  public void deleteUser(String userId) {
+    restClient
+        .delete()
+        .uri("/users/{userId}", userId)
+        .header("Authorization", "Bearer " + getAdminToken())
+        .retrieve()
+        .toBodilessEntity();
   }
 
   @SuppressWarnings("unchecked")

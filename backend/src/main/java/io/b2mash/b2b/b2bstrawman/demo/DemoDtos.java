@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.demo;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import java.util.List;
 import java.util.UUID;
 
 public final class DemoDtos {
@@ -30,4 +31,15 @@ public final class DemoDtos {
       boolean success,
       String verticalProfile,
       String error) {}
+
+  public record DemoCleanupRequest(@NotBlank String confirmOrganizationName) {}
+
+  public record DemoCleanupResponse(
+      UUID organizationId,
+      String organizationName,
+      boolean keycloakCleaned,
+      boolean schemaCleaned,
+      boolean publicRecordsCleaned,
+      boolean s3Cleaned,
+      List<String> errors) {}
 }

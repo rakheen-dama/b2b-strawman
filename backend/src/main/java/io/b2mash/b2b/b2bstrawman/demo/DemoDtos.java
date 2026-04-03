@@ -21,5 +21,6 @@ public final class DemoDtos {
       String verticalProfile,
       String loginUrl,
       boolean demoDataSeeded,
-      String adminNote) {}
+      String adminNote,
+      String tempPassword) {}
 }

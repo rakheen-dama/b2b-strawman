@@ -7,9 +7,11 @@ import io.b2mash.b2b.b2bstrawman.billing.SubscriptionStatusCache;
 import io.b2mash.b2b.b2bstrawman.demo.DemoDtos.DemoProvisionRequest;
 import io.b2mash.b2b.b2bstrawman.demo.DemoDtos.DemoProvisionResponse;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient;
+import java.security.SecureRandom;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,15 +82,23 @@ public class DemoProvisionService {
         verticalProfile,
         adminEmail);
 
+    // Guard: reject if an org with this slug already exists (prevents corrupting real tenants)
+    if (organizationRepository.findByExternalOrgId(slug).isPresent()) {
+      throw new ResourceConflictException(
+          "Organization already exists",
+          "An organization with slug '%s' already exists. Choose a different name."
+              .formatted(slug));
+    }
+
     // Step 1: Find or create Keycloak user
+    String tempPassword = generateTempPassword();
     String userId =
         keycloakAdminClient
             .findUserByEmail(adminEmail)
             .orElseGet(
                 () -> {
                   log.info("Creating Keycloak user for {}", adminEmail);
-                  return keycloakAdminClient.createUser(
-                      adminEmail, "Demo", "Admin", "demo-password-123");
+                  return keycloakAdminClient.createUser(adminEmail, "Demo", "Admin", tempPassword);
                 });
 
     // Step 2: Create Keycloak organization
@@ -117,7 +127,13 @@ public class DemoProvisionService {
     keycloakAdminClient.updateMemberRole(kcOrgId, userId, "owner");
 
     // Step 4: Provision tenant schema (NO outer transaction — seeders manage their own)
-    tenantProvisioningService.provisionTenant(slug, name, verticalProfile);
+    var provisioningResult = tenantProvisioningService.provisionTenant(slug, name, verticalProfile);
+    if (provisioningResult.alreadyProvisioned()) {
+      throw new ResourceConflictException(
+          "Tenant already provisioned",
+          "Tenant schema for slug '%s' was already provisioned. Cannot override existing tenant."
+              .formatted(slug));
+    }
 
     // Step 5: Override subscription to ACTIVE/PILOT (short transaction)
     var org =
@@ -169,7 +185,26 @@ public class DemoProvisionService {
     String loginUrl = baseUrl + "/org/" + slug;
 
     return new DemoProvisionResponse(
-        org.getId(), slug, name, verticalProfile, loginUrl, demoDataSeeded, adminNote);
+        org.getId(),
+        slug,
+        name,
+        verticalProfile,
+        loginUrl,
+        demoDataSeeded,
+        adminNote,
+        tempPassword);
+  }
+
+  private static final SecureRandom RANDOM = new SecureRandom();
+  private static final String PASSWORD_CHARS =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&*";
+
+  static String generateTempPassword() {
+    var sb = new StringBuilder(12);
+    for (int i = 0; i < 12; i++) {
+      sb.append(PASSWORD_CHARS.charAt(RANDOM.nextInt(PASSWORD_CHARS.length())));
+    }
+    return sb.toString();
   }
 
   static String toSlug(String name) {

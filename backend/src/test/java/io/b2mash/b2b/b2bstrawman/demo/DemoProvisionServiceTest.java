@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.demo;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -71,7 +72,8 @@ class DemoProvisionServiceTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.organizationSlug").value("demo-accounting-firm"))
         .andExpect(jsonPath("$.organizationName").value("Demo Accounting Firm"))
-        .andExpect(jsonPath("$.verticalProfile").value("accounting"));
+        .andExpect(jsonPath("$.verticalProfile").value("accounting"))
+        .andExpect(jsonPath("$.tempPassword").isNotEmpty());
 
     verify(keycloakAdminClient)
         .createOrganization("Demo Accounting Firm", "demo-accounting-firm", "kc-user-001");
@@ -106,9 +108,10 @@ class DemoProvisionServiceTest {
     // Verify subscription was overridden to ACTIVE/PILOT
     var org = organizationRepository.findByExternalOrgId("pilot-org").orElseThrow();
     var sub = subscriptionRepository.findByOrganizationId(org.getId()).orElseThrow();
-    assert sub.getSubscriptionStatus()
-        == io.b2mash.b2b.b2bstrawman.billing.Subscription.SubscriptionStatus.ACTIVE;
-    assert sub.getBillingMethod() == io.b2mash.b2b.b2bstrawman.billing.BillingMethod.PILOT;
+    assertEquals(
+        io.b2mash.b2b.b2bstrawman.billing.Subscription.SubscriptionStatus.ACTIVE,
+        sub.getSubscriptionStatus());
+    assertEquals(io.b2mash.b2b.b2bstrawman.billing.BillingMethod.PILOT, sub.getBillingMethod());
   }
 
   @Test

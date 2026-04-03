@@ -388,13 +388,14 @@ public class KeycloakAdminClient {
       userId = path.substring(path.lastIndexOf('/') + 1);
     }
     if (userId == null) {
-      // Fallback: look up the user we just created
-      return findUserByEmail(email)
-          .orElseThrow(
-              () ->
-                  new InvalidStateException(
-                      "User creation failed",
-                      "Created user but could not resolve user ID for " + email));
+      // Fallback: look up the user we just created, then continue to set password
+      userId =
+          findUserByEmail(email)
+              .orElseThrow(
+                  () ->
+                      new InvalidStateException(
+                          "User creation failed",
+                          "Created user but could not resolve user ID for " + email));
     }
     // Set the password via a separate PUT call
     restClient
@@ -402,7 +403,7 @@ public class KeycloakAdminClient {
         .uri("/users/{userId}/reset-password", userId)
         .header("Authorization", "Bearer " + getAdminToken())
         .contentType(MediaType.APPLICATION_JSON)
-        .body(Map.of("type", "password", "value", tempPassword, "temporary", false))
+        .body(Map.of("type", "password", "value", tempPassword, "temporary", true))
         .retrieve()
         .toBodilessEntity();
     log.info("Created Keycloak user {} ({})", userId, email);

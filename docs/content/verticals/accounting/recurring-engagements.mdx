@@ -3,6 +3,102 @@ title: "Recurring Engagements"
 description: "Set up recurring engagements with automatic project creation and scheduling."
 ---
 
+import { Callout, Steps } from "nextra/components"
+
 # Recurring Engagements
 
-Content coming soon.
+Many accounting engagements repeat on a predictable cycle — monthly bookkeeping, quarterly VAT returns, annual audits. Instead of manually creating a new engagement each time, HeyKazi lets you set up schedules that automatically create engagements from a template on a recurring basis. You configure it once, and the system handles the rest.
+
+## Key Concepts
+
+### What Is a Schedule?
+
+A schedule links a project template to a client and a frequency. Each time the schedule fires, it creates a new engagement pre-filled from the template, assigned to the correct client, and optionally triggers follow-up actions like generating a document or sending an information request.
+
+### Schedule Statuses
+
+| Status | Description |
+|--------|-------------|
+| **Active** | The schedule is running. New engagements are created automatically at each interval. |
+| **Paused** | The schedule is temporarily stopped. No new engagements are created until you resume it. |
+| **Completed** | The schedule has reached its end date and will not create further engagements. |
+
+### Frequencies
+
+You can configure schedules to repeat at six different intervals.
+
+| Frequency | Typical Use Case |
+|-----------|-----------------|
+| Weekly | Payroll processing |
+| Fortnightly | Bi-weekly bookkeeping |
+| Monthly | Monthly bookkeeping, management accounts |
+| Quarterly | VAT returns, provisional tax |
+| Semi-Annually | Interim reviews |
+| Annually | Annual audits, tax returns, annual financial statements |
+
+## Creating a Schedule
+
+<Steps>
+### Step 1 — Choose a project template
+
+Select the project template that defines the engagement structure. The template determines the default tasks, documents, and settings for each created engagement.
+
+### Step 2 — Select the client
+
+Choose which client the recurring engagement is for.
+
+### Step 3 — Set the frequency and dates
+
+Pick how often the engagement repeats and set the start date. Optionally set an end date if the schedule should stop after a certain period.
+
+### Step 4 — Configure lead time
+
+Enter the number of days before the period start date to create the engagement. For example, a lead time of 14 days means the engagement is created two weeks before the period begins, giving your team time to prepare.
+
+### Step 5 — Assign a project lead (optional)
+
+Select a team member to be automatically assigned as the lead on each engagement created by this schedule.
+
+### Step 6 — Set a name override (optional)
+
+If you want engagements to follow a custom naming pattern instead of the template default, enter it here.
+
+### Step 7 — Configure post-create actions
+
+Optionally add actions that run automatically each time the schedule creates an engagement:
+- **Generate Document** — select a document template to auto-generate (for example, an engagement letter).
+- **Send Information Request** — select a request template and set the number of days until the request is due.
+</Steps>
+
+<Callout type="info">
+  Post-create actions save significant time on high-volume recurring work. For example, you can automatically send a year-end information request to the client every time an annual audit engagement is created.
+</Callout>
+
+## Managing Schedules
+
+The schedule list shows all your recurring engagements in a table with columns for Template, Client, Frequency, Next Execution, Last Executed, Executions (total count), Status, and Actions.
+
+From the actions menu on each schedule you can:
+- **View** the schedule details and execution history
+- **Pause** an active schedule to temporarily stop it
+- **Resume** a paused schedule
+- **Delete** a schedule that is no longer needed
+
+### Execution History
+
+Each schedule maintains a history of every engagement it has created. The execution history table shows the period covered (start and end dates), a link to the created engagement, and the date it was executed. This gives you a full audit trail of automated engagement creation.
+
+## Tips and Best Practices
+
+- **Start with your highest-volume engagements** — monthly bookkeeping clients benefit the most from automation.
+- **Use lead time wisely** — give your team enough prep time without creating engagements so early that they clutter the active list.
+- **Pair with post-create actions** — combining automatic engagement creation with automatic document generation and information requests can eliminate most of the manual setup for routine work.
+- **Review execution history periodically** — check that schedules are firing as expected and that no executions were missed.
+
+## Terminology Note
+
+In the accounting profile, "Projects" may appear as "Engagements" if your admin has configured terminology overrides. A "schedule" in HeyKazi is your recurring engagement configuration — it defines what gets created, for whom, and how often.
+
+## Related Features
+
+- [Projects](/features/projects) — engagements created by schedules appear as regular projects

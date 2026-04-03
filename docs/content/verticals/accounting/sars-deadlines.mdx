@@ -3,6 +3,109 @@ title: "SARS Deadline Management"
 description: "Track SARS filing deadlines, manage submission statuses, and avoid penalties."
 ---
 
+import { Callout, Steps } from "nextra/components"
+
 # SARS Deadline Management
 
-Content coming soon.
+Managing SARS filing deadlines across dozens of clients is one of the most high-stakes parts of running an accounting firm in South Africa. Miss a deadline and your client faces penalties. HeyKazi gives you a centralised view of every regulatory deadline for every client, calculated automatically from their financial year-end dates, so nothing slips through the cracks.
+
+## Key Concepts
+
+### Deadline Types
+
+HeyKazi tracks eight South African deadline types, organised into four categories.
+
+**Tax**
+
+| Deadline | Calculation Rule | Applicability |
+|----------|-----------------|---------------|
+| Provisional Tax — 1st Payment (IRP6) | Financial year-end + 6 months (end of month) | All clients |
+| Provisional Tax — 2nd Payment (IRP6) | Financial year-end month end | All clients |
+| Provisional Tax — Top-Up (Voluntary) | Financial year-end + 7 months (end of month) | All clients |
+| Income Tax Return (ITR14/IT12) | Financial year-end + 12 months | All clients |
+
+**VAT**
+
+| Deadline | Calculation Rule | Applicability |
+|----------|-----------------|---------------|
+| VAT Return (bi-monthly) | Period + 1 month, day 25 | Only if the client has a VAT number |
+
+**Corporate**
+
+| Deadline | Calculation Rule | Applicability |
+|----------|-----------------|---------------|
+| CIPC Annual Return | Financial year-end + 12 months | Only if the client has a CIPC registration number |
+| Annual Financial Statements | Financial year-end + 6 months | All clients |
+
+**Payroll**
+
+| Deadline | Calculation Rule | Applicability |
+|----------|-----------------|---------------|
+| PAYE/UIF/SDL Monthly Return | Period + 1 month, day 7 | All clients |
+
+### Filing Statuses
+
+Every deadline has a filing status that tells you where it stands.
+
+| Status | Description |
+|--------|-------------|
+| **Pending** | The due date is in the future and the filing has not been submitted yet. |
+| **Filed** | Marked as filed. You can record an optional SARS reference number and notes. |
+| **Overdue** | The due date has passed without a filing. These require urgent attention. |
+| **Not Applicable** | This deadline does not apply to the client (for example, a sole proprietor with no CIPC return). |
+
+## Viewing Your Deadlines
+
+The **Regulatory Deadlines** page shows filing deadlines for all clients, calculated from their financial year-end dates. You can switch between two views.
+
+### Calendar View
+
+The calendar displays a monthly grid with colour-coded dots on each day. Red dots indicate overdue deadlines, amber dots show pending deadlines, and teal dots mark filed deadlines. Click any day to see the full list of deadlines due on that date.
+
+### List View
+
+The list view shows a sortable table with columns for Client, Deadline Type, Due Date, Status, and Linked Engagement. Use the category filters at the top — Tax, Corporate, VAT, and Payroll — to narrow the view.
+
+Summary cards above the table give you a per-category breakdown showing the total count alongside how many are filed, pending, and overdue.
+
+## Filing Deadlines
+
+<Steps>
+### Step 1 — Select deadlines
+
+In the list view, use the checkboxes to select one or more deadlines you want to update.
+
+### Step 2 — Choose a batch action
+
+Click **Mark as Filed** to record the filing, or **Mark as N/A** if the deadline does not apply.
+
+### Step 3 — Enter filing details
+
+When marking as filed, you can optionally enter a reference number (for example, "SARS-2026-001") and any notes. This creates a record you can refer back to later.
+</Steps>
+
+<Callout type="info">
+  You can also update a single deadline's status directly from the list by clicking the status badge. This is handy for quick updates without selecting multiple items.
+</Callout>
+
+## Linking Deadlines to Engagements
+
+Each deadline can be linked to a specific engagement. This means when you open a client's engagement, you can see which regulatory deadlines are associated with it and track progress in context.
+
+To link a deadline, open the deadline detail and select the relevant engagement from the dropdown. You can also create a new engagement directly from the deadline if one does not exist yet.
+
+## Tips and Best Practices
+
+- **Review overdue deadlines daily** — the list view filtered to "overdue" gives you an instant action list each morning.
+- **Use the calendar for planning** — switch to calendar view at the start of each month to see what is coming up.
+- **Record reference numbers** — entering the SARS reference when marking as filed saves time if you need to follow up with SARS later.
+- **Set up client year-ends correctly** — all deadline calculations depend on the financial year-end date on the [customer](/features/customers) record. Double-check this when onboarding new clients.
+
+## Terminology Note
+
+In the accounting profile, some labels differ from the generic HeyKazi interface. "Projects" may appear as "Engagements" if your admin has configured terminology overrides. "Customers" refers to your clients — the businesses or individuals whose tax affairs you manage.
+
+## Related Features
+
+- [Customers](/features/customers) — manage client records including financial year-end dates
+- [Projects](/features/projects) — link deadlines to specific engagements

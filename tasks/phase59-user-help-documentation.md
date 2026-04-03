@@ -52,7 +52,7 @@ Phase 59 adds self-service user documentation to the HeyKazi platform -- a stand
 
 | Order | Epic | Rationale |
 |-------|------|-----------|
-| 2a | Epic 433: Getting Started & Core Feature Guides | P0 content -- 8 articles covering onboarding and core workflows. Highest priority for launch. |
+| 2a | Epic 433: Getting Started & Core Feature Guides (433A **Done** PR #900) | P0 content -- 8 articles covering onboarding and core workflows. Highest priority for launch. |
 | 2b | Epic 434: Admin & Settings Guides | P0 + P1 admin content -- 4 articles covering team management, settings, integrations, billing. |
 | 2c | Epic 435: P1 Feature Guides | P1 content -- 8 feature guides for secondary features. |
 | 2d | Epic 436: P2 Features & Vertical Guides | P2 features + vertical-specific content. Lowest content priority. |
@@ -172,7 +172,7 @@ Stage 3:  [E437B]                                                <- call-site wi
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **433A** | 433.1--433.4 | 3 getting-started guides (quick-setup, invite-your-team, first-project) + projects.mdx feature guide. 4 articles, ~3,900 estimated words. | |
+| **433A** | 433.1--433.4 | 3 getting-started guides (quick-setup, invite-your-team, first-project) + projects.mdx feature guide. 4 articles, ~3,900 estimated words. | **Done** (PR #900) |
 | **433B** | 433.5--433.8 | 4 core feature guides (customers, tasks, time-tracking, invoicing). 4 articles, ~3,500 estimated words. | |
 
 ### Tasks

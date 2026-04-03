@@ -6,8 +6,10 @@ import io.b2mash.b2b.b2bstrawman.billing.SubscriptionRepository;
 import io.b2mash.b2b.b2bstrawman.billing.SubscriptionStatusCache;
 import io.b2mash.b2b.b2bstrawman.demo.DemoDtos.DemoProvisionRequest;
 import io.b2mash.b2b.b2bstrawman.demo.DemoDtos.DemoProvisionResponse;
+import io.b2mash.b2b.b2bstrawman.demo.seed.DemoDataSeeder;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
+import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient;
@@ -31,6 +33,8 @@ public class DemoProvisionService {
   private final SubscriptionRepository subscriptionRepository;
   private final SubscriptionStatusCache subscriptionStatusCache;
   private final TransactionTemplate txTemplate;
+  private final DemoDataSeeder demoDataSeeder;
+  private final OrgSchemaMappingRepository mappingRepository;
   private final String baseUrl;
 
   public DemoProvisionService(
@@ -40,6 +44,8 @@ public class DemoProvisionService {
       SubscriptionRepository subscriptionRepository,
       SubscriptionStatusCache subscriptionStatusCache,
       TransactionTemplate txTemplate,
+      DemoDataSeeder demoDataSeeder,
+      OrgSchemaMappingRepository mappingRepository,
       @Value("${app.base-url:http://localhost:3000}") String baseUrl) {
     this.keycloakAdminClient = keycloakAdminClient;
     this.tenantProvisioningService = tenantProvisioningService;
@@ -47,6 +53,8 @@ public class DemoProvisionService {
     this.subscriptionRepository = subscriptionRepository;
     this.subscriptionStatusCache = subscriptionStatusCache;
     this.txTemplate = txTemplate;
+    this.demoDataSeeder = demoDataSeeder;
+    this.mappingRepository = mappingRepository;
     this.baseUrl = baseUrl;
   }
 
@@ -165,8 +173,20 @@ public class DemoProvisionService {
           subscriptionStatusCache.evict(org.getId());
         });
 
-    // Step 6: Demo data seeding (DemoDataSeeder does not exist yet — Epic 430)
+    // Step 6: Demo data seeding
     boolean demoDataSeeded = false;
+    if (request.seedDemoData()) {
+      String schemaName =
+          mappingRepository
+              .findByExternalOrgId(slug)
+              .map(m -> m.getSchemaName())
+              .orElseThrow(
+                  () ->
+                      new InvalidStateException(
+                          "Schema not found", "No schema mapping for slug: " + slug));
+      demoDataSeeder.seed(schemaName, org.getId(), verticalProfile);
+      demoDataSeeded = true;
+    }
 
     // Step 7: Audit event — platform admin context has no tenant, so use structured logging
     var auditDetails =

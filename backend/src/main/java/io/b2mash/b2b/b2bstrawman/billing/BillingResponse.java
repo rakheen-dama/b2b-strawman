@@ -71,7 +71,7 @@ public record BillingResponse(
         true,
         false,
         BillingMethod.MANUAL.name(),
-        true,
+        false,
         null);
   }
 }

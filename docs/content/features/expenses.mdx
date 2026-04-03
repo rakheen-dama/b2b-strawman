@@ -1,8 +1,111 @@
 ---
 title: "Expenses"
-description: "Track project expenses, attach receipts, and include expenses on invoices."
+description: "Track project expenses, attach receipts, and include billable expenses on invoices."
 ---
+
+import { Callout, Steps } from "nextra/components"
 
 # Expenses
 
-Content coming soon.
+Expenses capture the out-of-pocket costs your team incurs while working on a project — filing fees, travel, courier charges, software licences, and more. They appear on the **Expenses** tab of a project detail page alongside your time entries and other project data.
+
+Tracking expenses separately from time ensures your invoices reflect the full cost of an engagement. Billable expenses can be included on invoices with optional markup, while non-billable expenses are recorded for internal cost visibility without being charged to the client.
+
+## Key Concepts
+
+### Expense Categories
+
+When logging an expense, you choose a category that describes the type of cost.
+
+| Category | Examples |
+|----------|----------|
+| **Filing Fee** | Court filing fees, registration costs, regulatory submissions |
+| **Travel** | Flights, accommodation, mileage, parking |
+| **Courier** | Document delivery, express shipping |
+| **Software** | Licence fees, SaaS subscriptions, tools purchased for a project |
+| **Subcontractor** | Third-party professional services, outsourced work |
+| **Printing** | Document printing, binding, physical copies |
+| **Communication** | Phone calls, postage, certified mail |
+| **Other** | Any cost that does not fit the above categories |
+
+### Billing Statuses
+
+Each expense has a billing status that determines whether it appears on invoices.
+
+| Status | Description |
+|--------|-------------|
+| **Unbilled** | A billable expense that has not yet been included on an invoice. |
+| **Billed** | Included on an invoice. Billed expenses are locked and cannot be edited or deleted. |
+| **Non-billable** | Marked as non-billable, either when logged or after being written off by an admin. Not included on invoices. |
+
+### Billable Amount and Markup
+
+When you set a markup percentage on an expense, the billable amount is calculated as the base amount multiplied by one plus the markup (for example, a R500 expense with 15% markup becomes R575 on the invoice). The billable amount appears as a separate column in the expense list so you can see both the actual cost and the client-facing charge.
+
+## Logging an Expense
+
+<Steps>
+### Step 1 — Navigate to the Expenses tab
+
+Open a project detail page and click the **Expenses** tab.
+
+### Step 2 — Click Log Expense
+
+Click the **Log Expense** button to open the expense dialog.
+
+### Step 3 — Fill in the details
+
+Complete the form fields:
+
+- **Date** (required) — defaults to today
+- **Description** (required) — a clear summary such as "Court filing fee" or "Client site visit — Johannesburg"
+- **Amount** (required) — the actual cost incurred
+- **Currency** (required) — defaults to your organisation's currency (for example, ZAR)
+- **Category** (required) — select from the list of expense categories
+- **Task** (optional) — link the expense to a specific task in the project
+- **Markup %** (optional) — percentage markup applied when billing the client
+- **Billable** (checkbox, on by default) — uncheck to record as a non-billable expense
+- **Notes** (optional) — additional context or justification
+- **Receipt** (optional) — upload an image, PDF, or document as supporting evidence
+
+### Step 4 — Save the expense
+
+Click **Save**. The expense appears in the list with an **Unbilled** status (or **Non-billable** if you unchecked the billable flag).
+</Steps>
+
+## Including Expenses on Invoices
+
+When generating an invoice for a project, unbilled expenses appear alongside unbilled time entries as selectable line items. Each expense becomes an **Expense** line item on the invoice, using the billable amount (with markup applied, if any). Once an invoice is finalised, the included expenses move to **Billed** status and are locked from further editing.
+
+## Write-off and Restore
+
+Admins can write off an unbilled expense to move it to **Non-billable** status. This is useful when a cost was initially flagged as billable but you decide not to charge the client. If a write-off was made in error, admins can restore the expense back to **Unbilled** status.
+
+<Callout type="warning">
+  Billed expenses cannot be written off, edited, or deleted. To correct a billed expense, you need to adjust the invoice it appears on.
+</Callout>
+
+## Filtering and Reporting
+
+The expense list supports filters to help you find what you need:
+
+- **Billing status** — All, Unbilled, Billed, or Non-billable
+- **Category** — filter by expense category
+- **Member** — filter by the team member who logged the expense
+
+These filters combine to give you a clear view of specific cost types, outstanding billable amounts, or individual team member spending.
+
+## Tips and Best Practices
+
+- **Attach receipts at the time of logging** — uploading supporting documents immediately avoids the scramble at invoicing time.
+- **Use markup consistently** — if your firm marks up disbursements, set a standard percentage so clients see predictable charges.
+- **Review unbilled expenses before invoicing** — check the expense list for any costs that should be written off or recategorised before generating an invoice.
+- **Link expenses to tasks** — connecting an expense to a specific task gives you granular cost tracking and makes it easier to explain charges to clients.
+- **Use categories for reporting** — consistent categorisation helps you spot spending patterns across projects and identify cost savings.
+
+## Related Features
+
+- [Projects](/features/projects) — expenses are tracked per project on the Expenses tab
+- [Invoicing](/features/invoicing) — include billable expenses as line items on invoices
+- [Time Tracking](/features/time-tracking) — track hours alongside expenses for a complete project cost picture
+- [Rate Cards and Budgets](/features/rate-cards-budgets) — configure billing rates and budgets that work alongside expense tracking

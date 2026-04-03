@@ -1,8 +1,143 @@
 ---
 title: "Rate Cards & Budgets"
-description: "Configure billing rates, set project budgets, and monitor profitability."
+description: "Configure billing and cost rates, set project budgets, and monitor profitability across your organisation."
 ---
+
+import { Callout, Steps } from "nextra/components"
 
 # Rate Cards & Budgets
 
-Content coming soon.
+Rate cards and budgets are the financial backbone of HeyKazi. Rate cards define what you charge clients per hour and what your team costs internally. Budgets set spending limits on projects so you can track consumption and act before costs run over. Together, they drive invoicing, profitability reporting, and financial oversight across your organisation.
+
+<Callout type="info">
+  **Vertical terminology**: Depending on your industry, rate cards may be called **Fee Schedules** (accounting firms) or **Tariff Cards** (legal firms). HeyKazi supports terminology overrides so the platform speaks your language.
+</Callout>
+
+## Key Concepts
+
+### Billing Rates vs Cost Rates
+
+HeyKazi tracks two types of rates for each team member:
+
+| Rate Type | Description |
+|-----------|-------------|
+| **Billing Rate** | What you charge the client per hour. This drives invoice line item values. |
+| **Cost Rate** | Your internal cost per team member — typically their salary or contractor rate divided by working hours. This drives profitability calculations. |
+
+The difference between billing and cost rates is your margin. Setting both accurately gives you a clear picture of how profitable each project, customer, and team member is.
+
+### Rate Hierarchy
+
+Rates follow a three-level hierarchy where the most specific rate always wins:
+
+| Level | Scope | Set where |
+|-------|-------|-----------|
+| **Org Default** | Applies to all work unless overridden | Settings → Rates |
+| **Customer Override** | Applies to all projects for a specific customer | Customer detail → Rates tab |
+| **Project Override** | Applies only to a specific project | Project detail → Rates tab |
+
+For example, if a team member has an org default billing rate of R800/hr, a customer override of R750/hr, and no project override, the customer rate of R750/hr is used for time logged on that customer's projects. A project override would take precedence over both.
+
+<Callout type="info">
+  Rates are resolved per member, per engagement. If you negotiate special pricing for a customer or project, set an override at the appropriate level and it applies automatically to all time entries logged there.
+</Callout>
+
+### Effective Dates
+
+Each rate has an effective-from date and an optional effective-to date. If the effective-to date is blank, the rate is treated as **Ongoing**. This lets you manage rate changes over time — for example, applying an annual rate increase starting on a specific date without losing the historical rate.
+
+### Rate Snapshots
+
+When a time entry is logged or an invoice is generated, the current applicable rate is captured as a snapshot. If you change a rate later, existing time entries and invoices retain their original rate. This ensures historical accuracy in your financial records and prevents retrospective changes from distorting past reports.
+
+## Setting Up Rates
+
+<Steps>
+### Step 1 — Navigate to Settings
+
+Click **Settings** in the left sidebar, then select the **Rates** tab. If no rates have been configured yet, you will see: "No rate cards yet — Rate cards define what you charge clients and what your team costs. Set up rates to enable profitability tracking and invoicing."
+
+### Step 2 — Choose Billing Rates or Cost Rates
+
+The rates page has two tabs: **Billing Rates** and **Cost Rates**. Start with billing rates, as these drive your client-facing invoicing.
+
+### Step 3 — Add a rate for each member
+
+Each team member appears as a row. Click **Add Rate** next to a member to create their first rate. Enter the hourly amount, currency (defaults to your organisation's currency), and the effective-from date.
+
+### Step 4 — Set customer or project overrides (optional)
+
+If a customer has negotiated special pricing, open the customer detail page and go to the **Rates** tab. Click **Add Rate** to create a customer-level override. The same process applies on a project's **Rates** tab for project-specific overrides.
+</Steps>
+
+## Project Budgets
+
+Budgets help you set financial guardrails on projects. You can cap hours, revenue, or both — and receive alerts when consumption approaches your limit.
+
+### Configuring a Budget
+
+Open a project detail page, click the **Budget** tab, and configure:
+
+- **Budget Hours** — a cap on hours worked (for example, 200 hours)
+- **Budget Amount** — a revenue cap in a specific currency (for example, R50,000)
+- **Alert Threshold** — a percentage between 50% and 100% (default 80%) that triggers a notification when reached
+
+You can set hours and amount independently or together. Both are tracked in real time as your team logs time.
+
+### Budget Statuses
+
+The budget tab displays a progress bar and stat cards showing Budget, Consumed, Remaining, and Used percentage. The overall status updates automatically:
+
+| Status | Colour | Trigger |
+|--------|--------|---------|
+| **On Track** | Green | Consumed is below the alert threshold |
+| **At Risk** | Amber | Consumed has reached the alert threshold but is below 100% |
+| **Over Budget** | Red | Consumed has reached or exceeded 100% |
+
+<Callout type="warning">
+  Going over budget does not block work — your team can continue logging time. The status serves as a signal to leads and admins that the project needs attention.
+</Callout>
+
+## Profitability Reporting
+
+The **Profitability** page (accessible from the left sidebar for Admins and Owners) brings together rate and time data to show you how your organisation is performing financially.
+
+### Utilisation
+
+The utilisation table shows each team member's billable hours as a percentage of their total tracked hours. A higher utilisation rate means more of your team's effort is generating revenue. Industry benchmarks typically range from 60% to 80%.
+
+### Project Profitability
+
+The project profitability table shows per-project financials:
+
+- **Billable Hours** — total billable time logged
+- **Revenue** — billable hours multiplied by the applicable billing rate
+- **Cost** — total hours multiplied by the applicable cost rate
+- **Margin** — revenue minus cost
+- **Margin %** — margin as a percentage of revenue
+
+The table is sortable by any column and supports date-range filtering to focus on a specific period.
+
+### Customer Profitability
+
+The same breakdown is available aggregated by customer, showing total revenue, cost, and margin across all of a customer's projects.
+
+### Projections
+
+Toggle **Include Projections** to add projected values based on in-progress work. Projections estimate future revenue and cost using current rates and task completion progress, helping you forecast outcomes before an engagement is complete.
+
+## Tips and Best Practices
+
+- **Set org defaults first** — configure a billing and cost rate for every team member at the org level. This ensures all time entries have a rate, even if you have not set overrides.
+- **Use customer overrides for negotiated pricing** — rather than adjusting individual project rates, set a customer-level override that applies to all work for that client.
+- **Review profitability monthly** — regular check-ins on margin and utilisation help you spot underpriced engagements and underutilised team members early.
+- **Set realistic alert thresholds** — an 80% threshold gives you time to act. For tighter projects, lower the threshold to 70% or 75%.
+- **Trust the snapshots** — rate snapshots protect historical accuracy. If you need to correct a past rate, adjust the affected time entries individually rather than changing the rate card.
+
+## Related Features
+
+- [Projects](/features/projects) — configure project-specific rates and budgets on the project detail page
+- [Customers](/features/customers) — set customer-level rate overrides on the customer's Rates tab
+- [Time Tracking](/features/time-tracking) — logged time drives budget consumption and profitability calculations
+- [Invoicing](/features/invoicing) — billing rates determine invoice line item values
+- [Expenses](/features/expenses) — track out-of-pocket costs alongside time-based charges

@@ -1,8 +1,107 @@
 ---
 title: "Billing & Subscription"
-description: "Manage your HeyKazi subscription, view invoices, and update payment details."
+description: "Manage your HeyKazi subscription, understand billing statuses, and handle plan changes."
 ---
+
+import { Callout, Steps } from "nextra/components"
 
 # Billing & Subscription
 
-Content coming soon.
+Your HeyKazi subscription determines what features your organisation can access and how many team members you can have. The **Billing** page in Settings shows your current plan status, payment history, and options to subscribe or cancel.
+
+Navigate to **Settings** then **Billing** to view and manage your subscription.
+
+## Subscription Lifecycle
+
+Every subscription moves through a series of statuses that reflect its current state. Understanding these statuses helps you anticipate what happens at each stage.
+
+| Status | Description |
+|--------|-------------|
+| **Trial** | Your organisation is in the free trial period. All features are available so you can explore the platform before committing. |
+| **Active** | You have an active paid subscription. Everything works as normal. |
+| **Cancelling** | You have requested cancellation. Your access continues until the end of your current billing period. |
+| **Past Due** | A payment has failed. Your access continues while the issue is being resolved. |
+| **Grace Period** | Your subscription has ended. The organisation is in read-only mode — you can view your data but cannot make changes. |
+| **Expired** | The grace period has passed. The organisation remains in read-only mode. |
+| **Suspended** | Your account has been suspended. Data is preserved but access is restricted. |
+| **Locked** | Your account has been locked due to an expired subscription. All data is preserved and becomes accessible once you resubscribe. |
+
+The typical path is **Trial** to **Active** to (optionally) **Cancelling** to **Grace Period**. Subscribing at any point brings you back to **Active**.
+
+<Callout type="info">
+  During **Trial**, **Active**, **Cancelling**, and **Past Due** statuses, your organisation has full read-write access. All other statuses put your organisation into read-only mode.
+</Callout>
+
+## What You See at Each Stage
+
+The Billing page adapts to your current status:
+
+- **Trial** — a countdown showing when your trial ends, your member count, the monthly amount, and a **Subscribe** button to start a paid plan.
+- **Active** — your next billing date, member count, monthly amount, and a **Cancel** button showing when your current period ends.
+- **Cancelling** — the date your access ends, with an option to resubscribe if you change your mind.
+- **Past Due** — a message that your payment has failed, with a **Subscribe** button to update your payment details.
+- **Grace Period** — a countdown showing time remaining in the grace period, a red warning banner about read-only mode, and a **Subscribe** button.
+- **Expired** — a red warning banner confirming the grace period has ended, read-only mode active, and a **Subscribe** button.
+- **Suspended** — a red banner with the grace period end date and a **Subscribe** button.
+- **Locked** — a full-page notice explaining that your account has been locked. Your data is preserved and will be accessible once you resubscribe. A **Subscribe** button lets you reactivate.
+
+## Subscribing
+
+HeyKazi uses **PayFast** to process payments. When you click **Subscribe**, you are redirected to PayFast to complete the checkout process.
+
+<Steps>
+### Step 1 — Click Subscribe
+
+On the Billing page, click the **Subscribe** button. This initiates the PayFast checkout flow.
+
+### Step 2 — Complete payment on PayFast
+
+Follow the PayFast payment process to enter your payment details and confirm the subscription.
+
+### Step 3 — Return to HeyKazi
+
+After completing payment, you are redirected back to HeyKazi. The page polls for your updated subscription status — once confirmed, your status changes to **Active**.
+</Steps>
+
+If you cancel the PayFast checkout, you are returned to the Billing page with no changes to your subscription.
+
+## Cancelling Your Subscription
+
+If you need to cancel, the Billing page shows a **Cancel** button when your subscription is **Active**. Cancelling does not take effect immediately — your access continues until the end of your current billing period. During this time your status shows as **Cancelling**.
+
+<Callout type="warning">
+  After cancellation takes effect, your organisation enters read-only mode. You can still view all your data, but you cannot create or edit projects, tasks, time entries, or invoices until you resubscribe.
+</Callout>
+
+If you change your mind before the period ends, you can resubscribe from the Billing page to return to **Active** status.
+
+## Payment History
+
+The Billing page includes a **Payment History** section that shows a table of all past payments. This is visible for all subscription statuses except **Locked**, where the full-page lock notice takes over.
+
+## Member Limits
+
+Your plan sets a maximum number of team members. The **Team** page displays a progress bar showing your current usage (including pending invitations) — for example, "3 of 10 members." When you reach the limit, the invite form is replaced with a message directing you to upgrade.
+
+## Admin-Managed Accounts
+
+Some organisations have their billing managed externally rather than through self-service. If your account is admin-managed, the Billing page shows a **Managed Account** info card instead of the standard PayFast subscription controls.
+
+Admin-managed accounts do not see the Subscribe or Cancel buttons. If your account reaches a locked state, you will see a message to contact your administrator rather than a self-service resubscribe option.
+
+<Callout type="info">
+  If you are unsure whether your account is self-service or admin-managed, check the Billing page. A **Managed Account** badge indicates external billing management.
+</Callout>
+
+## Tips and Best Practices
+
+- **Subscribe before your trial ends** — subscribing early avoids any interruption. Your billing cycle starts from the date you subscribe, not the end of the trial.
+- **Monitor the grace period** — if your subscription lapses, you have a limited window to resubscribe before the account is locked. Data is always preserved, but read-only mode can disrupt your team's workflow.
+- **Check payment history for failed payments** — if your status shows **Past Due**, review your payment method with PayFast and try subscribing again.
+- **Plan for member limits** — keep an eye on your member count relative to your plan limit. Upgrade before you run out of seats to avoid blocking new invitations.
+
+## Related Features
+
+- [Team & Permissions](/admin/team-permissions) — manage team members and understand plan limits
+- [Organization Settings](/admin/org-settings) — configure currency, branding, and preferences
+- [Integrations](/admin/integrations) — some integrations require specific plans

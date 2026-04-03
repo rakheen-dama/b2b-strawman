@@ -1,8 +1,119 @@
 ---
 title: "Integrations"
-description: "Connect HeyKazi with external services like email, payment providers, and AI."
+description: "Connect HeyKazi with external services for accounting, AI, email, payments, and document signing."
 ---
+
+import { Callout, Steps } from "nextra/components"
 
 # Integrations
 
-Content coming soon.
+HeyKazi connects with external services to extend your workflow. The **Integrations** page in Settings gives you a single place to manage all your connections — from payment gateways to AI-powered document drafting.
+
+Navigate to **Settings** then **Integrations** to view and configure all available integration domains.
+
+## Integration Domains
+
+HeyKazi organises integrations into five domains, each covering a distinct area of your workflow.
+
+| Domain | Description |
+|--------|-------------|
+| **Accounting** | Connect your accounting software for invoice sync (for example, Xero or QuickBooks) |
+| **AI Assistant** | Enable AI-powered document drafting and analysis |
+| **Document Signing** | Enable electronic signatures on documents (for example, DocuSign or SignNow) |
+| **Email Delivery** | Platform email delivery with optional custom configuration |
+| **Payment Gateway** | Accept online payments from customers |
+
+## Bring Your Own API Key (BYOAK)
+
+Most integrations in HeyKazi use a **Bring Your Own API Key** model. Instead of connecting through a shared service, you provide your own credentials. This gives you full control over your accounts, usage limits, and billing with each provider.
+
+The setup process is the same across domains:
+
+<Steps>
+### Step 1 — Select a provider
+
+Choose a provider from the dropdown for the integration domain you want to configure.
+
+### Step 2 — Enter your API key
+
+Paste your API key into the field. Keys are stored securely and displayed as `••••` followed by the last few characters so you can confirm which key is active.
+
+### Step 3 — Enable the integration
+
+Toggle the integration to **Enabled**. You can disable it at any time without removing your key.
+
+### Step 4 — Test the connection
+
+Click the test button to verify your credentials are working correctly.
+</Steps>
+
+## AI Assistant
+
+The AI Assistant integration connects HeyKazi to Claude (by Anthropic) for AI-powered document drafting and analysis.
+
+<Callout type="info">
+  The AI Assistant requires the **PRO plan**. Organisations on the Starter plan will see a message with a link to upgrade.
+</Callout>
+
+After entering your API key and enabling the integration, a model selector appears. HeyKazi fetches the available models from your account and displays them in a dropdown. The recommended model is marked with a **(Recommended)** label to help you choose.
+
+## Email Delivery
+
+Email delivery works out of the box — HeyKazi provides platform email delivery for all organisations. The Email integration card always shows as **Active** with no setup required.
+
+The card displays live delivery statistics:
+
+- **Sent (24h)** — emails sent in the last 24 hours
+- **Bounced (7d)** — bounced emails in the last 7 days
+- **Rate Limit** — your current usage against the hourly limit
+
+A **Send Test Email** button lets you verify delivery is working. After sending, there is a 10-second cooldown before you can send another test.
+
+An expandable **Bring Your Own API Key (SendGrid)** section is available for organisations that want to use their own email infrastructure. Custom email configuration is coming soon.
+
+## Payment Gateway
+
+The Payment Gateway integration lets your customers pay invoices online. Without a payment provider configured, invoices default to **Manual Payments Only**.
+
+HeyKazi supports two payment providers:
+
+### PayFast
+
+PayFast is a South African payment gateway. After selecting PayFast as your provider, configure the following fields:
+
+| Field | Description |
+|-------|-------------|
+| **Merchant ID** | Your PayFast merchant identifier |
+| **Merchant Key** | Your PayFast merchant key |
+| **Passphrase** | Your PayFast passphrase (stored securely) |
+| **Sandbox** | Toggle on to use the PayFast sandbox for testing before going live |
+| **ITN Callback URL** | A read-only URL that PayFast uses to notify HeyKazi of payment events. Copy this and paste it into your PayFast dashboard. |
+
+### Stripe
+
+Stripe is an international payment gateway. After selecting Stripe, configure the following fields:
+
+| Field | Description |
+|-------|-------------|
+| **Secret Key** | Your Stripe secret key (starts with `sk_live_` or `sk_test_`) |
+| **Webhook Signing Secret** | Your Stripe webhook secret (starts with `whsec_`) |
+| **Webhook URL** | A read-only URL that Stripe uses to send payment events. Copy this and add it to your Stripe dashboard. |
+
+Both providers have a **Save Configuration** button and an **Enable/Disable** toggle. Configure and test in sandbox or test mode first, then switch to live credentials when you are ready.
+
+## Accounting and Document Signing
+
+The **Accounting** and **Document Signing** domains follow the same BYOAK pattern — select a provider, enter your credentials, enable, and test. Available providers are listed in the dropdown for each domain.
+
+## Tips and Best Practices
+
+- **Start with sandbox or test mode** — for payment gateways, always test with sandbox credentials before going live.
+- **Copy callback and webhook URLs carefully** — the ITN Callback URL (PayFast) and Webhook URL (Stripe) must be configured in your provider's dashboard for payments to process correctly.
+- **Keep your API keys secure** — HeyKazi stores keys encrypted, but treat them with the same care as passwords. Rotate keys periodically.
+- **Disable before removing** — if you are switching providers, disable the current integration before configuring a new one to avoid conflicts.
+
+## Related Features
+
+- [Billing & Subscription](/admin/billing) — manage your HeyKazi plan and payment method
+- [Organization Settings](/admin/org-settings) — configure currency, tax, and branding
+- [Invoicing](/features/invoicing) — create and send invoices that connect to your payment gateway

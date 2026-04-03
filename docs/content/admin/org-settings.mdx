@@ -1,8 +1,114 @@
 ---
 title: "Organization Settings"
-description: "Configure your organization's branding, terminology, and general preferences."
+description: "Configure your organisation's currency, tax, branding, vertical profile, and notification preferences."
 ---
+
+import { Callout, Steps } from "nextra/components"
 
 # Organization Settings
 
-Content coming soon.
+The Settings area is where you tailor HeyKazi to your organisation. From currency and tax configuration to branding and industry terminology, these options shape how the platform looks and behaves for your team and your customers.
+
+<Callout type="info">
+  Most settings are restricted to **Admins** and **Owners**. The **Vertical Profile** section is only editable by the **Owner** — other roles can view it in read-only mode.
+</Callout>
+
+## Settings Navigation
+
+The settings sidebar is organised into six groups, each containing related configuration pages:
+
+| Group | Pages |
+|-------|-------|
+| **General** | General, Billing, Notifications, Email, Security |
+| **Work** | Time Tracking, Project Templates, Project Naming, Automations |
+| **Documents** | Templates, Clauses, Checklists, Document Acceptance |
+| **Finance** | Rates & Currency, Tax, Batch Billing, Capacity |
+| **Clients** | Custom Fields, Tags, Request Templates, Request Settings, Compliance, Data Protection |
+| **Access & Integrations** | Roles & Permissions, Integrations |
+
+Some pages (marked as admin-only) are only visible to Admins and Owners.
+
+## General Settings
+
+The **General** settings page is the starting point for configuring your organisation. It contains three admin-only sections.
+
+### Currency
+
+Set the default currency used across invoices, rates, and reports. Choose from:
+
+- **ZAR** — South African Rand
+- **USD** — US Dollar
+- **EUR** — Euro
+- **GBP** — British Pound
+
+The selected currency applies to all financial features — rate cards, budgets, profitability reports, and generated invoices.
+
+### Tax Configuration
+
+Configure how tax is displayed and calculated on your documents and invoices.
+
+| Field | Description |
+|-------|-------------|
+| **Tax Registration Number** | Your organisation's tax registration (for example, `VAT-123456789`). Maximum 50 characters. |
+| **Tax Label** | The label shown on invoices and documents — typically "VAT" or "GST". Maximum 20 characters. |
+| **Tax-inclusive pricing** | Toggle on to treat all amounts as tax-inclusive. Toggle off for tax-exclusive pricing where tax is added on top. |
+
+### Branding
+
+Customise the look of your generated documents — proposals, invoices, and other exports.
+
+| Field | Description |
+|-------|-------------|
+| **Logo** | Upload your organisation's logo (PNG, JPG, or SVG, maximum 2 MB). Displayed on generated documents. |
+| **Brand Color** | A hex colour value (for example, `#1a2b3c`) used as an accent colour on generated documents. Use the colour picker or type the value directly. |
+| **Document Footer Text** | Free-text area (maximum 500 characters) for content that appears at the bottom of every generated document — typically legal disclaimers, registration numbers, or contact details. |
+
+## Vertical Profile
+
+<Callout type="info">
+  The **Vertical Profile** section is only editable by the **Owner** of the organisation. Other roles can view it in read-only mode.
+</Callout>
+
+HeyKazi supports industry-specific profiles that adapt the platform to your field. When you apply a vertical profile, two things happen:
+
+1. **Rate card tiers and schedule templates** (inactive by default) are seeded with industry-standard defaults.
+2. **Terminology across the entire interface** is updated to match your industry's language.
+
+Select a profile from the dropdown (for example, **Accounting (ZA)** or **Legal (ZA)**) and save. The terminology changes take effect immediately across the whole platform.
+
+### Terminology Overrides
+
+When a vertical profile is active, common terms throughout HeyKazi are renamed to match your industry:
+
+| Default Term | Accounting (ZA) | Legal (ZA) |
+|-------------|-----------------|------------|
+| Project / Projects | Engagement / Engagements | Matter / Matters |
+| Customer / Customers | Client / Clients | Client / Clients |
+| Proposal / Proposals | Engagement Letter / Engagement Letters | Engagement Letter / Engagement Letters |
+| Rate Card / Rate Cards | Fee Schedule / Fee Schedules | Tariff Schedule / Tariff Schedules |
+| Task / Tasks | Task / Tasks | Work Item / Work Items |
+| Time Entry / Time Entries | Time Entry / Time Entries | Fee Note / Fee Notes |
+| Document / Documents | Document / Documents | Pleading / Pleadings |
+
+These overrides apply everywhere — sidebar navigation, page headings, form labels, and generated documents.
+
+## Notification Preferences
+
+Navigate to **Settings** then **Notifications** to manage how you receive notifications. The **Notification Preferences** page lets you choose which notifications you receive and how they are delivered.
+
+Each notification type can be toggled independently, so you can stay informed about the things that matter to you without being overwhelmed by noise.
+
+## Tips and Best Practices
+
+- **Set your currency early** — changing it later does not retroactively convert existing financial data. Choose the right currency before you start creating rate cards and invoices.
+- **Upload a high-quality logo** — it appears on all generated documents. A clean SVG or high-resolution PNG works best.
+- **Apply a vertical profile before onboarding your team** — terminology changes apply globally, so it is less confusing if the right labels are in place from day one.
+- **Use the document footer for legal text** — include your registration number, physical address, or standard disclaimers so they appear automatically on every document.
+- **Review notification preferences periodically** — as your role changes or your organisation grows, you may want to adjust which notifications you receive.
+
+## Related Features
+
+- [Team & Permissions](/admin/team-permissions) — manage team members and configure access roles
+- [Integrations](/admin/integrations) — connect external services like payment gateways and AI
+- [Billing & Subscription](/admin/billing) — manage your plan and payment method
+- [Quick Setup](/getting-started/quick-setup) — initial organisation configuration walkthrough

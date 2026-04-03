@@ -9,8 +9,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class SubscriptionStatusCache {
 
+  private static final CachedSubscriptionInfo DEFAULT_INFO =
+      new CachedSubscriptionInfo(Subscription.SubscriptionStatus.TRIALING, BillingMethod.MANUAL);
+
   private final SubscriptionRepository subscriptionRepository;
-  private final Cache<UUID, Subscription.SubscriptionStatus> cache;
+  private final Cache<UUID, CachedSubscriptionInfo> cache;
 
   public SubscriptionStatusCache(SubscriptionRepository subscriptionRepository) {
     this.subscriptionRepository = subscriptionRepository;
@@ -24,6 +27,15 @@ public class SubscriptionStatusCache {
    * subscription row exists.
    */
   public Subscription.SubscriptionStatus getStatus(UUID organizationId) {
+    return getInfo(organizationId).status();
+  }
+
+  /**
+   * Returns the full cached subscription info (status and billing method) for the given
+   * organization. Loads from the database on cache miss. Returns TRIALING/MANUAL as a defensive
+   * default if no subscription row exists.
+   */
+  public CachedSubscriptionInfo getInfo(UUID organizationId) {
     return cache.get(organizationId, this::loadFromDb);
   }
 
@@ -32,10 +44,13 @@ public class SubscriptionStatusCache {
     cache.invalidate(organizationId);
   }
 
-  private Subscription.SubscriptionStatus loadFromDb(UUID organizationId) {
+  private CachedSubscriptionInfo loadFromDb(UUID organizationId) {
     return subscriptionRepository
         .findByOrganizationId(organizationId)
-        .map(Subscription::getSubscriptionStatus)
-        .orElse(Subscription.SubscriptionStatus.TRIALING);
+        .map(sub -> new CachedSubscriptionInfo(sub.getSubscriptionStatus(), sub.getBillingMethod()))
+        .orElse(DEFAULT_INFO);
   }
+
+  public record CachedSubscriptionInfo(
+      Subscription.SubscriptionStatus status, BillingMethod billingMethod) {}
 }

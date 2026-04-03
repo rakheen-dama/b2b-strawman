@@ -19,6 +19,13 @@ import java.util.UUID;
 @Table(name = "subscriptions", schema = "public")
 public class Subscription {
 
+  private static final Set<SubscriptionStatus> ADMIN_ALLOWED_TARGETS =
+      Set.of(
+          SubscriptionStatus.TRIALING,
+          SubscriptionStatus.ACTIVE,
+          SubscriptionStatus.GRACE_PERIOD,
+          SubscriptionStatus.LOCKED);
+
   private static final Map<SubscriptionStatus, Set<SubscriptionStatus>> VALID_TRANSITIONS =
       Map.of(
           SubscriptionStatus.TRIALING,
@@ -80,6 +87,13 @@ public class Subscription {
   @Column(name = "cancelled_at")
   private Instant cancelledAt;
 
+  @Enumerated(EnumType.STRING)
+  @Column(name = "billing_method", nullable = false)
+  private BillingMethod billingMethod = BillingMethod.MANUAL;
+
+  @Column(name = "admin_note")
+  private String adminNote;
+
   @Column(name = "created_at", nullable = false)
   private Instant createdAt;
 
@@ -102,6 +116,23 @@ public class Subscription {
 
   public void transitionTo(SubscriptionStatus newStatus) {
     validateTransition(this.subscriptionStatus, newStatus);
+    this.subscriptionStatus = newStatus;
+    this.updatedAt = Instant.now();
+  }
+
+  /**
+   * Admin-only transition that bypasses the normal state machine. Only certain target states are
+   * allowed to prevent admins from putting subscriptions into states that require external triggers
+   * (e.g., PENDING_CANCELLATION requires a user-initiated cancel, PAST_DUE requires a failed
+   * payment).
+   */
+  public void adminTransitionTo(SubscriptionStatus newStatus) {
+    if (!ADMIN_ALLOWED_TARGETS.contains(newStatus)) {
+      throw new InvalidStateException(
+          "Invalid admin subscription transition",
+          "Admin cannot transition to %s. Allowed targets: %s"
+              .formatted(newStatus, ADMIN_ALLOWED_TARGETS));
+    }
     this.subscriptionStatus = newStatus;
     this.updatedAt = Instant.now();
   }
@@ -173,6 +204,14 @@ public class Subscription {
     return cancelledAt;
   }
 
+  public BillingMethod getBillingMethod() {
+    return billingMethod;
+  }
+
+  public String getAdminNote() {
+    return adminNote;
+  }
+
   public Instant getCreatedAt() {
     return createdAt;
   }
@@ -225,6 +264,14 @@ public class Subscription {
 
   public void setCancelledAt(Instant cancelledAt) {
     this.cancelledAt = cancelledAt;
+  }
+
+  public void setBillingMethod(BillingMethod billingMethod) {
+    this.billingMethod = billingMethod;
+  }
+
+  public void setAdminNote(String adminNote) {
+    this.adminNote = adminNote;
   }
 
   public enum SubscriptionStatus {

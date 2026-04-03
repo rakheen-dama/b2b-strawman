@@ -78,7 +78,7 @@ class DemoCleanupServiceTest {
     UUID orgId = provisionTestTenant("pilot", BillingMethod.PILOT);
     String orgName = organizationRepository.findById(orgId).orElseThrow().getName();
 
-    var response = demoCleanupService.cleanup(orgId, orgName);
+    var response = demoCleanupService.cleanup(orgId, orgName, "test-admin");
 
     assertEquals(orgId, response.organizationId());
     assertEquals(orgName, response.organizationName());
@@ -96,7 +96,7 @@ class DemoCleanupServiceTest {
     UUID orgId = provisionTestTenant("comp", BillingMethod.COMPLIMENTARY);
     String orgName = organizationRepository.findById(orgId).orElseThrow().getName();
 
-    var response = demoCleanupService.cleanup(orgId, orgName);
+    var response = demoCleanupService.cleanup(orgId, orgName, "test-admin");
 
     assertEquals(orgId, response.organizationId());
     assertTrue(response.keycloakCleaned());
@@ -112,7 +112,8 @@ class DemoCleanupServiceTest {
     UUID orgId = provisionTestTenant("payfast", BillingMethod.PAYFAST);
     String orgName = organizationRepository.findById(orgId).orElseThrow().getName();
 
-    assertThrows(ForbiddenException.class, () -> demoCleanupService.cleanup(orgId, orgName));
+    assertThrows(
+        ForbiddenException.class, () -> demoCleanupService.cleanup(orgId, orgName, "test-admin"));
 
     // Verify org is NOT deleted
     assertTrue(organizationRepository.findById(orgId).isPresent());
@@ -123,7 +124,8 @@ class DemoCleanupServiceTest {
     UUID orgId = provisionTestTenant("manual", BillingMethod.MANUAL);
     String orgName = organizationRepository.findById(orgId).orElseThrow().getName();
 
-    assertThrows(ForbiddenException.class, () -> demoCleanupService.cleanup(orgId, orgName));
+    assertThrows(
+        ForbiddenException.class, () -> demoCleanupService.cleanup(orgId, orgName, "test-admin"));
 
     // Verify org is NOT deleted
     assertTrue(organizationRepository.findById(orgId).isPresent());
@@ -134,7 +136,8 @@ class DemoCleanupServiceTest {
     UUID orgId = provisionTestTenant("debit", BillingMethod.DEBIT_ORDER);
     String orgName = organizationRepository.findById(orgId).orElseThrow().getName();
 
-    assertThrows(ForbiddenException.class, () -> demoCleanupService.cleanup(orgId, orgName));
+    assertThrows(
+        ForbiddenException.class, () -> demoCleanupService.cleanup(orgId, orgName, "test-admin"));
 
     // Verify org is NOT deleted
     assertTrue(organizationRepository.findById(orgId).isPresent());
@@ -146,7 +149,7 @@ class DemoCleanupServiceTest {
 
     assertThrows(
         InvalidStateException.class,
-        () -> demoCleanupService.cleanup(orgId, "Wrong Organization Name"));
+        () -> demoCleanupService.cleanup(orgId, "Wrong Organization Name", "test-admin"));
 
     // Verify org is NOT deleted
     assertTrue(organizationRepository.findById(orgId).isPresent());
@@ -162,7 +165,7 @@ class DemoCleanupServiceTest {
     when(keycloakAdminClient.resolveOrgId(externalOrgId))
         .thenThrow(new RuntimeException("Keycloak connection refused"));
 
-    var response = demoCleanupService.cleanup(orgId, orgName);
+    var response = demoCleanupService.cleanup(orgId, orgName, "test-admin");
 
     // Keycloak failed, but other steps should succeed
     assertFalse(response.keycloakCleaned());
@@ -186,7 +189,7 @@ class DemoCleanupServiceTest {
     UUID orgId = provisionTestTenant("audit", BillingMethod.PILOT);
     String orgName = organizationRepository.findById(orgId).orElseThrow().getName();
 
-    var response = demoCleanupService.cleanup(orgId, orgName);
+    var response = demoCleanupService.cleanup(orgId, orgName, "test-admin");
 
     assertEquals(orgId, response.organizationId());
     assertEquals(orgName, response.organizationName());

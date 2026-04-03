@@ -46,7 +46,11 @@ public class DemoAdminController {
 
   @DeleteMapping("/{orgId}")
   public ResponseEntity<DemoCleanupResponse> cleanupDemo(
-      @PathVariable UUID orgId, @Valid @RequestBody DemoCleanupRequest request) {
-    return ResponseEntity.ok(demoCleanupService.cleanup(orgId, request.confirmOrganizationName()));
+      @PathVariable UUID orgId,
+      @Valid @RequestBody DemoCleanupRequest request,
+      JwtAuthenticationToken auth) {
+    return ResponseEntity.ok(
+        demoCleanupService.cleanup(
+            orgId, request.confirmOrganizationName(), auth.getToken().getSubject()));
   }
 }

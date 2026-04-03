@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @Service
 public class DemoCleanupService {
@@ -35,6 +36,7 @@ public class DemoCleanupService {
   private final OrgSchemaMappingRepository orgSchemaMappingRepository;
   private final DataSource migrationDataSource;
   private final JdbcTemplate jdbcTemplate;
+  private final TransactionTemplate transactionTemplate;
   private final StorageService storageService;
 
   public DemoCleanupService(
@@ -45,6 +47,7 @@ public class DemoCleanupService {
       OrgSchemaMappingRepository orgSchemaMappingRepository,
       @Qualifier("migrationDataSource") DataSource migrationDataSource,
       JdbcTemplate jdbcTemplate,
+      TransactionTemplate transactionTemplate,
       @Nullable StorageService storageService) {
     this.keycloakAdminClient = keycloakAdminClient;
     this.organizationRepository = organizationRepository;
@@ -53,6 +56,7 @@ public class DemoCleanupService {
     this.orgSchemaMappingRepository = orgSchemaMappingRepository;
     this.migrationDataSource = migrationDataSource;
     this.jdbcTemplate = jdbcTemplate;
+    this.transactionTemplate = transactionTemplate;
     this.storageService = storageService;
   }
 
@@ -61,7 +65,7 @@ public class DemoCleanupService {
    * Each step is wrapped in try-catch so partial failures do not prevent remaining steps from
    * running.
    */
-  public DemoCleanupResponse cleanup(UUID orgId, String confirmName) {
+  public DemoCleanupResponse cleanup(UUID orgId, String confirmName, String callerSubject) {
     var org =
         organizationRepository
             .findById(orgId)
@@ -108,7 +112,9 @@ public class DemoCleanupService {
             "external_org_id",
             externalOrgId,
             "billing_method",
-            sub.getBillingMethod().name());
+            sub.getBillingMethod().name(),
+            "caller_subject",
+            callerSubject);
     log.info("AUDIT: Demo tenant deleted for org {}: {}", org.getId(), auditDetails);
 
     // Step 2: KEYCLOAK — clean up org members and org
@@ -217,15 +223,18 @@ public class DemoCleanupService {
   private boolean cleanupPublicRecords(
       UUID orgId, String externalOrgId, UUID subscriptionId, List<String> errors) {
     try {
-      // Order matters due to FK constraints: children before parents
-      jdbcTemplate.update(
-          "DELETE FROM subscription_payments WHERE subscription_id IN "
-              + "(SELECT id FROM subscriptions WHERE organization_id = ?)",
-          orgId);
-      jdbcTemplate.update("DELETE FROM subscriptions WHERE organization_id = ?", orgId);
-      jdbcTemplate.update(
-          "DELETE FROM org_schema_mapping WHERE external_org_id = ?", externalOrgId);
-      jdbcTemplate.update("DELETE FROM organizations WHERE id = ?", orgId);
+      transactionTemplate.executeWithoutResult(
+          tx -> {
+            // Order matters due to FK constraints: children before parents
+            jdbcTemplate.update(
+                "DELETE FROM subscription_payments WHERE subscription_id IN "
+                    + "(SELECT id FROM subscriptions WHERE organization_id = ?)",
+                orgId);
+            jdbcTemplate.update("DELETE FROM subscriptions WHERE organization_id = ?", orgId);
+            jdbcTemplate.update(
+                "DELETE FROM org_schema_mapping WHERE external_org_id = ?", externalOrgId);
+            jdbcTemplate.update("DELETE FROM organizations WHERE id = ?", orgId);
+          });
       log.info("Deleted public records for org {}", orgId);
       return true;
     } catch (Exception e) {

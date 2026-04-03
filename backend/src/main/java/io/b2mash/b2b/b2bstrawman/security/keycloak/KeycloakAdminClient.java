@@ -6,6 +6,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpClient.Version;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -410,13 +411,36 @@ public class KeycloakAdminClient {
     return userId;
   }
 
-  /** Returns the user IDs of all members in the given Keycloak organization. */
+  /**
+   * Returns the user IDs of all members in the given Keycloak organization. Uses pagination to
+   * handle organizations with more than the Keycloak default page size (10).
+   */
   public List<String> listOrgMemberIds(String kcOrgId) {
-    List<Map<String, Object>> members = listOrgMembers(kcOrgId);
-    if (members == null) {
-      return List.of();
+    List<String> allIds = new ArrayList<>();
+    int first = 0;
+    int max = 100;
+
+    while (true) {
+      List<Map<String, Object>> page = listOrgMembersPage(kcOrgId, first, max);
+      if (page == null || page.isEmpty()) {
+        break;
+      }
+      page.stream().map(m -> (String) m.get("id")).filter(id -> id != null).forEach(allIds::add);
+      if (page.size() < max) {
+        break;
+      }
+      first += max;
     }
-    return members.stream().map(m -> (String) m.get("id")).filter(id -> id != null).toList();
+    return allIds;
+  }
+
+  private List<Map<String, Object>> listOrgMembersPage(String orgId, int first, int max) {
+    return restClient
+        .get()
+        .uri("/organizations/{orgId}/members?first={first}&max={max}", orgId, first, max)
+        .header("Authorization", "Bearer " + getAdminToken())
+        .retrieve()
+        .body(new ParameterizedTypeReference<>() {});
   }
 
   /** Returns the organizations a user belongs to. */

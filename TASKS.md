@@ -483,7 +483,7 @@
 | 425 | Backend Cleanup — Dead Tier Code | Backend | 419-422 | M | 425A, 425B | **Done** (PRs #884, #885) |
 | 426 | Frontend Cleanup — Dead Tier Components & Test Refs | Frontend | 423, 424 | S | 426A | **Done** (PR #886) |
 | **Phase 58 — Demo Readiness & Admin Billing Controls** | | | | | | See [tasks/phase58-demo-readiness-admin-billing.md](tasks/phase58-demo-readiness-admin-billing.md) |
-| 427 | Billing Method Dimension | Backend | -- | M | 427A, 427B | |
+| 427 | Billing Method Dimension | Backend | -- | M | 427A, 427B | 427A Done (PR #887) |
 | 428 | Admin Billing Management | Backend + Frontend | 427 | L | 428A, 428B | |
 | 429 | Demo Tenant Provisioning | Backend + Frontend | 427 | L | 429A, 429B | |
 | 430 | Demo Data Seeding | Backend | 429 | L | 430A, 430B, 430C | |

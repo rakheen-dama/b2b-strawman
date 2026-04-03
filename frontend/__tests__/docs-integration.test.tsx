@@ -22,6 +22,7 @@ vi.mock("next/link", () => ({
 
 afterEach(() => {
   cleanup();
+  delete process.env.NEXT_PUBLIC_DOCS_URL;
 });
 
 // ─── docsLink utility ──────────────────────────────────────────────────────────
@@ -45,8 +46,6 @@ describe("docsLink", () => {
     expect(docsLink("/features/tasks")).toBe(
       "http://localhost:3003/features/tasks",
     );
-
-    delete process.env.NEXT_PUBLIC_DOCS_URL;
   });
 });
 

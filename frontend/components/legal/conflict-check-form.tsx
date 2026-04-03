@@ -64,8 +64,8 @@ export function ConflictCheckForm({
   useEffect(() => {
     Promise.all([fetchProjects(), fetchCustomers()])
       .then(([p, c]) => {
-        setProjects(p);
-        setCustomers(c);
+        setProjects(p ?? []);
+        setCustomers(c ?? []);
       })
       .catch(() => {
         setProjects([]);

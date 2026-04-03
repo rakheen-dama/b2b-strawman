@@ -222,7 +222,7 @@ export async function fetchProjects(): Promise<
   const result = await api.get<PaginatedResponse<{ id: string; name: string }>>(
     "/api/projects?size=200"
   );
-  return result.content;
+  return result?.content ?? [];
 }
 
 // ── Dashboard ──────────────────────────────────────────────────────

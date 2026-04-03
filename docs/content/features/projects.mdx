@@ -1,8 +1,136 @@
 ---
 title: "Projects"
-description: "Create and manage projects, track progress, and organize work for your clients."
+description: "Create and manage projects to organise work, track time, and deliver client engagements in HeyKazi."
 ---
+
+import { Callout, Steps, Tabs } from "nextra/components"
 
 # Projects
 
-Content coming soon.
+Projects are the central workspace in HeyKazi. They bring together tasks, documents, time tracking, budgets, and invoicing for a client engagement — everything your team needs in one place.
+
+Every project belongs to your organisation and can optionally be linked to a [customer](/features/customers). Projects without a linked customer are labelled as **Internal Projects**, which is useful for non-client work like internal initiatives or administrative tasks.
+
+<Callout type="info">
+  **Vertical terminology**: Depending on your industry, projects may be called **Engagements** (accounting firms) or **Matters** (legal firms). HeyKazi supports terminology overrides so the platform speaks your language.
+</Callout>
+
+## Key Concepts
+
+### Project Status
+
+Every project has a status that reflects where it is in its lifecycle.
+
+| Status | Description | Badge colour |
+|--------|-------------|-------------|
+| **Active** | The default status. The project is in progress and your team is actively working on it. | Green |
+| **Completed** | Work is finished. The project remains accessible for reference and reporting. | Grey |
+| **Archived** | The project is hidden from default list views. A yellow banner appears on the detail page. Admins can restore archived projects at any time. | Yellow banner |
+
+Projects start as **Active** when created. Move a project to **Completed** when the work is done, or **Archive** it to declutter your project list while keeping the data intact.
+
+### Project Roles
+
+Each team member on a project has a project-level role that determines what they can do within that project.
+
+| Role | What they can do | Badge |
+|------|-----------------|-------|
+| **Lead** | Edit project details, manage members, configure rates and budget. Responsible for the project overall. | Teal |
+| **Member** | Work on tasks, log time, and add documents. | Grey |
+
+<Callout type="info">
+  **Admins** and **Owners** have full access to all projects regardless of their project role. Project roles apply mainly to team members with the organisation-level **Member** role.
+</Callout>
+
+## Creating a Project
+
+<Steps>
+### Step 1 — Navigate to Projects
+
+Click **Projects** in the left sidebar. If you have no projects yet, you will see: "No projects yet — Projects organise your work, documents, and time tracking. Create your first project to get started."
+
+### Step 2 — Click New Project
+
+Click the **New Project** button in the top-right corner to open the project creation dialog.
+
+### Step 3 — Fill in the details
+
+Complete the form fields:
+
+- **Name** (required) — a clear, descriptive name such as "Annual Audit 2025" or "Trademark Registration — Acme"
+- **Description** (optional) — a brief summary of the project scope
+- **Due Date** (optional) — pick a target completion date using the date picker
+- **Customer** (optional) — select a customer from the dropdown to link this project. Only **Active** customers appear in the list.
+
+### Step 4 — Create the project
+
+Click **Create Project**. You are taken directly to the project detail page where you can start adding tasks, documents, and team members.
+</Steps>
+
+<Tabs items={["From scratch", "From a template"]}>
+  <Tabs.Tab>
+    The steps above create a blank project. This is the best choice when starting something new or when each engagement has a unique structure.
+  </Tabs.Tab>
+  <Tabs.Tab>
+    Admins can also create a project **from a template** by clicking **New from Template** (if templates have been set up). Templates pre-fill the project with a predefined set of tasks, members, and settings — ideal for repeating engagements like annual audits, monthly bookkeeping, or standard legal matters.
+  </Tabs.Tab>
+</Tabs>
+
+## The Project Detail Page
+
+Once inside a project, work is organised into tabs along the top. The tabs you see depend on your role and which modules are enabled for your organisation.
+
+**Core tabs available to everyone:**
+
+- **Overview** — a health summary with key metrics, setup progress, and status indicators
+- **Tasks** — your task list with statuses, assignees, and filters
+- **Time** — time entry summary and log for the project
+- **Documents** — files, generated documents, and templates
+- **Activity** — a full audit trail of all actions taken on the project
+
+**Additional tabs for Leads and Admins:**
+
+- **Members** — add or remove team members and assign project roles
+- **Customers** — view and manage the linked customer
+- **Budget** — configure a budget and track actual spend against the plan
+- **Financials** — profitability reporting for the project
+- **Rates** — billing and cost rate configuration specific to this project
+- **Expenses**, **Staffing**, **Generated**, **Requests**, **Customer Comments** — additional management tabs depending on your workflow
+
+## Managing Projects
+
+### Editing a Project
+
+Open the project and update the name, description, due date, or linked customer from the **Overview** tab. Changes are saved immediately.
+
+### Completing a Project
+
+When all work is finished, change the project status to **Completed**. The project stays accessible for reference, time reports, and invoicing — but it signals to the team that active work has wrapped up.
+
+### Archiving and Restoring
+
+Only Admins can archive a project. Archived projects are hidden from the default project list but can be found using the **status filter**. A yellow banner on the detail page clearly marks the project as archived. To bring a project back, click **Restore** on the archived project.
+
+## Tags and Custom Fields
+
+**Tags** are colour-coded labels you can attach to projects to categorise them — by department, priority, engagement type, or any system that fits your workflow. Tags appear as coloured badges on the project card and can be shared across projects, customers, and tasks.
+
+**Custom fields** let Admins capture data unique to your workflow. Field types include text, number, date, single-select, and multi-select. Custom field values appear on the project detail page and as small badges on project cards in the list view.
+
+To learn more, see [Custom Fields and Tags](/features/custom-fields-tags).
+
+## Tips and Best Practices
+
+- **Use clear, consistent names** — include the client name and engagement type (for example, "Acme Holdings — Annual Audit 2025") so projects are easy to find.
+- **Link a customer early** — connecting a customer before logging time ensures billable hours flow smoothly into invoices.
+- **Check the Overview tab regularly** — it combines budget usage, timeline progress, and task completion into one view so you can spot issues early.
+- **Archive instead of deleting** — archiving preserves all project data for reporting and compliance. Use it for completed engagements you no longer need in your active list.
+- **Use templates for repeating work** — if your firm runs the same type of engagement regularly, save time by creating a project template.
+
+## Related Features
+
+- [Customers](/features/customers) — manage the organisations you serve and link them to projects
+- [Tasks](/features/tasks) — break projects into trackable work items
+- [Time Tracking](/features/time-tracking) — log hours against tasks for invoicing and reporting
+- [Invoicing](/features/invoicing) — generate invoices from tracked time
+- [Rate Cards and Budgets](/features/rate-cards-budgets) — configure billing rates and project budgets

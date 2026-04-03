@@ -100,6 +100,9 @@ export default async function OrgLayout({
     limits: { maxMembers: 5, currentMembers: 0 },
     canSubscribe: false,
     canCancel: false,
+    billingMethod: "PAYFAST",
+    adminManaged: false,
+    adminNote: null,
   };
 
   let billingData: BillingResponse = FALLBACK_BILLING;

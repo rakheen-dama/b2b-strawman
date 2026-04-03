@@ -27,6 +27,9 @@ export interface BillingResponse {
   limits: { maxMembers: number; currentMembers: number };
   canSubscribe: boolean;
   canCancel: boolean;
+  billingMethod: string;
+  adminManaged: boolean;
+  adminNote: string | null;
 }
 
 export interface SubscribeResponse {

@@ -11,7 +11,7 @@ Phase 59 adds self-service user documentation to the HeyKazi platform -- a stand
 | 434 | Admin & Settings Guides | Docs (Content) | 432 | S | 434A | **Done** (PR #902) |
 | 435 | P1 Feature Guides | Docs (Content) | 432 | M | 435A, 435B | **Done** (PRs #903, #904) |
 | 436 | P2 Features & Vertical Guides | Docs (Content) | 432 | M | 436A, 436B | **Done** (PRs #905, #906) |
-| 437 | Frontend Contextual Deep-Links | Frontend | 432 | M | 437A, 437B | |
+| 437 | Frontend Contextual Deep-Links | Frontend | 432 | M | 437A, 437B | **Done** (PRs #907, #908) |
 
 ## Dependency Graph
 
@@ -62,7 +62,7 @@ Phase 59 adds self-service user documentation to the HeyKazi platform -- a stand
 
 | Order | Epic | Rationale |
 |-------|------|-----------|
-| 3 | Epic 437B: Call-Site Wiring & Tests | Wire ~19 EmptyState/HelpTip instances with doc links. Depends on 437A component changes. Links will work once content merges. |
+| 3 | Epic 437B: Call-Site Wiring & Tests (**Done** PR #908) | Wire ~19 EmptyState/HelpTip instances with doc links. Depends on 437A component changes. Links will work once content merges. |
 
 ### Timeline
 
@@ -457,7 +457,7 @@ Stage 3:  [E437B]                                                <- call-site wi
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **437A** | 437.1--437.7 | `docsLink()` utility, HelpTip `docsPath` extension, EmptyState external URL detection, NavItem `external` flag, sidebar Help item, sidebar external link rendering (desktop + mobile), Vitest tests for all component changes | **Done** (PR #907) |
-| **437B** | 437.8--437.10 | Wire ~12 EmptyState call sites with `secondaryLink` props, wire ~7 HelpTip instances with `docsPath` props, add `NEXT_PUBLIC_DOCS_URL` to frontend environment | |
+| **437B** | 437.8--437.10 | Wire ~12 EmptyState call sites with `secondaryLink` props, wire ~7 HelpTip instances with `docsPath` props, add `NEXT_PUBLIC_DOCS_URL` to frontend environment | **Done** (PR #908) |
 
 ### Tasks
 

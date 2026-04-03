@@ -6,7 +6,7 @@ Phase 58 closes the gap between "the platform can process payments" (Phase 57) a
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 427 | Billing Method Dimension | Backend | -- | M | 427A, 427B | |
+| 427 | Billing Method Dimension | Backend | -- | M | 427A, 427B | **Done** (PRs #887, #888) |
 | 428 | Admin Billing Management | Backend + Frontend | 427 | L | 428A, 428B | |
 | 429 | Demo Tenant Provisioning | Backend + Frontend | 427 | L | 429A, 429B | |
 | 430 | Demo Data Seeding | Backend | 429 | L | 430A, 430B, 430C | |
@@ -97,7 +97,7 @@ Stage 4:  [E428B] [E429B] [E431B]                       <- parallel frontend (af
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **427A** | 427.1--427.6 | V18 global migration, `BillingMethod` enum, `Subscription` entity extensions (`billingMethod`, `adminNote`, `adminTransitionTo()`), `CachedSubscriptionInfo` record in `SubscriptionStatusCache`, updated `BillingResponse` DTO, updated `SubscriptionRepository` with billing method filter query | **Done** (PR #887) |
-| **427B** | 427.7--427.12 | `SubscriptionExpiryJob` billing method filter, `SubscriptionItnService` PAYFAST auto-set, `canSubscribe` logic update, `BillingMethodTest`, `SubscriptionExpiryJobBillingMethodTest`, existing test updates | |
+| **427B** | 427.7--427.12 | `SubscriptionExpiryJob` billing method filter, `SubscriptionItnService` PAYFAST auto-set, `canSubscribe` logic update, `BillingMethodTest`, `SubscriptionExpiryJobBillingMethodTest`, existing test updates | **Done** (PR #888) |
 
 ### Tasks
 

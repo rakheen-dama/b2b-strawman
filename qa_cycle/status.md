@@ -2,7 +2,7 @@
 
 ## Current State
 
-- **QA Position**: T1.2 (Court Calendar — Calendar View). T0 complete, T7 complete, T1.1 complete.
+- **QA Position**: T4.1 (Conflict Check). T0, T7, T1 (all), T2.1, T3.1–T3.2 complete.
 - **Cycle**: 1
 - **Dev Stack**: READY
 - **NEEDS_REBUILD**: false
@@ -78,6 +78,11 @@ TOKEN=$(curl -sf -X POST "http://localhost:8180/realms/docteams/protocol/openid-
 | GAP-P55-003 | Direct URL for gated modules shows generic error | minor | OPEN | Frontend | — | Frontend error boundary catches 403 "Module not enabled" but shows generic "Something went wrong" instead of module-specific message. |
 | GAP-P55-004 | Court Calendar missing date range and client filters | minor | OPEN | Frontend | — | Only Status and Type filter dropdowns available. No client/matter or date range filters. |
 | GAP-P55-005 | Court date type badge shows raw enum with underscore | cosmetic | OPEN | Frontend | — | "Pre_trial" instead of "Pre-Trial". Applies to all multi-word type enums. |
+| GAP-P55-006 | "New Court Date" dialog crashes with TypeError | major | OPEN | Frontend | — | Clicking "New Court Date" crashes page: `TypeError: Cannot read properties of undefined (reading 'map')` in react-hook-form Controller. Backend API works. Blocks T1.3, T1.8 UI creation. |
+| GAP-P55-007 | Postponement reason not visible in court date detail | minor | OPEN | Frontend | — | After postponing, the detail panel does not show the reason entered. Cancellation reason IS shown (under "Outcome" label). |
+| GAP-P55-008 | No Edit action for court dates | minor | OPEN | Frontend | — | SCHEDULED and POSTPONED court dates have no "Edit" option in Actions dropdown. Only Postpone/Cancel/Record Outcome available. |
+| GAP-P55-009 | Dashboard "Upcoming Court Dates" widget shows error | minor | OPEN | Frontend | — | Dashboard widget displays "Unable to load court dates." despite court dates existing and Court Calendar page loading correctly. |
+| GAP-P55-010 | Adverse party search does not match on partial name tokens | major | OPEN | Backend | — | Searching "BHP" or "Road" returns 0 results despite matching parties existing. "Minerals" works. Search implementation likely broken (prefix match or threshold issue). |
 
 ## Log
 
@@ -91,3 +96,14 @@ TOKEN=$(curl -sf -X POST "http://localhost:8180/realms/docteams/protocol/openid-
 | 2026-04-04T00:42Z | QA | T7: Module gating verified. Accounting tenant (Thornton) sidebar has zero legal nav items. API returns 403 for all 3 legal endpoints. Direct URL shows generic error (GAP-P55-003). |
 | 2026-04-04T00:45Z | QA | T1.1: Court Calendar list view verified — 4 dates visible, columns correct, status badges correct. Found GAP-P55-004 (missing filters) and GAP-P55-005 (enum display). |
 | 2026-04-04T00:46Z | QA | Checkpoint results written. 5 gaps logged (0 blocker, 2 major, 2 minor, 1 cosmetic). QA position: T1.2. |
+| 2026-04-04T00:58Z | QA | T1.2: Calendar View — all 6 checkpoints PASS. Month grid with markers on correct dates, detail popup works on click. |
+| 2026-04-04T00:58Z | QA | T1.3: Create Court Date — "New Court Date" button crashes page (GAP-P55-006). Backend API works (created TAXATION for Nkosi Estate via API). |
+| 2026-04-04T00:58Z | QA | T1.4: Postpone — PASS. PRE_TRIAL postponed to 2026-04-17, status=POSTPONED. Reason not shown in detail (GAP-P55-007). |
+| 2026-04-04T00:58Z | QA | T1.5: Cancel — PASS. Mediation cancelled, reason visible under "Outcome" label. No actions on terminal state. |
+| 2026-04-04T00:58Z | QA | T1.6: Record Outcome — PASS. Hearing marked Heard, outcome text visible. Terminal state enforced. |
+| 2026-04-04T00:58Z | QA | T1.7: State Machine — terminal states (CANCELLED, HEARD) have no actions. POSTPONED has Cancel+Record Outcome but no Edit (GAP-P55-008). |
+| 2026-04-04T00:58Z | QA | T2.1: Prescription List — 2 trackers visible. Mabena DELICT_3Y correct. Mining GENERAL_3Y shows RUNNING (should be EXPIRED, confirms GAP-P55-002). |
+| 2026-04-04T00:58Z | QA | T3.1: Adverse Party List — 4 parties visible. Type badges partially formatted (GAP-P55-005 class). |
+| 2026-04-04T00:58Z | QA | T3.2: Adverse Party Search — BROKEN. "BHP" and "Road" return 0 results (GAP-P55-010). Backend search query issue. |
+| 2026-04-04T00:58Z | QA | Dashboard: "Upcoming Court Dates" widget shows "Unable to load court dates" (GAP-P55-009). |
+| 2026-04-04T00:58Z | QA | Checkpoint results written. 10 total gaps (0 blocker, 4 major, 4 minor, 1 cosmetic, 1 from dashboard). QA position: T4.1. |

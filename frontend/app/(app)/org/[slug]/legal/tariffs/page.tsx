@@ -28,8 +28,8 @@ export default async function TariffsPage({
 
   try {
     const result = await fetchTariffSchedules();
-    initialSchedules = result.content;
-    initialTotal = result.page.totalElements;
+    initialSchedules = result ?? [];
+    initialTotal = initialSchedules.length;
   } catch (error) {
     console.error("Failed to fetch tariff schedules:", error);
   }

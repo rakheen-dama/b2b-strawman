@@ -64,10 +64,10 @@ export function TariffLineDialog({
         }
         // Also load all schedules for the picker
         const result = await fetchTariffSchedules();
-        setSchedules(result.content);
+        setSchedules(result ?? []);
         // If no active, auto-select first
-        if (!active && result.content.length > 0) {
-          setSelectedScheduleId(result.content[0].id);
+        if (!active && result.length > 0) {
+          setSelectedScheduleId(result[0].id);
         }
       } catch (err) {
         console.error("Failed to load tariff schedules:", err);

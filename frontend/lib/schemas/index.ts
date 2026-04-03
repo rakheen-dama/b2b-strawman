@@ -19,6 +19,9 @@ export type { LogDsarRequestFormData, DsarStatusTransitionFormData, ProcessingAc
 export { filingStatusSchema } from "./deadline";
 export type { FilingStatusFormData } from "./deadline";
 
+export { demoProvisionSchema } from "./demo-provision";
+export type { DemoProvisionFormData } from "./demo-provision";
+
 export {
   createCourtDateSchema,
   postponeCourtDateSchema,

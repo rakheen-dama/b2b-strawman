@@ -36,6 +36,12 @@ export default async function PlatformAdminLayout({
         >
           Billing
         </Link>
+        <Link
+          href="/platform-admin/demo"
+          className="text-sm font-medium text-slate-700 hover:text-slate-950"
+        >
+          Demo
+        </Link>
       </nav>
       {children}
     </div>

@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+@theme inline {
+  /* Font stack — matches HeyKazi main app */
+  --font-sans: var(--font-plex);
+  --font-mono: var(--font-jetbrains);
+  --font-display: var(--font-sora);
+
+  /* Slate color scale (OKLCH, hue ~260) */
+  --color-slate-50: oklch(98.2% 0.003 260);
+  --color-slate-100: oklch(95.8% 0.005 260);
+  --color-slate-200: oklch(91% 0.008 260);
+  --color-slate-300: oklch(85.5% 0.012 260);
+  --color-slate-400: oklch(70% 0.018 260);
+  --color-slate-500: oklch(55.5% 0.025 260);
+  --color-slate-600: oklch(44.5% 0.020 260);
+  --color-slate-700: oklch(37% 0.018 260);
+  --color-slate-800: oklch(26% 0.014 260);
+  --color-slate-900: oklch(20.5% 0.011 260);
+  --color-slate-950: oklch(13.5% 0.006 258);
+
+  /* Teal accent */
+  --color-teal-500: oklch(72% 0.15 185);
+  --color-teal-600: oklch(62% 0.16 183);
+}
+
+:root {
+  /* Nextra primary color — teal accent */
+  --nextra-primary-hue: 175deg;
+  --nextra-primary-saturation: 60%;
+}
+
+/* Override Nextra heading font to Sora (display) */
+.nextra-content h1,
+.nextra-content h2,
+.nextra-content h3,
+.nextra-content h4 {
+  font-family: var(--font-display);
+}
+
+/* Match HeyKazi code block styling */
+code,
+pre {
+  font-family: var(--font-mono);
+}

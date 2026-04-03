@@ -23,4 +23,11 @@ public final class DemoDtos {
       boolean demoDataSeeded,
       String adminNote,
       String tempPassword) {}
+
+  public record DemoReseedResponse(
+      UUID organizationId,
+      String organizationName,
+      boolean success,
+      String verticalProfile,
+      String error) {}
 }

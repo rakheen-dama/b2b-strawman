@@ -39,8 +39,8 @@ Field groups organise related field definitions under a shared heading. On an en
 
 Groups have two powerful options:
 
-- **Auto-apply** -- when enabled, the group is automatically added whenever a new entity of that type is created. This ensures every new project or customer starts with the right fields.
-- **Dependencies** -- when a group is applied, its dependency groups are automatically co-applied. This is useful when one set of fields only makes sense alongside another.
+- **Auto-apply** — when enabled, the group is automatically added whenever a new entity of that type is created. This ensures every new project or customer starts with the right fields.
+- **Dependencies** — when a group is applied, its dependency groups are automatically co-applied. This is useful when one set of fields only makes sense alongside another.
 
 ### Tags
 
@@ -55,32 +55,32 @@ Each tag has a name and an optional hex colour (for example, `#FF5733`). Tags ap
 ## Creating Custom Fields
 
 <Steps>
-### Step 1 -- Navigate to Settings
+### Step 1 — Navigate to Settings
 
 Open **Settings** and click **Custom Fields** in the sidebar.
 
-### Step 2 -- Click New Field
+### Step 2 — Click New Field
 
 Click the **New Field** button to open the field definition form.
 
-### Step 3 -- Configure the field
+### Step 3 — Configure the field
 
 Complete the form:
 
-- **Entity type** -- choose Project, Task, or Customer
-- **Name** -- the label users will see (a slug is generated automatically)
-- **Field type** -- select from the types listed above
-- **Description** (optional) -- help text displayed alongside the field
-- **Required** -- toggle on if this field must be filled in
-- **Required-for contexts** -- optionally make the field required for specific actions (for example, before creating an invoice)
-- **Sort order** -- controls where this field appears relative to others
-- **Validation rules** -- depending on the field type, set constraints like minimum length, maximum value, or date boundaries
+- **Entity type** — choose Project, Task, or Customer
+- **Name** — the label users will see (a slug is generated automatically)
+- **Field type** — select from the types listed above
+- **Description** (optional) — help text displayed alongside the field
+- **Required** — toggle on if this field must be filled in
+- **Required-for contexts** — optionally make the field required for specific actions (for example, before creating an invoice)
+- **Sort order** — controls where this field appears relative to others
+- **Validation rules** — depending on the field type, set constraints like minimum length, maximum value, or date boundaries
 
-### Step 4 -- Set visibility conditions (optional)
+### Step 4 — Set visibility conditions (optional)
 
 You can make a field appear only when another field has a certain value. Choose a condition field and an operator (**equals**, **does not equal**, or **is one of**), then specify the trigger value. This keeps forms concise by hiding fields that are not relevant.
 
-### Step 5 -- Save
+### Step 5 — Save
 
 Click **Save**. The field is now available on all entities of the selected type.
 </Steps>
@@ -102,32 +102,32 @@ To filter by tags, use the tag filter on any list page. You can select one or mo
 Saved views let you save a combination of filters, columns, and sort order as a named view you can switch to at any time.
 
 <Steps>
-### Step 1 -- Configure filters
+### Step 1 — Configure filters
 
 Set your filters: tag filter, custom field filter, date range, or search keyword. Narrow the list to exactly the records you want to see.
 
-### Step 2 -- Select columns
+### Step 2 — Select columns
 
 Choose which columns to display. In addition to standard columns (name, status, dates), you can include custom field columns to surface your custom data directly in the table.
 
-### Step 3 -- Name your view
+### Step 3 — Name your view
 
 Give the view a name and optionally share it with your team. Shared views are visible to all members and marked with a "(shared)" indicator. Only admins and owners can share views.
 </Steps>
 
-Once saved, your view appears as a tab alongside the default "All" tab. Switch between views to see your data from different angles -- for example, a view for high-priority tasks due this week, or active projects filtered by a specific tag.
+Once saved, your view appears as a tab alongside the default "All" tab. Switch between views to see your data from different angles — for example, a view for high-priority tasks due this week, or active projects filtered by a specific tag.
 
 ## Tips and Best Practices
 
-- **Start with field groups** -- organise related fields into groups before creating individual fields. This keeps entity forms tidy and ensures consistency across your team.
-- **Use auto-apply for mandatory data** -- if every new customer needs an industry field, put it in an auto-apply group so it is never missed.
-- **Keep tag colours meaningful** -- establish a colour convention (for example, red for urgent, green for complete) so tags communicate status at a glance.
-- **Create shared views for common workflows** -- a shared "Overdue Tasks" or "Active Clients" view saves everyone from rebuilding the same filters repeatedly.
-- **Use visibility conditions to simplify forms** -- hide fields that only apply in certain situations. For example, show a "Tax ID" field only when the customer type is set to "Business."
+- **Start with field groups** — organise related fields into groups before creating individual fields. This keeps entity forms tidy and ensures consistency across your team.
+- **Use auto-apply for mandatory data** — if every new customer needs an industry field, put it in an auto-apply group so it is never missed.
+- **Keep tag colours meaningful** — establish a colour convention (for example, red for urgent, green for complete) so tags communicate status at a glance.
+- **Create shared views for common workflows** — a shared "Overdue Tasks" or "Active Clients" view saves everyone from rebuilding the same filters repeatedly.
+- **Use visibility conditions to simplify forms** — hide fields that only apply in certain situations. For example, show a "Tax ID" field only when the customer type is set to "Business."
 
 ## Related Features
 
-- [Projects](/features/projects) -- custom fields and tags can be applied to projects
-- [Tasks](/features/tasks) -- add custom fields to tasks for structured tracking
-- [Customers](/features/customers) -- capture client-specific data with custom fields and tags
-- [Documents and Templates](/features/documents) -- custom field values can feed into document templates
+- [Projects](/features/projects) — custom fields and tags can be applied to projects
+- [Tasks](/features/tasks) — add custom fields to tasks for structured tracking
+- [Customers](/features/customers) — capture client-specific data with custom fields and tags
+- [Documents & Templates](/features/documents) — custom field values can feed into document templates

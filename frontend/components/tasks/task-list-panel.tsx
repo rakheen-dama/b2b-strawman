@@ -6,6 +6,7 @@ import { ClipboardList, Plus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/empty-state";
+import { docsLink } from "@/lib/docs";
 import {
   Table,
   TableBody,
@@ -284,7 +285,12 @@ export function TaskListPanel({
       <div className="space-y-4">
         {header}
         {viewSelector}
-        <EmptyState icon={ClipboardList} title="No tasks yet" description="Create a task to start tracking work on this project" />
+        <EmptyState
+          icon={ClipboardList}
+          title="No tasks yet"
+          description="Create a task to start tracking work on this project"
+          secondaryLink={{ label: "Read the guide", href: docsLink("/features/tasks") }}
+        />
       </div>
     );
   }

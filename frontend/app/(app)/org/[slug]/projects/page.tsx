@@ -22,6 +22,7 @@ import Link from "next/link";
 import { EmptyState } from "@/components/empty-state";
 import { TerminologyHeading } from "@/components/terminology-heading";
 import { createMessages } from "@/lib/messages";
+import { docsLink } from "@/lib/docs";
 
 const PROJECT_STATUS_BADGE: Record<
   ProjectStatus,
@@ -221,6 +222,7 @@ export default async function ProjectsPage({
           title={t("projects.list.heading")}
           description={isAdmin ? t("projects.list.description") : t("projects.list.descriptionMember")}
           action={<CreateProjectDialog slug={slug} />}
+          secondaryLink={{ label: "Read the guide", href: docsLink("/features/projects") }}
         />
       ) : (
         <div className="grid auto-rows-fr grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">

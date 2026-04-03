@@ -11,6 +11,7 @@ import { formatCurrency, formatDate } from "@/lib/format";
 import { Receipt, CreditCard } from "lucide-react";
 import Link from "next/link";
 import { HelpTip } from "@/components/help-tip";
+import { docsLink } from "@/lib/docs";
 
 function computeSummary(invoices: InvoiceResponse[]) {
   const now = new Date();
@@ -209,6 +210,7 @@ export default async function InvoicesPage({
               ? `No ${search.status.toLowerCase()} invoices found.`
               : t("invoices.list.description")
           }
+          secondaryLink={{ label: "Read the guide", href: docsLink("/features/invoicing") }}
         />
       ) : (
         <div className="overflow-x-auto">

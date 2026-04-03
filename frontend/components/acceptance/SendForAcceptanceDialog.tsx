@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { HelpTip } from "@/components/help-tip";
 import {
   fetchPortalContacts,
   sendForAcceptance,
@@ -112,7 +113,10 @@ export function SendForAcceptanceDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Send for Acceptance: {documentName}</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            Send for Acceptance: {documentName}
+            <HelpTip code="portal.contacts" docsPath="/features/customer-portal" />
+          </DialogTitle>
         </DialogHeader>
 
         {isLoadingContacts && (

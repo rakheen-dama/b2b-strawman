@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { CheckCircle2, X } from "lucide-react";
 import { createMessages } from "@/lib/messages";
+import { HelpTip } from "@/components/help-tip";
 import { useOnboardingProgress } from "@/hooks/use-onboarding-progress";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -51,6 +52,7 @@ export function GettingStartedCard({
         <span className="text-sm font-medium text-teal-900 dark:text-teal-100">
           {t("card.title")}
         </span>
+        <HelpTip code="onboarding.setup" docsPath="/getting-started/quick-setup" />
         <span className="text-xs text-teal-700 dark:text-teal-300">
           {t("card.progress", {
             completed: String(completedCount),

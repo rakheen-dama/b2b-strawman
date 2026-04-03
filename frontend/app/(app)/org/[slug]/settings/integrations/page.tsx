@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
+import { HelpTip } from "@/components/help-tip";
 import { api } from "@/lib/api";
 import { listIntegrations, listProviders } from "@/lib/api/integrations";
 import { IntegrationCard } from "@/components/integrations/IntegrationCard";
@@ -82,8 +83,9 @@ export default async function IntegrationsSettingsPage({
       </Link>
 
       <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
+        <h1 className="flex items-center gap-2 font-display text-3xl text-slate-950 dark:text-slate-50">
           Integrations
+          <HelpTip code="integrations.overview" docsPath="/admin/integrations" />
         </h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           Connect third-party tools and services to your organization.

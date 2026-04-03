@@ -1,5 +1,6 @@
 import { Sparkles } from "lucide-react";
 import Link from "next/link";
+import { docsLink } from "@/lib/docs";
 
 interface EmptyStateProps {
   orgRole: string;
@@ -28,6 +29,14 @@ export function EmptyState({ orgRole, slug }: EmptyStateProps) {
               Settings &rarr; Integrations
             </Link>
           </p>
+          <a
+            href={docsLink("/features/ai-assistant")}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-2 inline-block text-sm text-teal-600 hover:text-teal-700"
+          >
+            Read the guide
+          </a>
         </div>
       </div>
     );
@@ -39,6 +48,14 @@ export function EmptyState({ orgRole, slug }: EmptyStateProps) {
       <p className="text-sm text-slate-500 dark:text-slate-400">
         AI assistant is not available. Ask your admin to enable it.
       </p>
+      <a
+        href={docsLink("/features/ai-assistant")}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-2 inline-block text-sm text-teal-600 hover:text-teal-700"
+      >
+        Read the guide
+      </a>
     </div>
   );
 }

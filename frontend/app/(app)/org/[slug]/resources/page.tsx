@@ -1,11 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Users } from "lucide-react";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api } from "@/lib/api";
 import { getTeamCapacityGrid } from "@/lib/api/capacity";
 import type { TeamCapacityGrid } from "@/lib/api/capacity";
 import type { Project } from "@/lib/types";
 import { AllocationGrid } from "@/components/capacity/allocation-grid";
+import { EmptyState } from "@/components/empty-state";
+import { docsLink } from "@/lib/docs";
 import { WeekRangeSelector } from "@/components/capacity/week-range-selector";
 import { getCurrentMonday, formatDate, addWeeks } from "@/lib/date-utils";
 
@@ -90,7 +93,16 @@ export default async function ResourcesPage({
         <WeekRangeSelector weekStart={weekStart} weekCount={weekCount} />
       </div>
 
-      <AllocationGrid grid={grid} projects={projectOptions} slug={slug} />
+      {grid.members.length === 0 ? (
+        <EmptyState
+          icon={Users}
+          title="No resource allocations"
+          description="Allocate team members to projects to plan capacity."
+          secondaryLink={{ label: "Read the guide", href: docsLink("/features/resource-planning") }}
+        />
+      ) : (
+        <AllocationGrid grid={grid} projects={projectOptions} slug={slug} />
+      )}
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api } from "@/lib/api";
 import { FileText, Plus } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
+import { docsLink } from "@/lib/docs";
 import { TerminologyHeading } from "@/components/terminology-heading";
 import { TerminologyText } from "@/components/terminology-text";
 import { ProposalSummaryCards } from "@/components/proposals/proposal-summary-cards";
@@ -103,6 +104,7 @@ export default async function ProposalsPage({
           icon={FileText}
           title={<TerminologyText template="No {proposals} yet" />}
           description={<TerminologyText template="Create a {proposal} to start tracking client engagements." />}
+          secondaryLink={{ label: "Read the guide", href: docsLink("/features/proposals") }}
         />
       ) : (
         <ProposalTable proposals={proposals} slug={slug} now={new Date().getTime()} />

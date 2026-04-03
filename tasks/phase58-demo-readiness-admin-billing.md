@@ -51,7 +51,7 @@ Phase 58 closes the gap between "the platform can process payments" (Phase 57) a
 |-------|------|-----------|
 | 2a | Epic 428A: Admin Billing Backend | Admin billing service + controller + DTOs. Depends on billing method entity from 427. Independent of 429, 431. | **Done** (PR #889) |
 | 2b | Epic 429A: Demo Provisioning Backend | Demo provision service + controller + KeycloakAdminClient extensions. Depends on PILOT billing method from 427. Independent of 428, 431. | **Done** (PR #891) |
-| 2c | Epic 431A: Demo Cleanup Backend | Cleanup service + controller + safety validation. Depends on `isCleanupEligible()` from 427. Independent of 428, 429. |
+| 2c | Epic 431A: Demo Cleanup Backend | Cleanup service + controller + safety validation. Depends on `isCleanupEligible()` from 427. Independent of 428, 429. | **Done** (PR #896) |
 
 ### Stage 3: Demo Data Seeding (After Provisioning Backend)
 
@@ -421,7 +421,7 @@ Stage 4:  [E428B] [E429B] [E431B]                       <- parallel frontend (af
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **431A** | 431.1--431.6 | `DemoCleanupService` (multi-step cleanup with error handling), `DemoCleanupRequest`/`DemoCleanupResponse` DTOs, cleanup endpoint on `DemoAdminController`, `DemoCleanupServiceTest` | |
+| **431A** | 431.1--431.6 | `DemoCleanupService` (multi-step cleanup with error handling), `DemoCleanupRequest`/`DemoCleanupResponse` DTOs, cleanup endpoint on `DemoAdminController`, `DemoCleanupServiceTest` | **Done** (PR #896) |
 | **431B** | 431.7--431.12 | Demo tenant list (filtered PILOT/COMPLIMENTARY view), delete confirmation dialog (org name match), reseed button, billing page adaptation (hide PayFast UI for `adminManaged`), frontend tests | |
 
 ### Tasks

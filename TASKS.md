@@ -487,7 +487,7 @@
 | 428 | Admin Billing Management | Backend + Frontend | 427 | L | 428A, 428B | **Done** (PRs #889, #890) |
 | 429 | Demo Tenant Provisioning | Backend + Frontend | 427 | L | 429A, 429B | **Done** (PRs #891, #892) |
 | 430 | Demo Data Seeding | Backend | 429 | L | 430A, 430B, 430C | **Done** (PRs #893, #894, #895) |
-| 431 | Demo Tenant Cleanup | Backend + Frontend | 427 | L | 431A, 431B | |
+| 431 | Demo Tenant Cleanup | Backend + Frontend | 427 | L | 431A, 431B | 431A Done (PR #896) |
 
 ---
 

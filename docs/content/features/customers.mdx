@@ -3,6 +3,140 @@ title: "Customers"
 description: "Manage your client base, track customer lifecycle, and link projects to customers."
 ---
 
+import { Callout, Steps } from "nextra/components"
+
 # Customers
 
-Content coming soon.
+Customers represent the organisations and individuals your firm serves. They are the foundation of your client relationships in HeyKazi — every project, invoice, and engagement connects back to a customer record.
+
+Managing customers in one place gives you a clear picture of each relationship: where they are in their journey, what work you are doing for them, and how profitable the engagement is. Whether you run an accounting practice, a law firm, or a consulting agency, the customer module adapts to your workflow.
+
+<Callout type="info">
+  **Vertical terminology**: Depending on your industry, customers may be called **Clients** (legal firms) or **Accounts** (consulting firms). HeyKazi supports terminology overrides so the platform speaks your language.
+</Callout>
+
+## Key Concepts
+
+### Customer Types
+
+When creating a customer, you choose a type that describes the entity:
+
+| Type | Description |
+|------|-------------|
+| **Individual** | A single person — for personal tax returns, individual legal matters, or sole practitioners. |
+| **Company** | A business entity — for corporate engagements, audits, or business advisory. |
+| **Trust** | A trust entity — for trust administration, estate planning, or fiduciary work. |
+
+### Customer Lifecycle
+
+Every customer moves through a lifecycle that tracks the business relationship from first contact to completion.
+
+| Status | Description |
+|--------|-------------|
+| **Prospect** | The default status for new customers. You have captured their details but have not started working together yet. |
+| **Onboarding** | The intake process is underway. Checklists guide your team through the steps needed to bring the customer on board. |
+| **Active** | Fully operational. The customer can have projects, time entries, and invoices. |
+| **Dormant** | No recent activity. The relationship is on hold but not ended. |
+| **Offboarding** | The relationship is winding down. Final deliverables and handovers are in progress. |
+| **Offboarded** | The relationship has ended. The record is preserved for reference and compliance. |
+
+<Callout type="info">
+  Lifecycle status is separate from the record status (Active or Archived). The lifecycle tracks the business relationship, while the record status controls whether the customer appears in your default list views.
+</Callout>
+
+### Completeness Score
+
+Each customer has a completeness percentage based on how many fields and data points have been filled in. This appears as a progress badge on the customer list and helps you identify records that need attention. Use the **Show incomplete** toggle to filter for customers that still need work.
+
+## Creating a Customer
+
+<Steps>
+### Step 1 — Navigate to Customers
+
+Click **Customers** in the left sidebar. If you have no customers yet, you will see: "No customers yet — Customers represent the organisations you work with. Add your first customer to start managing relationships."
+
+### Step 2 — Click Add Customer
+
+Click the **Add Customer** button in the top-right corner to open the customer creation dialog.
+
+### Step 3 — Fill in the basic details
+
+Complete the first step of the form:
+
+- **Name** (required) — the customer's full name or business name
+- **Type** — choose Individual, Company, or Trust
+- **Email** (optional) — primary contact email address
+- **Phone** (optional) — primary phone number
+- **ID Number** (optional) — tax ID, registration number, or personal ID
+- **Notes** (optional) — any additional context about the customer
+
+### Step 4 — Complete additional intake fields
+
+The second step presents any custom intake fields your admin has configured. These might include industry, referral source, or engagement type. You can fill them in now or skip this step and return to it later.
+
+### Step 5 — Save the customer
+
+Click **Create**. The customer is created with the **Prospect** lifecycle status and you are taken to the customer detail page.
+</Steps>
+
+## The Customer Detail Page
+
+Once inside a customer record, information is organised into tabs along the top. The tabs you see depend on your role and which modules are enabled for your organisation.
+
+**Core tabs:**
+
+- **Projects** — all projects linked to this customer, with status and progress indicators
+- **Documents** — customer-scoped documents and files
+- **Onboarding** — the onboarding checklist with steps to complete before the customer becomes active (visible during the Onboarding lifecycle stage)
+
+**Admin and management tabs:**
+
+- **Invoices** — all invoices for this customer, with totals and status breakdowns
+- **Retainer** — retainer balance management (when retainers are enabled)
+- **Requests** — information requests sent to or received from the customer
+- **Rates** — customer-specific billing rate overrides
+- **Generated Docs** — documents generated from templates for this customer
+- **Financials** — profitability reporting showing revenue, costs, and margins
+
+## Managing Customers
+
+### Editing a Customer
+
+Open the customer detail page and update any field directly. Changes are saved immediately.
+
+### Transitioning Through the Lifecycle
+
+Admins can move a customer through lifecycle stages using the status dropdown on the detail page. The typical path is **Prospect** to **Onboarding** to **Active**, but you can transition to any status that fits your workflow. Moving a customer to **Onboarding** activates the onboarding checklist, and completing all checklist items transitions the customer to **Active** automatically.
+
+### Archiving and Restoring
+
+Archiving a customer hides it from the default customer list but preserves all data. Use the **status filter** to find archived customers. To bring a customer back, open the archived record and click **Restore**.
+
+<Callout type="warning">
+  Only **Active** customers (lifecycle status) can have new projects and invoices created against them. Make sure a customer has completed onboarding before starting billable work.
+</Callout>
+
+### Linking Projects
+
+You can link a project to a customer when creating the project or by editing an existing project. Linking ensures that time logged on the project flows through to the customer's invoices and financial reports.
+
+## Tags and Saved Views
+
+**Tags** are colour-coded labels you can attach to customers to categorise them — by industry, service type, priority, or any system that suits your firm. Tags appear as coloured badges on the customer list and are shared across projects, tasks, and customers.
+
+**Saved views** let you save your current filter, sort, and column configuration as a named view. This is useful when you regularly check a specific subset of customers, such as "Active Companies" or "Prospects This Month."
+
+## Tips and Best Practices
+
+- **Complete customer records early** — filling in all fields improves your completeness score and ensures your team has the information they need.
+- **Use the onboarding checklist** — it standardises your intake process and ensures nothing is missed before you start billable work.
+- **Link customers to projects promptly** — this keeps invoicing and financial reporting accurate from day one.
+- **Archive instead of deleting** — archiving preserves all customer data for reporting and compliance while keeping your active list clean.
+- **Set customer-specific rates when needed** — if a customer has negotiated special pricing, configure rate overrides on the Rates tab so time entries are valued correctly.
+
+## Related Features
+
+- [Projects](/features/projects) — create and manage engagements linked to customers
+- [Invoicing](/features/invoicing) — generate invoices from tracked time for a customer
+- [Rate Cards and Budgets](/features/rate-cards-budgets) — configure billing rates at the organisation, project, or customer level
+- [Custom Fields and Tags](/features/custom-fields-tags) — add structured data and colour-coded labels to customer records

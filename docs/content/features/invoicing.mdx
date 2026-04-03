@@ -3,6 +3,196 @@ title: "Invoicing"
 description: "Create invoices from tracked time, manage the invoice lifecycle, and record payments."
 ---
 
+import { Callout, Steps } from "nextra/components"
+
 # Invoicing
 
-Content coming soon.
+Invoicing in HeyKazi turns your tracked billable time into professional invoices. Whether you bill a single customer for a specific engagement or run a batch billing cycle across your entire client base, the invoicing module handles the full lifecycle from draft to payment.
+
+Invoices connect directly to time tracking — billable hours logged against tasks flow into invoices as line items, with rates and amounts calculated automatically. You can also add manual line items, apply tax, preview a PDF, and record payments when they arrive.
+
+## Key Concepts
+
+### Invoice Lifecycle
+
+Every invoice moves through a series of statuses that reflect where it is in the billing process.
+
+| Status | Badge colour | Description |
+|--------|-------------|-------------|
+| **Draft** | Grey | The invoice is being prepared. Line items, dates, and notes can still be edited. |
+| **Approved** | Teal | Reviewed and confirmed. Ready to send to the customer. |
+| **Sent** | Teal | Delivered to the customer. The invoice is locked and cannot be edited. |
+| **Paid** | Green | Payment has been received and recorded. |
+| **Void** | Red | The invoice has been cancelled. No payment is expected. |
+
+The typical path is **Draft** to **Approved** to **Sent** to **Paid**. You can void an invoice at the Draft, Approved, or Sent stage if it is no longer valid.
+
+<Callout type="info">
+  Only **Draft** invoices can be modified. Once an invoice moves to Approved or beyond, it is locked to preserve a reliable audit trail. If you need to make changes after approval, void the invoice and create a new one.
+</Callout>
+
+### Invoice Numbering
+
+Invoice numbers are generated sequentially (for example, INV-001, INV-002). The format uses a prefix followed by a zero-padded counter that increments automatically. Numbers are assigned when the invoice is created, giving you a clear chronological reference for every invoice.
+
+### Line Item Types
+
+Invoices support several types of line items to cover different billing scenarios:
+
+| Type | Description |
+|------|-------------|
+| **Time** | Generated from tracked billable time entries. Hours, rate, and amount are calculated automatically. |
+| **Expense** | From expense entries recorded against projects. |
+| **Retainer** | Drawn from a customer's retainer balance. |
+| **Manual** | Manually entered line items for ad-hoc charges. |
+| **Tariff** | From industry-specific tariff schedules (for example, LSSA tariff items for legal work). |
+| **Fixed Fee** | A flat-fee charge for a defined scope of work. |
+
+## Creating an Invoice from Unbilled Time
+
+The most common way to create an invoice is to pull in unbilled time entries for a customer.
+
+<Steps>
+### Step 1 — Navigate to Invoices
+
+Click **Invoices** in the left sidebar or open the **Invoices** tab on a customer's detail page. If no invoices exist yet, you will see: "No invoices yet — Generate invoices from tracked time or create them manually. You'll need at least one project with logged time."
+
+### Step 2 — Click New Invoice
+
+Click the **New Invoice** button to open the invoice generation dialog.
+
+### Step 3 — Configure the invoice
+
+In the first step of the dialog, set:
+
+- **Customer** — select which customer to invoice
+- **Date range** — choose the start and end dates to scope which time entries to include
+- **Currency** — confirm the billing currency
+
+### Step 4 — Review and select time entries
+
+The second step shows all unbilled time entries and expenses that fall within the date range for that customer. Review the list and select or deselect individual items. Each entry shows the task, hours, rate, and calculated amount.
+
+### Step 5 — Create the draft
+
+Click **Create**. A draft invoice is generated with the selected items as line items. You are taken to the invoice detail page where you can review and adjust before approving.
+</Steps>
+
+### Creating a Manual Invoice
+
+If you need to invoice for something that is not tied to tracked time, click **New Invoice** and choose the manual creation option. This creates a blank draft for a customer where you can add line items by hand — useful for fixed-fee engagements, retainer draws, or ad-hoc charges.
+
+## The Invoice Detail Page
+
+The invoice detail page is where you review, edit, and manage each invoice.
+
+**Header area:**
+
+- Invoice number and status badge
+- Customer name
+- Issue date and due date
+- Currency
+
+**For Draft invoices, you can edit:**
+
+- Issue date and due date
+- Payment terms
+- Notes to the customer
+- Line items — add, edit, or remove individual lines
+- Tax rates on each line item
+
+**Line item table:**
+
+Each line shows the description, quantity, unit price, tax rate, and calculated amount. For drafts, you can add new lines, edit existing ones, or remove items you do not want to include.
+
+**Totals section:**
+
+- Subtotal (before tax)
+- Tax breakdown (grouped by rate)
+- Total amount due
+
+**Actions by status:**
+
+| Status | Available actions |
+|--------|------------------|
+| **Draft** | Edit, Preview PDF, Approve, Delete |
+| **Approved** | Preview PDF, Send, Void |
+| **Sent** | Record Payment, Void |
+| **Paid** | View payment details |
+
+### Recording a Payment
+
+When a customer pays an invoice, open the Sent invoice and click **Record Payment**. Enter the payment amount, date, reference number, and payment method. Once saved, the invoice moves to **Paid** status. A payment history section on the invoice shows all recorded payments.
+
+### PDF Preview and Generation
+
+At any stage, click **Preview** to generate a PDF of the invoice using your organisation's branding (logo, brand colour, and footer configured in organisation settings). The PDF is rendered server-side and opens in a preview window. You can download it or send it directly to the customer.
+
+## Billing Runs
+
+For firms that invoice multiple customers on a regular cycle, billing runs let you generate and send a batch of invoices in one go.
+
+The billing run wizard walks you through five steps:
+
+<Steps>
+### Step 1 — Configure
+
+Set the date range for the billing period, select the currency, and choose whether to include retainer balances.
+
+### Step 2 — Select Customers
+
+Choose which customers to include in this billing run. Only customers with unbilled time or expenses in the date range appear.
+
+### Step 3 — Review and Cherry-Pick
+
+For each selected customer, review the individual time entries and expenses. Select or deselect specific items — giving you full control over what goes on each invoice.
+
+### Step 4 — Review Drafts
+
+See a summary of all draft invoices that will be generated. Review totals and line counts per customer before finalising.
+
+### Step 5 — Send
+
+Approve and send all invoices at once. Each customer receives their invoice, and all included time entries are marked as billed.
+</Steps>
+
+<Callout type="info">
+  Billing runs are ideal for monthly or quarterly billing cycles. They save significant time compared to creating invoices for each customer individually.
+</Callout>
+
+## The Invoice List Page
+
+The invoice list gives you an overview of all invoices across your organisation.
+
+**Summary cards** at the top show:
+
+- **Outstanding amount** — total unpaid across Sent invoices
+- **Overdue amount** — total where the due date has passed
+- **Paid this month** — total payments received in the current month
+
+**Filtering options:**
+
+- Filter by status (Draft, Approved, Sent, Paid, Void)
+- Filter by customer
+
+**Table columns:** Invoice number, customer, status badge, total amount, issue date, and due date.
+
+<Callout type="warning">
+  The Invoices page is available to organisation Owners, Admins, and users with the invoicing capability. Team members without this permission will not see the Invoices item in the sidebar.
+</Callout>
+
+## Tips and Best Practices
+
+- **Invoice promptly** — the sooner you invoice after completing work, the sooner you get paid. Aim to invoice at least monthly.
+- **Review line items before approving** — check that all time entries are correctly categorised and that rates are accurate. Corrections are easy in Draft status but require voiding after approval.
+- **Use billing runs for regular cycles** — if you bill monthly, the billing run wizard is faster and more consistent than creating invoices one at a time.
+- **Add notes for context** — the notes field on an invoice is a good place to summarise the work performed or reference a project name, which helps customers understand what they are paying for.
+- **Track unbilled time regularly** — review unbilled time reports weekly to catch any time entries that need correction before they reach an invoice.
+
+## Related Features
+
+- [Time Tracking](/features/time-tracking) — log the billable hours that flow into invoices
+- [Customers](/features/customers) — invoices are generated for and sent to customers
+- [Projects](/features/projects) — time and expenses are tracked within projects and rolled up into invoices
+- [Rate Cards and Budgets](/features/rate-cards-budgets) — configure the billing rates used to calculate invoice line amounts
+- [Documents and Templates](/features/documents) — customise invoice templates and branding

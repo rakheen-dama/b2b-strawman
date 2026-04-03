@@ -1,0 +1,18 @@
+export default {
+  projects: "Projects",
+  customers: "Customers",
+  tasks: "Tasks",
+  "time-tracking": "Time Tracking",
+  invoicing: "Invoicing",
+  documents: "Documents & Templates",
+  proposals: "Proposals",
+  expenses: "Expenses",
+  "rate-cards-budgets": "Rate Cards & Budgets",
+  reports: "Reports & Data Export",
+  "resource-planning": "Resource Planning",
+  "workflow-automations": "Workflow Automations",
+  "custom-fields-tags": "Custom Fields & Tags",
+  "information-requests": "Information Requests",
+  "customer-portal": "Customer Portal",
+  "ai-assistant": "AI Assistant",
+};

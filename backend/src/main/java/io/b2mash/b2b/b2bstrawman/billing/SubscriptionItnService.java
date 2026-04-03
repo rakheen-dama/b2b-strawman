@@ -118,9 +118,14 @@ public class SubscriptionItnService {
 
     subscription.transitionTo(Subscription.SubscriptionStatus.ACTIVE);
 
-    // Set billing method to PAYFAST on first successful payment (MANUAL -> PAYFAST transition)
-    if (subscription.getBillingMethod() != BillingMethod.PAYFAST) {
+    // Set billing method to PAYFAST only for MANUAL subscriptions on first successful payment.
+    if (subscription.getBillingMethod() == BillingMethod.MANUAL) {
       subscription.setBillingMethod(BillingMethod.PAYFAST);
+    } else if (subscription.getBillingMethod() != BillingMethod.PAYFAST) {
+      log.warn(
+          "Unexpected COMPLETE ITN for organization {} with billing method {}; leaving unchanged",
+          orgId,
+          subscription.getBillingMethod());
     }
 
     if (token != null && subscription.getPayfastToken() == null) {

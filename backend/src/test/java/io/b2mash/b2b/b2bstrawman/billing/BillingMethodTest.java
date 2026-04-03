@@ -168,10 +168,8 @@ class BillingMethodTest {
     }
 
     @Test
-    void v18Migration_setsPayfastForTokenLinkedSubscriptions() {
-      // Create a subscription with a payfast_token — V18 migration already ran,
-      // so we simulate by setting the token and verifying the billing method
-      // can be set to PAYFAST (the migration does UPDATE ... WHERE payfast_token IS NOT NULL)
+    void billingMethodPersistsCorrectly_payfast() {
+      // Verify PAYFAST billing method and payfast_token persist and round-trip correctly
       var orgId = createOrganization("bm-test-migration-" + UUID.randomUUID());
       var sub = new Subscription(orgId);
       sub.setPayfastToken("tok_test_migration");

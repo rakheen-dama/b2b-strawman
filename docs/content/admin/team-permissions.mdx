@@ -1,8 +1,146 @@
 ---
 title: "Team & Permissions"
-description: "Manage team members, assign roles, and configure access permissions."
+description: "Manage team members, assign roles, and configure granular permissions for your organisation."
 ---
+
+import { Callout, Steps } from "nextra/components"
 
 # Team & Permissions
 
-Content coming soon.
+HeyKazi gives you full control over who can access your organisation and what they can do. You manage your team from the **Team** page and configure roles from **Settings**. This guide covers inviting and removing members, understanding roles, working with capabilities, and creating custom roles.
+
+<Callout type="info">
+  Only **Owners** and **Admins** can invite or remove team members. Members can view the team list but cannot make changes.
+</Callout>
+
+## Built-in Roles
+
+Every organisation has three system roles that cannot be modified or deleted.
+
+| Role | Access Level | Description |
+|------|-------------|-------------|
+| **Owner** | Full access | Complete control over everything, including billing and subscription management. There is one Owner per organisation — the person who created it. |
+| **Admin** | Full access | Can manage projects, customers, team members, and settings. Can invite and remove members. Cannot manage the subscription. |
+| **Member** | Capabilities-gated | Can work on assigned projects — create tasks, log time, and add documents. Cannot access organisation settings or invite others by default. |
+
+Owners and Admins bypass all capability checks — they always have full access. Members are restricted to the capabilities granted by their role or per-user overrides.
+
+## Capabilities
+
+Capabilities are the building blocks of permissions. Each capability controls access to a specific area of HeyKazi.
+
+| Capability | Description |
+|-----------|-------------|
+| **Financial Visibility** | View financial data including rates, budgets, and profitability reports |
+| **Invoicing** | Create, edit, and send invoices to customers |
+| **Project Management** | Create and manage projects, tasks, and documents |
+| **Team Oversight** | View team members' work, time entries, and assignments |
+| **Customer Management** | Create and manage customer records and relationships |
+| **Automations** | Configure workflow automations and scheduling rules |
+| **Resource Planning** | View and manage resource allocation and capacity planning |
+
+The **Member** role has no capabilities by default. Capabilities are added through custom roles or per-user overrides at invite time.
+
+## Inviting a Team Member
+
+<Steps>
+### Step 1 — Open the Team page
+
+Click **Team** in the sidebar. The invite form appears at the top of the page, visible to Admins and Owners.
+
+### Step 2 — Enter their email address
+
+Type your colleague's email into the **Email address** field. The placeholder shows `colleague@company.com` as an example.
+
+### Step 3 — Choose a role
+
+Select a role from the **Role** dropdown. The dropdown is split into two groups:
+
+- **System roles** — **Member** and **Admin**
+- **Custom roles** — any additional roles your organisation has created
+
+### Step 4 — Customise permissions (optional)
+
+If you select a custom role, a **Customize for this user** section appears below the dropdown. Expand it to toggle individual capabilities on or off for this specific invitation. Modified capabilities are marked with **+** (added) or **-** (removed) so you can see what differs from the base role.
+
+### Step 5 — Send the invitation
+
+Click **Send Invite**. The invitation is sent immediately and the person appears in the **Pending Invitations** tab.
+</Steps>
+
+## Managing Pending Invitations
+
+Switch to the **Pending Invitations** tab on the Team page to view all outstanding invitations.
+
+| Column | Description |
+|--------|-------------|
+| **Email** | The email address the invitation was sent to |
+| **Role** | The role assigned to the invitation (shown as a badge) |
+| **Invited** | The date the invitation was sent |
+| **Actions** | A **Revoke** button to cancel the invitation |
+
+<Callout type="warning">
+  Revoking an invitation cannot be undone. If you change your mind, you will need to send a new invitation.
+</Callout>
+
+## Removing a Member
+
+Admins and Owners can remove members from the Team page. Open the actions menu for the member you want to remove and confirm the action. The member loses access to the organisation immediately.
+
+## Custom Roles
+
+Custom roles let you define reusable permission sets beyond the three built-in roles. Navigate to **Settings** then **Roles & Permissions** to manage them.
+
+### Creating a Custom Role
+
+<Steps>
+### Step 1 — Open Roles & Permissions
+
+Go to **Settings** in the sidebar, then click **Roles & Permissions**.
+
+### Step 2 — Add a new role
+
+Click the button to create a new role. Give it a descriptive name (for example, "Senior Associate" or "Billing Manager") and an optional description.
+
+### Step 3 — Select capabilities
+
+Choose which capabilities this role should have. Only the capabilities you select will be available to members assigned this role.
+
+### Step 4 — Save the role
+
+Save the role. It immediately appears in the invite dropdown under the **Custom** group and shows on the role card with a member count and capability badges.
+</Steps>
+
+<Callout type="info">
+  **Custom roles** are ideal when you need something between Member and Admin. For example, a "Project Lead" role with **Project Management** and **Team Oversight** capabilities — but without access to financial data or billing.
+</Callout>
+
+## How Permission Inheritance Works
+
+Permissions in HeyKazi follow a simple hierarchy:
+
+1. **Owner and Admin** — bypass all capability checks. They always have full access.
+2. **Custom roles** — inherit capabilities from the role definition. When inviting a member, you can add or remove individual capabilities as overrides.
+3. **Member** — has no capabilities by default. Must be granted capabilities through a custom role or per-user overrides.
+
+Per-user overrides take priority over the base role. If a custom role includes **Invoicing** but you remove it for a specific person at invite time, that person will not have invoicing access.
+
+## Plan Limits
+
+Your organisation's plan determines how many team members you can have. The Team page shows a progress bar with your current usage — for example, "3 of 10 members."
+
+When you reach your plan limit, the invite form displays: "Member limit reached. Upgrade to invite more members." with a link to your billing settings.
+
+## Tips and Best Practices
+
+- **Use Member for most of your team** — the Member role covers everyday work. Pair it with a custom role if they need specific capabilities.
+- **Reserve Admin for managers** — only people who need to manage settings, invite others, or configure rate cards should be Admins.
+- **Create custom roles for common patterns** — if several people need the same set of capabilities, define a custom role instead of customising each invitation individually.
+- **Review pending invitations regularly** — revoke stale invitations so your member count stays accurate against your plan limit.
+- **Start with fewer capabilities** — it is easier to add capabilities later than to remove them after someone has been working with broader access.
+
+## Related Features
+
+- [Invite Your Team](/getting-started/invite-your-team) — step-by-step walkthrough for first-time team setup
+- [Organization Settings](/admin/org-settings) — configure branding, currency, and other organisation-wide preferences
+- [Billing & Subscription](/admin/billing) — manage your plan and member limits

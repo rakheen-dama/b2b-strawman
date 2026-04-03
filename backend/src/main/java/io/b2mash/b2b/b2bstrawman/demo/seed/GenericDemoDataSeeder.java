@@ -312,7 +312,7 @@ public class GenericDemoDataSeeder extends BaseDemoDataSeeder {
 
     // Split time entries into groups for 10 invoices
     List<TimeEntry> unbilled = timeEntries.stream().filter(e -> e.getInvoiceId() == null).toList();
-    int entriesPerInvoice = unbilled.size() / 10;
+    int entriesPerInvoice = Math.max(1, unbilled.size() / 10);
 
     // Invoice status distribution: 2 DRAFT, 4 SENT, 3 PAID, 1 VOID
     // DRAFT = just created, SENT = approved + sent, PAID = approved + sent + paid, VOID = approved

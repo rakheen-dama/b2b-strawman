@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
+import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
@@ -28,17 +29,40 @@ import org.springframework.test.context.ActiveProfiles;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class GenericDemoDataSeederTest {
 
-  @Autowired private GenericDemoDataSeeder genericDemoDataSeeder;
-  @Autowired private TenantProvisioningService tenantProvisioningService;
-  @Autowired private TenantTransactionHelper tenantTransactionHelper;
-  @Autowired private OrgSchemaMappingRepository mappingRepository;
-  @Autowired private CustomerRepository customerRepository;
-  @Autowired private ProjectRepository projectRepository;
-  @Autowired private TaskRepository taskRepository;
-  @Autowired private TimeEntryRepository timeEntryRepository;
+  private final GenericDemoDataSeeder genericDemoDataSeeder;
+  private final TenantProvisioningService tenantProvisioningService;
+  private final TenantTransactionHelper tenantTransactionHelper;
+  private final OrgSchemaMappingRepository mappingRepository;
+  private final OrganizationRepository organizationRepository;
+  private final CustomerRepository customerRepository;
+  private final ProjectRepository projectRepository;
+  private final TaskRepository taskRepository;
+  private final TimeEntryRepository timeEntryRepository;
 
   private String schemaName;
   private UUID orgId;
+
+  @Autowired
+  GenericDemoDataSeederTest(
+      GenericDemoDataSeeder genericDemoDataSeeder,
+      TenantProvisioningService tenantProvisioningService,
+      TenantTransactionHelper tenantTransactionHelper,
+      OrgSchemaMappingRepository mappingRepository,
+      OrganizationRepository organizationRepository,
+      CustomerRepository customerRepository,
+      ProjectRepository projectRepository,
+      TaskRepository taskRepository,
+      TimeEntryRepository timeEntryRepository) {
+    this.genericDemoDataSeeder = genericDemoDataSeeder;
+    this.tenantProvisioningService = tenantProvisioningService;
+    this.tenantTransactionHelper = tenantTransactionHelper;
+    this.mappingRepository = mappingRepository;
+    this.organizationRepository = organizationRepository;
+    this.customerRepository = customerRepository;
+    this.projectRepository = projectRepository;
+    this.taskRepository = taskRepository;
+    this.timeEntryRepository = timeEntryRepository;
+  }
 
   @BeforeAll
   void setUp() {
@@ -48,8 +72,8 @@ class GenericDemoDataSeederTest {
 
     schemaName = mappingRepository.findByExternalOrgId(slug).orElseThrow().getSchemaName();
 
-    // Get the org ID from the Organization record
-    orgId = UUID.nameUUIDFromBytes(slug.getBytes());
+    // Get the org ID from the actual Organization record (not derived from slug)
+    orgId = organizationRepository.findByExternalOrgId(slug).orElseThrow().getId();
 
     // Run the seeder
     genericDemoDataSeeder.seed(schemaName, orgId);

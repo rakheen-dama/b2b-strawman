@@ -34,7 +34,7 @@ public class DemoDataSeeder {
         "Dispatching demo data seeding for profile '{}' in schema {}", verticalProfile, schemaName);
 
     BaseDemoDataSeeder seeder =
-        switch (verticalProfile.toLowerCase()) {
+        switch (verticalProfile == null ? "" : verticalProfile.toLowerCase()) {
           case "accounting" -> genericSeeder; // replaced in 430B
           case "legal" -> genericSeeder; // replaced in 430B
           default -> genericSeeder;

@@ -220,7 +220,7 @@ export default async function MyWorkPage({
     tasksData.assigned.length === 0 && tasksData.unassigned.length === 0;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {/* Page Header with Date Range Selector */}
       <div className="flex items-center justify-between">
         <MyWorkHeader from={from} to={to} />

@@ -138,13 +138,14 @@ export function TemplatesContent({
             <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
               {CATEGORY_LABELS[cat as TemplateCategory] ?? cat}
             </h2>
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Name</TableHead>
                   <TableHead>Format</TableHead>
-                  <TableHead>Entity Type</TableHead>
-                  <TableHead>Source</TableHead>
+                  <TableHead className="hidden md:table-cell">Entity Type</TableHead>
+                  <TableHead className="hidden lg:table-cell">Source</TableHead>
                   <TableHead>Status</TableHead>
                   {canManage && (
                     <TableHead className="w-12">Actions</TableHead>
@@ -184,12 +185,12 @@ export function TemplatesContent({
                         <Badge variant="neutral">Tiptap</Badge>
                       )}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="hidden md:table-cell">
                       <Badge variant="neutral">
                         {template.primaryEntityType}
                       </Badge>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="hidden lg:table-cell">
                       {template.source === "PLATFORM" ? (
                         <Badge variant="pro">Platform</Badge>
                       ) : (
@@ -215,6 +216,7 @@ export function TemplatesContent({
                 ))}
               </TableBody>
             </Table>
+            </div>
           </div>
         ))
       )}

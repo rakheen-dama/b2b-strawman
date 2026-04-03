@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { FileText, Plus } from "lucide-react";
-import Link from "next/link";
 import { api } from "@/lib/api";
 import { fetchRetainers } from "@/lib/api/retainers";
 import type { RetainerResponse, RetainerStatus } from "@/lib/api/retainers";
@@ -11,13 +10,6 @@ import { RetainerList } from "@/components/retainers/retainer-list";
 import { CreateRetainerDialog } from "@/components/retainers/create-retainer-dialog";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/empty-state";
-
-const STATUS_FILTERS: { label: string; value: RetainerStatus | null }[] = [
-  { label: "All", value: null },
-  { label: "Active", value: "ACTIVE" },
-  { label: "Paused", value: "PAUSED" },
-  { label: "Terminated", value: "TERMINATED" },
-];
 
 function computeSummary(retainers: RetainerResponse[]) {
   let activeCount = 0;
@@ -103,31 +95,6 @@ export default async function RetainersPage({
         readyToCloseCount={summary.readyToCloseCount}
         totalOverageHours={summary.totalOverageHours}
       />
-
-      {/* URL-based Status Filter Tabs */}
-      <div className="flex flex-wrap items-center gap-3">
-        <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
-          Filter:
-        </span>
-        {STATUS_FILTERS.map((filter) => (
-          <Link
-            key={filter.label}
-            href={
-              filter.value
-                ? `/org/${slug}/retainers?status=${filter.value}`
-                : `/org/${slug}/retainers`
-            }
-            className={`rounded-full px-3 py-1 text-sm transition-colors ${
-              (filter.value === null && !search.status) ||
-              search.status === filter.value
-                ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
-                : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
-            }`}
-          >
-            {filter.label}
-          </Link>
-        ))}
-      </div>
 
       {/* Retainer List */}
       {retainers.length === 0 ? (

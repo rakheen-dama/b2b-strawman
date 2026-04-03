@@ -99,7 +99,7 @@ export default async function OrgDashboardPage({
   capacityGrid = await getTeamCapacityGrid(weekStartStr, weekEndStr).catch(() => null);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <GettingStartedCard activeProjectCount={kpis?.activeProjectCount} />
 
       <DashboardHeader from={from} to={to} />

@@ -2,7 +2,7 @@
 
 ## Current State
 
-- **QA Position**: T4.1 (Conflict Check). T0, T7, T1 (all), T2.1, T3.1–T3.2 complete.
+- **QA Position**: ALL_TRACKS_COMPLETE (Cycle 1). T0, T7, T1 (all), T2.1, T3.1–T3.2, T4 (all, API), T5 (all, API), T6 (BLOCKED), T8 (partial), T9 (SKIP — job not run), T10 (all, API+UI) complete.
 - **Cycle**: 1
 - **Dev Stack**: READY
 - **NEEDS_REBUILD**: false
@@ -83,6 +83,10 @@ TOKEN=$(curl -sf -X POST "http://localhost:8180/realms/docteams/protocol/openid-
 | GAP-P55-008 | No Edit action for court dates | minor | OPEN | Frontend | — | SCHEDULED and POSTPONED court dates have no "Edit" option in Actions dropdown. Only Postpone/Cancel/Record Outcome available. |
 | GAP-P55-009 | Dashboard "Upcoming Court Dates" widget shows error | minor | OPEN | Frontend | — | Dashboard widget displays "Unable to load court dates." despite court dates existing and Court Calendar page loading correctly. |
 | GAP-P55-010 | Adverse party search does not match on partial name tokens | major | OPEN | Backend | — | Searching "BHP" or "Road" returns 0 results despite matching parties existing. "Minerals" works. Search implementation likely broken (prefix match or threshold issue). |
+| GAP-P55-011 | Conflict Check page crashes on load (TypeError in Controller) | major | OPEN | Frontend | — | `/conflict-check` page: `TypeError: Cannot read properties of undefined (reading 'map')` in react-hook-form Controller. Same class as GAP-P55-006. Entire page non-functional. Backend API works. |
+| GAP-P55-012 | Tariff Schedules page crashes on load (data shape mismatch) | major | OPEN | Frontend | — | `/legal/tariffs` page: Server expects paginated response but API returns array → `TypeError: Cannot read properties of undefined (reading 'totalElements')`. Also client crash in TariffBrowserClient. |
+| GAP-P55-013 | No manual trigger for court date reminder job | minor | OPEN | Backend | — | `CourtDateReminderJob` only runs on cron (6 AM daily). No internal endpoint to trigger manually for QA/testing. |
+| GAP-P55-014 | "Customer:" label on matter detail instead of "Client:" for legal tenant | cosmetic | OPEN | Frontend | — | Project detail page shows "Customer: Sipho Mabena" instead of "Client:" despite legal-za terminology override. Sidebar uses "Clients" correctly. |
 
 ## Log
 
@@ -107,3 +111,10 @@ TOKEN=$(curl -sf -X POST "http://localhost:8180/realms/docteams/protocol/openid-
 | 2026-04-04T00:58Z | QA | T3.2: Adverse Party Search — BROKEN. "BHP" and "Road" return 0 results (GAP-P55-010). Backend search query issue. |
 | 2026-04-04T00:58Z | QA | Dashboard: "Upcoming Court Dates" widget shows "Unable to load court dates" (GAP-P55-009). |
 | 2026-04-04T00:58Z | QA | Checkpoint results written. 10 total gaps (0 blocker, 4 major, 4 minor, 1 cosmetic, 1 from dashboard). QA position: T4.1. |
+| 2026-04-04T01:16Z | QA | T4: Conflict Check — page crashes on load (GAP-P55-011, same Controller .map() bug as GAP-P55-006). All 10 sub-checkpoints tested via API: exact ID match PASS, reg number match PASS, fuzzy name match PASS (0.84 score), alias match PASS (POTENTIAL_CONFLICT, 0.65), no-conflict PASS, customer cross-check PASS (EXISTING_CLIENT), resolve PROCEED PASS, resolve WAIVER_OBTAINED PASS, history+filters PASS, validation PASS. |
+| 2026-04-04T01:16Z | QA | T5: Tariff Management — page crashes on load (GAP-P55-012, data shape mismatch: API returns array, frontend expects paginated). All backend operations via API: 1 system schedule (19 items), immutability enforced (400 on PUT/DELETE), clone works (deep copy, 19 items), edit/add/delete items on custom schedule PASS, create from scratch PASS. |
+| 2026-04-04T01:16Z | QA | T6: Invoice Tariff Integration — BLOCKED. Invoice creation fails 422 (customer missing address_line1, city, country, tax_number). These are pack-managed fields requiring field group setup. Time entries also require tasks (none exist). |
+| 2026-04-04T01:16Z | QA | T8: Matter Detail Integration — Court Dates tab on Mabena matter shows 2 dates (PRE_TRIAL postponed, TRIAL scheduled), sorted chronologically. "New Court Date" button present. Adverse Parties tab on Mining Rights shows "BHP Minerals SA (Pty) Ltd" (Opposing Party). Prescription trackers not shown on matter detail page. |
+| 2026-04-04T01:16Z | QA | T9: Notifications — SKIP. Reminder job cron-only (6 AM daily), no manual trigger (GAP-P55-013). Zero COURT_DATE_REMINDER or PRESCRIPTION_WARNING notifications. Only 4 AUTOMATION_ACTION_FAILED notifications exist. Code review confirms job logic is correct. |
+| 2026-04-04T01:16Z | QA | T10: Multi-Vertical Coexistence — Data isolation PASS (Moyo 4 projects/4 customers, Thornton 14/5, zero overlap). Module gating PASS (403 on all legal APIs for Thornton). Pack isolation PASS (legal: "SA Legal — Matter Details", accounting: "SA Accounting — Engagement Details"). Terminology PASS (sidebar: "Matters"/"Clients") with minor inconsistency on detail page (GAP-P55-014: "Customer:" instead of "Client:"). Tariff isolation PASS (403 for Thornton). |
+| 2026-04-04T01:16Z | QA | ALL TRACKS COMPLETE (Cycle 1). 14 total gaps: 0 blocker, 6 major, 5 minor, 2 cosmetic, 1 dashboard. Core architecture (schema isolation, module gating, conflict detection, tariff management) is solid at the API level. Primary issue: 3 legal module frontend pages crash on load (court date dialog, conflict check page, tariffs page) — all related to undefined array access in react-hook-form/component rendering. |

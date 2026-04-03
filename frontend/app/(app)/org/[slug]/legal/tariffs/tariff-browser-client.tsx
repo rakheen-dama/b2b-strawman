@@ -33,8 +33,8 @@ export function TariffBrowserClient({
     startTransition(async () => {
       try {
         const result = await fetchTariffSchedules();
-        setSchedules(result.content);
-        setTotal(result.page.totalElements);
+        setSchedules(result ?? []);
+        setTotal(result?.length ?? 0);
       } catch (err) {
         console.error("Failed to refetch tariff schedules:", err);
       }

@@ -27,23 +27,20 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("@/app/(app)/org/[slug]/legal/tariffs/actions", () => ({
-  fetchTariffSchedules: vi.fn().mockResolvedValue({
-    content: [
-      {
-        id: "ts-1",
-        name: "High Court PP 2026",
-        code: "HC_PP",
-        description: null,
-        effectiveFrom: "2026-01-01",
-        effectiveTo: null,
-        active: true,
-        itemCount: 10,
-        createdAt: "2026-01-01T00:00:00Z",
-        updatedAt: "2026-01-01T00:00:00Z",
-      },
-    ],
-    page: { totalElements: 1, totalPages: 1, size: 50, number: 0 },
-  }),
+  fetchTariffSchedules: vi.fn().mockResolvedValue([
+    {
+      id: "ts-1",
+      name: "High Court PP 2026",
+      code: "HC_PP",
+      description: null,
+      effectiveFrom: "2026-01-01",
+      effectiveTo: null,
+      active: true,
+      itemCount: 10,
+      createdAt: "2026-01-01T00:00:00Z",
+      updatedAt: "2026-01-01T00:00:00Z",
+    },
+  ]),
   fetchActiveSchedule: vi.fn().mockResolvedValue({
     id: "ts-1",
     name: "High Court PP 2026",
@@ -56,22 +53,19 @@ vi.mock("@/app/(app)/org/[slug]/legal/tariffs/actions", () => ({
     createdAt: "2026-01-01T00:00:00Z",
     updatedAt: "2026-01-01T00:00:00Z",
   }),
-  fetchTariffItems: vi.fn().mockResolvedValue({
-    content: [
-      {
-        id: "ti-1",
-        scheduleId: "ts-1",
-        itemNumber: "1(a)",
-        description: "Instructions to institute action",
-        unit: "PER_ITEM",
-        rateInCents: 85000,
-        notes: null,
-        createdAt: "2026-01-01T00:00:00Z",
-        updatedAt: "2026-01-01T00:00:00Z",
-      },
-    ],
-    page: { totalElements: 1, totalPages: 1, size: 200, number: 0 },
-  }),
+  fetchTariffItems: vi.fn().mockResolvedValue([
+    {
+      id: "ti-1",
+      scheduleId: "ts-1",
+      itemNumber: "1(a)",
+      description: "Instructions to institute action",
+      unit: "PER_ITEM",
+      rateInCents: 85000,
+      notes: null,
+      createdAt: "2026-01-01T00:00:00Z",
+      updatedAt: "2026-01-01T00:00:00Z",
+    },
+  ]),
 }));
 
 vi.mock("@/app/(app)/org/[slug]/invoices/invoice-crud-actions", () => ({

@@ -73,7 +73,7 @@ export function TariffItemBrowser({
       startTransition(async () => {
         try {
           const result = await fetchTariffItems(scheduleId, searchQuery || undefined);
-          setItems(result.content);
+          setItems(result ?? []);
         } catch (err) {
           console.error("Failed to fetch tariff items:", err);
         }

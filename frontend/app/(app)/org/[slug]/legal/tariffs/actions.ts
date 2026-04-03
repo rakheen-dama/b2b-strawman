@@ -6,16 +6,6 @@ import type { TariffSchedule, TariffItem } from "@/lib/types";
 
 // -- Response types --
 
-interface PaginatedResponse<T> {
-  content: T[];
-  page: {
-    totalElements: number;
-    totalPages: number;
-    size: number;
-    number: number;
-  };
-}
-
 interface ActionResult {
   success: boolean;
   error?: string;
@@ -23,17 +13,8 @@ interface ActionResult {
 
 // -- Tariff Schedule actions --
 
-export async function fetchTariffSchedules(
-  page?: number,
-  size?: number,
-): Promise<PaginatedResponse<TariffSchedule>> {
-  const params = new URLSearchParams();
-  params.set("page", String(page ?? 0));
-  params.set("size", String(size ?? 50));
-
-  return api.get<PaginatedResponse<TariffSchedule>>(
-    `/api/tariff-schedules?${params.toString()}`,
-  );
+export async function fetchTariffSchedules(): Promise<TariffSchedule[]> {
+  return api.get<TariffSchedule[]>("/api/tariff-schedules");
 }
 
 export async function fetchTariffSchedule(
@@ -114,14 +95,13 @@ export async function fetchTariffItems(
   scheduleId: string,
   search?: string,
   section?: string,
-): Promise<PaginatedResponse<TariffItem>> {
+): Promise<TariffItem[]> {
   const params = new URLSearchParams();
   params.set("scheduleId", scheduleId);
   if (search) params.set("search", search);
   if (section) params.set("section", section);
-  params.set("size", "200");
 
-  return api.get<PaginatedResponse<TariffItem>>(
+  return api.get<TariffItem[]>(
     `/api/tariff-items?${params.toString()}`,
   );
 }

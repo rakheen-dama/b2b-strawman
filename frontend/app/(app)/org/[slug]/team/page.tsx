@@ -32,7 +32,7 @@ export default async function TeamPage({
     <div className="space-y-8">
       {/* Page header */}
       <div className="flex items-center gap-3">
-        <h1 className="flex items-center gap-2 font-display text-3xl">
+        <h1 className="flex items-center gap-2 font-display text-3xl text-slate-950 dark:text-slate-50">
           Team
           <HelpTip code="team.overview" docsPath="/admin/team-permissions" />
         </h1>

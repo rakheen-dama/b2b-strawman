@@ -12,6 +12,17 @@ const ADMIN_ROLES = ["owner", "admin"];
 export function EmptyState({ orgRole, slug }: EmptyStateProps) {
   const isAdmin = ADMIN_ROLES.includes(orgRole.toLowerCase());
 
+  const guideLink = (
+    <a
+      href={docsLink("/features/ai-assistant")}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="mt-2 text-sm text-teal-600 hover:text-teal-700"
+    >
+      Read the guide
+    </a>
+  );
+
   if (isAdmin) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-3 px-4 text-center">
@@ -29,14 +40,7 @@ export function EmptyState({ orgRole, slug }: EmptyStateProps) {
               Settings &rarr; Integrations
             </Link>
           </p>
-          <a
-            href={docsLink("/features/ai-assistant")}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-2 inline-block text-sm text-teal-600 hover:text-teal-700"
-          >
-            Read the guide
-          </a>
+          {guideLink}
         </div>
       </div>
     );
@@ -48,14 +52,7 @@ export function EmptyState({ orgRole, slug }: EmptyStateProps) {
       <p className="text-sm text-slate-500 dark:text-slate-400">
         AI assistant is not available. Ask your admin to enable it.
       </p>
-      <a
-        href={docsLink("/features/ai-assistant")}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="mt-2 inline-block text-sm text-teal-600 hover:text-teal-700"
-      >
-        Read the guide
-      </a>
+      {guideLink}
     </div>
   );
 }

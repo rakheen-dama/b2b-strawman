@@ -57,7 +57,7 @@ Phase 58 closes the gap between "the platform can process payments" (Phase 57) a
 
 | Order | Epic | Rationale |
 |-------|------|-----------|
-| 3a | Epic 430A: Base + Generic Seeder | BaseDemoDataSeeder + GenericDemoDataSeeder. Must exist before provisioning can seed data. |
+| 3a | Epic 430A: Base + Generic Seeder | BaseDemoDataSeeder + GenericDemoDataSeeder. Must exist before provisioning can seed data. | **Done** (PR #893) |
 | 3b | Epic 430B: Accounting + Legal Seeders | Profile-specific seeders. Can begin after 430A provides the base class. |
 | 3c | Epic 430C: Reseed Endpoint + Integration Tests | Reseed endpoint on DemoAdminController + comprehensive data consistency tests. After 430A and 430B. |
 
@@ -329,7 +329,7 @@ Stage 4:  [E428B] [E429B] [E431B]                       <- parallel frontend (af
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **430A** | 430.1--430.5 | `BaseDemoDataSeeder` abstract base with utilities, `GenericDemoDataSeeder` (agency/consultancy), wire into `DemoProvisionService`, basic seeder unit test | |
+| **430A** | 430.1--430.5 | `BaseDemoDataSeeder` abstract base with utilities, `GenericDemoDataSeeder` (agency/consultancy), wire into `DemoProvisionService`, basic seeder unit test | **Done** (PR #893) |
 | **430B** | 430.6--430.9 | `AccountingDemoDataSeeder` (SA accounting firm), `LegalDemoDataSeeder` (SA law firm, conditional), profile-specific unit tests | |
 | **430C** | 430.10--430.14 | Reseed endpoint + `DemoReseedResponse` DTO, reseed service method (truncate transactional data, preserve config, re-seed), `DemoDataSeederTest` (integration -- data consistency), `DemoReseedTest` | |
 

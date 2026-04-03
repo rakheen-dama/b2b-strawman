@@ -3,6 +3,131 @@ title: "Time Tracking"
 description: "Log time entries, use timers, mark billable hours, and review time reports."
 ---
 
+import { Callout, Steps } from "nextra/components"
+
 # Time Tracking
 
-Content coming soon.
+Time tracking in HeyKazi records the hours your team spends on tasks. It connects planning to billing — every hour logged feeds into budgets, profitability reports, and invoices so you always know where your time is going and what it is worth.
+
+Whether your team prefers logging time after the fact or using the weekly timesheet grid to enter a full week at once, HeyKazi gives you flexible options that fit different working styles.
+
+## Key Concepts
+
+### Billable vs. Non-Billable Time
+
+Every time entry is marked as either billable or non-billable.
+
+| Type | Description |
+|------|-------------|
+| **Billable** | Work that can be charged to a client and appears on invoices. This is the default for most time entries. |
+| **Non-billable** | Internal meetings, admin work, or professional development. Tracked for effort visibility but not invoiced. |
+
+Use the **Billable** toggle when logging time to set the correct classification. Getting this right ensures your invoices are accurate and your profitability reports reflect the true picture.
+
+### Rate Hierarchy
+
+When you log billable time, HeyKazi automatically applies the correct billing rate. Rates follow a three-level hierarchy: organisation defaults, project overrides, and customer overrides. A more specific rate always takes precedence.
+
+For example, if your organisation default rate is R1,200/hour but a specific customer has a negotiated rate of R1,000/hour, the customer rate applies to all time logged for that customer's projects.
+
+<Callout type="info">
+  **Rate snapshots**: When a time entry is logged, the current rate is captured as a snapshot. Changing rates later does not affect existing entries — so your historical records always reflect the rate that was in effect at the time.
+</Callout>
+
+### Billing Status
+
+Each time entry has a billing status that indicates whether it has been included on an invoice:
+
+| Status | Description |
+|--------|-------------|
+| **Unbilled** | Not yet included on any invoice. Available for invoice generation. |
+| **Billed** | Included on an invoice. The time entry is locked to preserve invoice accuracy. |
+
+Unbilled time entries are hours logged against tasks that have not yet been included on an invoice. Use the invoice generator to pull unbilled time into a new invoice for a specific customer and date range.
+
+## Logging Time
+
+<Steps>
+### Step 1 — Open a task
+
+Navigate to the project, click the **Tasks** tab, and open the task you worked on.
+
+### Step 2 — Click Log Time
+
+Click the **Log Time** button to open the time entry dialog.
+
+### Step 3 — Enter the details
+
+Complete the form fields:
+
+- **Hours** and **Minutes** — how long you worked
+- **Date** — defaults to today, but you can pick a past date
+- **Billable** toggle — checked by default. Uncheck for non-billable work.
+- **Description** (optional) — a brief note about what you did
+
+When the billable toggle is checked, the dialog shows a rate preview with the applicable rate and estimated amount. The rate source is displayed (for example, "member default," "project override," or "customer override") so you can see which rate is being applied.
+
+### Step 4 — Save the entry
+
+Click **Save**. The time entry appears on the task's **Time** tab and is included in project and budget calculations immediately.
+</Steps>
+
+## The Weekly Timesheet Grid
+
+For team members who prefer to enter time in bulk, the weekly timesheet grid provides a spreadsheet-style interface for logging an entire week at once.
+
+**How it works:**
+
+- Each row represents a project and task combination
+- Columns represent the days of the week (Monday to Sunday)
+- Type hours directly into the cells
+- Row totals show how much time you logged per task
+- Column totals show how much time you logged per day
+- Navigate between weeks using the previous and next arrows
+
+**Helpful features:**
+
+- **Copy previous week** — pre-fills the grid with the same project/task rows from the previous week, saving you from re-entering the same structure each time
+- **CSV import** — upload a spreadsheet of time entries for bulk data entry
+
+<Callout type="info">
+  The weekly timesheet grid is ideal for team members who log time at the end of each week rather than throughout the day. It gives you a complete view of your week in one place.
+</Callout>
+
+## My Work
+
+The **My Work** page is your personal dashboard. It brings together everything assigned to you across all projects into a single view.
+
+**What you will find on My Work:**
+
+- **Tasks assigned to you** — across every project, with status and due dates. If no tasks are assigned, you will see: "No tasks assigned to you — Tasks assigned to you across all projects will appear here. Head to a project to create or pick up tasks."
+- **Weekly time summary** — total hours logged this week at a glance
+- **Today's time entries** — what you have logged today
+- **Time breakdown** — how your time is distributed across projects
+- **Today's Agenda** — a focused view of what needs your attention today
+- **Weekly Rhythm Strip** — a visual summary of your week's activity
+
+The date range defaults to the current week (Monday to Sunday) and you can navigate to previous or future weeks.
+
+## Editing and Deleting Time Entries
+
+If you made a mistake or need to adjust an entry, open the task and find the time entry on the **Time** tab. Click the entry to open the edit dialog, where you can update the hours, date, billable status, or description. You can also delete an entry entirely if it was logged in error.
+
+<Callout type="warning">
+  Time entries that have been included on an invoice (billing status: **Billed**) cannot be edited or deleted. If you need to correct a billed entry, void the invoice first, make your changes, and regenerate the invoice.
+</Callout>
+
+## Tips and Best Practices
+
+- **Log time promptly** — recording hours while the work is fresh gives you the most accurate data for billing and reporting.
+- **Use descriptions** — a brief note on each entry (for example, "Reviewed draft financials with client") makes invoices more informative and helps resolve questions later.
+- **Check your billable toggle** — miscategorising billable time as non-billable (or vice versa) affects invoices and profitability reports. Double-check before saving.
+- **Review My Work daily** — it gives you a quick snapshot of what is on your plate and how much time you have logged.
+- **Use the weekly grid for batch entry** — if you track time at the end of the week, the grid is faster than logging entries one by one.
+
+## Related Features
+
+- [Tasks](/features/tasks) — time is logged against tasks within projects
+- [Projects](/features/projects) — time entries roll up to project-level budgets and reports
+- [Invoicing](/features/invoicing) — unbilled time is pulled into invoices for customers
+- [Rate Cards and Budgets](/features/rate-cards-budgets) — configure billing and cost rates that apply to time entries

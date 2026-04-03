@@ -3,6 +3,145 @@ title: "Tasks"
 description: "Create tasks, assign team members, track status, and manage work within projects."
 ---
 
+import { Callout, Steps } from "nextra/components"
+
 # Tasks
 
-Content coming soon.
+Tasks are the individual pieces of work within a project. They give your team a clear, trackable way to break down engagements into manageable steps — from initial document collection through to final sign-off.
+
+Every task lives inside a project and appears on that project's **Tasks** tab. You can assign tasks to team members, set priorities and due dates, track status changes, and log time directly against each task. Tasks are the connection point between planning your work and measuring how long it takes.
+
+## Key Concepts
+
+### Task Status
+
+Every task has a status that shows where it is in the workflow.
+
+| Status | Icon | Description |
+|--------|------|-------------|
+| **Open** | Circle | Not started. The task is ready to be picked up. |
+| **In Progress** | Spinning loader | Someone is actively working on it. |
+| **Done** | Checkmark | The work is complete. |
+| **Cancelled** | X circle | The task is no longer needed. |
+
+Tasks start as **Open** when created. The allowed transitions are:
+
+- **Open** can move to In Progress or Cancelled
+- **In Progress** can move to Done, back to Open, or to Cancelled
+- **Done** can be reopened (back to Open)
+- **Cancelled** can be reopened (back to Open)
+
+### Priority Levels
+
+Each task can be assigned a priority to help your team focus on what matters most:
+
+| Priority | When to use |
+|----------|-------------|
+| **Low** | Nice-to-have items or long-term improvements |
+| **Medium** | Standard work items (this is the default) |
+| **High** | Important items that should be addressed soon |
+| **Urgent** | Critical items that need immediate attention |
+
+### Recurring Tasks
+
+For work that repeats on a schedule — like monthly reconciliations, weekly reviews, or daily check-ins — you can set a recurrence pattern. Options include **Daily**, **Weekly**, **Monthly**, and **Yearly**, each with a configurable interval (for example, every 2 weeks). Recurring tasks automatically create new instances on schedule so nothing falls through the cracks.
+
+## Creating a Task
+
+<Steps>
+### Step 1 — Open a project
+
+Navigate to the project where you want to add the task and click the **Tasks** tab.
+
+### Step 2 — Click New Task
+
+Click the **New Task** button to open the task creation dialog.
+
+### Step 3 — Fill in the details
+
+Complete the form fields:
+
+- **Title** (required) — a clear, action-oriented description such as "Prepare draft financial statements" or "Review contract amendments"
+- **Description** (optional) — additional context, instructions, or acceptance criteria
+- **Priority** — choose Low, Medium, High, or Urgent (defaults to Medium)
+- **Assignee** (optional) — select a team member from the project's member list
+- **Due Date** (optional) — pick a target completion date
+- **Recurrence** (optional) — set a repeating schedule if this task recurs
+
+### Step 4 — Create the task
+
+Click **Create**. The task appears in the task list with **Open** status.
+</Steps>
+
+## The Task Detail Sheet
+
+Clicking a task in the list opens the task detail sheet — a side panel that shows everything about the task without leaving the project page.
+
+**Header area:**
+
+- Task title (editable)
+- Status selector — change status with a single click
+- Close button to return to the task list
+
+**Metadata section:**
+
+- **Assignee** — who is responsible for the task. Click to assign, reassign, or release.
+- **Due Date** — the target completion date
+- **Created By** — who created the task
+- **Created** — when the task was created
+- **Tags** — colour-coded labels for categorisation
+- **Custom Fields** — any additional structured data configured by your admin
+- **Recurrence** — the repeating schedule, if set
+
+**Tabs within the detail sheet:**
+
+- **Sub-items** — break a task into smaller steps
+- **Time** — time entries logged against this task
+- **Comments** — discussion and notes from team members
+
+## Working with Tasks
+
+### Claiming and Releasing Tasks
+
+If a task is unassigned, you can **claim** it to assign it to yourself. If you need to hand off a task, open the assignee selector and either pick a different team member or **release** the task to make it unassigned again.
+
+### Filtering and Saved Views
+
+The task list includes filter chips to quickly narrow your view:
+
+- **All** — every task regardless of status
+- **Open** — tasks not yet started
+- **In Progress** — tasks currently being worked on
+- **Done** — completed tasks
+- **Cancelled** — cancelled tasks
+- **My Tasks** — tasks assigned to you
+- **Recurring** — tasks with a recurrence pattern
+
+By default, the list shows **Open** and **In Progress** tasks. You can save your current filter, sort, and column configuration as a **saved view** so you can return to it with one click.
+
+### Bulk Operations
+
+Select multiple tasks using the checkboxes to perform bulk status changes. This is useful for closing out a batch of tasks at once or cancelling tasks that are no longer relevant.
+
+### Tags
+
+Tags are colour-coded labels you can attach to tasks to categorise them — by phase, department, work type, or any system that fits your workflow. These labels appear as small badges on the task row in the list and are shared across projects, customers, and tasks.
+
+<Callout type="info">
+  The **My Work** page gives you a single view of all tasks assigned to you across every project. It is your personal dashboard for staying on top of your workload. Learn more in [Time Tracking](/features/time-tracking).
+</Callout>
+
+## Tips and Best Practices
+
+- **Write action-oriented titles** — start with a verb ("Prepare," "Review," "Send") so it is immediately clear what needs to happen.
+- **Set priorities deliberately** — if everything is Urgent, nothing is. Reserve High and Urgent for items that genuinely need immediate attention.
+- **Use due dates** — even rough target dates help your team plan their week and flag overdue work early.
+- **Break large tasks into sub-items** — if a task has multiple steps, use sub-items to track progress without creating too many top-level tasks.
+- **Log time as you go** — recording time against tasks while the work is fresh ensures accurate invoicing and effort tracking.
+
+## Related Features
+
+- [Projects](/features/projects) — tasks live inside projects and inherit their customer and budget context
+- [Time Tracking](/features/time-tracking) — log hours against tasks for invoicing and reporting
+- [Invoicing](/features/invoicing) — billable time logged on tasks flows into customer invoices
+- [Custom Fields and Tags](/features/custom-fields-tags) — add structured data and labels to tasks

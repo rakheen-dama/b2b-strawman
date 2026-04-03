@@ -1,9 +1,12 @@
 package io.b2mash.b2b.b2bstrawman.demo.seed;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLine;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
@@ -14,6 +17,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.math.BigDecimal;
@@ -106,11 +110,9 @@ class DemoDataSeederIntegrationTest {
         orgId.toString(),
         t -> {
           var invoiceIds =
-              invoiceRepository.findAll().stream()
-                  .map(inv -> inv.getId())
-                  .collect(Collectors.toSet());
+              invoiceRepository.findAll().stream().map(Invoice::getId).collect(Collectors.toSet());
           var lines = invoiceLineRepository.findAll();
-          assertTrue(!lines.isEmpty(), "Should have invoice lines");
+          assertFalse(lines.isEmpty(), "Should have invoice lines");
           boolean allValid =
               lines.stream().allMatch(line -> invoiceIds.contains(line.getInvoiceId()));
           result.set(allValid);
@@ -179,11 +181,9 @@ class DemoDataSeederIntegrationTest {
         orgId.toString(),
         t -> {
           var taskIds =
-              taskRepository.findAll().stream()
-                  .map(task -> task.getId())
-                  .collect(Collectors.toSet());
+              taskRepository.findAll().stream().map(Task::getId).collect(Collectors.toSet());
           var timeEntries = timeEntryRepository.findAll();
-          assertTrue(!timeEntries.isEmpty(), "Should have time entries");
+          assertFalse(timeEntries.isEmpty(), "Should have time entries");
           boolean allValid =
               timeEntries.stream().allMatch(entry -> taskIds.contains(entry.getTaskId()));
           result.set(allValid);
@@ -232,7 +232,7 @@ class DemoDataSeederIntegrationTest {
 
           // Build map of customer ID -> createdAt
           var customerCreatedAt =
-              customers.stream().collect(Collectors.toMap(c -> c.getId(), c -> c.getCreatedAt()));
+              customers.stream().collect(Collectors.toMap(Customer::getId, Customer::getCreatedAt));
 
           boolean allValid =
               projects.stream()
@@ -263,8 +263,7 @@ class DemoDataSeederIntegrationTest {
           // Group time entries by task's project
           var tasks = taskRepository.findAll();
           var taskToProject =
-              tasks.stream()
-                  .collect(Collectors.toMap(task -> task.getId(), task -> task.getProjectId()));
+              tasks.stream().collect(Collectors.toMap(Task::getId, Task::getProjectId));
 
           // Count time entries per project
           var entriesPerProject =
@@ -317,10 +316,10 @@ class DemoDataSeederIntegrationTest {
         acctOrgId.toString(),
         t ->
             customerNames.set(
-                customerRepository.findAll().stream().map(c -> c.getName()).toList()));
+                customerRepository.findAll().stream().map(Customer::getName).toList()));
 
     List<String> names = customerNames.get();
-    assertTrue(!names.isEmpty(), "Accounting seeder should create customers");
+    assertFalse(names.isEmpty(), "Accounting seeder should create customers");
     boolean hasAccountingCustomer =
         names.stream()
             .anyMatch(

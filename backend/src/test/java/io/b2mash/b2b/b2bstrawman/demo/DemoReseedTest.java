@@ -14,6 +14,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
@@ -47,6 +48,7 @@ class DemoReseedTest {
   private final ProjectRepository projectRepository;
   private final TimeEntryRepository timeEntryRepository;
   private final MemberRepository memberRepository;
+  private final OrgRoleRepository orgRoleRepository;
   private final TransactionTemplate txTemplate;
 
   private String schemaName;
@@ -65,6 +67,7 @@ class DemoReseedTest {
       ProjectRepository projectRepository,
       TimeEntryRepository timeEntryRepository,
       MemberRepository memberRepository,
+      OrgRoleRepository orgRoleRepository,
       TransactionTemplate txTemplate) {
     this.demoProvisionService = demoProvisionService;
     this.genericDemoDataSeeder = genericDemoDataSeeder;
@@ -77,6 +80,7 @@ class DemoReseedTest {
     this.projectRepository = projectRepository;
     this.timeEntryRepository = timeEntryRepository;
     this.memberRepository = memberRepository;
+    this.orgRoleRepository = orgRoleRepository;
     this.txTemplate = txTemplate;
   }
 
@@ -123,7 +127,7 @@ class DemoReseedTest {
     assertTrue(customerCountBefore.get() > 0, "Should have customers before reseed");
 
     // Execute reseed
-    var response = demoProvisionService.reseed(orgId);
+    var response = demoProvisionService.reseed(orgId, "test-admin");
 
     assertTrue(response.success(), "Reseed should succeed");
     assertEquals(orgId, response.organizationId());
@@ -138,31 +142,30 @@ class DemoReseedTest {
 
   @Test
   void reseed_preservesConfigurationData() {
-    // Count config data before reseed
+    // Count config data before reseed — org_roles is a config table that is NOT truncated
     var orgRoleCountBefore = new AtomicReference<Long>();
     tenantTransactionHelper.executeInTenantTransaction(
-        schemaName,
-        orgId.toString(),
-        t -> orgRoleCountBefore.set(memberRepository.count())); // Use as baseline reference
+        schemaName, orgId.toString(), t -> orgRoleCountBefore.set(orgRoleRepository.count()));
+    assertTrue(orgRoleCountBefore.get() > 0, "Should have org roles before reseed");
 
     // Execute reseed
-    var response = demoProvisionService.reseed(orgId);
+    var response = demoProvisionService.reseed(orgId, "test-admin");
     assertTrue(response.success(), "Reseed should succeed");
 
-    // Verify the reseed completed — config tables are not truncated
-    // org_roles is a config table that should survive the reseed
-    // We verify by checking that reseed was successful and data was re-populated
-    var customerCountAfter = new AtomicReference<Long>();
+    // Verify config table (org_roles) is preserved after reseed
+    var orgRoleCountAfter = new AtomicReference<Long>();
     tenantTransactionHelper.executeInTenantTransaction(
-        schemaName, orgId.toString(), t -> customerCountAfter.set(customerRepository.count()));
-    assertTrue(
-        customerCountAfter.get() > 0, "Transactional data should be re-populated after reseed");
+        schemaName, orgId.toString(), t -> orgRoleCountAfter.set(orgRoleRepository.count()));
+    assertEquals(
+        orgRoleCountBefore.get(),
+        orgRoleCountAfter.get(),
+        "Org role count should be preserved after reseed");
   }
 
   @Test
   void reseed_repopulatesTransactionalData() {
     // Execute reseed
-    var response = demoProvisionService.reseed(orgId);
+    var response = demoProvisionService.reseed(orgId, "test-admin");
     assertTrue(response.success(), "Reseed should succeed");
 
     // Verify data volumes match fresh seed expectations
@@ -198,7 +201,7 @@ class DemoReseedTest {
         });
 
     // Reseed should be rejected
-    assertThrows(ForbiddenException.class, () -> demoProvisionService.reseed(orgId));
+    assertThrows(ForbiddenException.class, () -> demoProvisionService.reseed(orgId, "test-admin"));
   }
 
   @Test
@@ -212,6 +215,6 @@ class DemoReseedTest {
         });
 
     // Reseed should be rejected
-    assertThrows(ForbiddenException.class, () -> demoProvisionService.reseed(orgId));
+    assertThrows(ForbiddenException.class, () -> demoProvisionService.reseed(orgId, "test-admin"));
   }
 }

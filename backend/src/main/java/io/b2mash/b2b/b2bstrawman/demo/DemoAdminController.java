@@ -33,7 +33,8 @@ public class DemoAdminController {
   }
 
   @PostMapping("/{orgId}/reseed")
-  public ResponseEntity<DemoReseedResponse> reseedDemo(@PathVariable UUID orgId) {
-    return ResponseEntity.ok(demoProvisionService.reseed(orgId));
+  public ResponseEntity<DemoReseedResponse> reseedDemo(
+      @PathVariable UUID orgId, JwtAuthenticationToken auth) {
+    return ResponseEntity.ok(demoProvisionService.reseed(orgId, auth.getToken().getSubject()));
   }
 }

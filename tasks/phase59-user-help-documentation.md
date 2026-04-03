@@ -46,7 +46,7 @@ Phase 59 adds self-service user documentation to the HeyKazi platform -- a stand
 
 | Order | Epic | Rationale |
 |-------|------|-----------|
-| 1 | Epic 432: Doc Site Scaffold & Home Page | Nextra project scaffold, theming, _meta.ts files, home page, and build verification. All content slices depend on this. |
+| 1 | Epic 432: Doc Site Scaffold & Home Page (432A **Done** PR #898) | Nextra project scaffold, theming, _meta.ts files, home page, and build verification. All content slices depend on this. |
 
 ### Stage 2: Content & Frontend (Parallel Tracks)
 
@@ -90,7 +90,7 @@ Stage 3:  [E437B]                                                <- call-site wi
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **432A** | 432.1--432.7 | Nextra 4 project scaffold: package.json, next.config.ts, tsconfig.json, postcss.config.mjs, app/globals.css (Tailwind v4 with brand tokens), app/layout.tsx (fonts, Nextra theme, header, footer), app/[[...mdxPath]]/page.tsx (catch-all renderer), mdx-components.tsx, public/ assets, .gitignore, .env.local | |
+| **432A** | 432.1--432.7 | Nextra 4 project scaffold: package.json, next.config.ts, tsconfig.json, postcss.config.mjs, app/globals.css (Tailwind v4 with brand tokens), app/layout.tsx (fonts, Nextra theme, header, footer), app/[[...mdxPath]]/page.tsx (catch-all renderer), mdx-components.tsx, public/ assets, .gitignore, .env.local | **Done** (PR #898) |
 | **432B** | 432.8--432.13 | All `_meta.ts` navigation files (top-level + 6 section metas), home page (content/index.mdx) with hero and category cards, HomeCards custom component, build verification | |
 
 ### Tasks

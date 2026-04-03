@@ -1,8 +1,127 @@
 ---
 title: "Information Requests"
-description: "Send information requests to clients and collect documents via the portal."
+description: "Send structured information requests to clients, track document uploads, and manage review workflows via the customer portal."
 ---
+
+import { Callout, Steps } from "nextra/components"
 
 # Information Requests
 
-Content coming soon.
+Information requests give your firm a structured way to collect documents and answers from clients. Instead of chasing files over email, you create a request with specific items, send it to a portal contact, and track progress as the client responds. Every submission is reviewed and accepted or rejected, creating a clear audit trail of what was requested, what was received, and when.
+
+This is especially useful during onboarding, year-end compliance, or any engagement where you need specific documents or answers from a client on a deadline.
+
+## Key Concepts
+
+### Request Lifecycle
+
+Every information request moves through a series of statuses as it progresses from creation to completion.
+
+| Status | Badge | Description |
+|--------|-------|-------------|
+| **Draft** | Grey | Created but not yet sent to the client. You can still edit items and settings. |
+| **Sent** | Blue | Delivered to the portal contact. The client can now view and respond. |
+| **In Progress** | Amber | At least one item has been submitted by the client. |
+| **Completed** | Green | All items have been accepted by your team. |
+| **Cancelled** | Red | The request has been cancelled. No further action is expected. |
+
+### Item Statuses
+
+Each item within a request has its own status that tracks whether the client has responded and whether your team has reviewed the submission.
+
+| Status | Badge | Description |
+|--------|-------|-------------|
+| **Pending** | Grey | Waiting for the client to respond. |
+| **Submitted** | Amber | The client has uploaded a file or provided a response. Awaiting your review. |
+| **Accepted** | Green | Your team has reviewed and accepted the submission. |
+| **Rejected** | Red | Your team has rejected the submission with a reason. The client can resubmit. |
+
+### Response Types
+
+Each item specifies what the client needs to provide:
+
+- **File upload** — the client uploads a document (for example, a signed engagement letter or bank statement)
+- **Text response** — the client types an answer (for example, confirming their registered company name)
+
+## Creating a Request
+
+<Steps>
+### Step 1 — Navigate to Information Requests
+
+Click **Information Requests** in the sidebar, or open the **Requests** tab on a customer's detail page.
+
+### Step 2 — Click New Request
+
+Click **New Request** to open the creation dialog.
+
+### Step 3 — Choose a template or go ad-hoc
+
+Select from a pre-created request template to pre-fill the items, or choose **Ad-hoc (no template)** to build the request from scratch.
+
+### Step 4 — Select a portal contact
+
+Choose which portal contact for the customer will receive the request. This is the person who will see the request in the customer portal and provide the responses.
+
+### Step 5 — Set the reminder interval
+
+Configure how often automated reminders are sent while items are still outstanding. The default is every 5 days, and you can set any interval between 1 and 90 days.
+
+### Step 6 — Save or send
+
+Click **Save as Draft** to continue editing later, or **Send Now** to deliver the request to the portal contact immediately.
+</Steps>
+
+<Callout type="info">
+  You can link a request to a specific project. This keeps the request visible on the project's detail page and associates any uploaded documents with that engagement.
+</Callout>
+
+## Request Templates
+
+If your firm regularly asks for the same set of documents, create a request template to save time. Go to **Settings > Request Templates** and click **New Template**. Give it a name and description, then add items with their response types.
+
+When creating a new request, selecting a template pre-fills all the items so you do not have to re-enter them each time. Templates can also be duplicated to create variations for different engagement types.
+
+## Reviewing Submissions
+
+When a client submits a response, the item status changes to **Submitted** and appears on the request detail page for your review.
+
+For each submitted item, you can:
+
+- **Accept** — marks the item as complete. Once all items are accepted, the request moves to **Completed** status automatically.
+- **Reject** — prompts you for a rejection reason, which the client sees in the portal. The item returns to a state where the client can resubmit.
+
+The request detail page shows a progress bar indicating how many items have been accepted out of the total, giving you a quick sense of how close the request is to completion.
+
+## Managing Requests
+
+### Automated Reminders
+
+Reminders are sent automatically at the interval you configured when the request was created. They continue as long as items remain outstanding, nudging the client to complete their submissions without you having to follow up manually.
+
+You can configure the default reminder interval for your organisation in **Settings**.
+
+### Resending Notifications
+
+If a client did not receive the original notification or needs a nudge outside the automated schedule, open the request and select **Resend Notification** from the menu. This is available for requests in **Sent** or **In Progress** status.
+
+### Cancelling a Request
+
+If a request is no longer needed, select **Cancel Request** from the menu. The request moves to **Cancelled** status and the client is no longer expected to respond. Cancelled requests remain visible in your records for reference.
+
+## The Request List
+
+The request list page shows all information requests across your organisation in a table with the following columns: request number, customer, contact, status, progress, and sent date. Use status filters to focus on outstanding or completed requests.
+
+## Tips and Best Practices
+
+- **Use templates for recurring requests** — if you ask for the same documents every tax season or audit cycle, a template ensures nothing is missed.
+- **Set realistic reminder intervals** — too frequent and clients may find them intrusive; too infrequent and documents arrive late. Five to seven days works well for most engagements.
+- **Add rejection reasons** — when rejecting a submission, a clear reason helps the client provide the correct document on the next attempt, reducing back-and-forth.
+- **Link requests to projects** — associating a request with a project keeps everything in context and makes it easy to find related documents later.
+
+## Related Features
+
+- [Customers](/features/customers) — requests are sent to customers via their portal contacts
+- [Projects](/features/projects) — link requests to specific engagements
+- [Documents & Templates](/features/documents) — uploaded files from completed requests are stored as documents
+- [Customer Portal](/features/customer-portal) — where clients view and respond to requests

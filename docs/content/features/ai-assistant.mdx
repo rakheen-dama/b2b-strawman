@@ -1,8 +1,95 @@
 ---
 title: "AI Assistant"
-description: "Use the AI assistant to draft documents, summarize projects, and answer questions."
+description: "Use the AI assistant to draft content, summarise projects, and answer questions about your organisation's data."
 ---
+
+import { Callout, Steps } from "nextra/components"
 
 # AI Assistant
 
-Content coming soon.
+The AI assistant is a conversational helper built into HeyKazi that can answer questions about your organisation's data, draft content, summarise projects, and help you navigate the platform. It opens as a slide-out panel from any page, giving you quick access to information without leaving your current workflow.
+
+The assistant uses your organisation's live data to provide accurate, contextual answers. Ask it to look up a customer's outstanding invoices, summarise a project's time entries, or draft a follow-up email — and it will pull the relevant information and respond in natural language.
+
+## Key Concepts
+
+### Data Lookups
+
+When the assistant needs information to answer your question, it looks up your organisation's data in real time. You will see cards in the conversation showing what data is being retrieved — for example, "Looking up projects..." or "Looking up time entries..." — followed by the results.
+
+The assistant can look up projects, customers, tasks, time entries, invoices, and other records. It only accesses data that the current user has permission to see, so there is no risk of exposing information across roles.
+
+### Confirmation Cards
+
+Some actions require your explicit approval before the assistant proceeds. When this happens, a confirmation card appears in the conversation showing what the assistant wants to do and asking you to confirm or cancel. This safeguard ensures the assistant never takes sensitive actions without your knowledge.
+
+### Token Usage
+
+The assistant panel displays a token usage badge in the header, showing how many input and output tokens have been used in the current conversation. This updates in real time during streaming and gives you visibility into the cost of each interaction.
+
+<Callout type="warning">
+  Token costs are charged to your Anthropic API key. Longer conversations and complex data lookups use more tokens. Keep an eye on the usage badge if cost is a concern.
+</Callout>
+
+## Setting Up
+
+The AI assistant requires an Anthropic API key. Your organisation brings its own key (BYOAK), which means you control costs and usage.
+
+<Steps>
+### Step 1 — Navigate to Settings
+
+Go to **Settings > Integrations**.
+
+### Step 2 — Enter your API key
+
+Click **Set API Key** and enter your Anthropic API key. The key is stored securely and used for all assistant interactions across your organisation.
+
+### Step 3 — Start using the assistant
+
+Once the key is saved, every member can open the assistant panel from the header. Click the assistant icon to open the panel and start a conversation.
+</Steps>
+
+<Callout type="info">
+  Only owners and admins can configure the API key. If the key is not set, admins see a prompt to configure it in Settings, while other members see a message asking their admin to enable the assistant.
+</Callout>
+
+## How It Works
+
+### Asking Questions
+
+Type your question in the input field at the bottom of the assistant panel and press Enter. The assistant streams its response in real time, so you see the answer as it is being generated.
+
+You can ask questions like:
+
+- "What are the outstanding invoices for Acme Corp?"
+- "Summarise the time logged on Project Atlas this month"
+- "Which tasks are overdue across all projects?"
+- "Draft a follow-up email for the client meeting yesterday"
+- "How much unbilled time do we have this quarter?"
+
+The assistant is aware of the page you are currently viewing, so it can tailor responses to your context. For example, asking "summarise this project" while viewing a project detail page will summarise that specific project.
+
+### Conversation Behaviour
+
+Each conversation starts fresh when you open the assistant panel. Within a session, the assistant remembers your previous messages and its own responses, so you can ask follow-up questions without repeating context. Closing the panel or refreshing the page resets the conversation — no history is stored beyond the active session.
+
+## Limitations
+
+- **Session-scoped history** — closing the panel or refreshing the page starts a new conversation.
+- **Requires an API key** — the assistant will not work until an admin configures an Anthropic API key in Settings > Integrations.
+- **Token costs** — all usage is charged to your organisation's API key. Costs depend on conversation length and complexity.
+- **Read-only by default** — the assistant looks up your data to answer questions but does not modify records on your behalf. Write actions are possible only through confirmation cards, which require your explicit approval before proceeding.
+
+## Tips and Best Practices
+
+- **Be specific** — the more detail you include in your question, the more accurate the response. "What are Carol's unbilled hours for Acme Corp in March?" gives a better answer than "Show me time."
+- **Use it for drafting** — the assistant is great at drafting emails, summaries, and notes. Ask it to draft, review the output, and paste it where you need it.
+- **Check the page context** — the assistant knows which page you are on. Use phrases like "this project" or "this customer" to save typing.
+- **Monitor token usage** — keep an eye on the usage badge during longer conversations. If you have finished your question, start a new conversation to reset the token count.
+
+## Related Features
+
+- [Projects](/features/projects) — ask the assistant about project status, time entries, and budgets
+- [Customers](/features/customers) — look up customer information and outstanding work
+- [Invoicing](/features/invoicing) — query invoice statuses and unbilled time
+- [Time Tracking](/features/time-tracking) — get summaries of logged time across projects and team members

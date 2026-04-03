@@ -82,7 +82,7 @@ If you need to narrow when the rule fires, add one or more conditions. Select a 
 
 ### Step 5 — Add actions
 
-Click **Add Action** and select an action type. Fill in the action-specific fields, insert variables where needed, and optionally set a delay. Repeat to add multiple actions — drag to reorder if the sequence matters.
+Click **Add Action** and select an action type. Fill in the action-specific fields, insert variables where needed, and optionally set a delay. Repeat to add multiple actions — use the arrow buttons to reorder if the sequence matters.
 
 ### Step 6 — Save the rule
 
@@ -99,7 +99,7 @@ Rather than building rules from scratch, you can browse the **Template Gallery**
 
 ## Execution Log
 
-The execution log provides a complete audit trail of every automation run. Filter by **rule** and **status** (Running, Completed, Failed, or Skipped) to find specific executions. The table shows the rule name, trigger type, timestamp, status badge, whether conditions were met, the number of actions executed, and the duration.
+The execution log provides a complete audit trail of every automation run. Filter by **rule** and **status** (Completed, Failed, or Skipped) to find specific executions. The table shows the rule name, trigger type, timestamp, status badge, whether conditions were met, the number of actions executed, and the duration.
 
 Click any row to drill into the execution detail, which shows each action's result individually — helpful for diagnosing why a rule produced unexpected outcomes.
 
@@ -114,6 +114,10 @@ Before enabling a rule in production, use the **Test** feature to validate it. S
 ## Enabling and Disabling Rules
 
 Each rule has a toggle switch in the automations table. Disabled rules remain configured but do not fire — useful for pausing a rule during a busy period or while you refine its conditions.
+
+## Permissions
+
+Access to workflow automations requires the **Admin** or **Owner** organisation role, or the **Automations** capability.
 
 ## Tips and Best Practices
 

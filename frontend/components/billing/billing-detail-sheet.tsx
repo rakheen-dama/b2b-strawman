@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import {
   Sheet,
@@ -24,6 +24,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { StatusBadge } from "@/components/billing/status-badge";
 import { MethodBadge } from "@/components/billing/method-badge";
+import { formatDate } from "@/components/billing/utils";
 import {
   overrideBilling,
   extendTrial,
@@ -52,40 +53,30 @@ interface BillingDetailSheetProps {
   onSuccess: () => void;
 }
 
-function formatDate(dateStr: string | null): string {
-  if (!dateStr) return "N/A";
-  return new Date(dateStr).toLocaleDateString("en-ZA", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
-
 export function BillingDetailSheet({
   tenant,
   open,
   onOpenChange,
   onSuccess,
 }: BillingDetailSheetProps) {
-  const [status, setStatus] = useState("");
-  const [billingMethod, setBillingMethod] = useState("");
+  const [status, setStatus] = useState(tenant?.subscriptionStatus ?? "");
+  const [billingMethod, setBillingMethod] = useState(
+    tenant?.billingMethod ?? "",
+  );
   const [trialDays, setTrialDays] = useState("");
-  const [adminNote, setAdminNote] = useState("");
+  const [adminNote, setAdminNote] = useState(tenant?.adminNote ?? "");
   const [noteError, setNoteError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
 
-  // Reset form when tenant changes
-  const [prevTenantId, setPrevTenantId] = useState<string | null>(null);
-  if (tenant && tenant.organizationId !== prevTenantId) {
-    setPrevTenantId(tenant.organizationId);
-    setStatus(tenant.subscriptionStatus);
-    setBillingMethod(tenant.billingMethod);
-    setTrialDays("");
-    setAdminNote(tenant.adminNote ?? "");
-    setNoteError("");
-    setError("");
-  }
+  const hasChanges = useMemo(() => {
+    if (!tenant) return false;
+    return (
+      status !== tenant.subscriptionStatus ||
+      billingMethod !== tenant.billingMethod ||
+      adminNote.trim() !== (tenant.adminNote ?? "")
+    );
+  }, [tenant, status, billingMethod, adminNote]);
 
   if (!tenant) return null;
 
@@ -113,18 +104,20 @@ export function BillingDetailSheet({
         }
       }
 
-      // Override billing status/method
-      const overrideResult = await overrideBilling(tenant.organizationId, {
-        status: status !== tenant.subscriptionStatus ? status : null,
-        billingMethod:
-          billingMethod !== tenant.billingMethod ? billingMethod : null,
-        adminNote: adminNote.trim(),
-      });
+      // Override billing status/method (only if something changed)
+      if (hasChanges) {
+        const overrideResult = await overrideBilling(tenant.organizationId, {
+          status: status !== tenant.subscriptionStatus ? status : null,
+          billingMethod:
+            billingMethod !== tenant.billingMethod ? billingMethod : null,
+          adminNote: adminNote.trim(),
+        });
 
-      if (!overrideResult.success) {
-        setError(overrideResult.error ?? "Failed to update billing");
-        setIsSaving(false);
-        return;
+        if (!overrideResult.success) {
+          setError(overrideResult.error ?? "Failed to update billing");
+          setIsSaving(false);
+          return;
+        }
       }
 
       toast.success("Billing updated successfully");

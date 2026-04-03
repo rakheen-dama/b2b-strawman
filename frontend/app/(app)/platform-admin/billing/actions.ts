@@ -55,9 +55,16 @@ export async function listBillingTenants(
   }
 }
 
+function isValidOrgId(orgId: string): boolean {
+  return /^[\w-]+$/.test(orgId);
+}
+
 export async function getBillingTenant(
   orgId: string,
 ): Promise<ActionResult<AdminTenantBilling>> {
+  if (!isValidOrgId(orgId)) {
+    return { success: false, error: "Invalid organization ID" };
+  }
   try {
     const response = await api.get<AdminTenantBilling>(
       `/api/platform-admin/billing/tenants/${orgId}`,
@@ -75,6 +82,9 @@ export async function overrideBilling(
   orgId: string,
   data: AdminBillingOverride,
 ): Promise<ActionResult<AdminTenantBilling>> {
+  if (!isValidOrgId(orgId)) {
+    return { success: false, error: "Invalid organization ID" };
+  }
   try {
     const response = await api.put<AdminTenantBilling>(
       `/api/platform-admin/billing/tenants/${orgId}/status`,
@@ -94,6 +104,9 @@ export async function extendTrial(
   orgId: string,
   days: number,
 ): Promise<ActionResult<AdminTenantBilling>> {
+  if (!isValidOrgId(orgId)) {
+    return { success: false, error: "Invalid organization ID" };
+  }
   try {
     const response = await api.post<AdminTenantBilling>(
       `/api/platform-admin/billing/tenants/${orgId}/extend-trial`,

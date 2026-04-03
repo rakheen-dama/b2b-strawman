@@ -24,6 +24,7 @@ import { EmptyState } from "@/components/empty-state";
 import { StatusBadge } from "@/components/billing/status-badge";
 import { MethodBadge } from "@/components/billing/method-badge";
 import { BillingDetailSheet } from "@/components/billing/billing-detail-sheet";
+import { formatDate } from "@/components/billing/utils";
 import type { AdminTenantBilling } from "@/app/(app)/platform-admin/billing/actions";
 
 const ALL_VALUE = "__ALL__";
@@ -57,15 +58,6 @@ const PROFILE_FILTER_OPTIONS = [
 
 interface BillingTenantsTableProps {
   tenants: AdminTenantBilling[];
-}
-
-function formatDate(dateStr: string | null): string {
-  if (!dateStr) return "—";
-  return new Date(dateStr).toLocaleDateString("en-ZA", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
 }
 
 export function BillingTenantsTable({ tenants }: BillingTenantsTableProps) {
@@ -199,14 +191,14 @@ export function BillingTenantsTable({ tenants }: BillingTenantsTableProps) {
                 </TableCell>
                 <TableCell className="text-sm">
                   {tenant.trialEndsAt
-                    ? formatDate(tenant.trialEndsAt)
-                    : formatDate(tenant.currentPeriodEnd)}
+                    ? formatDate(tenant.trialEndsAt, "\u2014")
+                    : formatDate(tenant.currentPeriodEnd, "\u2014")}
                 </TableCell>
                 <TableCell className="text-right">
                   {tenant.memberCount}
                 </TableCell>
                 <TableCell className="text-sm">
-                  {formatDate(tenant.createdAt)}
+                  {formatDate(tenant.createdAt, "\u2014")}
                 </TableCell>
                 <TableCell className="text-right">
                   <Button
@@ -224,6 +216,7 @@ export function BillingTenantsTable({ tenants }: BillingTenantsTableProps) {
       )}
 
       <BillingDetailSheet
+        key={selectedTenant?.organizationId ?? "none"}
         tenant={selectedTenant}
         open={sheetOpen}
         onOpenChange={setSheetOpen}

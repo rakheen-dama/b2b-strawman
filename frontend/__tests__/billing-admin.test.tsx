@@ -121,7 +121,7 @@ describe("BillingDetailSheet", () => {
     );
 
     expect(screen.getByTestId("sheet-org-name")).toHaveTextContent("Acme Corp");
-    expect(screen.getByTestId("trial-ends")).toHaveTextContent("1 May 2026");
+    expect(screen.getByTestId("trial-ends")).toHaveTextContent("01 May 2026");
     expect(screen.getByTestId("period-end")).toHaveTextContent("N/A");
     // Admin note appears in the current note display and pre-filled in the textarea
     expect(screen.getAllByText("Initial pilot setup").length).toBeGreaterThanOrEqual(1);

@@ -34,7 +34,7 @@ export function MethodBadge({ method }: MethodBadgeProps) {
     return (
       <Badge
         variant="neutral"
-        className="bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300"
+        className="bg-teal-100 text-teal-700 dark:bg-teal-900 dark:text-teal-300"
       >
         {methodLabelMap[method] ?? method}
       </Badge>

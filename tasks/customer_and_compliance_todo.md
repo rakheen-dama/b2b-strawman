@@ -2,7 +2,7 @@
 
 **Date:** 2026-02-20
 **Status:** Planning complete, ready for implementation
-**Reference:** `docs/findings-customer-lifecycle-onboarding.md`
+**Reference:** `documentation/findings-customer-lifecycle-onboarding.md`
 
 ---
 

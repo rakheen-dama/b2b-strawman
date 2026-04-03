@@ -8,7 +8,7 @@
 
 **Tech Stack:** Next.js 16, React 19, Tailwind CSS v4, Shadcn UI (Radix), TanStack Table v8, React Hook Form + Zod, Framer Motion, nuqs, Sonner, cmdk, Recharts, Lucide React
 
-**Design doc:** `docs/plans/2026-02-28-premium-ui-rebuild-design.md`
+**Design doc:** `documentation/plans/2026-02-28-premium-ui-rebuild-design.md`
 
 **Location:** `frontend-v2/` at project root (parallel to existing `frontend/`)
 

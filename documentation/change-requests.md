@@ -34,7 +34,7 @@ UX improvements and design refinements identified during product walkthrough tes
 ## CR-002: Ability to attach checklists to tasks
 
 **Status**: RESOLVED — rejected checklist reuse, implemented lightweight task sub-items (PR #279)
-**Decision doc**: `docs/cr-002-task-checklists-design.md`
+**Decision doc**: `documentation/cr-002-task-checklists-design.md`
 
 **Priority**: low
 **Area**: Both — Tasks + Checklists
@@ -70,7 +70,7 @@ Reuse the existing checklist system by broadening its scope from customer-only t
 ## CR-003: Project template tasks should include sub-items
 
 **Status**: IMPLEMENTED — PR #282
-**Decision doc**: `docs/cr-003-template-task-sub-items.md`
+**Decision doc**: `documentation/cr-003-template-task-sub-items.md`
 
 **Priority**: low
 **Area**: Both — Project Templates + Task Sub-Items

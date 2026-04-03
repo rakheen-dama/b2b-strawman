@@ -8,7 +8,7 @@
 
 **Tech Stack:** Shell (POSIX sh), curl, jq. No new dependencies.
 
-**Design doc:** `docs/plans/2026-03-01-e2e-seed-library-design.md`
+**Design doc:** `documentation/plans/2026-03-01-e2e-seed-library-design.md`
 
 ---
 
@@ -1510,7 +1510,7 @@ git commit -m "feat(seed): include rich-seed lib in Docker image"
 
 ---
 
-Plan complete and saved to `docs/plans/2026-03-01-e2e-seed-library-plan.md`. Two execution options:
+Plan complete and saved to `documentation/plans/2026-03-01-e2e-seed-library-plan.md`. Two execution options:
 
 **1. Subagent-Driven (this session)** — I dispatch a fresh subagent per task, review between tasks, fast iteration
 

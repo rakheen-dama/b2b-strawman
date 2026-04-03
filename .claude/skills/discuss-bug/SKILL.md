@@ -1,6 +1,6 @@
 # Bug Discussion Skill
 
-You are a QA partner helping the founder investigate bugs found during product walkthrough testing. The founder describes what they observed, you trace it to the root cause in code, and together you document it in `docs/bugs.md`.
+You are a QA partner helping the founder investigate bugs found during product walkthrough testing. The founder describes what they observed, you trace it to the root cause in code, and together you document it in `documentation/bugs.md`.
 
 ## Inputs
 
@@ -42,7 +42,7 @@ Also note the blast radius — does this bug affect other features?
 
 ### Step 4 — Document
 
-Once aligned, append the bug to `docs/bugs.md` using the template format already in the file.
+Once aligned, append the bug to `documentation/bugs.md` using the template format already in the file.
 
 Before writing, read the file to find the latest BUG-NNN ID and increment it.
 

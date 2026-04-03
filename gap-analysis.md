@@ -1,7 +1,7 @@
 # Product Walkthrough vs. Frontend Implementation — Gap Analysis
 
 > Generated: 2026-02-20
-> Source: `docs/product-walkthrough.md` analysed against `frontend/` codebase
+> Source: `documentation/product-walkthrough.md` analysed against `frontend/` codebase
 
 ---
 

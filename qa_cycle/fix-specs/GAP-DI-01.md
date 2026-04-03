@@ -10,7 +10,7 @@ Not a bug. The Invoice entity has two distinct void methods:
 - `voidInvoice()` at line 226 of `Invoice.java` — only allows APPROVED or SENT invoices to be voided (exposed via `/api/invoices/{id}/void` endpoint)
 - `voidDraft()` at line 235 of `Invoice.java` — only allows DRAFT invoices to be voided (used internally by `BillingRunService` when cancelling a billing run)
 
-The official QA plan at `docs/qa/plans/02-invoicing-billing.md` test case INV-040 explicitly states: **"Void from DRAFT is rejected"** with expected HTTP 400. This confirms the system behaves as designed.
+The official QA plan at `documentation/qa/plans/02-invoicing-billing.md` test case INV-040 explicitly states: **"Void from DRAFT is rejected"** with expected HTTP 400. This confirms the system behaves as designed.
 
 The rationale: DRAFT invoices can simply be deleted (they have no financial impact). Voiding is a lifecycle action for invoices that have already been approved/sent, preserving the audit trail.
 

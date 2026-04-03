@@ -20,8 +20,8 @@ These rules apply to you AND every subagent you spawn. Include them in every sub
 
 ## Key Files to Read First
 
-1. `docs/plans/2026-02-28-premium-ui-rebuild-design.md` — the full design specification (navigation architecture, page patterns, component system, all 53 pages)
-2. `docs/plans/2026-02-28-premium-ui-rebuild-plan.md` — the 25-task implementation plan with exact file paths, code snippets, and commit messages
+1. `documentation/plans/2026-02-28-premium-ui-rebuild-design.md` — the full design specification (navigation architecture, page patterns, component system, all 53 pages)
+2. `documentation/plans/2026-02-28-premium-ui-rebuild-plan.md` — the 25-task implementation plan with exact file paths, code snippets, and commit messages
 3. `frontend/CLAUDE.md` — conventions for the existing frontend (same stack, same patterns apply to v2)
 4. `CLAUDE.md` — project-level instructions
 
@@ -83,8 +83,8 @@ For each subagent, provide:
 You are building frontend-v2/ for a B2B SaaS app.
 
 Read these files first:
-- docs/plans/2026-02-28-premium-ui-rebuild-plan.md (find Task N)
-- docs/plans/2026-02-28-premium-ui-rebuild-design.md (for design specs)
+- documentation/plans/2026-02-28-premium-ui-rebuild-plan.md (find Task N)
+- documentation/plans/2026-02-28-premium-ui-rebuild-design.md (for design specs)
 - frontend/CLAUDE.md (conventions)
 
 Execute Task N exactly as described in the plan.

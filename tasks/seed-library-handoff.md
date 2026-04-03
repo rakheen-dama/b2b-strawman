@@ -71,6 +71,6 @@ bash compose/seed/rich-seed.sh --reset 2>&1
 7. **Bare arrays vs paginated** — customers/projects/tasks/time-entries/invoices/retainers/members/documents/comments return `[...]`, proposals/billing-rates return `{content:[...]}`
 
 ## Files
-- Design doc: `docs/plans/2026-03-01-e2e-seed-library-design.md`
-- Implementation plan: `docs/plans/2026-03-01-e2e-seed-library-plan.md`
+- Design doc: `documentation/plans/2026-03-01-e2e-seed-library-design.md`
+- Implementation plan: `documentation/plans/2026-03-01-e2e-seed-library-plan.md`
 - Scripts: `compose/seed/lib/*.sh` + `compose/seed/rich-seed.sh`

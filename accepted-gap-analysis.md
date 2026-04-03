@@ -213,7 +213,7 @@ Replace the `<Input>` in `TemplatePreviewDialog.tsx` with a `Command`/Combobox c
 
 ### Problem Statement
 
-The product walkthrough (`docs/product-walkthrough.md`) was written from an early spec or aspirational design. The implementation evolved — often for the better — creating label mismatches, flow differences, and omitted features. None of these require code changes.
+The product walkthrough (`documentation/product-walkthrough.md`) was written from an early spec or aspirational design. The implementation evolved — often for the better — creating label mismatches, flow differences, and omitted features. None of these require code changes.
 
 ### Categories
 
@@ -250,7 +250,7 @@ The product walkthrough (`docs/product-walkthrough.md`) was written from an earl
 
 ### Action
 
-A single pass through `docs/product-walkthrough.md` updating all 26 items. No code changes required.
+A single pass through `documentation/product-walkthrough.md` updating all 26 items. No code changes required.
 
 ---
 

@@ -625,14 +625,14 @@ Clerk → POST /api/webhooks/clerk (Next.js)
 | 15.3 | Create dev deployment workflow | **Done** | `deploy-dev.yml` — triggered by `workflow_run` on Build & Push success. Uses `head_sha` for image tag consistency. Parallel frontend/backend deploy, then ALB health check smoke tests (graceful skip if ALB not found). |
 | 15.4 | Create staging deployment workflow | **Done** | `deploy-staging.yml` — manual `workflow_dispatch` with git ref input. Builds images for staging ECR, deploys to `docteams-staging` ECS via reusable composite action. GitHub environment `staging` (1 approval). Smoke tests on ALB. |
 | 15.5 | Create production deployment workflow | **Done** | `deploy-prod.yml` — manual `workflow_dispatch` with git ref + `deploy-prod` confirmation. Builds images for prod ECR, deploys to `docteams-prod` ECS. GitHub environment `prod` (2 approvals + 5-min wait). Smoke tests on ALB. |
-| 15.6 | Configure GitHub secrets and environments | **Done** | `docs/github-environments-setup.md` — documents required secrets (AWS creds, Clerk key), GitHub environments (dev/staging/prod) with protection rules, IAM permissions, OIDC migration guide. Updated with staging/prod workflow details. |
-| 15.7 | Add rollback procedure | **Done** | `rollback.yml` — manual `workflow_dispatch` with environment/service/confirmation inputs. Reverts ECS service to previous task definition revision. `docs/rollback-procedure.md` — operational runbook with CLI fallback and post-rollback checklist. |
+| 15.6 | Configure GitHub secrets and environments | **Done** | `documentation/github-environments-setup.md` — documents required secrets (AWS creds, Clerk key), GitHub environments (dev/staging/prod) with protection rules, IAM permissions, OIDC migration guide. Updated with staging/prod workflow details. |
+| 15.7 | Add rollback procedure | **Done** | `rollback.yml` — manual `workflow_dispatch` with environment/service/confirmation inputs. Reverts ECS service to previous task definition revision. `documentation/rollback-procedure.md` — operational runbook with CLI fallback and post-rollback checklist. |
 
 ### Key Files (15A)
 - `.github/workflows/build-and-push.yml` — Docker build & push to ECR on merge to main
 - `.github/actions/ecs-deploy/action.yml` — Reusable ECS deploy composite action
 - `.github/workflows/deploy-dev.yml` — Auto-deploy to dev with smoke tests
-- `docs/github-environments-setup.md` — GitHub environments and secrets setup guide
+- `documentation/github-environments-setup.md` — GitHub environments and secrets setup guide
 
 ### Architecture (15A)
 ```
@@ -658,7 +658,7 @@ Push to main
 - `.github/workflows/deploy-staging.yml` — Manual staging deploy (build → deploy → smoke test)
 - `.github/workflows/deploy-prod.yml` — Manual prod deploy with confirmation + approval gate
 - `.github/workflows/rollback.yml` — Manual rollback to previous ECS task definition revision
-- `docs/rollback-procedure.md` — Operational runbook for rollbacks (workflow + CLI fallback)
+- `documentation/rollback-procedure.md` — Operational runbook for rollbacks (workflow + CLI fallback)
 
 ### Architecture (15B)
 ```

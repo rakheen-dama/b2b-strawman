@@ -6,8 +6,8 @@ Copy everything below the line as the prompt for a fresh Claude Code session.
 
 Continue implementing the fields-clauses-templates integration plan. Previous sessions completed Tasks 1-8. You need to:
 
-1. **First**, read the handover doc at `docs/plans/2026-03-08-fields-clauses-templates-handover.md` for full context on what's done, branch state, and architecture
-2. **Then**, read the full plan at `docs/plans/2026-03-08-fields-clauses-templates-integration.md` for remaining task details
+1. **First**, read the handover doc at `documentation/plans/2026-03-08-fields-clauses-templates-handover.md` for full context on what's done, branch state, and architecture
+2. **Then**, read the full plan at `documentation/plans/2026-03-08-fields-clauses-templates-integration.md` for remaining task details
 
 ## What's Done
 - Tasks 1-5, 7-8 (GAP-1 through GAP-5, GAP-9, GAP-7) — all P0, P1, and most P2 gaps resolved

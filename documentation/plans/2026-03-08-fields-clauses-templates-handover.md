@@ -5,7 +5,7 @@
 - **Branch:** `feat/fields-clauses-templates-integration`
 - **Worktree:** `.worktrees/fields-clauses-templates-integration`
 - **Base SHA:** `dddbc40f` (main)
-- **Plan file:** `docs/plans/2026-03-08-fields-clauses-templates-integration.md`
+- **Plan file:** `documentation/plans/2026-03-08-fields-clauses-templates-integration.md`
 - **Findings doc:** `architecture/findings-fields-clauses-templates-gaps.md`
 
 ## Completed Tasks (7 of 9 implementable)

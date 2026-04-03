@@ -8,7 +8,7 @@
 
 **Tech Stack:** Spring Boot 4 (Java 25), Next.js 16, PostgreSQL, Flyway, vitest, JUnit 5
 
-**Design doc:** `docs/plans/2026-02-25-portal-integration-gaps-design.md`
+**Design doc:** `documentation/plans/2026-02-25-portal-integration-gaps-design.md`
 
 **Key conventions:**
 - Read `backend/CLAUDE.md` before touching backend files

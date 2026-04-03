@@ -906,7 +906,7 @@ Stage 8: [279A] → [279B]                                          (after all t
 | 279.6 | Test: session expiry and token refresh | 279A | | Gateway test: simulate expired access token in session. Verify: gateway uses refresh token to obtain new access token transparently (Spring Security's `OAuth2AuthorizedClientManager` handles this). |
 | 279.7 | Clerk mode regression test | 279B | | Verification: set `NEXT_PUBLIC_AUTH_MODE=clerk`, `SPRING_PROFILES_ACTIVE=local`. Run existing test suites. Verify: no regressions from JIT provisioning code (guarded by profile), no regressions from middleware changes (guarded by AUTH_MODE), no regressions from API client changes (guarded by AUTH_MODE). |
 | 279.8 | Mock E2E mode regression test | 279B | | Verification: set `NEXT_PUBLIC_AUTH_MODE=mock`, `SPRING_PROFILES_ACTIVE=e2e`. Run E2E stack with `e2e-up.sh`. Verify: mock IDP flow works, Playwright fixtures work, smoke tests pass. |
-| 279.9 | Create operational runbook | 279B | | New file: `docs/keycloak-gateway-runbook.md`. Document: (1) env var reference for all three modes, (2) startup order (postgres -> keycloak -> gateway -> backend -> frontend), (3) how to generate Keycloak client secret, (4) how to import realm, (5) troubleshooting common issues (session table missing, CSRF errors, token relay failures). |
+| 279.9 | Create operational runbook | 279B | | New file: `documentation/keycloak-gateway-runbook.md`. Document: (1) env var reference for all three modes, (2) startup order (postgres -> keycloak -> gateway -> backend -> frontend), (3) how to generate Keycloak client secret, (4) how to import realm, (5) troubleshooting common issues (session table missing, CSRF errors, token relay failures). |
 | 279.10 | Create architecture diagram update | 279B | | Modify or new: add production topology diagram to architecture doc or README showing the three-mode architecture (Clerk/Keycloak/Mock). |
 
 ### Key Files
@@ -917,7 +917,7 @@ Stage 8: [279A] → [279B]                                          (after all t
 - `backend/src/test/java/io/b2mash/b2b/b2bstrawman/multitenancy/JitProvisioningIntegrationTest.java` (if not covered in 271A)
 
 **Slice 279B — Create:**
-- `docs/keycloak-gateway-runbook.md`
+- `documentation/keycloak-gateway-runbook.md`
 
 **Slice 279B — Read for context:**
 - `compose/scripts/e2e-up.sh` — existing E2E stack

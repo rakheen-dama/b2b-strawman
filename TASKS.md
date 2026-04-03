@@ -491,7 +491,7 @@
 | **Phase 59 — User Help Documentation Site** | | | | | | See [tasks/phase59-user-help-documentation.md](tasks/phase59-user-help-documentation.md) |
 | 432 | Doc Site Scaffold & Home Page | Docs | -- | M | 432A, 432B | **Done** (PRs #898, #899) |
 | 433 | Getting Started & Core Feature Guides | Docs (Content) | 432 | M | 433A, 433B | **Done** (PRs #900, #901) |
-| 434 | Admin & Settings Guides | Docs (Content) | 432 | S | 434A | |
+| 434 | Admin & Settings Guides | Docs (Content) | 432 | S | 434A | **Done** (PR #902) |
 | 435 | P1 Feature Guides | Docs (Content) | 432 | M | 435A, 435B | |
 | 436 | P2 Features & Vertical Guides | Docs (Content) | 432 | M | 436A, 436B | |
 | 437 | Frontend Contextual Deep-Links | Frontend | 432 | M | 437A, 437B | |

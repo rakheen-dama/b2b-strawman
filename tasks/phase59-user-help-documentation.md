@@ -8,7 +8,7 @@ Phase 59 adds self-service user documentation to the HeyKazi platform -- a stand
 |------|------|-------|------|--------|--------|--------|
 | 432 | Doc Site Scaffold & Home Page | Docs | -- | M | 432A, 432B | **Done** (PRs #898, #899) |
 | 433 | Getting Started & Core Feature Guides | Docs (Content) | 432 | M | 433A, 433B | **Done** (PRs #900, #901) |
-| 434 | Admin & Settings Guides | Docs (Content) | 432 | S | 434A | |
+| 434 | Admin & Settings Guides | Docs (Content) | 432 | S | 434A | **Done** (PR #902) |
 | 435 | P1 Feature Guides | Docs (Content) | 432 | M | 435A, 435B | |
 | 436 | P2 Features & Vertical Guides | Docs (Content) | 432 | M | 436A, 436B | |
 | 437 | Frontend Contextual Deep-Links | Frontend | 432 | M | 437A, 437B | |
@@ -53,7 +53,7 @@ Phase 59 adds self-service user documentation to the HeyKazi platform -- a stand
 | Order | Epic | Rationale |
 |-------|------|-----------|
 | 2a | Epic 433: Getting Started & Core Feature Guides (433A **Done** PR #900, 433B **Done** PR #901) | P0 content -- 8 articles covering onboarding and core workflows. Highest priority for launch. |
-| 2b | Epic 434: Admin & Settings Guides | P0 + P1 admin content -- 4 articles covering team management, settings, integrations, billing. |
+| 2b | Epic 434: Admin & Settings Guides (434A **Done** PR #902) | P0 + P1 admin content -- 4 articles covering team management, settings, integrations, billing. |
 | 2c | Epic 435: P1 Feature Guides | P1 content -- 8 feature guides for secondary features. |
 | 2d | Epic 436: P2 Features & Vertical Guides | P2 features + vertical-specific content. Lowest content priority. |
 | 2e | Epic 437A: Frontend Component Changes | docsLink utility, HelpTip extension, EmptyState fix, sidebar Help item. Independent of content. |
@@ -245,7 +245,7 @@ Stage 3:  [E437B]                                                <- call-site wi
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **434A** | 434.1--434.4 | 4 admin guides (team-permissions, org-settings, integrations, billing). 4 articles, ~2,800 estimated words. | |
+| **434A** | 434.1--434.4 | 4 admin guides (team-permissions, org-settings, integrations, billing). 4 articles, ~2,800 estimated words. | **Done** (PR #902) |
 
 ### Tasks
 

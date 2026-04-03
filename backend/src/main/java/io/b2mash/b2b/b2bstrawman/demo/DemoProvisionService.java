@@ -6,17 +6,24 @@ import io.b2mash.b2b.b2bstrawman.billing.SubscriptionRepository;
 import io.b2mash.b2b.b2bstrawman.billing.SubscriptionStatusCache;
 import io.b2mash.b2b.b2bstrawman.demo.DemoDtos.DemoProvisionRequest;
 import io.b2mash.b2b.b2bstrawman.demo.DemoDtos.DemoProvisionResponse;
+import io.b2mash.b2b.b2bstrawman.demo.DemoDtos.DemoReseedResponse;
 import io.b2mash.b2b.b2bstrawman.demo.seed.DemoDataSeeder;
+import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient;
 import java.security.SecureRandom;
 import java.util.Map;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -33,6 +40,9 @@ public class DemoProvisionService {
   private final SubscriptionStatusCache subscriptionStatusCache;
   private final TransactionTemplate txTemplate;
   private final DemoDataSeeder demoDataSeeder;
+  private final OrgSchemaMappingRepository orgSchemaMappingRepository;
+  private final TenantTransactionHelper tenantTransactionHelper;
+  private final JdbcTemplate jdbcTemplate;
   private final String baseUrl;
 
   public DemoProvisionService(
@@ -43,6 +53,9 @@ public class DemoProvisionService {
       SubscriptionStatusCache subscriptionStatusCache,
       TransactionTemplate txTemplate,
       DemoDataSeeder demoDataSeeder,
+      OrgSchemaMappingRepository orgSchemaMappingRepository,
+      TenantTransactionHelper tenantTransactionHelper,
+      JdbcTemplate jdbcTemplate,
       @Value("${app.base-url:http://localhost:3000}") String baseUrl) {
     this.keycloakAdminClient = keycloakAdminClient;
     this.tenantProvisioningService = tenantProvisioningService;
@@ -51,6 +64,9 @@ public class DemoProvisionService {
     this.subscriptionStatusCache = subscriptionStatusCache;
     this.txTemplate = txTemplate;
     this.demoDataSeeder = demoDataSeeder;
+    this.orgSchemaMappingRepository = orgSchemaMappingRepository;
+    this.tenantTransactionHelper = tenantTransactionHelper;
+    this.jdbcTemplate = jdbcTemplate;
     this.baseUrl = baseUrl;
   }
 
@@ -209,6 +225,104 @@ public class DemoProvisionService {
         demoDataSeeded,
         adminNote,
         tempPassword);
+  }
+
+  /**
+   * Reseeds demo data for an existing tenant. Clears all transactional data and re-runs the
+   * profile-specific seeder. Only PILOT and COMPLIMENTARY billing methods are eligible.
+   */
+  public DemoReseedResponse reseed(UUID orgId) {
+    var org =
+        organizationRepository
+            .findById(orgId)
+            .orElseThrow(
+                () ->
+                    new ResourceNotFoundException(
+                        "Organization not found", "No organization found for id: " + orgId));
+
+    var sub =
+        subscriptionRepository
+            .findByOrganizationId(orgId)
+            .orElseThrow(
+                () ->
+                    new ResourceNotFoundException(
+                        "Subscription not found",
+                        "No subscription found for organization: " + orgId));
+
+    if (!sub.getBillingMethod().isCleanupEligible()) {
+      throw new ForbiddenException(
+          "Reseed not allowed",
+          "Reseed is only allowed for PILOT or COMPLIMENTARY tenants. Current billing method: "
+              + sub.getBillingMethod());
+    }
+
+    var mapping =
+        orgSchemaMappingRepository
+            .findByExternalOrgId(org.getExternalOrgId())
+            .orElseThrow(
+                () ->
+                    new ResourceNotFoundException(
+                        "Schema mapping not found",
+                        "No schema mapping found for org: " + org.getExternalOrgId()));
+
+    String schemaName = mapping.getSchemaName();
+    String verticalProfile = parseVerticalProfile(sub.getAdminNote());
+
+    log.info(
+        "Reseeding demo tenant '{}' (schema: {}, profile: {})",
+        org.getName(),
+        schemaName,
+        verticalProfile);
+
+    try {
+      tenantTransactionHelper.executeInTenantTransaction(
+          schemaName,
+          orgId.toString(),
+          t -> {
+            truncateTransactionalTables(schemaName);
+            log.info("Truncated transactional tables for schema {}", schemaName);
+          });
+
+      demoDataSeeder.seed(schemaName, orgId, verticalProfile);
+
+      log.info(
+          "AUDIT: Demo tenant reseeded for org {}: schema={}, profile={}",
+          orgId,
+          schemaName,
+          verticalProfile);
+
+      return new DemoReseedResponse(org.getId(), org.getName(), true, verticalProfile, null);
+    } catch (Exception e) {
+      log.error("Reseed failed for org {} (schema {})", orgId, schemaName, e);
+      return new DemoReseedResponse(
+          org.getId(), org.getName(), false, verticalProfile, e.getMessage());
+    }
+  }
+
+  private void truncateTransactionalTables(String schemaName) {
+    // JdbcTemplate gets its own connection from the pool, so explicitly set search_path
+    jdbcTemplate.execute("SET search_path TO " + schemaName);
+    jdbcTemplate.execute("TRUNCATE TABLE notifications CASCADE");
+    jdbcTemplate.execute("TRUNCATE TABLE comments CASCADE");
+    jdbcTemplate.execute("TRUNCATE TABLE invoice_lines CASCADE");
+    jdbcTemplate.execute("TRUNCATE TABLE invoices CASCADE");
+    jdbcTemplate.execute("TRUNCATE TABLE time_entries CASCADE");
+    jdbcTemplate.execute("TRUNCATE TABLE task_items CASCADE");
+    jdbcTemplate.execute("TRUNCATE TABLE tasks CASCADE");
+    jdbcTemplate.execute("TRUNCATE TABLE project_members CASCADE");
+    jdbcTemplate.execute("TRUNCATE TABLE customer_projects CASCADE");
+    jdbcTemplate.execute("TRUNCATE TABLE projects CASCADE");
+    jdbcTemplate.execute("TRUNCATE TABLE customers CASCADE");
+    jdbcTemplate.execute("TRUNCATE TABLE members CASCADE");
+    jdbcTemplate.execute("SET search_path TO public");
+  }
+
+  static String parseVerticalProfile(String adminNote) {
+    if (adminNote == null) return "generic";
+    // Admin note format: "Demo tenant provisioned by admin <userId>. Profile: <profile>"
+    int idx = adminNote.indexOf("Profile: ");
+    if (idx < 0) return "generic";
+    return adminNote.substring(idx + 9).trim().toLowerCase();
   }
 
   private static final SecureRandom RANDOM = new SecureRandom();

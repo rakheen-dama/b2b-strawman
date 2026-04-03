@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getSessionIdentity } from "@/lib/auth";
 
@@ -20,5 +21,23 @@ export default async function PlatformAdminLayout({
     notFound();
   }
 
-  return <>{children}</>;
+  return (
+    <div>
+      <nav className="border-b border-slate-200 bg-white px-6 py-3 flex gap-6">
+        <Link
+          href="/platform-admin/access-requests"
+          className="text-sm font-medium text-slate-700 hover:text-slate-950"
+        >
+          Access Requests
+        </Link>
+        <Link
+          href="/platform-admin/billing"
+          className="text-sm font-medium text-slate-700 hover:text-slate-950"
+        >
+          Billing
+        </Link>
+      </nav>
+      {children}
+    </div>
+  );
 }

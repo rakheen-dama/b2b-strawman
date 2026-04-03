@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -345,6 +346,68 @@ public class KeycloakAdminClient {
       return orgs.getFirst();
     }
     return null;
+  }
+
+  @SuppressWarnings("unchecked")
+  public Optional<String> findUserByEmail(String email) {
+    List<Map<String, Object>> users =
+        restClient
+            .get()
+            .uri("/users?email={email}&exact=true", email)
+            .header("Authorization", "Bearer " + getAdminToken())
+            .retrieve()
+            .body(new ParameterizedTypeReference<>() {});
+    if (users == null || users.isEmpty()) {
+      return Optional.empty();
+    }
+    return Optional.ofNullable((String) users.getFirst().get("id"));
+  }
+
+  public String createUser(String email, String firstName, String lastName, String tempPassword) {
+    var userBody =
+        Map.of(
+            "email", email,
+            "username", email,
+            "firstName", firstName,
+            "lastName", lastName,
+            "enabled", true,
+            "emailVerified", true);
+    var response =
+        restClient
+            .post()
+            .uri("/users")
+            .header("Authorization", "Bearer " + getAdminToken())
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(userBody)
+            .retrieve()
+            .toBodilessEntity();
+    var location = response.getHeaders().getLocation();
+    String userId = null;
+    if (location != null) {
+      String path = location.getPath();
+      userId = path.substring(path.lastIndexOf('/') + 1);
+    }
+    if (userId == null) {
+      // Fallback: look up the user we just created, then continue to set password
+      userId =
+          findUserByEmail(email)
+              .orElseThrow(
+                  () ->
+                      new InvalidStateException(
+                          "User creation failed",
+                          "Created user but could not resolve user ID for " + email));
+    }
+    // Set the password via a separate PUT call
+    restClient
+        .put()
+        .uri("/users/{userId}/reset-password", userId)
+        .header("Authorization", "Bearer " + getAdminToken())
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(Map.of("type", "password", "value", tempPassword, "temporary", true))
+        .retrieve()
+        .toBodilessEntity();
+    log.info("Created Keycloak user {} ({})", userId, email);
+    return userId;
   }
 
   @SuppressWarnings("unchecked")

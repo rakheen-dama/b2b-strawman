@@ -10,7 +10,7 @@ Phase 58 closes the gap between "the platform can process payments" (Phase 57) a
 | 428 | Admin Billing Management | Backend + Frontend | 427 | L | 428A, 428B | **Done** (PRs #889, #890) |
 | 429 | Demo Tenant Provisioning | Backend + Frontend | 427 | L | 429A, 429B | **Done** (PRs #891, #892) |
 | 430 | Demo Data Seeding | Backend | 429 | L | 430A, 430B, 430C | **Done** (PRs #893, #894, #895) |
-| 431 | Demo Tenant Cleanup | Backend + Frontend | 427 | L | 431A, 431B | |
+| 431 | Demo Tenant Cleanup | Backend + Frontend | 427 | L | 431A, 431B | **Done** (PRs #896, #897) |
 
 ## Dependency Graph
 
@@ -67,7 +67,7 @@ Phase 58 closes the gap between "the platform can process payments" (Phase 57) a
 |-------|------|-----------|
 | 4a | Epic 428B: Admin Billing Frontend | Platform admin billing page, detail slide-over. Depends on 428A backend API. **Done** (PR #890) |
 | 4b | Epic 429B: Demo Provisioning Frontend | Demo creation form + success state. Depends on 429A backend API. **Done** (PR #892) |
-| 4c | Epic 431B: Demo Cleanup + Billing Adaptation Frontend | Demo tenant list, delete confirmation dialog, billing page adaptation for `adminManaged`. Depends on 431A backend API. |
+| 4c | Epic 431B: Demo Cleanup + Billing Adaptation Frontend | Demo tenant list, delete confirmation dialog, billing page adaptation for `adminManaged`. Depends on 431A backend API. | **Done** (PR #897) |
 
 ### Timeline
 
@@ -422,7 +422,7 @@ Stage 4:  [E428B] [E429B] [E431B]                       <- parallel frontend (af
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **431A** | 431.1--431.6 | `DemoCleanupService` (multi-step cleanup with error handling), `DemoCleanupRequest`/`DemoCleanupResponse` DTOs, cleanup endpoint on `DemoAdminController`, `DemoCleanupServiceTest` | **Done** (PR #896) |
-| **431B** | 431.7--431.12 | Demo tenant list (filtered PILOT/COMPLIMENTARY view), delete confirmation dialog (org name match), reseed button, billing page adaptation (hide PayFast UI for `adminManaged`), frontend tests | |
+| **431B** | 431.7--431.12 | Demo tenant list (filtered PILOT/COMPLIMENTARY view), delete confirmation dialog (org name match), reseed button, billing page adaptation (hide PayFast UI for `adminManaged`), frontend tests | **Done** (PR #897) |
 
 ### Tasks
 

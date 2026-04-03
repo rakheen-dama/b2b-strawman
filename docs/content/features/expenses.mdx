@@ -1,8 +1,92 @@
 ---
 title: "Expenses"
-description: "Track project expenses, attach receipts, and include expenses on invoices."
+description: "Track project expenses, attach receipts, and include billable expenses on invoices."
 ---
+
+import { Callout, Steps } from "nextra/components"
 
 # Expenses
 
-Content coming soon.
+Expenses capture the out-of-pocket costs your team incurs while working on a project — filing fees, travel, courier charges, software licences, and more. They appear on the **Expenses** tab of a project detail page alongside your time entries and other project data.
+
+Tracking expenses separately from time ensures your invoices reflect the full cost of an engagement. Billable expenses can be included on invoices with optional markup, while non-billable expenses are recorded for internal cost visibility without being charged to the client.
+
+## Key Concepts
+
+### Expense Categories
+
+When logging an expense, you choose a category: **Filing Fee**, **Travel**, **Courier**, **Software**, **Subcontractor**, **Printing**, **Communication**, or **Other**. Categories help you filter the expense list and spot spending patterns across projects.
+
+### Billing Statuses
+
+Each expense has a billing status that determines whether it appears on invoices.
+
+| Status | Description |
+|--------|-------------|
+| **Unbilled** | A billable expense that has not yet been included on an invoice. |
+| **Billed** | Included on an invoice. Billed expenses are locked and cannot be edited or deleted. |
+| **Non-billable** | Marked as non-billable, either when logged or after being written off by an admin. Not included on invoices. |
+
+### Billable Amount and Markup
+
+When you set a markup percentage, the billable amount equals the base amount plus the markup (for example, R500 with 15% markup becomes R575). Both the actual cost and the client-facing charge appear as separate columns in the expense list.
+
+## Logging an Expense
+
+<Steps>
+### Step 1 — Navigate to the Expenses tab
+
+Open a project detail page and click the **Expenses** tab.
+
+### Step 2 — Click Log Expense
+
+Click the **Log Expense** button to open the expense dialog.
+
+### Step 3 — Fill in the details
+
+Complete the form fields:
+
+- **Date** (required) — defaults to today
+- **Description** (required) — for example, "Court filing fee" or "Client site visit — Johannesburg"
+- **Amount** and **Currency** (required) — the actual cost incurred, in your organisation's currency
+- **Category** (required) — select from the list of expense categories
+- **Task** (optional) — link to a specific task in the project
+- **Markup %** (optional) — percentage markup applied when billing the client
+- **Billable** (checkbox, on by default) — uncheck for non-billable expenses
+- **Notes** (optional) — additional context or justification
+- **Receipt** (optional) — upload an image, PDF, or document as supporting evidence
+
+### Step 4 — Save the expense
+
+Click **Save**. The expense appears in the list with an **Unbilled** status (or **Non-billable** if you unchecked the billable flag).
+</Steps>
+
+## Including Expenses on Invoices
+
+When generating an invoice, unbilled expenses appear alongside unbilled time entries as selectable line items. Each expense uses the billable amount (with markup applied, if any). Once the invoice is finalised, included expenses move to **Billed** status and are locked from further editing.
+
+## Write-off and Restore
+
+Admins can write off an unbilled expense to move it to **Non-billable** status. This is useful when a cost was initially flagged as billable but you decide not to charge the client. If a write-off was made in error, admins can restore the expense back to **Unbilled** status.
+
+<Callout type="warning">
+  Billed expenses cannot be written off, edited, or deleted. To correct a billed expense, you need to adjust the invoice it appears on.
+</Callout>
+
+## Filtering and Reporting
+
+The expense list supports filters by **billing status** (All, Unbilled, Billed, or Non-billable), **category**, and **member**. Combine filters to find specific cost types or review individual team member spending. Billable expenses also feed into the [profitability reports](/features/rate-cards-budgets) alongside time-based charges.
+
+## Tips and Best Practices
+
+- **Attach receipts immediately** — uploading supporting documents at the time of logging avoids the scramble at invoicing time.
+- **Use markup consistently** — set a standard percentage so clients see predictable charges.
+- **Review unbilled expenses before invoicing** — check for costs that should be written off or recategorised.
+- **Link expenses to tasks** — granular cost tracking makes it easier to explain charges to clients.
+
+## Related Features
+
+- [Projects](/features/projects) — expenses are tracked per project on the Expenses tab
+- [Invoicing](/features/invoicing) — include billable expenses as line items on invoices
+- [Time Tracking](/features/time-tracking) — track hours alongside expenses for a complete project cost picture
+- [Rate Cards and Budgets](/features/rate-cards-budgets) — configure billing rates and budgets that work alongside expense tracking

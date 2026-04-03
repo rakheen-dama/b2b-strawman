@@ -1,8 +1,137 @@
 ---
 title: "Documents & Templates"
-description: "Generate documents from templates, manage document workflows, and export to PDF."
+description: "Upload files, generate documents from templates, and manage document workflows across projects and customers in HeyKazi."
 ---
+
+import { Callout, Steps } from "nextra/components"
 
 # Documents & Templates
 
-Content coming soon.
+Documents in HeyKazi give your team a central place to store, generate, and manage files attached to your work. Whether you are uploading a signed contract, generating a proposal from a template, or attaching a compliance certificate, every document lives alongside the project or customer it belongs to.
+
+The documents feature supports two workflows: **uploading files** directly (contracts, receipts, reports) and **generating documents from templates** using your organisation's branding and data. Both workflows produce a clear audit trail so you always know who uploaded or generated a document and when.
+
+<Callout type="info">
+  **Vertical terminology**: Depending on your industry, documents may include **Engagement Letters** (accounting firms), **Briefs** or **Pleadings** (legal firms), or **Statements of Work** (consulting firms). HeyKazi supports terminology overrides so the platform speaks your language.
+</Callout>
+
+## Key Concepts
+
+### Document Scopes
+
+Every document is attached to a scope that determines where it appears and who can access it.
+
+| Scope | Description |
+|-------|-------------|
+| **Project** | Attached to a specific project. Visible on the project's Documents tab. |
+| **Customer** | Attached to a customer record. Visible on the customer's Documents tab. Useful for client-wide files like master agreements or KYC documents. |
+| **Org** | Organisation-level documents visible to all members. Ideal for policies, templates, and internal reference materials. |
+
+When viewing documents in a mixed-scope list, each document displays a scope badge so you can quickly identify where it belongs.
+
+### Document Statuses
+
+Each document has a status that reflects its upload state.
+
+| Status | Badge | Description |
+|--------|-------|-------------|
+| **Uploaded** | Green | The file has been uploaded successfully and is ready to view or download. |
+| **Pending** | Amber | The upload is in progress or awaiting confirmation. |
+| **Failed** | Red | The upload encountered an error. You can retry or remove the document. |
+
+### Supported File Types
+
+HeyKazi accepts a wide range of file types including images, PDFs, Word documents (.doc/.docx), spreadsheets, zip archives, and more. Files are stored securely in cloud storage with access controlled by your organisation's permissions.
+
+## Uploading Documents
+
+<Steps>
+### Step 1 — Navigate to the Documents tab
+
+Open a project or customer detail page and click the **Documents** tab.
+
+### Step 2 — Upload your files
+
+Drag and drop files onto the upload zone, or click the zone to open your file picker. You can upload multiple files at once.
+
+### Step 3 — Wait for confirmation
+
+Each file uploads directly to secure cloud storage with a progress indicator. Once complete, the document status changes to **Uploaded** and the file appears in the document list.
+
+### Step 4 — Add comments (optional)
+
+Click the chevron next to a document's filename to expand the inline comment thread. Use comments to provide context, flag issues, or request reviews from team members.
+</Steps>
+
+## Generating Documents from Templates
+
+Template-generated documents let you produce professional, branded output using data from your projects, customers, and invoices. Generated documents appear under a separate **Generated** tab on the project or customer detail page.
+
+### Template Types
+
+HeyKazi supports two types of document templates:
+
+- **Rich text templates** — edited directly in your browser using a visual editor. Best for simple documents like engagement letters, cover pages, and internal memos.
+- **Word (.docx) templates** — uploaded DOCX files that use `{{variable}}` mail-merge style placeholders (for example, `{{project.name}}`, `{{customer.name}}`, `{{invoice.total}}`). Choose these when you need complex formatting, tables, or layouts that go beyond what the visual editor offers.
+
+### Template Packs
+
+Template packs are pre-built collections of common document types — proposals, engagement letters, invoices. Clone a pack to get started quickly, then customise the templates to match your organisation's branding and terminology. Admins can manage template packs from the template settings page.
+
+### Branding and PDF Output
+
+Documents generated from templates use your organisation's branding settings: **logo**, **brand colour**, and **footer text**. These settings are configured in **Settings** and apply automatically to all generated PDFs, giving your output a consistent, professional look.
+
+### Generating a Document
+
+<Steps>
+### Step 1 — Open the Generate Document dropdown
+
+On a project, customer, or invoice detail page, click the **Generate Document** button.
+
+### Step 2 — Choose a template
+
+Select from the available templates. The template determines the structure and merge fields used.
+
+### Step 3 — Preview the output
+
+A preview dialog shows the generated HTML output with all merge fields replaced by real data. Review the content before finalising.
+
+### Step 4 — Generate the document
+
+Click **Generate** to produce the final document. The generated file is stored and linked to the project or customer, and appears on the Generated tab.
+</Steps>
+
+### Version History
+
+Each generated document is tracked with a timestamp, the template used, and the user who generated it. If you regenerate a document from the same template, both versions are preserved so you can compare changes over time.
+
+### Document Acceptance and E-Signing
+
+Documents that require client approval can be sent as acceptance requests through the customer portal. The recipient reviews the document and records their acceptance, creating an auditable record of consent. This is useful for engagement letters, terms of service, and other documents that need formal sign-off.
+
+## Managing Documents
+
+### Downloading
+
+Click the download button on any document row to download the file. HeyKazi generates a secure, time-limited download link so files are never exposed publicly.
+
+### Comments
+
+Documents support inline comment threads. Expand a document row to view and add comments — useful for review cycles, approval workflows, or flagging issues with an uploaded file.
+
+## Tips and Best Practices
+
+- **Use scopes intentionally** — attach client-wide documents (master agreements, KYC forms) to the customer, and engagement-specific files (deliverables, working papers) to the project.
+- **Customise template packs early** — clone the default pack and update branding, terminology, and content before your team starts generating documents.
+- **Preview before generating** — always review the preview to catch missing merge fields or formatting issues before producing the final document.
+- **Add comments for context** — a brief note on an uploaded document saves your colleagues from guessing why it was uploaded or what action is needed.
+- **Keep branding settings current** — update your logo, brand colour, and footer in Settings so all generated documents reflect your latest identity.
+
+## Related Features
+
+- [Projects](/features/projects) — organise work and attach project-scoped documents
+- [Customers](/features/customers) — manage client records and attach customer-scoped documents
+- [Invoicing](/features/invoicing) — generate invoice documents from templates
+- [Proposals](/features/proposals) — create and send pre-engagement proposals to clients
+- [Custom Fields and Tags](/features/custom-fields-tags) — add structured metadata to your records

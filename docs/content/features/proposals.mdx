@@ -1,8 +1,132 @@
 ---
 title: "Proposals"
-description: "Create and send proposals to clients, track acceptance, and convert to projects."
+description: "Create and send proposals to clients, track acceptance, and convert accepted proposals into projects."
 ---
+
+import { Callout, Steps } from "nextra/components"
 
 # Proposals
 
-Content coming soon.
+Proposals are pre-engagement documents you send to customers before starting a project. They capture the scope of work, fee arrangement, and terms — giving your client a clear picture of what you will deliver and what it will cost. Once a customer accepts a proposal, you can convert it directly into a project with a single click.
+
+The proposals module provides a complete lifecycle from draft to acceptance (or decline), with summary metrics that help you track your pipeline and conversion rate.
+
+<Callout type="info">
+  **Vertical terminology**: Depending on your industry, proposals may be called **Quotes** (consulting firms) or **Fee Estimates** (accounting firms). HeyKazi supports terminology overrides so the platform speaks your language.
+</Callout>
+
+## Key Concepts
+
+### Proposal Lifecycle
+
+Every proposal moves through a lifecycle that tracks its progress from creation to outcome.
+
+| Status | Badge | Description |
+|--------|-------|-------------|
+| **Draft** | Neutral | Newly created, not yet sent. All fields are editable. |
+| **Sent** | Teal | Sent to a portal contact, awaiting response. |
+| **Accepted** | Green | Customer accepted. Can be converted to a project. |
+| **Declined** | Red | Customer declined. A decline reason may be recorded. |
+| **Expired** | Amber | Expiry date passed without a response. |
+
+### Fee Models
+
+When creating a proposal, you choose a fee model that describes how the engagement will be billed.
+
+| Fee Model | Description |
+|-----------|-------------|
+| **Fixed Fee** | A set amount for the entire engagement — you specify the total fee and currency. |
+| **Hourly** | Billed by the hour, with an optional rate note (for example, "R850/hr"). |
+| **Retainer** | A recurring retainer amount with optional hours included per period. |
+
+### Proposal Numbers
+
+Each proposal is assigned an auto-generated reference number (for example, PRO-001). This number is sequential and unique within your organisation, making it easy to reference proposals in communications and reports.
+
+## Creating a Proposal
+
+<Steps>
+### Step 1 — Navigate to Proposals
+
+Click **Proposals** in the left sidebar. If you have no proposals yet, you will see a summary dashboard with zeroed metrics.
+
+### Step 2 — Click New Proposal
+
+Click the **New Proposal** button to open the proposal creation dialog.
+
+### Step 3 — Fill in the details
+
+Complete the form fields:
+
+- **Title** (required) — a clear name such as "Annual Audit Proposal" or "Tax Advisory — Acme Holdings"
+- **Customer** (required) — select a customer from the searchable dropdown
+- **Fee Model** (required) — choose Fixed Fee, Hourly, or Retainer, then fill in the associated fields (amount, currency, rate note, or hours included)
+- **Expiry Date** (optional) — set a deadline for the customer to respond
+
+### Step 4 — Create the proposal
+
+Click **Create**. The proposal is saved as a **Draft** and you are taken to the proposal detail page.
+</Steps>
+
+## Sending a Proposal
+
+Once your proposal is ready, send it to a customer portal contact so they can review and respond.
+
+<Steps>
+### Step 1 — Open the proposal
+
+Navigate to the proposal detail page from the proposals list.
+
+### Step 2 — Click Send Proposal
+
+Click the **Send Proposal** button. A dialog appears asking you to select a portal contact from the customer's configured contacts.
+
+### Step 3 — Select a contact and send
+
+Choose the contact who should receive the proposal, then confirm. The proposal status moves to **Sent**.
+</Steps>
+
+<Callout type="warning">
+  Portal contacts must be configured on the customer record before you can send a proposal. If no contacts are available, set them up in the customer's portal settings first.
+</Callout>
+
+### Withdrawing a Proposal
+
+If you need to retract a sent proposal, click **Withdraw** on the proposal detail page. This moves the proposal back to **Draft** status and prevents the customer from responding. You can then edit and resend it.
+
+## Editing Proposal Content
+
+The proposal detail page includes a rich text editor for authoring the body of your proposal — scope of work, deliverables, assumptions, and any other detail your client needs. Use the editor to format text, add headings, and insert lists before sending.
+
+If your organisation has configured **proposal templates**, you can link a template to pre-fill the content with standard sections and merge fields, saving time on repetitive engagements.
+
+## Converting to a Project
+
+When a customer accepts a proposal, a **Convert to Project** action becomes available. Converting creates a new project linked to the customer, with the fee model carrying forward into the project setup. If a **project template** is linked to the proposal, the new project is pre-populated with the template's tasks and structure.
+
+## The Proposals Dashboard
+
+The proposals list page includes summary cards at the top:
+
+- **Total Proposals** — count across all statuses
+- **Pending** — sent and awaiting a response
+- **Accepted** — accepted by the customer
+- **Conversion Rate** — percentage that result in acceptance
+
+A **Needs Attention** section highlights overdue or pending proposals that may require follow-up.
+
+## Tips and Best Practices
+
+- **Set expiry dates** — deadlines encourage timely responses and keep your pipeline moving.
+- **Use descriptive titles** — include the client name and engagement type so proposals are easy to find.
+- **Configure portal contacts first** — ensure your customer has at least one portal contact before sending.
+- **Review before sending** — once sent, the proposal is visible to the customer. Double-check the fee model and terms first.
+- **Convert promptly after acceptance** — this keeps momentum going and links the agreed terms to the engagement.
+
+## Related Features
+
+- [Projects](/features/projects) — convert accepted proposals into active projects
+- [Customers](/features/customers) — link proposals to customer records
+- [Customer Portal](/features/customer-portal) — where customers view and respond to proposals
+- [Invoicing](/features/invoicing) — generate invoices from project work after conversion
+- [Documents & Templates](/features/documents) — generate proposal documents from templates

@@ -104,5 +104,41 @@
       "title": "Notification preferences",
       "body": "Control which events trigger notifications and how you receive them. For each event type — such as task assignments, comments, or budget alerts — choose between in-app notifications, email, or both."
     }
+  },
+  "team": {
+    "overview": {
+      "title": "Team management",
+      "body": "Invite members, assign roles, and manage permissions for your organization."
+    }
+  },
+  "org": {
+    "general": {
+      "title": "Organization settings",
+      "body": "Configure your organization's currency, tax, branding, and vertical profile."
+    }
+  },
+  "integrations": {
+    "overview": {
+      "title": "Integrations",
+      "body": "Connect third-party tools like accounting software, payment gateways, and email providers."
+    }
+  },
+  "billing": {
+    "overview": {
+      "title": "Billing & subscription",
+      "body": "Manage your subscription plan, payment method, and view billing history."
+    }
+  },
+  "onboarding": {
+    "setup": {
+      "title": "Getting started",
+      "body": "Follow the setup checklist to configure your organization and start managing projects."
+    }
+  },
+  "portal": {
+    "contacts": {
+      "title": "Portal contacts",
+      "body": "Portal contacts are external users who can access the customer portal to view documents, respond to requests, and accept proposals."
+    }
   }
 }

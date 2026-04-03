@@ -12,6 +12,7 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { EmptyState } from "@/components/empty-state";
+import { docsLink } from "@/lib/docs";
 
 export default async function ReportsPage({
   params,
@@ -53,6 +54,7 @@ export default async function ReportsPage({
               ? "There was a problem loading report definitions. Please try again later."
               : "Report definitions will appear here once configured."
           }
+          secondaryLink={{ label: "Read the guide", href: docsLink("/features/reports") }}
         />
       ) : (
         data.categories.map((category) => (

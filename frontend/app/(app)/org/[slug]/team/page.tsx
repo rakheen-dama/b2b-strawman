@@ -1,6 +1,7 @@
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { InviteMemberForm } from "@/components/team/invite-member-form";
 import { TeamTabs } from "@/components/team/team-tabs";
+import { HelpTip } from "@/components/help-tip";
 import { api } from "@/lib/api";
 import type { BillingResponse } from "@/lib/internal-api";
 import { fetchOrgRoles } from "@/lib/api/org-roles";
@@ -31,7 +32,10 @@ export default async function TeamPage({
     <div className="space-y-8">
       {/* Page header */}
       <div className="flex items-center gap-3">
-        <h1 className="font-display text-3xl">Team</h1>
+        <h1 className="flex items-center gap-2 font-display text-3xl text-slate-950 dark:text-slate-50">
+          Team
+          <HelpTip code="team.overview" docsPath="/admin/team-permissions" />
+        </h1>
         <span className="rounded-full bg-slate-200 px-2.5 py-0.5 text-sm text-slate-700 dark:bg-slate-800 dark:text-slate-300">
           {billing.limits.currentMembers} member{billing.limits.currentMembers !== 1 ? "s" : ""}
         </span>

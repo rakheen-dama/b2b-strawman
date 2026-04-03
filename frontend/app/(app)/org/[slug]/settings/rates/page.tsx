@@ -65,7 +65,7 @@ export default async function RatesSettingsPage({
       <div>
         <h1 className="flex items-center gap-2 font-display text-3xl text-slate-950 dark:text-slate-50">
           Rates & Currency
-          <HelpTip code="rates.hierarchy" />
+          <HelpTip code="rates.hierarchy" docsPath="/features/rate-cards-budgets" />
         </h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           Manage billing rates, cost rates, and the default currency for your

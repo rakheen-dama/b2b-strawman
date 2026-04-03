@@ -1,5 +1,6 @@
 import { Sparkles } from "lucide-react";
 import Link from "next/link";
+import { docsLink } from "@/lib/docs";
 
 interface EmptyStateProps {
   orgRole: string;
@@ -10,6 +11,17 @@ const ADMIN_ROLES = ["owner", "admin"];
 
 export function EmptyState({ orgRole, slug }: EmptyStateProps) {
   const isAdmin = ADMIN_ROLES.includes(orgRole.toLowerCase());
+
+  const guideLink = (
+    <a
+      href={docsLink("/features/ai-assistant")}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="mt-2 text-sm text-teal-600 hover:text-teal-700"
+    >
+      Read the guide
+    </a>
+  );
 
   if (isAdmin) {
     return (
@@ -28,6 +40,7 @@ export function EmptyState({ orgRole, slug }: EmptyStateProps) {
               Settings &rarr; Integrations
             </Link>
           </p>
+          {guideLink}
         </div>
       </div>
     );
@@ -39,6 +52,7 @@ export function EmptyState({ orgRole, slug }: EmptyStateProps) {
       <p className="text-sm text-slate-500 dark:text-slate-400">
         AI assistant is not available. Ask your admin to enable it.
       </p>
+      {guideLink}
     </div>
   );
 }

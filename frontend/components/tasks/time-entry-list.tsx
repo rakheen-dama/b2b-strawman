@@ -5,6 +5,7 @@ import { Clock, Pencil, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/empty-state";
+import { docsLink } from "@/lib/docs";
 import {
   Table,
   TableBody,
@@ -93,6 +94,7 @@ export function TimeEntryList({
         icon={Clock}
         title="No time logged yet"
         description="Use the Log Time button to record time spent on this task"
+        secondaryLink={{ label: "Read the guide", href: docsLink("/features/time-tracking") }}
       />
     );
   }

@@ -11,6 +11,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { HelpTip } from "@/components/help-tip";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { SubscribeButton } from "@/components/billing/subscribe-button";
 import { CancelConfirmDialog } from "@/components/billing/cancel-confirm-dialog";
@@ -107,8 +108,9 @@ export default async function BillingPage({
 
       {/* Page header */}
       <div className="flex items-center gap-3">
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
+        <h1 className="flex items-center gap-2 font-display text-3xl text-slate-950 dark:text-slate-50">
           Billing
+          <HelpTip code="billing.overview" docsPath="/admin/billing" />
         </h1>
         <Badge variant={statusBadgeVariant(billing.status)}>
           {statusLabel(billing.status)}

@@ -3,6 +3,7 @@ import { RequestStatusBadge } from "@/components/information-requests/request-st
 import { RequestProgressBar } from "@/components/information-requests/request-progress-bar";
 import { formatDate } from "@/lib/format";
 import { FileText } from "lucide-react";
+import { docsLink } from "@/lib/docs";
 import Link from "next/link";
 
 interface RequestListProps {
@@ -23,6 +24,14 @@ export function RequestList({
         <p className="text-sm text-slate-500 dark:text-slate-400">
           No information requests yet
         </p>
+        <a
+          href={docsLink("/features/information-requests")}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-2 text-sm text-teal-600 hover:text-teal-700"
+        >
+          Read the guide
+        </a>
       </div>
     );
   }

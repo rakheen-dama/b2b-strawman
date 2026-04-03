@@ -3,6 +3,7 @@ import { ChevronLeft } from "lucide-react";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api } from "@/lib/api";
 import { GeneralSettingsForm } from "@/components/settings/general-settings-form";
+import { HelpTip } from "@/components/help-tip";
 import { VerticalProfileSection } from "@/components/settings/vertical-profile-section";
 import { OrgDocumentsSection } from "@/components/settings/org-documents-section";
 import type { Document, OrgSettings } from "@/lib/types";
@@ -33,8 +34,9 @@ export default async function GeneralSettingsPage({
           <ChevronLeft className="size-4" />
           Settings
         </Link>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
+        <h1 className="flex items-center gap-2 font-display text-3xl text-slate-950 dark:text-slate-50">
           General
+          <HelpTip code="org.general" docsPath="/admin/org-settings" />
         </h1>
 
         <OrgDocumentsSection
@@ -66,8 +68,9 @@ export default async function GeneralSettingsPage({
       </Link>
 
       <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
+        <h1 className="flex items-center gap-2 font-display text-3xl text-slate-950 dark:text-slate-50">
           General
+          <HelpTip code="org.general" docsPath="/admin/org-settings" />
         </h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           Manage your organization&apos;s currency, tax configuration, and

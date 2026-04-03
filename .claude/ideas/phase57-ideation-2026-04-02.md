@@ -23,7 +23,15 @@ Single-plan subscription billing via PayFast recurring payments. Replace the STA
 - 2-month read-only grace period before hard lock (confirmed)
 - No downgrade path — just cancel (confirmed)
 
+## PSP Research (2026-04-02 follow-up)
+- **Stripe in SA**: Available via Paystack (acquired 2020). "Extended network" — Paystack API underneath, not Stripe API directly. ZAR supported, subscription APIs available, but needs verification that SA-specific feature set matches marketing claims.
+- **Paystack**: Better developer experience than PayFast. REST API, proper webhooks (subscription.create, charge.success, invoice.create, expiring_cards). Dunning is limited — marks "attention" on failure, retries next cycle only. Pricing: 2.9% + R1 cards, 2% EFT.
+- **PayFast**: Recurring billing announced Jan 2026 — new/immature. Form-encoded redirects, ITN webhooks. Onboarding process unclear/difficult. Founder feeling blocked by PayFast onboarding.
+- **Decision**: Keep PayFast integration as built (Epic 421 done). Use admin endpoints (`/internal/billing/activate`, `/internal/billing/extend-trial`) for demos/pilots while PayFast onboarding clears. No PSP switch needed — adapter pattern means swapping is cheap later.
+- **Key insight**: B2B SaaS at 5-20 tenants doesn't need automated card billing. Admin-activate + EFT invoice is standard for SA B2B launches. Automated billing is a scale problem (~50+ tenants), not a launch problem.
+- **Billing method dimension (Option B) — approved, deferred to separate phase**: Separate `billing_method` column (PAYFAST, DEBIT_ORDER, PILOT, COMPLIMENTARY, MANUAL) from `subscription_status`. Guard filter only checks status. Needs its own architecture doc and planning before implementation.
+
 ## Phase Roadmap (Updated)
 - Phase 55: Legal Foundations (specced)
 - Phase 56: Production Infrastructure (specced)
-- **Phase 57: Tenant Subscription Payments** (spec written)
+- **Phase 57: Tenant Subscription Payments** (in progress — backend done, frontend remaining)

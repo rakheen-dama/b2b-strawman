@@ -488,6 +488,13 @@
 | 429 | Demo Tenant Provisioning | Backend + Frontend | 427 | L | 429A, 429B | **Done** (PRs #891, #892) |
 | 430 | Demo Data Seeding | Backend | 429 | L | 430A, 430B, 430C | **Done** (PRs #893, #894, #895) |
 | 431 | Demo Tenant Cleanup | Backend + Frontend | 427 | L | 431A, 431B | **Done** (PRs #896, #897) |
+| **Phase 59 — User Help Documentation Site** | | | | | | See [tasks/phase59-user-help-documentation.md](tasks/phase59-user-help-documentation.md) |
+| 432 | Doc Site Scaffold & Home Page | Docs | -- | M | 432A, 432B | |
+| 433 | Getting Started & Core Feature Guides | Docs (Content) | 432 | M | 433A, 433B | |
+| 434 | Admin & Settings Guides | Docs (Content) | 432 | S | 434A | |
+| 435 | P1 Feature Guides | Docs (Content) | 432 | M | 435A, 435B | |
+| 436 | P2 Features & Vertical Guides | Docs (Content) | 432 | M | 436A, 436B | |
+| 437 | Frontend Contextual Deep-Links | Frontend | 432 | M | 437A, 437B | |
 
 ---
 

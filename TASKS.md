@@ -490,7 +490,7 @@
 | 431 | Demo Tenant Cleanup | Backend + Frontend | 427 | L | 431A, 431B | **Done** (PRs #896, #897) |
 | **Phase 59 — User Help Documentation Site** | | | | | | See [tasks/phase59-user-help-documentation.md](tasks/phase59-user-help-documentation.md) |
 | 432 | Doc Site Scaffold & Home Page | Docs | -- | M | 432A, 432B | **Done** (PRs #898, #899) |
-| 433 | Getting Started & Core Feature Guides | Docs (Content) | 432 | M | 433A, 433B | 433A **Done** (PR #900) |
+| 433 | Getting Started & Core Feature Guides | Docs (Content) | 432 | M | 433A, 433B | **Done** (PRs #900, #901) |
 | 434 | Admin & Settings Guides | Docs (Content) | 432 | S | 434A | |
 | 435 | P1 Feature Guides | Docs (Content) | 432 | M | 435A, 435B | |
 | 436 | P2 Features & Vertical Guides | Docs (Content) | 432 | M | 436A, 436B | |

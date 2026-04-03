@@ -15,11 +15,16 @@ public class DemoDataSeeder {
   private static final Logger log = LoggerFactory.getLogger(DemoDataSeeder.class);
 
   private final GenericDemoDataSeeder genericSeeder;
+  private final AccountingDemoDataSeeder accountingSeeder;
+  private final LegalDemoDataSeeder legalSeeder;
 
-  // AccountingDemoDataSeeder + LegalDemoDataSeeder injected in 430B
-
-  public DemoDataSeeder(GenericDemoDataSeeder genericSeeder) {
+  public DemoDataSeeder(
+      GenericDemoDataSeeder genericSeeder,
+      AccountingDemoDataSeeder accountingSeeder,
+      LegalDemoDataSeeder legalSeeder) {
     this.genericSeeder = genericSeeder;
+    this.accountingSeeder = accountingSeeder;
+    this.legalSeeder = legalSeeder;
   }
 
   /**
@@ -35,8 +40,8 @@ public class DemoDataSeeder {
 
     BaseDemoDataSeeder seeder =
         switch (verticalProfile == null ? "" : verticalProfile.toLowerCase()) {
-          case "accounting" -> genericSeeder; // replaced in 430B
-          case "legal" -> genericSeeder; // replaced in 430B
+          case "accounting" -> accountingSeeder;
+          case "legal" -> legalSeeder;
           default -> genericSeeder;
         };
     seeder.seed(schemaName, orgId);

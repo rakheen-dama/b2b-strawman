@@ -8,7 +8,7 @@ export default async function DemoProvisionPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-10">
-      <h1 className="text-2xl font-bold tracking-tight">
+      <h1 className="font-display text-2xl font-bold tracking-tight">
         Demo Provisioning
       </h1>
       <p className="mt-2 text-sm text-muted-foreground">
@@ -20,7 +20,7 @@ export default async function DemoProvisionPage() {
       </div>
 
       <div className="mt-12">
-        <h2 className="text-xl font-semibold tracking-tight">
+        <h2 className="font-display text-xl font-semibold tracking-tight">
           Demo Tenants
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">

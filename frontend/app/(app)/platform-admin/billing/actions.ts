@@ -1,6 +1,7 @@
 "use server";
 
 import { api, ApiError } from "@/lib/api";
+import type { BillingMethod } from "@/lib/internal-api";
 import { revalidatePath } from "next/cache";
 
 export interface AdminTenantBilling {
@@ -8,7 +9,7 @@ export interface AdminTenantBilling {
   organizationName: string;
   verticalProfile: string;
   subscriptionStatus: string;
-  billingMethod: string;
+  billingMethod: BillingMethod;
   trialEndsAt: string | null;
   currentPeriodEnd: string | null;
   graceEndsAt: string | null;

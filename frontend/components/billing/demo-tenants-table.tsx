@@ -12,6 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/empty-state";
 import { StatusBadge } from "@/components/billing/status-badge";
@@ -32,9 +33,8 @@ export function DemoTenantsTable({ tenants }: DemoTenantsTableProps) {
     null,
   );
 
-  const demoTenants = tenants.filter(
-    (t) => t.billingMethod === "PILOT" || t.billingMethod === "COMPLIMENTARY",
-  );
+  // Tenants are already filtered to PILOT/COMPLIMENTARY by the server action
+  const demoTenants = tenants;
 
   async function handleReseed(orgId: string) {
     setReseedingId(orgId);
@@ -92,7 +92,7 @@ export function DemoTenantsTable({ tenants }: DemoTenantsTableProps) {
                 {tenant.organizationName}
               </TableCell>
               <TableCell>
-                <MethodBadge method={tenant.verticalProfile} />
+                <Badge variant="outline">{tenant.verticalProfile}</Badge>
               </TableCell>
               <TableCell>
                 <StatusBadge status={tenant.subscriptionStatus} />

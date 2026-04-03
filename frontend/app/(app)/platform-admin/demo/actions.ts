@@ -60,13 +60,18 @@ export async function listDemoTenants(): Promise<
   ActionResult<AdminTenantBilling[]>
 > {
   try {
-    const response = await api.get<AdminTenantBilling[]>(
-      "/api/platform-admin/billing/tenants",
-    );
-    const demoTenants = response.filter(
-      (t) =>
-        t.billingMethod === "PILOT" || t.billingMethod === "COMPLIMENTARY",
-    );
+    // TODO: The backend billingMethod filter accepts a single value. Fetch PILOT
+    // and COMPLIMENTARY separately to avoid pulling the full tenant list.
+    // Tracked as a backend enhancement for multi-value billingMethod filtering.
+    const [pilotResult, compResult] = await Promise.all([
+      api.get<AdminTenantBilling[]>(
+        "/api/platform-admin/billing/tenants?billingMethod=PILOT",
+      ),
+      api.get<AdminTenantBilling[]>(
+        "/api/platform-admin/billing/tenants?billingMethod=COMPLIMENTARY",
+      ),
+    ]);
+    const demoTenants = [...pilotResult, ...compResult];
     return { success: true, data: demoTenants };
   } catch (error) {
     if (error instanceof ApiError) {

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -16,7 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { MethodBadge } from "@/components/billing/method-badge";
+import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/components/billing/utils";
 import { deleteDemoTenant } from "@/app/(app)/platform-admin/demo/actions";
 
@@ -39,7 +38,6 @@ export function DeleteTenantDialog({
   onOpenChange,
   onSuccess,
 }: DeleteTenantDialogProps) {
-  const router = useRouter();
   const [confirmInput, setConfirmInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -60,7 +58,6 @@ export function DeleteTenantDialog({
         setConfirmInput("");
         onOpenChange(false);
         onSuccess();
-        router.refresh();
       } else {
         toast.error(result.error ?? "Failed to delete demo tenant.");
       }
@@ -96,7 +93,7 @@ export function DeleteTenantDialog({
             <span className="font-medium text-slate-700 dark:text-slate-300">
               {tenant.organizationName}
             </span>
-            <MethodBadge method={tenant.verticalProfile} />
+            <Badge variant="outline">{tenant.verticalProfile}</Badge>
           </div>
           <div className="text-slate-600 dark:text-slate-400">
             <span>{tenant.memberCount} member{tenant.memberCount !== 1 ? "s" : ""}</span>

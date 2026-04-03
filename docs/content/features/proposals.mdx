@@ -23,11 +23,11 @@ Every proposal moves through a lifecycle that tracks its progress from creation 
 
 | Status | Badge | Description |
 |--------|-------|-------------|
-| **Draft** | Neutral | Newly created and not yet sent to the customer. You can edit all fields freely. |
-| **Sent** | Teal | Sent to a portal contact. The customer can view and respond through the customer portal. |
-| **Accepted** | Green | The customer has accepted the proposal. It can now be converted to a project. |
-| **Declined** | Red | The customer declined. A decline reason may be recorded for future reference. |
-| **Expired** | Amber | The expiry date passed without a response from the customer. |
+| **Draft** | Neutral | Newly created, not yet sent. All fields are editable. |
+| **Sent** | Teal | Sent to a portal contact, awaiting response. |
+| **Accepted** | Green | Customer accepted. Can be converted to a project. |
+| **Declined** | Red | Customer declined. A decline reason may be recorded. |
+| **Expired** | Amber | Expiry date passed without a response. |
 
 ### Fee Models
 
@@ -35,9 +35,9 @@ When creating a proposal, you choose a fee model that describes how the engageme
 
 | Fee Model | Description |
 |-----------|-------------|
-| **Fixed Fee** | A set amount for the entire engagement. You specify the total fee and currency. |
-| **Hourly** | Billed by the hour. You can include a rate note (for example, "R850/hr") for the customer's reference. |
-| **Retainer** | A recurring retainer amount with an optional number of hours included per period. |
+| **Fixed Fee** | A set amount for the entire engagement — you specify the total fee and currency. |
+| **Hourly** | Billed by the hour, with an optional rate note (for example, "R850/hr"). |
+| **Retainer** | A recurring retainer amount with optional hours included per period. |
 
 ### Proposal Numbers
 
@@ -59,7 +59,7 @@ Click the **New Proposal** button to open the proposal creation dialog.
 Complete the form fields:
 
 - **Title** (required) — a clear name such as "Annual Audit Proposal" or "Tax Advisory — Acme Holdings"
-- **Customer** (required) — select a customer from the searchable dropdown. Only customers who are not in the Prospect or Offboarded lifecycle stage appear in the list.
+- **Customer** (required) — select a customer from the searchable dropdown
 - **Fee Model** (required) — choose Fixed Fee, Hourly, or Retainer, then fill in the associated fields (amount, currency, rate note, or hours included)
 - **Expiry Date** (optional) — set a deadline for the customer to respond
 
@@ -92,30 +92,36 @@ Choose the contact who should receive the proposal, then confirm. The proposal s
 
 ### Withdrawing a Proposal
 
-If you need to retract a sent proposal, click **Withdraw** on the proposal detail page. This moves the proposal back and prevents the customer from responding. You can then edit and resend, or leave it withdrawn.
+If you need to retract a sent proposal, click **Withdraw** on the proposal detail page. This moves the proposal back to **Draft** status and prevents the customer from responding. You can then edit and resend it.
+
+## Editing Proposal Content
+
+The proposal detail page includes a rich text editor for authoring the body of your proposal — scope of work, deliverables, assumptions, and any other detail your client needs. Use the editor to format text, add headings, and insert lists before sending.
+
+If your organisation has configured **proposal templates**, you can link a template to pre-fill the content with standard sections and merge fields, saving time on repetitive engagements.
 
 ## Converting to a Project
 
-When a customer accepts a proposal, a **Convert to Project** action becomes available on the proposal detail page. Converting creates a new project linked to the customer, with the fee model from the proposal informing the project setup. This saves time and ensures the agreed terms carry forward into the engagement.
+When a customer accepts a proposal, a **Convert to Project** action becomes available. Converting creates a new project linked to the customer, with the fee model carrying forward into the project setup. If a **project template** is linked to the proposal, the new project is pre-populated with the template's tasks and structure.
 
 ## The Proposals Dashboard
 
-The proposals list page includes summary cards at the top that give you a quick overview of your pipeline:
+The proposals list page includes summary cards at the top:
 
-- **Total Proposals** — the total number of proposals across all statuses
-- **Pending** — proposals that have been sent but are awaiting a response
-- **Accepted** — proposals the customer has accepted
-- **Conversion Rate** — the percentage of proposals that result in acceptance
+- **Total Proposals** — count across all statuses
+- **Pending** — sent and awaiting a response
+- **Accepted** — accepted by the customer
+- **Conversion Rate** — percentage that result in acceptance
 
 A **Needs Attention** section highlights overdue or pending proposals that may require follow-up.
 
 ## Tips and Best Practices
 
-- **Set expiry dates** — deadlines encourage timely responses and keep your pipeline moving. Expired proposals are clearly flagged so you can follow up or create new ones.
-- **Use descriptive titles** — include the client name and engagement type (for example, "Trademark Registration — Acme") so proposals are easy to find in the list.
-- **Configure portal contacts first** — ensure your customer has at least one portal contact set up before attempting to send a proposal.
-- **Review before sending** — once sent, a proposal is visible to the customer. Double-check the fee model, amounts, and terms on the detail page before clicking Send.
-- **Convert promptly after acceptance** — converting an accepted proposal to a project keeps the momentum going and links the agreed terms to the engagement.
+- **Set expiry dates** — deadlines encourage timely responses and keep your pipeline moving.
+- **Use descriptive titles** — include the client name and engagement type so proposals are easy to find.
+- **Configure portal contacts first** — ensure your customer has at least one portal contact before sending.
+- **Review before sending** — once sent, the proposal is visible to the customer. Double-check the fee model and terms first.
+- **Convert promptly after acceptance** — this keeps momentum going and links the agreed terms to the engagement.
 
 ## Related Features
 

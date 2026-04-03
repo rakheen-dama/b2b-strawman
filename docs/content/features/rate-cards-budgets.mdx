@@ -36,10 +36,10 @@ Rates follow a three-level hierarchy where the most specific rate always wins:
 | **Customer Override** | Applies to all projects for a specific customer | Customer detail → Rates tab |
 | **Project Override** | Applies only to a specific project | Project detail → Rates tab |
 
-For example, if a team member has an org default billing rate of R800/hr, a customer override of R750/hr, and no project override, the customer rate of R750/hr is used for time logged on that customer's projects. A project override would take precedence over both.
+For example, if a team member has an org default of R800/hr and a customer override of R750/hr, the customer rate is used for that customer's projects. A project override would take precedence over both.
 
 <Callout type="info">
-  Rates are resolved per member, per engagement. If you negotiate special pricing for a customer or project, set an override at the appropriate level and it applies automatically to all time entries logged there.
+  Rates are resolved per member, per engagement. Set an override at the appropriate level and it applies automatically to all time entries logged there.
 </Callout>
 
 ### Effective Dates
@@ -48,7 +48,7 @@ Each rate has an effective-from date and an optional effective-to date. If the e
 
 ### Rate Snapshots
 
-When a time entry is logged or an invoice is generated, the current applicable rate is captured as a snapshot. If you change a rate later, existing time entries and invoices retain their original rate. This ensures historical accuracy in your financial records and prevents retrospective changes from distorting past reports.
+When a time entry is logged or an invoice is generated, the current rate is captured as a snapshot. Changing a rate later does not affect existing entries or invoices, ensuring historical accuracy in your financial records.
 
 ## Setting Up Rates
 
@@ -100,39 +100,20 @@ The budget tab displays a progress bar and stat cards showing Budget, Consumed, 
 
 ## Profitability Reporting
 
-The **Profitability** page (accessible from the left sidebar for Admins and Owners) brings together rate and time data to show you how your organisation is performing financially.
+The **Profitability** page (left sidebar, Admins and Owners only) brings together rate and time data to show financial performance across your organisation. It includes:
 
-### Utilisation
-
-The utilisation table shows each team member's billable hours as a percentage of their total tracked hours. A higher utilisation rate means more of your team's effort is generating revenue. Industry benchmarks typically range from 60% to 80%.
-
-### Project Profitability
-
-The project profitability table shows per-project financials:
-
-- **Billable Hours** — total billable time logged
-- **Revenue** — billable hours multiplied by the applicable billing rate
-- **Cost** — total hours multiplied by the applicable cost rate
-- **Margin** — revenue minus cost
-- **Margin %** — margin as a percentage of revenue
-
-The table is sortable by any column and supports date-range filtering to focus on a specific period.
-
-### Customer Profitability
-
-The same breakdown is available aggregated by customer, showing total revenue, cost, and margin across all of a customer's projects.
-
-### Projections
-
-Toggle **Include Projections** to add projected values based on in-progress work. Projections estimate future revenue and cost using current rates and task completion progress, helping you forecast outcomes before an engagement is complete.
+- **Utilisation** — each team member's billable hours as a percentage of total tracked hours. Industry benchmarks range from 60% to 80%.
+- **Project profitability** — per-project billable hours, revenue, cost, margin, and margin percentage. Sortable and filterable by date range.
+- **Customer profitability** — the same breakdown aggregated across all of a customer's projects.
+- **Projections toggle** — adds projected values based on in-progress work and current rates, helping you forecast outcomes before an engagement is complete.
 
 ## Tips and Best Practices
 
-- **Set org defaults first** — configure a billing and cost rate for every team member at the org level. This ensures all time entries have a rate, even if you have not set overrides.
-- **Use customer overrides for negotiated pricing** — rather than adjusting individual project rates, set a customer-level override that applies to all work for that client.
-- **Review profitability monthly** — regular check-ins on margin and utilisation help you spot underpriced engagements and underutilised team members early.
-- **Set realistic alert thresholds** — an 80% threshold gives you time to act. For tighter projects, lower the threshold to 70% or 75%.
-- **Trust the snapshots** — rate snapshots protect historical accuracy. If you need to correct a past rate, adjust the affected time entries individually rather than changing the rate card.
+- **Set org defaults first** — configure a billing and cost rate for every member at the org level so all time entries have a rate.
+- **Use customer overrides for negotiated pricing** — a customer-level override applies to all work for that client.
+- **Review profitability monthly** — regular check-ins help you spot underpriced engagements early.
+- **Set realistic alert thresholds** — 80% gives you time to act; lower to 70% for tighter projects.
+- **Trust the snapshots** — if you need to correct a past rate, adjust individual time entries rather than the rate card.
 
 ## Related Features
 

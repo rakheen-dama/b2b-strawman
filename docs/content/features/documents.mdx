@@ -71,12 +71,8 @@ Template-generated documents let you produce professional, branded output using 
 
 HeyKazi supports two types of document templates:
 
-- **Tiptap templates** — rich-text templates edited directly in your browser using a visual editor. Best for simple documents like engagement letters, cover pages, and internal memos.
-- **Word (.docx) templates** — uploaded DOCX files that use mail-merge style placeholders. Choose these when you need complex formatting, tables, or layouts that go beyond what the visual editor offers.
-
-<Callout type="info">
-  Use `{{variable}}` syntax in your templates to insert dynamic data. When a document is generated, variables like `{{project.name}}`, `{{customer.name}}`, and `{{invoice.total}}` are replaced with real values from your project, customer, or invoice.
-</Callout>
+- **Rich text templates** — edited directly in your browser using a visual editor. Best for simple documents like engagement letters, cover pages, and internal memos.
+- **Word (.docx) templates** — uploaded DOCX files that use `{{variable}}` mail-merge style placeholders (for example, `{{project.name}}`, `{{customer.name}}`, `{{invoice.total}}`). Choose these when you need complex formatting, tables, or layouts that go beyond what the visual editor offers.
 
 ### Template Packs
 
@@ -109,6 +105,10 @@ Click **Generate** to produce the final document. The generated file is stored a
 ### Version History
 
 Each generated document is tracked with a timestamp, the template used, and the user who generated it. If you regenerate a document from the same template, both versions are preserved so you can compare changes over time.
+
+### Document Acceptance and E-Signing
+
+Documents that require client approval can be sent as acceptance requests through the customer portal. The recipient reviews the document and records their acceptance, creating an auditable record of consent. This is useful for engagement letters, terms of service, and other documents that need formal sign-off.
 
 ## Managing Documents
 

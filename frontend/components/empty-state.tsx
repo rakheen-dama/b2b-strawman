@@ -43,14 +43,24 @@ export function EmptyState({
         </Button>
       )}
       {action}
-      {secondaryLink && (
-        <Link
-          href={secondaryLink.href}
-          className="text-sm text-teal-600 hover:text-teal-700"
-        >
-          {secondaryLink.label}
-        </Link>
-      )}
+      {secondaryLink &&
+        (secondaryLink.href.startsWith("http") ? (
+          <a
+            href={secondaryLink.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-teal-600 hover:text-teal-700"
+          >
+            {secondaryLink.label}
+          </a>
+        ) : (
+          <Link
+            href={secondaryLink.href}
+            className="text-sm text-teal-600 hover:text-teal-700"
+          >
+            {secondaryLink.label}
+          </Link>
+        ))}
     </div>
   );
 }

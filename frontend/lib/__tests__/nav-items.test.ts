@@ -56,16 +56,18 @@ describe("NAV_GROUPS", () => {
 });
 
 describe("UTILITY_ITEMS", () => {
-  it("has exactly 2 items (Notifications and Settings)", () => {
-    expect(UTILITY_ITEMS).toHaveLength(2);
+  it("has exactly 3 items (Notifications, Settings, Help)", () => {
+    expect(UTILITY_ITEMS).toHaveLength(3);
     const labels = UTILITY_ITEMS.map((i) => i.label);
-    expect(labels).toEqual(["Notifications", "Settings"]);
+    expect(labels).toEqual(["Notifications", "Settings", "Help"]);
   });
 
   it("items have valid href functions", () => {
     for (const item of UTILITY_ITEMS) {
       expect(typeof item.href).toBe("function");
-      expect(item.href("my-org")).toContain("/org/my-org/");
+      if (!item.external) {
+        expect(item.href("my-org")).toContain("/org/my-org/");
+      }
     }
   });
 });
@@ -79,8 +81,8 @@ describe("NAV_ITEMS (backward compat)", () => {
     expect(NAV_ITEMS).toEqual(expected);
   });
 
-  it("total count is 22 (20 group items + 2 utility items)", () => {
-    expect(NAV_ITEMS).toHaveLength(22);
+  it("total count is 23 (20 group items + 3 utility items)", () => {
+    expect(NAV_ITEMS).toHaveLength(23);
   });
 
   it("includes Notifications and Settings from UTILITY_ITEMS", () => {

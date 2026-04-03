@@ -90,11 +90,27 @@ export function MobileSidebar({ slug, groups = [], userName, userEmail }: Mobile
           </>
         )}
 
-        {/* Utility footer — Notifications + Settings */}
+        {/* Utility footer — Notifications + Settings + Help */}
         <div className="mx-4 border-t border-white/10" />
         <div className="p-2">
           {UTILITY_ITEMS.map((item) => {
             const href = item.href(slug);
+
+            if (item.external) {
+              return (
+                <a
+                  key={item.label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="relative flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white text-white/60 hover:bg-slate-800 hover:text-white"
+                >
+                  <item.icon className="h-4 w-4" />
+                  {item.label}
+                </a>
+              );
+            }
+
             const isActive = item.exact
               ? pathname === href
               : pathname.startsWith(href);

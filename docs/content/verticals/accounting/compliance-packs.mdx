@@ -3,6 +3,81 @@ title: "Compliance Packs"
 description: "Use compliance packs to standardize onboarding checklists and engagement workflows."
 ---
 
+import { Callout, Steps } from "nextra/components"
+
 # Compliance Packs
 
-Content coming soon.
+When onboarding a new client, there are regulatory steps you cannot skip -- FICA verification, IRBA independence declarations, tax registrations. Compliance packs give you pre-configured checklists that standardise these requirements so nothing falls through the cracks. Apply a pack to a client and your team gets a clear, trackable list of what needs to be done.
+
+## Key Concepts
+
+### What Is a Compliance Pack?
+
+A compliance pack is a bundle of checklist items tied to a specific jurisdiction and client type. Each pack defines the items your team must complete, which items are required versus optional, and whether any items need a supporting document attached.
+
+DocTeams ships with a set of default packs for South African accounting firms, and you can create custom checklist templates to match your firm's specific processes.
+
+### Client Type Scoping
+
+Packs are scoped to a client type -- **Individual**, **Company**, or **Trust**. This ensures that the correct checklists are applied based on the nature of the client. A company client will see CIPC-related items, while an individual client will see items relevant to personal tax registrations.
+
+### Auto-Instantiate
+
+When you enable auto-instantiate on a checklist template, a checklist is automatically created whenever a new client of the matching type is added. This means your team never has to remember to manually apply the onboarding checklist -- it is there from day one.
+
+## Applying a Pack to a Client
+
+<Steps>
+### Step 1 -- Open the client record
+
+Navigate to [Customers](/features/customers) and open the client you want to apply a pack to.
+
+### Step 2 -- Go to the Compliance tab
+
+Click the **Compliance** tab on the client detail page to see existing packs and checklists.
+
+### Step 3 -- Apply a pack
+
+Select the pack you want to apply. The system creates a checklist instance with all the items from the pack, ready for your team to work through.
+</Steps>
+
+## Working Through a Checklist
+
+Each checklist instance tracks its own status.
+
+| Status | Description |
+|--------|-------------|
+| **In Progress** | The checklist is active and items are being worked on. |
+| **Completed** | All items have been addressed. |
+| **Cancelled** | The checklist was cancelled and is no longer active. |
+
+For each item, your team can take one of three actions:
+
+- **Complete** -- mark the item as done, optionally adding notes and attaching a document if the item requires one.
+- **Skip** -- skip the item with a reason (for items that do not apply to this specific client).
+- **Reopen** -- reopen a completed or skipped item if it needs to be revisited.
+
+A progress bar at the top of the checklist shows how many items are completed out of the total, with a separate count for required items. The bar turns green when all required items are done.
+
+<Callout type="info">
+  Items marked as "document required" will prompt your team to attach a file when completing them. This ensures that supporting evidence (such as a certified ID copy or proof of address) is captured alongside the checklist.
+</Callout>
+
+## Viewing Applied Packs
+
+The compliance pack list on a client record shows all packs that have been applied. Each row is expandable to reveal the full details: description, jurisdiction and client type badges, the checklist items table (showing name, description, whether the item is required, and whether a document is needed), field definitions added by the pack, and any retention overrides.
+
+## Tips and Best Practices
+
+- **Enable auto-instantiate for onboarding packs** -- this eliminates the risk of forgetting to apply a checklist when adding a new client.
+- **Mark document-required items accurately** -- if FICA requires a certified ID copy, flag the item as document-required so your team is prompted to attach it.
+- **Use skip with a reason** -- when an item does not apply, recording why creates a defensible audit trail.
+- **Review checklist progress weekly** -- filter clients by incomplete checklists to identify onboarding bottlenecks.
+
+## Terminology Note
+
+In the accounting profile, "Customers" refers to your clients -- the businesses or individuals your firm serves. Compliance packs are specific to the accounting vertical and may not appear if your organisation uses a different industry profile.
+
+## Related Features
+
+- [Customers](/features/customers) -- compliance packs are applied to client records

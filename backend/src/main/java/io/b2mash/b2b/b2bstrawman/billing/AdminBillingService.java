@@ -107,7 +107,13 @@ public class AdminBillingService {
 
     // Apply status change if requested
     if (request.status() != null && !request.status().isBlank()) {
-      var newStatus = Subscription.SubscriptionStatus.valueOf(request.status());
+      Subscription.SubscriptionStatus newStatus;
+      try {
+        newStatus = Subscription.SubscriptionStatus.valueOf(request.status());
+      } catch (IllegalArgumentException e) {
+        throw new InvalidStateException(
+            "Invalid subscription status", "Unknown status: " + request.status());
+      }
       auditDetails.put("previous_status", sub.getSubscriptionStatus().name());
       auditDetails.put("new_status", newStatus.name());
       sub.adminTransitionTo(newStatus);
@@ -115,7 +121,13 @@ public class AdminBillingService {
 
     // Apply billing method change if requested
     if (request.billingMethod() != null && !request.billingMethod().isBlank()) {
-      var newMethod = BillingMethod.valueOf(request.billingMethod());
+      BillingMethod newMethod;
+      try {
+        newMethod = BillingMethod.valueOf(request.billingMethod());
+      } catch (IllegalArgumentException e) {
+        throw new InvalidStateException(
+            "Invalid billing method", "Unknown billing method: " + request.billingMethod());
+      }
       // Validate: cannot set PAYFAST without existing PayFast token
       if (newMethod == BillingMethod.PAYFAST && sub.getPayfastToken() == null) {
         throw new InvalidStateException(

@@ -1,0 +1,372 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e6]: DocTeams
+      - generic [ref=e9]: e2e-test-org
+      - button "Search, Command K" [ref=e11]:
+        - img [ref=e12]
+        - text: Search...
+        - generic [ref=e15]: ⌘K
+      - navigation "Main navigation" [ref=e16]:
+        - generic [ref=e17]:
+          - button "Work" [expanded] [ref=e18]:
+            - generic [ref=e19]: Work
+            - img [ref=e20]
+          - generic [ref=e22]:
+            - link "Dashboard" [ref=e23] [cursor=pointer]:
+              - /url: /org/e2e-test-org/dashboard
+              - img [ref=e24]
+              - text: Dashboard
+            - link "My Work" [ref=e29] [cursor=pointer]:
+              - /url: /org/e2e-test-org/my-work
+              - img [ref=e30]
+              - text: My Work
+            - link "Calendar" [ref=e33] [cursor=pointer]:
+              - /url: /org/e2e-test-org/calendar
+              - img [ref=e34]
+              - text: Calendar
+        - generic [ref=e37]:
+          - button "Projects" [expanded] [ref=e38]:
+            - generic [ref=e39]: Projects
+            - img [ref=e40]
+          - generic [ref=e42]:
+            - link "Engagements" [ref=e43] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects
+              - img [ref=e44]
+              - text: Engagements
+            - link "Recurring Schedules" [ref=e46] [cursor=pointer]:
+              - /url: /org/e2e-test-org/schedules
+              - img [ref=e47]
+              - text: Recurring Schedules
+        - button "Clients" [ref=e53]:
+          - generic [ref=e54]: Clients
+          - img [ref=e55]
+        - button "Finance" [ref=e59]:
+          - generic [ref=e60]: Finance
+          - img [ref=e61]
+        - generic [ref=e64]:
+          - button "Team" [expanded] [ref=e65]:
+            - generic [ref=e66]: Team
+            - img [ref=e67]
+          - generic [ref=e69]:
+            - link "Team" [ref=e70] [cursor=pointer]:
+              - /url: /org/e2e-test-org/team
+              - img [ref=e71]
+              - text: Team
+            - link "Resources" [ref=e76] [cursor=pointer]:
+              - /url: /org/e2e-test-org/resources
+              - img [ref=e77]
+              - text: Resources
+      - link "Platform Admin" [ref=e84] [cursor=pointer]:
+        - /url: /platform-admin/access-requests
+        - img [ref=e85]
+        - text: Platform Admin
+      - generic [ref=e88]:
+        - link "Notifications" [ref=e89] [cursor=pointer]:
+          - /url: /org/e2e-test-org/notifications
+          - img [ref=e90]
+          - text: Notifications
+        - link "Settings" [ref=e93] [cursor=pointer]:
+          - /url: /org/e2e-test-org/settings/general
+          - img [ref=e94]
+          - text: Settings
+      - generic [ref=e98]:
+        - generic [ref=e99]: AO
+        - generic [ref=e100]:
+          - paragraph [ref=e101]: Alice Owner
+          - paragraph [ref=e102]: alice@e2e-test.local
+    - generic [ref=e103]:
+      - banner [ref=e104]:
+        - navigation "Breadcrumb" [ref=e105]:
+          - link "e2e-test-org" [ref=e106] [cursor=pointer]:
+            - /url: /org/e2e-test-org/dashboard
+          - generic [ref=e107]:
+            - img [ref=e108]
+            - link "Clients" [ref=e110] [cursor=pointer]:
+              - /url: /org/e2e-test-org/customers
+          - generic [ref=e111]:
+            - img [ref=e112]
+            - generic [ref=e114]: Client
+        - generic [ref=e115]:
+          - generic [ref=e117]: e2e-test-org
+          - button "AO" [ref=e119]
+          - button "Notifications" [ref=e121]:
+            - img
+      - main [ref=e123]:
+        - generic [ref=e126]:
+          - link "Back to Customers" [ref=e128] [cursor=pointer]:
+            - /url: /org/e2e-test-org/customers
+            - img [ref=e129]
+            - text: Back to Customers
+          - generic [ref=e131]:
+            - generic [ref=e132]:
+              - generic [ref=e133]:
+                - heading "RegSkip-7896" [level=1] [ref=e134]
+                - img "0%" [ref=e135]:
+                  - generic [ref=e138]: 0%
+                - generic [ref=e139]: Active
+                - generic [ref=e140]: Prospect
+              - paragraph [ref=e141]: skip7896@test.com
+              - paragraph [ref=e142]: +27110000001 · Created Mar 25, 2026 · 0 projects
+            - generic [ref=e143]:
+              - button "Change Status" [ref=e144]:
+                - text: Change Status
+                - img
+              - button "Generate Document" [ref=e145]:
+                - img
+                - text: Generate Document
+                - img
+              - button "Export Data" [ref=e146]:
+                - img
+                - text: Export Data
+              - button "Anonymize" [ref=e147]:
+                - img
+                - text: Anonymize
+              - button "Edit" [ref=e148]:
+                - img
+                - text: Edit
+              - button "Archive" [ref=e149]:
+                - img
+                - text: Archive
+          - generic [ref=e150]:
+            - paragraph [ref=e151]: Field Groups
+            - generic [ref=e152]:
+              - generic [ref=e153]:
+                - text: SA Accounting — Client Details
+                - button "Remove SA Accounting — Client Details" [ref=e154]:
+                  - img [ref=e155]
+              - generic [ref=e158]:
+                - text: SA Accounting — Trust Details
+                - button "Remove SA Accounting — Trust Details" [ref=e159]:
+                  - img [ref=e160]
+              - generic [ref=e163]:
+                - text: Contact & Address
+                - button "Remove Contact & Address" [ref=e164]:
+                  - img [ref=e165]
+              - button "Add Group" [ref=e168]:
+                - img
+                - text: Add Group
+          - generic [ref=e169]:
+            - generic [ref=e170]:
+              - generic [ref=e172]: SA Accounting — Client Details
+              - generic [ref=e174]:
+                - generic [ref=e175]:
+                  - generic [ref=e176]: Company Registration Number
+                  - textbox "Company Registration Number" [ref=e178]:
+                    - /placeholder: CIPC registration number (e.g., 2024/123456/07)
+                - generic [ref=e179]:
+                  - generic [ref=e180]: Trading As
+                  - textbox "Trading As" [ref=e182]:
+                    - /placeholder: Trading name if different from registered name
+                - generic [ref=e183]:
+                  - generic [ref=e184]: VAT Number
+                  - textbox "VAT Number" [ref=e186]:
+                    - /placeholder: SARS VAT registration number (only if VAT-registered, threshold R1M turnover)
+                - generic [ref=e187]:
+                  - generic [ref=e188]:
+                    - text: SARS Tax Reference
+                    - generic "required" [ref=e189]: "*"
+                  - textbox "SARS Tax Reference required" [ref=e191]:
+                    - /placeholder: Income tax reference number issued by SARS
+                - generic [ref=e192]:
+                  - generic [ref=e193]: SARS eFiling Profile Number
+                  - textbox "SARS eFiling Profile Number" [ref=e195]:
+                    - /placeholder: Client's SARS eFiling profile number for electronic filing
+                - generic [ref=e196]:
+                  - generic [ref=e197]:
+                    - text: Financial Year-End
+                    - generic "required" [ref=e198]: "*"
+                  - textbox "Financial Year-End required" [ref=e200]
+                - generic [ref=e201]:
+                  - generic [ref=e202]:
+                    - text: Entity Type
+                    - generic "required" [ref=e203]: "*"
+                  - combobox "Entity Type required" [ref=e205]:
+                    - option "Select..." [selected]
+                    - option "Pty Ltd"
+                    - option "Sole Proprietor"
+                    - option "Close Corporation (CC)"
+                    - option "Trust"
+                    - option "Partnership"
+                    - option "Non-Profit Company (NPC)"
+                - generic [ref=e206]:
+                  - generic [ref=e207]: Industry (SIC Code)
+                  - textbox "Industry (SIC Code)" [ref=e209]:
+                    - /placeholder: SARS Standard Industrial Classification code for tax returns
+                - generic [ref=e210]:
+                  - generic [ref=e211]:
+                    - text: Registered Address
+                    - generic "required" [ref=e212]: "*"
+                  - textbox "Registered Address required" [ref=e214]:
+                    - /placeholder: Physical registered address (CIPC requirement)
+                - generic [ref=e215]:
+                  - generic [ref=e216]: Postal Address
+                  - textbox "Postal Address" [ref=e218]:
+                    - /placeholder: Postal address if different from registered address
+                - generic [ref=e219]:
+                  - generic [ref=e220]:
+                    - text: Primary Contact Name
+                    - generic "required" [ref=e221]: "*"
+                  - textbox "Primary Contact Name required" [ref=e223]:
+                    - /placeholder: Main contact person at the client company
+                - generic [ref=e224]:
+                  - generic [ref=e225]:
+                    - text: Primary Contact Email
+                    - generic "required" [ref=e226]: "*"
+                  - textbox "Primary Contact Email required" [ref=e228]:
+                    - /placeholder: Email address for primary contact
+                - generic [ref=e229]:
+                  - generic [ref=e230]: Primary Contact Phone
+                  - textbox "Primary Contact Phone" [ref=e232]:
+                    - /placeholder: +1 (555) 000-0000
+                - generic [ref=e233]:
+                  - generic [ref=e234]:
+                    - text: FICA Verified
+                    - generic "required" [ref=e235]: "*"
+                  - combobox "FICA Verified required" [ref=e237]:
+                    - option "Select..." [selected]
+                    - option "Not Started"
+                    - option "In Progress"
+                    - option "Verified"
+                - generic [ref=e238]:
+                  - generic [ref=e239]: FICA Verification Date
+                  - textbox "FICA Verification Date" [ref=e241]
+                - generic [ref=e242]:
+                  - generic [ref=e243]: Referred By
+                  - textbox "Referred By" [ref=e245]:
+                    - /placeholder: Source of client referral for tracking
+            - generic [ref=e248]: SA Accounting — Trust Details
+            - generic [ref=e249]:
+              - generic [ref=e251]: Contact & Address
+              - generic [ref=e253]:
+                - generic [ref=e254]:
+                  - generic [ref=e255]: Address Line 1
+                  - textbox "Address Line 1" [ref=e257]:
+                    - /placeholder: Street address
+                - generic [ref=e258]:
+                  - generic [ref=e259]: Address Line 2
+                  - textbox "Address Line 2" [ref=e261]:
+                    - /placeholder: Suite, unit, building, floor, etc.
+                - generic [ref=e262]:
+                  - generic [ref=e263]: City
+                  - textbox "City" [ref=e265]:
+                    - /placeholder: City or locality
+                - generic [ref=e266]:
+                  - generic [ref=e267]: State / Province
+                  - textbox "State / Province" [ref=e269]:
+                    - /placeholder: State, province, or region
+                - generic [ref=e270]:
+                  - generic [ref=e271]: Postal Code
+                  - textbox "Postal Code" [ref=e273]:
+                    - /placeholder: ZIP or postal code
+                - generic [ref=e274]:
+                  - generic [ref=e275]: Country
+                  - combobox "Country" [ref=e277]:
+                    - option "Select..." [selected]
+                    - option "United States"
+                    - option "Canada"
+                    - option "United Kingdom"
+                    - option "Australia"
+                    - option "South Africa"
+                    - option "Germany"
+                    - option "France"
+                    - option "Netherlands"
+                    - option "New Zealand"
+                - generic [ref=e278]:
+                  - generic [ref=e279]: Tax Number
+                  - textbox "Tax Number" [ref=e281]:
+                    - /placeholder: Tax identification number (VAT, EIN, GST, etc.)
+                - generic [ref=e282]:
+                  - generic [ref=e283]: Phone
+                  - textbox "Phone" [ref=e285]:
+                    - /placeholder: +1 (555) 000-0000
+            - button "Save Custom Fields" [ref=e287]:
+              - img
+              - text: Save Custom Fields
+          - generic [ref=e288]:
+            - paragraph [ref=e289]: Tags
+            - button "Add Tag" [ref=e292]:
+              - img
+              - text: Add Tag
+          - generic [ref=e293]:
+            - generic [ref=e295]:
+              - generic [ref=e296]: Customer Readiness
+              - button "Collapse setup steps" [ref=e297]:
+                - img
+            - generic [ref=e298]:
+              - generic [ref=e299]:
+                - generic [ref=e300]:
+                  - generic [ref=e301]: Progress
+                  - generic [ref=e302]: 33%
+                - progressbar [ref=e303]
+              - list [ref=e305]:
+                - listitem [ref=e306]:
+                  - img [ref=e307]
+                  - generic [ref=e309]: Projects linked
+                  - link "Set up" [ref=e310] [cursor=pointer]:
+                    - /url: "?tab=projects"
+                - listitem [ref=e311]:
+                  - img [ref=e312]
+                  - generic [ref=e315]: No onboarding checklist
+                - listitem [ref=e316]:
+                  - img [ref=e317]
+                  - generic [ref=e319]: Required fields filled (0/10)
+                  - link "Set up" [ref=e320] [cursor=pointer]:
+                    - /url: "#custom-fields"
+              - generic [ref=e321]:
+                - paragraph [ref=e322]: Field Completeness
+                - list [ref=e323]:
+                  - listitem [ref=e324]:
+                    - button "Toggle Required Fields details" [ref=e325]:
+                      - img [ref=e326]
+                      - generic [ref=e328]: "Required Fields: 0/10 fields"
+                      - img [ref=e329]
+          - generic [ref=e331]:
+            - generic [ref=e333]: Document Templates
+            - list [ref=e335]:
+              - listitem [ref=e336]:
+                - generic [ref=e337]:
+                  - img [ref=e338]
+                  - generic [ref=e341]: Statement of Account
+                - link "Generate" [ref=e342] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/customers/293efdf6-f60e-4598-bfce-8112636776b1?generateTemplate=aa7c42ba-9d7c-4801-ba29-806be82b4176
+              - listitem [ref=e343]:
+                - generic [ref=e344]:
+                  - img [ref=e345]
+                  - generic [ref=e348]: FICA Confirmation Letter
+                - link "Generate" [ref=e349] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/customers/293efdf6-f60e-4598-bfce-8112636776b1?generateTemplate=b973e144-48e5-4ce3-993e-6a8c544ac1dd
+          - generic [ref=e351]:
+            - img [ref=e352]
+            - generic [ref=e354]:
+              - heading "Ready to start onboarding?" [level=3] [ref=e355]
+              - paragraph [ref=e356]: Move this customer to Onboarding to begin compliance checklists.
+              - link "Start Onboarding" [ref=e358] [cursor=pointer]:
+                - /url: "#lifecycle-transition"
+          - generic [ref=e359]:
+            - tablist [ref=e360]:
+              - tab "Projects" [selected] [ref=e361]: Projects
+              - tab "Documents" [ref=e363]
+              - tab "Invoices" [ref=e364]
+              - tab "Requests" [ref=e365]
+              - tab "Rates" [ref=e366]
+              - tab "Generated Docs" [ref=e367]
+              - tab "Financials" [ref=e368]
+            - tabpanel "Projects" [ref=e369]:
+              - generic [ref=e370]:
+                - generic [ref=e371]:
+                  - heading "Projects" [level=2] [ref=e373]
+                  - button "Link Project" [ref=e374]:
+                    - img
+                    - text: Link Project
+                - generic [ref=e375]:
+                  - img [ref=e376]
+                  - heading "No linked projects" [level=2] [ref=e378]
+                  - paragraph [ref=e379]: Link projects to this customer to track their work
+  - generic [ref=e380]:
+    - heading "Command Palette" [level=2] [ref=e381]
+    - paragraph [ref=e382]: Search pages and settings
+  - region "Notifications alt+T"
+  - alert [ref=e383]

@@ -1,0 +1,163 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e6]: DocTeams
+      - generic [ref=e9]: e2e-test-org
+      - button "Search, Command K" [ref=e11]:
+        - img [ref=e12]
+        - text: Search...
+        - generic [ref=e15]: ⌘K
+      - navigation "Main navigation" [ref=e16]:
+        - generic [ref=e17]:
+          - button "Work" [expanded] [ref=e18]:
+            - generic [ref=e19]: Work
+            - img [ref=e20]
+          - generic [ref=e22]:
+            - link "Dashboard" [ref=e23] [cursor=pointer]:
+              - /url: /org/e2e-test-org/dashboard
+              - img [ref=e24]
+              - text: Dashboard
+            - link "My Work" [ref=e29] [cursor=pointer]:
+              - /url: /org/e2e-test-org/my-work
+              - img [ref=e30]
+              - text: My Work
+            - link "Calendar" [ref=e33] [cursor=pointer]:
+              - /url: /org/e2e-test-org/calendar
+              - img [ref=e34]
+              - text: Calendar
+        - generic [ref=e37]:
+          - button "Projects" [expanded] [ref=e38]:
+            - generic [ref=e39]: Projects
+            - img [ref=e40]
+          - generic [ref=e42]:
+            - link "Engagements" [ref=e43] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects
+              - img [ref=e44]
+              - text: Engagements
+            - link "Recurring Schedules" [ref=e46] [cursor=pointer]:
+              - /url: /org/e2e-test-org/schedules
+              - img [ref=e47]
+              - text: Recurring Schedules
+        - button "Clients" [ref=e53]:
+          - generic [ref=e54]: Clients
+          - img [ref=e55]
+        - button "Finance" [ref=e59]:
+          - generic [ref=e60]: Finance
+          - img [ref=e61]
+        - generic [ref=e64]:
+          - button "Team" [expanded] [ref=e65]:
+            - generic [ref=e66]: Team
+            - img [ref=e67]
+          - generic [ref=e69]:
+            - link "Team" [ref=e70] [cursor=pointer]:
+              - /url: /org/e2e-test-org/team
+              - img [ref=e71]
+              - text: Team
+            - link "Resources" [ref=e76] [cursor=pointer]:
+              - /url: /org/e2e-test-org/resources
+              - img [ref=e77]
+              - text: Resources
+      - link "Platform Admin" [ref=e84] [cursor=pointer]:
+        - /url: /platform-admin/access-requests
+        - img [ref=e85]
+        - text: Platform Admin
+      - generic [ref=e88]:
+        - link "Notifications" [ref=e89] [cursor=pointer]:
+          - /url: /org/e2e-test-org/notifications
+          - img [ref=e90]
+          - text: Notifications
+        - link "Settings" [ref=e93] [cursor=pointer]:
+          - /url: /org/e2e-test-org/settings/general
+          - img [ref=e94]
+          - text: Settings
+      - generic [ref=e98]:
+        - generic [ref=e99]: AO
+        - generic [ref=e100]:
+          - paragraph [ref=e101]: Alice Owner
+          - paragraph [ref=e102]: alice@e2e-test.local
+    - generic [ref=e103]:
+      - banner [ref=e104]:
+        - navigation "Breadcrumb" [ref=e105]:
+          - link "e2e-test-org" [ref=e106] [cursor=pointer]:
+            - /url: /org/e2e-test-org/dashboard
+          - generic [ref=e107]:
+            - img [ref=e108]
+            - generic [ref=e110]: Retainers
+        - generic [ref=e111]:
+          - generic [ref=e113]: e2e-test-org
+          - button "AO" [ref=e115]
+          - button "Notifications" [ref=e117]:
+            - img
+      - main [ref=e119]:
+        - generic [ref=e122]:
+          - generic [ref=e123]:
+            - generic [ref=e124]:
+              - heading "Retainers" [level=1] [ref=e125]
+              - generic [ref=e126]: "1"
+            - button "New Retainer" [ref=e127]:
+              - img
+              - text: New Retainer
+          - generic [ref=e128]:
+            - generic [ref=e129]:
+              - generic [ref=e130]:
+                - generic [ref=e131]: Active Retainers
+                - img [ref=e132]
+              - paragraph [ref=e136]: "1"
+            - generic [ref=e137]:
+              - generic [ref=e138]:
+                - generic [ref=e139]: Periods Ready to Close
+                - img [ref=e140]
+              - paragraph [ref=e144]: "0"
+            - generic [ref=e145]:
+              - generic [ref=e146]:
+                - generic [ref=e147]: Total Overage Hours
+                - img [ref=e148]
+              - paragraph [ref=e151]: 0.0 hrs
+          - generic [ref=e152]:
+            - generic [ref=e153]:
+              - button "Active" [ref=e154]
+              - button "Paused" [ref=e155]
+              - button "Terminated" [ref=e156]
+              - button "All" [ref=e157]
+            - table [ref=e159]:
+              - rowgroup [ref=e160]:
+                - row "Agreement Customer Type Frequency Period Hours Status Actions" [ref=e161]:
+                  - columnheader "Agreement" [ref=e162]:
+                    - button "Agreement" [ref=e163]:
+                      - text: Agreement
+                      - img [ref=e164]
+                  - columnheader "Customer" [ref=e167]
+                  - columnheader "Type" [ref=e168]
+                  - columnheader "Frequency" [ref=e169]
+                  - columnheader "Period" [ref=e170]
+                  - columnheader "Hours" [ref=e171]
+                  - columnheader "Status" [ref=e172]
+                  - columnheader "Actions" [ref=e173]
+              - rowgroup [ref=e174]:
+                - row "Monthly Retainer glvv Acme Corp Hour Bank Monthly Open 0.0h 10.0h Active Pause Monthly Retainer glvv Terminate Monthly Retainer glvv" [ref=e175]:
+                  - cell "Monthly Retainer glvv" [ref=e176]:
+                    - link "Monthly Retainer glvv" [ref=e177] [cursor=pointer]:
+                      - /url: /org/e2e-test-org/retainers/07aa8f7c-6d86-4641-aff2-150421740221
+                  - cell "Acme Corp" [ref=e178]
+                  - cell "Hour Bank" [ref=e179]
+                  - cell "Monthly" [ref=e180]
+                  - cell "Open" [ref=e181]:
+                    - generic [ref=e182]: Open
+                  - cell "0.0h 10.0h" [ref=e183]:
+                    - generic [ref=e185]:
+                      - generic [ref=e186]: 0.0h
+                      - generic [ref=e187]: 10.0h
+                  - cell "Active" [ref=e189]:
+                    - generic [ref=e190]: Active
+                  - cell "Pause Monthly Retainer glvv Terminate Monthly Retainer glvv" [ref=e191]:
+                    - generic [ref=e192]:
+                      - button "Pause Monthly Retainer glvv" [ref=e193]:
+                        - img
+                        - generic [ref=e194]: Pause Monthly Retainer glvv
+                      - button "Terminate Monthly Retainer glvv" [ref=e195]:
+                        - img
+                        - generic [ref=e196]: Terminate Monthly Retainer glvv
+  - region "Notifications alt+T"
+  - alert [ref=e197]

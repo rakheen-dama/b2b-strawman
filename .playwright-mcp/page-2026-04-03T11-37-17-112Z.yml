@@ -1,0 +1,281 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e6]: DocTeams
+      - generic [ref=e9]: e2e-test-org
+      - button "Search, Command K" [ref=e11]:
+        - img [ref=e12]
+        - text: Search...
+        - generic [ref=e15]: ⌘K
+      - navigation "Main navigation" [ref=e16]:
+        - generic [ref=e17]:
+          - button "Work" [expanded] [ref=e18]:
+            - generic [ref=e19]: Work
+            - img [ref=e20]
+          - generic [ref=e22]:
+            - link "Dashboard" [ref=e23] [cursor=pointer]:
+              - /url: /org/e2e-test-org/dashboard
+              - img [ref=e24]
+              - text: Dashboard
+            - link "My Work" [ref=e29] [cursor=pointer]:
+              - /url: /org/e2e-test-org/my-work
+              - img [ref=e30]
+              - text: My Work
+            - link "Calendar" [ref=e33] [cursor=pointer]:
+              - /url: /org/e2e-test-org/calendar
+              - img [ref=e34]
+              - text: Calendar
+        - generic [ref=e37]:
+          - button "Projects" [expanded] [ref=e38]:
+            - generic [ref=e39]: Projects
+            - img [ref=e40]
+          - generic [ref=e42]:
+            - link "Engagements" [ref=e43] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects
+              - img [ref=e45]
+              - text: Engagements
+            - link "Recurring Schedules" [ref=e47] [cursor=pointer]:
+              - /url: /org/e2e-test-org/schedules
+              - img [ref=e48]
+              - text: Recurring Schedules
+        - button "Clients" [ref=e54]:
+          - generic [ref=e55]: Clients
+          - img [ref=e56]
+        - button "Finance" [ref=e60]:
+          - generic [ref=e61]: Finance
+          - img [ref=e62]
+        - generic [ref=e65]:
+          - button "Team" [expanded] [ref=e66]:
+            - generic [ref=e67]: Team
+            - img [ref=e68]
+          - generic [ref=e70]:
+            - link "Team" [ref=e71] [cursor=pointer]:
+              - /url: /org/e2e-test-org/team
+              - img [ref=e72]
+              - text: Team
+            - link "Resources" [ref=e77] [cursor=pointer]:
+              - /url: /org/e2e-test-org/resources
+              - img [ref=e78]
+              - text: Resources
+      - link "Platform Admin" [ref=e85] [cursor=pointer]:
+        - /url: /platform-admin/access-requests
+        - img [ref=e86]
+        - text: Platform Admin
+      - generic [ref=e89]:
+        - link "Notifications" [ref=e90] [cursor=pointer]:
+          - /url: /org/e2e-test-org/notifications
+          - img [ref=e91]
+          - text: Notifications
+        - link "Settings" [ref=e94] [cursor=pointer]:
+          - /url: /org/e2e-test-org/settings/general
+          - img [ref=e95]
+          - text: Settings
+      - generic [ref=e99]:
+        - generic [ref=e100]: AO
+        - generic [ref=e101]:
+          - paragraph [ref=e102]: Alice Owner
+          - paragraph [ref=e103]: alice@e2e-test.local
+    - generic [ref=e104]:
+      - banner [ref=e105]:
+        - navigation "Breadcrumb" [ref=e106]:
+          - link "e2e-test-org" [ref=e107] [cursor=pointer]:
+            - /url: /org/e2e-test-org/dashboard
+          - generic [ref=e108]:
+            - img [ref=e109]
+            - link "Engagements" [ref=e111] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects
+          - generic [ref=e112]:
+            - img [ref=e113]
+            - generic [ref=e115]: Engagement
+        - generic [ref=e116]:
+          - generic [ref=e118]: e2e-test-org
+          - button "AO" [ref=e120]
+          - button "Notifications" [ref=e122]:
+            - img
+      - main [ref=e124]:
+        - generic [ref=e127]:
+          - link "Back to Projects" [ref=e129] [cursor=pointer]:
+            - /url: /org/e2e-test-org/projects
+            - img [ref=e130]
+            - text: Back to Projects
+          - generic [ref=e132]:
+            - generic [ref=e133]:
+              - generic [ref=e134]:
+                - heading "E2E Test 1774464229084" [level=1] [ref=e135]
+                - generic [ref=e136]: Lead
+                - generic [ref=e137]: Active
+              - paragraph [ref=e138]: No description
+              - paragraph [ref=e139]: Internal Project
+              - paragraph [ref=e140]: Created Mar 25, 2026 · 0 documents · 1 member · 0 tasks
+            - generic [ref=e141]:
+              - button "Complete Project" [ref=e142]:
+                - img
+                - text: Complete Project
+              - button [ref=e143]:
+                - img
+              - button "Generate Document" [ref=e144]:
+                - img
+                - text: Generate Document
+                - img
+              - button "Save as Template" [ref=e145]:
+                - img
+                - text: Save as Template
+              - button "Edit" [ref=e146]:
+                - img
+                - text: Edit
+              - button "Delete" [ref=e147]:
+                - img
+                - text: Delete
+          - generic [ref=e148]:
+            - paragraph [ref=e149]: Field Groups
+            - generic [ref=e150]:
+              - generic [ref=e151]:
+                - text: SA Accounting — Engagement Details
+                - button "Remove SA Accounting — Engagement Details" [ref=e152]:
+                  - img [ref=e153]
+              - generic [ref=e156]:
+                - text: Project Info
+                - button "Remove Project Info" [ref=e157]:
+                  - img [ref=e158]
+          - generic [ref=e161]:
+            - generic [ref=e162]:
+              - generic [ref=e164]: SA Accounting — Engagement Details
+              - generic [ref=e166]:
+                - generic [ref=e167]:
+                  - generic [ref=e168]:
+                    - text: Engagement Type
+                    - generic "required" [ref=e169]: "*"
+                  - combobox "Engagement Type required" [ref=e171]:
+                    - option "Select..." [selected]
+                    - option "Monthly Bookkeeping"
+                    - option "Annual Tax Return"
+                    - option "Annual Financial Statements"
+                    - option "Advisory"
+                    - option "Trust Administration"
+                    - option "Company Secretarial"
+                    - option "VAT Returns"
+                    - option "Payroll"
+                    - option "Other"
+                - generic [ref=e172]:
+                  - generic [ref=e173]: Tax Year
+                  - textbox "Tax Year" [ref=e175]:
+                    - /placeholder: Relevant tax year (e.g., 2026) for tax return engagements
+                - generic [ref=e176]:
+                  - generic [ref=e177]: SARS Submission Deadline
+                  - textbox "SARS Submission Deadline" [ref=e179]
+                - generic [ref=e180]:
+                  - generic [ref=e181]: Assigned Reviewer
+                  - textbox "Assigned Reviewer" [ref=e183]:
+                    - /placeholder: Senior person who reviews deliverables before client delivery
+                - generic [ref=e184]:
+                  - generic [ref=e185]: Complexity
+                  - combobox "Complexity" [ref=e187]:
+                    - option "Select..." [selected]
+                    - option "Simple"
+                    - option "Moderate"
+                    - option "Complex"
+            - generic [ref=e188]:
+              - generic [ref=e190]: Project Info
+              - generic [ref=e192]:
+                - generic [ref=e193]:
+                  - generic [ref=e194]: Reference Number
+                  - textbox "Reference Number" [ref=e196]:
+                    - /placeholder: External reference or tracking number
+                - generic [ref=e197]:
+                  - generic [ref=e198]: Priority
+                  - combobox "Priority" [ref=e200]:
+                    - option "Select..." [selected]
+                    - option "Low"
+                    - option "Medium"
+                    - option "High"
+                - generic [ref=e201]:
+                  - generic [ref=e202]: Category
+                  - textbox "Category" [ref=e204]:
+                    - /placeholder: Project category or type
+            - button "Save Custom Fields" [ref=e206]:
+              - img
+              - text: Save Custom Fields
+          - generic [ref=e207]:
+            - paragraph [ref=e208]: Tags
+            - button "Add Tag" [ref=e211]:
+              - img
+              - text: Add Tag
+          - generic [ref=e212]:
+            - tablist [ref=e213]:
+              - tab "Overview" [selected] [ref=e214]: Overview
+              - tab "Documents" [ref=e216]
+              - tab "Members" [ref=e217]
+              - tab "Customers" [ref=e218]
+              - tab "Tasks" [ref=e219]
+              - tab "Time" [ref=e220]
+              - tab "Expenses" [ref=e221]
+              - tab "Budget" [ref=e222]
+              - tab "Financials" [ref=e223]
+              - tab "Staffing" [ref=e224]
+              - tab "Rates" [ref=e225]
+              - tab "Generated Docs" [ref=e226]
+              - tab "Activity" [ref=e227]
+            - tabpanel "Overview" [ref=e228]:
+              - generic [ref=e229]:
+                - generic [ref=e230]:
+                  - generic [ref=e231]:
+                    - generic [ref=e235]: Unknown
+                    - heading "E2E Test 1774464229084" [level=2] [ref=e237]
+                  - generic [ref=e239]: No tasks created yet
+                  - generic [ref=e240]:
+                    - generic [ref=e241]:
+                      - paragraph [ref=e242]: Budget
+                      - text: "--"
+                    - generic [ref=e243]:
+                      - paragraph [ref=e244]: Hours
+                      - generic [ref=e245]: 0.0h
+                    - generic [ref=e246]:
+                      - paragraph [ref=e247]: Tasks
+                      - generic [ref=e248]: 0/0
+                      - text: complete
+                    - generic [ref=e249]:
+                      - paragraph [ref=e250]: Revenue
+                      - text: "--"
+                - group [ref=e251]:
+                  - generic "1/5 setup steps complete 20%" [ref=e252] [cursor=pointer]:
+                    - generic [ref=e253]:
+                      - generic [ref=e255]: 1/5 setup steps complete
+                      - generic [ref=e260]: 20%
+                    - img [ref=e261]
+                - generic [ref=e263]:
+                  - generic [ref=e264]:
+                    - generic [ref=e265]:
+                      - generic [ref=e267]:
+                        - generic [ref=e268]: Recent Activity
+                        - link "View all" [ref=e269] [cursor=pointer]:
+                          - /url: /org/e2e-test-org/projects/5bc805ae-b5be-4d87-8667-8b405ab507e7?tab=activity
+                      - paragraph [ref=e271]: No recent activity
+                    - generic [ref=e272]:
+                      - generic [ref=e274]:
+                        - generic [ref=e275]: Task Status
+                        - link "View all tasks" [ref=e276] [cursor=pointer]:
+                          - /url: /org/e2e-test-org/projects/5bc805ae-b5be-4d87-8667-8b405ab507e7?tab=tasks
+                      - paragraph [ref=e278]: No tasks yet
+                    - generic [ref=e279]:
+                      - generic [ref=e281]: Upcoming Deadlines
+                      - paragraph [ref=e283]: No upcoming deadlines
+                  - generic [ref=e284]:
+                    - generic [ref=e285]:
+                      - generic [ref=e287]: Budget
+                      - paragraph [ref=e289]: No budget configured
+                    - generic [ref=e290]:
+                      - generic [ref=e292]:
+                        - generic [ref=e293]: Time Breakdown
+                        - link "View all time" [ref=e294] [cursor=pointer]:
+                          - /url: /org/e2e-test-org/projects/5bc805ae-b5be-4d87-8667-8b405ab507e7?tab=time
+                      - paragraph [ref=e296]: No hours logged this month
+                    - generic [ref=e297]:
+                      - generic [ref=e299]: Team
+                      - paragraph [ref=e301]: No team members assigned
+  - generic [ref=e302]:
+    - heading "Command Palette" [level=2] [ref=e303]
+    - paragraph [ref=e304]: Search pages and settings
+  - region "Notifications alt+T"
+  - alert [ref=e305]

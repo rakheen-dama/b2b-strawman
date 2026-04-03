@@ -1,0 +1,137 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e6]: DocTeams
+      - generic [ref=e9]: e2e-test-org
+      - button "Search, Command K" [ref=e11]:
+        - img [ref=e12]
+        - text: Search...
+        - generic [ref=e15]: ⌘K
+      - navigation "Main navigation" [ref=e16]:
+        - generic [ref=e17]:
+          - button "Work" [expanded] [ref=e18]:
+            - generic [ref=e19]: Work
+            - img [ref=e20]
+          - generic [ref=e22]:
+            - link "Dashboard" [ref=e23] [cursor=pointer]:
+              - /url: /org/e2e-test-org/dashboard
+              - img [ref=e24]
+              - text: Dashboard
+            - link "My Work" [ref=e29] [cursor=pointer]:
+              - /url: /org/e2e-test-org/my-work
+              - img [ref=e30]
+              - text: My Work
+            - link "Calendar" [ref=e33] [cursor=pointer]:
+              - /url: /org/e2e-test-org/calendar
+              - img [ref=e34]
+              - text: Calendar
+        - generic [ref=e37]:
+          - button "Projects" [expanded] [ref=e38]:
+            - generic [ref=e39]: Projects
+            - img [ref=e40]
+          - generic [ref=e42]:
+            - link "Engagements" [ref=e43] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects
+              - img [ref=e44]
+              - text: Engagements
+            - link "Recurring Schedules" [ref=e46] [cursor=pointer]:
+              - /url: /org/e2e-test-org/schedules
+              - img [ref=e47]
+              - text: Recurring Schedules
+        - button "Clients" [ref=e53]:
+          - generic [ref=e54]: Clients
+          - img [ref=e55]
+        - button "Finance" [ref=e59]:
+          - generic [ref=e60]: Finance
+          - img [ref=e61]
+        - generic [ref=e64]:
+          - button "Team" [expanded] [ref=e65]:
+            - generic [ref=e66]: Team
+            - img [ref=e67]
+          - generic [ref=e69]:
+            - link "Team" [ref=e70] [cursor=pointer]:
+              - /url: /org/e2e-test-org/team
+              - img [ref=e71]
+              - text: Team
+            - link "Resources" [ref=e76] [cursor=pointer]:
+              - /url: /org/e2e-test-org/resources
+              - img [ref=e77]
+              - text: Resources
+      - link "Platform Admin" [ref=e84] [cursor=pointer]:
+        - /url: /platform-admin/access-requests
+        - img [ref=e85]
+        - text: Platform Admin
+      - generic [ref=e88]:
+        - link "Notifications" [ref=e89] [cursor=pointer]:
+          - /url: /org/e2e-test-org/notifications
+          - img [ref=e90]
+          - text: Notifications
+        - link "Settings" [ref=e93] [cursor=pointer]:
+          - /url: /org/e2e-test-org/settings/general
+          - img [ref=e94]
+          - text: Settings
+      - generic [ref=e98]:
+        - generic [ref=e99]: AO
+        - generic [ref=e100]:
+          - paragraph [ref=e101]: Alice Owner
+          - paragraph [ref=e102]: alice@e2e-test.local
+    - generic [ref=e103]:
+      - banner [ref=e104]:
+        - navigation "Breadcrumb" [ref=e105]:
+          - link "e2e-test-org" [ref=e106] [cursor=pointer]:
+            - /url: /org/e2e-test-org/dashboard
+          - generic [ref=e107]:
+            - img [ref=e108]
+            - generic [ref=e110]: Clients
+        - generic [ref=e111]:
+          - generic [ref=e113]: e2e-test-org
+          - button "AO" [ref=e115]
+          - button "Notifications" [ref=e117]:
+            - img
+      - main [ref=e119]:
+        - table [ref=e129]:
+          - rowgroup [ref=e130]:
+            - row [ref=e131]:
+              - columnheader [ref=e132]
+              - columnheader [ref=e134]
+              - columnheader [ref=e136]
+              - columnheader [ref=e138]
+              - columnheader [ref=e140]
+          - rowgroup [ref=e142]:
+            - row [ref=e143]:
+              - cell [ref=e144]
+              - cell [ref=e146]
+              - cell [ref=e148]
+              - cell [ref=e150]
+              - cell [ref=e152]
+            - row [ref=e154]:
+              - cell [ref=e155]
+              - cell [ref=e157]
+              - cell [ref=e159]
+              - cell [ref=e161]
+              - cell [ref=e163]
+            - row [ref=e165]:
+              - cell [ref=e166]
+              - cell [ref=e168]
+              - cell [ref=e170]
+              - cell [ref=e172]
+              - cell [ref=e174]
+            - row [ref=e176]:
+              - cell [ref=e177]
+              - cell [ref=e179]
+              - cell [ref=e181]
+              - cell [ref=e183]
+              - cell [ref=e185]
+            - row [ref=e187]:
+              - cell [ref=e188]
+              - cell [ref=e190]
+              - cell [ref=e192]
+              - cell [ref=e194]
+              - cell [ref=e196]
+  - generic [ref=e198]:
+    - heading "Command Palette" [level=2] [ref=e199]
+    - paragraph [ref=e200]: Search pages and settings
+  - region "Notifications alt+T"
+  - alert [ref=e201]

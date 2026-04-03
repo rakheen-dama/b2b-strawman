@@ -1,0 +1,483 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e6]: DocTeams
+      - generic [ref=e9]: e2e-test-org
+      - button "Search, Command K" [ref=e11]:
+        - img [ref=e12]
+        - text: Search...
+        - generic [ref=e15]: ⌘K
+      - navigation "Main navigation" [ref=e16]:
+        - generic [ref=e17]:
+          - button "Work" [expanded] [ref=e18]:
+            - generic [ref=e19]: Work
+            - img [ref=e20]
+          - generic [ref=e22]:
+            - link "Dashboard" [ref=e23] [cursor=pointer]:
+              - /url: /org/e2e-test-org/dashboard
+              - img [ref=e24]
+              - text: Dashboard
+            - link "My Work" [ref=e29] [cursor=pointer]:
+              - /url: /org/e2e-test-org/my-work
+              - img [ref=e30]
+              - text: My Work
+            - link "Calendar" [ref=e33] [cursor=pointer]:
+              - /url: /org/e2e-test-org/calendar
+              - img [ref=e34]
+              - text: Calendar
+        - generic [ref=e37]:
+          - button "Projects" [expanded] [ref=e38]:
+            - generic [ref=e39]: Projects
+            - img [ref=e40]
+          - generic [ref=e42]:
+            - link "Engagements" [ref=e43] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects
+              - img [ref=e44]
+              - text: Engagements
+            - link "Recurring Schedules" [ref=e46] [cursor=pointer]:
+              - /url: /org/e2e-test-org/schedules
+              - img [ref=e47]
+              - text: Recurring Schedules
+        - button "Clients" [ref=e53]:
+          - generic [ref=e54]: Clients
+          - img [ref=e55]
+        - button "Finance" [ref=e59]:
+          - generic [ref=e60]: Finance
+          - img [ref=e61]
+        - generic [ref=e64]:
+          - button "Team" [expanded] [ref=e65]:
+            - generic [ref=e66]: Team
+            - img [ref=e67]
+          - generic [ref=e69]:
+            - link "Team" [ref=e70] [cursor=pointer]:
+              - /url: /org/e2e-test-org/team
+              - img [ref=e71]
+              - text: Team
+            - link "Resources" [ref=e76] [cursor=pointer]:
+              - /url: /org/e2e-test-org/resources
+              - img [ref=e77]
+              - text: Resources
+      - link "Platform Admin" [ref=e84] [cursor=pointer]:
+        - /url: /platform-admin/access-requests
+        - img [ref=e85]
+        - text: Platform Admin
+      - generic [ref=e88]:
+        - link "Notifications" [ref=e89] [cursor=pointer]:
+          - /url: /org/e2e-test-org/notifications
+          - img [ref=e90]
+          - text: Notifications
+        - link "Settings" [ref=e93] [cursor=pointer]:
+          - /url: /org/e2e-test-org/settings/general
+          - img [ref=e94]
+          - text: Settings
+      - generic [ref=e98]:
+        - generic [ref=e99]: AO
+        - generic [ref=e100]:
+          - paragraph [ref=e101]: Alice Owner
+          - paragraph [ref=e102]: alice@e2e-test.local
+    - generic [ref=e103]:
+      - banner [ref=e104]:
+        - navigation "Breadcrumb" [ref=e105]:
+          - link "e2e-test-org" [ref=e106] [cursor=pointer]:
+            - /url: /org/e2e-test-org/dashboard
+          - generic [ref=e107]:
+            - img [ref=e108]
+            - link "Settings" [ref=e110] [cursor=pointer]:
+              - /url: /org/e2e-test-org/settings
+          - generic [ref=e111]:
+            - img [ref=e112]
+            - generic [ref=e114]: Templates
+        - generic [ref=e115]:
+          - generic [ref=e117]: e2e-test-org
+          - button "AO" [ref=e119]
+          - button "Notifications" [ref=e121]:
+            - img
+      - main [ref=e123]:
+        - generic [ref=e126]:
+          - complementary [ref=e127]:
+            - navigation "Settings navigation" [ref=e128]:
+              - generic [ref=e129]:
+                - generic [ref=e130]: General
+                - link "General" [ref=e131] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/general
+                - link "Billing" [ref=e132] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/billing
+                - link "Notifications" [ref=e133] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/notifications
+                - link "Email" [ref=e134] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/email
+                - generic [ref=e135]:
+                  - text: Security
+                  - generic [ref=e136]: Coming soon
+              - generic [ref=e137]:
+                - generic [ref=e139]: Work
+                - link "Time Tracking" [ref=e140] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/time-tracking
+                - link "Project Templates" [ref=e141] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/project-templates
+                - link "Project Naming" [ref=e142] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/project-naming
+                - link "Automations" [ref=e143] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/automations
+              - generic [ref=e144]:
+                - generic [ref=e146]: Documents
+                - link "Templates" [ref=e147] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/templates
+                - link "Clauses" [ref=e148] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/clauses
+                - link "Checklists" [ref=e149] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/checklists
+                - link "Document Acceptance" [ref=e150] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/acceptance
+              - generic [ref=e151]:
+                - generic [ref=e153]: Finance
+                - link "Rates & Currency" [ref=e154] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/rates
+                - link "Tax" [ref=e155] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/tax
+                - link "Batch Billing" [ref=e156] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/batch-billing
+                - link "Capacity" [ref=e157] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/capacity
+              - generic [ref=e158]:
+                - generic [ref=e160]: Clients
+                - link "Custom Fields" [ref=e161] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/custom-fields
+                - link "Tags" [ref=e162] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/tags
+                - link "Request Templates" [ref=e163] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/request-templates
+                - link "Request Settings" [ref=e164] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/request-settings
+                - link "Compliance" [ref=e165] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/compliance
+                - link "Data Protection" [ref=e166] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/data-protection
+              - generic [ref=e167]:
+                - generic [ref=e169]: Access & Integrations
+                - link "Roles & Permissions" [ref=e170] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/roles
+                - link "Integrations" [ref=e171] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/integrations
+          - generic [ref=e173]:
+            - link "Settings" [ref=e174] [cursor=pointer]:
+              - /url: /org/e2e-test-org/settings
+              - img [ref=e175]
+              - text: Settings
+            - generic [ref=e177]:
+              - 'heading "Templates Help: Tiptap vs. Word templates" [level=1] [ref=e178]':
+                - text: Templates
+                - 'button "Help: Tiptap vs. Word templates" [ref=e179] [cursor=pointer]':
+                  - img [ref=e180]
+              - paragraph [ref=e183]: Manage document templates for engagement letters, statements of work, and more.
+            - generic [ref=e184]:
+              - generic [ref=e185]:
+                - generic [ref=e186]:
+                  - combobox [ref=e187]:
+                    - generic: All Formats
+                    - img
+                  - 'button "Help: Template packs" [ref=e188] [cursor=pointer]':
+                    - img [ref=e189]
+                - generic [ref=e192]:
+                  - button "Upload Word Template" [ref=e193]:
+                    - img
+                    - text: Upload Word Template
+                  - link "New Template" [ref=e194] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/settings/templates/new
+                    - button "New Template" [ref=e195]:
+                      - img
+                      - text: New Template
+              - generic [ref=e196]:
+                - heading "COMPLIANCE" [level=2] [ref=e197]
+                - table [ref=e200]:
+                  - rowgroup [ref=e201]:
+                    - row "Name Format Entity Type Source Status Actions" [ref=e202]:
+                      - columnheader "Name" [ref=e203]
+                      - columnheader "Format" [ref=e204]
+                      - columnheader "Entity Type" [ref=e205]
+                      - columnheader "Source" [ref=e206]
+                      - columnheader "Status" [ref=e207]
+                      - columnheader "Actions" [ref=e208]
+                  - rowgroup [ref=e209]:
+                    - row "PAIA Section 51 Manual PAIA Section 51 manual required for South African private bodies Tiptap ORGANIZATION Platform Active" [ref=e210]:
+                      - cell "PAIA Section 51 Manual PAIA Section 51 manual required for South African private bodies" [ref=e211]:
+                        - link "PAIA Section 51 Manual" [ref=e212] [cursor=pointer]:
+                          - /url: /org/e2e-test-org/settings/templates/1d692e1b-87dd-4962-96f0-51ee1d36eb93/edit
+                        - paragraph [ref=e213]: PAIA Section 51 manual required for South African private bodies
+                      - cell "Tiptap" [ref=e214]:
+                        - generic [ref=e215]: Tiptap
+                      - cell "ORGANIZATION" [ref=e216]:
+                        - generic [ref=e217]: ORGANIZATION
+                      - cell "Platform" [ref=e218]:
+                        - generic [ref=e219]: Platform
+                      - cell "Active" [ref=e220]:
+                        - generic [ref=e221]: Active
+                      - cell [ref=e222]:
+                        - button [ref=e224]:
+                          - img
+                    - row "PAIA Section 51 Manual (Custom) PAIA Section 51 manual required for South African private bodies Tiptap ORGANIZATION Custom Active" [ref=e225]:
+                      - cell "PAIA Section 51 Manual (Custom) PAIA Section 51 manual required for South African private bodies" [ref=e226]:
+                        - link "PAIA Section 51 Manual (Custom)" [ref=e227] [cursor=pointer]:
+                          - /url: /org/e2e-test-org/settings/templates/00151408-750b-4a4b-86b8-8267cf55624e/edit
+                        - paragraph [ref=e228]: PAIA Section 51 manual required for South African private bodies
+                      - cell "Tiptap" [ref=e229]:
+                        - generic [ref=e230]: Tiptap
+                      - cell "ORGANIZATION" [ref=e231]:
+                        - generic [ref=e232]: ORGANIZATION
+                      - cell "Custom" [ref=e233]:
+                        - generic [ref=e234]: Custom
+                      - cell "Active" [ref=e235]:
+                        - generic [ref=e236]: Active
+                      - cell [ref=e237]:
+                        - button [ref=e239]:
+                          - img
+              - generic [ref=e240]:
+                - heading "Cover Letter" [level=2] [ref=e241]
+                - table [ref=e244]:
+                  - rowgroup [ref=e245]:
+                    - row "Name Format Entity Type Source Status Actions" [ref=e246]:
+                      - columnheader "Name" [ref=e247]
+                      - columnheader "Format" [ref=e248]
+                      - columnheader "Entity Type" [ref=e249]
+                      - columnheader "Source" [ref=e250]
+                      - columnheader "Status" [ref=e251]
+                      - columnheader "Actions" [ref=e252]
+                  - rowgroup [ref=e253]:
+                    - row "Invoice Cover Letter Cover letter for invoices Tiptap INVOICE Platform Active" [ref=e254]:
+                      - cell "Invoice Cover Letter Cover letter for invoices" [ref=e255]:
+                        - link "Invoice Cover Letter" [ref=e256] [cursor=pointer]:
+                          - /url: /org/e2e-test-org/settings/templates/72fda6d5-5aa7-4e1f-b7aa-28756b5bba9f/edit
+                        - paragraph [ref=e257]: Cover letter for invoices
+                      - cell "Tiptap" [ref=e258]:
+                        - generic [ref=e259]: Tiptap
+                      - cell "INVOICE" [ref=e260]:
+                        - generic [ref=e261]: INVOICE
+                      - cell "Platform" [ref=e262]:
+                        - generic [ref=e263]: Platform
+                      - cell "Active" [ref=e264]:
+                        - generic [ref=e265]: Active
+                      - cell [ref=e266]:
+                        - button [ref=e268]:
+                          - img
+                    - row "Monthly Report Cover Cover page for monthly bookkeeping deliverables package. Tiptap PROJECT Platform Active" [ref=e269]:
+                      - cell "Monthly Report Cover Cover page for monthly bookkeeping deliverables package." [ref=e270]:
+                        - link "Monthly Report Cover" [ref=e271] [cursor=pointer]:
+                          - /url: /org/e2e-test-org/settings/templates/83350b27-ede7-4c7c-ab7c-9d4fd2aa6ae1/edit
+                        - paragraph [ref=e272]: Cover page for monthly bookkeeping deliverables package.
+                      - cell "Tiptap" [ref=e273]:
+                        - generic [ref=e274]: Tiptap
+                      - cell "PROJECT" [ref=e275]:
+                        - generic [ref=e276]: PROJECT
+                      - cell "Platform" [ref=e277]:
+                        - generic [ref=e278]: Platform
+                      - cell "Active" [ref=e279]:
+                        - generic [ref=e280]: Active
+                      - cell [ref=e281]:
+                        - button [ref=e283]:
+                          - img
+              - generic [ref=e284]:
+                - heading "Engagement Letter" [level=2] [ref=e285]
+                - table [ref=e288]:
+                  - rowgroup [ref=e289]:
+                    - row "Name Format Entity Type Source Status Actions" [ref=e290]:
+                      - columnheader "Name" [ref=e291]
+                      - columnheader "Format" [ref=e292]
+                      - columnheader "Entity Type" [ref=e293]
+                      - columnheader "Source" [ref=e294]
+                      - columnheader "Status" [ref=e295]
+                      - columnheader "Actions" [ref=e296]
+                  - rowgroup [ref=e297]:
+                    - row "Engagement Letter — Monthly Bookkeeping Standard SAICA-format engagement letter for monthly bookkeeping services. Includes scope of work, monthly fee, and standard clauses. Tiptap PROJECT Platform Active" [ref=e298]:
+                      - cell "Engagement Letter — Monthly Bookkeeping Standard SAICA-format engagement letter for monthly bookkeeping services. Includes scope of work, monthly fee, and standard clauses." [ref=e299]:
+                        - link "Engagement Letter — Monthly Bookkeeping" [ref=e300] [cursor=pointer]:
+                          - /url: /org/e2e-test-org/settings/templates/876bd8c3-c611-470e-9f83-2fa5008fd578/edit
+                        - paragraph [ref=e301]: Standard SAICA-format engagement letter for monthly bookkeeping services. Includes scope of work, monthly fee, and standard clauses.
+                      - cell "Tiptap" [ref=e302]:
+                        - generic [ref=e303]: Tiptap
+                      - cell "PROJECT" [ref=e304]:
+                        - generic [ref=e305]: PROJECT
+                      - cell "Platform" [ref=e306]:
+                        - generic [ref=e307]: Platform
+                      - cell "Active" [ref=e308]:
+                        - generic [ref=e309]: Active
+                      - cell [ref=e310]:
+                        - button [ref=e312]:
+                          - img
+                    - row "Standard Engagement Letter Client engagement letter template Tiptap PROJECT Platform Active" [ref=e313]:
+                      - cell "Standard Engagement Letter Client engagement letter template" [ref=e314]:
+                        - link "Standard Engagement Letter" [ref=e315] [cursor=pointer]:
+                          - /url: /org/e2e-test-org/settings/templates/2ffd5cfe-9602-4063-8623-6b3f3b859745/edit
+                        - paragraph [ref=e316]: Client engagement letter template
+                      - cell "Tiptap" [ref=e317]:
+                        - generic [ref=e318]: Tiptap
+                      - cell "PROJECT" [ref=e319]:
+                        - generic [ref=e320]: PROJECT
+                      - cell "Platform" [ref=e321]:
+                        - generic [ref=e322]: Platform
+                      - cell "Active" [ref=e323]:
+                        - generic [ref=e324]: Active
+                      - cell [ref=e325]:
+                        - button [ref=e327]:
+                          - img
+                    - row "Engagement Letter — Annual Tax Return Engagement letter for annual income tax return preparation. References tax year and SARS submission deadline. Tiptap PROJECT Platform Active" [ref=e328]:
+                      - cell "Engagement Letter — Annual Tax Return Engagement letter for annual income tax return preparation. References tax year and SARS submission deadline." [ref=e329]:
+                        - link "Engagement Letter — Annual Tax Return" [ref=e330] [cursor=pointer]:
+                          - /url: /org/e2e-test-org/settings/templates/6062fc92-3303-4502-afa6-75381a77c5c5/edit
+                        - paragraph [ref=e331]: Engagement letter for annual income tax return preparation. References tax year and SARS submission deadline.
+                      - cell "Tiptap" [ref=e332]:
+                        - generic [ref=e333]: Tiptap
+                      - cell "PROJECT" [ref=e334]:
+                        - generic [ref=e335]: PROJECT
+                      - cell "Platform" [ref=e336]:
+                        - generic [ref=e337]: Platform
+                      - cell "Active" [ref=e338]:
+                        - generic [ref=e339]: Active
+                      - cell [ref=e340]:
+                        - button [ref=e342]:
+                          - img
+                    - row "Engagement Letter — Advisory Engagement letter for hourly advisory services. Specifies hourly rate and estimated hours. Tiptap PROJECT Platform Active" [ref=e343]:
+                      - cell "Engagement Letter — Advisory Engagement letter for hourly advisory services. Specifies hourly rate and estimated hours." [ref=e344]:
+                        - link "Engagement Letter — Advisory" [ref=e345] [cursor=pointer]:
+                          - /url: /org/e2e-test-org/settings/templates/15db585b-9752-47b2-96ab-eb89b17467fc/edit
+                        - paragraph [ref=e346]: Engagement letter for hourly advisory services. Specifies hourly rate and estimated hours.
+                      - cell "Tiptap" [ref=e347]:
+                        - generic [ref=e348]: Tiptap
+                      - cell "PROJECT" [ref=e349]:
+                        - generic [ref=e350]: PROJECT
+                      - cell "Platform" [ref=e351]:
+                        - generic [ref=e352]: Platform
+                      - cell "Active" [ref=e353]:
+                        - generic [ref=e354]: Active
+                      - cell [ref=e355]:
+                        - button [ref=e357]:
+                          - img
+              - generic [ref=e358]:
+                - heading "OTHER" [level=2] [ref=e359]
+                - table [ref=e362]:
+                  - rowgroup [ref=e363]:
+                    - row "Name Format Entity Type Source Status Actions" [ref=e364]:
+                      - columnheader "Name" [ref=e365]
+                      - columnheader "Format" [ref=e366]
+                      - columnheader "Entity Type" [ref=e367]
+                      - columnheader "Source" [ref=e368]
+                      - columnheader "Status" [ref=e369]
+                      - columnheader "Actions" [ref=e370]
+                  - rowgroup [ref=e371]:
+                    - row "SA Tax Invoice South African tax invoice template with VAT number, bank details, and SARS-compliant formatting. Tiptap INVOICE Platform Active" [ref=e372]:
+                      - cell "SA Tax Invoice South African tax invoice template with VAT number, bank details, and SARS-compliant formatting." [ref=e373]:
+                        - link "SA Tax Invoice" [ref=e374] [cursor=pointer]:
+                          - /url: /org/e2e-test-org/settings/templates/09b9519f-7e4c-410d-946d-38596217a38a/edit
+                        - paragraph [ref=e375]: South African tax invoice template with VAT number, bank details, and SARS-compliant formatting.
+                      - cell "Tiptap" [ref=e376]:
+                        - generic [ref=e377]: Tiptap
+                      - cell "INVOICE" [ref=e378]:
+                        - generic [ref=e379]: INVOICE
+                      - cell "Platform" [ref=e380]:
+                        - generic [ref=e381]: Platform
+                      - cell "Active" [ref=e382]:
+                        - generic [ref=e383]: Active
+                      - cell [ref=e384]:
+                        - button [ref=e386]:
+                          - img
+                    - row "FICA Confirmation Letter Letter confirming FICA/KYC verification has been completed for a client. Tiptap CUSTOMER Platform Active" [ref=e387]:
+                      - cell "FICA Confirmation Letter Letter confirming FICA/KYC verification has been completed for a client." [ref=e388]:
+                        - link "FICA Confirmation Letter" [ref=e389] [cursor=pointer]:
+                          - /url: /org/e2e-test-org/settings/templates/b973e144-48e5-4ce3-993e-6a8c544ac1dd/edit
+                        - paragraph [ref=e390]: Letter confirming FICA/KYC verification has been completed for a client.
+                      - cell "Tiptap" [ref=e391]:
+                        - generic [ref=e392]: Tiptap
+                      - cell "CUSTOMER" [ref=e393]:
+                        - generic [ref=e394]: CUSTOMER
+                      - cell "Platform" [ref=e395]:
+                        - generic [ref=e396]: Platform
+                      - cell "Active" [ref=e397]:
+                        - generic [ref=e398]: Active
+                      - cell [ref=e399]:
+                        - button [ref=e401]:
+                          - img
+              - generic [ref=e402]:
+                - heading "Project Summary" [level=2] [ref=e403]
+                - table [ref=e406]:
+                  - rowgroup [ref=e407]:
+                    - row "Name Format Entity Type Source Status Actions" [ref=e408]:
+                      - columnheader "Name" [ref=e409]
+                      - columnheader "Format" [ref=e410]
+                      - columnheader "Entity Type" [ref=e411]
+                      - columnheader "Source" [ref=e412]
+                      - columnheader "Status" [ref=e413]
+                      - columnheader "Actions" [ref=e414]
+                  - rowgroup [ref=e415]:
+                    - row "Project Summary Report Project summary report template Tiptap PROJECT Platform Active" [ref=e416]:
+                      - cell "Project Summary Report Project summary report template" [ref=e417]:
+                        - link "Project Summary Report" [ref=e418] [cursor=pointer]:
+                          - /url: /org/e2e-test-org/settings/templates/25b251a0-d552-4b78-9894-76859882712d/edit
+                        - paragraph [ref=e419]: Project summary report template
+                      - cell "Tiptap" [ref=e420]:
+                        - generic [ref=e421]: Tiptap
+                      - cell "PROJECT" [ref=e422]:
+                        - generic [ref=e423]: PROJECT
+                      - cell "Platform" [ref=e424]:
+                        - generic [ref=e425]: Platform
+                      - cell "Active" [ref=e426]:
+                        - generic [ref=e427]: Active
+                      - cell [ref=e428]:
+                        - button [ref=e430]:
+                          - img
+              - generic [ref=e431]:
+                - heading "REPORT" [level=2] [ref=e432]
+                - table [ref=e435]:
+                  - rowgroup [ref=e436]:
+                    - row "Name Format Entity Type Source Status Actions" [ref=e437]:
+                      - columnheader "Name" [ref=e438]
+                      - columnheader "Format" [ref=e439]
+                      - columnheader "Entity Type" [ref=e440]
+                      - columnheader "Source" [ref=e441]
+                      - columnheader "Status" [ref=e442]
+                      - columnheader "Actions" [ref=e443]
+                  - rowgroup [ref=e444]:
+                    - row "Statement of Account Client statement of account showing all invoices, payments, and outstanding balance. Tiptap CUSTOMER Platform Active" [ref=e445]:
+                      - cell "Statement of Account Client statement of account showing all invoices, payments, and outstanding balance." [ref=e446]:
+                        - link "Statement of Account" [ref=e447] [cursor=pointer]:
+                          - /url: /org/e2e-test-org/settings/templates/aa7c42ba-9d7c-4801-ba29-806be82b4176/edit
+                        - paragraph [ref=e448]: Client statement of account showing all invoices, payments, and outstanding balance.
+                      - cell "Tiptap" [ref=e449]:
+                        - generic [ref=e450]: Tiptap
+                      - cell "CUSTOMER" [ref=e451]:
+                        - generic [ref=e452]: CUSTOMER
+                      - cell "Platform" [ref=e453]:
+                        - generic [ref=e454]: Platform
+                      - cell "Active" [ref=e455]:
+                        - generic [ref=e456]: Active
+                      - cell [ref=e457]:
+                        - button [ref=e459]:
+                          - img
+              - generic [ref=e460]:
+                - generic [ref=e461]:
+                  - img [ref=e462]
+                  - heading "Branding" [level=2] [ref=e468]
+                - paragraph [ref=e469]: Customize your organization's branding for generated documents.
+                - generic [ref=e470]:
+                  - generic [ref=e471]: Logo
+                  - generic [ref=e472]:
+                    - img [ref=e474]
+                    - generic [ref=e477]:
+                      - button "Upload Logo" [ref=e478]
+                      - paragraph [ref=e479]: PNG, JPG, or SVG. Max 2 MB.
+                - generic [ref=e480]:
+                  - generic [ref=e481]: Brand Color
+                  - generic [ref=e482]:
+                    - textbox [ref=e483] [cursor=pointer]: "#1a8f6e"
+                    - textbox "Brand Color" [ref=e484]:
+                      - /placeholder: "#000000"
+                      - text: "#1a8f6e"
+                - generic [ref=e485]:
+                  - generic [ref=e486]: Document Footer Text
+                  - textbox "Document Footer Text" [ref=e487]:
+                    - /placeholder: Text that appears at the bottom of generated documents...
+                    - text: Test Footer 1774464225999
+                  - paragraph [ref=e488]: 25/500 characters
+                - button "Save Branding" [ref=e490]
+  - region "Notifications alt+T"
+  - alert [ref=e491]

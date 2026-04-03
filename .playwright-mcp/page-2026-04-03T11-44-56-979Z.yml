@@ -1,0 +1,112 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e6]: DocTeams
+      - generic [ref=e9]: e2e-test-org
+      - button "Search, Command K" [ref=e11]:
+        - img [ref=e12]
+        - text: Search...
+        - generic [ref=e15]: ⌘K
+      - navigation "Main navigation" [ref=e16]:
+        - generic [ref=e17]:
+          - button "Work" [expanded] [ref=e18]:
+            - generic [ref=e19]: Work
+            - img [ref=e20]
+          - generic [ref=e22]:
+            - link "Dashboard" [ref=e23] [cursor=pointer]:
+              - /url: /org/e2e-test-org/dashboard
+              - img [ref=e24]
+              - text: Dashboard
+            - link "My Work" [ref=e29] [cursor=pointer]:
+              - /url: /org/e2e-test-org/my-work
+              - img [ref=e30]
+              - text: My Work
+            - link "Calendar" [ref=e33] [cursor=pointer]:
+              - /url: /org/e2e-test-org/calendar
+              - img [ref=e34]
+              - text: Calendar
+        - generic [ref=e37]:
+          - button "Projects" [expanded] [ref=e38]:
+            - generic [ref=e39]: Projects
+            - img [ref=e40]
+          - generic [ref=e42]:
+            - link "Engagements" [ref=e43] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects
+              - img [ref=e44]
+              - text: Engagements
+            - link "Recurring Schedules" [ref=e46] [cursor=pointer]:
+              - /url: /org/e2e-test-org/schedules
+              - img [ref=e48]
+              - text: Recurring Schedules
+        - button "Clients" [ref=e54]:
+          - generic [ref=e55]: Clients
+          - img [ref=e56]
+        - button "Finance" [ref=e60]:
+          - generic [ref=e61]: Finance
+          - img [ref=e62]
+        - generic [ref=e65]:
+          - button "Team" [expanded] [ref=e66]:
+            - generic [ref=e67]: Team
+            - img [ref=e68]
+          - generic [ref=e70]:
+            - link "Team" [ref=e71] [cursor=pointer]:
+              - /url: /org/e2e-test-org/team
+              - img [ref=e72]
+              - text: Team
+            - link "Resources" [ref=e77] [cursor=pointer]:
+              - /url: /org/e2e-test-org/resources
+              - img [ref=e78]
+              - text: Resources
+      - link "Platform Admin" [ref=e85] [cursor=pointer]:
+        - /url: /platform-admin/access-requests
+        - img [ref=e86]
+        - text: Platform Admin
+      - generic [ref=e89]:
+        - link "Notifications" [ref=e90] [cursor=pointer]:
+          - /url: /org/e2e-test-org/notifications
+          - img [ref=e91]
+          - text: Notifications
+        - link "Settings" [ref=e94] [cursor=pointer]:
+          - /url: /org/e2e-test-org/settings/general
+          - img [ref=e95]
+          - text: Settings
+      - generic [ref=e99]:
+        - generic [ref=e100]: AO
+        - generic [ref=e101]:
+          - paragraph [ref=e102]: Alice Owner
+          - paragraph [ref=e103]: alice@e2e-test.local
+    - generic [ref=e104]:
+      - banner [ref=e105]:
+        - navigation "Breadcrumb" [ref=e106]:
+          - link "e2e-test-org" [ref=e107] [cursor=pointer]:
+            - /url: /org/e2e-test-org/dashboard
+          - generic [ref=e108]:
+            - img [ref=e109]
+            - generic [ref=e111]: Recurring Schedules
+        - generic [ref=e112]:
+          - generic [ref=e114]: e2e-test-org
+          - button "AO" [ref=e116]
+          - button "Notifications" [ref=e118]:
+            - img
+      - main [ref=e120]:
+        - generic [ref=e123]:
+          - generic [ref=e124]:
+            - heading "Recurring Schedules" [level=1] [ref=e125]
+            - paragraph [ref=e126]: Automate project creation with recurring schedules based on templates.
+          - generic [ref=e127]:
+            - generic [ref=e128]:
+              - button "Active" [ref=e129]
+              - button "Paused" [ref=e130]
+              - button "Completed" [ref=e131]
+              - button "All" [ref=e132]
+            - generic [ref=e133]:
+              - img [ref=e134]
+              - heading "No active schedules found." [level=2] [ref=e138]
+              - paragraph [ref=e139]: Create a recurring schedule to automate project creation.
+  - generic [ref=e140]:
+    - heading "Command Palette" [level=2] [ref=e141]
+    - paragraph [ref=e142]: Search pages and settings
+  - region "Notifications alt+T"
+  - alert [ref=e143]

@@ -1,0 +1,214 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e6]: DocTeams
+      - generic [ref=e9]: e2e-test-org
+      - button "Search, Command K" [ref=e11]:
+        - img [ref=e12]
+        - text: Search...
+        - generic [ref=e15]: ⌘K
+      - navigation "Main navigation" [ref=e16]:
+        - generic [ref=e17]:
+          - button "Work" [expanded] [ref=e18]:
+            - generic [ref=e19]: Work
+            - img [ref=e20]
+          - generic [ref=e22]:
+            - link "Dashboard" [ref=e23] [cursor=pointer]:
+              - /url: /org/e2e-test-org/dashboard
+              - img [ref=e24]
+              - text: Dashboard
+            - link "My Work" [ref=e29] [cursor=pointer]:
+              - /url: /org/e2e-test-org/my-work
+              - img [ref=e30]
+              - text: My Work
+            - link "Calendar" [ref=e33] [cursor=pointer]:
+              - /url: /org/e2e-test-org/calendar
+              - img [ref=e34]
+              - text: Calendar
+        - generic [ref=e37]:
+          - button "Projects" [expanded] [ref=e38]:
+            - generic [ref=e39]: Projects
+            - img [ref=e40]
+          - generic [ref=e42]:
+            - link "Engagements" [ref=e43] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects
+              - img [ref=e44]
+              - text: Engagements
+            - link "Recurring Schedules" [ref=e46] [cursor=pointer]:
+              - /url: /org/e2e-test-org/schedules
+              - img [ref=e47]
+              - text: Recurring Schedules
+        - button "Clients" [ref=e53]:
+          - generic [ref=e54]: Clients
+          - img [ref=e55]
+        - button "Finance" [ref=e59]:
+          - generic [ref=e60]: Finance
+          - img [ref=e61]
+        - generic [ref=e64]:
+          - button "Team" [expanded] [ref=e65]:
+            - generic [ref=e66]: Team
+            - img [ref=e67]
+          - generic [ref=e69]:
+            - link "Team" [ref=e70] [cursor=pointer]:
+              - /url: /org/e2e-test-org/team
+              - img [ref=e71]
+              - text: Team
+            - link "Resources" [ref=e76] [cursor=pointer]:
+              - /url: /org/e2e-test-org/resources
+              - img [ref=e77]
+              - text: Resources
+      - link "Platform Admin" [ref=e84] [cursor=pointer]:
+        - /url: /platform-admin/access-requests
+        - img [ref=e85]
+        - text: Platform Admin
+      - generic [ref=e88]:
+        - link "Notifications" [ref=e89] [cursor=pointer]:
+          - /url: /org/e2e-test-org/notifications
+          - img [ref=e90]
+          - text: Notifications
+        - link "Settings" [ref=e93] [cursor=pointer]:
+          - /url: /org/e2e-test-org/settings/general
+          - img [ref=e94]
+          - text: Settings
+      - generic [ref=e98]:
+        - generic [ref=e99]: AO
+        - generic [ref=e100]:
+          - paragraph [ref=e101]: Alice Owner
+          - paragraph [ref=e102]: alice@e2e-test.local
+    - generic [ref=e103]:
+      - banner [ref=e104]:
+        - navigation "Breadcrumb" [ref=e105]:
+          - link "e2e-test-org" [ref=e106] [cursor=pointer]:
+            - /url: /org/e2e-test-org/dashboard
+          - generic [ref=e107]:
+            - img [ref=e108]
+            - link "Settings" [ref=e110] [cursor=pointer]:
+              - /url: /org/e2e-test-org/settings
+          - generic [ref=e111]:
+            - img [ref=e112]
+            - generic [ref=e114]: Roles & Permissions
+        - generic [ref=e115]:
+          - generic [ref=e117]: e2e-test-org
+          - button "AO" [ref=e119]
+          - button "Notifications" [ref=e121]:
+            - img
+      - main [ref=e123]:
+        - generic [ref=e126]:
+          - complementary [ref=e127]:
+            - navigation "Settings navigation" [ref=e128]:
+              - generic [ref=e129]:
+                - generic [ref=e130]: General
+                - link "General" [ref=e131] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/general
+                - link "Billing" [ref=e132] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/billing
+                - link "Notifications" [ref=e133] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/notifications
+                - link "Email" [ref=e134] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/email
+                - generic [ref=e135]:
+                  - text: Security
+                  - generic [ref=e136]: Coming soon
+              - generic [ref=e137]:
+                - generic [ref=e139]: Work
+                - link "Time Tracking" [ref=e140] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/time-tracking
+                - link "Project Templates" [ref=e141] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/project-templates
+                - link "Project Naming" [ref=e142] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/project-naming
+                - link "Automations" [ref=e143] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/automations
+              - generic [ref=e144]:
+                - generic [ref=e146]: Documents
+                - link "Templates" [ref=e147] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/templates
+                - link "Clauses" [ref=e148] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/clauses
+                - link "Checklists" [ref=e149] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/checklists
+                - link "Document Acceptance" [ref=e150] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/acceptance
+              - generic [ref=e151]:
+                - generic [ref=e153]: Finance
+                - link "Rates & Currency" [ref=e154] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/rates
+                - link "Tax" [ref=e155] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/tax
+                - link "Batch Billing" [ref=e156] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/batch-billing
+                - link "Capacity" [ref=e157] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/capacity
+              - generic [ref=e158]:
+                - generic [ref=e160]: Clients
+                - link "Custom Fields" [ref=e161] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/custom-fields
+                - link "Tags" [ref=e162] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/tags
+                - link "Request Templates" [ref=e163] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/request-templates
+                - link "Request Settings" [ref=e164] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/request-settings
+                - link "Compliance" [ref=e165] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/compliance
+                - link "Data Protection" [ref=e166] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/data-protection
+              - generic [ref=e167]:
+                - generic [ref=e169]: Access & Integrations
+                - link "Roles & Permissions" [ref=e170] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/roles
+                - link "Integrations" [ref=e171] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/integrations
+          - generic [ref=e173]:
+            - link "Settings" [ref=e174] [cursor=pointer]:
+              - /url: /org/e2e-test-org/settings
+              - img [ref=e175]
+              - text: Settings
+            - generic [ref=e177]:
+              - heading "Roles & Permissions" [level=1] [ref=e178]
+              - paragraph [ref=e179]: Manage system roles and create custom roles with granular permissions.
+            - generic [ref=e180]:
+              - generic [ref=e181]:
+                - heading "System Roles" [level=2] [ref=e182]
+                - paragraph [ref=e183]: Built-in roles that cannot be modified or deleted.
+              - generic [ref=e184]:
+                - generic [ref=e185]:
+                  - generic [ref=e186]:
+                    - heading "Owner" [level=3] [ref=e187]
+                    - generic [ref=e188]: System
+                  - paragraph [ref=e189]: No default capabilities
+                  - generic [ref=e190]:
+                    - img [ref=e191]
+                    - generic [ref=e196]: 1 member
+                - generic [ref=e197]:
+                  - generic [ref=e198]:
+                    - heading "Admin" [level=3] [ref=e199]
+                    - generic [ref=e200]: System
+                  - paragraph [ref=e201]: No default capabilities
+                  - generic [ref=e202]:
+                    - img [ref=e203]
+                    - generic [ref=e208]: 1 member
+                - generic [ref=e209]:
+                  - generic [ref=e210]:
+                    - heading "Member" [level=3] [ref=e211]
+                    - generic [ref=e212]: System
+                  - generic [ref=e214]: VIEW LEGAL
+                  - generic [ref=e215]:
+                    - img [ref=e216]
+                    - generic [ref=e221]: 1 member
+            - generic [ref=e222]:
+              - generic [ref=e223]:
+                - generic [ref=e224]:
+                  - heading "Custom Roles" [level=2] [ref=e225]
+                  - paragraph [ref=e226]: Create roles with specific capabilities for your team.
+                - button "New Role" [ref=e227]:
+                  - img
+                  - text: New Role
+              - paragraph [ref=e229]: No custom roles yet. Create one to assign granular permissions to team members.
+            - button "Capability Reference" [ref=e231]:
+              - img
+              - text: Capability Reference
+  - region "Notifications alt+T"
+  - alert [ref=e232]

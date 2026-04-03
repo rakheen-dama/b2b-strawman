@@ -1,0 +1,205 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e6]: DocTeams
+      - generic [ref=e9]: e2e-test-org
+      - button "Search, Command K" [ref=e11]:
+        - img [ref=e12]
+        - text: Search...
+        - generic [ref=e15]: ⌘K
+      - navigation "Main navigation" [ref=e16]:
+        - generic [ref=e17]:
+          - button "Work" [expanded] [ref=e18]:
+            - generic [ref=e19]: Work
+            - img [ref=e20]
+          - generic [ref=e22]:
+            - link "Dashboard" [ref=e23] [cursor=pointer]:
+              - /url: /org/e2e-test-org/dashboard
+              - img [ref=e24]
+              - text: Dashboard
+            - link "My Work" [ref=e29] [cursor=pointer]:
+              - /url: /org/e2e-test-org/my-work
+              - img [ref=e30]
+              - text: My Work
+            - link "Calendar" [ref=e33] [cursor=pointer]:
+              - /url: /org/e2e-test-org/calendar
+              - img [ref=e34]
+              - text: Calendar
+        - generic [ref=e37]:
+          - button "Projects" [expanded] [ref=e38]:
+            - generic [ref=e39]: Projects
+            - img [ref=e40]
+          - generic [ref=e42]:
+            - link "Engagements" [ref=e43] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects
+              - img [ref=e44]
+              - text: Engagements
+            - link "Recurring Schedules" [ref=e46] [cursor=pointer]:
+              - /url: /org/e2e-test-org/schedules
+              - img [ref=e47]
+              - text: Recurring Schedules
+        - button "Clients" [ref=e53]:
+          - generic [ref=e54]: Clients
+          - img [ref=e55]
+        - button "Finance" [ref=e59]:
+          - generic [ref=e60]: Finance
+          - img [ref=e61]
+        - generic [ref=e64]:
+          - button "Team" [expanded] [ref=e65]:
+            - generic [ref=e66]: Team
+            - img [ref=e67]
+          - generic [ref=e69]:
+            - link "Team" [ref=e70] [cursor=pointer]:
+              - /url: /org/e2e-test-org/team
+              - img [ref=e71]
+              - text: Team
+            - link "Resources" [ref=e76] [cursor=pointer]:
+              - /url: /org/e2e-test-org/resources
+              - img [ref=e77]
+              - text: Resources
+      - link "Platform Admin" [ref=e84] [cursor=pointer]:
+        - /url: /platform-admin/access-requests
+        - img [ref=e85]
+        - text: Platform Admin
+      - generic [ref=e88]:
+        - link "Notifications" [ref=e89] [cursor=pointer]:
+          - /url: /org/e2e-test-org/notifications
+          - img [ref=e90]
+          - text: Notifications
+        - link "Settings" [ref=e93] [cursor=pointer]:
+          - /url: /org/e2e-test-org/settings/general
+          - img [ref=e94]
+          - text: Settings
+      - generic [ref=e98]:
+        - generic [ref=e99]: AO
+        - generic [ref=e100]:
+          - paragraph [ref=e101]: Alice Owner
+          - paragraph [ref=e102]: alice@e2e-test.local
+    - generic [ref=e103]:
+      - banner [ref=e104]:
+        - navigation "Breadcrumb" [ref=e105]:
+          - link "e2e-test-org" [ref=e106] [cursor=pointer]:
+            - /url: /org/e2e-test-org/dashboard
+          - generic [ref=e107]:
+            - img [ref=e108]
+            - link "invoices" [ref=e110] [cursor=pointer]:
+              - /url: /org/e2e-test-org/invoices
+          - generic [ref=e111]:
+            - img [ref=e112]
+            - generic [ref=e114]: Invoice
+        - generic [ref=e115]:
+          - generic [ref=e117]: e2e-test-org
+          - button "AO" [ref=e119]
+          - button "Notifications" [ref=e121]:
+            - img
+      - main [ref=e123]:
+        - generic [ref=e126]:
+          - generic [ref=e127]:
+            - link "Back to Invoices" [ref=e128] [cursor=pointer]:
+              - /url: /org/e2e-test-org/invoices
+              - img [ref=e129]
+              - text: Back to Invoices
+            - button "Generate Document" [ref=e131]:
+              - img
+              - text: Generate Document
+              - img
+          - generic [ref=e132]:
+            - generic [ref=e133]:
+              - generic [ref=e134]:
+                - generic [ref=e135]:
+                  - 'heading "INV-0027 Help: Invoice numbering" [level=1] [ref=e136]':
+                    - text: INV-0027
+                    - 'button "Help: Invoice numbering" [ref=e137] [cursor=pointer]':
+                      - img [ref=e138]
+                  - generic [ref=e141]: Approved
+                - generic [ref=e142]:
+                  - generic [ref=e143]: "Customer: Acme Corp"
+                  - generic [ref=e144]: "Issued: Mar 25, 2026"
+                  - generic [ref=e145]: "Currency: ZAR"
+              - generic [ref=e146]:
+                - button "Preview" [ref=e147]:
+                  - img
+                  - text: Preview
+                - button "Send Invoice" [ref=e148]
+                - button "Void" [ref=e149]
+            - generic [ref=e150]:
+              - heading "Invoice Details" [level=2] [ref=e151]
+              - generic [ref=e153]:
+                - term [ref=e154]: Notes
+                - definition [ref=e155]: Lifecycle test 5kdm
+            - generic [ref=e156]:
+              - heading "Line Items" [level=2] [ref=e158]
+              - table [ref=e160]:
+                - rowgroup [ref=e161]:
+                  - row "Description Project Qty Rate Amount Tax" [ref=e162]:
+                    - columnheader "Description" [ref=e163]
+                    - columnheader "Project" [ref=e164]
+                    - columnheader "Qty" [ref=e165]
+                    - columnheader "Rate" [ref=e166]
+                    - columnheader "Amount" [ref=e167]
+                    - columnheader "Tax" [ref=e168]
+                - rowgroup [ref=e169]:
+                  - row "Lifecycle line 5kdm — 2 R 750,00 R 1 500,00 Standard (15%) R 225,00" [ref=e170]:
+                    - cell "Lifecycle line 5kdm" [ref=e171]:
+                      - generic [ref=e172]: Lifecycle line 5kdm
+                    - cell "—" [ref=e173]
+                    - cell "2" [ref=e174]
+                    - cell "R 750,00" [ref=e175]
+                    - cell "R 1 500,00" [ref=e176]
+                    - cell "Standard (15%) R 225,00" [ref=e177]:
+                      - generic [ref=e178]: Standard (15%) R 225,00
+            - generic [ref=e180]:
+              - generic [ref=e181]:
+                - generic [ref=e182]: Subtotal
+                - generic [ref=e183]: R 1 500,00
+              - generic [ref=e184]:
+                - generic [ref=e185]: (%)
+                - generic [ref=e186]: R 225,00
+              - generic [ref=e187]:
+                - generic [ref=e188]: Total
+                - generic [ref=e189]: R 1 725,00
+          - generic [ref=e190]:
+            - paragraph [ref=e191]: Field Groups
+            - generic [ref=e193]:
+              - text: Invoice Info
+              - button "Remove Invoice Info" [ref=e194]:
+                - img [ref=e195]
+          - generic [ref=e198]:
+            - generic [ref=e199]:
+              - generic [ref=e201]: Invoice Info
+              - generic [ref=e203]:
+                - generic [ref=e204]:
+                  - generic [ref=e205]: Purchase Order Number
+                  - textbox "Purchase Order Number" [ref=e207]:
+                    - /placeholder: Client's PO number for this invoice
+                - generic [ref=e208]:
+                  - generic [ref=e209]: Payment Reference
+                  - textbox "Payment Reference" [ref=e211]:
+                    - /placeholder: Payment reference for bank transfers
+                - generic [ref=e212]:
+                  - generic [ref=e213]: Tax Type
+                  - combobox "Tax Type" [ref=e215]:
+                    - option "Select..." [selected]
+                    - option "VAT"
+                    - option "GST"
+                    - option "Sales Tax"
+                    - option "No Tax"
+                - generic [ref=e216]:
+                  - generic [ref=e217]: Billing Period Start
+                  - textbox "Billing Period Start" [ref=e219]
+                - generic [ref=e220]:
+                  - generic [ref=e221]: Billing Period End
+                  - textbox "Billing Period End" [ref=e223]
+            - button "Save Custom Fields" [ref=e225]:
+              - img
+              - text: Save Custom Fields
+          - generic [ref=e226]:
+            - heading "Generated Documents" [level=2] [ref=e227]
+            - paragraph [ref=e229]: Loading generated documents...
+  - generic [ref=e230]:
+    - heading "Command Palette" [level=2] [ref=e231]
+    - paragraph [ref=e232]: Search pages and settings
+  - region "Notifications alt+T"
+  - alert [ref=e233]

@@ -1,0 +1,144 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e6]: DocTeams
+      - generic [ref=e9]: e2e-test-org
+      - button "Search, Command K" [ref=e11]:
+        - img [ref=e12]
+        - text: Search...
+        - generic [ref=e15]: ⌘K
+      - navigation "Main navigation" [ref=e16]:
+        - generic [ref=e17]:
+          - button "Work" [expanded] [ref=e18]:
+            - generic [ref=e19]: Work
+            - img [ref=e20]
+          - generic [ref=e22]:
+            - link "Dashboard" [ref=e23] [cursor=pointer]:
+              - /url: /org/e2e-test-org/dashboard
+              - img [ref=e24]
+              - text: Dashboard
+            - link "My Work" [ref=e29] [cursor=pointer]:
+              - /url: /org/e2e-test-org/my-work
+              - img [ref=e30]
+              - text: My Work
+            - link "Calendar" [ref=e33] [cursor=pointer]:
+              - /url: /org/e2e-test-org/calendar
+              - img [ref=e34]
+              - text: Calendar
+        - generic [ref=e37]:
+          - button "Projects" [expanded] [ref=e38]:
+            - generic [ref=e39]: Projects
+            - img [ref=e40]
+          - generic [ref=e42]:
+            - link "Engagements" [ref=e43] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects
+              - img [ref=e44]
+              - text: Engagements
+            - link "Recurring Schedules" [ref=e46] [cursor=pointer]:
+              - /url: /org/e2e-test-org/schedules
+              - img [ref=e47]
+              - text: Recurring Schedules
+        - button "Clients" [ref=e53]:
+          - generic [ref=e54]: Clients
+          - img [ref=e55]
+        - button "Finance" [ref=e59]:
+          - generic [ref=e60]: Finance
+          - img [ref=e61]
+        - generic [ref=e64]:
+          - button "Team" [expanded] [ref=e65]:
+            - generic [ref=e66]: Team
+            - img [ref=e67]
+          - generic [ref=e69]:
+            - link "Team" [ref=e70] [cursor=pointer]:
+              - /url: /org/e2e-test-org/team
+              - img [ref=e71]
+              - text: Team
+            - link "Resources" [ref=e76] [cursor=pointer]:
+              - /url: /org/e2e-test-org/resources
+              - img [ref=e77]
+              - text: Resources
+      - link "Platform Admin" [ref=e84] [cursor=pointer]:
+        - /url: /platform-admin/access-requests
+        - img [ref=e85]
+        - text: Platform Admin
+      - generic [ref=e88]:
+        - link "Notifications" [ref=e89] [cursor=pointer]:
+          - /url: /org/e2e-test-org/notifications
+          - img [ref=e90]
+          - text: Notifications
+        - link "Settings" [ref=e93] [cursor=pointer]:
+          - /url: /org/e2e-test-org/settings/general
+          - img [ref=e94]
+          - text: Settings
+      - generic [ref=e98]:
+        - generic [ref=e99]: AO
+        - generic [ref=e100]:
+          - paragraph [ref=e101]: Alice Owner
+          - paragraph [ref=e102]: alice@e2e-test.local
+    - generic [ref=e103]:
+      - banner [ref=e104]:
+        - navigation "Breadcrumb" [ref=e105]:
+          - link "e2e-test-org" [ref=e106] [cursor=pointer]:
+            - /url: /org/e2e-test-org/dashboard
+          - generic [ref=e107]:
+            - img [ref=e108]
+            - generic [ref=e110]: Compliance
+        - generic [ref=e111]:
+          - generic [ref=e113]: e2e-test-org
+          - button "AO" [ref=e115]
+          - button "Notifications" [ref=e117]:
+            - img
+      - main [ref=e119]:
+        - generic [ref=e122]:
+          - heading "Compliance" [level=1] [ref=e123]
+          - generic [ref=e124]:
+            - heading "Lifecycle Distribution" [level=2] [ref=e125]
+            - generic [ref=e126]:
+              - link "40 Prospect" [ref=e127] [cursor=pointer]:
+                - /url: /org/e2e-test-org/customers?lifecycleStatus=PROSPECT
+                - generic [ref=e129]:
+                  - img [ref=e130]
+                  - generic [ref=e133]:
+                    - paragraph [ref=e134]: "40"
+                    - paragraph [ref=e135]: Prospect
+              - link "0 Onboarding" [ref=e136] [cursor=pointer]:
+                - /url: /org/e2e-test-org/customers?lifecycleStatus=ONBOARDING
+                - generic [ref=e138]:
+                  - img [ref=e139]
+                  - generic [ref=e144]:
+                    - paragraph [ref=e145]: "0"
+                    - paragraph [ref=e146]: Onboarding
+              - link "1 Active" [ref=e147] [cursor=pointer]:
+                - /url: /org/e2e-test-org/customers?lifecycleStatus=ACTIVE
+                - generic [ref=e149]:
+                  - img [ref=e150]
+                  - generic [ref=e154]:
+                    - paragraph [ref=e155]: "1"
+                    - paragraph [ref=e156]: Active
+              - link "0 Dormant" [ref=e157] [cursor=pointer]:
+                - /url: /org/e2e-test-org/customers?lifecycleStatus=DORMANT
+                - generic [ref=e159]:
+                  - img [ref=e160]
+                  - generic [ref=e162]:
+                    - paragraph [ref=e163]: "0"
+                    - paragraph [ref=e164]: Dormant
+              - link "7 Offboarded" [ref=e165] [cursor=pointer]:
+                - /url: /org/e2e-test-org/customers?lifecycleStatus=OFFBOARDED
+                - generic [ref=e167]:
+                  - img [ref=e168]
+                  - generic [ref=e173]:
+                    - paragraph [ref=e174]: "7"
+                    - paragraph [ref=e175]: Offboarded
+          - generic [ref=e176]:
+            - heading "Onboarding Pipeline" [level=2] [ref=e177]
+            - paragraph [ref=e178]: No customers currently in onboarding
+          - generic [ref=e179]:
+            - heading "Data Requests" [level=2] [ref=e181]
+            - paragraph [ref=e182]: No open data requests
+          - generic [ref=e184]:
+            - heading "Dormancy Check" [level=2] [ref=e185]
+            - button "Check for Dormant Customers" [ref=e186]
+  - region "Notifications alt+T"
+  - alert [ref=e187]

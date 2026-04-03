@@ -1,0 +1,243 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e6]: DocTeams
+      - generic [ref=e9]: e2e-test-org
+      - button "Search, Command K" [ref=e11]:
+        - img [ref=e12]
+        - text: Search...
+        - generic [ref=e15]: ⌘K
+      - navigation "Main navigation" [ref=e16]:
+        - generic [ref=e17]:
+          - button "Work" [expanded] [ref=e18]:
+            - generic [ref=e19]: Work
+            - img [ref=e20]
+          - generic [ref=e22]:
+            - link "Dashboard" [ref=e23] [cursor=pointer]:
+              - /url: /org/e2e-test-org/dashboard
+              - img [ref=e24]
+              - text: Dashboard
+            - link "My Work" [ref=e29] [cursor=pointer]:
+              - /url: /org/e2e-test-org/my-work
+              - img [ref=e30]
+              - text: My Work
+            - link "Calendar" [ref=e33] [cursor=pointer]:
+              - /url: /org/e2e-test-org/calendar
+              - img [ref=e34]
+              - text: Calendar
+        - generic [ref=e37]:
+          - button "Projects" [expanded] [ref=e38]:
+            - generic [ref=e39]: Projects
+            - img [ref=e40]
+          - generic [ref=e42]:
+            - link "Engagements" [ref=e43] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects
+              - img [ref=e44]
+              - text: Engagements
+            - link "Recurring Schedules" [ref=e46] [cursor=pointer]:
+              - /url: /org/e2e-test-org/schedules
+              - img [ref=e47]
+              - text: Recurring Schedules
+        - button "Clients" [ref=e53]:
+          - generic [ref=e54]: Clients
+          - img [ref=e55]
+        - button "Finance" [ref=e59]:
+          - generic [ref=e60]: Finance
+          - img [ref=e61]
+        - generic [ref=e64]:
+          - button "Team" [expanded] [ref=e65]:
+            - generic [ref=e66]: Team
+            - img [ref=e67]
+          - generic [ref=e69]:
+            - link "Team" [ref=e70] [cursor=pointer]:
+              - /url: /org/e2e-test-org/team
+              - img [ref=e71]
+              - text: Team
+            - link "Resources" [ref=e76] [cursor=pointer]:
+              - /url: /org/e2e-test-org/resources
+              - img [ref=e77]
+              - text: Resources
+      - link "Platform Admin" [ref=e84] [cursor=pointer]:
+        - /url: /platform-admin/access-requests
+        - img [ref=e85]
+        - text: Platform Admin
+      - generic [ref=e88]:
+        - link "Notifications" [ref=e89] [cursor=pointer]:
+          - /url: /org/e2e-test-org/notifications
+          - img [ref=e90]
+          - text: Notifications
+        - link "Settings" [ref=e93] [cursor=pointer]:
+          - /url: /org/e2e-test-org/settings/general
+          - img [ref=e95]
+          - text: Settings
+      - generic [ref=e99]:
+        - generic [ref=e100]: AO
+        - generic [ref=e101]:
+          - paragraph [ref=e102]: Alice Owner
+          - paragraph [ref=e103]: alice@e2e-test.local
+    - generic [ref=e104]:
+      - banner [ref=e105]:
+        - navigation "Breadcrumb" [ref=e106]:
+          - link "e2e-test-org" [ref=e107] [cursor=pointer]:
+            - /url: /org/e2e-test-org/dashboard
+          - generic [ref=e108]:
+            - img [ref=e109]
+            - link "Settings" [ref=e111] [cursor=pointer]:
+              - /url: /org/e2e-test-org/settings
+          - generic [ref=e112]:
+            - img [ref=e113]
+            - generic [ref=e115]: general
+        - generic [ref=e116]:
+          - generic [ref=e118]: e2e-test-org
+          - button "AO" [ref=e120]
+          - button "Notifications" [ref=e122]:
+            - img
+      - main [ref=e124]:
+        - generic [ref=e127]:
+          - complementary [ref=e128]:
+            - navigation "Settings navigation" [ref=e129]:
+              - generic [ref=e130]:
+                - generic [ref=e131]: General
+                - link "General" [ref=e132] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/general
+                - link "Billing" [ref=e133] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/billing
+                - link "Notifications" [ref=e134] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/notifications
+                - link "Email" [ref=e135] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/email
+                - generic [ref=e136]:
+                  - text: Security
+                  - generic [ref=e137]: Coming soon
+              - generic [ref=e138]:
+                - generic [ref=e140]: Work
+                - link "Time Tracking" [ref=e141] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/time-tracking
+                - link "Project Templates" [ref=e142] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/project-templates
+                - link "Project Naming" [ref=e143] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/project-naming
+                - link "Automations" [ref=e144] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/automations
+              - generic [ref=e145]:
+                - generic [ref=e147]: Documents
+                - link "Templates" [ref=e148] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/templates
+                - link "Clauses" [ref=e149] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/clauses
+                - link "Checklists" [ref=e150] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/checklists
+                - link "Document Acceptance" [ref=e151] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/acceptance
+              - generic [ref=e152]:
+                - generic [ref=e154]: Finance
+                - link "Rates & Currency" [ref=e155] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/rates
+                - link "Tax" [ref=e156] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/tax
+                - link "Batch Billing" [ref=e157] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/batch-billing
+                - link "Capacity" [ref=e158] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/capacity
+              - generic [ref=e159]:
+                - generic [ref=e161]: Clients
+                - link "Custom Fields" [ref=e162] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/custom-fields
+                - link "Tags" [ref=e163] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/tags
+                - link "Request Templates" [ref=e164] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/request-templates
+                - link "Request Settings" [ref=e165] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/request-settings
+                - link "Compliance" [ref=e166] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/compliance
+                - link "Data Protection" [ref=e167] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/data-protection
+              - generic [ref=e168]:
+                - generic [ref=e170]: Access & Integrations
+                - link "Roles & Permissions" [ref=e171] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/roles
+                - link "Integrations" [ref=e172] [cursor=pointer]:
+                  - /url: /org/e2e-test-org/settings/integrations
+          - generic [ref=e174]:
+            - link "Settings" [ref=e175] [cursor=pointer]:
+              - /url: /org/e2e-test-org/settings
+              - img [ref=e176]
+              - text: Settings
+            - generic [ref=e178]:
+              - heading "General" [level=1] [ref=e179]
+              - paragraph [ref=e180]: Manage your organization's currency, tax configuration, and branding.
+            - generic [ref=e181]:
+              - heading "Vertical Profile" [level=2] [ref=e182]
+              - paragraph [ref=e183]: Select an industry profile to enable specialized modules and templates.
+              - generic [ref=e184]:
+                - button "Apply Profile" [disabled]
+            - generic [ref=e186]:
+              - generic [ref=e187]:
+                - heading "Currency" [level=2] [ref=e188]
+                - paragraph [ref=e189]: Set the default currency for invoices, rates, and financial reports.
+                - generic [ref=e190]:
+                  - generic [ref=e191]: Default Currency
+                  - combobox "Default Currency" [ref=e192]:
+                    - generic: ZAR — South African Rand
+                    - img
+              - generic [ref=e193]:
+                - heading "Tax Configuration" [level=2] [ref=e194]
+                - paragraph [ref=e195]: Configure your organization's tax registration and display settings.
+                - generic [ref=e196]:
+                  - generic [ref=e197]:
+                    - generic [ref=e198]: Tax Registration Number
+                    - textbox "Tax Registration Number" [ref=e199]:
+                      - /placeholder: e.g. VAT-123456789
+                  - generic [ref=e200]:
+                    - generic [ref=e201]: Tax Label
+                    - textbox "Tax Label" [ref=e202]:
+                      - /placeholder: e.g. VAT, GST, Tax
+                    - paragraph [ref=e203]: Label shown on invoices and documents (e.g. "VAT", "GST").
+                  - generic [ref=e204]:
+                    - switch "Tax-inclusive pricing" [ref=e205]
+                    - generic [ref=e206]: Tax-inclusive pricing
+              - generic [ref=e207]:
+                - heading "Branding" [level=2] [ref=e208]
+                - paragraph [ref=e209]: Customize your organization's branding for generated documents.
+                - generic [ref=e210]:
+                  - generic [ref=e211]: Logo
+                  - generic [ref=e212]:
+                    - img [ref=e214]
+                    - generic [ref=e217]:
+                      - button "Upload Logo" [ref=e218]
+                      - paragraph [ref=e219]: PNG, JPG, or SVG. Max 2 MB.
+                - generic [ref=e220]:
+                  - generic [ref=e221]: Brand Color
+                  - generic [ref=e222]:
+                    - textbox [ref=e223] [cursor=pointer]: "#1a8f6e"
+                    - textbox "Brand Color" [ref=e224]:
+                      - /placeholder: "#000000"
+                      - text: "#1a8f6e"
+                - generic [ref=e225]:
+                  - generic [ref=e226]: Document Footer Text
+                  - textbox "Document Footer Text" [ref=e227]:
+                    - /placeholder: Text that appears at the bottom of generated documents...
+                    - text: Test Footer 1774464225999
+                  - paragraph [ref=e228]: 25/500 characters
+              - button "Save Settings" [ref=e230]
+            - generic [ref=e231]:
+              - generic [ref=e232]:
+                - generic [ref=e233]:
+                  - heading "Org Documents" [level=2] [ref=e234]
+                  - generic [ref=e235]: "0"
+                - button "Upload Document" [ref=e236]:
+                  - img
+                  - text: Upload Document
+              - paragraph [ref=e237]: Organization-level documents shared across all projects.
+              - generic [ref=e238]:
+                - img [ref=e239]
+                - heading "No organization documents yet" [level=3] [ref=e242]
+                - paragraph [ref=e243]: Upload your first organization-level document to get started.
+  - generic [ref=e244]:
+    - heading "Command Palette" [level=2] [ref=e245]
+    - paragraph [ref=e246]: Search pages and settings
+  - region "Notifications alt+T"
+  - alert [ref=e247]

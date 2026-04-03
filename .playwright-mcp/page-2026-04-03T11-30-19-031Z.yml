@@ -1,0 +1,996 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e6]: DocTeams
+      - generic [ref=e9]: e2e-test-org
+      - button "Search, Command K" [ref=e11]:
+        - img [ref=e12]
+        - text: Search...
+        - generic [ref=e15]: ⌘K
+      - navigation "Main navigation" [ref=e16]:
+        - generic [ref=e17]:
+          - button "Work" [expanded] [ref=e18]:
+            - generic [ref=e19]: Work
+            - img [ref=e20]
+          - generic [ref=e22]:
+            - link "Dashboard" [ref=e23] [cursor=pointer]:
+              - /url: /org/e2e-test-org/dashboard
+              - img [ref=e24]
+              - text: Dashboard
+            - link "My Work" [ref=e29] [cursor=pointer]:
+              - /url: /org/e2e-test-org/my-work
+              - img [ref=e30]
+              - text: My Work
+            - link "Calendar" [ref=e33] [cursor=pointer]:
+              - /url: /org/e2e-test-org/calendar
+              - img [ref=e34]
+              - text: Calendar
+        - generic [ref=e37]:
+          - button "Projects" [expanded] [ref=e38]:
+            - generic [ref=e39]: Projects
+            - img [ref=e40]
+          - generic [ref=e42]:
+            - link "Engagements" [ref=e43] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects
+              - img [ref=e44]
+              - text: Engagements
+            - link "Recurring Schedules" [ref=e46] [cursor=pointer]:
+              - /url: /org/e2e-test-org/schedules
+              - img [ref=e47]
+              - text: Recurring Schedules
+        - button "Clients" [ref=e53]:
+          - generic [ref=e54]: Clients
+          - img [ref=e55]
+        - button "Finance" [ref=e59]:
+          - generic [ref=e60]: Finance
+          - img [ref=e61]
+        - generic [ref=e64]:
+          - button "Team" [expanded] [ref=e65]:
+            - generic [ref=e66]: Team
+            - img [ref=e67]
+          - generic [ref=e69]:
+            - link "Team" [ref=e70] [cursor=pointer]:
+              - /url: /org/e2e-test-org/team
+              - img [ref=e71]
+              - text: Team
+            - link "Resources" [ref=e76] [cursor=pointer]:
+              - /url: /org/e2e-test-org/resources
+              - img [ref=e77]
+              - text: Resources
+      - link "Platform Admin" [ref=e84] [cursor=pointer]:
+        - /url: /platform-admin/access-requests
+        - img [ref=e85]
+        - text: Platform Admin
+      - generic [ref=e88]:
+        - link "Notifications" [ref=e89] [cursor=pointer]:
+          - /url: /org/e2e-test-org/notifications
+          - img [ref=e90]
+          - text: Notifications
+        - link "Settings" [ref=e93] [cursor=pointer]:
+          - /url: /org/e2e-test-org/settings/general
+          - img [ref=e94]
+          - text: Settings
+      - generic [ref=e98]:
+        - generic [ref=e99]: AO
+        - generic [ref=e100]:
+          - paragraph [ref=e101]: Alice Owner
+          - paragraph [ref=e102]: alice@e2e-test.local
+    - generic [ref=e103]:
+      - banner [ref=e104]:
+        - navigation "Breadcrumb" [ref=e105]:
+          - link "e2e-test-org" [ref=e106] [cursor=pointer]:
+            - /url: /org/e2e-test-org/dashboard
+          - generic [ref=e107]:
+            - img [ref=e108]
+            - generic [ref=e110]: invoices
+        - generic [ref=e111]:
+          - generic [ref=e113]: e2e-test-org
+          - button "AO" [ref=e115]
+          - button "Notifications" [ref=e117]:
+            - img
+      - main [ref=e119]:
+        - generic [ref=e122]:
+          - generic [ref=e123]:
+            - generic [ref=e124]:
+              - 'heading "Invoices Help: Invoice lifecycle" [level=1] [ref=e125]':
+                - text: Invoices
+                - 'button "Help: Invoice lifecycle" [ref=e126] [cursor=pointer]':
+                  - img [ref=e127]
+              - generic [ref=e130]: "77"
+            - button "New Invoice" [ref=e131]:
+              - img
+              - text: New Invoice
+          - generic [ref=e132]:
+            - link "Invoices" [ref=e133] [cursor=pointer]:
+              - /url: /org/e2e-test-org/invoices
+            - link "Billing Runs" [ref=e134] [cursor=pointer]:
+              - /url: /org/e2e-test-org/invoices/billing-runs
+          - generic [ref=e135]:
+            - generic [ref=e136]:
+              - paragraph [ref=e137]: Total Outstanding
+              - paragraph [ref=e138]: R 33 925,00
+            - generic [ref=e139]:
+              - paragraph [ref=e140]: Total Overdue
+              - paragraph [ref=e141]: R 0,00
+            - generic [ref=e142]:
+              - paragraph [ref=e143]: Paid This Month
+              - paragraph [ref=e144]: R 0,00
+          - generic [ref=e145]:
+            - generic [ref=e146]: "Filter:"
+            - link "All" [ref=e147] [cursor=pointer]:
+              - /url: /org/e2e-test-org/invoices
+            - link "Draft" [ref=e148] [cursor=pointer]:
+              - /url: /org/e2e-test-org/invoices?status=DRAFT
+            - link "Approved" [ref=e149] [cursor=pointer]:
+              - /url: /org/e2e-test-org/invoices?status=APPROVED
+            - link "Sent" [ref=e150] [cursor=pointer]:
+              - /url: /org/e2e-test-org/invoices?status=SENT
+            - link "Paid" [ref=e151] [cursor=pointer]:
+              - /url: /org/e2e-test-org/invoices?status=PAID
+            - link "Void" [ref=e152] [cursor=pointer]:
+              - /url: /org/e2e-test-org/invoices?status=VOID
+          - table [ref=e154]:
+            - rowgroup [ref=e155]:
+              - row "Invoice Customer Status Issue Date Due Date Total Currency" [ref=e156]:
+                - columnheader "Invoice" [ref=e157]
+                - columnheader "Customer" [ref=e158]
+                - columnheader "Status" [ref=e159]
+                - columnheader "Issue Date" [ref=e160]
+                - columnheader "Due Date" [ref=e161]
+                - columnheader "Total" [ref=e162]
+                - columnheader "Currency" [ref=e163]
+            - rowgroup [ref=e164]:
+              - row "INV-0027 Acme Corp Approved Mar 25, 2026 — R 1 725,00 ZAR" [ref=e165]:
+                - cell "INV-0027" [ref=e166]:
+                  - link "INV-0027" [ref=e167] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/cd06b0dc-f17a-4b08-aef9-7d131bcf439e
+                - cell "Acme Corp" [ref=e168]
+                - cell "Approved" [ref=e169]:
+                  - generic [ref=e171]: Approved
+                - cell "Mar 25, 2026" [ref=e172]
+                - cell "—" [ref=e173]
+                - cell "R 1 725,00" [ref=e174]
+                - cell "ZAR" [ref=e175]
+              - row "INV-0026 Acme Corp Approved Mar 25, 2026 — R 1 725,00 ZAR" [ref=e176]:
+                - cell "INV-0026" [ref=e177]:
+                  - link "INV-0026" [ref=e178] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/0c0adbc4-c2d2-45f2-8aec-0cf4d1e87026
+                - cell "Acme Corp" [ref=e179]
+                - cell "Approved" [ref=e180]:
+                  - generic [ref=e182]: Approved
+                - cell "Mar 25, 2026" [ref=e183]
+                - cell "—" [ref=e184]
+                - cell "R 1 725,00" [ref=e185]
+                - cell "ZAR" [ref=e186]
+              - row "INV-0025 Acme Corp Sent Mar 25, 2026 — R 1 725,00 ZAR" [ref=e187]:
+                - cell "INV-0025" [ref=e188]:
+                  - link "INV-0025" [ref=e189] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/4f9d7a8b-2dca-417b-8f6f-8116096ee586
+                - cell "Acme Corp" [ref=e190]
+                - cell "Sent" [ref=e191]:
+                  - generic [ref=e193]: Sent
+                - cell "Mar 25, 2026" [ref=e194]
+                - cell "—" [ref=e195]
+                - cell "R 1 725,00" [ref=e196]
+                - cell "ZAR" [ref=e197]
+              - row "Draft Acme Corp Draft — — R 2 875,00 ZAR" [ref=e198]:
+                - cell "Draft" [ref=e199]:
+                  - link "Draft" [ref=e200] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/8308bd6e-d47a-4cca-864a-b54c2135b4f6
+                - cell "Acme Corp" [ref=e201]
+                - cell "Draft" [ref=e202]:
+                  - generic [ref=e204]: Draft
+                - cell "—" [ref=e205]
+                - cell "—" [ref=e206]
+                - cell "R 2 875,00" [ref=e207]
+                - cell "ZAR" [ref=e208]
+              - row "INV-0024 Acme Corp Paid Mar 25, 2026 — R 1 725,00 ZAR" [ref=e209]:
+                - cell "INV-0024" [ref=e210]:
+                  - link "INV-0024" [ref=e211] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/83a85c3c-3378-40c3-b2f3-dbf1026ff3c6
+                - cell "Acme Corp" [ref=e212]
+                - cell "Paid" [ref=e213]:
+                  - generic [ref=e215]: Paid
+                - cell "Mar 25, 2026" [ref=e216]
+                - cell "—" [ref=e217]
+                - cell "R 1 725,00" [ref=e218]
+                - cell "ZAR" [ref=e219]
+              - row "Draft Acme Corp Draft — — R 2 875,00 ZAR" [ref=e220]:
+                - cell "Draft" [ref=e221]:
+                  - link "Draft" [ref=e222] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/66871564-86e2-466a-bcd5-c7a09fc8d87b
+                - cell "Acme Corp" [ref=e223]
+                - cell "Draft" [ref=e224]:
+                  - generic [ref=e226]: Draft
+                - cell "—" [ref=e227]
+                - cell "—" [ref=e228]
+                - cell "R 2 875,00" [ref=e229]
+                - cell "ZAR" [ref=e230]
+              - row "Draft Acme Corp Draft — — R 1 840,00 ZAR" [ref=e231]:
+                - cell "Draft" [ref=e232]:
+                  - link "Draft" [ref=e233] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/1e39add6-f624-4f43-b293-ae89f661fc07
+                - cell "Acme Corp" [ref=e234]
+                - cell "Draft" [ref=e235]:
+                  - generic [ref=e237]: Draft
+                - cell "—" [ref=e238]
+                - cell "—" [ref=e239]
+                - cell "R 1 840,00" [ref=e240]
+                - cell "ZAR" [ref=e241]
+              - row "Draft Acme Corp Draft — — R 345,00 ZAR" [ref=e242]:
+                - cell "Draft" [ref=e243]:
+                  - link "Draft" [ref=e244] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/83dc19e5-0e3c-417b-8f31-7ec384131d3e
+                - cell "Acme Corp" [ref=e245]
+                - cell "Draft" [ref=e246]:
+                  - generic [ref=e248]: Draft
+                - cell "—" [ref=e249]
+                - cell "—" [ref=e250]
+                - cell "R 345,00" [ref=e251]
+                - cell "ZAR" [ref=e252]
+              - row "Draft Acme Corp Draft — — R 0,00 ZAR" [ref=e253]:
+                - cell "Draft" [ref=e254]:
+                  - link "Draft" [ref=e255] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/e6cc90f7-9058-4af5-a823-b1514109308c
+                - cell "Acme Corp" [ref=e256]
+                - cell "Draft" [ref=e257]:
+                  - generic [ref=e259]: Draft
+                - cell "—" [ref=e260]
+                - cell "—" [ref=e261]
+                - cell "R 0,00" [ref=e262]
+                - cell "ZAR" [ref=e263]
+              - row "Draft Acme Corp Draft — — R 575,00 ZAR" [ref=e264]:
+                - cell "Draft" [ref=e265]:
+                  - link "Draft" [ref=e266] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/e9ce6b27-5de0-40ad-bbee-7738bbd91e62
+                - cell "Acme Corp" [ref=e267]
+                - cell "Draft" [ref=e268]:
+                  - generic [ref=e270]: Draft
+                - cell "—" [ref=e271]
+                - cell "—" [ref=e272]
+                - cell "R 575,00" [ref=e273]
+                - cell "ZAR" [ref=e274]
+              - row "Draft Acme Corp Draft — — R 2 875,00 ZAR" [ref=e275]:
+                - cell "Draft" [ref=e276]:
+                  - link "Draft" [ref=e277] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/d6c74281-a2f0-415c-b699-97a1cd441761
+                - cell "Acme Corp" [ref=e278]
+                - cell "Draft" [ref=e279]:
+                  - generic [ref=e281]: Draft
+                - cell "—" [ref=e282]
+                - cell "—" [ref=e283]
+                - cell "R 2 875,00" [ref=e284]
+                - cell "ZAR" [ref=e285]
+              - row "Draft Acme Corp Draft — — R 1 552,50 ZAR" [ref=e286]:
+                - cell "Draft" [ref=e287]:
+                  - link "Draft" [ref=e288] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/dcd0a8c6-b4bb-4bf1-8ca5-11cc82f9cb7c
+                - cell "Acme Corp" [ref=e289]
+                - cell "Draft" [ref=e290]:
+                  - generic [ref=e292]: Draft
+                - cell "—" [ref=e293]
+                - cell "—" [ref=e294]
+                - cell "R 1 552,50" [ref=e295]
+                - cell "ZAR" [ref=e296]
+              - row "INV-0023 Acme Corp Approved Mar 25, 2026 — R 1 725,00 ZAR" [ref=e297]:
+                - cell "INV-0023" [ref=e298]:
+                  - link "INV-0023" [ref=e299] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/af71063c-f986-45c7-95bf-c5432e5ff050
+                - cell "Acme Corp" [ref=e300]
+                - cell "Approved" [ref=e301]:
+                  - generic [ref=e303]: Approved
+                - cell "Mar 25, 2026" [ref=e304]
+                - cell "—" [ref=e305]
+                - cell "R 1 725,00" [ref=e306]
+                - cell "ZAR" [ref=e307]
+              - row "INV-0022 Acme Corp Approved Mar 25, 2026 — R 1 725,00 ZAR" [ref=e308]:
+                - cell "INV-0022" [ref=e309]:
+                  - link "INV-0022" [ref=e310] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/79bd5fcd-297a-4cf9-8fbc-4a9717521b1b
+                - cell "Acme Corp" [ref=e311]
+                - cell "Approved" [ref=e312]:
+                  - generic [ref=e314]: Approved
+                - cell "Mar 25, 2026" [ref=e315]
+                - cell "—" [ref=e316]
+                - cell "R 1 725,00" [ref=e317]
+                - cell "ZAR" [ref=e318]
+              - row "INV-0021 Acme Corp Sent Mar 25, 2026 — R 1 725,00 ZAR" [ref=e319]:
+                - cell "INV-0021" [ref=e320]:
+                  - link "INV-0021" [ref=e321] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/88abaf28-3bfb-406b-9117-6bd2857ec36a
+                - cell "Acme Corp" [ref=e322]
+                - cell "Sent" [ref=e323]:
+                  - generic [ref=e325]: Sent
+                - cell "Mar 25, 2026" [ref=e326]
+                - cell "—" [ref=e327]
+                - cell "R 1 725,00" [ref=e328]
+                - cell "ZAR" [ref=e329]
+              - row "Draft Acme Corp Draft — — R 2 875,00 ZAR" [ref=e330]:
+                - cell "Draft" [ref=e331]:
+                  - link "Draft" [ref=e332] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/59562bf8-8f1d-422f-bfc3-5ba5181d88a8
+                - cell "Acme Corp" [ref=e333]
+                - cell "Draft" [ref=e334]:
+                  - generic [ref=e336]: Draft
+                - cell "—" [ref=e337]
+                - cell "—" [ref=e338]
+                - cell "R 2 875,00" [ref=e339]
+                - cell "ZAR" [ref=e340]
+              - row "INV-0020 Acme Corp Paid Mar 25, 2026 — R 1 725,00 ZAR" [ref=e341]:
+                - cell "INV-0020" [ref=e342]:
+                  - link "INV-0020" [ref=e343] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/51186580-8fb3-4a11-91fc-b44cb5dc75ed
+                - cell "Acme Corp" [ref=e344]
+                - cell "Paid" [ref=e345]:
+                  - generic [ref=e347]: Paid
+                - cell "Mar 25, 2026" [ref=e348]
+                - cell "—" [ref=e349]
+                - cell "R 1 725,00" [ref=e350]
+                - cell "ZAR" [ref=e351]
+              - row "Draft Acme Corp Draft — — R 2 875,00 ZAR" [ref=e352]:
+                - cell "Draft" [ref=e353]:
+                  - link "Draft" [ref=e354] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/048459fd-61d0-47c6-b8a1-aafcb5a0c397
+                - cell "Acme Corp" [ref=e355]
+                - cell "Draft" [ref=e356]:
+                  - generic [ref=e358]: Draft
+                - cell "—" [ref=e359]
+                - cell "—" [ref=e360]
+                - cell "R 2 875,00" [ref=e361]
+                - cell "ZAR" [ref=e362]
+              - row "Draft Acme Corp Draft — — R 1 840,00 ZAR" [ref=e363]:
+                - cell "Draft" [ref=e364]:
+                  - link "Draft" [ref=e365] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/c775170e-9391-409b-8430-cd62aefa414a
+                - cell "Acme Corp" [ref=e366]
+                - cell "Draft" [ref=e367]:
+                  - generic [ref=e369]: Draft
+                - cell "—" [ref=e370]
+                - cell "—" [ref=e371]
+                - cell "R 1 840,00" [ref=e372]
+                - cell "ZAR" [ref=e373]
+              - row "Draft Acme Corp Draft — — R 345,00 ZAR" [ref=e374]:
+                - cell "Draft" [ref=e375]:
+                  - link "Draft" [ref=e376] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/6432dcaf-304a-4c4a-84be-410ed5aa2200
+                - cell "Acme Corp" [ref=e377]
+                - cell "Draft" [ref=e378]:
+                  - generic [ref=e380]: Draft
+                - cell "—" [ref=e381]
+                - cell "—" [ref=e382]
+                - cell "R 345,00" [ref=e383]
+                - cell "ZAR" [ref=e384]
+              - row "Draft Acme Corp Draft — — R 0,00 ZAR" [ref=e385]:
+                - cell "Draft" [ref=e386]:
+                  - link "Draft" [ref=e387] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/a3d5b6b3-ae4b-4ed2-83e7-a8a379a9cf3d
+                - cell "Acme Corp" [ref=e388]
+                - cell "Draft" [ref=e389]:
+                  - generic [ref=e391]: Draft
+                - cell "—" [ref=e392]
+                - cell "—" [ref=e393]
+                - cell "R 0,00" [ref=e394]
+                - cell "ZAR" [ref=e395]
+              - row "Draft Acme Corp Draft — — R 575,00 ZAR" [ref=e396]:
+                - cell "Draft" [ref=e397]:
+                  - link "Draft" [ref=e398] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/0460f944-c70d-4337-a1e3-af08db17d1ce
+                - cell "Acme Corp" [ref=e399]
+                - cell "Draft" [ref=e400]:
+                  - generic [ref=e402]: Draft
+                - cell "—" [ref=e403]
+                - cell "—" [ref=e404]
+                - cell "R 575,00" [ref=e405]
+                - cell "ZAR" [ref=e406]
+              - row "Draft Acme Corp Draft — — R 2 875,00 ZAR" [ref=e407]:
+                - cell "Draft" [ref=e408]:
+                  - link "Draft" [ref=e409] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/90cb5d28-d6a7-432a-89f8-c7764a1fcfb3
+                - cell "Acme Corp" [ref=e410]
+                - cell "Draft" [ref=e411]:
+                  - generic [ref=e413]: Draft
+                - cell "—" [ref=e414]
+                - cell "—" [ref=e415]
+                - cell "R 2 875,00" [ref=e416]
+                - cell "ZAR" [ref=e417]
+              - row "Draft Acme Corp Draft — — R 1 552,50 ZAR" [ref=e418]:
+                - cell "Draft" [ref=e419]:
+                  - link "Draft" [ref=e420] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/973e3ad4-5e1e-4d27-bbc9-4408a1408832
+                - cell "Acme Corp" [ref=e421]
+                - cell "Draft" [ref=e422]:
+                  - generic [ref=e424]: Draft
+                - cell "—" [ref=e425]
+                - cell "—" [ref=e426]
+                - cell "R 1 552,50" [ref=e427]
+                - cell "ZAR" [ref=e428]
+              - row "INV-0018 Acme Corp Approved Mar 25, 2026 — R 1 725,00 ZAR" [ref=e429]:
+                - cell "INV-0018" [ref=e430]:
+                  - link "INV-0018" [ref=e431] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/a217e893-54e9-4dc4-89e5-142561c89c77
+                - cell "Acme Corp" [ref=e432]
+                - cell "Approved" [ref=e433]:
+                  - generic [ref=e435]: Approved
+                - cell "Mar 25, 2026" [ref=e436]
+                - cell "—" [ref=e437]
+                - cell "R 1 725,00" [ref=e438]
+                - cell "ZAR" [ref=e439]
+              - row "INV-0017 Acme Corp Approved Mar 25, 2026 — R 1 725,00 ZAR" [ref=e440]:
+                - cell "INV-0017" [ref=e441]:
+                  - link "INV-0017" [ref=e442] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/c4af2c96-b09c-432b-9afb-d1eba98a4a91
+                - cell "Acme Corp" [ref=e443]
+                - cell "Approved" [ref=e444]:
+                  - generic [ref=e446]: Approved
+                - cell "Mar 25, 2026" [ref=e447]
+                - cell "—" [ref=e448]
+                - cell "R 1 725,00" [ref=e449]
+                - cell "ZAR" [ref=e450]
+              - row "INV-0016 Acme Corp Sent Mar 25, 2026 — R 1 725,00 ZAR" [ref=e451]:
+                - cell "INV-0016" [ref=e452]:
+                  - link "INV-0016" [ref=e453] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/b8ae5621-c606-465f-84e8-97b695d9d43b
+                - cell "Acme Corp" [ref=e454]
+                - cell "Sent" [ref=e455]:
+                  - generic [ref=e457]: Sent
+                - cell "Mar 25, 2026" [ref=e458]
+                - cell "—" [ref=e459]
+                - cell "R 1 725,00" [ref=e460]
+                - cell "ZAR" [ref=e461]
+              - row "INV-0019 Acme Corp Approved Mar 25, 2026 — R 2 875,00 ZAR" [ref=e462]:
+                - cell "INV-0019" [ref=e463]:
+                  - link "INV-0019" [ref=e464] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/03aab0b7-1f47-4074-84d4-d0eccccc32aa
+                - cell "Acme Corp" [ref=e465]
+                - cell "Approved" [ref=e466]:
+                  - generic [ref=e468]: Approved
+                - cell "Mar 25, 2026" [ref=e469]
+                - cell "—" [ref=e470]
+                - cell "R 2 875,00" [ref=e471]
+                - cell "ZAR" [ref=e472]
+              - row "INV-0015 Acme Corp Paid Mar 25, 2026 — R 1 725,00 ZAR" [ref=e473]:
+                - cell "INV-0015" [ref=e474]:
+                  - link "INV-0015" [ref=e475] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/4df527a7-57bd-4de0-9aa7-f6616fa33785
+                - cell "Acme Corp" [ref=e476]
+                - cell "Paid" [ref=e477]:
+                  - generic [ref=e479]: Paid
+                - cell "Mar 25, 2026" [ref=e480]
+                - cell "—" [ref=e481]
+                - cell "R 1 725,00" [ref=e482]
+                - cell "ZAR" [ref=e483]
+              - row "Draft Acme Corp Draft — — R 1 840,00 ZAR" [ref=e484]:
+                - cell "Draft" [ref=e485]:
+                  - link "Draft" [ref=e486] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/d0e35863-d1e3-47ef-b27c-a4f1d48c6d9f
+                - cell "Acme Corp" [ref=e487]
+                - cell "Draft" [ref=e488]:
+                  - generic [ref=e490]: Draft
+                - cell "—" [ref=e491]
+                - cell "—" [ref=e492]
+                - cell "R 1 840,00" [ref=e493]
+                - cell "ZAR" [ref=e494]
+              - row "Draft Acme Corp Draft — — R 345,00 ZAR" [ref=e495]:
+                - cell "Draft" [ref=e496]:
+                  - link "Draft" [ref=e497] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/696039e7-0510-4bd3-bdcf-a671ad9b8be6
+                - cell "Acme Corp" [ref=e498]
+                - cell "Draft" [ref=e499]:
+                  - generic [ref=e501]: Draft
+                - cell "—" [ref=e502]
+                - cell "—" [ref=e503]
+                - cell "R 345,00" [ref=e504]
+                - cell "ZAR" [ref=e505]
+              - row "Draft Acme Corp Draft — — R 0,00 ZAR" [ref=e506]:
+                - cell "Draft" [ref=e507]:
+                  - link "Draft" [ref=e508] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/008dfb06-f818-45a6-9a61-5195f063b1cb
+                - cell "Acme Corp" [ref=e509]
+                - cell "Draft" [ref=e510]:
+                  - generic [ref=e512]: Draft
+                - cell "—" [ref=e513]
+                - cell "—" [ref=e514]
+                - cell "R 0,00" [ref=e515]
+                - cell "ZAR" [ref=e516]
+              - row "Draft Acme Corp Draft — — R 575,00 ZAR" [ref=e517]:
+                - cell "Draft" [ref=e518]:
+                  - link "Draft" [ref=e519] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/97f77288-199b-4cb2-8be2-8b678f9aa648
+                - cell "Acme Corp" [ref=e520]
+                - cell "Draft" [ref=e521]:
+                  - generic [ref=e523]: Draft
+                - cell "—" [ref=e524]
+                - cell "—" [ref=e525]
+                - cell "R 575,00" [ref=e526]
+                - cell "ZAR" [ref=e527]
+              - row "Draft Acme Corp Draft — — R 2 875,00 ZAR" [ref=e528]:
+                - cell "Draft" [ref=e529]:
+                  - link "Draft" [ref=e530] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/6585300a-b622-424a-8fbd-cfc337cf8c3c
+                - cell "Acme Corp" [ref=e531]
+                - cell "Draft" [ref=e532]:
+                  - generic [ref=e534]: Draft
+                - cell "—" [ref=e535]
+                - cell "—" [ref=e536]
+                - cell "R 2 875,00" [ref=e537]
+                - cell "ZAR" [ref=e538]
+              - row "Draft Acme Corp Draft — — R 2 875,00 ZAR" [ref=e539]:
+                - cell "Draft" [ref=e540]:
+                  - link "Draft" [ref=e541] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/9daaff95-574a-43de-b58e-d1e03a54e042
+                - cell "Acme Corp" [ref=e542]
+                - cell "Draft" [ref=e543]:
+                  - generic [ref=e545]: Draft
+                - cell "—" [ref=e546]
+                - cell "—" [ref=e547]
+                - cell "R 2 875,00" [ref=e548]
+                - cell "ZAR" [ref=e549]
+              - row "Draft Acme Corp Draft — — R 1 552,50 ZAR" [ref=e550]:
+                - cell "Draft" [ref=e551]:
+                  - link "Draft" [ref=e552] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/8d1195ee-4a61-4033-b0d6-050585dc8007
+                - cell "Acme Corp" [ref=e553]
+                - cell "Draft" [ref=e554]:
+                  - generic [ref=e556]: Draft
+                - cell "—" [ref=e557]
+                - cell "—" [ref=e558]
+                - cell "R 1 552,50" [ref=e559]
+                - cell "ZAR" [ref=e560]
+              - row "INV-0014 Acme Corp Approved Mar 25, 2026 — R 1 725,00 ZAR" [ref=e561]:
+                - cell "INV-0014" [ref=e562]:
+                  - link "INV-0014" [ref=e563] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/2694361c-ebdf-4681-b144-cd925de590c8
+                - cell "Acme Corp" [ref=e564]
+                - cell "Approved" [ref=e565]:
+                  - generic [ref=e567]: Approved
+                - cell "Mar 25, 2026" [ref=e568]
+                - cell "—" [ref=e569]
+                - cell "R 1 725,00" [ref=e570]
+                - cell "ZAR" [ref=e571]
+              - row "INV-0013 Acme Corp Approved Mar 25, 2026 — R 1 725,00 ZAR" [ref=e572]:
+                - cell "INV-0013" [ref=e573]:
+                  - link "INV-0013" [ref=e574] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/19e6dcf3-770f-4e12-8610-367666adf81e
+                - cell "Acme Corp" [ref=e575]
+                - cell "Approved" [ref=e576]:
+                  - generic [ref=e578]: Approved
+                - cell "Mar 25, 2026" [ref=e579]
+                - cell "—" [ref=e580]
+                - cell "R 1 725,00" [ref=e581]
+                - cell "ZAR" [ref=e582]
+              - row "INV-0012 Acme Corp Sent Mar 25, 2026 — R 1 725,00 ZAR" [ref=e583]:
+                - cell "INV-0012" [ref=e584]:
+                  - link "INV-0012" [ref=e585] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/2504fc95-80b8-41db-9c98-8d11529926f0
+                - cell "Acme Corp" [ref=e586]
+                - cell "Sent" [ref=e587]:
+                  - generic [ref=e589]: Sent
+                - cell "Mar 25, 2026" [ref=e590]
+                - cell "—" [ref=e591]
+                - cell "R 1 725,00" [ref=e592]
+                - cell "ZAR" [ref=e593]
+              - row "Draft Acme Corp Draft — — R 2 875,00 ZAR" [ref=e594]:
+                - cell "Draft" [ref=e595]:
+                  - link "Draft" [ref=e596] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/0bb302ed-1f40-4286-bf1f-b343f9ebd45b
+                - cell "Acme Corp" [ref=e597]
+                - cell "Draft" [ref=e598]:
+                  - generic [ref=e600]: Draft
+                - cell "—" [ref=e601]
+                - cell "—" [ref=e602]
+                - cell "R 2 875,00" [ref=e603]
+                - cell "ZAR" [ref=e604]
+              - row "INV-0011 Acme Corp Paid Mar 25, 2026 — R 1 725,00 ZAR" [ref=e605]:
+                - cell "INV-0011" [ref=e606]:
+                  - link "INV-0011" [ref=e607] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/d8f63449-3a25-4faf-ae97-c93e3b22474d
+                - cell "Acme Corp" [ref=e608]
+                - cell "Paid" [ref=e609]:
+                  - generic [ref=e611]: Paid
+                - cell "Mar 25, 2026" [ref=e612]
+                - cell "—" [ref=e613]
+                - cell "R 1 725,00" [ref=e614]
+                - cell "ZAR" [ref=e615]
+              - row "Draft Acme Corp Draft — — R 1 840,00 ZAR" [ref=e616]:
+                - cell "Draft" [ref=e617]:
+                  - link "Draft" [ref=e618] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/edaa5af4-d846-4f65-b2a5-cd85204e19e3
+                - cell "Acme Corp" [ref=e619]
+                - cell "Draft" [ref=e620]:
+                  - generic [ref=e622]: Draft
+                - cell "—" [ref=e623]
+                - cell "—" [ref=e624]
+                - cell "R 1 840,00" [ref=e625]
+                - cell "ZAR" [ref=e626]
+              - row "Draft Acme Corp Draft — — R 345,00 ZAR" [ref=e627]:
+                - cell "Draft" [ref=e628]:
+                  - link "Draft" [ref=e629] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/95288b21-0393-4e5a-b6f7-d27eceb1c41a
+                - cell "Acme Corp" [ref=e630]
+                - cell "Draft" [ref=e631]:
+                  - generic [ref=e633]: Draft
+                - cell "—" [ref=e634]
+                - cell "—" [ref=e635]
+                - cell "R 345,00" [ref=e636]
+                - cell "ZAR" [ref=e637]
+              - row "Draft Acme Corp Draft — — R 0,00 ZAR" [ref=e638]:
+                - cell "Draft" [ref=e639]:
+                  - link "Draft" [ref=e640] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/20e529fb-d50e-456b-ba14-7152932a5436
+                - cell "Acme Corp" [ref=e641]
+                - cell "Draft" [ref=e642]:
+                  - generic [ref=e644]: Draft
+                - cell "—" [ref=e645]
+                - cell "—" [ref=e646]
+                - cell "R 0,00" [ref=e647]
+                - cell "ZAR" [ref=e648]
+              - row "Draft Acme Corp Draft — — R 2 875,00 ZAR" [ref=e649]:
+                - cell "Draft" [ref=e650]:
+                  - link "Draft" [ref=e651] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/506983c7-df91-4929-a529-361e16932875
+                - cell "Acme Corp" [ref=e652]
+                - cell "Draft" [ref=e653]:
+                  - generic [ref=e655]: Draft
+                - cell "—" [ref=e656]
+                - cell "—" [ref=e657]
+                - cell "R 2 875,00" [ref=e658]
+                - cell "ZAR" [ref=e659]
+              - row "Draft Acme Corp Draft — — R 575,00 ZAR" [ref=e660]:
+                - cell "Draft" [ref=e661]:
+                  - link "Draft" [ref=e662] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/2d289248-84b4-4dac-a548-d29967e466ad
+                - cell "Acme Corp" [ref=e663]
+                - cell "Draft" [ref=e664]:
+                  - generic [ref=e666]: Draft
+                - cell "—" [ref=e667]
+                - cell "—" [ref=e668]
+                - cell "R 575,00" [ref=e669]
+                - cell "ZAR" [ref=e670]
+              - row "Draft Acme Corp Draft — — R 2 875,00 ZAR" [ref=e671]:
+                - cell "Draft" [ref=e672]:
+                  - link "Draft" [ref=e673] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/99ac7fff-7c78-49ed-b153-1835fbdafc80
+                - cell "Acme Corp" [ref=e674]
+                - cell "Draft" [ref=e675]:
+                  - generic [ref=e677]: Draft
+                - cell "—" [ref=e678]
+                - cell "—" [ref=e679]
+                - cell "R 2 875,00" [ref=e680]
+                - cell "ZAR" [ref=e681]
+              - row "Draft Acme Corp Draft — — R 1 552,50 ZAR" [ref=e682]:
+                - cell "Draft" [ref=e683]:
+                  - link "Draft" [ref=e684] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/cdc37a8c-b562-437c-832e-5bc1b68ad0bd
+                - cell "Acme Corp" [ref=e685]
+                - cell "Draft" [ref=e686]:
+                  - generic [ref=e688]: Draft
+                - cell "—" [ref=e689]
+                - cell "—" [ref=e690]
+                - cell "R 1 552,50" [ref=e691]
+                - cell "ZAR" [ref=e692]
+              - row "INV-0010 Acme Corp Approved Mar 25, 2026 — R 1 725,00 ZAR" [ref=e693]:
+                - cell "INV-0010" [ref=e694]:
+                  - link "INV-0010" [ref=e695] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/999181c4-6d06-4272-b336-7955bbcf805d
+                - cell "Acme Corp" [ref=e696]
+                - cell "Approved" [ref=e697]:
+                  - generic [ref=e699]: Approved
+                - cell "Mar 25, 2026" [ref=e700]
+                - cell "—" [ref=e701]
+                - cell "R 1 725,00" [ref=e702]
+                - cell "ZAR" [ref=e703]
+              - row "INV-0009 Acme Corp Approved Mar 25, 2026 — R 1 725,00 ZAR" [ref=e704]:
+                - cell "INV-0009" [ref=e705]:
+                  - link "INV-0009" [ref=e706] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/a2b03fe0-2b8d-4c76-b04b-438bfb081839
+                - cell "Acme Corp" [ref=e707]
+                - cell "Approved" [ref=e708]:
+                  - generic [ref=e710]: Approved
+                - cell "Mar 25, 2026" [ref=e711]
+                - cell "—" [ref=e712]
+                - cell "R 1 725,00" [ref=e713]
+                - cell "ZAR" [ref=e714]
+              - row "INV-0008 Acme Corp Sent Mar 25, 2026 — R 1 725,00 ZAR" [ref=e715]:
+                - cell "INV-0008" [ref=e716]:
+                  - link "INV-0008" [ref=e717] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/a040fc81-21d3-4ed9-a653-053f93ab13a5
+                - cell "Acme Corp" [ref=e718]
+                - cell "Sent" [ref=e719]:
+                  - generic [ref=e721]: Sent
+                - cell "Mar 25, 2026" [ref=e722]
+                - cell "—" [ref=e723]
+                - cell "R 1 725,00" [ref=e724]
+                - cell "ZAR" [ref=e725]
+              - row "Draft Acme Corp Draft — — R 2 875,00 ZAR" [ref=e726]:
+                - cell "Draft" [ref=e727]:
+                  - link "Draft" [ref=e728] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/ab00062e-be06-4149-bafe-4bd214121532
+                - cell "Acme Corp" [ref=e729]
+                - cell "Draft" [ref=e730]:
+                  - generic [ref=e732]: Draft
+                - cell "—" [ref=e733]
+                - cell "—" [ref=e734]
+                - cell "R 2 875,00" [ref=e735]
+                - cell "ZAR" [ref=e736]
+              - row "INV-0007 Acme Corp Paid Mar 25, 2026 — R 1 725,00 ZAR" [ref=e737]:
+                - cell "INV-0007" [ref=e738]:
+                  - link "INV-0007" [ref=e739] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/439d52bd-02d6-440d-b355-889023de8c1d
+                - cell "Acme Corp" [ref=e740]
+                - cell "Paid" [ref=e741]:
+                  - generic [ref=e743]: Paid
+                - cell "Mar 25, 2026" [ref=e744]
+                - cell "—" [ref=e745]
+                - cell "R 1 725,00" [ref=e746]
+                - cell "ZAR" [ref=e747]
+              - row "Draft Acme Corp Draft — — R 1 840,00 ZAR" [ref=e748]:
+                - cell "Draft" [ref=e749]:
+                  - link "Draft" [ref=e750] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/1f33fd66-87e0-41b0-be17-296df1afc566
+                - cell "Acme Corp" [ref=e751]
+                - cell "Draft" [ref=e752]:
+                  - generic [ref=e754]: Draft
+                - cell "—" [ref=e755]
+                - cell "—" [ref=e756]
+                - cell "R 1 840,00" [ref=e757]
+                - cell "ZAR" [ref=e758]
+              - row "Draft Acme Corp Draft — — R 345,00 ZAR" [ref=e759]:
+                - cell "Draft" [ref=e760]:
+                  - link "Draft" [ref=e761] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/4cf1ac54-b8bf-401d-8e9f-624b1992e96f
+                - cell "Acme Corp" [ref=e762]
+                - cell "Draft" [ref=e763]:
+                  - generic [ref=e765]: Draft
+                - cell "—" [ref=e766]
+                - cell "—" [ref=e767]
+                - cell "R 345,00" [ref=e768]
+                - cell "ZAR" [ref=e769]
+              - row "Draft Acme Corp Draft — — R 0,00 ZAR" [ref=e770]:
+                - cell "Draft" [ref=e771]:
+                  - link "Draft" [ref=e772] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/d2c42ede-bd49-4b89-99f4-fca7fb442b95
+                - cell "Acme Corp" [ref=e773]
+                - cell "Draft" [ref=e774]:
+                  - generic [ref=e776]: Draft
+                - cell "—" [ref=e777]
+                - cell "—" [ref=e778]
+                - cell "R 0,00" [ref=e779]
+                - cell "ZAR" [ref=e780]
+              - row "Draft Acme Corp Draft — — R 2 875,00 ZAR" [ref=e781]:
+                - cell "Draft" [ref=e782]:
+                  - link "Draft" [ref=e783] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/c4d5a2ea-878e-4528-95f5-3e0ed5ab1a8f
+                - cell "Acme Corp" [ref=e784]
+                - cell "Draft" [ref=e785]:
+                  - generic [ref=e787]: Draft
+                - cell "—" [ref=e788]
+                - cell "—" [ref=e789]
+                - cell "R 2 875,00" [ref=e790]
+                - cell "ZAR" [ref=e791]
+              - row "Draft Acme Corp Draft — — R 575,00 ZAR" [ref=e792]:
+                - cell "Draft" [ref=e793]:
+                  - link "Draft" [ref=e794] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/75da3e8f-af45-4d09-94e8-9869e416c393
+                - cell "Acme Corp" [ref=e795]
+                - cell "Draft" [ref=e796]:
+                  - generic [ref=e798]: Draft
+                - cell "—" [ref=e799]
+                - cell "—" [ref=e800]
+                - cell "R 575,00" [ref=e801]
+                - cell "ZAR" [ref=e802]
+              - row "Draft Acme Corp Draft — — R 2 875,00 ZAR" [ref=e803]:
+                - cell "Draft" [ref=e804]:
+                  - link "Draft" [ref=e805] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/67487d9b-a4cf-4403-9d58-77874eeea58b
+                - cell "Acme Corp" [ref=e806]
+                - cell "Draft" [ref=e807]:
+                  - generic [ref=e809]: Draft
+                - cell "—" [ref=e810]
+                - cell "—" [ref=e811]
+                - cell "R 2 875,00" [ref=e812]
+                - cell "ZAR" [ref=e813]
+              - row "Draft Acme Corp Draft — — R 1 552,50 ZAR" [ref=e814]:
+                - cell "Draft" [ref=e815]:
+                  - link "Draft" [ref=e816] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/c11ea508-659b-4b79-88e7-c16f58ad5e76
+                - cell "Acme Corp" [ref=e817]
+                - cell "Draft" [ref=e818]:
+                  - generic [ref=e820]: Draft
+                - cell "—" [ref=e821]
+                - cell "—" [ref=e822]
+                - cell "R 1 552,50" [ref=e823]
+                - cell "ZAR" [ref=e824]
+              - row "INV-0006 Acme Corp Approved Mar 25, 2026 — R 1 725,00 ZAR" [ref=e825]:
+                - cell "INV-0006" [ref=e826]:
+                  - link "INV-0006" [ref=e827] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/3d785789-5225-45b0-a29f-2009bf993054
+                - cell "Acme Corp" [ref=e828]
+                - cell "Approved" [ref=e829]:
+                  - generic [ref=e831]: Approved
+                - cell "Mar 25, 2026" [ref=e832]
+                - cell "—" [ref=e833]
+                - cell "R 1 725,00" [ref=e834]
+                - cell "ZAR" [ref=e835]
+              - row "INV-0005 Acme Corp Approved Mar 25, 2026 — R 1 725,00 ZAR" [ref=e836]:
+                - cell "INV-0005" [ref=e837]:
+                  - link "INV-0005" [ref=e838] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/c84dff4c-8919-43b1-8f48-eeb830d91c9f
+                - cell "Acme Corp" [ref=e839]
+                - cell "Approved" [ref=e840]:
+                  - generic [ref=e842]: Approved
+                - cell "Mar 25, 2026" [ref=e843]
+                - cell "—" [ref=e844]
+                - cell "R 1 725,00" [ref=e845]
+                - cell "ZAR" [ref=e846]
+              - row "INV-0004 Acme Corp Sent Mar 25, 2026 — R 1 725,00 ZAR" [ref=e847]:
+                - cell "INV-0004" [ref=e848]:
+                  - link "INV-0004" [ref=e849] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/69be7bdd-09ad-41d9-8a05-61ac4d89f5e0
+                - cell "Acme Corp" [ref=e850]
+                - cell "Sent" [ref=e851]:
+                  - generic [ref=e853]: Sent
+                - cell "Mar 25, 2026" [ref=e854]
+                - cell "—" [ref=e855]
+                - cell "R 1 725,00" [ref=e856]
+                - cell "ZAR" [ref=e857]
+              - row "Draft Acme Corp Draft — — R 2 875,00 ZAR" [ref=e858]:
+                - cell "Draft" [ref=e859]:
+                  - link "Draft" [ref=e860] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/fdbb9219-06bd-46f2-9c41-5d1735f46d67
+                - cell "Acme Corp" [ref=e861]
+                - cell "Draft" [ref=e862]:
+                  - generic [ref=e864]: Draft
+                - cell "—" [ref=e865]
+                - cell "—" [ref=e866]
+                - cell "R 2 875,00" [ref=e867]
+                - cell "ZAR" [ref=e868]
+              - row "Draft Acme Corp Draft — — R 2 875,00 ZAR" [ref=e869]:
+                - cell "Draft" [ref=e870]:
+                  - link "Draft" [ref=e871] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/ff263e2f-f0c8-40da-8cf4-1171a51efdd8
+                - cell "Acme Corp" [ref=e872]
+                - cell "Draft" [ref=e873]:
+                  - generic [ref=e875]: Draft
+                - cell "—" [ref=e876]
+                - cell "—" [ref=e877]
+                - cell "R 2 875,00" [ref=e878]
+                - cell "ZAR" [ref=e879]
+              - row "INV-0003 Acme Corp Paid Mar 25, 2026 — R 1 725,00 ZAR" [ref=e880]:
+                - cell "INV-0003" [ref=e881]:
+                  - link "INV-0003" [ref=e882] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/414883aa-9c4f-4c56-8df1-c0a142495584
+                - cell "Acme Corp" [ref=e883]
+                - cell "Paid" [ref=e884]:
+                  - generic [ref=e886]: Paid
+                - cell "Mar 25, 2026" [ref=e887]
+                - cell "—" [ref=e888]
+                - cell "R 1 725,00" [ref=e889]
+                - cell "ZAR" [ref=e890]
+              - row "Draft Acme Corp Draft — — R 1 840,00 ZAR" [ref=e891]:
+                - cell "Draft" [ref=e892]:
+                  - link "Draft" [ref=e893] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/12e30980-21d3-46fd-ac8a-85a8bf0c7876
+                - cell "Acme Corp" [ref=e894]
+                - cell "Draft" [ref=e895]:
+                  - generic [ref=e897]: Draft
+                - cell "—" [ref=e898]
+                - cell "—" [ref=e899]
+                - cell "R 1 840,00" [ref=e900]
+                - cell "ZAR" [ref=e901]
+              - row "Draft Acme Corp Draft — — R 345,00 ZAR" [ref=e902]:
+                - cell "Draft" [ref=e903]:
+                  - link "Draft" [ref=e904] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/18db1ed4-4011-4cb2-ab78-435a8319d4e0
+                - cell "Acme Corp" [ref=e905]
+                - cell "Draft" [ref=e906]:
+                  - generic [ref=e908]: Draft
+                - cell "—" [ref=e909]
+                - cell "—" [ref=e910]
+                - cell "R 345,00" [ref=e911]
+                - cell "ZAR" [ref=e912]
+              - row "Draft Acme Corp Draft — — R 0,00 ZAR" [ref=e913]:
+                - cell "Draft" [ref=e914]:
+                  - link "Draft" [ref=e915] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/02337de4-e0ec-4db4-9a4f-5766765d5bb2
+                - cell "Acme Corp" [ref=e916]
+                - cell "Draft" [ref=e917]:
+                  - generic [ref=e919]: Draft
+                - cell "—" [ref=e920]
+                - cell "—" [ref=e921]
+                - cell "R 0,00" [ref=e922]
+                - cell "ZAR" [ref=e923]
+              - row "Draft Acme Corp Draft — — R 575,00 ZAR" [ref=e924]:
+                - cell "Draft" [ref=e925]:
+                  - link "Draft" [ref=e926] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/8cf9e32f-f9d4-4f16-a79a-9890a03cf9e2
+                - cell "Acme Corp" [ref=e927]
+                - cell "Draft" [ref=e928]:
+                  - generic [ref=e930]: Draft
+                - cell "—" [ref=e931]
+                - cell "—" [ref=e932]
+                - cell "R 575,00" [ref=e933]
+                - cell "ZAR" [ref=e934]
+              - row "Draft Acme Corp Draft — — R 2 875,00 ZAR" [ref=e935]:
+                - cell "Draft" [ref=e936]:
+                  - link "Draft" [ref=e937] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/28338e4a-5b69-4a72-9e41-6446ef2aa357
+                - cell "Acme Corp" [ref=e938]
+                - cell "Draft" [ref=e939]:
+                  - generic [ref=e941]: Draft
+                - cell "—" [ref=e942]
+                - cell "—" [ref=e943]
+                - cell "R 2 875,00" [ref=e944]
+                - cell "ZAR" [ref=e945]
+              - row "Draft Acme Corp Draft — — R 1 552,50 ZAR" [ref=e946]:
+                - cell "Draft" [ref=e947]:
+                  - link "Draft" [ref=e948] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/acc4a7e1-bd5b-40d3-8eb3-55a4da97cff8
+                - cell "Acme Corp" [ref=e949]
+                - cell "Draft" [ref=e950]:
+                  - generic [ref=e952]: Draft
+                - cell "—" [ref=e953]
+                - cell "—" [ref=e954]
+                - cell "R 1 552,50" [ref=e955]
+                - cell "ZAR" [ref=e956]
+              - row "Draft Acme Corp Draft — — R 690,00 ZAR" [ref=e957]:
+                - cell "Draft" [ref=e958]:
+                  - link "Draft" [ref=e959] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/15e06b58-8e9e-42df-b42c-6f2fa7378a00
+                - cell "Acme Corp" [ref=e960]
+                - cell "Draft" [ref=e961]:
+                  - generic [ref=e963]: Draft
+                - cell "—" [ref=e964]
+                - cell "—" [ref=e965]
+                - cell "R 690,00" [ref=e966]
+                - cell "ZAR" [ref=e967]
+              - row "Draft Acme Corp Draft — — R 2 875,00 ZAR" [ref=e968]:
+                - cell "Draft" [ref=e969]:
+                  - link "Draft" [ref=e970] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/0337024f-5e6a-4431-835a-87be71ebb9a7
+                - cell "Acme Corp" [ref=e971]
+                - cell "Draft" [ref=e972]:
+                  - generic [ref=e974]: Draft
+                - cell "—" [ref=e975]
+                - cell "—" [ref=e976]
+                - cell "R 2 875,00" [ref=e977]
+                - cell "ZAR" [ref=e978]
+              - row "Draft Acme Corp Draft — — R 1 552,50 ZAR" [ref=e979]:
+                - cell "Draft" [ref=e980]:
+                  - link "Draft" [ref=e981] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/e9a02ace-47e3-4724-b50b-0364013a752e
+                - cell "Acme Corp" [ref=e982]
+                - cell "Draft" [ref=e983]:
+                  - generic [ref=e985]: Draft
+                - cell "—" [ref=e986]
+                - cell "—" [ref=e987]
+                - cell "R 1 552,50" [ref=e988]
+                - cell "ZAR" [ref=e989]
+              - row "INV-0002 Acme Corp Void Mar 25, 2026 — R 1 552,50 ZAR" [ref=e990]:
+                - cell "INV-0002" [ref=e991]:
+                  - link "INV-0002" [ref=e992] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/d1278c44-a544-4585-9a16-6db0a7be1cac
+                - cell "Acme Corp" [ref=e993]
+                - cell "Void" [ref=e994]:
+                  - generic [ref=e996]: Void
+                - cell "Mar 25, 2026" [ref=e997]
+                - cell "—" [ref=e998]
+                - cell "R 1 552,50" [ref=e999]
+                - cell "ZAR" [ref=e1000]
+              - row "INV-0001 Acme Corp Paid Mar 25, 2026 — R 1 552,50 ZAR" [ref=e1001]:
+                - cell "INV-0001" [ref=e1002]:
+                  - link "INV-0001" [ref=e1003] [cursor=pointer]:
+                    - /url: /org/e2e-test-org/invoices/16749378-6eca-417f-b8cf-584d41c74b87
+                - cell "Acme Corp" [ref=e1004]
+                - cell "Paid" [ref=e1005]:
+                  - generic [ref=e1007]: Paid
+                - cell "Mar 25, 2026" [ref=e1008]
+                - cell "—" [ref=e1009]
+                - cell "R 1 552,50" [ref=e1010]
+                - cell "ZAR" [ref=e1011]
+  - generic [ref=e1012]:
+    - heading "Command Palette" [level=2] [ref=e1013]
+    - paragraph [ref=e1014]: Search pages and settings
+  - region "Notifications alt+T"
+  - alert [ref=e1015]

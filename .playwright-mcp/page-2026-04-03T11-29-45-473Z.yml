@@ -1,0 +1,731 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e6]: DocTeams
+      - generic [ref=e9]: e2e-test-org
+      - button "Search, Command K" [ref=e11]:
+        - img [ref=e12]
+        - text: Search...
+        - generic [ref=e15]: ⌘K
+      - navigation "Main navigation" [ref=e16]:
+        - generic [ref=e17]:
+          - button "Work" [expanded] [ref=e18]:
+            - generic [ref=e19]: Work
+            - img [ref=e20]
+          - generic [ref=e22]:
+            - link "Dashboard" [ref=e23] [cursor=pointer]:
+              - /url: /org/e2e-test-org/dashboard
+              - img [ref=e24]
+              - text: Dashboard
+            - link "My Work" [ref=e29] [cursor=pointer]:
+              - /url: /org/e2e-test-org/my-work
+              - img [ref=e30]
+              - text: My Work
+            - link "Calendar" [ref=e33] [cursor=pointer]:
+              - /url: /org/e2e-test-org/calendar
+              - img [ref=e34]
+              - text: Calendar
+        - generic [ref=e37]:
+          - button "Projects" [expanded] [ref=e38]:
+            - generic [ref=e39]: Projects
+            - img [ref=e40]
+          - generic [ref=e42]:
+            - link "Engagements" [ref=e43] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects
+              - img [ref=e45]
+              - text: Engagements
+            - link "Recurring Schedules" [ref=e47] [cursor=pointer]:
+              - /url: /org/e2e-test-org/schedules
+              - img [ref=e48]
+              - text: Recurring Schedules
+        - button "Clients" [ref=e54]:
+          - generic [ref=e55]: Clients
+          - img [ref=e56]
+        - button "Finance" [ref=e60]:
+          - generic [ref=e61]: Finance
+          - img [ref=e62]
+        - generic [ref=e65]:
+          - button "Team" [expanded] [ref=e66]:
+            - generic [ref=e67]: Team
+            - img [ref=e68]
+          - generic [ref=e70]:
+            - link "Team" [ref=e71] [cursor=pointer]:
+              - /url: /org/e2e-test-org/team
+              - img [ref=e72]
+              - text: Team
+            - link "Resources" [ref=e77] [cursor=pointer]:
+              - /url: /org/e2e-test-org/resources
+              - img [ref=e78]
+              - text: Resources
+      - link "Platform Admin" [ref=e85] [cursor=pointer]:
+        - /url: /platform-admin/access-requests
+        - img [ref=e86]
+        - text: Platform Admin
+      - generic [ref=e89]:
+        - link "Notifications" [ref=e90] [cursor=pointer]:
+          - /url: /org/e2e-test-org/notifications
+          - img [ref=e91]
+          - text: Notifications
+        - link "Settings" [ref=e94] [cursor=pointer]:
+          - /url: /org/e2e-test-org/settings/general
+          - img [ref=e95]
+          - text: Settings
+      - generic [ref=e99]:
+        - generic [ref=e100]: AO
+        - generic [ref=e101]:
+          - paragraph [ref=e102]: Alice Owner
+          - paragraph [ref=e103]: alice@e2e-test.local
+    - generic [ref=e104]:
+      - banner [ref=e105]:
+        - navigation "Breadcrumb" [ref=e106]:
+          - link "e2e-test-org" [ref=e107] [cursor=pointer]:
+            - /url: /org/e2e-test-org/dashboard
+          - generic [ref=e108]:
+            - img [ref=e109]
+            - generic [ref=e111]: Engagements
+        - generic [ref=e112]:
+          - generic [ref=e114]: e2e-test-org
+          - button "AO" [ref=e116]
+          - button "Notifications" [ref=e118]:
+            - img
+      - main [ref=e120]:
+        - generic [ref=e123]:
+          - generic [ref=e124]:
+            - generic [ref=e125]:
+              - heading "Engagements" [level=1] [ref=e126]
+              - paragraph [ref=e127]:
+                - generic [ref=e128]: 39 engagements
+            - button "New Engagement" [ref=e131]:
+              - img
+              - text: New Engagement
+          - generic [ref=e132]:
+            - generic [ref=e133]:
+              - generic [ref=e134]:
+                - img [ref=e135]
+                - 'button "Help: Saved views" [ref=e138] [cursor=pointer]':
+                  - img [ref=e139]
+              - tablist [ref=e143]:
+                - tab "All" [selected] [ref=e144]
+            - button "Save View" [ref=e145]:
+              - img
+              - text: Save View
+          - generic [ref=e146]:
+            - link "Active" [ref=e147] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects
+            - link "Completed" [ref=e148] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects?status=COMPLETED
+            - link "Archived" [ref=e149] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects?status=ARCHIVED
+            - link "All" [ref=e150] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects?status=ALL
+          - generic [ref=e151]:
+            - link "E2E Test 1774464229084 Lead No description — — Mar 25, 2026" [ref=e152] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects/5bc805ae-b5be-4d87-8667-8b405ab507e7
+              - generic [ref=e153]:
+                - generic [ref=e154]:
+                  - heading "E2E Test 1774464229084" [level=3] [ref=e155]
+                  - generic [ref=e156]: Lead
+                - paragraph [ref=e157]: No description
+                - generic [ref=e158]:
+                  - generic [ref=e159]:
+                    - img [ref=e160]
+                    - text: —
+                  - generic [ref=e163]:
+                    - img [ref=e164]
+                    - text: —
+                  - generic [ref=e169]: Mar 25, 2026
+            - link "Time Test Project 67u3 Lead Project for time entry E2E tests — — Mar 25, 2026" [ref=e170] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects/e80733c5-fe5b-46fe-8128-dfb0a8fa5e0b
+              - generic [ref=e171]:
+                - generic [ref=e172]:
+                  - heading "Time Test Project 67u3" [level=3] [ref=e173]
+                  - generic [ref=e174]: Lead
+                - paragraph [ref=e175]: Project for time entry E2E tests
+                - generic [ref=e176]:
+                  - generic [ref=e177]:
+                    - img [ref=e178]
+                    - text: —
+                  - generic [ref=e181]:
+                    - img [ref=e182]
+                    - text: —
+                  - generic [ref=e187]: Mar 25, 2026
+            - link "Task Test Project 67ng Lead Project for task E2E tests — — Mar 25, 2026" [ref=e188] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects/ca7d44e5-7b1e-4450-8ea3-122a725ebdbd
+              - generic [ref=e189]:
+                - generic [ref=e190]:
+                  - heading "Task Test Project 67ng" [level=3] [ref=e191]
+                  - generic [ref=e192]: Lead
+                - paragraph [ref=e193]: Project for task E2E tests
+                - generic [ref=e194]:
+                  - generic [ref=e195]:
+                    - img [ref=e196]
+                    - text: —
+                  - generic [ref=e199]:
+                    - img [ref=e200]
+                    - text: —
+                  - generic [ref=e205]: Mar 25, 2026
+            - link "Proj Internal 62wf Lead E2E internal project — no customer — — Mar 25, 2026" [ref=e206] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects/b662e4c1-e112-4b3b-8046-94423fec311a
+              - generic [ref=e207]:
+                - generic [ref=e208]:
+                  - heading "Proj Internal 62wf" [level=3] [ref=e209]
+                  - generic [ref=e210]: Lead
+                - paragraph [ref=e211]: E2E internal project — no customer
+                - generic [ref=e212]:
+                  - generic [ref=e213]:
+                    - img [ref=e214]
+                    - text: —
+                  - generic [ref=e217]:
+                    - img [ref=e218]
+                    - text: —
+                  - generic [ref=e223]: Mar 25, 2026
+            - link "Expense Test Project 62wf Lead Project for expense E2E tests — — Mar 25, 2026" [ref=e224] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects/9cd3399e-5038-4f37-94f0-626478335ffb
+              - generic [ref=e225]:
+                - generic [ref=e226]:
+                  - heading "Expense Test Project 62wf" [level=3] [ref=e227]
+                  - generic [ref=e228]: Lead
+                - paragraph [ref=e229]: Project for expense E2E tests
+                - generic [ref=e230]:
+                  - generic [ref=e231]:
+                    - img [ref=e232]
+                    - text: —
+                  - generic [ref=e235]:
+                    - img [ref=e236]
+                    - text: —
+                  - generic [ref=e241]: Mar 25, 2026
+            - 'link "Budget Test Project 62vg Lead Budget: On track Project for budget E2E tests — — Mar 25, 2026" [ref=e242] [cursor=pointer]':
+              - /url: /org/e2e-test-org/projects/a67d1375-53b8-4dbb-902c-0c4caf549cba
+              - generic [ref=e243]:
+                - generic [ref=e244]:
+                  - heading "Budget Test Project 62vg" [level=3] [ref=e245]
+                  - generic [ref=e246]: Lead
+                  - 'generic "Budget: On track" [ref=e247]'
+                - paragraph [ref=e248]: Project for budget E2E tests
+                - generic [ref=e249]:
+                  - generic [ref=e250]:
+                    - img [ref=e251]
+                    - text: —
+                  - generic [ref=e254]:
+                    - img [ref=e255]
+                    - text: —
+                  - generic [ref=e260]: Mar 25, 2026
+            - link "E2E Test Project 5ku3 Lead Retainer Automated test project created by Playwright — — Mar 25, 2026" [ref=e261] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects/03596217-8558-4738-96f4-509b7ec719be
+              - generic [ref=e262]:
+                - generic [ref=e263]:
+                  - heading "E2E Test Project 5ku3" [level=3] [ref=e264]
+                  - generic [ref=e265]: Lead
+                  - generic "Customer has an active retainer" [ref=e266]:
+                    - img [ref=e267]
+                    - text: Retainer
+                - paragraph [ref=e270]: Automated test project created by Playwright
+                - generic [ref=e271]:
+                  - generic [ref=e272]:
+                    - img [ref=e273]
+                    - text: —
+                  - generic [ref=e276]:
+                    - img [ref=e277]
+                    - text: —
+                  - generic [ref=e282]: Mar 25, 2026
+            - link "E2E Test 1774464135813 Lead No description — — Mar 25, 2026" [ref=e283] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects/92cc5869-6a20-4c30-82c0-39aa4545e43e
+              - generic [ref=e284]:
+                - generic [ref=e285]:
+                  - heading "E2E Test 1774464135813" [level=3] [ref=e286]
+                  - generic [ref=e287]: Lead
+                - paragraph [ref=e288]: No description
+                - generic [ref=e289]:
+                  - generic [ref=e290]:
+                    - img [ref=e291]
+                    - text: —
+                  - generic [ref=e294]:
+                    - img [ref=e295]
+                    - text: —
+                  - generic [ref=e300]: Mar 25, 2026
+            - link "E2E Test 1774464030998 Lead No description — — Mar 25, 2026" [ref=e301] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects/e74cd431-aaab-4945-8451-8cb43c22f147
+              - generic [ref=e302]:
+                - generic [ref=e303]:
+                  - heading "E2E Test 1774464030998" [level=3] [ref=e304]
+                  - generic [ref=e305]: Lead
+                - paragraph [ref=e306]: No description
+                - generic [ref=e307]:
+                  - generic [ref=e308]:
+                    - img [ref=e309]
+                    - text: —
+                  - generic [ref=e312]:
+                    - img [ref=e313]
+                    - text: —
+                  - generic [ref=e318]: Mar 25, 2026
+            - link "Time Test Project 1z55 Lead Project for time entry E2E tests — — Mar 25, 2026" [ref=e319] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects/1c93c54f-b7a1-4d15-b9a9-c83cd1b15384
+              - generic [ref=e320]:
+                - generic [ref=e321]:
+                  - heading "Time Test Project 1z55" [level=3] [ref=e322]
+                  - generic [ref=e323]: Lead
+                - paragraph [ref=e324]: Project for time entry E2E tests
+                - generic [ref=e325]:
+                  - generic [ref=e326]:
+                    - img [ref=e327]
+                    - text: —
+                  - generic [ref=e330]:
+                    - img [ref=e331]
+                    - text: —
+                  - generic [ref=e336]: Mar 25, 2026
+            - link "Task Test Project 1ymz Lead Project for task E2E tests — — Mar 25, 2026" [ref=e337] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects/7e41e987-2c27-4b6e-b922-fe1c28e50c69
+              - generic [ref=e338]:
+                - generic [ref=e339]:
+                  - heading "Task Test Project 1ymz" [level=3] [ref=e340]
+                  - generic [ref=e341]: Lead
+                - paragraph [ref=e342]: Project for task E2E tests
+                - generic [ref=e343]:
+                  - generic [ref=e344]:
+                    - img [ref=e345]
+                    - text: —
+                  - generic [ref=e348]:
+                    - img [ref=e349]
+                    - text: —
+                  - generic [ref=e354]: Mar 25, 2026
+            - link "Proj Internal 1spr Lead E2E internal project — no customer — — Mar 25, 2026" [ref=e355] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects/3d92e92b-1470-4600-a1b4-02092236e1de
+              - generic [ref=e356]:
+                - generic [ref=e357]:
+                  - heading "Proj Internal 1spr" [level=3] [ref=e358]
+                  - generic [ref=e359]: Lead
+                - paragraph [ref=e360]: E2E internal project — no customer
+                - generic [ref=e361]:
+                  - generic [ref=e362]:
+                    - img [ref=e363]
+                    - text: —
+                  - generic [ref=e366]:
+                    - img [ref=e367]
+                    - text: —
+                  - generic [ref=e372]: Mar 25, 2026
+            - link "Expense Test Project 1tf4 Lead Project for expense E2E tests — — Mar 25, 2026" [ref=e373] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects/eb006d41-5e06-4c78-98f6-c1a63a35b0ca
+              - generic [ref=e374]:
+                - generic [ref=e375]:
+                  - heading "Expense Test Project 1tf4" [level=3] [ref=e376]
+                  - generic [ref=e377]: Lead
+                - paragraph [ref=e378]: Project for expense E2E tests
+                - generic [ref=e379]:
+                  - generic [ref=e380]:
+                    - img [ref=e381]
+                    - text: —
+                  - generic [ref=e384]:
+                    - img [ref=e385]
+                    - text: —
+                  - generic [ref=e390]: Mar 25, 2026
+            - 'link "Budget Test Project 1rvh Lead Budget: On track Project for budget E2E tests — — Mar 25, 2026" [ref=e391] [cursor=pointer]':
+              - /url: /org/e2e-test-org/projects/e2ef0f07-7fb3-4903-92ea-d61fa841dafe
+              - generic [ref=e392]:
+                - generic [ref=e393]:
+                  - heading "Budget Test Project 1rvh" [level=3] [ref=e394]
+                  - generic [ref=e395]: Lead
+                  - 'generic "Budget: On track" [ref=e396]'
+                - paragraph [ref=e397]: Project for budget E2E tests
+                - generic [ref=e398]:
+                  - generic [ref=e399]:
+                    - img [ref=e400]
+                    - text: —
+                  - generic [ref=e403]:
+                    - img [ref=e404]
+                    - text: —
+                  - generic [ref=e409]: Mar 25, 2026
+            - link "E2E Test Project 1cn0 Lead Retainer Automated test project created by Playwright — — Mar 25, 2026" [ref=e410] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects/e7604c23-40ac-437a-aa3a-adf6449b7fdb
+              - generic [ref=e411]:
+                - generic [ref=e412]:
+                  - heading "E2E Test Project 1cn0" [level=3] [ref=e413]
+                  - generic [ref=e414]: Lead
+                  - generic "Customer has an active retainer" [ref=e415]:
+                    - img [ref=e416]
+                    - text: Retainer
+                - paragraph [ref=e419]: Automated test project created by Playwright
+                - generic [ref=e420]:
+                  - generic [ref=e421]:
+                    - img [ref=e422]
+                    - text: —
+                  - generic [ref=e425]:
+                    - img [ref=e426]
+                    - text: —
+                  - generic [ref=e431]: Mar 25, 2026
+            - link "E2E Test Project yvce Lead Retainer Automated test project created by Playwright — — Mar 25, 2026" [ref=e432] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects/71c7ea22-60a6-445a-ad29-8a96e1594782
+              - generic [ref=e433]:
+                - generic [ref=e434]:
+                  - heading "E2E Test Project yvce" [level=3] [ref=e435]
+                  - generic [ref=e436]: Lead
+                  - generic "Customer has an active retainer" [ref=e437]:
+                    - img [ref=e438]
+                    - text: Retainer
+                - paragraph [ref=e441]: Automated test project created by Playwright
+                - generic [ref=e442]:
+                  - generic [ref=e443]:
+                    - img [ref=e444]
+                    - text: —
+                  - generic [ref=e447]:
+                    - img [ref=e448]
+                    - text: —
+                  - generic [ref=e453]: Mar 25, 2026
+            - link "E2E Test 1774463751817 Lead No description — — Mar 25, 2026" [ref=e454] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects/345d0b3b-9302-45a3-9306-8fb787551787
+              - generic [ref=e455]:
+                - generic [ref=e456]:
+                  - heading "E2E Test 1774463751817" [level=3] [ref=e457]
+                  - generic [ref=e458]: Lead
+                - paragraph [ref=e459]: No description
+                - generic [ref=e460]:
+                  - generic [ref=e461]:
+                    - img [ref=e462]
+                    - text: —
+                  - generic [ref=e465]:
+                    - img [ref=e466]
+                    - text: —
+                  - generic [ref=e471]: Mar 25, 2026
+            - link "Time Test Project obvx Lead Project for time entry E2E tests — — Mar 25, 2026" [ref=e472] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects/a8f1dfd6-7afd-4654-be57-5d51b59b9014
+              - generic [ref=e473]:
+                - generic [ref=e474]:
+                  - heading "Time Test Project obvx" [level=3] [ref=e475]
+                  - generic [ref=e476]: Lead
+                - paragraph [ref=e477]: Project for time entry E2E tests
+                - generic [ref=e478]:
+                  - generic [ref=e479]:
+                    - img [ref=e480]
+                    - text: —
+                  - generic [ref=e483]:
+                    - img [ref=e484]
+                    - text: —
+                  - generic [ref=e489]: Mar 25, 2026
+            - link "Task Test Project o7zj Lead Project for task E2E tests — — Mar 25, 2026" [ref=e490] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects/8f009a2f-482f-4b97-b3d4-8bde63a56e89
+              - generic [ref=e491]:
+                - generic [ref=e492]:
+                  - heading "Task Test Project o7zj" [level=3] [ref=e493]
+                  - generic [ref=e494]: Lead
+                - paragraph [ref=e495]: Project for task E2E tests
+                - generic [ref=e496]:
+                  - generic [ref=e497]:
+                    - img [ref=e498]
+                    - text: —
+                  - generic [ref=e501]:
+                    - img [ref=e502]
+                    - text: —
+                  - generic [ref=e507]: Mar 25, 2026
+            - link "Proj Internal o4kj Lead E2E internal project — no customer — — Mar 25, 2026" [ref=e508] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects/d00ba822-0ebb-4dfe-987f-858231eb0e83
+              - generic [ref=e509]:
+                - generic [ref=e510]:
+                  - heading "Proj Internal o4kj" [level=3] [ref=e511]
+                  - generic [ref=e512]: Lead
+                - paragraph [ref=e513]: E2E internal project — no customer
+                - generic [ref=e514]:
+                  - generic [ref=e515]:
+                    - img [ref=e516]
+                    - text: —
+                  - generic [ref=e519]:
+                    - img [ref=e520]
+                    - text: —
+                  - generic [ref=e525]: Mar 25, 2026
+            - link "Expense Test Project o76h Lead Project for expense E2E tests — — Mar 25, 2026" [ref=e526] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects/c95b93cd-587d-44e4-9fe4-e6dc10006f98
+              - generic [ref=e527]:
+                - generic [ref=e528]:
+                  - heading "Expense Test Project o76h" [level=3] [ref=e529]
+                  - generic [ref=e530]: Lead
+                - paragraph [ref=e531]: Project for expense E2E tests
+                - generic [ref=e532]:
+                  - generic [ref=e533]:
+                    - img [ref=e534]
+                    - text: —
+                  - generic [ref=e537]:
+                    - img [ref=e538]
+                    - text: —
+                  - generic [ref=e543]: Mar 25, 2026
+            - 'link "Budget Test Project o49t Lead Budget: On track Project for budget E2E tests — — Mar 25, 2026" [ref=e544] [cursor=pointer]':
+              - /url: /org/e2e-test-org/projects/7749b943-82e6-40f8-94a9-6068ce11a98b
+              - generic [ref=e545]:
+                - generic [ref=e546]:
+                  - heading "Budget Test Project o49t" [level=3] [ref=e547]
+                  - generic [ref=e548]: Lead
+                  - 'generic "Budget: On track" [ref=e549]'
+                - paragraph [ref=e550]: Project for budget E2E tests
+                - generic [ref=e551]:
+                  - generic [ref=e552]:
+                    - img [ref=e553]
+                    - text: —
+                  - generic [ref=e556]:
+                    - img [ref=e557]
+                    - text: —
+                  - generic [ref=e562]: Mar 25, 2026
+            - link "Time Test Project lr6l Lead Project for time entry E2E tests — — Mar 25, 2026" [ref=e563] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects/2a80d1df-2e1a-4c60-a8bc-6a54d5aa3061
+              - generic [ref=e564]:
+                - generic [ref=e565]:
+                  - heading "Time Test Project lr6l" [level=3] [ref=e566]
+                  - generic [ref=e567]: Lead
+                - paragraph [ref=e568]: Project for time entry E2E tests
+                - generic [ref=e569]:
+                  - generic [ref=e570]:
+                    - img [ref=e571]
+                    - text: —
+                  - generic [ref=e574]:
+                    - img [ref=e575]
+                    - text: —
+                  - generic [ref=e580]: Mar 25, 2026
+            - link "Task Test Project lqxb Lead Project for task E2E tests — — Mar 25, 2026" [ref=e581] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects/e8873771-b87f-4a47-9dd0-ab3ef9300cc0
+              - generic [ref=e582]:
+                - generic [ref=e583]:
+                  - heading "Task Test Project lqxb" [level=3] [ref=e584]
+                  - generic [ref=e585]: Lead
+                - paragraph [ref=e586]: Project for task E2E tests
+                - generic [ref=e587]:
+                  - generic [ref=e588]:
+                    - img [ref=e589]
+                    - text: —
+                  - generic [ref=e592]:
+                    - img [ref=e593]
+                    - text: —
+                  - generic [ref=e598]: Mar 25, 2026
+            - link "Proj Internal lnbm Lead E2E internal project — no customer — — Mar 25, 2026" [ref=e599] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects/fed37cd9-22c1-4e2c-a5dc-d2806c356915
+              - generic [ref=e600]:
+                - generic [ref=e601]:
+                  - heading "Proj Internal lnbm" [level=3] [ref=e602]
+                  - generic [ref=e603]: Lead
+                - paragraph [ref=e604]: E2E internal project — no customer
+                - generic [ref=e605]:
+                  - generic [ref=e606]:
+                    - img [ref=e607]
+                    - text: —
+                  - generic [ref=e610]:
+                    - img [ref=e611]
+                    - text: —
+                  - generic [ref=e616]: Mar 25, 2026
+            - link "Expense Test Project lnff Lead Project for expense E2E tests — — Mar 25, 2026" [ref=e617] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects/532f82f0-0c64-4df1-8f85-6b696a9264e9
+              - generic [ref=e618]:
+                - generic [ref=e619]:
+                  - heading "Expense Test Project lnff" [level=3] [ref=e620]
+                  - generic [ref=e621]: Lead
+                - paragraph [ref=e622]: Project for expense E2E tests
+                - generic [ref=e623]:
+                  - generic [ref=e624]:
+                    - img [ref=e625]
+                    - text: —
+                  - generic [ref=e628]:
+                    - img [ref=e629]
+                    - text: —
+                  - generic [ref=e634]: Mar 25, 2026
+            - 'link "Budget Test Project ln8v Lead Budget: On track Project for budget E2E tests — — Mar 25, 2026" [ref=e635] [cursor=pointer]':
+              - /url: /org/e2e-test-org/projects/1763854d-aa9d-4467-afc6-85c3cd089760
+              - generic [ref=e636]:
+                - generic [ref=e637]:
+                  - heading "Budget Test Project ln8v" [level=3] [ref=e638]
+                  - generic [ref=e639]: Lead
+                  - 'generic "Budget: On track" [ref=e640]'
+                - paragraph [ref=e641]: Project for budget E2E tests
+                - generic [ref=e642]:
+                  - generic [ref=e643]:
+                    - img [ref=e644]
+                    - text: —
+                  - generic [ref=e647]:
+                    - img [ref=e648]
+                    - text: —
+                  - generic [ref=e653]: Mar 25, 2026
+            - link "Time Test Project izxe Lead Project for time entry E2E tests — — Mar 25, 2026" [ref=e654] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects/5f7b2a3f-562f-4bee-9e39-99b537667e90
+              - generic [ref=e655]:
+                - generic [ref=e656]:
+                  - heading "Time Test Project izxe" [level=3] [ref=e657]
+                  - generic [ref=e658]: Lead
+                - paragraph [ref=e659]: Project for time entry E2E tests
+                - generic [ref=e660]:
+                  - generic [ref=e661]:
+                    - img [ref=e662]
+                    - text: —
+                  - generic [ref=e665]:
+                    - img [ref=e666]
+                    - text: —
+                  - generic [ref=e671]: Mar 25, 2026
+            - link "Task Test Project izlz Lead Project for task E2E tests — — Mar 25, 2026" [ref=e672] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects/e1079bc0-4706-4952-80ea-48e927d46f8f
+              - generic [ref=e673]:
+                - generic [ref=e674]:
+                  - heading "Task Test Project izlz" [level=3] [ref=e675]
+                  - generic [ref=e676]: Lead
+                - paragraph [ref=e677]: Project for task E2E tests
+                - generic [ref=e678]:
+                  - generic [ref=e679]:
+                    - img [ref=e680]
+                    - text: —
+                  - generic [ref=e683]:
+                    - img [ref=e684]
+                    - text: —
+                  - generic [ref=e689]: Mar 25, 2026
+            - link "Proj Internal ivq8 Lead E2E internal project — no customer — — Mar 25, 2026" [ref=e690] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects/6f04241e-9ef7-45ca-95c0-1286e8f3357c
+              - generic [ref=e691]:
+                - generic [ref=e692]:
+                  - heading "Proj Internal ivq8" [level=3] [ref=e693]
+                  - generic [ref=e694]: Lead
+                - paragraph [ref=e695]: E2E internal project — no customer
+                - generic [ref=e696]:
+                  - generic [ref=e697]:
+                    - img [ref=e698]
+                    - text: —
+                  - generic [ref=e701]:
+                    - img [ref=e702]
+                    - text: —
+                  - generic [ref=e707]: Mar 25, 2026
+            - link "Expense Test Project ivv0 Lead Project for expense E2E tests — — Mar 25, 2026" [ref=e708] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects/9cebabdb-1163-409c-be2d-2732850d0649
+              - generic [ref=e709]:
+                - generic [ref=e710]:
+                  - heading "Expense Test Project ivv0" [level=3] [ref=e711]
+                  - generic [ref=e712]: Lead
+                - paragraph [ref=e713]: Project for expense E2E tests
+                - generic [ref=e714]:
+                  - generic [ref=e715]:
+                    - img [ref=e716]
+                    - text: —
+                  - generic [ref=e719]:
+                    - img [ref=e720]
+                    - text: —
+                  - generic [ref=e725]: Mar 25, 2026
+            - 'link "Budget Test Project ivjm Lead Budget: On track Project for budget E2E tests — — Mar 25, 2026" [ref=e726] [cursor=pointer]':
+              - /url: /org/e2e-test-org/projects/8ed918c7-8a6b-4742-b6e3-7282095a0dd3
+              - generic [ref=e727]:
+                - generic [ref=e728]:
+                  - heading "Budget Test Project ivjm" [level=3] [ref=e729]
+                  - generic [ref=e730]: Lead
+                  - 'generic "Budget: On track" [ref=e731]'
+                - paragraph [ref=e732]: Project for budget E2E tests
+                - generic [ref=e733]:
+                  - generic [ref=e734]:
+                    - img [ref=e735]
+                    - text: —
+                  - generic [ref=e738]:
+                    - img [ref=e739]
+                    - text: —
+                  - generic [ref=e744]: Mar 25, 2026
+            - link "Time Test Project ggbr Lead Project for time entry E2E tests — — Mar 25, 2026" [ref=e745] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects/b48ec576-97b6-41ec-87b4-a8cce2bfad41
+              - generic [ref=e746]:
+                - generic [ref=e747]:
+                  - heading "Time Test Project ggbr" [level=3] [ref=e748]
+                  - generic [ref=e749]: Lead
+                - paragraph [ref=e750]: Project for time entry E2E tests
+                - generic [ref=e751]:
+                  - generic [ref=e752]:
+                    - img [ref=e753]
+                    - text: —
+                  - generic [ref=e756]:
+                    - img [ref=e757]
+                    - text: —
+                  - generic [ref=e762]: Mar 25, 2026
+            - link "Task Test Project gd2v Lead Project for task E2E tests — — Mar 25, 2026" [ref=e763] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects/d5c8633a-2375-4b43-8368-a28955d31142
+              - generic [ref=e764]:
+                - generic [ref=e765]:
+                  - heading "Task Test Project gd2v" [level=3] [ref=e766]
+                  - generic [ref=e767]: Lead
+                - paragraph [ref=e768]: Project for task E2E tests
+                - generic [ref=e769]:
+                  - generic [ref=e770]:
+                    - img [ref=e771]
+                    - text: —
+                  - generic [ref=e774]:
+                    - img [ref=e775]
+                    - text: —
+                  - generic [ref=e780]: Mar 25, 2026
+            - link "Expense Test Project gcxs Lead Project for expense E2E tests — — Mar 25, 2026" [ref=e781] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects/70fdc632-2791-4a91-9f61-76b9265fa72c
+              - generic [ref=e782]:
+                - generic [ref=e783]:
+                  - heading "Expense Test Project gcxs" [level=3] [ref=e784]
+                  - generic [ref=e785]: Lead
+                - paragraph [ref=e786]: Project for expense E2E tests
+                - generic [ref=e787]:
+                  - generic [ref=e788]:
+                    - img [ref=e789]
+                    - text: —
+                  - generic [ref=e792]:
+                    - img [ref=e793]
+                    - text: —
+                  - generic [ref=e798]: Mar 25, 2026
+            - link "Proj Internal g934 Lead E2E internal project — no customer — — Mar 25, 2026" [ref=e799] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects/f30710c7-c50d-4a17-b794-05591f3670ed
+              - generic [ref=e800]:
+                - generic [ref=e801]:
+                  - heading "Proj Internal g934" [level=3] [ref=e802]
+                  - generic [ref=e803]: Lead
+                - paragraph [ref=e804]: E2E internal project — no customer
+                - generic [ref=e805]:
+                  - generic [ref=e806]:
+                    - img [ref=e807]
+                    - text: —
+                  - generic [ref=e810]:
+                    - img [ref=e811]
+                    - text: —
+                  - generic [ref=e816]: Mar 25, 2026
+            - 'link "Budget Test Project g8m6 Lead Budget: On track Project for budget E2E tests — — Mar 25, 2026" [ref=e817] [cursor=pointer]':
+              - /url: /org/e2e-test-org/projects/386980d0-fbca-41bd-a6c3-463ca08cfd26
+              - generic [ref=e818]:
+                - generic [ref=e819]:
+                  - heading "Budget Test Project g8m6" [level=3] [ref=e820]
+                  - generic [ref=e821]: Lead
+                  - 'generic "Budget: On track" [ref=e822]'
+                - paragraph [ref=e823]: Project for budget E2E tests
+                - generic [ref=e824]:
+                  - generic [ref=e825]:
+                    - img [ref=e826]
+                    - text: —
+                  - generic [ref=e829]:
+                    - img [ref=e830]
+                    - text: —
+                  - generic [ref=e835]: Mar 25, 2026
+            - link "Should-Fail-7896 Lead No description — — Mar 25, 2026" [ref=e836] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects/906db4ca-ae1b-4651-85e0-38902ceb14a4
+              - generic [ref=e837]:
+                - generic [ref=e838]:
+                  - heading "Should-Fail-7896" [level=3] [ref=e839]
+                  - generic [ref=e840]: Lead
+                - paragraph [ref=e841]: No description
+                - generic [ref=e842]:
+                  - generic [ref=e843]:
+                    - img [ref=e844]
+                    - text: —
+                  - generic [ref=e847]:
+                    - img [ref=e848]
+                    - text: —
+                  - generic [ref=e853]: Mar 25, 2026
+            - link "Website Redesign Lead Retainer E2E seed project for testing — — Mar 25, 2026" [ref=e854] [cursor=pointer]:
+              - /url: /org/e2e-test-org/projects/0cd99250-64b6-4683-bf47-b0ef87d37954
+              - generic [ref=e855]:
+                - generic [ref=e856]:
+                  - heading "Website Redesign" [level=3] [ref=e857]
+                  - generic [ref=e858]: Lead
+                  - generic "Customer has an active retainer" [ref=e859]:
+                    - img [ref=e860]
+                    - text: Retainer
+                - paragraph [ref=e863]: E2E seed project for testing
+                - generic [ref=e864]:
+                  - generic [ref=e865]:
+                    - img [ref=e866]
+                    - text: —
+                  - generic [ref=e869]:
+                    - img [ref=e870]
+                    - text: —
+                  - generic [ref=e875]: Mar 25, 2026
+  - generic [ref=e876]:
+    - heading "Command Palette" [level=2] [ref=e877]
+    - paragraph [ref=e878]: Search pages and settings
+  - region "Notifications alt+T"
+  - alert [ref=e879]

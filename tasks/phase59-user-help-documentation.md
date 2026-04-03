@@ -10,7 +10,7 @@ Phase 59 adds self-service user documentation to the HeyKazi platform -- a stand
 | 433 | Getting Started & Core Feature Guides | Docs (Content) | 432 | M | 433A, 433B | **Done** (PRs #900, #901) |
 | 434 | Admin & Settings Guides | Docs (Content) | 432 | S | 434A | **Done** (PR #902) |
 | 435 | P1 Feature Guides | Docs (Content) | 432 | M | 435A, 435B | **Done** (PRs #903, #904) |
-| 436 | P2 Features & Vertical Guides | Docs (Content) | 432 | M | 436A, 436B | |
+| 436 | P2 Features & Vertical Guides | Docs (Content) | 432 | M | 436A, 436B | **Done** (PRs #905, #906) |
 | 437 | Frontend Contextual Deep-Links | Frontend | 432 | M | 437A, 437B | |
 
 ## Dependency Graph
@@ -55,7 +55,7 @@ Phase 59 adds self-service user documentation to the HeyKazi platform -- a stand
 | 2a | Epic 433: Getting Started & Core Feature Guides (433A **Done** PR #900, 433B **Done** PR #901) | P0 content -- 8 articles covering onboarding and core workflows. Highest priority for launch. |
 | 2b | Epic 434: Admin & Settings Guides (434A **Done** PR #902) | P0 + P1 admin content -- 4 articles covering team management, settings, integrations, billing. |
 | 2c | Epic 435: P1 Feature Guides (435A **Done** PR #903, 435B **Done** PR #904) | P1 content -- 8 feature guides for secondary features. |
-| 2d | Epic 436: P2 Features & Vertical Guides (436A **Done** PR #905) | P2 features + vertical-specific content. Lowest content priority. |
+| 2d | Epic 436: P2 Features & Vertical Guides (436A **Done** PR #905, 436B **Done** PR #906) | P2 features + vertical-specific content. Lowest content priority. |
 | 2e | Epic 437A: Frontend Component Changes | docsLink utility, HelpTip extension, EmptyState fix, sidebar Help item. Independent of content. |
 
 ### Stage 3: Frontend Wiring (After Component Changes)
@@ -377,7 +377,7 @@ Stage 3:  [E437B]                                                <- call-site wi
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **436A** | 436.1--436.3 | 3 P2 feature guides: custom-fields-tags, information-requests, ai-assistant. ~1,900 estimated words. | **Done** (PR #905) |
-| **436B** | 436.4--436.9 | 3 accounting guides + 3 legal stubs. 6 articles, ~2,400 estimated words (stubs are ~200 words each). | |
+| **436B** | 436.4--436.9 | 3 accounting guides + 3 legal stubs. 6 articles, ~2,400 estimated words (stubs are ~200 words each). | **Done** (PR #906) |
 
 ### Tasks
 

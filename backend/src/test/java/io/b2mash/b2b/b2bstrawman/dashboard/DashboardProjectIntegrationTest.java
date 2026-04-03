@@ -47,6 +47,9 @@ class DashboardProjectIntegrationTest {
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
 
+  @Autowired
+  private io.b2mash.b2b.b2bstrawman.automation.AutomationRuleRepository automationRuleRepository;
+
   private String tenantSchema;
   private UUID memberIdOwner;
   private UUID memberIdMember;
@@ -87,6 +90,15 @@ class DashboardProjectIntegrationTest {
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+
+    // Disable seeded automation rules so they don't create follow-up tasks during test setup
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .run(
+            () -> {
+              var rules = automationRuleRepository.findByEnabled(true);
+              rules.forEach(rule -> rule.toggle());
+              automationRuleRepository.saveAll(rules);
+            });
 
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)

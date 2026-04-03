@@ -78,7 +78,7 @@ export function CreateCourtDateDialog({
   useEffect(() => {
     if (open) {
       fetchProjects()
-        .then((all) => setProjects(all))
+        .then((all) => setProjects(all ?? []))
         .catch(() => setProjects([]));
     }
   }, [open]);

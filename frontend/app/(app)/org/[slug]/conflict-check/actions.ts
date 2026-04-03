@@ -117,7 +117,7 @@ export async function fetchProjects(): Promise<
   const result = await api.get<
     PaginatedResponse<{ id: string; name: string }>
   >("/api/projects?size=200");
-  return result.content;
+  return result?.content ?? [];
 }
 
 export async function fetchCustomers(): Promise<
@@ -126,5 +126,5 @@ export async function fetchCustomers(): Promise<
   const result = await api.get<
     PaginatedResponse<{ id: string; name: string }>
   >("/api/customers?size=200");
-  return result.content;
+  return result?.content ?? [];
 }

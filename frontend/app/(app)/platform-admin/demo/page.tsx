@@ -1,4 +1,4 @@
-import { DemoProvisionForm } from "./demo-provision-form";
+import { DemoProvisionForm } from "@/app/(app)/platform-admin/demo/demo-provision-form";
 
 export default function DemoProvisionPage() {
   return (

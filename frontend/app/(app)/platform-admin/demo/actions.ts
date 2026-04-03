@@ -1,14 +1,10 @@
 "use server";
 
 import { api, ApiError } from "@/lib/api";
+import { type DemoProvisionFormData } from "@/lib/schemas/demo-provision";
 import { revalidatePath } from "next/cache";
 
-export interface DemoProvisionFormData {
-  organizationName: string;
-  verticalProfile: "GENERIC" | "ACCOUNTING" | "LEGAL";
-  adminEmail: string;
-  seedDemoData: boolean;
-}
+export type { DemoProvisionFormData };
 
 export interface DemoProvisionResponse {
   organizationId: string;
@@ -17,7 +13,7 @@ export interface DemoProvisionResponse {
   verticalProfile: string;
   loginUrl: string;
   demoDataSeeded: boolean;
-  adminNote: string;
+  adminNote: string | null;
 }
 
 interface ActionResult<T = void> {

@@ -22,7 +22,7 @@ import {
 import {
   provisionDemo,
   type DemoProvisionResponse,
-} from "./actions";
+} from "@/app/(app)/platform-admin/demo/actions";
 
 const VERTICAL_OPTIONS = [
   {

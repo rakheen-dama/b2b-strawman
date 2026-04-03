@@ -187,40 +187,42 @@ public class AccountingDemoDataSeeder extends BaseDemoDataSeeder {
 
     record ProjectSpec(String name, String description, boolean completed) {}
 
+    // Projects ordered so names align with modulo customer assignment (i % 3):
+    // i=0 -> Van der Merwe, i=1 -> Protea, i=2 -> Karoo, i=3 -> Van der Merwe, etc.
     List<ProjectSpec> specs =
         List.of(
             new ProjectSpec(
-                "2025 Annual Financials -- Protea Trading",
-                "Full annual financial statement preparation and audit for Protea Trading",
-                false),
-            new ProjectSpec(
-                "VAT Registration -- Disa Financial",
-                "VAT vendor registration and first return filing",
-                false),
-            new ProjectSpec(
                 "BBBEE Audit -- Van der Merwe",
                 "Broad-Based BEE verification and scorecard preparation",
+                false),
+            new ProjectSpec(
+                "2025 Annual Financials -- Protea Trading",
+                "Full annual financial statement preparation and audit for Protea Trading",
                 false),
             new ProjectSpec(
                 "Monthly Bookkeeping -- Karoo Investments",
                 "Recurring monthly bookkeeping and management accounts",
                 false),
             new ProjectSpec(
-                "SARS ITR14 -- Berg & Berg",
-                "Corporate income tax return preparation and submission",
+                "CIPC Compliance -- Van der Merwe",
+                "Annual CIPC return filing and company secretarial compliance",
                 false),
             new ProjectSpec(
                 "Payroll Setup -- Protea Trading",
                 "PAYE registration and monthly payroll processing setup",
-                true),
-            new ProjectSpec(
-                "CIPC Compliance -- Van der Merwe",
-                "Annual CIPC return filing and company secretarial compliance",
-                true),
+                false),
             new ProjectSpec(
                 "Tax Advisory -- Karoo Investments",
                 "Strategic tax planning and advisory engagement",
-                false));
+                false),
+            new ProjectSpec(
+                "SARS ITR14 -- Van der Merwe",
+                "Corporate income tax return preparation and submission",
+                true),
+            new ProjectSpec(
+                "VAT Registration -- Protea Trading",
+                "VAT vendor registration and first return filing",
+                true));
 
     List<ProjectInfo> results = new ArrayList<>();
     for (int i = 0; i < specs.size(); i++) {
@@ -383,10 +385,4 @@ public class AccountingDemoDataSeeder extends BaseDemoDataSeeder {
       }
     }
   }
-
-  /** Internal record for tracking customer data during seeding. */
-  record CustomerInfo(UUID id, String name, String email, LifecycleStatus status) {}
-
-  /** Internal record for tracking project data during seeding. */
-  record ProjectInfo(UUID id, String name, boolean completed) {}
 }

@@ -216,6 +216,8 @@ public class LegalDemoDataSeeder extends BaseDemoDataSeeder {
 
     record ProjectSpec(String name, String description, boolean completed) {}
 
+    // Projects ordered so names align with modulo customer assignment (i % 3):
+    // i=0 -> Dlamini, i=1 -> Naidoo, i=2 -> Botha, i=3 -> Dlamini, etc.
     List<ProjectSpec> specs =
         List.of(
             new ProjectSpec(
@@ -231,15 +233,15 @@ public class LegalDemoDataSeeder extends BaseDemoDataSeeder {
                 "Administration of deceased estate including asset distribution",
                 false),
             new ProjectSpec(
-                "Msimang -- Labour Dispute",
+                "Dlamini -- Labour Dispute",
                 "Labour dispute representation at CCMA and Labour Court",
                 false),
             new ProjectSpec(
-                "Dlamini -- Sectional Title Registration",
+                "Naidoo -- Sectional Title Registration",
                 "Sectional title registration for residential complex",
                 true),
             new ProjectSpec(
-                "Naidoo -- Company Formation",
+                "Botha -- Company Formation",
                 "CIPC registration and shareholder agreement drafting",
                 true));
 
@@ -403,10 +405,4 @@ public class LegalDemoDataSeeder extends BaseDemoDataSeeder {
       }
     }
   }
-
-  /** Internal record for tracking customer data during seeding. */
-  record CustomerInfo(UUID id, String name, String email, LifecycleStatus status) {}
-
-  /** Internal record for tracking project data during seeding. */
-  record ProjectInfo(UUID id, String name, boolean completed) {}
 }

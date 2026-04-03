@@ -366,10 +366,4 @@ public class GenericDemoDataSeeder extends BaseDemoDataSeeder {
       }
     }
   }
-
-  /** Internal record for tracking customer data during seeding. */
-  record CustomerInfo(UUID id, String name, String email, LifecycleStatus status) {}
-
-  /** Internal record for tracking project data during seeding. */
-  record ProjectInfo(UUID id, String name, boolean completed) {}
 }

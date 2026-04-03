@@ -7,7 +7,7 @@ Phase 58 closes the gap between "the platform can process payments" (Phase 57) a
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 427 | Billing Method Dimension | Backend | -- | M | 427A, 427B | **Done** (PRs #887, #888) |
-| 428 | Admin Billing Management | Backend + Frontend | 427 | L | 428A, 428B | |
+| 428 | Admin Billing Management | Backend + Frontend | 427 | L | 428A, 428B | **Done** (PRs #889, #890) |
 | 429 | Demo Tenant Provisioning | Backend + Frontend | 427 | L | 429A, 429B | |
 | 430 | Demo Data Seeding | Backend | 429 | L | 430A, 430B, 430C | |
 | 431 | Demo Tenant Cleanup | Backend + Frontend | 427 | L | 431A, 431B | |
@@ -65,7 +65,7 @@ Phase 58 closes the gap between "the platform can process payments" (Phase 57) a
 
 | Order | Epic | Rationale |
 |-------|------|-----------|
-| 4a | Epic 428B: Admin Billing Frontend | Platform admin billing page, detail slide-over. Depends on 428A backend API. |
+| 4a | Epic 428B: Admin Billing Frontend | Platform admin billing page, detail slide-over. Depends on 428A backend API. **Done** (PR #890) |
 | 4b | Epic 429B: Demo Provisioning Frontend | Demo creation form + success state. Depends on 429A backend API. |
 | 4c | Epic 431B: Demo Cleanup + Billing Adaptation Frontend | Demo tenant list, delete confirmation dialog, billing page adaptation for `adminManaged`. Depends on 431A backend API. |
 
@@ -174,7 +174,7 @@ Stage 4:  [E428B] [E429B] [E431B]                       <- parallel frontend (af
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **428A** | 428.1--428.6 | `AdminBillingService`, `AdminBillingController`, admin DTOs (`AdminBillingOverrideRequest`, `AdminTenantBillingResponse`, `ExtendTrialRequest`), audit event integration, `AdminBillingEndpointTest` | **Done** (PR #889) |
-| **428B** | 428.7--428.12 | Platform admin billing page (tenant list with badges, filters, search), billing detail slide-over (status/method changes, trial extension, admin note), layout update with "Billing" nav, frontend tests | |
+| **428B** | 428.7--428.12 | Platform admin billing page (tenant list with badges, filters, search), billing detail slide-over (status/method changes, trial extension, admin note), layout update with "Billing" nav, frontend tests | **Done** (PR #890) |
 
 ### Tasks
 

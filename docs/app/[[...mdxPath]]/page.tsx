@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { generateStaticParamsFor, importPage } from "nextra/pages";
 import { useMDXComponents } from "../../mdx-components";
 
@@ -11,7 +12,9 @@ export async function generateMetadata(props: {
   return metadata;
 }
 
-const Wrapper = useMDXComponents().wrapper;
+const Wrapper =
+  useMDXComponents().wrapper ??
+  (({ children }: { children: ReactNode }) => <>{children}</>);
 
 export default async function Page(props: {
   params: Promise<{ mdxPath?: string[] }>;

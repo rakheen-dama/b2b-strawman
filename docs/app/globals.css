@@ -30,6 +30,11 @@
   --nextra-primary-saturation: 60%;
 }
 
+/* Display font utility — used by navbar logo */
+.font-display {
+  font-family: var(--font-display);
+}
+
 /* Override Nextra heading font to Sora (display) */
 .nextra-content h1,
 .nextra-content h2,

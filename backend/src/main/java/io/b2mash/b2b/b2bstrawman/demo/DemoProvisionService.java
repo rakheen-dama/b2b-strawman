@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.billing.SubscriptionRepository;
 import io.b2mash.b2b.b2bstrawman.billing.SubscriptionStatusCache;
 import io.b2mash.b2b.b2bstrawman.demo.DemoDtos.DemoProvisionRequest;
 import io.b2mash.b2b.b2bstrawman.demo.DemoDtos.DemoProvisionResponse;
+import io.b2mash.b2b.b2bstrawman.demo.seed.DemoDataSeeder;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
@@ -31,6 +32,7 @@ public class DemoProvisionService {
   private final SubscriptionRepository subscriptionRepository;
   private final SubscriptionStatusCache subscriptionStatusCache;
   private final TransactionTemplate txTemplate;
+  private final DemoDataSeeder demoDataSeeder;
   private final String baseUrl;
 
   public DemoProvisionService(
@@ -40,6 +42,7 @@ public class DemoProvisionService {
       SubscriptionRepository subscriptionRepository,
       SubscriptionStatusCache subscriptionStatusCache,
       TransactionTemplate txTemplate,
+      DemoDataSeeder demoDataSeeder,
       @Value("${app.base-url:http://localhost:3000}") String baseUrl) {
     this.keycloakAdminClient = keycloakAdminClient;
     this.tenantProvisioningService = tenantProvisioningService;
@@ -47,6 +50,7 @@ public class DemoProvisionService {
     this.subscriptionRepository = subscriptionRepository;
     this.subscriptionStatusCache = subscriptionStatusCache;
     this.txTemplate = txTemplate;
+    this.demoDataSeeder = demoDataSeeder;
     this.baseUrl = baseUrl;
   }
 
@@ -165,8 +169,20 @@ public class DemoProvisionService {
           subscriptionStatusCache.evict(org.getId());
         });
 
-    // Step 6: Demo data seeding (DemoDataSeeder does not exist yet — Epic 430)
+    // Step 6: Demo data seeding (non-fatal — tenant is usable without demo data)
     boolean demoDataSeeded = false;
+    if (request.seedDemoData()) {
+      try {
+        demoDataSeeder.seed(provisioningResult.schemaName(), org.getId(), verticalProfile);
+        demoDataSeeded = true;
+      } catch (Exception e) {
+        log.error(
+            "Demo data seeding failed for org {} (schema {}). Tenant is provisioned but has no demo data.",
+            org.getId(),
+            provisioningResult.schemaName(),
+            e);
+      }
+    }
 
     // Step 7: Audit event — platform admin context has no tenant, so use structured logging
     var auditDetails =

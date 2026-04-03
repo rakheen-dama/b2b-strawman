@@ -47,7 +47,7 @@ export function HomeCards() {
         <Link
           key={card.href}
           href={card.href}
-          className="group rounded-lg border border-slate-200/80 bg-white p-6 shadow-sm transition-all hover:border-teal-500/50 hover:shadow-md dark:border-slate-800/80 dark:bg-slate-900 dark:hover:border-teal-500/50"
+          className="group rounded-lg border border-slate-200/80 bg-white p-6 shadow-sm transition-all hover:border-teal-500/50 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/60 focus-visible:ring-offset-2 dark:border-slate-800/80 dark:bg-slate-900 dark:hover:border-teal-500/50 dark:focus-visible:ring-offset-slate-900"
         >
           <div className="mb-3 text-2xl">{card.icon}</div>
           <h3 className="font-semibold text-slate-900 dark:text-slate-100">

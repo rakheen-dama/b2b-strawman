@@ -1,8 +1,146 @@
 ---
 title: "Your First Project"
-description: "End-to-end walkthrough: create a customer, project, tasks, log time, and invoice."
+description: "End-to-end walkthrough: create a customer, set up a project, add tasks, log time, and generate your first invoice."
 ---
+
+import { Callout, Steps, Tabs } from "nextra/components"
 
 # Your First Project
 
-Content coming soon.
+This guide walks you through the core HeyKazi workflow from start to finish — adding a customer, creating a project, breaking work into tasks, logging time, and generating an invoice. By the end, you will have completed five of the six steps on the Getting Started checklist.
+
+## Before You Begin
+
+Make sure you have:
+
+- A HeyKazi account with access to your organisation (see [Quick Setup](/getting-started/quick-setup))
+- An **Admin** or **Owner** role — Members can work on existing projects but cannot create new customers or projects
+
+If your team is already set up and a colleague has created the first project, you can skip ahead to the tasks and time-tracking steps.
+
+## The Workflow at a Glance
+
+Here is the full journey you are about to follow:
+
+1. **Add a customer** — record who you are doing the work for
+2. **Create a project** — set up a workspace to organise the engagement
+3. **Add tasks** — break the project into trackable pieces of work
+4. **Log time** — record hours spent on each task
+5. **Generate an invoice** — pull unbilled time into a professional invoice and send it
+
+Each step builds on the previous one, so we recommend following them in order your first time through.
+
+## Step-by-Step Walkthrough
+
+<Steps>
+### Step 1 — Add a Customer
+
+Customers represent the organisations you serve. You need at least one customer before you can link a project for invoicing.
+
+1. Click **Customers** in the left sidebar.
+2. If this is your first customer, you will see the empty state: "No customers yet — Customers represent the organisations you work with. Add your first customer to start managing relationships."
+3. Click **Add customer**.
+4. Fill in the customer details — at minimum, provide a **name** (for example, "Acme Holdings"). You can also add contact information and notes.
+5. Click **Save**.
+
+Your new customer starts with a **Prospect** status. This is the default for all new customers. As you begin working together, the customer will move through the lifecycle stages (Prospect, Onboarding, Active, and beyond).
+
+<Callout type="info">
+  You can create a project without linking a customer — it will be marked as an **Internal Project**. However, linking a customer is required if you plan to generate invoices.
+</Callout>
+
+To learn more about customer statuses and management, see [Customers](/features/customers).
+
+### Step 2 — Create a Project
+
+Projects organise all the work, documents, and time tracking for a client engagement.
+
+1. Click **Projects** in the left sidebar.
+2. If this is your first project, you will see: "No projects yet — Projects organise your work, documents, and time tracking. Create your first project to get started."
+3. Click **New Project** in the top-right corner.
+4. Fill in the project details:
+   - **Name** (required) — give the project a clear name, such as "Annual Tax Return 2025" or "Company Formation — Acme"
+   - **Description** (optional) — a brief summary of the scope
+   - **Due Date** (optional) — pick a target completion date
+   - **Customer** (optional) — select the customer you created in Step 1 from the dropdown
+5. Click **Create Project**.
+
+You are taken to the project detail page, which is where you will spend most of your time managing the engagement.
+
+<Callout type="info">
+  Only **Active** customers appear in the Customer dropdown. If your customer does not show up, check that they have been moved past the Prospect stage.
+</Callout>
+
+To learn more about project features and settings, see [Projects](/features/projects).
+
+### Step 3 — Add Tasks
+
+Tasks break your project into individual pieces of work that can be assigned, tracked, and timed.
+
+1. On the project detail page, click the **Tasks** tab.
+2. Click **New Task** to create your first task.
+3. Give the task a **title** — for example, "Gather supporting documents" or "Draft financial statements."
+4. Optionally, assign the task to a team member using the **Assignee** field.
+5. Repeat for each piece of work in the project.
+
+Tasks move through three statuses: **Open** (not started), **In Progress** (being worked on), and **Done** (complete). Update the status as work progresses.
+
+To learn more about task management, see [Tasks](/features/tasks).
+
+### Step 4 — Log Time
+
+Time tracking is central to how HeyKazi handles invoicing, budgets, and profitability reporting. You log time against tasks.
+
+1. In the **Tasks** tab, find the task you want to log time against.
+2. Click **Log Time** on the task.
+3. Enter the **hours** spent (or use the timer to track time as you work).
+4. Choose whether the time is **Billable** or **Non-billable**:
+   - **Billable** time can be charged to the client and appears on invoices.
+   - **Non-billable** time (such as internal meetings or admin) is tracked for visibility but is not invoiced.
+5. Click **Save**.
+
+Logged time entries accumulate in the project's **Time** tab, where you can see a summary of all hours by team member, task, and billing status.
+
+<Callout type="info">
+  Billable vs. non-billable time is important for profitability reporting. Billable time generates revenue; non-billable time is tracked for effort visibility. A healthy utilisation rate is typically 60 to 80 percent.
+</Callout>
+
+To learn more about time tracking and timers, see [Time Tracking](/features/time-tracking).
+
+### Step 5 — Generate an Invoice
+
+Once you have billable time logged against a project, you can pull it into an invoice.
+
+1. Click **Invoices** in the left sidebar.
+2. Click **Create Invoice**.
+3. Select the **Customer** you want to invoice and a **date range** for the unbilled time.
+4. HeyKazi automatically pulls in all unbilled billable time entries for that customer within the selected period.
+5. Review the line items — you can adjust descriptions, amounts, or add manual line items.
+6. When you are satisfied, **send** the invoice to your client.
+
+Invoices start as **Drafts**, where you can freely edit them. Once sent, the invoice is locked. It then moves to **Paid** when payment is received, or **Overdue** if payment is late.
+
+To learn more about the invoice lifecycle, see [Invoicing](/features/invoicing).
+</Steps>
+
+## Checklist Progress
+
+If you followed all five steps above, you have completed five of the six items on the Getting Started checklist:
+
+- **Create your first project** — done
+- **Add a customer** — done
+- **Log time on a task** — done
+- **Invite a team member** — see [Invite Your Team](/getting-started/invite-your-team) if you have not done this yet
+- **Generate your first invoice** — done
+
+The remaining step — **Set up your rate card** — defines your billing and cost rates. Rate cards enable profitability tracking and ensure your invoices reflect accurate pricing. Head to **Settings** in the sidebar to configure your rate card.
+
+## What's Next?
+
+Now that you have completed the core workflow, explore these feature guides to get the most out of HeyKazi:
+
+- [Projects](/features/projects) — project statuses, detail tabs, templates, and archiving
+- [Customers](/features/customers) — customer lifecycle, contact management, and linking to projects
+- [Tasks](/features/tasks) — task statuses, assignments, and workflows
+- [Time Tracking](/features/time-tracking) — timers, bulk logging, and time reports
+- [Invoicing](/features/invoicing) — invoice lifecycle, unbilled time, and payment tracking

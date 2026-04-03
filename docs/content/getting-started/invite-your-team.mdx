@@ -1,8 +1,117 @@
 ---
 title: "Invite Your Team"
-description: "Add team members to your organization and assign roles."
+description: "Add team members to your HeyKazi organisation, assign roles, and manage pending invitations."
 ---
+
+import { Callout, Steps } from "nextra/components"
 
 # Invite Your Team
 
-Content coming soon.
+HeyKazi works best when your whole team is on board. This guide shows you how to invite colleagues, choose the right role for each person, and manage pending invitations.
+
+<Callout type="info">
+  Only **Admins** and **Owners** can invite team members. If you are a Member, you can view the team list but will not see the invite form.
+</Callout>
+
+## Navigating to Team Settings
+
+Open the left sidebar and click **Team**. This takes you to the Team page at `/org/your-org/team`.
+
+At the top of the page you will see a heading with a member count badge — for example, "Team" with "3 members" beside it. Below that, the page is split into two main sections:
+
+- **Invite a team member** — the form to send new invitations (visible to Admins and Owners)
+- **Team tabs** — a tabbed view with a **Members** list and a **Pending Invitations** list
+
+If you are the only person in the organisation, the members tab shows: "Just you for now — Invite team members to collaborate on projects, track time, and share documents."
+
+## Sending an Invitation
+
+<Steps>
+### Step 1 — Go to the Team page
+
+Click **Team** in the sidebar. You will see the invite form at the top of the page.
+
+### Step 2 — Enter an email address
+
+Type your colleague's email address into the **Email address** field. The placeholder shows `colleague@company.com` as an example.
+
+### Step 3 — Select a role
+
+Choose a role from the **Role** dropdown. The dropdown has two sections:
+
+- **System roles**: **Member** and **Admin**
+- **Custom roles**: any additional roles your organisation has defined (if applicable)
+
+See the role descriptions below to decide which fits best.
+
+### Step 4 — Send the invite
+
+Click **Send Invite**. The invitation is sent immediately and the person appears in the **Pending Invitations** tab.
+</Steps>
+
+### Customising Permissions for Custom Roles
+
+If you select a custom role, you may see a **Customize for this user** section appear below the role dropdown. Expanding this section reveals a list of individual capabilities you can toggle on or off for this specific invitation.
+
+Capabilities modified from the base role are marked with a **+** (added) or **-** (removed) indicator so you can see at a glance what has changed.
+
+## Understanding Roles
+
+HeyKazi has three built-in roles and supports custom roles for more granular control.
+
+| Role | What they can do |
+|------|-----------------|
+| **Owner** | Full access to everything, including billing and subscription management. There is one Owner per organisation — the person who created it. |
+| **Admin** | Manage projects, customers, team members, and settings. Can invite and remove members. Cannot manage the subscription. |
+| **Member** | Work on projects they are assigned to — create tasks, log time, and add documents. Cannot access organisation settings or invite others. |
+
+<Callout type="info">
+  **Custom roles** let you fine-tune access beyond the built-in options. Admins can create custom roles with a specific set of capabilities — for example, a "Senior Associate" role that can manage project members but not organisation settings.
+</Callout>
+
+For most organisations, **Member** is the right choice for the majority of your team. Reserve **Admin** for managers or team leads who need to manage settings and invite others.
+
+## What Happens Next
+
+Once you send an invitation, here is what the recipient experiences:
+
+1. They receive an **email** with a link to join your organisation.
+2. Clicking the link takes them through account creation (or signs them in if they already have an account).
+3. They land on the organisation dashboard with the role you assigned — ready to start working.
+
+The new team member will see the same **Getting Started** checklist on their dashboard to help them get oriented.
+
+## Managing Pending Invitations
+
+Switch to the **Pending Invitations** tab on the Team page to see all outstanding invitations. The table shows:
+
+| Column | Description |
+|--------|-------------|
+| **Email** | The email address the invitation was sent to |
+| **Role** | The role assigned to the invitation (shown as a badge) |
+| **Invited** | The date the invitation was sent |
+| **Actions** | A **Revoke** button to cancel the invitation |
+
+If someone has not accepted their invitation and you need to cancel it, click **Revoke**. The invitation is removed immediately and the recipient can no longer use the link.
+
+<Callout type="warning">
+  Revoking an invitation cannot be undone. If you change your mind, you will need to send a new invitation.
+</Callout>
+
+## Plan Limits
+
+Your organisation's plan determines how many team members you can have. The Team page displays a progress bar showing your current usage — for example, "3 of 10 members."
+
+When you reach your plan limit, the invite form shows: "Member limit reached. Upgrade to invite more members." with a link to your billing settings where you can upgrade your plan.
+
+## Tips and Best Practices
+
+- **Start small** — invite your core team first and expand as you settle into the platform.
+- **Use Member for most staff** — the Member role covers everyday work like tasks, time tracking, and documents.
+- **Reserve Admin for managers** — only people who need to manage settings, invite others, or configure rate cards should be Admins.
+- **Review pending invitations regularly** — revoke any that have gone stale so your member count stays accurate.
+
+## Related Features
+
+- [Quick Setup](/getting-started/quick-setup) — get your account and organisation up and running
+- [Your First Project](/getting-started/first-project) — now that your team is set up, create your first project together

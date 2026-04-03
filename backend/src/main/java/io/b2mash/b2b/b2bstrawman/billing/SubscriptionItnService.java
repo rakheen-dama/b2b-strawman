@@ -118,6 +118,11 @@ public class SubscriptionItnService {
 
     subscription.transitionTo(Subscription.SubscriptionStatus.ACTIVE);
 
+    // Set billing method to PAYFAST on first successful payment (MANUAL -> PAYFAST transition)
+    if (subscription.getBillingMethod() != BillingMethod.PAYFAST) {
+      subscription.setBillingMethod(BillingMethod.PAYFAST);
+    }
+
     if (token != null && subscription.getPayfastToken() == null) {
       subscription.setPayfastToken(token);
     }

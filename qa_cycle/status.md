@@ -5,7 +5,7 @@
 - **QA Position**: ALL_TRACKS_COMPLETE (Cycle 1). T0, T7, T1 (all), T2.1, T3.1–T3.2, T4 (all, API), T5 (all, API), T6 (BLOCKED), T8 (partial), T9 (SKIP — job not run), T10 (all, API+UI) complete.
 - **Cycle**: 1
 - **Dev Stack**: READY
-- **NEEDS_REBUILD**: true
+- **NEEDS_REBUILD**: false
 - **Branch**: `bugfix_cycle_2026-04-04`
 - **Scenario**: `qa/testplan/phase55-legal-foundations.md`
 - **Focus**: Legal foundations — matter types, practice areas, legal entity management, conflict checks, court/jurisdiction registry, legal calendar, trust accounting foundations
@@ -16,7 +16,7 @@
 | Service | URL | Status |
 |---------|-----|--------|
 | Frontend | http://localhost:3000 | UP (PID 74243) |
-| Backend | http://localhost:8080 | UP (PID 72936) |
+| Backend | http://localhost:8080 | UP (PID 43171) |
 | Gateway (BFF) | http://localhost:8443 | UP (PID 74067) |
 | Portal | http://localhost:3002 | UP (PID 74299) |
 | Keycloak | http://localhost:8180 | UP (Docker: b2b-keycloak) |
@@ -133,3 +133,4 @@ TOKEN=$(curl -sf -X POST "http://localhost:8180/realms/docteams/protocol/openid-
 | 2026-04-04T03:35Z | Dev | **GAP-P55-010 FIXED** (PR #917, merged). Added `findByNameContaining` ILIKE query to `AdversePartyRepository`. Updated `AdversePartyService.list()` to use substring match as primary search, `similarity()` as secondary fuzzy fallback, alias match as tertiary. Results merged with dedup preserving substring-match priority. 2 files changed (+22/-3 lines). 13 AdverseParty tests pass. NEEDS_REBUILD: backend. |
 | 2026-04-04T03:45Z | Dev | **GAP-P55-004 FIXED** (PR #918, merged). Added date range (from/to) inputs and client/matter text search to court calendar filter bar. Date filters wired to backend `CourtDateFilters`; text search uses client-side `useMemo` filter on `customerName`/`projectName`. 1 file changed (+47/-6 lines). Build green, 1800 tests pass. |
 | 2026-04-04T03:55Z | Dev | **GAP-P55-008 FIXED** (PR #919, merged). Created `EditCourtDateDialog` component (pre-populated with existing court date values, calls `updateCourtDate` action). Added `canEdit` to `canTransition()` for SCHEDULED/POSTPONED statuses. Wired "Edit" menu item into list view dropdown (before Postpone) and "Edit" button into detail side panel. Updated `ProjectCourtDatesTab` and all test usages with new `onEdit` prop. Added `editCourtDateSchema` to `lib/schemas/legal.ts`. 6 files changed (+406 lines). Build green, 291 test files / 1800 tests pass. |
+| 2026-04-04T04:05Z | Infra | Backend restarted (PID 72936 -> 43171) after PRs #912, #914, #917 merged (Java changes: prescription status computation, postpone reason storage, adverse party substring search). All 4 services healthy. NEEDS_REBUILD cleared. |

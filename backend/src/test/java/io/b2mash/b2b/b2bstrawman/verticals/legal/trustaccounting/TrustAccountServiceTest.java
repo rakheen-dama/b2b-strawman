@@ -101,9 +101,9 @@ class TrustAccountServiceTest {
                   assertThat(response.bankName()).isEqualTo("First National Bank");
                   assertThat(response.branchCode()).isEqualTo("250655");
                   assertThat(response.accountNumber()).isEqualTo("1234567890");
-                  assertThat(response.accountType()).isEqualTo("GENERAL");
+                  assertThat(response.accountType()).isEqualTo(TrustAccountType.GENERAL);
                   assertThat(response.isPrimary()).isTrue();
-                  assertThat(response.status()).isEqualTo("ACTIVE");
+                  assertThat(response.status()).isEqualTo(TrustAccountStatus.ACTIVE);
                   assertThat(response.openedDate()).isEqualTo(LocalDate.of(2026, 1, 1));
                 }));
   }
@@ -203,7 +203,7 @@ class TrustAccountServiceTest {
 
                   var closed = trustAccountService.closeTrustAccount(created.id());
 
-                  assertThat(closed.status()).isEqualTo("CLOSED");
+                  assertThat(closed.status()).isEqualTo(TrustAccountStatus.CLOSED);
                   assertThat(closed.closedDate()).isNotNull();
                 }));
   }
@@ -282,7 +282,7 @@ class TrustAccountServiceTest {
 
                   var activeAccounts = trustAccountService.listTrustAccounts();
 
-                  assertThat(activeAccounts).allMatch(a -> "ACTIVE".equals(a.status()));
+                  assertThat(activeAccounts).allMatch(a -> TrustAccountStatus.ACTIVE == a.status());
                   assertThat(activeAccounts)
                       .anyMatch(a -> "Active List Account".equals(a.accountName()));
                   assertThat(activeAccounts)

@@ -8,6 +8,8 @@ import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.lpff.LpffRate;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.lpff.LpffRateRepository;
 import jakarta.persistence.EntityManager;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -45,10 +47,10 @@ public class TrustAccountService {
   // --- DTO Records ---
 
   public record CreateTrustAccountRequest(
-      String accountName,
-      String bankName,
-      String branchCode,
-      String accountNumber,
+      @NotBlank String accountName,
+      @NotBlank String bankName,
+      @NotBlank String branchCode,
+      @NotBlank String accountNumber,
       String accountType,
       Boolean isPrimary,
       Boolean requireDualApproval,
@@ -71,11 +73,11 @@ public class TrustAccountService {
       String bankName,
       String branchCode,
       String accountNumber,
-      String accountType,
+      TrustAccountType accountType,
       boolean isPrimary,
       boolean requireDualApproval,
       BigDecimal paymentApprovalThreshold,
-      String status,
+      TrustAccountStatus status,
       LocalDate openedDate,
       LocalDate closedDate,
       String notes,
@@ -83,7 +85,10 @@ public class TrustAccountService {
       Instant updatedAt) {}
 
   public record CreateLpffRateRequest(
-      LocalDate effectiveFrom, BigDecimal ratePercent, BigDecimal lpffSharePercent, String notes) {}
+      @NotNull LocalDate effectiveFrom,
+      @NotNull BigDecimal ratePercent,
+      @NotNull BigDecimal lpffSharePercent,
+      String notes) {}
 
   public record LpffRateResponse(
       UUID id,
@@ -100,7 +105,9 @@ public class TrustAccountService {
   public List<TrustAccountResponse> listTrustAccounts() {
     moduleGuard.requireModule(MODULE_ID);
 
-    return trustAccountRepository.findByStatus("ACTIVE").stream().map(this::toResponse).toList();
+    return trustAccountRepository.findByStatus(TrustAccountStatus.ACTIVE).stream()
+        .map(this::toResponse)
+        .toList();
   }
 
   @Transactional(readOnly = true)
@@ -122,7 +129,10 @@ public class TrustAccountService {
     boolean primary = request.isPrimary() != null ? request.isPrimary() : true;
     boolean dualApproval =
         request.requireDualApproval() != null ? request.requireDualApproval() : false;
-    String accountType = request.accountType() != null ? request.accountType() : "GENERAL";
+    TrustAccountType accountType =
+        request.accountType() != null
+            ? TrustAccountType.valueOf(request.accountType())
+            : TrustAccountType.GENERAL;
 
     var account =
         new TrustAccount(
@@ -148,7 +158,7 @@ public class TrustAccountService {
                 Map.of(
                     "account_name", saved.getAccountName(),
                     "bank_name", saved.getBankName(),
-                    "account_type", saved.getAccountType()))
+                    "account_type", saved.getAccountType().name()))
             .build());
 
     return toResponse(saved);
@@ -163,7 +173,7 @@ public class TrustAccountService {
             .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("TrustAccount", id));
 
-    if ("CLOSED".equals(account.getStatus())) {
+    if (TrustAccountStatus.CLOSED == account.getStatus()) {
       throw new InvalidStateException(
           "Cannot update trust account", "Account is closed and cannot be modified");
     }
@@ -189,7 +199,6 @@ public class TrustAccountService {
     if (request.notes() != null) {
       account.setNotes(request.notes());
     }
-    account.setUpdatedAt(Instant.now());
 
     var saved = trustAccountRepository.save(account);
 
@@ -216,7 +225,7 @@ public class TrustAccountService {
             .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("TrustAccount", id));
 
-    if ("CLOSED".equals(account.getStatus())) {
+    if (TrustAccountStatus.CLOSED == account.getStatus()) {
       throw new InvalidStateException("Cannot close trust account", "Account is already closed");
     }
 
@@ -236,9 +245,8 @@ public class TrustAccountService {
           "Account has non-zero client balances totalling " + totalBalance);
     }
 
-    account.setStatus("CLOSED");
+    account.setStatus(TrustAccountStatus.CLOSED);
     account.setClosedDate(LocalDate.now());
-    account.setUpdatedAt(Instant.now());
 
     var saved = trustAccountRepository.save(account);
 
@@ -256,12 +264,16 @@ public class TrustAccountService {
     return toResponse(saved);
   }
 
+  /**
+   * Returns the primary GENERAL trust account, or empty if none has been configured yet. A newly
+   * onboarded tenant may not have a trust account, so Optional is the correct return type here.
+   */
   @Transactional(readOnly = true)
   public Optional<TrustAccountResponse> getPrimaryAccount() {
     moduleGuard.requireModule(MODULE_ID);
 
     return trustAccountRepository
-        .findByAccountTypeAndIsPrimaryTrue("GENERAL")
+        .findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL)
         .map(this::toResponse);
   }
 
@@ -314,7 +326,8 @@ public class TrustAccountService {
 
     var rate =
         lpffRateRepository
-            .findEffectiveRate(accountId, asOfDate)
+            .findFirstByTrustAccountIdAndEffectiveFromLessThanEqualOrderByEffectiveFromDesc(
+                accountId, asOfDate)
             .orElseThrow(
                 () ->
                     new InvalidStateException(
@@ -337,7 +350,7 @@ public class TrustAccountService {
         entity.getBranchCode(),
         entity.getAccountNumber(),
         entity.getAccountType(),
-        entity.getIsPrimary(),
+        entity.isPrimary(),
         entity.getRequireDualApproval(),
         entity.getPaymentApprovalThreshold(),
         entity.getStatus(),

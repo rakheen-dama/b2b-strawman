@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface TrustAccountRepository extends JpaRepository<TrustAccount, UUID> {
 
-  List<TrustAccount> findByStatus(String status);
+  List<TrustAccount> findByStatus(TrustAccountStatus status);
 
-  Optional<TrustAccount> findByAccountTypeAndIsPrimaryTrue(String accountType);
+  Optional<TrustAccount> findByAccountTypeAndPrimaryTrue(TrustAccountType accountType);
 }

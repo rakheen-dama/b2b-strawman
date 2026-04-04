@@ -9,7 +9,11 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.notification.NotificationRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
@@ -73,11 +77,17 @@ class TrustTransactionServiceTest {
   @Autowired private AuditEventRepository auditEventRepository;
   @Autowired private EntityManager entityManager;
   @Autowired private JdbcTemplate jdbcTemplate;
+  @Autowired private InvoiceService invoiceService;
+  @Autowired private InvoiceRepository invoiceRepository;
+  @Autowired private NotificationRepository notificationRepository;
 
   private String tenantSchema;
   private UUID memberId;
   private UUID approverId;
+  private UUID secondApproverId;
   private UUID trustAccountId;
+  private UUID dualApprovalAccountId;
+  private UUID thresholdAccountId;
 
   @BeforeAll
   void setup() throws Exception {
@@ -92,6 +102,14 @@ class TrustTransactionServiceTest {
     approverId =
         UUID.fromString(
             syncMember(ORG_ID, "user_approver", "approver@test.com", "Trust Approver", "owner"));
+    secondApproverId =
+        UUID.fromString(
+            syncMember(
+                ORG_ID,
+                "user_second_approver",
+                "second_approver@test.com",
+                "Second Approver",
+                "owner"));
 
     // Enable the trust_accounting module
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -124,6 +142,50 @@ class TrustTransactionServiceTest {
 
                   var response = trustAccountService.createTrustAccount(request);
                   trustAccountId = response.id();
+                }));
+
+    // Create a trust account with dual approval enabled (no threshold)
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var request =
+                      new CreateTrustAccountRequest(
+                          "Dual Approval Trust Account",
+                          "First National Bank",
+                          "250655",
+                          "1111111111",
+                          "GENERAL",
+                          false,
+                          true,
+                          null,
+                          LocalDate.of(2026, 1, 1),
+                          "Dual approval test account");
+
+                  var response = trustAccountService.createTrustAccount(request);
+                  dualApprovalAccountId = response.id();
+                }));
+
+    // Create a trust account with dual approval + threshold of R10,000
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var request =
+                      new CreateTrustAccountRequest(
+                          "Threshold Trust Account",
+                          "First National Bank",
+                          "250655",
+                          "2222222222",
+                          "GENERAL",
+                          false,
+                          true,
+                          new BigDecimal("10000.00"),
+                          LocalDate.of(2026, 1, 1),
+                          "Threshold test account");
+
+                  var response = trustAccountService.createTrustAccount(request);
+                  thresholdAccountId = response.id();
                 }));
   }
 
@@ -1799,7 +1861,626 @@ class TrustTransactionServiceTest {
                 }));
   }
 
+  // --- 441.11: Dual Approval Integration Tests ---
+
+  @Test
+  void dualApproval_firstApproval_setsApprovedByAndKeepsAwaitingApproval() {
+    UUID[] txnId = new UUID[1];
+
+    // Record a payment on the dual-approval account as memberId
+    runInTenantWithCapabilities(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var customer =
+                      customerRepository.save(
+                          TestCustomerFactory.createActiveCustomer(
+                              "Dual First Client", "dual_first@test.com", memberId));
+
+                  transactionService.recordDeposit(
+                      dualApprovalAccountId,
+                      new RecordDepositRequest(
+                          customer.getId(),
+                          null,
+                          new BigDecimal("20000.00"),
+                          "DEP-DUAL-001",
+                          "Funding",
+                          LocalDate.of(2026, 4, 1)));
+
+                  var response =
+                      transactionService.recordPayment(
+                          dualApprovalAccountId,
+                          new RecordPaymentRequest(
+                              customer.getId(),
+                              null,
+                              new BigDecimal("5000.00"),
+                              "PAY-DUAL-001",
+                              "Dual approval test",
+                              LocalDate.of(2026, 4, 1)));
+
+                  txnId[0] = response.id();
+                }));
+
+    // First approval by approverId
+    runAsApprover(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var response = transactionService.approveTransaction(txnId[0], approverId);
+
+                  assertThat(response.status()).isEqualTo("AWAITING_APPROVAL");
+                  assertThat(response.approvedBy()).isEqualTo(approverId);
+                  assertThat(response.approvedAt()).isNotNull();
+                  assertThat(response.secondApprovedBy()).isNull();
+                }));
+  }
+
+  @Test
+  void dualApproval_secondApproval_completesAndDebitsLedger() {
+    UUID[] txnId = new UUID[1];
+    UUID[] customerId = new UUID[1];
+
+    runInTenantWithCapabilities(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var customer =
+                      customerRepository.save(
+                          TestCustomerFactory.createActiveCustomer(
+                              "Dual Complete Client", "dual_complete@test.com", memberId));
+                  customerId[0] = customer.getId();
+
+                  transactionService.recordDeposit(
+                      dualApprovalAccountId,
+                      new RecordDepositRequest(
+                          customer.getId(),
+                          null,
+                          new BigDecimal("20000.00"),
+                          "DEP-DUAL-002",
+                          "Funding",
+                          LocalDate.of(2026, 4, 1)));
+
+                  var response =
+                      transactionService.recordPayment(
+                          dualApprovalAccountId,
+                          new RecordPaymentRequest(
+                              customer.getId(),
+                              null,
+                              new BigDecimal("5000.00"),
+                              "PAY-DUAL-002",
+                              "Dual complete test",
+                              LocalDate.of(2026, 4, 1)));
+
+                  txnId[0] = response.id();
+                }));
+
+    // First approval
+    runAsApprover(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> transactionService.approveTransaction(txnId[0], approverId)));
+
+    // Second approval by a different approver
+    runAsSecondApprover(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var response = transactionService.approveTransaction(txnId[0], secondApproverId);
+
+                  assertThat(response.status()).isEqualTo("APPROVED");
+                  assertThat(response.approvedBy()).isEqualTo(approverId);
+                  assertThat(response.secondApprovedBy()).isEqualTo(secondApproverId);
+                  assertThat(response.secondApprovedAt()).isNotNull();
+
+                  // Verify ledger was debited
+                  var ledger =
+                      ledgerCardRepository
+                          .findByTrustAccountIdAndCustomerId(dualApprovalAccountId, customerId[0])
+                          .orElseThrow();
+                  assertThat(ledger.getBalance()).isEqualByComparingTo(new BigDecimal("15000.00"));
+                }));
+  }
+
+  @Test
+  void dualApproval_samePersonAsBothApprovers_rejected() {
+    UUID[] txnId = new UUID[1];
+
+    runInTenantWithCapabilities(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var customer =
+                      customerRepository.save(
+                          TestCustomerFactory.createActiveCustomer(
+                              "Dual Same Client", "dual_same@test.com", memberId));
+
+                  transactionService.recordDeposit(
+                      dualApprovalAccountId,
+                      new RecordDepositRequest(
+                          customer.getId(),
+                          null,
+                          new BigDecimal("20000.00"),
+                          "DEP-DUAL-003",
+                          "Funding",
+                          LocalDate.of(2026, 4, 1)));
+
+                  var response =
+                      transactionService.recordPayment(
+                          dualApprovalAccountId,
+                          new RecordPaymentRequest(
+                              customer.getId(),
+                              null,
+                              new BigDecimal("5000.00"),
+                              "PAY-DUAL-003",
+                              "Dual same person test",
+                              LocalDate.of(2026, 4, 1)));
+
+                  txnId[0] = response.id();
+                }));
+
+    // First approval by approverId
+    runAsApprover(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> transactionService.approveTransaction(txnId[0], approverId)));
+
+    // Second approval by same approverId — should be rejected
+    runAsApprover(
+        () ->
+            assertThatThrownBy(() -> transactionService.approveTransaction(txnId[0], approverId))
+                .isInstanceOf(InvalidStateException.class)
+                .hasMessageContaining("different from the first approver"));
+  }
+
+  @Test
+  void dualApproval_recorderAsFirstApproverDifferentSecond_succeeds() {
+    UUID[] txnId = new UUID[1];
+
+    // Record a payment as approverId (who will also be the first approver)
+    runAsApprover(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var customer =
+                      customerRepository.save(
+                          TestCustomerFactory.createActiveCustomer(
+                              "Dual Recorder Client", "dual_recorder@test.com", approverId));
+
+                  transactionService.recordDeposit(
+                      dualApprovalAccountId,
+                      new RecordDepositRequest(
+                          customer.getId(),
+                          null,
+                          new BigDecimal("20000.00"),
+                          "DEP-DUAL-004",
+                          "Funding",
+                          LocalDate.of(2026, 4, 1)));
+
+                  var response =
+                      transactionService.recordPayment(
+                          dualApprovalAccountId,
+                          new RecordPaymentRequest(
+                              customer.getId(),
+                              null,
+                              new BigDecimal("5000.00"),
+                              "PAY-DUAL-004",
+                              "Recorder as first approver",
+                              LocalDate.of(2026, 4, 1)));
+
+                  txnId[0] = response.id();
+                }));
+
+    // First approval by recorder (approverId) — allowed in dual mode
+    runAsApprover(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var response = transactionService.approveTransaction(txnId[0], approverId);
+                  assertThat(response.status()).isEqualTo("AWAITING_APPROVAL");
+                  assertThat(response.approvedBy()).isEqualTo(approverId);
+                }));
+
+    // Second approval by different person
+    runAsSecondApprover(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var response = transactionService.approveTransaction(txnId[0], secondApproverId);
+                  assertThat(response.status()).isEqualTo("APPROVED");
+                  assertThat(response.secondApprovedBy()).isEqualTo(secondApproverId);
+                }));
+  }
+
+  @Test
+  void threshold_belowThreshold_usesSingleApproval() {
+    UUID[] txnId = new UUID[1];
+
+    runInTenantWithCapabilities(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var customer =
+                      customerRepository.save(
+                          TestCustomerFactory.createActiveCustomer(
+                              "Threshold Below Client", "threshold_below@test.com", memberId));
+
+                  transactionService.recordDeposit(
+                      thresholdAccountId,
+                      new RecordDepositRequest(
+                          customer.getId(),
+                          null,
+                          new BigDecimal("20000.00"),
+                          "DEP-THR-001",
+                          "Funding",
+                          LocalDate.of(2026, 4, 1)));
+
+                  // Amount R5,000 < threshold R10,000 — single approval should suffice
+                  var response =
+                      transactionService.recordPayment(
+                          thresholdAccountId,
+                          new RecordPaymentRequest(
+                              customer.getId(),
+                              null,
+                              new BigDecimal("5000.00"),
+                              "PAY-THR-001",
+                              "Below threshold test",
+                              LocalDate.of(2026, 4, 1)));
+
+                  txnId[0] = response.id();
+                }));
+
+    // Single approval should complete immediately (no dual required)
+    runAsApprover(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var response = transactionService.approveTransaction(txnId[0], approverId);
+
+                  assertThat(response.status()).isEqualTo("APPROVED");
+                  assertThat(response.approvedBy()).isEqualTo(approverId);
+                  assertThat(response.secondApprovedBy()).isNull();
+                }));
+  }
+
+  @Test
+  void threshold_atThreshold_requiresDualApproval() {
+    UUID[] txnId = new UUID[1];
+
+    runInTenantWithCapabilities(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var customer =
+                      customerRepository.save(
+                          TestCustomerFactory.createActiveCustomer(
+                              "Threshold At Client", "threshold_at@test.com", memberId));
+
+                  transactionService.recordDeposit(
+                      thresholdAccountId,
+                      new RecordDepositRequest(
+                          customer.getId(),
+                          null,
+                          new BigDecimal("50000.00"),
+                          "DEP-THR-002",
+                          "Funding",
+                          LocalDate.of(2026, 4, 1)));
+
+                  // Amount R10,000 == threshold R10,000 — dual approval required
+                  var response =
+                      transactionService.recordPayment(
+                          thresholdAccountId,
+                          new RecordPaymentRequest(
+                              customer.getId(),
+                              null,
+                              new BigDecimal("10000.00"),
+                              "PAY-THR-002",
+                              "At threshold test",
+                              LocalDate.of(2026, 4, 1)));
+
+                  txnId[0] = response.id();
+                }));
+
+    // First approval — status should remain AWAITING_APPROVAL (dual mode)
+    runAsApprover(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var response = transactionService.approveTransaction(txnId[0], approverId);
+
+                  assertThat(response.status()).isEqualTo("AWAITING_APPROVAL");
+                  assertThat(response.approvedBy()).isEqualTo(approverId);
+                }));
+
+    // Second approval — should complete
+    runAsSecondApprover(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var response = transactionService.approveTransaction(txnId[0], secondApproverId);
+
+                  assertThat(response.status()).isEqualTo("APPROVED");
+                  assertThat(response.secondApprovedBy()).isEqualTo(secondApproverId);
+                }));
+  }
+
+  // --- 441.12: Concurrent Approval and Fee Transfer Tests ---
+
+  @Test
+  void concurrentApprovals_secondSeesUpdatedBalance() throws Exception {
+    UUID[] txnId1 = new UUID[1];
+    UUID[] txnId2 = new UUID[1];
+
+    // Create two payments from same customer on the single-approval account
+    runInTenantWithCapabilities(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var customer =
+                      customerRepository.save(
+                          TestCustomerFactory.createActiveCustomer(
+                              "Concurrent Client", "concurrent@test.com", memberId));
+
+                  transactionService.recordDeposit(
+                      trustAccountId,
+                      new RecordDepositRequest(
+                          customer.getId(),
+                          null,
+                          new BigDecimal("8000.00"),
+                          "DEP-CONC-001",
+                          "Funding",
+                          LocalDate.of(2026, 4, 2)));
+
+                  var resp1 =
+                      transactionService.recordPayment(
+                          trustAccountId,
+                          new RecordPaymentRequest(
+                              customer.getId(),
+                              null,
+                              new BigDecimal("5000.00"),
+                              "PAY-CONC-001",
+                              "First concurrent",
+                              LocalDate.of(2026, 4, 2)));
+                  txnId1[0] = resp1.id();
+
+                  var resp2 =
+                      transactionService.recordPayment(
+                          trustAccountId,
+                          new RecordPaymentRequest(
+                              customer.getId(),
+                              null,
+                              new BigDecimal("5000.00"),
+                              "PAY-CONC-002",
+                              "Second concurrent",
+                              LocalDate.of(2026, 4, 2)));
+                  txnId2[0] = resp2.id();
+                }));
+
+    // Approve first — should succeed (8000 >= 5000)
+    runAsApprover(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var response = transactionService.approveTransaction(txnId1[0], approverId);
+                  assertThat(response.status()).isEqualTo("APPROVED");
+                }));
+
+    // Approve second — should fail (8000 - 5000 = 3000 < 5000)
+    runAsApprover(
+        () ->
+            assertThatThrownBy(() -> transactionService.approveTransaction(txnId2[0], approverId))
+                .isInstanceOf(InvalidStateException.class)
+                .hasMessageContaining("Insufficient trust balance"));
+  }
+
+  @Test
+  void feeTransferApproval_marksInvoiceAsPaid() {
+    UUID[] txnId = new UUID[1];
+
+    runInTenantWithCapabilities(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var customer =
+                      customerRepository.save(
+                          TestCustomerFactory.createActiveCustomer(
+                              "FT Invoice Client", "ft_invoice@test.com", memberId));
+
+                  // Fund the account
+                  transactionService.recordDeposit(
+                      trustAccountId,
+                      new RecordDepositRequest(
+                          customer.getId(),
+                          null,
+                          new BigDecimal("50000.00"),
+                          "DEP-FT-INV-001",
+                          "Funding",
+                          LocalDate.of(2026, 4, 2)));
+
+                  // Create a SENT invoice via native SQL (simulating invoice lifecycle)
+                  var invoiceId = UUID.randomUUID();
+                  entityManager
+                      .createNativeQuery(
+                          """
+                          INSERT INTO invoices (id, customer_id, invoice_number, status, currency,
+                              subtotal, tax_amount, total, due_date,
+                              customer_name, org_name, created_by, created_at, updated_at)
+                          VALUES (:id, :customerId, 'INV-FT-B-001', 'SENT', 'ZAR',
+                              1000.00, 150.00, 1150.00, '2026-04-30',
+                              'FT Invoice Client', 'Test Org', :memberId,
+                              now(), now())
+                          """)
+                      .setParameter("id", invoiceId)
+                      .setParameter("customerId", customer.getId())
+                      .setParameter("memberId", memberId)
+                      .executeUpdate();
+                  entityManager.flush();
+
+                  var response =
+                      transactionService.recordFeeTransfer(
+                          trustAccountId,
+                          new RecordFeeTransferRequest(
+                              customer.getId(),
+                              invoiceId,
+                              new BigDecimal("1150.00"),
+                              "FT-INV-001"));
+
+                  txnId[0] = response.id();
+                }));
+
+    // Approve the fee transfer — should mark invoice as PAID
+    runAsApprover(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var response = transactionService.approveTransaction(txnId[0], approverId);
+
+                  assertThat(response.status()).isEqualTo("APPROVED");
+
+                  // Verify the invoice was marked as PAID
+                  var invoice = invoiceRepository.findById(response.invoiceId()).orElseThrow();
+                  assertThat(invoice.getStatus().name()).isEqualTo("PAID");
+                }));
+  }
+
+  @Test
+  void feeTransferApproval_alreadyPaidInvoice_fails() {
+    UUID[] txnId = new UUID[1];
+
+    // Create a SENT invoice, record fee transfer, then mark invoice PAID before approval
+    runInTenantWithCapabilities(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var customer =
+                      customerRepository.save(
+                          TestCustomerFactory.createActiveCustomer(
+                              "FT Paid Client", "ft_paid@test.com", memberId));
+
+                  transactionService.recordDeposit(
+                      trustAccountId,
+                      new RecordDepositRequest(
+                          customer.getId(),
+                          null,
+                          new BigDecimal("50000.00"),
+                          "DEP-FT-PAID-001",
+                          "Funding",
+                          LocalDate.of(2026, 4, 2)));
+
+                  var invoiceId = UUID.randomUUID();
+                  entityManager
+                      .createNativeQuery(
+                          """
+                          INSERT INTO invoices (id, customer_id, invoice_number, status, currency,
+                              subtotal, tax_amount, total, due_date,
+                              customer_name, org_name, created_by, created_at, updated_at)
+                          VALUES (:id, :customerId, 'INV-FT-PAID-001', 'SENT', 'ZAR',
+                              1000.00, 150.00, 1150.00, '2026-04-30',
+                              'FT Paid Client', 'Test Org', :memberId,
+                              now(), now())
+                          """)
+                      .setParameter("id", invoiceId)
+                      .setParameter("customerId", customer.getId())
+                      .setParameter("memberId", memberId)
+                      .executeUpdate();
+                  entityManager.flush();
+
+                  var response =
+                      transactionService.recordFeeTransfer(
+                          trustAccountId,
+                          new RecordFeeTransferRequest(
+                              customer.getId(),
+                              invoiceId,
+                              new BigDecimal("1150.00"),
+                              "FT-PAID-001"));
+
+                  txnId[0] = response.id();
+
+                  // Mark the invoice as PAID directly (simulating external payment)
+                  entityManager
+                      .createNativeQuery("UPDATE invoices SET status = 'PAID' WHERE id = :id")
+                      .setParameter("id", invoiceId)
+                      .executeUpdate();
+                  entityManager.flush();
+                }));
+
+    // Approve — should fail because the invoice is already PAID
+    runAsApprover(
+        () ->
+            assertThatThrownBy(() -> transactionService.approveTransaction(txnId[0], approverId))
+                .isInstanceOf(ResourceConflictException.class)
+                .hasMessageContaining("Only sent invoices can be paid"));
+  }
+
+  @Test
+  void notificationHandler_sendsOnAwaitingApproval() {
+    // This test verifies that recording a payment (which sets AWAITING_APPROVAL)
+    // results in notifications being created via the event handler.
+    // Since @TransactionalEventListener runs AFTER_COMMIT, we need to let the
+    // transaction commit before checking notifications.
+
+    UUID[] txnId = new UUID[1];
+
+    runInTenantWithCapabilities(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var customer =
+                      customerRepository.save(
+                          TestCustomerFactory.createActiveCustomer(
+                              "Notification Client", "notification@test.com", memberId));
+
+                  transactionService.recordDeposit(
+                      trustAccountId,
+                      new RecordDepositRequest(
+                          customer.getId(),
+                          null,
+                          new BigDecimal("10000.00"),
+                          "DEP-NOTIF-001",
+                          "Funding",
+                          LocalDate.of(2026, 4, 2)));
+
+                  var response =
+                      transactionService.recordPayment(
+                          trustAccountId,
+                          new RecordPaymentRequest(
+                              customer.getId(),
+                              null,
+                              new BigDecimal("1000.00"),
+                              "PAY-NOTIF-001",
+                              "Notification test",
+                              LocalDate.of(2026, 4, 2)));
+
+                  txnId[0] = response.id();
+                }));
+
+    // After commit, the @TransactionalEventListener should fire.
+    // Give it a moment and check notifications were created.
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var notifications = notificationRepository.findAll();
+                  var trustNotifications =
+                      notifications.stream()
+                          .filter(n -> "trust_transaction.awaiting_approval".equals(n.getType()))
+                          .toList();
+                  // At least one notification should have been created for approvers
+                  assertThat(trustNotifications).isNotEmpty();
+                }));
+  }
+
   // --- Helpers ---
+
+  private void runAsSecondApprover(Runnable action) {
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, secondApproverId)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .where(
+            RequestScopes.CAPABILITIES,
+            Set.of("APPROVE_TRUST_PAYMENT", "MANAGE_TRUST", "VIEW_TRUST"))
+        .run(action);
+  }
 
   private void runAsApprover(Runnable action) {
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)

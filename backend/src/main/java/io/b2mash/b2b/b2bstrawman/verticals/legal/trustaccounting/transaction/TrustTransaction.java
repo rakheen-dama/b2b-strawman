@@ -254,4 +254,12 @@ public class TrustTransaction {
   public void setInvoiceId(UUID invoiceId) {
     this.invoiceId = invoiceId;
   }
+
+  public void setSecondApprovedBy(UUID secondApprovedBy) {
+    this.secondApprovedBy = secondApprovedBy;
+  }
+
+  public void setSecondApprovedAt(Instant secondApprovedAt) {
+    this.secondApprovedAt = secondApprovedAt;
+  }
 }

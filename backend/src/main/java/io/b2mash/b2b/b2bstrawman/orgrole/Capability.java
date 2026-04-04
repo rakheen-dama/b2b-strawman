@@ -15,10 +15,17 @@ public enum Capability {
   MANAGE_COMPLIANCE,
   MANAGE_COMPLIANCE_DESTRUCTIVE,
   VIEW_LEGAL,
-  MANAGE_LEGAL;
+  MANAGE_LEGAL,
+  /** View trust accounts, transactions, and reports. */
+  VIEW_TRUST,
+  /** Manage trust accounts and record transactions. */
+  MANAGE_TRUST,
+  /** Approve or reject trust payments. */
+  APPROVE_TRUST_PAYMENT;
 
   /** Capabilities restricted to the owner role — admin does NOT inherit these. */
-  public static final Set<String> OWNER_ONLY = Set.of(MANAGE_COMPLIANCE_DESTRUCTIVE.name());
+  public static final Set<String> OWNER_ONLY =
+      Set.of(MANAGE_COMPLIANCE_DESTRUCTIVE.name(), APPROVE_TRUST_PAYMENT.name());
 
   public static final Set<String> ALL_NAMES =
       Arrays.stream(values()).map(Enum::name).collect(Collectors.toUnmodifiableSet());

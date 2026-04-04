@@ -15,6 +15,7 @@ import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -27,6 +28,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -42,17 +44,37 @@ class TrustAccountingCapabilityTest {
   private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_trust_cap_test";
 
-  @Autowired private MockMvc mockMvc;
-  @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private OrgSettingsRepository orgSettingsRepository;
-  @Autowired private OrgSettingsService orgSettingsService;
-  @Autowired private OrgRoleRepository orgRoleRepository;
-  @Autowired private MemberRepository memberRepository;
-  @Autowired private MemberFilter memberFilter;
-  @Autowired private TransactionTemplate transactionTemplate;
+  private final MockMvc mockMvc;
+  private final TenantProvisioningService provisioningService;
+  private final OrgSettingsRepository orgSettingsRepository;
+  private final OrgSettingsService orgSettingsService;
+  private final OrgRoleRepository orgRoleRepository;
+  private final MemberRepository memberRepository;
+  private final MemberFilter memberFilter;
+  private final TransactionTemplate transactionTemplate;
 
   private String tenantSchema;
   private UUID noTrustRoleId;
+
+  @Autowired
+  TrustAccountingCapabilityTest(
+      MockMvc mockMvc,
+      TenantProvisioningService provisioningService,
+      OrgSettingsRepository orgSettingsRepository,
+      OrgSettingsService orgSettingsService,
+      OrgRoleRepository orgRoleRepository,
+      MemberRepository memberRepository,
+      MemberFilter memberFilter,
+      TransactionTemplate transactionTemplate) {
+    this.mockMvc = mockMvc;
+    this.provisioningService = provisioningService;
+    this.orgSettingsRepository = orgSettingsRepository;
+    this.orgSettingsService = orgSettingsService;
+    this.orgRoleRepository = orgRoleRepository;
+    this.memberRepository = memberRepository;
+    this.memberFilter = memberFilter;
+    this.transactionTemplate = transactionTemplate;
+  }
 
   @BeforeAll
   void provisionTenantAndSeedData() throws Exception {
@@ -114,7 +136,7 @@ class TrustAccountingCapabilityTest {
         .perform(get("/api/trust-accounting/status").with(ownerJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.module").value("trust_accounting"))
-        .andExpect(jsonPath("$.status").value("stub"));
+        .andExpect(jsonPath("$.status").value("active"));
   }
 
   @Test
@@ -150,15 +172,15 @@ class TrustAccountingCapabilityTest {
   private JwtRequestPostProcessor ownerJwt() {
     return jwt()
         .jwt(
-            j ->
-                j.subject("user_trust_cap_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
+            j -> j.subject("user_trust_cap_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")))
+        .authorities(new SimpleGrantedAuthority("VIEW_TRUST"));
   }
 
   private JwtRequestPostProcessor noCapJwt() {
     return jwt()
         .jwt(
             j ->
-                j.subject("user_trust_cap_nocap")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
+                j.subject("user_trust_cap_nocap").claim("o", Map.of("id", ORG_ID, "rol", "member")))
+        .authorities(Collections.emptyList());
   }
 }

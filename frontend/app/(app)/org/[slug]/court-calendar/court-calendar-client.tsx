@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useTransition, useCallback, useEffect, useRef } from "react";
+import { useState, useMemo, useTransition, useCallback, useEffect, useRef } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CourtDateListView } from "@/components/legal/court-date-list-view";
@@ -49,6 +50,9 @@ export function CourtCalendarClient({
   // Filter state
   const [statusFilter, setStatusFilter] = useState<CourtDateStatus | "">("");
   const [dateTypeFilter, setDateTypeFilter] = useState<CourtDateType | "">("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [clientSearch, setClientSearch] = useState("");
 
   // Calendar month navigation
   const now = new Date();
@@ -71,6 +75,8 @@ export function CourtCalendarClient({
         const filters: CourtDateFilters = {};
         if (statusFilter) filters.status = statusFilter;
         if (dateTypeFilter) filters.dateType = dateTypeFilter;
+        if (dateFrom) filters.from = dateFrom;
+        if (dateTo) filters.to = dateTo;
         const result = await fetchCourtDates(filters);
         setCourtDates(result.content);
         setTotal(result.page.totalElements);
@@ -78,7 +84,7 @@ export function CourtCalendarClient({
         console.error("Failed to refetch court dates:", err);
       }
     });
-  }, [statusFilter, dateTypeFilter]);
+  }, [statusFilter, dateTypeFilter, dateFrom, dateTo]);
 
   const refetchTrackers = useCallback(() => {
     startTransition(async () => {
@@ -99,7 +105,7 @@ export function CourtCalendarClient({
       return;
     }
     refetchCourtDates();
-  }, [statusFilter, dateTypeFilter, refetchCourtDates]);
+  }, [statusFilter, dateTypeFilter, dateFrom, dateTo, refetchCourtDates]);
 
   function handleViewChange(v: string) {
     if (v === "list" || v === "calendar" || v === "prescriptions") {
@@ -141,7 +147,18 @@ export function CourtCalendarClient({
     "December",
   ];
 
-  const scheduledCount = courtDates.filter(
+  // Client-side text filter on customer/matter name
+  const filteredCourtDates = useMemo(() => {
+    if (!clientSearch.trim()) return courtDates;
+    const q = clientSearch.toLowerCase();
+    return courtDates.filter(
+      (d) =>
+        d.customerName?.toLowerCase().includes(q) ||
+        d.projectName?.toLowerCase().includes(q)
+    );
+  }, [courtDates, clientSearch]);
+
+  const scheduledCount = filteredCourtDates.filter(
     (d) => d.status === "SCHEDULED"
   ).length;
 
@@ -181,6 +198,30 @@ export function CourtCalendarClient({
           <option value="OTHER">Other</option>
         </select>
 
+        <Input
+          type="date"
+          value={dateFrom}
+          onChange={(e) => setDateFrom(e.target.value)}
+          placeholder="From date"
+          className="h-9 w-36"
+          aria-label="From date"
+        />
+        <Input
+          type="date"
+          value={dateTo}
+          onChange={(e) => setDateTo(e.target.value)}
+          placeholder="To date"
+          className="h-9 w-36"
+          aria-label="To date"
+        />
+        <Input
+          value={clientSearch}
+          onChange={(e) => setClientSearch(e.target.value)}
+          placeholder="Search client/matter..."
+          className="h-9 w-48"
+          aria-label="Search client or matter"
+        />
+
         <div className="ml-auto">
           <CreateCourtDateDialog slug={slug} onSuccess={refetchCourtDates} />
         </div>
@@ -217,7 +258,7 @@ export function CourtCalendarClient({
         <div className={selectedCourtDate ? "flex-1" : "w-full"}>
           {view === "list" && (
             <CourtDateListView
-              courtDates={courtDates}
+              courtDates={filteredCourtDates}
               onPostpone={setPostponeTarget}
               onCancel={setCancelTarget}
               onRecordOutcome={setOutcomeTarget}
@@ -240,7 +281,7 @@ export function CourtCalendarClient({
                 </Button>
               </div>
               <CourtCalendarView
-                courtDates={courtDates}
+                courtDates={filteredCourtDates}
                 year={calYear}
                 month={calMonth}
                 onDayClick={(_date, dayCases) => {

@@ -104,7 +104,9 @@ CREATE TABLE IF NOT EXISTS trust_transactions (
             'FEE_TRANSFER', 'REFUND', 'INTEREST_CREDIT', 'INTEREST_LPFF', 'REVERSAL'
         )),
     CONSTRAINT chk_trust_txn_status
-        CHECK (status IN ('RECORDED', 'AWAITING_APPROVAL', 'APPROVED', 'REJECTED', 'REVERSED'))
+        CHECK (status IN ('RECORDED', 'AWAITING_APPROVAL', 'APPROVED', 'REJECTED', 'REVERSED')),
+    CONSTRAINT chk_trust_txn_customer_required
+        CHECK (transaction_type = 'INTEREST_LPFF' OR customer_id IS NOT NULL)
 );
 
 CREATE INDEX IF NOT EXISTS idx_trust_txn_account_date

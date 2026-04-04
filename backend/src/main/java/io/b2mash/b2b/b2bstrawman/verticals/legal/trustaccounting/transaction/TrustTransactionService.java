@@ -815,7 +815,7 @@ public class TrustTransactionService {
   // --- 441A: Approval / Rejection ---
 
   @Transactional
-  public TrustTransactionResponse approveTransaction(UUID transactionId, UUID approverId) {
+  public TrustTransactionResponse approveTransaction(UUID transactionId) {
     moduleGuard.requireModule(MODULE_ID);
 
     if (!RequestScopes.hasCapability(Capability.APPROVE_TRUST_PAYMENT.name())) {
@@ -823,9 +823,11 @@ public class TrustTransactionService {
           "Insufficient permissions", "You do not have the APPROVE_TRUST_PAYMENT capability");
     }
 
+    var actorId = RequestScopes.requireMemberId();
+
     var transaction =
         transactionRepository
-            .findById(transactionId)
+            .findByIdForUpdate(transactionId)
             .orElseThrow(() -> new ResourceNotFoundException("TrustTransaction", transactionId));
 
     if (!"AWAITING_APPROVAL".equals(transaction.getStatus())) {
@@ -836,7 +838,7 @@ public class TrustTransactionService {
     }
 
     // Self-approval prevention
-    if (approverId.equals(transaction.getRecordedBy())) {
+    if (actorId.equals(transaction.getRecordedBy())) {
       throw new InvalidStateException(
           "Self-approval not allowed",
           "The transaction recorder cannot be the sole approver. "
@@ -875,7 +877,7 @@ public class TrustTransactionService {
     }
 
     // Approve the transaction
-    transaction.setApprovedBy(approverId);
+    transaction.setApprovedBy(actorId);
     transaction.setApprovedAt(Instant.now());
     transaction.setStatus("APPROVED");
     transactionRepository.save(transaction);
@@ -896,7 +898,7 @@ public class TrustTransactionService {
 
     auditService.log(
         AuditEventBuilder.builder()
-            .eventType("trust_payment.approved")
+            .eventType(auditEventTypeForTransaction(transaction.getTransactionType(), "approved"))
             .entityType("trust_transaction")
             .entityId(transaction.getId())
             .details(
@@ -904,7 +906,7 @@ public class TrustTransactionService {
                     "amount", transaction.getAmount().toString(),
                     "customer_id", transaction.getCustomerId().toString(),
                     "customer_name", customer.getName(),
-                    "approved_by", approverId.toString(),
+                    "approved_by", actorId.toString(),
                     "transaction_type", transaction.getTransactionType()))
             .build());
 
@@ -912,8 +914,7 @@ public class TrustTransactionService {
   }
 
   @Transactional
-  public TrustTransactionResponse rejectTransaction(
-      UUID transactionId, UUID rejecterId, String reason) {
+  public TrustTransactionResponse rejectTransaction(UUID transactionId, String reason) {
     moduleGuard.requireModule(MODULE_ID);
 
     if (!RequestScopes.hasCapability(Capability.APPROVE_TRUST_PAYMENT.name())) {
@@ -921,9 +922,19 @@ public class TrustTransactionService {
           "Insufficient permissions", "You do not have the APPROVE_TRUST_PAYMENT capability");
     }
 
+    if (reason == null || reason.isBlank()) {
+      throw new IllegalArgumentException("Rejection reason is required");
+    }
+    if (reason.length() > 500) {
+      throw new IllegalArgumentException("Rejection reason must not exceed 500 characters");
+    }
+    var trimmedReason = reason.trim();
+
+    var actorId = RequestScopes.requireMemberId();
+
     var transaction =
         transactionRepository
-            .findById(transactionId)
+            .findByIdForUpdate(transactionId)
             .orElseThrow(() -> new ResourceNotFoundException("TrustTransaction", transactionId));
 
     if (!"AWAITING_APPROVAL".equals(transaction.getStatus())) {
@@ -940,15 +951,15 @@ public class TrustTransactionService {
                 () -> new ResourceNotFoundException("Customer", transaction.getCustomerId()));
 
     // Reject the transaction — no ledger effect
-    transaction.setRejectedBy(rejecterId);
+    transaction.setRejectedBy(actorId);
     transaction.setRejectedAt(Instant.now());
-    transaction.setRejectionReason(reason);
+    transaction.setRejectionReason(trimmedReason);
     transaction.setStatus("REJECTED");
     transactionRepository.save(transaction);
 
     auditService.log(
         AuditEventBuilder.builder()
-            .eventType("trust_payment.rejected")
+            .eventType(auditEventTypeForTransaction(transaction.getTransactionType(), "rejected"))
             .entityType("trust_transaction")
             .entityId(transaction.getId())
             .details(
@@ -956,8 +967,8 @@ public class TrustTransactionService {
                     "amount", transaction.getAmount().toString(),
                     "customer_id", transaction.getCustomerId().toString(),
                     "customer_name", customer.getName(),
-                    "rejected_by", rejecterId.toString(),
-                    "rejection_reason", reason != null ? reason : "",
+                    "rejected_by", actorId.toString(),
+                    "rejection_reason", trimmedReason,
                     "transaction_type", transaction.getTransactionType()))
             .build());
 
@@ -965,6 +976,22 @@ public class TrustTransactionService {
   }
 
   // --- Private Helpers ---
+
+  /**
+   * Derives the audit event type from the transaction type and action. For example, PAYMENT +
+   * "approved" → "trust_payment.approved", FEE_TRANSFER + "rejected" →
+   * "trust_fee_transfer.rejected".
+   */
+  private static String auditEventTypeForTransaction(String transactionType, String action) {
+    var prefix =
+        switch (transactionType) {
+          case "PAYMENT" -> "trust_payment";
+          case "FEE_TRANSFER" -> "trust_fee_transfer";
+          case "REFUND" -> "trust_refund";
+          default -> "trust_transaction";
+        };
+    return prefix + "." + action;
+  }
 
   /**
    * Atomically ensures a ClientLedgerCard exists for the given account and customer. Uses a native

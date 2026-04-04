@@ -218,7 +218,7 @@ class TrustTransactionServiceApprovalTest {
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  var response = transactionService.approveTransaction(txnId[0], approverId);
+                  var response = transactionService.approveTransaction(txnId[0]);
 
                   assertThat(response.status()).isEqualTo("APPROVED");
                   assertThat(response.approvedBy()).isEqualTo(approverId);
@@ -276,7 +276,7 @@ class TrustTransactionServiceApprovalTest {
     // Attempt self-approval (recorder tries to approve their own transaction)
     runAsRecorderWithApproveCapability(
         () ->
-            assertThatThrownBy(() -> transactionService.approveTransaction(txnId[0], recorderId))
+            assertThatThrownBy(() -> transactionService.approveTransaction(txnId[0]))
                 .isInstanceOf(InvalidStateException.class)
                 .hasMessageContaining("recorder cannot be the sole approver"));
   }
@@ -323,7 +323,7 @@ class TrustTransactionServiceApprovalTest {
 
     runAsApprover(
         () ->
-            assertThatThrownBy(() -> transactionService.approveTransaction(txnId[0], approverId))
+            assertThatThrownBy(() -> transactionService.approveTransaction(txnId[0]))
                 .isInstanceOf(InvalidStateException.class)
                 .hasMessageContaining("Insufficient trust balance"));
   }
@@ -372,9 +372,7 @@ class TrustTransactionServiceApprovalTest {
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  var response =
-                      transactionService.rejectTransaction(
-                          txnId[0], approverId, "Incorrect amount");
+                  var response = transactionService.rejectTransaction(txnId[0], "Incorrect amount");
 
                   assertThat(response.status()).isEqualTo("REJECTED");
                   assertThat(response.rejectedBy()).isEqualTo(approverId);
@@ -433,12 +431,12 @@ class TrustTransactionServiceApprovalTest {
     runAsApprover(
         () ->
             transactionTemplate.executeWithoutResult(
-                tx -> transactionService.approveTransaction(txnId[0], approverId)));
+                tx -> transactionService.approveTransaction(txnId[0])));
 
     // Second approve should fail
     runAsApprover(
         () ->
-            assertThatThrownBy(() -> transactionService.approveTransaction(txnId[0], approverId))
+            assertThatThrownBy(() -> transactionService.approveTransaction(txnId[0]))
                 .isInstanceOf(InvalidStateException.class)
                 .hasMessageContaining("not in AWAITING_APPROVAL status"));
   }
@@ -575,7 +573,7 @@ class TrustTransactionServiceApprovalTest {
                 tx -> {
                   long auditCountBefore = auditEventRepository.count();
 
-                  transactionService.approveTransaction(txnId[0], approverId);
+                  transactionService.approveTransaction(txnId[0]);
 
                   long auditCountAfter = auditEventRepository.count();
                   assertThat(auditCountAfter).isGreaterThan(auditCountBefore);
@@ -626,7 +624,7 @@ class TrustTransactionServiceApprovalTest {
                 tx -> {
                   var response =
                       transactionService.rejectTransaction(
-                          txnId[0], approverId, "Client requested cancellation of payment");
+                          txnId[0], "Client requested cancellation of payment");
 
                   assertThat(response.rejectionReason())
                       .isEqualTo("Client requested cancellation of payment");

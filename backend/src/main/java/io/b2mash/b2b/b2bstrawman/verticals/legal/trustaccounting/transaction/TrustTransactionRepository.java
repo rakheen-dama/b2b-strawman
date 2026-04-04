@@ -15,6 +15,10 @@ import org.springframework.data.repository.query.Param;
 
 public interface TrustTransactionRepository extends JpaRepository<TrustTransaction, UUID> {
 
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query("SELECT t FROM TrustTransaction t WHERE t.id = :id")
+  Optional<TrustTransaction> findByIdForUpdate(@Param("id") UUID id);
+
   Page<TrustTransaction> findByTrustAccountIdOrderByTransactionDateDesc(
       UUID trustAccountId, Pageable pageable);
 
@@ -25,11 +29,6 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
       UUID customerId, UUID trustAccountId, Pageable pageable);
 
   List<TrustTransaction> findByStatusAndTrustAccountId(String status, UUID trustAccountId);
-
-  /** Acquires a pessimistic write lock on the transaction row to prevent concurrent reversals. */
-  @Lock(LockModeType.PESSIMISTIC_WRITE)
-  @Query("SELECT t FROM TrustTransaction t WHERE t.id = :id")
-  Optional<TrustTransaction> findByIdForUpdate(@Param("id") UUID id);
 
   /**
    * Finds the paired transfer transaction (e.g., TRANSFER_IN paired with a TRANSFER_OUT). The pair

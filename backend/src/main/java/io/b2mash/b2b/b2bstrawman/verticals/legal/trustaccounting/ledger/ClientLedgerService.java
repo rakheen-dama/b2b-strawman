@@ -36,10 +36,10 @@ public class ClientLedgerService {
   }
 
   private static final Set<String> CREDIT_TYPES =
-      Set.of("DEPOSIT", "TRANSFER_IN", "INTEREST_CREDIT", "REVERSAL");
+      Set.of("DEPOSIT", "TRANSFER_IN", "INTEREST_CREDIT");
 
   private static final Set<String> DEBIT_TYPES =
-      Set.of("PAYMENT", "TRANSFER_OUT", "FEE_TRANSFER", "REFUND");
+      Set.of("PAYMENT", "TRANSFER_OUT", "FEE_TRANSFER", "REFUND", "INTEREST_LPFF");
 
   // --- DTO Records ---
 
@@ -155,7 +155,10 @@ public class ClientLedgerService {
 
   /**
    * Computes the ledger effect of a transaction on the client's balance. Credit types add to
-   * balance; debit types subtract from balance.
+   * balance; debit types subtract from balance. REVERSAL transactions are excluded from statement
+   * queries (they should not appear here), but if they do, this will throw. Reversals affect
+   * balances through direct ledger card updates (debit reversals) or the approval flow (credit
+   * reversals, Epic 441).
    */
   private BigDecimal computeLedgerEffect(TrustTransaction txn) {
     if (CREDIT_TYPES.contains(txn.getTransactionType())) {
@@ -163,7 +166,7 @@ public class ClientLedgerService {
     } else if (DEBIT_TYPES.contains(txn.getTransactionType())) {
       return txn.getAmount().negate();
     }
-    return BigDecimal.ZERO;
+    throw new IllegalStateException("Unknown transaction type: " + txn.getTransactionType());
   }
 
   // --- Private Helpers ---

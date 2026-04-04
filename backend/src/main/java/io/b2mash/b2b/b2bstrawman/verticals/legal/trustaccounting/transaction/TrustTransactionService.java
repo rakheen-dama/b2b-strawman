@@ -324,10 +324,26 @@ public class TrustTransactionService {
   public TrustTransactionResponse reverseTransaction(UUID transactionId, String reason) {
     moduleGuard.requireModule(MODULE_ID);
 
+    // Validate reason is provided
+    if (reason == null || reason.isBlank()) {
+      throw new InvalidStateException("Invalid reversal", "Reversal reason is required");
+    }
+
     var original =
         transactionRepository
             .findById(transactionId)
             .orElseThrow(() -> new ResourceNotFoundException("TrustTransaction", transactionId));
+
+    // Validate trust account is not closed
+    var account =
+        trustAccountRepository
+            .findById(original.getTrustAccountId())
+            .orElseThrow(
+                () -> new ResourceNotFoundException("TrustAccount", original.getTrustAccountId()));
+
+    if (TrustAccountStatus.CLOSED == account.getStatus()) {
+      throw new InvalidStateException("Cannot reverse transaction", "Trust account is closed");
+    }
 
     // Validate status — only APPROVED transactions can be reversed
     if (!"APPROVED".equals(original.getStatus())) {
@@ -335,8 +351,11 @@ public class TrustTransactionService {
           "Cannot reverse transaction", "Transaction must be in APPROVED status to be reversed");
     }
 
-    // Validate not already reversed
-    if (original.getReversedById() != null) {
+    // Validate not already reversed — check both the original's reversedById (set for debit
+    // reversals) and whether a reversal transaction already exists (covers credit reversals
+    // where the original is not yet marked REVERSED until approval in Epic 441).
+    if (original.getReversedById() != null
+        || transactionRepository.existsByReversalOf(original.getId())) {
       throw new InvalidStateException(
           "Cannot reverse transaction", "Transaction has already been reversed");
     }
@@ -358,6 +377,12 @@ public class TrustTransactionService {
           "Transaction type " + original.getTransactionType() + " cannot be reversed");
     }
 
+    // Build reversal reference, truncating to 200-char column limit
+    String reversalRef = "REV-" + original.getReference();
+    if (reversalRef.length() > 200) {
+      reversalRef = reversalRef.substring(0, 200);
+    }
+
     var reversal =
         new TrustTransaction(
             original.getTrustAccountId(),
@@ -366,7 +391,7 @@ public class TrustTransactionService {
             original.getCustomerId(),
             original.getProjectId(),
             original.getCounterpartyCustomerId(),
-            "REV-" + original.getReference(),
+            reversalRef,
             reason,
             LocalDate.now(),
             reversalStatus,
@@ -377,24 +402,30 @@ public class TrustTransactionService {
 
     var savedReversal = transactionRepository.save(reversal);
 
-    // Update original transaction to mark as reversed
-    original.setReversedById(savedReversal.getId());
-    original.setStatus("REVERSED");
-    transactionRepository.save(original);
+    // For debit reversals (immediate): mark original as REVERSED and update ledger.
+    // RECORDED status for debit reversals is the final status — no approval needed,
+    // analogous to DEPOSIT's RECORDED status. The cashbook query includes RECORDED.
+    if (isDebitType) {
+      original.setReversedById(savedReversal.getId());
+      original.setStatus("REVERSED");
+      transactionRepository.save(original);
 
-    // For debit reversals (immediate), update the client ledger card
-    if (isDebitType && original.getCustomerId() != null) {
-      var ledgerCard =
-          ledgerCardRepository
-              .findByAccountAndCustomerForUpdate(
-                  original.getTrustAccountId(), original.getCustomerId())
-              .orElse(null);
+      if (original.getCustomerId() != null) {
+        var ledgerCard =
+            ledgerCardRepository
+                .findByAccountAndCustomerForUpdate(
+                    original.getTrustAccountId(), original.getCustomerId())
+                .orElse(null);
 
-      if (ledgerCard != null) {
-        ledgerCard.creditBalance(original.getAmount(), LocalDate.now());
-        ledgerCardRepository.save(ledgerCard);
+        if (ledgerCard != null) {
+          ledgerCard.creditBalance(original.getAmount(), LocalDate.now());
+          ledgerCardRepository.save(ledgerCard);
+        }
       }
     }
+    // For credit reversals (AWAITING_APPROVAL): do NOT mark the original as REVERSED yet.
+    // The original remains APPROVED until the reversal is itself approved (Epic 441 scope).
+    // Only the reversal_of FK on the new reversal transaction links them for now.
 
     auditService.log(
         AuditEventBuilder.builder()
@@ -407,7 +438,7 @@ public class TrustTransactionService {
                     "original_type", original.getTransactionType(),
                     "amount", original.getAmount().toString(),
                     "reversal_status", reversalStatus,
-                    "reason", reason != null ? reason : ""))
+                    "reason", reason))
             .build());
 
     return toResponse(savedReversal);

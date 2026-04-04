@@ -23,17 +23,21 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
 
   List<TrustTransaction> findByStatusAndTrustAccountId(String status, UUID trustAccountId);
 
+  /** Checks whether a reversal transaction already exists for the given original transaction. */
+  boolean existsByReversalOf(UUID reversalOf);
+
   /**
    * Computes the cashbook balance for a trust account. Cashbook-positive: DEPOSIT, INTEREST_CREDIT.
    * Cashbook-negative: PAYMENT, FEE_TRANSFER, REFUND, INTEREST_LPFF. Cashbook-neutral: TRANSFER_IN,
-   * TRANSFER_OUT. REVERSAL with RECORDED/APPROVED status treated as cashbook-positive (debit
-   * reversals add money back).
+   * TRANSFER_OUT. REVERSAL is excluded — debit reversals are already reflected in the client ledger
+   * card balances (updated inline), and credit reversals only affect balances when approved (Epic
+   * 441 scope).
    */
   @Query(
       """
       SELECT COALESCE(SUM(
         CASE
-          WHEN t.transactionType IN ('DEPOSIT', 'INTEREST_CREDIT', 'REVERSAL') THEN t.amount
+          WHEN t.transactionType IN ('DEPOSIT', 'INTEREST_CREDIT') THEN t.amount
           WHEN t.transactionType IN ('PAYMENT', 'FEE_TRANSFER', 'REFUND', 'INTEREST_LPFF') THEN -t.amount
           ELSE 0
         END
@@ -47,15 +51,16 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
   /**
    * Sums transactions for a specific customer up to a given date, applying credit/debit logic.
    * Credit types (DEPOSIT, TRANSFER_IN, INTEREST_CREDIT) add to balance. Debit types (PAYMENT,
-   * TRANSFER_OUT, FEE_TRANSFER, REFUND) subtract from balance. REVERSAL treated as credit (adds
-   * money back for debit reversals which are the only immediate ones).
+   * TRANSFER_OUT, FEE_TRANSFER, REFUND, INTEREST_LPFF) subtract from balance. REVERSAL is excluded
+   * — debit reversals are reflected via ledger card updates (inline), and credit reversals only
+   * affect balances when approved (Epic 441 scope).
    */
   @Query(
       """
       SELECT COALESCE(SUM(
         CASE
-          WHEN t.transactionType IN ('DEPOSIT', 'TRANSFER_IN', 'INTEREST_CREDIT', 'REVERSAL') THEN t.amount
-          WHEN t.transactionType IN ('PAYMENT', 'TRANSFER_OUT', 'FEE_TRANSFER', 'REFUND') THEN -t.amount
+          WHEN t.transactionType IN ('DEPOSIT', 'TRANSFER_IN', 'INTEREST_CREDIT') THEN t.amount
+          WHEN t.transactionType IN ('PAYMENT', 'TRANSFER_OUT', 'FEE_TRANSFER', 'REFUND', 'INTEREST_LPFF') THEN -t.amount
           ELSE 0
         END
       ), 0)

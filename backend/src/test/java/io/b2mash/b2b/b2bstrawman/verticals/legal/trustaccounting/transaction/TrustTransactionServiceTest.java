@@ -774,10 +774,11 @@ class TrustTransactionServiceTest {
                   assertThat(reversalResponse.amount())
                       .isEqualByComparingTo(new BigDecimal("5000.00"));
 
-                  // Original should now be REVERSED
+                  // Original should still be APPROVED (not REVERSED yet) — marking as
+                  // REVERSED is deferred to the approval flow (Epic 441) for credit reversals
                   var original = transactionRepository.findById(depositTxnId[0]).orElseThrow();
-                  assertThat(original.getStatus()).isEqualTo("REVERSED");
-                  assertThat(original.getReversedById()).isEqualTo(reversalResponse.id());
+                  assertThat(original.getStatus()).isEqualTo("APPROVED");
+                  assertThat(original.getReversedById()).isNull();
 
                   // Ledger should NOT be updated (credit reversal awaits approval)
                   var ledger =
@@ -912,7 +913,8 @@ class TrustTransactionServiceTest {
                   transactionService.reverseTransaction(depositTxnId[0], "First reversal");
                 }));
 
-    // Attempt to reverse the already-reversed transaction
+    // Attempt to reverse the already-reversed transaction — should fail because a reversal
+    // transaction already exists (detected via existsByReversalOf)
     runInTenant(
         () ->
             assertThatThrownBy(
@@ -920,7 +922,7 @@ class TrustTransactionServiceTest {
                         transactionService.reverseTransaction(
                             depositTxnId[0], "Second reversal attempt"))
                 .isInstanceOf(InvalidStateException.class)
-                .hasMessageContaining("APPROVED status"));
+                .hasMessageContaining("already been reversed"));
   }
 
   @Test

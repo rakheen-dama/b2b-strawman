@@ -20,10 +20,15 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountSer
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordDepositRequest;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordFeeTransferRequest;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordPaymentRequest;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordRefundRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordTransferRequest;
+import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
@@ -66,10 +71,12 @@ class TrustTransactionServiceTest {
   @Autowired private ClientLedgerService clientLedgerService;
   @Autowired private CustomerRepository customerRepository;
   @Autowired private AuditEventRepository auditEventRepository;
+  @Autowired private EntityManager entityManager;
   @Autowired private JdbcTemplate jdbcTemplate;
 
   private String tenantSchema;
   private UUID memberId;
+  private UUID approverId;
   private UUID trustAccountId;
 
   @BeforeAll
@@ -82,6 +89,9 @@ class TrustTransactionServiceTest {
         UUID.fromString(
             syncMember(
                 ORG_ID, "user_trust_txn_owner", "trust_txn@test.com", "Trust Txn Owner", "owner"));
+    approverId =
+        UUID.fromString(
+            syncMember(ORG_ID, "user_approver", "approver@test.com", "Trust Approver", "owner"));
 
     // Enable the trust_accounting module
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -1293,7 +1303,525 @@ class TrustTransactionServiceTest {
                 }));
   }
 
+  // --- 441.6: Approval Workflow Tests ---
+
+  @Test
+  void payment_createdInAwaitingApproval() {
+    runInTenantWithCapabilities(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var customer =
+                      customerRepository.save(
+                          TestCustomerFactory.createActiveCustomer(
+                              "Payment Approval Client", "pay_approval@test.com", memberId));
+
+                  // Fund the account first
+                  transactionService.recordDeposit(
+                      trustAccountId,
+                      new RecordDepositRequest(
+                          customer.getId(),
+                          null,
+                          new BigDecimal("20000.00"),
+                          "DEP-PAY-001",
+                          "Funding for payment test",
+                          LocalDate.of(2026, 4, 1)));
+
+                  var response =
+                      transactionService.recordPayment(
+                          trustAccountId,
+                          new RecordPaymentRequest(
+                              customer.getId(),
+                              null,
+                              new BigDecimal("5000.00"),
+                              "PAY-001",
+                              "Payment to supplier",
+                              LocalDate.of(2026, 4, 1)));
+
+                  assertThat(response.id()).isNotNull();
+                  assertThat(response.transactionType()).isEqualTo("PAYMENT");
+                  assertThat(response.status()).isEqualTo("AWAITING_APPROVAL");
+                  assertThat(response.amount()).isEqualByComparingTo(new BigDecimal("5000.00"));
+                  assertThat(response.recordedBy()).isEqualTo(memberId);
+                }));
+  }
+
+  @Test
+  void approvePayment_transitionsToApprovedAndDebitsLedger() {
+    UUID[] txnId = new UUID[1];
+    UUID[] customerId = new UUID[1];
+
+    // Record the payment as the recorder (memberId)
+    runInTenantWithCapabilities(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var customer =
+                      customerRepository.save(
+                          TestCustomerFactory.createActiveCustomer(
+                              "Approve Payment Client", "approve_pay@test.com", memberId));
+                  customerId[0] = customer.getId();
+
+                  // Fund the account
+                  transactionService.recordDeposit(
+                      trustAccountId,
+                      new RecordDepositRequest(
+                          customer.getId(),
+                          null,
+                          new BigDecimal("10000.00"),
+                          "DEP-PAY-002",
+                          "Funding",
+                          LocalDate.of(2026, 4, 2)));
+
+                  var response =
+                      transactionService.recordPayment(
+                          trustAccountId,
+                          new RecordPaymentRequest(
+                              customer.getId(),
+                              null,
+                              new BigDecimal("3000.00"),
+                              "PAY-002",
+                              "Payment for approval",
+                              LocalDate.of(2026, 4, 2)));
+
+                  txnId[0] = response.id();
+                }));
+
+    // Approve as a different member (approverId)
+    runAsApprover(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var response = transactionService.approveTransaction(txnId[0], approverId);
+
+                  assertThat(response.status()).isEqualTo("APPROVED");
+                  assertThat(response.approvedBy()).isEqualTo(approverId);
+                  assertThat(response.approvedAt()).isNotNull();
+
+                  // Verify ledger was debited
+                  var ledger =
+                      ledgerCardRepository
+                          .findByTrustAccountIdAndCustomerId(trustAccountId, customerId[0])
+                          .orElseThrow();
+
+                  // 10000 deposit - 3000 payment = 7000
+                  assertThat(ledger.getBalance()).isEqualByComparingTo(new BigDecimal("7000.00"));
+                  assertThat(ledger.getTotalPayments())
+                      .isEqualByComparingTo(new BigDecimal("3000.00"));
+                }));
+  }
+
+  @Test
+  void selfApproval_returns400() {
+    UUID[] txnId = new UUID[1];
+
+    // Record the payment as memberId
+    runInTenantWithCapabilities(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var customer =
+                      customerRepository.save(
+                          TestCustomerFactory.createActiveCustomer(
+                              "Self Approve Client", "self_approve@test.com", memberId));
+
+                  transactionService.recordDeposit(
+                      trustAccountId,
+                      new RecordDepositRequest(
+                          customer.getId(),
+                          null,
+                          new BigDecimal("10000.00"),
+                          "DEP-PAY-003",
+                          "Funding",
+                          LocalDate.of(2026, 4, 3)));
+
+                  var response =
+                      transactionService.recordPayment(
+                          trustAccountId,
+                          new RecordPaymentRequest(
+                              customer.getId(),
+                              null,
+                              new BigDecimal("1000.00"),
+                              "PAY-003",
+                              "Self-approval test",
+                              LocalDate.of(2026, 4, 3)));
+
+                  txnId[0] = response.id();
+                }));
+
+    // Try to approve as the same member who recorded it
+    runInTenantWithCapabilities(
+        () ->
+            assertThatThrownBy(() -> transactionService.approveTransaction(txnId[0], memberId))
+                .isInstanceOf(InvalidStateException.class)
+                .hasMessageContaining("The transaction recorder cannot be the sole approver"));
+  }
+
+  @Test
+  void approveWithInsufficientBalance_returns400WithClearMessage() {
+    UUID[] txnId = new UUID[1];
+
+    // Record a payment larger than the balance
+    runInTenantWithCapabilities(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var customer =
+                      customerRepository.save(
+                          TestCustomerFactory.createActiveCustomer(
+                              "Insufficient Approve Client", "insuff_approve@test.com", memberId));
+
+                  // Fund with only 500
+                  transactionService.recordDeposit(
+                      trustAccountId,
+                      new RecordDepositRequest(
+                          customer.getId(),
+                          null,
+                          new BigDecimal("500.00"),
+                          "DEP-PAY-004",
+                          "Small funding",
+                          LocalDate.of(2026, 4, 4)));
+
+                  var response =
+                      transactionService.recordPayment(
+                          trustAccountId,
+                          new RecordPaymentRequest(
+                              customer.getId(),
+                              null,
+                              new BigDecimal("5000.00"),
+                              "PAY-004",
+                              "Too large payment",
+                              LocalDate.of(2026, 4, 4)));
+
+                  txnId[0] = response.id();
+                }));
+
+    // Approve as a different member — should fail due to insufficient balance
+    runAsApprover(
+        () ->
+            assertThatThrownBy(() -> transactionService.approveTransaction(txnId[0], approverId))
+                .isInstanceOf(InvalidStateException.class)
+                .hasMessageContaining("Insufficient trust balance")
+                .hasMessageContaining("Available: R")
+                .hasMessageContaining("Requested: R"));
+  }
+
+  @Test
+  void rejectTransaction_transitionsToRejectedWithNoLedgerEffect() {
+    UUID[] txnId = new UUID[1];
+    UUID[] customerId = new UUID[1];
+
+    runInTenantWithCapabilities(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var customer =
+                      customerRepository.save(
+                          TestCustomerFactory.createActiveCustomer(
+                              "Reject Payment Client", "reject_pay@test.com", memberId));
+                  customerId[0] = customer.getId();
+
+                  transactionService.recordDeposit(
+                      trustAccountId,
+                      new RecordDepositRequest(
+                          customer.getId(),
+                          null,
+                          new BigDecimal("8000.00"),
+                          "DEP-PAY-005",
+                          "Funding",
+                          LocalDate.of(2026, 4, 5)));
+
+                  var response =
+                      transactionService.recordPayment(
+                          trustAccountId,
+                          new RecordPaymentRequest(
+                              customer.getId(),
+                              null,
+                              new BigDecimal("2000.00"),
+                              "PAY-005",
+                              "Payment to reject",
+                              LocalDate.of(2026, 4, 5)));
+
+                  txnId[0] = response.id();
+                }));
+
+    // Reject as a different member
+    runAsApprover(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var response =
+                      transactionService.rejectTransaction(
+                          txnId[0], approverId, "Duplicate payment");
+
+                  assertThat(response.status()).isEqualTo("REJECTED");
+                  assertThat(response.rejectedBy()).isEqualTo(approverId);
+                  assertThat(response.rejectedAt()).isNotNull();
+                  assertThat(response.rejectionReason()).isEqualTo("Duplicate payment");
+
+                  // Verify ledger was NOT debited (balance should remain 8000)
+                  var ledger =
+                      ledgerCardRepository
+                          .findByTrustAccountIdAndCustomerId(trustAccountId, customerId[0])
+                          .orElseThrow();
+
+                  assertThat(ledger.getBalance()).isEqualByComparingTo(new BigDecimal("8000.00"));
+                }));
+  }
+
+  @Test
+  void approveNonAwaitingTransaction_returns400() {
+    UUID[] txnId = new UUID[1];
+
+    runInTenantWithCapabilities(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var customer =
+                      customerRepository.save(
+                          TestCustomerFactory.createActiveCustomer(
+                              "Already Approved Client", "already_approved@test.com", memberId));
+
+                  // Record and manually set to APPROVED
+                  var response =
+                      transactionService.recordPayment(
+                          trustAccountId,
+                          new RecordPaymentRequest(
+                              customer.getId(),
+                              null,
+                              new BigDecimal("1000.00"),
+                              "PAY-006",
+                              "Already approved",
+                              LocalDate.of(2026, 4, 6)));
+
+                  txnId[0] = response.id();
+
+                  var txn = transactionRepository.findById(txnId[0]).orElseThrow();
+                  txn.setStatus("APPROVED");
+                  transactionRepository.save(txn);
+                }));
+
+    // Attempt to approve an already-APPROVED transaction
+    runAsApprover(
+        () ->
+            assertThatThrownBy(() -> transactionService.approveTransaction(txnId[0], approverId))
+                .isInstanceOf(InvalidStateException.class)
+                .hasMessageContaining("AWAITING_APPROVAL"));
+  }
+
+  @Test
+  void feeTransfer_createdWithInvoiceId() {
+    runInTenantWithCapabilities(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var customer =
+                      customerRepository.save(
+                          TestCustomerFactory.createActiveCustomer(
+                              "Fee Transfer Client", "fee_transfer@test.com", memberId));
+
+                  // Fund the account
+                  transactionService.recordDeposit(
+                      trustAccountId,
+                      new RecordDepositRequest(
+                          customer.getId(),
+                          null,
+                          new BigDecimal("15000.00"),
+                          "DEP-FT-001",
+                          "Funding for fee transfer",
+                          LocalDate.of(2026, 4, 7)));
+
+                  // Create an invoice in APPROVED status using native SQL
+                  var invoiceId = UUID.randomUUID();
+                  entityManager
+                      .createNativeQuery(
+                          """
+                          INSERT INTO invoices (id, customer_id, invoice_number, status,
+                              subtotal, tax_amount, total, currency, due_date,
+                              customer_name, org_name, created_by, created_at, updated_at)
+                          VALUES (:id, :customerId, 'INV-FT-001', 'APPROVED',
+                              1000.00, 150.00, 1150.00, 'ZAR', :dueDate,
+                              'Fee Transfer Client', 'Test Org', :createdBy, now(), now())
+                          """)
+                      .setParameter("id", invoiceId)
+                      .setParameter("customerId", customer.getId())
+                      .setParameter("dueDate", LocalDate.of(2026, 5, 1))
+                      .setParameter("createdBy", memberId)
+                      .executeUpdate();
+
+                  entityManager.flush();
+
+                  var response =
+                      transactionService.recordFeeTransfer(
+                          trustAccountId,
+                          new RecordFeeTransferRequest(
+                              customer.getId(), invoiceId, new BigDecimal("1150.00"), "FT-001"));
+
+                  assertThat(response.id()).isNotNull();
+                  assertThat(response.transactionType()).isEqualTo("FEE_TRANSFER");
+                  assertThat(response.status()).isEqualTo("AWAITING_APPROVAL");
+                  assertThat(response.invoiceId()).isEqualTo(invoiceId);
+                  assertThat(response.amount()).isEqualByComparingTo(new BigDecimal("1150.00"));
+                }));
+  }
+
+  @Test
+  void refund_createdInAwaitingApproval() {
+    runInTenantWithCapabilities(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var customer =
+                      customerRepository.save(
+                          TestCustomerFactory.createActiveCustomer(
+                              "Refund Client", "refund@test.com", memberId));
+
+                  // Fund the account
+                  transactionService.recordDeposit(
+                      trustAccountId,
+                      new RecordDepositRequest(
+                          customer.getId(),
+                          null,
+                          new BigDecimal("5000.00"),
+                          "DEP-REF-001",
+                          "Funding for refund test",
+                          LocalDate.of(2026, 4, 8)));
+
+                  var response =
+                      transactionService.recordRefund(
+                          trustAccountId,
+                          new RecordRefundRequest(
+                              customer.getId(),
+                              new BigDecimal("2000.00"),
+                              "REF-001",
+                              "Refund to client",
+                              LocalDate.of(2026, 4, 8)));
+
+                  assertThat(response.id()).isNotNull();
+                  assertThat(response.transactionType()).isEqualTo("REFUND");
+                  assertThat(response.status()).isEqualTo("AWAITING_APPROVAL");
+                  assertThat(response.amount()).isEqualByComparingTo(new BigDecimal("2000.00"));
+                  assertThat(response.recordedBy()).isEqualTo(memberId);
+                }));
+  }
+
+  @Test
+  void approvePayment_emitsAuditEvent() {
+    UUID[] txnId = new UUID[1];
+
+    runInTenantWithCapabilities(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var customer =
+                      customerRepository.save(
+                          TestCustomerFactory.createActiveCustomer(
+                              "Audit Approve Client", "audit_approve@test.com", memberId));
+
+                  transactionService.recordDeposit(
+                      trustAccountId,
+                      new RecordDepositRequest(
+                          customer.getId(),
+                          null,
+                          new BigDecimal("10000.00"),
+                          "DEP-PAY-009",
+                          "Funding",
+                          LocalDate.of(2026, 4, 9)));
+
+                  var response =
+                      transactionService.recordPayment(
+                          trustAccountId,
+                          new RecordPaymentRequest(
+                              customer.getId(),
+                              null,
+                              new BigDecimal("1000.00"),
+                              "PAY-009",
+                              "Audit approval test",
+                              LocalDate.of(2026, 4, 9)));
+
+                  txnId[0] = response.id();
+                }));
+
+    // Approve and check audit count increases
+    runAsApprover(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  long auditCountBefore = auditEventRepository.count();
+
+                  transactionService.approveTransaction(txnId[0], approverId);
+
+                  long auditCountAfter = auditEventRepository.count();
+                  assertThat(auditCountAfter).isGreaterThan(auditCountBefore);
+                }));
+  }
+
+  @Test
+  void rejection_includesReasonInResponse() {
+    UUID[] txnId = new UUID[1];
+
+    runInTenantWithCapabilities(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var customer =
+                      customerRepository.save(
+                          TestCustomerFactory.createActiveCustomer(
+                              "Rejection Reason Client", "reject_reason@test.com", memberId));
+
+                  var response =
+                      transactionService.recordPayment(
+                          trustAccountId,
+                          new RecordPaymentRequest(
+                              customer.getId(),
+                              null,
+                              new BigDecimal("500.00"),
+                              "PAY-010",
+                              "Rejection reason test",
+                              LocalDate.of(2026, 4, 10)));
+
+                  txnId[0] = response.id();
+                }));
+
+    // Reject with a specific reason
+    runAsApprover(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var response =
+                      transactionService.rejectTransaction(
+                          txnId[0], approverId, "Amount does not match invoice");
+
+                  assertThat(response.status()).isEqualTo("REJECTED");
+                  assertThat(response.rejectionReason()).isEqualTo("Amount does not match invoice");
+                  assertThat(response.rejectedBy()).isEqualTo(approverId);
+                  assertThat(response.rejectedAt()).isNotNull();
+                }));
+  }
+
   // --- Helpers ---
+
+  private void runAsApprover(Runnable action) {
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, approverId)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .where(
+            RequestScopes.CAPABILITIES,
+            Set.of("APPROVE_TRUST_PAYMENT", "MANAGE_TRUST", "VIEW_TRUST"))
+        .run(action);
+  }
+
+  private void runInTenantWithCapabilities(Runnable action) {
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, memberId)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .where(
+            RequestScopes.CAPABILITIES,
+            Set.of("APPROVE_TRUST_PAYMENT", "MANAGE_TRUST", "VIEW_TRUST"))
+        .run(action);
+  }
 
   private void runInTenant(Runnable action) {
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)

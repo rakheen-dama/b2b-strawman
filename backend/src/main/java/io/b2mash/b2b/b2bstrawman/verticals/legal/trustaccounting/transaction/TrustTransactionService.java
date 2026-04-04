@@ -3,8 +3,11 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceStatus;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
@@ -31,6 +34,7 @@ public class TrustTransactionService {
   private final ClientLedgerCardRepository ledgerCardRepository;
   private final TrustAccountRepository trustAccountRepository;
   private final CustomerRepository customerRepository;
+  private final InvoiceRepository invoiceRepository;
   private final VerticalModuleGuard moduleGuard;
   private final AuditService auditService;
   private final EntityManager entityManager;
@@ -40,6 +44,7 @@ public class TrustTransactionService {
       ClientLedgerCardRepository ledgerCardRepository,
       TrustAccountRepository trustAccountRepository,
       CustomerRepository customerRepository,
+      InvoiceRepository invoiceRepository,
       VerticalModuleGuard moduleGuard,
       AuditService auditService,
       EntityManager entityManager) {
@@ -47,6 +52,7 @@ public class TrustTransactionService {
     this.ledgerCardRepository = ledgerCardRepository;
     this.trustAccountRepository = trustAccountRepository;
     this.customerRepository = customerRepository;
+    this.invoiceRepository = invoiceRepository;
     this.moduleGuard = moduleGuard;
     this.auditService = auditService;
     this.entityManager = entityManager;
@@ -66,6 +72,24 @@ public class TrustTransactionService {
       UUID sourceCustomerId,
       UUID targetCustomerId,
       UUID projectId,
+      BigDecimal amount,
+      String reference,
+      String description,
+      LocalDate transactionDate) {}
+
+  public record RecordPaymentRequest(
+      UUID customerId,
+      UUID projectId,
+      BigDecimal amount,
+      String reference,
+      String description,
+      LocalDate transactionDate) {}
+
+  public record RecordFeeTransferRequest(
+      UUID customerId, UUID invoiceId, BigDecimal amount, String reference) {}
+
+  public record RecordRefundRequest(
+      UUID customerId,
       BigDecimal amount,
       String reference,
       String description,
@@ -310,6 +334,332 @@ public class TrustTransactionService {
             .build());
 
     return List.of(toResponse(savedOut), toResponse(savedIn));
+  }
+
+  // --- 441.1: Record Payment ---
+
+  @Transactional
+  public TrustTransactionResponse recordPayment(UUID trustAccountId, RecordPaymentRequest request) {
+    moduleGuard.requireModule(MODULE_ID);
+    validateAmount(request.amount());
+    validateReference(request.reference());
+
+    var account =
+        trustAccountRepository
+            .findById(trustAccountId)
+            .orElseThrow(() -> new ResourceNotFoundException("TrustAccount", trustAccountId));
+
+    if (TrustAccountStatus.CLOSED == account.getStatus()) {
+      throw new InvalidStateException("Cannot record payment", "Trust account is closed");
+    }
+
+    var customer =
+        customerRepository
+            .findById(request.customerId())
+            .orElseThrow(() -> new ResourceNotFoundException("Customer", request.customerId()));
+
+    var memberId = RequestScopes.requireMemberId();
+
+    var transaction =
+        new TrustTransaction(
+            trustAccountId,
+            "PAYMENT",
+            request.amount(),
+            request.customerId(),
+            request.projectId(),
+            null,
+            request.reference(),
+            request.description(),
+            request.transactionDate(),
+            "AWAITING_APPROVAL",
+            memberId);
+
+    var saved = transactionRepository.save(transaction);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("trust_payment.recorded")
+            .entityType("trust_transaction")
+            .entityId(saved.getId())
+            .details(
+                Map.of(
+                    "amount", request.amount().toString(),
+                    "customer_id", request.customerId().toString(),
+                    "customer_name", customer.getName(),
+                    "reference", request.reference()))
+            .build());
+
+    return toResponse(saved);
+  }
+
+  // --- 441.2: Record Fee Transfer ---
+
+  @Transactional
+  public TrustTransactionResponse recordFeeTransfer(
+      UUID trustAccountId, RecordFeeTransferRequest request) {
+    moduleGuard.requireModule(MODULE_ID);
+    validateAmount(request.amount());
+    validateReference(request.reference());
+
+    var account =
+        trustAccountRepository
+            .findById(trustAccountId)
+            .orElseThrow(() -> new ResourceNotFoundException("TrustAccount", trustAccountId));
+
+    if (TrustAccountStatus.CLOSED == account.getStatus()) {
+      throw new InvalidStateException("Cannot record fee transfer", "Trust account is closed");
+    }
+
+    var customer =
+        customerRepository
+            .findById(request.customerId())
+            .orElseThrow(() -> new ResourceNotFoundException("Customer", request.customerId()));
+
+    var invoice =
+        invoiceRepository
+            .findById(request.invoiceId())
+            .orElseThrow(() -> new ResourceNotFoundException("Invoice", request.invoiceId()));
+
+    if (!invoice.getCustomerId().equals(request.customerId())) {
+      throw new InvalidStateException(
+          "Invalid fee transfer", "Invoice does not belong to the specified customer");
+    }
+
+    if (invoice.getStatus() != InvoiceStatus.APPROVED
+        && invoice.getStatus() != InvoiceStatus.SENT) {
+      throw new InvalidStateException(
+          "Invalid fee transfer",
+          "Invoice must be in APPROVED or SENT status, current status: " + invoice.getStatus());
+    }
+
+    var memberId = RequestScopes.requireMemberId();
+
+    var transaction =
+        new TrustTransaction(
+            trustAccountId,
+            "FEE_TRANSFER",
+            request.amount(),
+            request.customerId(),
+            null,
+            null,
+            request.reference(),
+            null,
+            LocalDate.now(),
+            "AWAITING_APPROVAL",
+            memberId);
+
+    transaction.setInvoiceId(request.invoiceId());
+
+    var saved = transactionRepository.save(transaction);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("trust_fee_transfer.recorded")
+            .entityType("trust_transaction")
+            .entityId(saved.getId())
+            .details(
+                Map.of(
+                    "amount", request.amount().toString(),
+                    "customer_id", request.customerId().toString(),
+                    "customer_name", customer.getName(),
+                    "invoice_id", request.invoiceId().toString(),
+                    "reference", request.reference()))
+            .build());
+
+    return toResponse(saved);
+  }
+
+  // --- 441.3: Record Refund ---
+
+  @Transactional
+  public TrustTransactionResponse recordRefund(UUID trustAccountId, RecordRefundRequest request) {
+    moduleGuard.requireModule(MODULE_ID);
+    validateAmount(request.amount());
+    validateReference(request.reference());
+
+    var account =
+        trustAccountRepository
+            .findById(trustAccountId)
+            .orElseThrow(() -> new ResourceNotFoundException("TrustAccount", trustAccountId));
+
+    if (TrustAccountStatus.CLOSED == account.getStatus()) {
+      throw new InvalidStateException("Cannot record refund", "Trust account is closed");
+    }
+
+    var customer =
+        customerRepository
+            .findById(request.customerId())
+            .orElseThrow(() -> new ResourceNotFoundException("Customer", request.customerId()));
+
+    var memberId = RequestScopes.requireMemberId();
+
+    var transaction =
+        new TrustTransaction(
+            trustAccountId,
+            "REFUND",
+            request.amount(),
+            request.customerId(),
+            null,
+            null,
+            request.reference(),
+            request.description(),
+            request.transactionDate(),
+            "AWAITING_APPROVAL",
+            memberId);
+
+    var saved = transactionRepository.save(transaction);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("trust_refund.recorded")
+            .entityType("trust_transaction")
+            .entityId(saved.getId())
+            .details(
+                Map.of(
+                    "amount", request.amount().toString(),
+                    "customer_id", request.customerId().toString(),
+                    "customer_name", customer.getName(),
+                    "reference", request.reference()))
+            .build());
+
+    return toResponse(saved);
+  }
+
+  // --- 441.4: Approve Transaction (Single Mode) ---
+
+  @Transactional
+  public TrustTransactionResponse approveTransaction(UUID transactionId, UUID approverId) {
+    moduleGuard.requireModule(MODULE_ID);
+
+    var transaction =
+        transactionRepository
+            .findByIdForUpdate(transactionId)
+            .orElseThrow(() -> new ResourceNotFoundException("TrustTransaction", transactionId));
+
+    if (!"AWAITING_APPROVAL".equals(transaction.getStatus())) {
+      throw new InvalidStateException(
+          "Cannot approve transaction",
+          "Transaction must be in AWAITING_APPROVAL status to be approved");
+    }
+
+    if (!RequestScopes.hasCapability("APPROVE_TRUST_PAYMENT")) {
+      throw new ForbiddenException(
+          "Missing capability", "Missing required capability: APPROVE_TRUST_PAYMENT");
+    }
+
+    if (approverId.equals(transaction.getRecordedBy())) {
+      throw new InvalidStateException(
+          "Self-approval not allowed",
+          "The transaction recorder cannot be the sole approver. A different member with"
+              + " APPROVE_TRUST_PAYMENT capability must approve this transaction.");
+    }
+
+    // Check balance for debit types
+    if (DEBIT_TYPES.contains(transaction.getTransactionType())) {
+      var customer =
+          customerRepository
+              .findById(transaction.getCustomerId())
+              .orElseThrow(
+                  () -> new ResourceNotFoundException("Customer", transaction.getCustomerId()));
+
+      var ledgerCard =
+          ledgerCardRepository
+              .findByAccountAndCustomerForUpdate(
+                  transaction.getTrustAccountId(), transaction.getCustomerId())
+              .orElse(null);
+
+      if (ledgerCard == null || ledgerCard.getBalance().compareTo(transaction.getAmount()) < 0) {
+        var availableBalance = ledgerCard != null ? ledgerCard.getBalance() : BigDecimal.ZERO;
+        throw new InvalidStateException(
+            "Insufficient trust balance",
+            "Insufficient trust balance for "
+                + customer.getName()
+                + ". Available: R"
+                + availableBalance
+                + ", Requested: R"
+                + transaction.getAmount());
+      }
+
+      // Update ledger based on transaction type
+      switch (transaction.getTransactionType()) {
+        case "PAYMENT" ->
+            ledgerCard.addPayment(transaction.getAmount(), transaction.getTransactionDate());
+        case "FEE_TRANSFER" ->
+            ledgerCard.addFeeTransfer(transaction.getAmount(), transaction.getTransactionDate());
+        case "REFUND" ->
+            ledgerCard.debitBalance(transaction.getAmount(), transaction.getTransactionDate());
+        default ->
+            throw new InvalidStateException(
+                "Unknown debit type",
+                "Cannot approve transaction of type: " + transaction.getTransactionType());
+      }
+
+      ledgerCardRepository.save(ledgerCard);
+    }
+
+    transaction.setApprovedBy(approverId);
+    transaction.setApprovedAt(Instant.now());
+    transaction.setStatus("APPROVED");
+    transactionRepository.save(transaction);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("trust_payment.approved")
+            .entityType("trust_transaction")
+            .entityId(transaction.getId())
+            .details(
+                Map.of(
+                    "transaction_type", transaction.getTransactionType(),
+                    "amount", transaction.getAmount().toString(),
+                    "approved_by", approverId.toString()))
+            .build());
+
+    return toResponse(transaction);
+  }
+
+  // --- 441.5: Reject Transaction ---
+
+  @Transactional
+  public TrustTransactionResponse rejectTransaction(
+      UUID transactionId, UUID rejecterId, String reason) {
+    moduleGuard.requireModule(MODULE_ID);
+
+    var transaction =
+        transactionRepository
+            .findById(transactionId)
+            .orElseThrow(() -> new ResourceNotFoundException("TrustTransaction", transactionId));
+
+    if (!"AWAITING_APPROVAL".equals(transaction.getStatus())) {
+      throw new InvalidStateException(
+          "Cannot reject transaction",
+          "Transaction must be in AWAITING_APPROVAL status to be rejected");
+    }
+
+    if (!RequestScopes.hasCapability("APPROVE_TRUST_PAYMENT")) {
+      throw new ForbiddenException(
+          "Missing capability", "Missing required capability: APPROVE_TRUST_PAYMENT");
+    }
+
+    transaction.setRejectedBy(rejecterId);
+    transaction.setRejectedAt(Instant.now());
+    transaction.setRejectionReason(reason);
+    transaction.setStatus("REJECTED");
+    transactionRepository.save(transaction);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("trust_payment.rejected")
+            .entityType("trust_transaction")
+            .entityId(transaction.getId())
+            .details(
+                Map.of(
+                    "transaction_type", transaction.getTransactionType(),
+                    "amount", transaction.getAmount().toString(),
+                    "rejected_by", rejecterId.toString(),
+                    "reason", reason))
+            .build());
+
+    return toResponse(transaction);
   }
 
   // --- 440.9: Transaction Reversal ---

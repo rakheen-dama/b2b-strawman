@@ -17,6 +17,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -309,6 +310,120 @@ public class TrustTransactionService {
             .build());
 
     return List.of(toResponse(savedOut), toResponse(savedIn));
+  }
+
+  // --- 440.9: Transaction Reversal ---
+
+  private static final Set<String> CREDIT_TYPES =
+      Set.of("DEPOSIT", "TRANSFER_IN", "INTEREST_CREDIT");
+
+  private static final Set<String> DEBIT_TYPES =
+      Set.of("PAYMENT", "TRANSFER_OUT", "FEE_TRANSFER", "REFUND");
+
+  @Transactional
+  public TrustTransactionResponse reverseTransaction(UUID transactionId, String reason) {
+    moduleGuard.requireModule(MODULE_ID);
+
+    var original =
+        transactionRepository
+            .findById(transactionId)
+            .orElseThrow(() -> new ResourceNotFoundException("TrustTransaction", transactionId));
+
+    // Validate status — only APPROVED transactions can be reversed
+    if (!"APPROVED".equals(original.getStatus())) {
+      throw new InvalidStateException(
+          "Cannot reverse transaction", "Transaction must be in APPROVED status to be reversed");
+    }
+
+    // Validate not already reversed
+    if (original.getReversedById() != null) {
+      throw new InvalidStateException(
+          "Cannot reverse transaction", "Transaction has already been reversed");
+    }
+
+    var memberId = RequestScopes.requireMemberId();
+    boolean isCreditType = CREDIT_TYPES.contains(original.getTransactionType());
+    boolean isDebitType = DEBIT_TYPES.contains(original.getTransactionType());
+
+    // Determine reversal status based on original type
+    // Debit reversals (add money back) are immediate; credit reversals (remove money) need approval
+    String reversalStatus;
+    if (isDebitType) {
+      reversalStatus = "RECORDED";
+    } else if (isCreditType) {
+      reversalStatus = "AWAITING_APPROVAL";
+    } else {
+      throw new InvalidStateException(
+          "Cannot reverse transaction",
+          "Transaction type " + original.getTransactionType() + " cannot be reversed");
+    }
+
+    var reversal =
+        new TrustTransaction(
+            original.getTrustAccountId(),
+            "REVERSAL",
+            original.getAmount(),
+            original.getCustomerId(),
+            original.getProjectId(),
+            original.getCounterpartyCustomerId(),
+            "REV-" + original.getReference(),
+            reason,
+            LocalDate.now(),
+            reversalStatus,
+            memberId);
+
+    // Set reversal_of to link to the original
+    reversal.setReversalOf(original.getId());
+
+    var savedReversal = transactionRepository.save(reversal);
+
+    // Update original transaction to mark as reversed
+    original.setReversedById(savedReversal.getId());
+    original.setStatus("REVERSED");
+    transactionRepository.save(original);
+
+    // For debit reversals (immediate), update the client ledger card
+    if (isDebitType && original.getCustomerId() != null) {
+      var ledgerCard =
+          ledgerCardRepository
+              .findByAccountAndCustomerForUpdate(
+                  original.getTrustAccountId(), original.getCustomerId())
+              .orElse(null);
+
+      if (ledgerCard != null) {
+        ledgerCard.creditBalance(original.getAmount(), LocalDate.now());
+        ledgerCardRepository.save(ledgerCard);
+      }
+    }
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("trust_transaction.reversed")
+            .entityType("trust_transaction")
+            .entityId(savedReversal.getId())
+            .details(
+                Map.of(
+                    "original_transaction_id", original.getId().toString(),
+                    "original_type", original.getTransactionType(),
+                    "amount", original.getAmount().toString(),
+                    "reversal_status", reversalStatus,
+                    "reason", reason != null ? reason : ""))
+            .build());
+
+    return toResponse(savedReversal);
+  }
+
+  // --- 440.10: Cashbook Balance ---
+
+  @Transactional(readOnly = true)
+  public BigDecimal getCashbookBalance(UUID trustAccountId) {
+    moduleGuard.requireModule(MODULE_ID);
+
+    trustAccountRepository
+        .findById(trustAccountId)
+        .orElseThrow(() -> new ResourceNotFoundException("TrustAccount", trustAccountId));
+
+    return transactionRepository.calculateCashbookBalance(trustAccountId);
   }
 
   // --- Private Helpers ---

@@ -723,6 +723,487 @@ class TrustTransactionServiceTest {
                 }));
   }
 
+  // --- 440.12: Reversal tests ---
+
+  @Test
+  void reverseCreditTransaction_requiresApproval() {
+    UUID[] depositTxnId = new UUID[1];
+
+    // Create a deposit (credit type) and approve it
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var customer =
+                      customerRepository.save(
+                          TestCustomerFactory.createActiveCustomer(
+                              "Reversal Credit Client", "rev_credit@test.com", memberId));
+
+                  var depositResponse =
+                      transactionService.recordDeposit(
+                          trustAccountId,
+                          new RecordDepositRequest(
+                              customer.getId(),
+                              null,
+                              new BigDecimal("5000.00"),
+                              "DEP-REV-001",
+                              "Deposit to reverse",
+                              LocalDate.of(2026, 3, 20)));
+
+                  depositTxnId[0] = depositResponse.id();
+
+                  // Manually set status to APPROVED (simulating approval flow from Epic 441)
+                  var txn = transactionRepository.findById(depositTxnId[0]).orElseThrow();
+                  txn.setStatus("APPROVED");
+                  transactionRepository.save(txn);
+                }));
+
+    // Reverse the credit (deposit) — should require approval
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var reversalResponse =
+                      transactionService.reverseTransaction(
+                          depositTxnId[0], "Client overpaid, reversing deposit");
+
+                  assertThat(reversalResponse.transactionType()).isEqualTo("REVERSAL");
+                  assertThat(reversalResponse.status()).isEqualTo("AWAITING_APPROVAL");
+                  assertThat(reversalResponse.reversalOf()).isEqualTo(depositTxnId[0]);
+                  assertThat(reversalResponse.reference()).isEqualTo("REV-DEP-REV-001");
+                  assertThat(reversalResponse.amount())
+                      .isEqualByComparingTo(new BigDecimal("5000.00"));
+
+                  // Original should now be REVERSED
+                  var original = transactionRepository.findById(depositTxnId[0]).orElseThrow();
+                  assertThat(original.getStatus()).isEqualTo("REVERSED");
+                  assertThat(original.getReversedById()).isEqualTo(reversalResponse.id());
+
+                  // Ledger should NOT be updated (credit reversal awaits approval)
+                  var ledger =
+                      ledgerCardRepository
+                          .findByTrustAccountIdAndCustomerId(
+                              trustAccountId, original.getCustomerId())
+                          .orElseThrow();
+
+                  // Balance still has the deposit amount (5000) — not yet reduced
+                  assertThat(ledger.getBalance()).isEqualByComparingTo(new BigDecimal("5000.00"));
+                }));
+  }
+
+  @Test
+  void reverseDebitTransaction_immediateWithLedgerUpdate() {
+    UUID[] transferOutTxnId = new UUID[1];
+    UUID[] sourceCustomerId = new UUID[1];
+
+    // Create a deposit, then a transfer out (debit type), and approve the transfer
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var sourceCustomer =
+                      customerRepository.save(
+                          TestCustomerFactory.createActiveCustomer(
+                              "Reversal Debit Source", "rev_debit_src@test.com", memberId));
+
+                  var targetCustomer =
+                      customerRepository.save(
+                          TestCustomerFactory.createActiveCustomer(
+                              "Reversal Debit Target", "rev_debit_tgt@test.com", memberId));
+
+                  sourceCustomerId[0] = sourceCustomer.getId();
+
+                  // Fund source with 10000
+                  transactionService.recordDeposit(
+                      trustAccountId,
+                      new RecordDepositRequest(
+                          sourceCustomer.getId(),
+                          null,
+                          new BigDecimal("10000.00"),
+                          "DEP-REV-002",
+                          "Funding for debit reversal test",
+                          LocalDate.of(2026, 3, 21)));
+
+                  // Transfer out 3000 (debit from source)
+                  var transferResult =
+                      transactionService.recordTransfer(
+                          trustAccountId,
+                          new RecordTransferRequest(
+                              sourceCustomer.getId(),
+                              targetCustomer.getId(),
+                              null,
+                              new BigDecimal("3000.00"),
+                              "TRF-REV-001",
+                              "Transfer to reverse",
+                              LocalDate.of(2026, 3, 22)));
+
+                  // The TRANSFER_OUT is the first in the pair
+                  transferOutTxnId[0] = transferResult.get(0).id();
+
+                  // Manually set status to APPROVED
+                  var txn = transactionRepository.findById(transferOutTxnId[0]).orElseThrow();
+                  txn.setStatus("APPROVED");
+                  transactionRepository.save(txn);
+                }));
+
+    // Reverse the debit (transfer out) — should be immediate
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  // Source balance before reversal: 10000 - 3000 = 7000
+                  var ledgerBefore =
+                      ledgerCardRepository
+                          .findByTrustAccountIdAndCustomerId(trustAccountId, sourceCustomerId[0])
+                          .orElseThrow();
+                  assertThat(ledgerBefore.getBalance())
+                      .isEqualByComparingTo(new BigDecimal("7000.00"));
+
+                  var reversalResponse =
+                      transactionService.reverseTransaction(
+                          transferOutTxnId[0], "Transfer was in error");
+
+                  assertThat(reversalResponse.transactionType()).isEqualTo("REVERSAL");
+                  assertThat(reversalResponse.status()).isEqualTo("RECORDED");
+                  assertThat(reversalResponse.reversalOf()).isEqualTo(transferOutTxnId[0]);
+
+                  // Ledger should be updated: 7000 + 3000 = 10000
+                  var ledgerAfter =
+                      ledgerCardRepository
+                          .findByTrustAccountIdAndCustomerId(trustAccountId, sourceCustomerId[0])
+                          .orElseThrow();
+                  assertThat(ledgerAfter.getBalance())
+                      .isEqualByComparingTo(new BigDecimal("10000.00"));
+                }));
+  }
+
+  @Test
+  void reverseAlreadyReversedTransaction_throwsInvalidStateException() {
+    UUID[] depositTxnId = new UUID[1];
+
+    // Create and approve a deposit, then reverse it
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var customer =
+                      customerRepository.save(
+                          TestCustomerFactory.createActiveCustomer(
+                              "Double Reversal Client", "double_rev@test.com", memberId));
+
+                  var depositResponse =
+                      transactionService.recordDeposit(
+                          trustAccountId,
+                          new RecordDepositRequest(
+                              customer.getId(),
+                              null,
+                              new BigDecimal("2000.00"),
+                              "DEP-REV-003",
+                              "Deposit for double reversal test",
+                              LocalDate.of(2026, 3, 23)));
+
+                  depositTxnId[0] = depositResponse.id();
+
+                  // Approve then reverse
+                  var txn = transactionRepository.findById(depositTxnId[0]).orElseThrow();
+                  txn.setStatus("APPROVED");
+                  transactionRepository.save(txn);
+
+                  transactionService.reverseTransaction(depositTxnId[0], "First reversal");
+                }));
+
+    // Attempt to reverse the already-reversed transaction
+    runInTenant(
+        () ->
+            assertThatThrownBy(
+                    () ->
+                        transactionService.reverseTransaction(
+                            depositTxnId[0], "Second reversal attempt"))
+                .isInstanceOf(InvalidStateException.class)
+                .hasMessageContaining("APPROVED status"));
+  }
+
+  @Test
+  void reverseAwaitingApprovalTransaction_throwsInvalidStateException() {
+    UUID[] depositTxnId = new UUID[1];
+
+    // Create a deposit that remains in RECORDED status (not APPROVED)
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var customer =
+                      customerRepository.save(
+                          TestCustomerFactory.createActiveCustomer(
+                              "Awaiting Reversal Client", "awaiting_rev@test.com", memberId));
+
+                  var depositResponse =
+                      transactionService.recordDeposit(
+                          trustAccountId,
+                          new RecordDepositRequest(
+                              customer.getId(),
+                              null,
+                              new BigDecimal("1500.00"),
+                              "DEP-REV-004",
+                              "Deposit for awaiting reversal test",
+                              LocalDate.of(2026, 3, 24)));
+
+                  depositTxnId[0] = depositResponse.id();
+
+                  // Set to AWAITING_APPROVAL to test this specific case
+                  var txn = transactionRepository.findById(depositTxnId[0]).orElseThrow();
+                  txn.setStatus("AWAITING_APPROVAL");
+                  transactionRepository.save(txn);
+                }));
+
+    // Attempt to reverse — should fail because it's not APPROVED
+    runInTenant(
+        () ->
+            assertThatThrownBy(
+                    () ->
+                        transactionService.reverseTransaction(
+                            depositTxnId[0], "Cannot reverse awaiting approval"))
+                .isInstanceOf(InvalidStateException.class)
+                .hasMessageContaining("APPROVED status"));
+  }
+
+  // --- 440.13: Cashbook balance tests ---
+
+  @Test
+  void cashbookBalance_correctAfterDepositsAndTransfers() {
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  // Capture baseline before this test's transactions
+                  var balanceBefore = transactionService.getCashbookBalance(trustAccountId);
+
+                  var customer1 =
+                      customerRepository.save(
+                          TestCustomerFactory.createActiveCustomer(
+                              "Cashbook Client 1", "cashbook1@test.com", memberId));
+
+                  var customer2 =
+                      customerRepository.save(
+                          TestCustomerFactory.createActiveCustomer(
+                              "Cashbook Client 2", "cashbook2@test.com", memberId));
+
+                  // Deposit 10000 to customer1 (cashbook positive)
+                  transactionService.recordDeposit(
+                      trustAccountId,
+                      new RecordDepositRequest(
+                          customer1.getId(),
+                          null,
+                          new BigDecimal("10000.00"),
+                          "DEP-CB-001",
+                          "Cashbook deposit 1",
+                          LocalDate.of(2026, 3, 25)));
+
+                  // Deposit 5000 to customer2 (cashbook positive)
+                  transactionService.recordDeposit(
+                      trustAccountId,
+                      new RecordDepositRequest(
+                          customer2.getId(),
+                          null,
+                          new BigDecimal("5000.00"),
+                          "DEP-CB-002",
+                          "Cashbook deposit 2",
+                          LocalDate.of(2026, 3, 25)));
+
+                  // Transfer 2000 from customer1 to customer2 (cashbook neutral)
+                  transactionService.recordTransfer(
+                      trustAccountId,
+                      new RecordTransferRequest(
+                          customer1.getId(),
+                          customer2.getId(),
+                          null,
+                          new BigDecimal("2000.00"),
+                          "TRF-CB-001",
+                          "Cashbook transfer",
+                          LocalDate.of(2026, 3, 26)));
+
+                  // Cashbook balance delta should be 10000 + 5000 = 15000
+                  // Transfers are cashbook-neutral (no cashbook effect)
+                  var balanceAfter = transactionService.getCashbookBalance(trustAccountId);
+                  var delta = balanceAfter.subtract(balanceBefore);
+
+                  assertThat(delta).isEqualByComparingTo(new BigDecimal("15000.00"));
+                }));
+  }
+
+  @Test
+  void cashbookBalance_excludesRejectedTransactions() {
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  // Capture baseline
+                  var balanceBefore = transactionService.getCashbookBalance(trustAccountId);
+
+                  var customer =
+                      customerRepository.save(
+                          TestCustomerFactory.createActiveCustomer(
+                              "Cashbook Rejected Client", "cashbook_rej@test.com", memberId));
+
+                  // Record a deposit (RECORDED status, counted in cashbook)
+                  transactionService.recordDeposit(
+                      trustAccountId,
+                      new RecordDepositRequest(
+                          customer.getId(),
+                          null,
+                          new BigDecimal("8000.00"),
+                          "DEP-CB-003",
+                          "Normal deposit",
+                          LocalDate.of(2026, 3, 27)));
+
+                  // Create another deposit and reject it
+                  var depositToReject =
+                      transactionService.recordDeposit(
+                          trustAccountId,
+                          new RecordDepositRequest(
+                              customer.getId(),
+                              null,
+                              new BigDecimal("3000.00"),
+                              "DEP-CB-004",
+                              "Rejected deposit",
+                              LocalDate.of(2026, 3, 27)));
+
+                  // Set the second deposit to REJECTED
+                  var rejectedTxn =
+                      transactionRepository.findById(depositToReject.id()).orElseThrow();
+                  rejectedTxn.setStatus("REJECTED");
+                  transactionRepository.save(rejectedTxn);
+
+                  // Cashbook delta should only include the first deposit (8000),
+                  // not the rejected one (3000)
+                  var balanceAfter = transactionService.getCashbookBalance(trustAccountId);
+                  var delta = balanceAfter.subtract(balanceBefore);
+
+                  assertThat(delta)
+                      .as("Rejected deposit should be excluded from cashbook balance")
+                      .isEqualByComparingTo(new BigDecimal("8000.00"));
+                }));
+  }
+
+  // --- 440.14: Historical balance tests ---
+
+  @Test
+  void historicalBalance_matchesExpectedAtPointInTime() {
+    UUID[] customerId = new UUID[1];
+
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var customer =
+                      customerRepository.save(
+                          TestCustomerFactory.createActiveCustomer(
+                              "Historical Balance Client", "hist_bal@test.com", memberId));
+                  customerId[0] = customer.getId();
+
+                  // Deposit 10000 on March 1
+                  transactionService.recordDeposit(
+                      trustAccountId,
+                      new RecordDepositRequest(
+                          customer.getId(),
+                          null,
+                          new BigDecimal("10000.00"),
+                          "DEP-HIST-001",
+                          "March deposit",
+                          LocalDate.of(2026, 3, 1)));
+
+                  // Deposit 5000 on March 15
+                  transactionService.recordDeposit(
+                      trustAccountId,
+                      new RecordDepositRequest(
+                          customer.getId(),
+                          null,
+                          new BigDecimal("5000.00"),
+                          "DEP-HIST-002",
+                          "Mid-March deposit",
+                          LocalDate.of(2026, 3, 15)));
+                }));
+
+    // Check historical balance as of March 10 — should only include the first deposit
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var balanceMarch10 =
+                      clientLedgerService.getClientBalanceAsOfDate(
+                          customerId[0], trustAccountId, LocalDate.of(2026, 3, 10));
+
+                  assertThat(balanceMarch10).isEqualByComparingTo(new BigDecimal("10000.00"));
+
+                  // Check as of March 31 — should include both deposits
+                  var balanceMarch31 =
+                      clientLedgerService.getClientBalanceAsOfDate(
+                          customerId[0], trustAccountId, LocalDate.of(2026, 3, 31));
+
+                  assertThat(balanceMarch31).isEqualByComparingTo(new BigDecimal("15000.00"));
+                }));
+  }
+
+  @Test
+  void totalTrustBalance_equalsSumOfLedgerCardBalances() {
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var customer1 =
+                      customerRepository.save(
+                          TestCustomerFactory.createActiveCustomer(
+                              "Total Bal Client 1", "total_bal1@test.com", memberId));
+
+                  var customer2 =
+                      customerRepository.save(
+                          TestCustomerFactory.createActiveCustomer(
+                              "Total Bal Client 2", "total_bal2@test.com", memberId));
+
+                  // Deposit 6000 to customer1
+                  transactionService.recordDeposit(
+                      trustAccountId,
+                      new RecordDepositRequest(
+                          customer1.getId(),
+                          null,
+                          new BigDecimal("6000.00"),
+                          "DEP-TOT-001",
+                          null,
+                          LocalDate.of(2026, 3, 28)));
+
+                  // Deposit 4000 to customer2
+                  transactionService.recordDeposit(
+                      trustAccountId,
+                      new RecordDepositRequest(
+                          customer2.getId(),
+                          null,
+                          new BigDecimal("4000.00"),
+                          "DEP-TOT-002",
+                          null,
+                          LocalDate.of(2026, 3, 28)));
+
+                  // Get total trust balance from ledger cards
+                  var totalBalance = clientLedgerService.getTotalTrustBalance(trustAccountId);
+
+                  // Get individual ledger card balances and sum them
+                  var ledger1 =
+                      ledgerCardRepository
+                          .findByTrustAccountIdAndCustomerId(trustAccountId, customer1.getId())
+                          .orElseThrow();
+                  var ledger2 =
+                      ledgerCardRepository
+                          .findByTrustAccountIdAndCustomerId(trustAccountId, customer2.getId())
+                          .orElseThrow();
+
+                  var expectedTotal = ledger1.getBalance().add(ledger2.getBalance());
+
+                  // Total trust balance should include these two plus any other existing cards
+                  assertThat(totalBalance).isGreaterThanOrEqualTo(expectedTotal);
+                  // More specifically, these two cards contribute at least 10000
+                  assertThat(totalBalance).isGreaterThanOrEqualTo(new BigDecimal("10000.00"));
+                }));
+  }
+
   // --- Helpers ---
 
   private void runInTenant(Runnable action) {

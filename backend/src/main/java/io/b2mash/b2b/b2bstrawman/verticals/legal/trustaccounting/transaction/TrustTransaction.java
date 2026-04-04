@@ -216,4 +216,18 @@ public class TrustTransaction {
   public Instant getCreatedAt() {
     return createdAt;
   }
+
+  // --- Mutable setters (status lifecycle + reversal linking) ---
+
+  public void setStatus(String status) {
+    this.status = status;
+  }
+
+  public void setReversedById(UUID reversedById) {
+    this.reversedById = reversedById;
+  }
+
+  public void setReversalOf(UUID reversalOf) {
+    this.reversalOf = reversalOf;
+  }
 }

@@ -25,7 +25,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
@@ -543,8 +543,9 @@ class TrustTransactionServiceTest {
                           LocalDate.of(2026, 3, 14)));
                 }));
 
-    // Two concurrent transfers of 3000 each -- only one should succeed
-    var latch = new CountDownLatch(1);
+    // Two concurrent transfers of 3000 each -- only one should succeed.
+    // CyclicBarrier ensures both threads are ready before either starts.
+    var barrier = new CyclicBarrier(2);
     AtomicReference<Throwable> error1 = new AtomicReference<>();
     AtomicReference<Throwable> error2 = new AtomicReference<>();
 
@@ -553,7 +554,7 @@ class TrustTransactionServiceTest {
       executor.submit(
           () -> {
             try {
-              latch.await();
+              barrier.await();
               ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
                   .where(RequestScopes.ORG_ID, ORG_ID)
                   .where(RequestScopes.MEMBER_ID, memberId)
@@ -580,7 +581,7 @@ class TrustTransactionServiceTest {
       executor.submit(
           () -> {
             try {
-              latch.await();
+              barrier.await();
               ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
                   .where(RequestScopes.ORG_ID, ORG_ID)
                   .where(RequestScopes.MEMBER_ID, memberId)
@@ -604,19 +605,19 @@ class TrustTransactionServiceTest {
             }
           });
 
-      latch.countDown();
       executor.shutdown();
       executor.awaitTermination(30, java.util.concurrent.TimeUnit.SECONDS);
     } finally {
       executor.shutdownNow();
     }
 
-    // Exactly one transfer should fail (insufficient balance) or one should encounter a DB error
-    // The key assertion: at most one succeeded, the other was blocked by FOR UPDATE and failed
+    // Exactly one transfer should succeed and one should fail (XOR)
     boolean firstFailed = error1.get() != null;
     boolean secondFailed = error2.get() != null;
-    assertThat(firstFailed || secondFailed)
-        .as("At least one concurrent transfer should fail due to insufficient balance")
+    assertThat(firstFailed ^ secondFailed)
+        .as(
+            "Exactly one concurrent transfer should fail (first=%s, second=%s)",
+            error1.get(), error2.get())
         .isTrue();
 
     // Verify final ledger balance is consistent: initial 5000 minus one successful 3000 transfer

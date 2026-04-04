@@ -78,7 +78,7 @@ public class ClientLedgerCard {
     }
     this.balance = this.balance.add(amount);
     this.totalDeposits = this.totalDeposits.add(amount);
-    this.lastTransactionDate = transactionDate;
+    updateLastTransactionDate(transactionDate);
   }
 
   /**
@@ -92,7 +92,7 @@ public class ClientLedgerCard {
       throw new IllegalArgumentException("amount must be positive");
     }
     this.balance = this.balance.subtract(amount);
-    this.lastTransactionDate = transactionDate;
+    updateLastTransactionDate(transactionDate);
   }
 
   public void creditBalance(BigDecimal amount, LocalDate transactionDate) {
@@ -101,7 +101,15 @@ public class ClientLedgerCard {
       throw new IllegalArgumentException("amount must be positive");
     }
     this.balance = this.balance.add(amount);
-    this.lastTransactionDate = transactionDate;
+    updateLastTransactionDate(transactionDate);
+  }
+
+  /** Only advances lastTransactionDate — never moves it backwards for backdated transactions. */
+  private void updateLastTransactionDate(LocalDate transactionDate) {
+    if (this.lastTransactionDate == null
+        || (transactionDate != null && transactionDate.isAfter(this.lastTransactionDate))) {
+      this.lastTransactionDate = transactionDate;
+    }
   }
 
   public UUID getId() {

@@ -11,6 +11,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRep
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountStatus;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
+import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -31,6 +32,7 @@ public class TrustTransactionService {
   private final CustomerRepository customerRepository;
   private final VerticalModuleGuard moduleGuard;
   private final AuditService auditService;
+  private final EntityManager entityManager;
 
   public TrustTransactionService(
       TrustTransactionRepository transactionRepository,
@@ -38,13 +40,15 @@ public class TrustTransactionService {
       TrustAccountRepository trustAccountRepository,
       CustomerRepository customerRepository,
       VerticalModuleGuard moduleGuard,
-      AuditService auditService) {
+      AuditService auditService,
+      EntityManager entityManager) {
     this.transactionRepository = transactionRepository;
     this.ledgerCardRepository = ledgerCardRepository;
     this.trustAccountRepository = trustAccountRepository;
     this.customerRepository = customerRepository;
     this.moduleGuard = moduleGuard;
     this.auditService = auditService;
+    this.entityManager = entityManager;
   }
 
   // --- DTO Records ---
@@ -133,11 +137,16 @@ public class TrustTransactionService {
     var saved = transactionRepository.save(transaction);
 
     // Upsert client ledger card — use FOR UPDATE lock to prevent lost updates on concurrent
-    // deposits
+    // deposits. If two concurrent inserts race, the second hits the unique constraint;
+    // we catch that and re-query with the lock to update the now-existing row.
     var ledgerCard =
         ledgerCardRepository
             .findByAccountAndCustomerForUpdate(trustAccountId, request.customerId())
-            .orElseGet(() -> new ClientLedgerCard(trustAccountId, request.customerId()));
+            .orElse(null);
+
+    if (ledgerCard == null) {
+      ledgerCard = upsertNewLedgerCard(trustAccountId, request.customerId());
+    }
 
     ledgerCard.addDeposit(request.amount(), request.transactionDate());
     ledgerCardRepository.save(ledgerCard);
@@ -279,9 +288,9 @@ public class TrustTransactionService {
     sourceLedger.debitBalance(request.amount(), request.transactionDate());
     ledgerCardRepository.save(sourceLedger);
 
-    // Upsert target ledger
+    // Upsert target ledger — handle concurrent insert race
     if (targetLedger == null) {
-      targetLedger = new ClientLedgerCard(trustAccountId, request.targetCustomerId());
+      targetLedger = upsertNewLedgerCard(trustAccountId, request.targetCustomerId());
     }
     targetLedger.creditBalance(request.amount(), request.transactionDate());
     ledgerCardRepository.save(targetLedger);
@@ -303,6 +312,36 @@ public class TrustTransactionService {
   }
 
   // --- Private Helpers ---
+
+  /**
+   * Atomically ensures a ClientLedgerCard exists for the given account and customer. Uses a native
+   * INSERT ... ON CONFLICT DO NOTHING to handle the race where two concurrent transactions both see
+   * no existing row. After the upsert, re-queries with FOR UPDATE to lock and return the row.
+   */
+  private ClientLedgerCard upsertNewLedgerCard(UUID trustAccountId, UUID customerId) {
+    entityManager
+        .createNativeQuery(
+            """
+            INSERT INTO client_ledger_cards (id, trust_account_id, customer_id, balance,
+                total_deposits, total_payments, total_fee_transfers, total_interest_credited,
+                created_at, updated_at)
+            VALUES (gen_random_uuid(), :accountId, :customerId, 0, 0, 0, 0, 0, now(), now())
+            ON CONFLICT (trust_account_id, customer_id) DO NOTHING
+            """)
+        .setParameter("accountId", trustAccountId)
+        .setParameter("customerId", customerId)
+        .executeUpdate();
+
+    return ledgerCardRepository
+        .findByAccountAndCustomerForUpdate(trustAccountId, customerId)
+        .orElseThrow(
+            () ->
+                new IllegalStateException(
+                    "Ledger card missing after upsert for account="
+                        + trustAccountId
+                        + " customer="
+                        + customerId));
+  }
 
   private void validateAmount(BigDecimal amount) {
     if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {

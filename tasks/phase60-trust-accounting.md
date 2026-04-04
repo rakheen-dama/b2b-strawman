@@ -33,7 +33,7 @@ Phase 60 replaces the `trust_accounting` module stub (registered in Phase 49) wi
 | 438 | Foundation: V85 Migration + Module Registration + RBAC Capabilities | Backend | -- | M | 438A, 438B | **Done** (PRs #921, #922) |
 | 439 | TrustAccount + LpffRate Entity + Service + Controller | Backend | 438 | M | 439A, 439B | **Done** (PRs #923, #924) |
 | 440 | TrustTransaction + ClientLedgerCard Entity + Deposit/Transfer Service | Backend | 439 | L | 440A, 440B | **Done** (PRs #925, #926) |
-| 441 | Approval Workflow + Payment/FeeTransfer/Refund Recording | Backend | 440 | L | 441A, 441B | Not started |
+| 441 | Approval Workflow + Payment/FeeTransfer/Refund Recording | Backend | 440 | L | 441A, 441B | **Done** (PRs #928, #929) |
 | 442 | Transaction Controller + Approval Endpoints + Client Ledger Controller | Backend | 441 | M | 442A, 442B | Not started |
 | 443 | Bank Statement Import + CSV Parsers | Backend | 439 | M | 443A, 443B | Not started |
 | 444 | Auto-Matching + Manual Matching + Reconciliation | Backend | 440, 443 | L | 444A, 444B | Not started |
@@ -233,7 +233,7 @@ FRONTEND CORE                           FRONTEND ADVANCED
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 4a | 441 | 441A | `recordPayment()`, `recordFeeTransfer()`, `recordRefund()` (all create in AWAITING_APPROVAL status). `approveTransaction()` with single approval mode + self-approval prevention + negative balance check. `rejectTransaction()`. Integration tests (~10). Backend only. | **Done** (PR #928) |
-| 4b | 441 | 441B | Dual approval mode + threshold-based dual approval + concurrent approval race condition tests. Fee transfer → `InvoiceService.recordPayment()` integration. `TrustNotificationHandler` skeleton for approval notifications. Integration tests (~10). Backend only. | Not started |
+| 4b | 441 | 441B | Dual approval mode + threshold-based dual approval + concurrent approval race condition tests. Fee transfer → `InvoiceService.recordPayment()` integration. `TrustNotificationHandler` skeleton for approval notifications. Integration tests (~10). Backend only. | **Done** (PR #929) |
 
 ### Stage 5: Controllers + Matching + Interest + Investments (parallel tracks)
 
@@ -516,7 +516,7 @@ Stage 11: [451A] -> [451B]                                                <- int
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **441A** | 441.1--441.6 | `recordPayment()`, `recordFeeTransfer()`, `recordRefund()` creating transactions in AWAITING_APPROVAL status. `approveTransaction()` with single approval mode + self-approval prevention + negative balance check on approval. `rejectTransaction()` with reason. Integration tests (~10). Backend only. | **Done** (PR #928) |
-| **441B** | 441.7--441.12 | Dual approval mode + threshold-based dual approval. Fee transfer → `InvoiceService.recordPayment()` on approval. `TrustNotificationHandler` skeleton for approval notification fan-out. Concurrent approval race condition tests. Integration tests (~10). Backend only. | Not started |
+| **441B** | 441.7--441.12 | Dual approval mode + threshold-based dual approval. Fee transfer → `InvoiceService.recordPayment()` on approval. `TrustNotificationHandler` skeleton for approval notification fan-out. Concurrent approval race condition tests. Integration tests (~10). Backend only. | **Done** (PR #929) |
 
 ### Tasks
 

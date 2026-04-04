@@ -330,15 +330,24 @@ public class AdversePartyService {
       // Limit each native query to a reasonable upper bound to avoid loading unbounded results.
       // We fetch enough to fill the page after dedup + filtering, but cap at a safe maximum.
       int maxResults = pageable.isPaged() ? pageable.getPageSize() * 3 : 200;
-      var nameMatches =
+
+      // Primary: substring match (handles short tokens like "BHP", "Road")
+      var substringMatches =
+          adversePartyRepository.findByNameContaining("%" + search + "%", maxResults);
+
+      // Secondary: fuzzy match (handles typos like "Roadd Accident")
+      var fuzzyMatches =
           adversePartyRepository.findBySimilarName(search, FUZZY_THRESHOLD, maxResults);
+
+      // Tertiary: alias matches
       var aliasMatches =
           adversePartyRepository.findByAliasContaining(search, FUZZY_THRESHOLD, maxResults);
 
-      // Merge and deduplicate preserving name-match order
+      // Merge and deduplicate, preserving substring-match priority
       var seen = new LinkedHashSet<UUID>();
       var merged =
-          Stream.concat(nameMatches.stream(), aliasMatches.stream())
+          Stream.of(substringMatches.stream(), fuzzyMatches.stream(), aliasMatches.stream())
+              .flatMap(Function.identity())
               .filter(ap -> seen.add(ap.getId()))
               .filter(ap -> partyType == null || ap.getPartyType().equals(partyType))
               .toList();

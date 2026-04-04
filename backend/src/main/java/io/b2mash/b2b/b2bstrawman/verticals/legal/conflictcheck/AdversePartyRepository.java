@@ -18,6 +18,16 @@ public interface AdversePartyRepository extends JpaRepository<AdverseParty, UUID
   @Query(
       value =
           "SELECT * FROM adverse_parties"
+              + " WHERE lower(name) LIKE lower(:pattern)"
+              + " ORDER BY name ASC"
+              + " LIMIT :maxResults",
+      nativeQuery = true)
+  List<AdverseParty> findByNameContaining(
+      @Param("pattern") String pattern, @Param("maxResults") int maxResults);
+
+  @Query(
+      value =
+          "SELECT * FROM adverse_parties"
               + " WHERE public.similarity(lower(name), lower(:name)) > :threshold"
               + " ORDER BY public.similarity(lower(name), lower(:name)) DESC"
               + " LIMIT :maxResults",

@@ -46,6 +46,7 @@ import { ArchivedProjectBanner } from "@/components/projects/archived-project-ba
 import { ProjectStaffingTab } from "@/components/capacity/project-staffing-tab";
 import { ProjectCourtDatesTab } from "@/components/legal/project-court-dates-tab";
 import { ProjectAdversePartiesTab } from "@/components/legal/project-adverse-parties-tab";
+import { TerminologyText } from "@/components/terminology-text";
 import { getProjectStaffing, type ProjectStaffingResponse } from "@/lib/api/capacity";
 import { getCurrentMonday, formatDate as formatDateUtil, addWeeks } from "@/lib/date-utils";
 import { createSavedViewAction } from "./view-actions";
@@ -458,7 +459,7 @@ export default async function ProjectDetailPage({
           {/* Customer display (208.12) */}
           {customers.length > 0 ? (
             <p className="mt-2 text-sm text-slate-600 dark:text-slate-400" data-testid="project-customer-link">
-              Customer:{" "}
+              <TerminologyText template="{Customer}:" />{" "}
               <Link
                 href={`/org/${slug}/customers/${customers[0].id}`}
                 className="text-teal-600 hover:text-teal-700 hover:underline dark:text-teal-400 dark:hover:text-teal-300"

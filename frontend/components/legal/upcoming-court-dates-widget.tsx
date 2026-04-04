@@ -36,7 +36,10 @@ function urgencyClass(daysRemaining: number): string {
 }
 
 function dateTypeLabel(type: string): string {
-  return type.charAt(0) + type.slice(1).toLowerCase();
+  return type
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join("-");
 }
 
 export function UpcomingCourtDatesWidget({

@@ -531,6 +531,18 @@ public class TrustTransactionService {
   public TrustTransactionResponse approveTransaction(UUID transactionId, UUID approverId) {
     moduleGuard.requireModule(MODULE_ID);
 
+    if (!RequestScopes.hasCapability("APPROVE_TRUST_PAYMENT")) {
+      throw new ForbiddenException(
+          "Missing capability", "Missing required capability: APPROVE_TRUST_PAYMENT");
+    }
+
+    // Validate approverId matches the authenticated member
+    var authenticatedMemberId = RequestScopes.requireMemberId();
+    if (!approverId.equals(authenticatedMemberId)) {
+      throw new ForbiddenException(
+          "Invalid approver", "Approver ID does not match the authenticated member");
+    }
+
     var transaction =
         transactionRepository
             .findByIdForUpdate(transactionId)
@@ -540,11 +552,6 @@ public class TrustTransactionService {
       throw new InvalidStateException(
           "Cannot approve transaction",
           "Transaction must be in AWAITING_APPROVAL status to be approved");
-    }
-
-    if (!RequestScopes.hasCapability("APPROVE_TRUST_PAYMENT")) {
-      throw new ForbiddenException(
-          "Missing capability", "Missing required capability: APPROVE_TRUST_PAYMENT");
     }
 
     if (approverId.equals(transaction.getRecordedBy())) {
@@ -604,7 +611,7 @@ public class TrustTransactionService {
 
     auditService.log(
         AuditEventBuilder.builder()
-            .eventType("trust_payment.approved")
+            .eventType("trust_" + transaction.getTransactionType().toLowerCase() + ".approved")
             .entityType("trust_transaction")
             .entityId(transaction.getId())
             .details(
@@ -624,20 +631,24 @@ public class TrustTransactionService {
       UUID transactionId, UUID rejecterId, String reason) {
     moduleGuard.requireModule(MODULE_ID);
 
+    if (!RequestScopes.hasCapability("APPROVE_TRUST_PAYMENT")) {
+      throw new ForbiddenException(
+          "Missing capability", "Missing required capability: APPROVE_TRUST_PAYMENT");
+    }
+
+    if (reason == null || reason.isBlank()) {
+      throw new InvalidStateException("Invalid rejection", "Rejection reason must not be blank");
+    }
+
     var transaction =
         transactionRepository
-            .findById(transactionId)
+            .findByIdForUpdate(transactionId)
             .orElseThrow(() -> new ResourceNotFoundException("TrustTransaction", transactionId));
 
     if (!"AWAITING_APPROVAL".equals(transaction.getStatus())) {
       throw new InvalidStateException(
           "Cannot reject transaction",
           "Transaction must be in AWAITING_APPROVAL status to be rejected");
-    }
-
-    if (!RequestScopes.hasCapability("APPROVE_TRUST_PAYMENT")) {
-      throw new ForbiddenException(
-          "Missing capability", "Missing required capability: APPROVE_TRUST_PAYMENT");
     }
 
     transaction.setRejectedBy(rejecterId);
@@ -648,7 +659,7 @@ public class TrustTransactionService {
 
     auditService.log(
         AuditEventBuilder.builder()
-            .eventType("trust_payment.rejected")
+            .eventType("trust_" + transaction.getTransactionType().toLowerCase() + ".rejected")
             .entityType("trust_transaction")
             .entityId(transaction.getId())
             .details(

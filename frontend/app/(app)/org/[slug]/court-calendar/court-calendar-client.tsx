@@ -290,8 +290,10 @@ export function CourtCalendarClient({
               <div>
                 <dt className="text-slate-500 dark:text-slate-400">Type</dt>
                 <dd className="text-slate-700 dark:text-slate-300">
-                  {selectedCourtDate.dateType.charAt(0) +
-                    selectedCourtDate.dateType.slice(1).toLowerCase()}
+                  {selectedCourtDate.dateType
+                    .split("_")
+                    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                    .join("-")}
                 </dd>
               </div>
               <div>

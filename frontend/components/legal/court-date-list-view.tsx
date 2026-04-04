@@ -44,7 +44,10 @@ function statusBadge(status: CourtDateStatus) {
 }
 
 function dateTypeLabel(type: string): string {
-  return type.charAt(0) + type.slice(1).toLowerCase();
+  return type
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join("-");
 }
 
 function canTransition(status: CourtDateStatus): {

@@ -5,7 +5,7 @@
 - **QA Position**: ALL_TRACKS_COMPLETE (Cycle 1). T0, T7, T1 (all), T2.1, T3.1–T3.2, T4 (all, API), T5 (all, API), T6 (BLOCKED), T8 (partial), T9 (SKIP — job not run), T10 (all, API+UI) complete.
 - **Cycle**: 1
 - **Dev Stack**: READY
-- **NEEDS_REBUILD**: false
+- **NEEDS_REBUILD**: true
 - **Branch**: `bugfix_cycle_2026-04-04`
 - **Scenario**: `qa/testplan/phase55-legal-foundations.md`
 - **Focus**: Legal foundations — matter types, practice areas, legal entity management, conflict checks, court/jurisdiction registry, legal calendar, trust accounting foundations
@@ -74,7 +74,7 @@ TOKEN=$(curl -sf -X POST "http://localhost:8180/realms/docteams/protocol/openid-
 | ID | Summary | Severity | Status | Owner | PR | Notes |
 |----|---------|----------|--------|-------|----|-------|
 | GAP-P55-001 | Demo provisioning `addMember` fails in KC 26.5.0 | major | WONT_FIX | Backend | — | KC 26.5 Organizations API changed. `POST /organizations/{orgId}/members` requires invite flow. Needs KC API research. See `fix-specs/GAP-P55-001.md`. |
-| GAP-P55-002 | Prescription tracker does not detect expired status | major | SPEC_READY | Backend | — | No dynamic status evaluation at query time. Fix: compute effective status in `buildResponse()`. See `fix-specs/GAP-P55-002.md`. |
+| GAP-P55-002 | Prescription tracker does not detect expired status | major | FIXED | Backend | PR #912 | Added `computeEffectiveStatus()` in `PrescriptionTrackerService.buildResponse()`. Dynamically evaluates prescription date against today: EXPIRED if past/today, WARNED if within 90 days (matches `PRESCRIPTION_LOOKAHEAD_DAYS`), terminal states preserved. 3 new tests added. |
 | GAP-P55-003 | Direct URL for gated modules shows generic error | minor | SPEC_READY | Frontend | — | Pages use `notFound()` for disabled modules. Fix: render module-specific "not available" message instead. See `fix-specs/GAP-P55-003.md`. |
 | GAP-P55-004 | Court Calendar missing date range and client filters | minor | SPEC_READY | Frontend | — | Backend supports all filters. UI only wires status+type. Fix: add date range inputs + client search. See `fix-specs/GAP-P55-004.md`. |
 | GAP-P55-005 | Court date type badge shows raw enum with underscore | cosmetic | SPEC_READY | Frontend | — | `dateTypeLabel()` doesn't handle underscores. Fix: split on `_`, capitalize each word, join with `-`. Grouped with GAP-P55-014. See `fix-specs/GAP-P55-005+014.md`. |
@@ -126,3 +126,4 @@ TOKEN=$(curl -sf -X POST "http://localhost:8180/realms/docteams/protocol/openid-
 | 2026-04-04T02:10Z | Dev | **GAP-P55-009 FIXED** (PR #909, merged). Changed `fetchUpcoming()` URL from `/api/court-calendar/upcoming` to `/api/court-dates/upcoming` in `frontend/app/(app)/org/[slug]/court-calendar/actions.ts`. 1 file, 1 line changed. Build green, 1800 tests pass. |
 | 2026-04-04T02:20Z | Dev | **GAP-P55-006+011 FIXED** (PR #910, merged). Added `?? []` defensive defaults in 4 files: `fetchProjects()` in court-calendar/actions.ts and conflict-check/actions.ts, `fetchCustomers()` in conflict-check/actions.ts, plus client-side state setters in CreateCourtDateDialog and ConflictCheckForm. 4 files, 6 lines changed. Build green, all tests pass. |
 | 2026-04-04T02:35Z | Dev | **GAP-P55-012 FIXED** (PR #911, merged). Changed `fetchTariffSchedules()` and `fetchTariffItems()` to return plain arrays instead of paginated response objects. Updated 5 consumer files (page.tsx, tariff-browser-client.tsx, tariff-item-browser.tsx, tariff-line-dialog.tsx, actions.ts) and 2 test files. Removed unused `PaginatedResponse` interface. 7 files changed (-132/+100 lines). Build green, 291 test files / 1800 tests pass. |
+| 2026-04-04T02:45Z | Dev | **GAP-P55-002 FIXED** (PR #912, merged). Added `computeEffectiveStatus()` in `PrescriptionTrackerService.buildResponse()` to dynamically evaluate prescription status at query time. EXPIRED if prescriptionDate <= today, WARNED if within 90 days (matches CourtDateReminderJob threshold), terminal states (INTERRUPTED/EXPIRED) preserved. Updated 2 existing tests to use relative dates (time-proof), added 3 new tests (expired, warned, terminal-state preservation). 2 files changed (+123/-16 lines). 13 Prescription tests pass. NEEDS_REBUILD: backend. |

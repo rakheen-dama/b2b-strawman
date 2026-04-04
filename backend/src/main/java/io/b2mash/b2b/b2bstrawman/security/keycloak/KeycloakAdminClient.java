@@ -109,7 +109,7 @@ public class KeycloakAdminClient {
         .uri("/organizations/{orgId}/members", orgId)
         .header("Authorization", "Bearer " + getAdminToken())
         .contentType(MediaType.APPLICATION_JSON)
-        .body(Map.of("id", userId))
+        .body("\"" + userId + "\"")
         .retrieve()
         .toBodilessEntity();
   }

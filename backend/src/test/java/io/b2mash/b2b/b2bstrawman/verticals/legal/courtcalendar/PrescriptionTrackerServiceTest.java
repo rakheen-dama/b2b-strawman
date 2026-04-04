@@ -103,24 +103,24 @@ class PrescriptionTrackerServiceTest {
 
   @Test
   void create_calculatesDateAndSavesWithRunningStatus() {
+    // Use a cause-of-action date that puts prescription date > 90 days in the future
+    var causeDate = LocalDate.now().minusYears(2);
+    var expectedPrescriptionDate = causeDate.plusYears(3);
+
     runInTenant(
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
                   var request =
                       new CreatePrescriptionTrackerRequest(
-                          projectId,
-                          LocalDate.of(2023, 6, 15),
-                          "GENERAL_3Y",
-                          null,
-                          "Motor vehicle accident claim");
+                          projectId, causeDate, "GENERAL_3Y", null, "Motor vehicle accident claim");
 
                   var response = prescriptionTrackerService.create(request, memberId);
 
                   assertThat(response.status()).isEqualTo("RUNNING");
                   assertThat(response.prescriptionType()).isEqualTo("GENERAL_3Y");
-                  assertThat(response.causeOfActionDate()).isEqualTo(LocalDate.of(2023, 6, 15));
-                  assertThat(response.prescriptionDate()).isEqualTo(LocalDate.of(2026, 6, 15));
+                  assertThat(response.causeOfActionDate()).isEqualTo(causeDate);
+                  assertThat(response.prescriptionDate()).isEqualTo(expectedPrescriptionDate);
                   assertThat(response.customerId()).isEqualTo(customerId);
                   assertThat(response.projectName()).isEqualTo("MVA Claim - Smith");
                   assertThat(response.customerName()).isEqualTo("Prescription Test Corp");
@@ -131,29 +131,30 @@ class PrescriptionTrackerServiceTest {
 
   @Test
   void update_recalculatesPrescriptionDate() {
+    // Use dates that keep prescription > 90 days in the future
+    var causeDate = LocalDate.now().minusYears(2);
+    var expectedInitialDate = causeDate.plusYears(3);
+    var expectedUpdatedDate = causeDate.plusYears(6);
+
     runInTenant(
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
                   var createRequest =
                       new CreatePrescriptionTrackerRequest(
-                          projectId,
-                          LocalDate.of(2020, 1, 1),
-                          "GENERAL_3Y",
-                          null,
-                          "Original claim");
+                          projectId, causeDate, "GENERAL_3Y", null, "Original claim");
 
                   var created = prescriptionTrackerService.create(createRequest, memberId);
-                  assertThat(created.prescriptionDate()).isEqualTo(LocalDate.of(2023, 1, 1));
+                  assertThat(created.prescriptionDate()).isEqualTo(expectedInitialDate);
 
                   var updateRequest =
                       new UpdatePrescriptionTrackerRequest(
-                          LocalDate.of(2020, 1, 1), "DEBT_6Y", null, "Changed to debt claim");
+                          causeDate, "DEBT_6Y", null, "Changed to debt claim");
 
                   var updated = prescriptionTrackerService.update(created.id(), updateRequest);
 
                   assertThat(updated.prescriptionType()).isEqualTo("DEBT_6Y");
-                  assertThat(updated.prescriptionDate()).isEqualTo(LocalDate.of(2026, 1, 1));
+                  assertThat(updated.prescriptionDate()).isEqualTo(expectedUpdatedDate);
                   assertThat(updated.notes()).isEqualTo("Changed to debt claim");
                 }));
   }
@@ -266,6 +267,85 @@ class PrescriptionTrackerServiceTest {
                   assertThat(response.customYears()).isEqualTo(10);
                   assertThat(response.prescriptionDate()).isEqualTo(LocalDate.of(2032, 8, 20));
                 }));
+  }
+
+  @Test
+  void getById_returnsExpiredStatus_whenPrescriptionDateIsInThePast() {
+    // Cause of action date far enough in past that prescription date is also past
+    var causeDate = LocalDate.now().minusYears(4);
+    final UUID[] trackerId = new UUID[1];
+
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var request =
+                      new CreatePrescriptionTrackerRequest(
+                          projectId, causeDate, "GENERAL_3Y", null, "Past prescription");
+                  var created = prescriptionTrackerService.create(request, memberId);
+                  trackerId[0] = created.id();
+                  // DB status is RUNNING, but prescription date is in the past
+                  assertThat(created.status()).isEqualTo("EXPIRED");
+                }));
+
+    runInTenant(
+        () -> {
+          var fetched = prescriptionTrackerService.getById(trackerId[0]);
+          assertThat(fetched.status()).isEqualTo("EXPIRED");
+        });
+  }
+
+  @Test
+  void getById_returnsWarnedStatus_whenPrescriptionDateIsWithin90Days() {
+    // Cause of action date so prescription falls within 90 days from today
+    var prescriptionTarget = LocalDate.now().plusDays(45);
+    var causeDate = prescriptionTarget.minusYears(3);
+    final UUID[] trackerId = new UUID[1];
+
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var request =
+                      new CreatePrescriptionTrackerRequest(
+                          projectId, causeDate, "GENERAL_3Y", null, "Approaching prescription");
+                  var created = prescriptionTrackerService.create(request, memberId);
+                  trackerId[0] = created.id();
+                  assertThat(created.status()).isEqualTo("WARNED");
+                }));
+
+    runInTenant(
+        () -> {
+          var fetched = prescriptionTrackerService.getById(trackerId[0]);
+          assertThat(fetched.status()).isEqualTo("WARNED");
+        });
+  }
+
+  @Test
+  void getById_preservesInterruptedStatus_evenWhenPrescriptionDateIsPast() {
+    var causeDate = LocalDate.now().minusYears(4);
+    final UUID[] trackerId = new UUID[1];
+
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var request =
+                      new CreatePrescriptionTrackerRequest(
+                          projectId, causeDate, "GENERAL_3Y", null, "Interrupted tracker");
+                  var created = prescriptionTrackerService.create(request, memberId);
+                  prescriptionTrackerService.interrupt(
+                      created.id(),
+                      new InterruptRequest(LocalDate.now().minusMonths(6), "Service of summons"));
+                  trackerId[0] = created.id();
+                }));
+
+    runInTenant(
+        () -> {
+          var fetched = prescriptionTrackerService.getById(trackerId[0]);
+          // INTERRUPTED is terminal — should NOT be overridden to EXPIRED
+          assertThat(fetched.status()).isEqualTo("INTERRUPTED");
+        });
   }
 
   // --- Helpers ---

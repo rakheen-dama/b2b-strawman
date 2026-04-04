@@ -11,6 +11,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -256,7 +257,33 @@ public class PrescriptionTrackerService {
 
   // --- Private Helpers ---
 
+  /**
+   * Warning threshold in days — matches {@link CourtDateReminderJob#PRESCRIPTION_LOOKAHEAD_DAYS}.
+   */
+  private static final int PRESCRIPTION_WARNING_DAYS = 90;
+
   private static final Set<String> TERMINAL_STATES = Set.of("INTERRUPTED", "EXPIRED");
+
+  /**
+   * Computes the effective prescription status dynamically at query time. Terminal states
+   * (INTERRUPTED, EXPIRED) are returned as-is. For RUNNING/WARNED trackers, the prescription date
+   * is compared against today to determine if the tracker has expired or entered the warning
+   * window.
+   */
+  private String computeEffectiveStatus(PrescriptionTracker entity) {
+    if (TERMINAL_STATES.contains(entity.getStatus())) {
+      return entity.getStatus();
+    }
+    LocalDate today = LocalDate.now();
+    if (!entity.getPrescriptionDate().isAfter(today)) {
+      return "EXPIRED";
+    }
+    long daysRemaining = ChronoUnit.DAYS.between(today, entity.getPrescriptionDate());
+    if (daysRemaining <= PRESCRIPTION_WARNING_DAYS) {
+      return "WARNED";
+    }
+    return entity.getStatus();
+  }
 
   private void requireMutableState(PrescriptionTracker tracker) {
     if (TERMINAL_STATES.contains(tracker.getStatus())) {
@@ -317,7 +344,7 @@ public class PrescriptionTrackerService {
         entity.getPrescriptionDate(),
         entity.getInterruptionDate(),
         entity.getInterruptionReason(),
-        entity.getStatus(),
+        computeEffectiveStatus(entity),
         entity.getNotes(),
         entity.getCreatedBy(),
         entity.getCreatedAt(),

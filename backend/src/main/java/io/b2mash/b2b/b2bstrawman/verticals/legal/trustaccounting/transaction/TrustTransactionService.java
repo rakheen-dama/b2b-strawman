@@ -7,11 +7,13 @@ import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceService;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceStatus;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountStatus;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionApprovalEvent;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
 import jakarta.persistence.EntityManager;
@@ -22,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,9 +38,11 @@ public class TrustTransactionService {
   private final TrustAccountRepository trustAccountRepository;
   private final CustomerRepository customerRepository;
   private final InvoiceRepository invoiceRepository;
+  private final InvoiceService invoiceService;
   private final VerticalModuleGuard moduleGuard;
   private final AuditService auditService;
   private final EntityManager entityManager;
+  private final ApplicationEventPublisher eventPublisher;
 
   public TrustTransactionService(
       TrustTransactionRepository transactionRepository,
@@ -45,17 +50,21 @@ public class TrustTransactionService {
       TrustAccountRepository trustAccountRepository,
       CustomerRepository customerRepository,
       InvoiceRepository invoiceRepository,
+      InvoiceService invoiceService,
       VerticalModuleGuard moduleGuard,
       AuditService auditService,
-      EntityManager entityManager) {
+      EntityManager entityManager,
+      ApplicationEventPublisher eventPublisher) {
     this.transactionRepository = transactionRepository;
     this.ledgerCardRepository = ledgerCardRepository;
     this.trustAccountRepository = trustAccountRepository;
     this.customerRepository = customerRepository;
     this.invoiceRepository = invoiceRepository;
+    this.invoiceService = invoiceService;
     this.moduleGuard = moduleGuard;
     this.auditService = auditService;
     this.entityManager = entityManager;
+    this.eventPublisher = eventPublisher;
   }
 
   // --- DTO Records ---
@@ -389,6 +398,17 @@ public class TrustTransactionService {
                     "reference", request.reference()))
             .build());
 
+    eventPublisher.publishEvent(
+        TrustTransactionApprovalEvent.awaitingApproval(
+            saved.getId(),
+            trustAccountId,
+            "PAYMENT",
+            request.amount(),
+            request.customerId(),
+            memberId,
+            RequestScopes.getTenantIdOrNull(),
+            RequestScopes.getOrgIdOrNull()));
+
     return toResponse(saved);
   }
 
@@ -466,6 +486,17 @@ public class TrustTransactionService {
                     "reference", request.reference()))
             .build());
 
+    eventPublisher.publishEvent(
+        TrustTransactionApprovalEvent.awaitingApproval(
+            saved.getId(),
+            trustAccountId,
+            "FEE_TRANSFER",
+            request.amount(),
+            request.customerId(),
+            memberId,
+            RequestScopes.getTenantIdOrNull(),
+            RequestScopes.getOrgIdOrNull()));
+
     return toResponse(saved);
   }
 
@@ -522,10 +553,21 @@ public class TrustTransactionService {
                     "reference", request.reference()))
             .build());
 
+    eventPublisher.publishEvent(
+        TrustTransactionApprovalEvent.awaitingApproval(
+            saved.getId(),
+            trustAccountId,
+            "REFUND",
+            request.amount(),
+            request.customerId(),
+            memberId,
+            RequestScopes.getTenantIdOrNull(),
+            RequestScopes.getOrgIdOrNull()));
+
     return toResponse(saved);
   }
 
-  // --- 441.4: Approve Transaction (Single Mode) ---
+  // --- 441.4+441.7+441.8: Approve Transaction (Single + Dual Mode) ---
 
   @Transactional
   public TrustTransactionResponse approveTransaction(UUID transactionId, UUID approverId) {
@@ -554,6 +596,30 @@ public class TrustTransactionService {
           "Transaction must be in AWAITING_APPROVAL status to be approved");
     }
 
+    // Load trust account to determine approval mode
+    var account =
+        trustAccountRepository
+            .findById(transaction.getTrustAccountId())
+            .orElseThrow(
+                () ->
+                    new ResourceNotFoundException("TrustAccount", transaction.getTrustAccountId()));
+
+    // Determine if dual approval is required (441.7 + 441.8)
+    boolean dualRequired =
+        account.getRequireDualApproval()
+            && (account.getPaymentApprovalThreshold() == null
+                || transaction.getAmount().compareTo(account.getPaymentApprovalThreshold()) >= 0);
+
+    if (dualRequired) {
+      return approveDualMode(transaction, approverId);
+    } else {
+      return approveSingleMode(transaction, approverId);
+    }
+  }
+
+  private TrustTransactionResponse approveSingleMode(
+      TrustTransaction transaction, UUID approverId) {
+    // Single mode: recorder cannot be the sole approver
     if (approverId.equals(transaction.getRecordedBy())) {
       throw new InvalidStateException(
           "Self-approval not allowed",
@@ -561,6 +627,58 @@ public class TrustTransactionService {
               + " APPROVE_TRUST_PAYMENT capability must approve this transaction.");
     }
 
+    performApprovalCompletion(transaction, approverId, false);
+    return toResponse(transaction);
+  }
+
+  private TrustTransactionResponse approveDualMode(TrustTransaction transaction, UUID approverId) {
+    if (transaction.getApprovedBy() == null) {
+      // First approval in dual mode
+      // Recorder CAN be the first approver in dual mode (relaxed self-approval)
+      transaction.setApprovedBy(approverId);
+      transaction.setApprovedAt(Instant.now());
+      // Status stays AWAITING_APPROVAL — second approval still needed
+      transactionRepository.save(transaction);
+
+      auditService.log(
+          AuditEventBuilder.builder()
+              .eventType(
+                  "trust_" + transaction.getTransactionType().toLowerCase() + ".first_approved")
+              .entityType("trust_transaction")
+              .entityId(transaction.getId())
+              .details(
+                  Map.of(
+                      "transaction_type", transaction.getTransactionType(),
+                      "amount", transaction.getAmount().toString(),
+                      "first_approved_by", approverId.toString()))
+              .build());
+
+      return toResponse(transaction);
+    } else {
+      // Second approval in dual mode
+      // Must differ from first approver.
+      // This also implicitly prevents the recorder from being both approvers:
+      // if the recorder was the first approver, this check blocks them from also being
+      // the second approver (since approverId would equal approvedBy).
+      if (approverId.equals(transaction.getApprovedBy())) {
+        throw new InvalidStateException(
+            "Duplicate approver", "Second approver must be different from the first approver");
+      }
+
+      transaction.setSecondApprovedBy(approverId);
+      transaction.setSecondApprovedAt(Instant.now());
+
+      performApprovalCompletion(transaction, approverId, true);
+      return toResponse(transaction);
+    }
+  }
+
+  /**
+   * Performs the common approval completion logic: balance check, ledger update, fee transfer
+   * invoice integration, status transition, audit, and event publishing.
+   */
+  private void performApprovalCompletion(
+      TrustTransaction transaction, UUID approverId, boolean isDualMode) {
     // Check balance for debit types
     if (DEBIT_TYPES.contains(transaction.getTransactionType())) {
       var customer =
@@ -602,10 +720,32 @@ public class TrustTransactionService {
       }
 
       ledgerCardRepository.save(ledgerCard);
+
+      // 441.9: Fee transfer invoice integration — mark invoice as PAID on approval.
+      // Use fromWebhook=true to skip PSP gateway call: a trust fee transfer is an internal
+      // accounting operation, not an external payment through a payment service provider.
+      // Pre-check: the webhook path silently accepts already-PAID invoices (idempotent),
+      // but trust fee transfers must reject this to prevent double debit from trust balance.
+      if ("FEE_TRANSFER".equals(transaction.getTransactionType())
+          && transaction.getInvoiceId() != null) {
+        var invoice =
+            invoiceRepository
+                .findById(transaction.getInvoiceId())
+                .orElseThrow(
+                    () -> new ResourceNotFoundException("Invoice", transaction.getInvoiceId()));
+        if (invoice.getStatus() == InvoiceStatus.PAID) {
+          throw new InvalidStateException(
+              "Invoice already paid",
+              "Cannot complete fee transfer — invoice is already in PAID status");
+        }
+        invoiceService.recordPayment(transaction.getInvoiceId(), transaction.getReference(), true);
+      }
     }
 
-    transaction.setApprovedBy(approverId);
-    transaction.setApprovedAt(Instant.now());
+    if (!isDualMode) {
+      transaction.setApprovedBy(approverId);
+      transaction.setApprovedAt(Instant.now());
+    }
     transaction.setStatus("APPROVED");
     transactionRepository.save(transaction);
 
@@ -621,7 +761,18 @@ public class TrustTransactionService {
                     "approved_by", approverId.toString()))
             .build());
 
-    return toResponse(transaction);
+    // Publish approval event for notifications
+    eventPublisher.publishEvent(
+        TrustTransactionApprovalEvent.approved(
+            transaction.getId(),
+            transaction.getTrustAccountId(),
+            transaction.getTransactionType(),
+            transaction.getAmount(),
+            transaction.getCustomerId(),
+            transaction.getRecordedBy(),
+            approverId,
+            RequestScopes.getTenantIdOrNull(),
+            RequestScopes.getOrgIdOrNull()));
   }
 
   // --- 441.5: Reject Transaction ---
@@ -669,6 +820,18 @@ public class TrustTransactionService {
                     "rejected_by", rejecterId.toString(),
                     "reason", reason))
             .build());
+
+    eventPublisher.publishEvent(
+        TrustTransactionApprovalEvent.rejected(
+            transaction.getId(),
+            transaction.getTrustAccountId(),
+            transaction.getTransactionType(),
+            transaction.getAmount(),
+            transaction.getCustomerId(),
+            transaction.getRecordedBy(),
+            rejecterId,
+            RequestScopes.getTenantIdOrNull(),
+            RequestScopes.getOrgIdOrNull()));
 
     return toResponse(transaction);
   }

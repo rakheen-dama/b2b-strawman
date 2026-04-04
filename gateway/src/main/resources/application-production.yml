@@ -16,3 +16,8 @@ server:
       cookie:
         secure: true
         same-site: lax
+
+management:
+  health:
+    redis:
+      enabled: true

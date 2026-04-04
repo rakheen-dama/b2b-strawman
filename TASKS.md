@@ -496,6 +496,22 @@
 | 436 | P2 Features & Vertical Guides | Docs (Content) | 432 | M | 436A, 436B | **Done** (PRs #905, #906) |
 | 437 | Frontend Contextual Deep-Links | Frontend | 432 | M | 437A, 437B | **Done** (PRs #907, #908) |
 
+| **Phase 60 — Trust Accounting (Legal Practice Act Section 86)** | | | | | | See [tasks/phase60-trust-accounting.md](tasks/phase60-trust-accounting.md) |
+| 438 | Foundation: V85 Migration + Module Registration + RBAC Capabilities | Backend | -- | M | 438A, 438B | |
+| 439 | TrustAccount + LpffRate Entity + Service + Controller | Backend | 438 | M | 439A, 439B | |
+| 440 | TrustTransaction + ClientLedgerCard Entity + Deposit/Transfer Service | Backend | 439 | L | 440A, 440B | |
+| 441 | Approval Workflow + Payment/FeeTransfer/Refund Recording | Backend | 440 | L | 441A, 441B | |
+| 442 | Transaction Controller + Approval Endpoints + Client Ledger Controller | Backend | 441 | M | 442A, 442B | |
+| 443 | Bank Statement Import + CSV Parsers | Backend | 439 | M | 443A, 443B | |
+| 444 | Auto-Matching + Manual Matching + Reconciliation | Backend | 440, 443 | L | 444A, 444B | |
+| 445 | Interest Calculation + Posting | Backend | 440 | L | 445A, 445B | |
+| 446 | Trust Investments | Backend | 441 | M | 446A, 446B | |
+| 447 | Trust Reports (Section 35) + Event/Notification Handlers | Backend | 442, 444, 445, 446 | M | 447A, 447B | |
+| 448 | Frontend: Trust Dashboard + Transaction Entry + Approval UX | Frontend | 442 | L | 448A, 448B | |
+| 449 | Frontend: Client Ledger + Reconciliation Split-Pane | Frontend | 442, 444 | L | 449A, 449B | |
+| 450 | Frontend: Interest + Investments + Reports Pages | Frontend | 445, 446, 447 | M | 450A, 450B | |
+| 451 | Frontend: Matter/Customer Trust Tabs + Settings + Sidebar + Coexistence Tests | Frontend | 448, 449, 450 | M | 451A, 451B | |
+
 ---
 
 See [tasks/reference.md](tasks/reference.md) for the Epic Dependency Graph, Implementation Order, and Risk Register.

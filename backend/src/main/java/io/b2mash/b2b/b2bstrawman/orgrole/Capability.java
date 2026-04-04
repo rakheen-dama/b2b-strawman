@@ -24,7 +24,8 @@ public enum Capability {
   APPROVE_TRUST_PAYMENT;
 
   /** Capabilities restricted to the owner role — admin does NOT inherit these. */
-  public static final Set<String> OWNER_ONLY = Set.of(MANAGE_COMPLIANCE_DESTRUCTIVE.name());
+  public static final Set<String> OWNER_ONLY =
+      Set.of(MANAGE_COMPLIANCE_DESTRUCTIVE.name(), APPROVE_TRUST_PAYMENT.name());
 
   public static final Set<String> ALL_NAMES =
       Arrays.stream(values()).map(Enum::name).collect(Collectors.toUnmodifiableSet());

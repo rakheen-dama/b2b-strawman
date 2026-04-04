@@ -88,10 +88,11 @@ class TrustAccountingMigrationTest {
 
   @Test
   void v85ClientLedgerCardBalanceConstraintPreventsNegative() throws Exception {
-    // Insert a valid trust account in the tenant schema first
-    jdbcTemplate.execute("SET search_path TO " + tenantSchema + ", public");
+    // Insert a valid trust account using schema-qualified table name
     jdbcTemplate.update(
-        "INSERT INTO trust_accounts "
+        "INSERT INTO "
+            + tenantSchema
+            + ".trust_accounts "
             + "(id, account_name, bank_name, branch_code, account_number, "
             + " account_type, is_primary, require_dual_approval, status, opened_date, "
             + " created_at, updated_at) "
@@ -103,12 +104,16 @@ class TrustAccountingMigrationTest {
     assertThatThrownBy(
             () ->
                 jdbcTemplate.update(
-                    "INSERT INTO client_ledger_cards "
+                    "INSERT INTO "
+                        + tenantSchema
+                        + ".client_ledger_cards "
                         + "(id, trust_account_id, customer_id, balance, total_deposits, "
                         + " total_payments, total_fee_transfers, total_interest_credited, "
                         + " created_at, updated_at) "
                         + "SELECT gen_random_uuid(), id, gen_random_uuid(), -1, 0, 0, 0, 0, now(), now() "
-                        + "FROM trust_accounts LIMIT 1"))
+                        + "FROM "
+                        + tenantSchema
+                        + ".trust_accounts LIMIT 1"))
         .isInstanceOf(DataIntegrityViolationException.class);
   }
 

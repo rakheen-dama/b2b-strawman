@@ -97,6 +97,8 @@ public class TrustTransactionService {
   @Transactional
   public TrustTransactionResponse recordDeposit(UUID trustAccountId, RecordDepositRequest request) {
     moduleGuard.requireModule(MODULE_ID);
+    validateAmount(request.amount());
+    validateReference(request.reference());
 
     var account =
         trustAccountRepository
@@ -130,10 +132,11 @@ public class TrustTransactionService {
 
     var saved = transactionRepository.save(transaction);
 
-    // Upsert client ledger card
+    // Upsert client ledger card — use FOR UPDATE lock to prevent lost updates on concurrent
+    // deposits
     var ledgerCard =
         ledgerCardRepository
-            .findByTrustAccountIdAndCustomerId(trustAccountId, request.customerId())
+            .findByAccountAndCustomerForUpdate(trustAccountId, request.customerId())
             .orElseGet(() -> new ClientLedgerCard(trustAccountId, request.customerId()));
 
     ledgerCard.addDeposit(request.amount(), request.transactionDate());
@@ -159,6 +162,8 @@ public class TrustTransactionService {
   public List<TrustTransactionResponse> recordTransfer(
       UUID trustAccountId, RecordTransferRequest request) {
     moduleGuard.requireModule(MODULE_ID);
+    validateAmount(request.amount());
+    validateReference(request.reference());
 
     var account =
         trustAccountRepository
@@ -298,6 +303,19 @@ public class TrustTransactionService {
   }
 
   // --- Private Helpers ---
+
+  private void validateAmount(BigDecimal amount) {
+    if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+      throw new InvalidStateException(
+          "Invalid amount", "Amount must be a positive value, got: " + amount);
+    }
+  }
+
+  private void validateReference(String reference) {
+    if (reference == null || reference.isBlank()) {
+      throw new InvalidStateException("Invalid reference", "Reference must not be blank");
+    }
+  }
 
   private TrustTransactionResponse toResponse(TrustTransaction entity) {
     return new TrustTransactionResponse(

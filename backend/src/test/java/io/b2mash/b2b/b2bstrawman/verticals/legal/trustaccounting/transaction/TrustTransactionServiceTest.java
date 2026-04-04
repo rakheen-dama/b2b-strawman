@@ -324,11 +324,13 @@ class TrustTransactionServiceTest {
 
                   var history =
                       clientLedgerService.getClientTransactionHistory(
-                          customer.getId(), trustAccountId);
+                          customer.getId(),
+                          trustAccountId,
+                          org.springframework.data.domain.Pageable.unpaged());
 
-                  assertThat(history).isNotEmpty();
-                  assertThat(history.get(0).transactionType()).isEqualTo("DEPOSIT");
-                  assertThat(history.get(0).amount())
+                  assertThat(history.getContent()).isNotEmpty();
+                  assertThat(history.getContent().get(0).transactionType()).isEqualTo("DEPOSIT");
+                  assertThat(history.getContent().get(0).amount())
                       .isEqualByComparingTo(new BigDecimal("7500.00"));
                 }));
   }
@@ -616,6 +618,21 @@ class TrustTransactionServiceTest {
     assertThat(firstFailed || secondFailed)
         .as("At least one concurrent transfer should fail due to insufficient balance")
         .isTrue();
+
+    // Verify final ledger balance is consistent: initial 5000 minus one successful 3000 transfer
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var sourceLedger =
+                      ledgerCardRepository
+                          .findByTrustAccountIdAndCustomerId(trustAccountId, sourceId[0])
+                          .orElseThrow();
+
+                  assertThat(sourceLedger.getBalance())
+                      .as("Source balance should be 2000 (5000 - one successful 3000 transfer)")
+                      .isEqualByComparingTo(new BigDecimal("2000.00"));
+                }));
   }
 
   @Test

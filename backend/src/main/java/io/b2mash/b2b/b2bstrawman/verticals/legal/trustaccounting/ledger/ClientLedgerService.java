@@ -7,7 +7,6 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.Tru
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -71,15 +70,14 @@ public class ClientLedgerService {
   }
 
   @Transactional(readOnly = true)
-  public List<TrustTransactionResponse> getClientTransactionHistory(
-      UUID customerId, UUID trustAccountId) {
+  public Page<TrustTransactionResponse> getClientTransactionHistory(
+      UUID customerId, UUID trustAccountId, Pageable pageable) {
     moduleGuard.requireModule(MODULE_ID);
 
     return transactionRepository
-        .findByCustomerIdAndTrustAccountIdOrderByTransactionDateDesc(customerId, trustAccountId)
-        .stream()
-        .map(this::toTransactionResponse)
-        .toList();
+        .findByCustomerIdAndTrustAccountIdOrderByTransactionDateDesc(
+            customerId, trustAccountId, pageable)
+        .map(this::toTransactionResponse);
   }
 
   // --- Private Helpers ---

@@ -14,5 +14,8 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
   List<TrustTransaction> findByCustomerIdAndTrustAccountIdOrderByTransactionDateDesc(
       UUID customerId, UUID trustAccountId);
 
+  Page<TrustTransaction> findByCustomerIdAndTrustAccountIdOrderByTransactionDateDesc(
+      UUID customerId, UUID trustAccountId, Pageable pageable);
+
   List<TrustTransaction> findByStatusAndTrustAccountId(String status, UUID trustAccountId);
 }

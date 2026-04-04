@@ -11,6 +11,7 @@ import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Objects;
 import java.util.UUID;
 
 @Entity
@@ -71,17 +72,34 @@ public class ClientLedgerCard {
   }
 
   public void addDeposit(BigDecimal amount, LocalDate transactionDate) {
+    Objects.requireNonNull(amount, "amount must not be null");
+    if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+      throw new IllegalArgumentException("amount must be positive");
+    }
     this.balance = this.balance.add(amount);
     this.totalDeposits = this.totalDeposits.add(amount);
     this.lastTransactionDate = transactionDate;
   }
 
+  /**
+   * Subtracts the given amount from the balance. Used for inter-client transfers. Running totals
+   * (totalPayments, totalFeeTransfers) are NOT updated here — those are updated by type-specific
+   * methods added in future slices (PAYMENT, FEE_TRANSFER transaction types).
+   */
   public void debitBalance(BigDecimal amount, LocalDate transactionDate) {
+    Objects.requireNonNull(amount, "amount must not be null");
+    if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+      throw new IllegalArgumentException("amount must be positive");
+    }
     this.balance = this.balance.subtract(amount);
     this.lastTransactionDate = transactionDate;
   }
 
   public void creditBalance(BigDecimal amount, LocalDate transactionDate) {
+    Objects.requireNonNull(amount, "amount must not be null");
+    if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+      throw new IllegalArgumentException("amount must be positive");
+    }
     this.balance = this.balance.add(amount);
     this.lastTransactionDate = transactionDate;
   }

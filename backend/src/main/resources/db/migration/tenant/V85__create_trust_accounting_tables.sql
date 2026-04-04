@@ -75,10 +75,10 @@ CREATE TABLE IF NOT EXISTS trust_transactions (
     trust_account_id            UUID NOT NULL REFERENCES trust_accounts(id),
     transaction_type            VARCHAR(20) NOT NULL,
     amount                      DECIMAL(15,2) NOT NULL,
-    customer_id                 UUID,  -- NULL only for INTEREST_LPFF (firm-level outflow, not client-specific)
-    project_id                  UUID,
-    counterparty_customer_id    UUID,
-    invoice_id                  UUID,
+    customer_id                 UUID REFERENCES customers(id),  -- NULL only for INTEREST_LPFF (firm-level outflow, not client-specific)
+    project_id                  UUID REFERENCES projects(id),
+    counterparty_customer_id    UUID REFERENCES customers(id),
+    invoice_id                  UUID REFERENCES invoices(id),
     reference                   VARCHAR(200) NOT NULL,
     description                 TEXT,
     transaction_date            DATE NOT NULL,
@@ -93,7 +93,7 @@ CREATE TABLE IF NOT EXISTS trust_transactions (
     reversal_of                 UUID REFERENCES trust_transactions(id),
     reversed_by_id              UUID REFERENCES trust_transactions(id),
     bank_statement_line_id      UUID,
-    recorded_by                 UUID NOT NULL,
+    recorded_by                 UUID NOT NULL REFERENCES members(id),
     created_at                  TIMESTAMPTZ NOT NULL DEFAULT now(),
 
     CONSTRAINT chk_trust_txn_amount_positive
@@ -135,7 +135,7 @@ CREATE INDEX IF NOT EXISTS idx_trust_txn_reference
 CREATE TABLE IF NOT EXISTS client_ledger_cards (
     id                      UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     trust_account_id        UUID NOT NULL REFERENCES trust_accounts(id),
-    customer_id             UUID NOT NULL,
+    customer_id             UUID NOT NULL REFERENCES customers(id),
     balance                 DECIMAL(15,2) NOT NULL DEFAULT 0,
     total_deposits          DECIMAL(15,2) NOT NULL DEFAULT 0,
     total_payments          DECIMAL(15,2) NOT NULL DEFAULT 0,
@@ -180,7 +180,7 @@ CREATE TABLE IF NOT EXISTS bank_statements (
     line_count          INTEGER NOT NULL,
     matched_count       INTEGER NOT NULL DEFAULT 0,
     status              VARCHAR(20) NOT NULL DEFAULT 'IMPORTED',
-    imported_by         UUID NOT NULL,
+    imported_by         UUID NOT NULL REFERENCES members(id),
     created_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
 
@@ -315,7 +315,7 @@ CREATE INDEX IF NOT EXISTS idx_interest_run_account_period
 CREATE TABLE IF NOT EXISTS interest_allocations (
     id                      UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     interest_run_id         UUID NOT NULL REFERENCES interest_runs(id),
-    customer_id             UUID NOT NULL,
+    customer_id             UUID NOT NULL REFERENCES customers(id),
     average_daily_balance   DECIMAL(15,2) NOT NULL,
     days_in_period          INTEGER NOT NULL,
     gross_interest          DECIMAL(15,2) NOT NULL,
@@ -346,7 +346,7 @@ CREATE INDEX IF NOT EXISTS idx_interest_alloc_run
 CREATE TABLE IF NOT EXISTS trust_investments (
     id                          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     trust_account_id            UUID NOT NULL REFERENCES trust_accounts(id),
-    customer_id                 UUID NOT NULL,
+    customer_id                 UUID NOT NULL REFERENCES customers(id),
     institution                 VARCHAR(200) NOT NULL,
     account_number              VARCHAR(50) NOT NULL,
     principal                   DECIMAL(15,2) NOT NULL,

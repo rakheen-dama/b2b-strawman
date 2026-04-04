@@ -211,7 +211,7 @@ FRONTEND CORE                           FRONTEND ADVANCED
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 1a | 439 | 439A | `TrustAccount` entity + `LpffRate` entity + `TrustAccountRepository` + `LpffRateRepository` + `TrustAccountService` (CRUD, close guard, LPFF rate management, module guard, audit events). Integration tests (~8). Backend only. | Not started |
+| 1a | 439 | 439A | `TrustAccount` entity + `LpffRate` entity + `TrustAccountRepository` + `LpffRateRepository` + `TrustAccountService` (CRUD, close guard, LPFF rate management, module guard, audit events). Integration tests (~8). Backend only. | **Done** (PR #923) |
 | 1b | 439 | 439B | Replace stub `TrustAccountingController` with 7 endpoints (list, get, create, update, close, listRates, addRate). `@RequiresCapability` on all endpoints. Integration tests (~6). Backend only. | Not started |
 
 ### Stage 2: Trust Ledger Core + Bank Statement Import (parallel tracks)
@@ -385,7 +385,7 @@ Stage 11: [451A] -> [451B]                                                <- int
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **439A** | 439.1--439.7 | `TrustAccount` entity + `LpffRate` entity + `TrustAccountRepository` + `LpffRateRepository` + `TrustAccountService` (list, get, create, update, close with guard, LPFF rate CRUD, module guard, audit events). Integration tests (~8). Backend only. | Not started |
+| **439A** | 439.1--439.7 | `TrustAccount` entity + `LpffRate` entity + `TrustAccountRepository` + `LpffRateRepository` + `TrustAccountService` (list, get, create, update, close with guard, LPFF rate CRUD, module guard, audit events). Integration tests (~8). Backend only. | **Done** (PR #923) |
 | **439B** | 439.8--439.12 | Replace stub `TrustAccountingController` with full implementation (7 endpoints: list accounts, get account, create account, update account, close account, list LPFF rates, add LPFF rate). `@RequiresCapability` on all endpoints. Integration tests (~6). Backend only. | Not started |
 
 ### Tasks

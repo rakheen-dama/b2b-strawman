@@ -230,4 +230,28 @@ public class TrustTransaction {
   public void setReversalOf(UUID reversalOf) {
     this.reversalOf = reversalOf;
   }
+
+  public void setApprovedBy(UUID approvedBy) {
+    this.approvedBy = approvedBy;
+  }
+
+  public void setApprovedAt(Instant approvedAt) {
+    this.approvedAt = approvedAt;
+  }
+
+  public void setRejectedBy(UUID rejectedBy) {
+    this.rejectedBy = rejectedBy;
+  }
+
+  public void setRejectedAt(Instant rejectedAt) {
+    this.rejectedAt = rejectedAt;
+  }
+
+  public void setRejectionReason(String rejectionReason) {
+    this.rejectionReason = rejectionReason;
+  }
+
+  public void setInvoiceId(UUID invoiceId) {
+    this.invoiceId = invoiceId;
+  }
 }

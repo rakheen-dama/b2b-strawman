@@ -88,7 +88,7 @@ class LegalModuleStubControllerTest {
         .perform(get("/api/trust-accounting/status").with(enabledOwnerJwt()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.module").value("trust_accounting"))
-        .andExpect(jsonPath("$.status").value("stub"))
+        .andExpect(jsonPath("$.status").value("active"))
         .andExpect(jsonPath("$.message").exists());
   }
 

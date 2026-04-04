@@ -203,6 +203,7 @@ class CourtCalendarServiceTest {
 
                   assertThat(postponed.status()).isEqualTo("POSTPONED");
                   assertThat(postponed.scheduledDate()).isEqualTo(LocalDate.of(2026, 8, 15));
+                  assertThat(postponed.outcome()).isEqualTo("Postponed: Judge unavailable");
                 }));
   }
 

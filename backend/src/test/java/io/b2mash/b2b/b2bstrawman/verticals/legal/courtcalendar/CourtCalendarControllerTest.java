@@ -282,7 +282,8 @@ class CourtCalendarControllerTest {
                     """))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("POSTPONED"))
-        .andExpect(jsonPath("$.scheduledDate").value("2026-10-15"));
+        .andExpect(jsonPath("$.scheduledDate").value("2026-10-15"))
+        .andExpect(jsonPath("$.outcome").value("Postponed: Judge unavailable"));
   }
 
   @Test

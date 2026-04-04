@@ -250,6 +250,9 @@ public class CourtCalendarService {
 
     courtDate.setScheduledDate(request.newDate());
     courtDate.setStatus("POSTPONED");
+    if (request.reason() != null && !request.reason().isBlank()) {
+      courtDate.setOutcome("Postponed: " + request.reason());
+    }
     courtDate.setUpdatedAt(Instant.now());
 
     var saved = courtDateRepository.save(courtDate);

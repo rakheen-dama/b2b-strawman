@@ -793,9 +793,11 @@ class TrustTransactionServiceTest {
   }
 
   @Test
-  void reverseDebitTransaction_immediateWithLedgerUpdate() {
+  void reverseTransferOut_reversesBothLegsAndUpdatesBothLedgers() {
     UUID[] transferOutTxnId = new UUID[1];
+    UUID[] transferInTxnId = new UUID[1];
     UUID[] sourceCustomerId = new UUID[1];
+    UUID[] targetCustomerId = new UUID[1];
 
     // Create a deposit, then a transfer out (debit type), and approve the transfer
     runInTenant(
@@ -813,6 +815,7 @@ class TrustTransactionServiceTest {
                               "Reversal Debit Target", "rev_debit_tgt@test.com", memberId));
 
                   sourceCustomerId[0] = sourceCustomer.getId();
+                  targetCustomerId[0] = targetCustomer.getId();
 
                   // Fund source with 10000
                   transactionService.recordDeposit(
@@ -838,27 +841,36 @@ class TrustTransactionServiceTest {
                               "Transfer to reverse",
                               LocalDate.of(2026, 3, 22)));
 
-                  // The TRANSFER_OUT is the first in the pair
+                  // The TRANSFER_OUT is the first in the pair, TRANSFER_IN is second
                   transferOutTxnId[0] = transferResult.get(0).id();
+                  transferInTxnId[0] = transferResult.get(1).id();
 
-                  // Manually set status to APPROVED
+                  // Manually set TRANSFER_OUT status to APPROVED
                   var txn = transactionRepository.findById(transferOutTxnId[0]).orElseThrow();
                   txn.setStatus("APPROVED");
                   transactionRepository.save(txn);
                 }));
 
-    // Reverse the debit (transfer out) — should be immediate
+    // Reverse the TRANSFER_OUT — should reverse both legs immediately
     runInTenant(
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
                   // Source balance before reversal: 10000 - 3000 = 7000
-                  var ledgerBefore =
+                  var sourceLedgerBefore =
                       ledgerCardRepository
                           .findByTrustAccountIdAndCustomerId(trustAccountId, sourceCustomerId[0])
                           .orElseThrow();
-                  assertThat(ledgerBefore.getBalance())
+                  assertThat(sourceLedgerBefore.getBalance())
                       .isEqualByComparingTo(new BigDecimal("7000.00"));
+
+                  // Target balance before reversal: 3000 (received from transfer)
+                  var targetLedgerBefore =
+                      ledgerCardRepository
+                          .findByTrustAccountIdAndCustomerId(trustAccountId, targetCustomerId[0])
+                          .orElseThrow();
+                  assertThat(targetLedgerBefore.getBalance())
+                      .isEqualByComparingTo(new BigDecimal("3000.00"));
 
                   var reversalResponse =
                       transactionService.reverseTransaction(
@@ -868,14 +880,89 @@ class TrustTransactionServiceTest {
                   assertThat(reversalResponse.status()).isEqualTo("RECORDED");
                   assertThat(reversalResponse.reversalOf()).isEqualTo(transferOutTxnId[0]);
 
-                  // Ledger should be updated: 7000 + 3000 = 10000
-                  var ledgerAfter =
+                  // Source ledger should be restored: 7000 + 3000 = 10000
+                  var sourceLedgerAfter =
                       ledgerCardRepository
                           .findByTrustAccountIdAndCustomerId(trustAccountId, sourceCustomerId[0])
                           .orElseThrow();
-                  assertThat(ledgerAfter.getBalance())
+                  assertThat(sourceLedgerAfter.getBalance())
                       .isEqualByComparingTo(new BigDecimal("10000.00"));
+
+                  // Target ledger should be debited: 3000 - 3000 = 0
+                  var targetLedgerAfter =
+                      ledgerCardRepository
+                          .findByTrustAccountIdAndCustomerId(trustAccountId, targetCustomerId[0])
+                          .orElseThrow();
+                  assertThat(targetLedgerAfter.getBalance()).isEqualByComparingTo(BigDecimal.ZERO);
+
+                  // The paired TRANSFER_IN should also be marked as REVERSED
+                  var pairedIn = transactionRepository.findById(transferInTxnId[0]).orElseThrow();
+                  assertThat(pairedIn.getStatus()).isEqualTo("REVERSED");
+                  assertThat(pairedIn.getReversedById()).isNotNull();
+
+                  // The original TRANSFER_OUT should be marked as REVERSED
+                  var originalOut =
+                      transactionRepository.findById(transferOutTxnId[0]).orElseThrow();
+                  assertThat(originalOut.getStatus()).isEqualTo("REVERSED");
+                  assertThat(originalOut.getReversedById()).isNotNull();
                 }));
+  }
+
+  @Test
+  void reverseTransferIn_throwsInvalidStateException() {
+    UUID[] transferInTxnId = new UUID[1];
+
+    // Create a deposit, then a transfer — we'll try to reverse the TRANSFER_IN directly
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var sourceCustomer =
+                      customerRepository.save(
+                          TestCustomerFactory.createActiveCustomer(
+                              "TrfIn Rev Source", "trfin_rev_src@test.com", memberId));
+
+                  var targetCustomer =
+                      customerRepository.save(
+                          TestCustomerFactory.createActiveCustomer(
+                              "TrfIn Rev Target", "trfin_rev_tgt@test.com", memberId));
+
+                  // Fund source
+                  transactionService.recordDeposit(
+                      trustAccountId,
+                      new RecordDepositRequest(
+                          sourceCustomer.getId(),
+                          null,
+                          new BigDecimal("5000.00"),
+                          "DEP-TRFIN-001",
+                          null,
+                          LocalDate.of(2026, 3, 28)));
+
+                  var transferResult =
+                      transactionService.recordTransfer(
+                          trustAccountId,
+                          new RecordTransferRequest(
+                              sourceCustomer.getId(),
+                              targetCustomer.getId(),
+                              null,
+                              new BigDecimal("2000.00"),
+                              "TRF-TRFIN-001",
+                              null,
+                              LocalDate.of(2026, 3, 29)));
+
+                  // TRANSFER_IN is the second in the pair
+                  transferInTxnId[0] = transferResult.get(1).id();
+                }));
+
+    // Attempt to reverse the TRANSFER_IN directly — should fail
+    runInTenant(
+        () ->
+            assertThatThrownBy(
+                    () ->
+                        transactionService.reverseTransaction(
+                            transferInTxnId[0], "Trying to reverse TRANSFER_IN directly"))
+                .isInstanceOf(InvalidStateException.class)
+                .hasMessageContaining("TRANSFER_OUT"));
   }
 
   @Test

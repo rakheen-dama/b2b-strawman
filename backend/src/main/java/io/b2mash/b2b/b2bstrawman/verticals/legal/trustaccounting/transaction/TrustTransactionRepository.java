@@ -1,12 +1,15 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction;
 
+import jakarta.persistence.LockModeType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -22,6 +25,30 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
       UUID customerId, UUID trustAccountId, Pageable pageable);
 
   List<TrustTransaction> findByStatusAndTrustAccountId(String status, UUID trustAccountId);
+
+  /** Acquires a pessimistic write lock on the transaction row to prevent concurrent reversals. */
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query("SELECT t FROM TrustTransaction t WHERE t.id = :id")
+  Optional<TrustTransaction> findByIdForUpdate(@Param("id") UUID id);
+
+  /**
+   * Finds the paired transfer transaction (e.g., TRANSFER_IN paired with a TRANSFER_OUT). The pair
+   * shares the same reference, trust account, and transaction date but has the opposite transfer
+   * type and targets the counterparty customer.
+   */
+  @Query(
+      """
+      SELECT t FROM TrustTransaction t
+      WHERE t.trustAccountId = :trustAccountId
+        AND t.reference = :reference
+        AND t.transactionType = :transactionType
+        AND t.customerId = :customerId
+      """)
+  Optional<TrustTransaction> findPairedTransfer(
+      @Param("trustAccountId") UUID trustAccountId,
+      @Param("reference") String reference,
+      @Param("transactionType") String transactionType,
+      @Param("customerId") UUID customerId);
 
   /** Checks whether a reversal transaction already exists for the given original transaction. */
   boolean existsByReversalOf(UUID reversalOf);

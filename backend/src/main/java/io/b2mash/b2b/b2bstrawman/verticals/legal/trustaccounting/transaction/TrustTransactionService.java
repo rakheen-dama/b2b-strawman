@@ -329,10 +329,19 @@ public class TrustTransactionService {
       throw new InvalidStateException("Invalid reversal", "Reversal reason is required");
     }
 
+    // Acquire pessimistic write lock to prevent concurrent double-reversal
     var original =
         transactionRepository
-            .findById(transactionId)
+            .findByIdForUpdate(transactionId)
             .orElseThrow(() -> new ResourceNotFoundException("TrustTransaction", transactionId));
+
+    // TRANSFER_IN cannot be reversed directly — reverse the paired TRANSFER_OUT instead,
+    // which will automatically reverse both legs.
+    if ("TRANSFER_IN".equals(original.getTransactionType())) {
+      throw new InvalidStateException(
+          "Cannot reverse TRANSFER_IN directly",
+          "Reverse the paired TRANSFER_OUT instead to undo both legs of the transfer");
+    }
 
     // Validate trust account is not closed
     var account =
@@ -361,6 +370,12 @@ public class TrustTransactionService {
     }
 
     var memberId = RequestScopes.requireMemberId();
+
+    // TRANSFER_OUT reversal: reverse both legs (TRANSFER_OUT + paired TRANSFER_IN)
+    if ("TRANSFER_OUT".equals(original.getTransactionType())) {
+      return reverseTransferOut(original, reason, memberId);
+    }
+
     boolean isCreditType = CREDIT_TYPES.contains(original.getTransactionType());
     boolean isDebitType = DEBIT_TYPES.contains(original.getTransactionType());
 
@@ -378,10 +393,7 @@ public class TrustTransactionService {
     }
 
     // Build reversal reference, truncating to 200-char column limit
-    String reversalRef = "REV-" + original.getReference();
-    if (reversalRef.length() > 200) {
-      reversalRef = reversalRef.substring(0, 200);
-    }
+    String reversalRef = buildReversalReference(original.getReference());
 
     var reversal =
         new TrustTransaction(
@@ -444,6 +456,140 @@ public class TrustTransactionService {
     return toResponse(savedReversal);
   }
 
+  /**
+   * Reverses a TRANSFER_OUT by reversing both legs: the TRANSFER_OUT (credit back to source) and
+   * the paired TRANSFER_IN (debit from target). Transfer reversals are internal moves, so both legs
+   * are immediate (RECORDED, no approval needed) and cashbook-neutral.
+   */
+  private TrustTransactionResponse reverseTransferOut(
+      TrustTransaction original, String reason, UUID memberId) {
+    // Find the paired TRANSFER_IN: same reference, same trust account, TRANSFER_IN type,
+    // targeted at the counterparty customer
+    var pairedTransferIn =
+        transactionRepository
+            .findPairedTransfer(
+                original.getTrustAccountId(),
+                original.getReference(),
+                "TRANSFER_IN",
+                original.getCounterpartyCustomerId())
+            .orElseThrow(
+                () ->
+                    new InvalidStateException(
+                        "Cannot reverse transfer",
+                        "Paired TRANSFER_IN not found for reference: " + original.getReference()));
+
+    // Validate paired TRANSFER_IN is not already reversed
+    if (pairedTransferIn.getReversedById() != null
+        || transactionRepository.existsByReversalOf(pairedTransferIn.getId())) {
+      throw new InvalidStateException(
+          "Cannot reverse transaction", "Paired TRANSFER_IN has already been reversed");
+    }
+
+    String reversalRef = buildReversalReference(original.getReference());
+
+    // Create reversal for the TRANSFER_OUT (credits source back)
+    var outReversal =
+        new TrustTransaction(
+            original.getTrustAccountId(),
+            "REVERSAL",
+            original.getAmount(),
+            original.getCustomerId(),
+            original.getProjectId(),
+            original.getCounterpartyCustomerId(),
+            reversalRef,
+            reason,
+            LocalDate.now(),
+            "RECORDED",
+            memberId);
+    outReversal.setReversalOf(original.getId());
+    var savedOutReversal = transactionRepository.save(outReversal);
+
+    // Create reversal for the TRANSFER_IN (debits target)
+    var inReversal =
+        new TrustTransaction(
+            pairedTransferIn.getTrustAccountId(),
+            "REVERSAL",
+            pairedTransferIn.getAmount(),
+            pairedTransferIn.getCustomerId(),
+            pairedTransferIn.getProjectId(),
+            pairedTransferIn.getCounterpartyCustomerId(),
+            reversalRef,
+            reason,
+            LocalDate.now(),
+            "RECORDED",
+            memberId);
+    inReversal.setReversalOf(pairedTransferIn.getId());
+    var savedInReversal = transactionRepository.save(inReversal);
+
+    // Mark both originals as REVERSED
+    original.setReversedById(savedOutReversal.getId());
+    original.setStatus("REVERSED");
+    transactionRepository.save(original);
+
+    pairedTransferIn.setReversedById(savedInReversal.getId());
+    pairedTransferIn.setStatus("REVERSED");
+    transactionRepository.save(pairedTransferIn);
+
+    // Update both ledger cards: credit source (add money back), debit target (remove money)
+    // Acquire locks in deterministic UUID order to prevent deadlocks
+    UUID sourceCustomerId = original.getCustomerId();
+    UUID targetCustomerId = pairedTransferIn.getCustomerId();
+
+    UUID firstId =
+        sourceCustomerId.compareTo(targetCustomerId) < 0 ? sourceCustomerId : targetCustomerId;
+    UUID secondId =
+        sourceCustomerId.compareTo(targetCustomerId) < 0 ? targetCustomerId : sourceCustomerId;
+
+    var firstLedger =
+        ledgerCardRepository
+            .findByAccountAndCustomerForUpdate(original.getTrustAccountId(), firstId)
+            .orElse(null);
+    var secondLedger =
+        ledgerCardRepository
+            .findByAccountAndCustomerForUpdate(original.getTrustAccountId(), secondId)
+            .orElse(null);
+
+    // Resolve source and target ledger cards
+    ClientLedgerCard sourceLedger;
+    ClientLedgerCard targetLedger;
+    if (firstId.equals(sourceCustomerId)) {
+      sourceLedger = firstLedger;
+      targetLedger = secondLedger;
+    } else {
+      sourceLedger = secondLedger;
+      targetLedger = firstLedger;
+    }
+
+    // Credit source (add back transferred amount)
+    if (sourceLedger != null) {
+      sourceLedger.creditBalance(original.getAmount(), LocalDate.now());
+      ledgerCardRepository.save(sourceLedger);
+    }
+
+    // Debit target (remove transferred amount)
+    if (targetLedger != null) {
+      targetLedger.debitBalance(original.getAmount(), LocalDate.now());
+      ledgerCardRepository.save(targetLedger);
+    }
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("trust_transaction.reversed")
+            .entityType("trust_transaction")
+            .entityId(savedOutReversal.getId())
+            .details(
+                Map.of(
+                    "original_transaction_id", original.getId().toString(),
+                    "paired_transfer_in_id", pairedTransferIn.getId().toString(),
+                    "original_type", original.getTransactionType(),
+                    "amount", original.getAmount().toString(),
+                    "reversal_status", "RECORDED",
+                    "reason", reason))
+            .build());
+
+    return toResponse(savedOutReversal);
+  }
+
   // --- 440.10: Cashbook Balance ---
 
   @Transactional(readOnly = true)
@@ -487,6 +633,17 @@ public class TrustTransactionService {
                         + trustAccountId
                         + " customer="
                         + customerId));
+  }
+
+  /**
+   * Builds a reversal reference from the original reference, truncating to 200-char column limit.
+   */
+  private static String buildReversalReference(String originalReference) {
+    String ref = "REV-" + originalReference;
+    if (ref.length() > 200) {
+      ref = ref.substring(0, 200);
+    }
+    return ref;
   }
 
   private void validateAmount(BigDecimal amount) {

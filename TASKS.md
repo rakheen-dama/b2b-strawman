@@ -497,7 +497,7 @@
 | 437 | Frontend Contextual Deep-Links | Frontend | 432 | M | 437A, 437B | **Done** (PRs #907, #908) |
 
 | **Phase 60 — Trust Accounting (Legal Practice Act Section 86)** | | | | | | See [tasks/phase60-trust-accounting.md](tasks/phase60-trust-accounting.md) |
-| 438 | Foundation: V85 Migration + Module Registration + RBAC Capabilities | Backend | -- | M | 438A, 438B | |
+| 438 | Foundation: V85 Migration + Module Registration + RBAC Capabilities | Backend | -- | M | 438A, 438B | 438A Done (PR #921) |
 | 439 | TrustAccount + LpffRate Entity + Service + Controller | Backend | 438 | M | 439A, 439B | |
 | 440 | TrustTransaction + ClientLedgerCard Entity + Deposit/Transfer Service | Backend | 439 | L | 440A, 440B | |
 | 441 | Approval Workflow + Payment/FeeTransfer/Refund Recording | Backend | 440 | L | 441A, 441B | |

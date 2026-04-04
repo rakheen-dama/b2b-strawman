@@ -30,7 +30,7 @@ Phase 60 replaces the `trust_accounting` module stub (registered in Phase 49) wi
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 438 | Foundation: V85 Migration + Module Registration + RBAC Capabilities | Backend | -- | M | 438A, 438B | Not started |
+| 438 | Foundation: V85 Migration + Module Registration + RBAC Capabilities | Backend | -- | M | 438A, 438B | 438A Done (PR #921) |
 | 439 | TrustAccount + LpffRate Entity + Service + Controller | Backend | 438 | M | 439A, 439B | Not started |
 | 440 | TrustTransaction + ClientLedgerCard Entity + Deposit/Transfer Service | Backend | 439 | L | 440A, 440B | Not started |
 | 441 | Approval Workflow + Payment/FeeTransfer/Refund Recording | Backend | 440 | L | 441A, 441B | Not started |
@@ -204,7 +204,7 @@ FRONTEND CORE                           FRONTEND ADVANCED
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 0a | 438 | 438A | V85 tenant migration (10 tables: `trust_accounts`, `lpff_rates`, `trust_transactions`, `client_ledger_cards`, `bank_statements`, `bank_statement_lines`, `trust_reconciliations`, `interest_runs`, `interest_allocations`, `trust_investments` + all indexes, constraints, deferred FK). Capability seeding (VIEW_TRUST, MANAGE_TRUST, APPROVE_TRUST_PAYMENT for owner/admin/member roles). `VIEW_TRUST`, `MANAGE_TRUST`, `APPROVE_TRUST_PAYMENT` added to `Capability` enum. Default role mapping updates. Unit tests (~4). Backend only. | Not started |
+| 0a | 438 | 438A | V85 tenant migration (10 tables: `trust_accounts`, `lpff_rates`, `trust_transactions`, `client_ledger_cards`, `bank_statements`, `bank_statement_lines`, `trust_reconciliations`, `interest_runs`, `interest_allocations`, `trust_investments` + all indexes, constraints, deferred FK). Capability seeding (VIEW_TRUST, MANAGE_TRUST, APPROVE_TRUST_PAYMENT for owner/admin/member roles). `VIEW_TRUST`, `MANAGE_TRUST`, `APPROVE_TRUST_PAYMENT` added to `Capability` enum. Default role mapping updates. Unit tests (~4). Backend only. | **Done** (PR #921) |
 | 0b | 438 | 438B | Update `VerticalModuleRegistry`: `trust_accounting` status `"stub"` → `"active"` with 7 nav items. Update `VerticalProfileRegistry`: `legal-za` profile `enabled_modules` includes `trust_accounting`. Update stub `TrustAccountingController` capability from `VIEW_LEGAL` to `VIEW_TRUST`. Integration tests (~4). Backend only. | Not started |
 
 ### Stage 1: Trust Account CRUD
@@ -323,7 +323,7 @@ Stage 11: [451A] -> [451B]                                                <- int
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **438A** | 438.1--438.5 | V85 tenant migration (10 tables + all indexes + constraints + deferred FK + capability seeding). `VIEW_TRUST`, `MANAGE_TRUST`, `APPROVE_TRUST_PAYMENT` added to `Capability` enum. Default role mapping updates (owner: all 3, admin: VIEW+MANAGE, member: VIEW only). Unit tests (~4). Backend only. | Not started |
+| **438A** | 438.1--438.5 | V85 tenant migration (10 tables + all indexes + constraints + deferred FK + capability seeding). `VIEW_TRUST`, `MANAGE_TRUST`, `APPROVE_TRUST_PAYMENT` added to `Capability` enum. Default role mapping updates (owner: all 3, admin: VIEW+MANAGE, member: VIEW only). Unit tests (~4). Backend only. | **Done** (PR #921) |
 | **438B** | 438.6--438.11 | `VerticalModuleRegistry`: `trust_accounting` → `"active"` with 7 nav items. `VerticalProfileRegistry`: `legal-za` profile update. Stub `TrustAccountingController` capability update to `VIEW_TRUST`. Integration tests (~4). Backend only. | Not started |
 
 ### Tasks

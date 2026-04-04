@@ -18,14 +18,17 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTran
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
 import jakarta.persistence.EntityManager;
+import jakarta.validation.constraints.NotBlank;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -176,9 +179,9 @@ public class TrustTransactionService {
       UUID customerId,
       UUID projectId) {}
 
-  public record RejectRequest(String reason) {}
+  public record RejectRequest(@NotBlank String reason) {}
 
-  public record ReverseRequest(String reason) {}
+  public record ReverseRequest(@NotBlank String reason) {}
 
   // --- Service Methods ---
 
@@ -1243,17 +1246,20 @@ public class TrustTransactionService {
     var results = query.getResultList();
     var total = countQuery.getSingleResult();
 
-    var enriched = results.stream().map(this::toEnrichedResponse).toList();
+    var enriched = batchEnrich(results);
     return new PageImpl<>(enriched, pageable, total);
   }
 
   @Transactional(readOnly = true)
-  public EnrichedTrustTransactionResponse getTransaction(UUID transactionId) {
+  public EnrichedTrustTransactionResponse getTransaction(UUID accountId, UUID transactionId) {
     moduleGuard.requireModule(MODULE_ID);
     var transaction =
         transactionRepository
             .findById(transactionId)
             .orElseThrow(() -> new ResourceNotFoundException("TrustTransaction", transactionId));
+    if (!transaction.getTrustAccountId().equals(accountId)) {
+      throw new ResourceNotFoundException("TrustTransaction", transactionId);
+    }
     return toEnrichedResponse(transaction);
   }
 
@@ -1264,11 +1270,9 @@ public class TrustTransactionService {
         .findById(trustAccountId)
         .orElseThrow(() -> new ResourceNotFoundException("TrustAccount", trustAccountId));
 
-    return transactionRepository
-        .findByStatusAndTrustAccountId("AWAITING_APPROVAL", trustAccountId)
-        .stream()
-        .map(this::toEnrichedResponse)
-        .toList();
+    var transactions =
+        transactionRepository.findByStatusAndTrustAccountId("AWAITING_APPROVAL", trustAccountId);
+    return batchEnrich(transactions);
   }
 
   /** Controller-facing deposit — returns enriched response with name resolution. */
@@ -1426,6 +1430,71 @@ public class TrustTransactionService {
         entity.getBankStatementLineId(),
         entity.getRecordedBy(),
         entity.getCreatedAt());
+  }
+
+  /**
+   * Batch-enriches a list of transactions, resolving all customer names and member names in two
+   * queries instead of N*3 individual queries.
+   */
+  private List<EnrichedTrustTransactionResponse> batchEnrich(List<TrustTransaction> transactions) {
+    if (transactions.isEmpty()) {
+      return List.of();
+    }
+
+    // Collect all distinct customer IDs and member IDs
+    Set<UUID> customerIds = new HashSet<>();
+    Set<UUID> memberIds = new HashSet<>();
+    for (var tx : transactions) {
+      if (tx.getCustomerId() != null) customerIds.add(tx.getCustomerId());
+      if (tx.getRecordedBy() != null) memberIds.add(tx.getRecordedBy());
+      if (tx.getApprovedBy() != null) memberIds.add(tx.getApprovedBy());
+    }
+
+    // Batch-fetch customer names
+    Map<UUID, String> customerNames =
+        customerIds.isEmpty()
+            ? Map.of()
+            : customerRepository.findByIdIn(customerIds).stream()
+                .collect(Collectors.toMap(c -> c.getId(), c -> c.getName(), (a, b) -> a));
+
+    // Batch-fetch member names
+    Map<UUID, String> memberNames = memberNameResolver.resolveNames(memberIds);
+
+    return transactions.stream()
+        .map(
+            entity ->
+                new EnrichedTrustTransactionResponse(
+                    entity.getId(),
+                    entity.getTrustAccountId(),
+                    entity.getTransactionType(),
+                    entity.getAmount(),
+                    entity.getCustomerId(),
+                    entity.getCustomerId() != null
+                        ? customerNames.get(entity.getCustomerId())
+                        : null,
+                    entity.getProjectId(),
+                    entity.getCounterpartyCustomerId(),
+                    entity.getInvoiceId(),
+                    entity.getReference(),
+                    entity.getDescription(),
+                    entity.getTransactionDate(),
+                    entity.getStatus(),
+                    entity.getApprovedBy(),
+                    entity.getApprovedBy() != null ? memberNames.get(entity.getApprovedBy()) : null,
+                    entity.getApprovedAt(),
+                    entity.getSecondApprovedBy(),
+                    entity.getSecondApprovedAt(),
+                    entity.getRejectedBy(),
+                    entity.getRejectedAt(),
+                    entity.getRejectionReason(),
+                    entity.getReversalOf(),
+                    entity.getReversedById(),
+                    entity.getBankStatementLineId(),
+                    entity.getRecordedBy(),
+                    memberNames.get(entity.getRecordedBy()),
+                    entity.getCreatedAt(),
+                    null))
+        .toList();
   }
 
   private EnrichedTrustTransactionResponse toEnrichedResponse(TrustTransaction entity) {

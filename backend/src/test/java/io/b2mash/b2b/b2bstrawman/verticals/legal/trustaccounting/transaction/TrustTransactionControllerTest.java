@@ -502,11 +502,6 @@ class TrustTransactionControllerTest {
             j -> j.subject("user_tx_ctrl_owner2").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
   }
 
-  private JwtRequestPostProcessor adminJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_tx_ctrl_admin").claim("o", Map.of("id", ORG_ID, "rol", "admin")));
-  }
-
   private JwtRequestPostProcessor memberJwt() {
     return jwt()
         .jwt(

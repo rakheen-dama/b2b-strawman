@@ -63,7 +63,7 @@ public class TrustTransactionController {
   @RequiresCapability("VIEW_TRUST")
   public ResponseEntity<EnrichedTrustTransactionResponse> getTransaction(
       @PathVariable UUID accountId, @PathVariable UUID id) {
-    return ResponseEntity.ok(trustTransactionService.getTransaction(id));
+    return ResponseEntity.ok(trustTransactionService.getTransaction(accountId, id));
   }
 
   @PostMapping("/api/trust-accounts/{accountId}/transactions/deposit")

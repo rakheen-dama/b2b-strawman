@@ -60,14 +60,7 @@ class VerticalProfileRegistryTest {
 
     var p = profile.get();
     assertThat(p.enabledModules())
-        .containsExactlyInAnyOrder("court_calendar", "conflict_check", "lssa_tariff");
-  }
-
-  @Test
-  void legalZaProfileDoesNotIncludeTrustAccounting() {
-    var profile = registry.getProfile("legal-za");
-
-    assertThat(profile).isPresent();
-    assertThat(profile.get().enabledModules()).doesNotContain("trust_accounting");
+        .containsExactlyInAnyOrder(
+            "court_calendar", "conflict_check", "lssa_tariff", "trust_accounting");
   }
 }

@@ -98,7 +98,8 @@ class VerticalProfileIntegrationTest {
         .andExpect(
             jsonPath(
                 "$.enabledModules",
-                containsInAnyOrder("court_calendar", "conflict_check", "lssa_tariff")))
+                containsInAnyOrder(
+                    "court_calendar", "conflict_check", "lssa_tariff", "trust_accounting")))
         .andExpect(jsonPath("$.terminologyNamespace").value("en-ZA-legal"));
 
     // Verify audit event was logged

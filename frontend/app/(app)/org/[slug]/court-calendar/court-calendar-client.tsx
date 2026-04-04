@@ -11,6 +11,7 @@ import { CourtDateListView } from "@/components/legal/court-date-list-view";
 import { CourtCalendarView } from "@/components/legal/court-calendar-view";
 import { PrescriptionTab } from "@/components/legal/prescription-tab";
 import { CreateCourtDateDialog } from "@/components/legal/create-court-date-dialog";
+import { EditCourtDateDialog } from "@/components/legal/edit-court-date-dialog";
 import { PostponeDialog } from "@/components/legal/postpone-dialog";
 import { CancelCourtDateDialog } from "@/components/legal/cancel-court-date-dialog";
 import { OutcomeDialog } from "@/components/legal/outcome-dialog";
@@ -65,6 +66,7 @@ export function CourtCalendarClient({
   );
 
   // Dialog state
+  const [editTarget, setEditTarget] = useState<CourtDate | null>(null);
   const [postponeTarget, setPostponeTarget] = useState<CourtDate | null>(null);
   const [cancelTarget, setCancelTarget] = useState<CourtDate | null>(null);
   const [outcomeTarget, setOutcomeTarget] = useState<CourtDate | null>(null);
@@ -259,6 +261,7 @@ export function CourtCalendarClient({
           {view === "list" && (
             <CourtDateListView
               courtDates={filteredCourtDates}
+              onEdit={setEditTarget}
               onPostpone={setPostponeTarget}
               onCancel={setCancelTarget}
               onRecordOutcome={setOutcomeTarget}
@@ -408,6 +411,13 @@ export function CourtCalendarClient({
               {(selectedCourtDate.status === "SCHEDULED" ||
                 selectedCourtDate.status === "POSTPONED") && (
                 <>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setEditTarget(selectedCourtDate)}
+                  >
+                    Edit
+                  </Button>
                   {selectedCourtDate.status === "SCHEDULED" && (
                     <Button
                       size="sm"
@@ -438,6 +448,21 @@ export function CourtCalendarClient({
       </div>
 
       {/* Lifecycle dialogs */}
+      {editTarget && (
+        <EditCourtDateDialog
+          slug={slug}
+          courtDate={editTarget}
+          open={!!editTarget}
+          onOpenChange={(v) => {
+            if (!v) setEditTarget(null);
+          }}
+          onSuccess={() => {
+            setSelectedCourtDate(null);
+            refetchCourtDates();
+          }}
+        />
+      )}
+
       {postponeTarget && (
         <PostponeDialog
           slug={slug}

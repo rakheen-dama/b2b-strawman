@@ -26,6 +26,31 @@ export const createCourtDateSchema = z.object({
 
 export type CreateCourtDateFormData = z.infer<typeof createCourtDateSchema>;
 
+export const editCourtDateSchema = z.object({
+  dateType: z.enum(
+    [
+      "HEARING",
+      "TRIAL",
+      "MOTION",
+      "CONFERENCE",
+      "MEDIATION",
+      "ARBITRATION",
+      "MENTION",
+      "OTHER",
+    ],
+    { message: "Date type is required" }
+  ),
+  scheduledDate: z.string().min(1, "Scheduled date is required"),
+  scheduledTime: z.string().optional().or(z.literal("")),
+  courtName: z.string().min(1, "Court name is required").max(255),
+  courtReference: z.string().max(255).optional().or(z.literal("")),
+  judgeMagistrate: z.string().max(255).optional().or(z.literal("")),
+  description: z.string().max(2000).optional().or(z.literal("")),
+  reminderDays: z.number().int().min(0).max(365),
+});
+
+export type EditCourtDateFormData = z.infer<typeof editCourtDateSchema>;
+
 export const postponeCourtDateSchema = z.object({
   newDate: z.string().min(1, "New date is required"),
   reason: z.string().min(1, "Reason is required").max(2000),

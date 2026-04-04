@@ -15,6 +15,7 @@ import type { CourtDate, CourtDateStatus } from "@/lib/types";
 
 interface CourtDateListViewProps {
   courtDates: CourtDate[];
+  onEdit: (courtDate: CourtDate) => void;
   onPostpone: (courtDate: CourtDate) => void;
   onCancel: (courtDate: CourtDate) => void;
   onRecordOutcome: (courtDate: CourtDate) => void;
@@ -51,22 +52,24 @@ function dateTypeLabel(type: string): string {
 }
 
 function canTransition(status: CourtDateStatus): {
+  canEdit: boolean;
   canPostpone: boolean;
   canCancel: boolean;
   canOutcome: boolean;
 } {
   switch (status) {
     case "SCHEDULED":
-      return { canPostpone: true, canCancel: true, canOutcome: true };
+      return { canEdit: true, canPostpone: true, canCancel: true, canOutcome: true };
     case "POSTPONED":
-      return { canPostpone: false, canCancel: true, canOutcome: true };
+      return { canEdit: true, canPostpone: false, canCancel: true, canOutcome: true };
     default:
-      return { canPostpone: false, canCancel: false, canOutcome: false };
+      return { canEdit: false, canPostpone: false, canCancel: false, canOutcome: false };
   }
 }
 
 export function CourtDateListView({
   courtDates,
+  onEdit,
   onPostpone,
   onCancel,
   onRecordOutcome,
@@ -162,7 +165,7 @@ export function CourtDateListView({
           {sorted.map((cd) => {
             const actions = canTransition(cd.status);
             const hasActions =
-              actions.canPostpone || actions.canCancel || actions.canOutcome;
+              actions.canEdit || actions.canPostpone || actions.canCancel || actions.canOutcome;
 
             return (
               <tr
@@ -206,6 +209,16 @@ export function CourtDateListView({
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+                        {actions.canEdit && (
+                          <DropdownMenuItem
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onEdit(cd);
+                            }}
+                          >
+                            Edit
+                          </DropdownMenuItem>
+                        )}
                         {actions.canPostpone && (
                           <DropdownMenuItem
                             onClick={(e) => {

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import useSWR from "swr";
 import { CourtDateListView } from "@/components/legal/court-date-list-view";
+import { EditCourtDateDialog } from "@/components/legal/edit-court-date-dialog";
 import { PostponeDialog } from "@/components/legal/postpone-dialog";
 import { CancelCourtDateDialog } from "@/components/legal/cancel-court-date-dialog";
 import { OutcomeDialog } from "@/components/legal/outcome-dialog";
@@ -19,6 +20,7 @@ export function ProjectCourtDatesTab({
   projectId,
   slug,
 }: ProjectCourtDatesTabProps) {
+  const [editTarget, setEditTarget] = useState<CourtDate | null>(null);
   const [postponeTarget, setPostponeTarget] = useState<CourtDate | null>(null);
   const [cancelTarget, setCancelTarget] = useState<CourtDate | null>(null);
   const [outcomeTarget, setOutcomeTarget] = useState<CourtDate | null>(null);
@@ -45,10 +47,24 @@ export function ProjectCourtDatesTab({
       ) : (
         <CourtDateListView
           courtDates={courtDates}
+          onEdit={setEditTarget}
           onPostpone={setPostponeTarget}
           onCancel={setCancelTarget}
           onRecordOutcome={setOutcomeTarget}
           onSelect={() => {}}
+        />
+      )}
+
+      {editTarget && (
+        <EditCourtDateDialog
+          slug={slug}
+          courtDate={editTarget}
+          open={!!editTarget}
+          onOpenChange={(open) => !open && setEditTarget(null)}
+          onSuccess={() => {
+            setEditTarget(null);
+            mutate();
+          }}
         />
       )}
 

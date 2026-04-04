@@ -147,6 +147,7 @@ describe("CourtDateListView", () => {
     render(
       <CourtDateListView
         courtDates={courtDates}
+        onEdit={vi.fn()}
         onPostpone={vi.fn()}
         onCancel={vi.fn()}
         onRecordOutcome={vi.fn()}
@@ -166,6 +167,7 @@ describe("CourtDateListView", () => {
     render(
       <CourtDateListView
         courtDates={[]}
+        onEdit={vi.fn()}
         onPostpone={vi.fn()}
         onCancel={vi.fn()}
         onRecordOutcome={vi.fn()}
@@ -353,6 +355,7 @@ describe("Court date detail actions", () => {
     render(
       <CourtDateListView
         courtDates={courtDates}
+        onEdit={vi.fn()}
         onPostpone={vi.fn()}
         onCancel={vi.fn()}
         onRecordOutcome={vi.fn()}

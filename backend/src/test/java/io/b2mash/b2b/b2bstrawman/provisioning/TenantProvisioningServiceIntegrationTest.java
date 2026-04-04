@@ -68,7 +68,7 @@ class TenantProvisioningServiceIntegrationTest {
     assertThat(enabledModules).contains("court_calendar");
     assertThat(enabledModules).contains("conflict_check");
     assertThat(enabledModules).contains("lssa_tariff");
-    assertThat(enabledModules).doesNotContain("trust_accounting");
+    assertThat(enabledModules).contains("trust_accounting");
 
     // Verify terminology_namespace via direct SQL
     String terminologyNamespace = getOrgSettingsColumn(tenantSchema, "terminology_namespace");

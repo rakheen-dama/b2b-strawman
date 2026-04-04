@@ -37,7 +37,7 @@ class VerticalModuleRegistryTest {
     assertThat(module.get().name()).isEqualTo("Trust Accounting");
     assertThat(module.get().description())
         .isEqualTo("LSSA-compliant trust account management for client funds");
-    assertThat(module.get().status()).isEqualTo("stub");
+    assertThat(module.get().status()).isEqualTo("active");
   }
 
   @Test

@@ -9,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceService;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceStatus;
+import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
@@ -20,11 +21,15 @@ import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,6 +48,7 @@ public class TrustTransactionService {
   private final AuditService auditService;
   private final EntityManager entityManager;
   private final ApplicationEventPublisher eventPublisher;
+  private final MemberNameResolver memberNameResolver;
 
   public TrustTransactionService(
       TrustTransactionRepository transactionRepository,
@@ -54,7 +60,8 @@ public class TrustTransactionService {
       VerticalModuleGuard moduleGuard,
       AuditService auditService,
       EntityManager entityManager,
-      ApplicationEventPublisher eventPublisher) {
+      ApplicationEventPublisher eventPublisher,
+      MemberNameResolver memberNameResolver) {
     this.transactionRepository = transactionRepository;
     this.ledgerCardRepository = ledgerCardRepository;
     this.trustAccountRepository = trustAccountRepository;
@@ -65,6 +72,7 @@ public class TrustTransactionService {
     this.auditService = auditService;
     this.entityManager = entityManager;
     this.eventPublisher = eventPublisher;
+    this.memberNameResolver = memberNameResolver;
   }
 
   // --- DTO Records ---
@@ -129,6 +137,48 @@ public class TrustTransactionService {
       UUID bankStatementLineId,
       UUID recordedBy,
       Instant createdAt) {}
+
+  public record EnrichedTrustTransactionResponse(
+      UUID id,
+      UUID trustAccountId,
+      String transactionType,
+      BigDecimal amount,
+      UUID customerId,
+      String customerName,
+      UUID projectId,
+      UUID counterpartyCustomerId,
+      UUID invoiceId,
+      String reference,
+      String description,
+      LocalDate transactionDate,
+      String status,
+      UUID approvedBy,
+      String approvedByName,
+      Instant approvedAt,
+      UUID secondApprovedBy,
+      Instant secondApprovedAt,
+      UUID rejectedBy,
+      Instant rejectedAt,
+      String rejectionReason,
+      UUID reversalOf,
+      UUID reversedById,
+      UUID bankStatementLineId,
+      UUID recordedBy,
+      String recordedByName,
+      Instant createdAt,
+      BigDecimal clientBalance) {}
+
+  public record TransactionFilters(
+      LocalDate dateFrom,
+      LocalDate dateTo,
+      String type,
+      String status,
+      UUID customerId,
+      UUID projectId) {}
+
+  public record RejectRequest(String reason) {}
+
+  public record ReverseRequest(String reason) {}
 
   // --- Service Methods ---
 
@@ -1127,6 +1177,173 @@ public class TrustTransactionService {
     return transactionRepository.calculateCashbookBalance(trustAccountId);
   }
 
+  // --- 442A: Controller-facing query and enrichment methods ---
+
+  @Transactional(readOnly = true)
+  public Page<EnrichedTrustTransactionResponse> listTransactions(
+      UUID trustAccountId, TransactionFilters filters, Pageable pageable) {
+    moduleGuard.requireModule(MODULE_ID);
+    trustAccountRepository
+        .findById(trustAccountId)
+        .orElseThrow(() -> new ResourceNotFoundException("TrustAccount", trustAccountId));
+
+    var jpql =
+        new StringBuilder("SELECT t FROM TrustTransaction t WHERE t.trustAccountId = :accountId");
+    var countJpql =
+        new StringBuilder(
+            "SELECT COUNT(t) FROM TrustTransaction t WHERE t.trustAccountId = :accountId");
+
+    var params = new ArrayList<Object[]>();
+    params.add(new Object[] {"accountId", trustAccountId});
+
+    if (filters.dateFrom() != null) {
+      jpql.append(" AND t.transactionDate >= :dateFrom");
+      countJpql.append(" AND t.transactionDate >= :dateFrom");
+      params.add(new Object[] {"dateFrom", filters.dateFrom()});
+    }
+    if (filters.dateTo() != null) {
+      jpql.append(" AND t.transactionDate <= :dateTo");
+      countJpql.append(" AND t.transactionDate <= :dateTo");
+      params.add(new Object[] {"dateTo", filters.dateTo()});
+    }
+    if (filters.type() != null) {
+      jpql.append(" AND t.transactionType = :type");
+      countJpql.append(" AND t.transactionType = :type");
+      params.add(new Object[] {"type", filters.type()});
+    }
+    if (filters.status() != null) {
+      jpql.append(" AND t.status = :status");
+      countJpql.append(" AND t.status = :status");
+      params.add(new Object[] {"status", filters.status()});
+    }
+    if (filters.customerId() != null) {
+      jpql.append(" AND t.customerId = :customerId");
+      countJpql.append(" AND t.customerId = :customerId");
+      params.add(new Object[] {"customerId", filters.customerId()});
+    }
+    if (filters.projectId() != null) {
+      jpql.append(" AND t.projectId = :projectId");
+      countJpql.append(" AND t.projectId = :projectId");
+      params.add(new Object[] {"projectId", filters.projectId()});
+    }
+
+    jpql.append(" ORDER BY t.transactionDate DESC, t.createdAt DESC");
+
+    var query = entityManager.createQuery(jpql.toString(), TrustTransaction.class);
+    var countQuery = entityManager.createQuery(countJpql.toString(), Long.class);
+
+    for (var param : params) {
+      query.setParameter((String) param[0], param[1]);
+      countQuery.setParameter((String) param[0], param[1]);
+    }
+
+    query.setFirstResult((int) pageable.getOffset());
+    query.setMaxResults(pageable.getPageSize());
+
+    var results = query.getResultList();
+    var total = countQuery.getSingleResult();
+
+    var enriched = results.stream().map(this::toEnrichedResponse).toList();
+    return new PageImpl<>(enriched, pageable, total);
+  }
+
+  @Transactional(readOnly = true)
+  public EnrichedTrustTransactionResponse getTransaction(UUID transactionId) {
+    moduleGuard.requireModule(MODULE_ID);
+    var transaction =
+        transactionRepository
+            .findById(transactionId)
+            .orElseThrow(() -> new ResourceNotFoundException("TrustTransaction", transactionId));
+    return toEnrichedResponse(transaction);
+  }
+
+  @Transactional(readOnly = true)
+  public List<EnrichedTrustTransactionResponse> getPendingApprovals(UUID trustAccountId) {
+    moduleGuard.requireModule(MODULE_ID);
+    trustAccountRepository
+        .findById(trustAccountId)
+        .orElseThrow(() -> new ResourceNotFoundException("TrustAccount", trustAccountId));
+
+    return transactionRepository
+        .findByStatusAndTrustAccountId("AWAITING_APPROVAL", trustAccountId)
+        .stream()
+        .map(this::toEnrichedResponse)
+        .toList();
+  }
+
+  /** Controller-facing deposit — returns enriched response with name resolution. */
+  @Transactional
+  public EnrichedTrustTransactionResponse recordDepositEnriched(
+      UUID trustAccountId, RecordDepositRequest request) {
+    var flat = recordDeposit(trustAccountId, request);
+    return toEnrichedResponseFromFlat(flat, null);
+  }
+
+  /** Controller-facing payment — returns enriched response with name resolution. */
+  @Transactional
+  public EnrichedTrustTransactionResponse recordPaymentEnriched(
+      UUID trustAccountId, RecordPaymentRequest request) {
+    var flat = recordPayment(trustAccountId, request);
+    return toEnrichedResponseFromFlat(flat, null);
+  }
+
+  /** Controller-facing transfer — returns enriched responses with name resolution. */
+  @Transactional
+  public List<EnrichedTrustTransactionResponse> recordTransferEnriched(
+      UUID trustAccountId, RecordTransferRequest request) {
+    var flatList = recordTransfer(trustAccountId, request);
+    return flatList.stream().map(flat -> toEnrichedResponseFromFlat(flat, null)).toList();
+  }
+
+  /** Controller-facing fee transfer — returns enriched response with name resolution. */
+  @Transactional
+  public EnrichedTrustTransactionResponse recordFeeTransferEnriched(
+      UUID trustAccountId, RecordFeeTransferRequest request) {
+    var flat = recordFeeTransfer(trustAccountId, request);
+    return toEnrichedResponseFromFlat(flat, null);
+  }
+
+  /** Controller-facing refund — returns enriched response with name resolution. */
+  @Transactional
+  public EnrichedTrustTransactionResponse recordRefundEnriched(
+      UUID trustAccountId, RecordRefundRequest request) {
+    var flat = recordRefund(trustAccountId, request);
+    return toEnrichedResponseFromFlat(flat, null);
+  }
+
+  /** Controller-facing approve — returns enriched response with client balance. */
+  @Transactional
+  public EnrichedTrustTransactionResponse approveTransactionEnriched(UUID transactionId) {
+    var memberId = RequestScopes.requireMemberId();
+    var flat = approveTransaction(transactionId, memberId);
+    BigDecimal clientBalance = null;
+    if (flat.customerId() != null) {
+      clientBalance =
+          ledgerCardRepository
+              .findByTrustAccountIdAndCustomerId(flat.trustAccountId(), flat.customerId())
+              .map(l -> l.getBalance())
+              .orElse(null);
+    }
+    return toEnrichedResponseFromFlat(flat, clientBalance);
+  }
+
+  /** Controller-facing reject — returns enriched response. */
+  @Transactional
+  public EnrichedTrustTransactionResponse rejectTransactionEnriched(
+      UUID transactionId, String reason) {
+    var memberId = RequestScopes.requireMemberId();
+    var flat = rejectTransaction(transactionId, memberId, reason);
+    return toEnrichedResponseFromFlat(flat, null);
+  }
+
+  /** Controller-facing reverse — returns enriched response. */
+  @Transactional
+  public EnrichedTrustTransactionResponse reverseTransactionEnriched(
+      UUID transactionId, String reason) {
+    var flat = reverseTransaction(transactionId, reason);
+    return toEnrichedResponseFromFlat(flat, null);
+  }
+
   // --- Private Helpers ---
 
   /**
@@ -1209,5 +1426,86 @@ public class TrustTransactionService {
         entity.getBankStatementLineId(),
         entity.getRecordedBy(),
         entity.getCreatedAt());
+  }
+
+  private EnrichedTrustTransactionResponse toEnrichedResponse(TrustTransaction entity) {
+    String customerName =
+        entity.getCustomerId() != null
+            ? customerRepository.findById(entity.getCustomerId()).map(c -> c.getName()).orElse(null)
+            : null;
+    String recordedByName = memberNameResolver.resolveNameOrNull(entity.getRecordedBy());
+    String approvedByName =
+        entity.getApprovedBy() != null
+            ? memberNameResolver.resolveNameOrNull(entity.getApprovedBy())
+            : null;
+    return new EnrichedTrustTransactionResponse(
+        entity.getId(),
+        entity.getTrustAccountId(),
+        entity.getTransactionType(),
+        entity.getAmount(),
+        entity.getCustomerId(),
+        customerName,
+        entity.getProjectId(),
+        entity.getCounterpartyCustomerId(),
+        entity.getInvoiceId(),
+        entity.getReference(),
+        entity.getDescription(),
+        entity.getTransactionDate(),
+        entity.getStatus(),
+        entity.getApprovedBy(),
+        approvedByName,
+        entity.getApprovedAt(),
+        entity.getSecondApprovedBy(),
+        entity.getSecondApprovedAt(),
+        entity.getRejectedBy(),
+        entity.getRejectedAt(),
+        entity.getRejectionReason(),
+        entity.getReversalOf(),
+        entity.getReversedById(),
+        entity.getBankStatementLineId(),
+        entity.getRecordedBy(),
+        recordedByName,
+        entity.getCreatedAt(),
+        null);
+  }
+
+  private EnrichedTrustTransactionResponse toEnrichedResponseFromFlat(
+      TrustTransactionResponse flat, BigDecimal clientBalance) {
+    String customerName =
+        flat.customerId() != null
+            ? customerRepository.findById(flat.customerId()).map(c -> c.getName()).orElse(null)
+            : null;
+    String recordedByName = memberNameResolver.resolveNameOrNull(flat.recordedBy());
+    String approvedByName =
+        flat.approvedBy() != null ? memberNameResolver.resolveNameOrNull(flat.approvedBy()) : null;
+    return new EnrichedTrustTransactionResponse(
+        flat.id(),
+        flat.trustAccountId(),
+        flat.transactionType(),
+        flat.amount(),
+        flat.customerId(),
+        customerName,
+        flat.projectId(),
+        flat.counterpartyCustomerId(),
+        flat.invoiceId(),
+        flat.reference(),
+        flat.description(),
+        flat.transactionDate(),
+        flat.status(),
+        flat.approvedBy(),
+        approvedByName,
+        flat.approvedAt(),
+        flat.secondApprovedBy(),
+        flat.secondApprovedAt(),
+        flat.rejectedBy(),
+        flat.rejectedAt(),
+        flat.rejectionReason(),
+        flat.reversalOf(),
+        flat.reversedById(),
+        flat.bankStatementLineId(),
+        flat.recordedBy(),
+        recordedByName,
+        flat.createdAt(),
+        clientBalance);
   }
 }

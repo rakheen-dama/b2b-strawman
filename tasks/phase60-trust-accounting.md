@@ -32,7 +32,7 @@ Phase 60 replaces the `trust_accounting` module stub (registered in Phase 49) wi
 |------|------|-------|------|--------|--------|--------|
 | 438 | Foundation: V85 Migration + Module Registration + RBAC Capabilities | Backend | -- | M | 438A, 438B | **Done** (PRs #921, #922) |
 | 439 | TrustAccount + LpffRate Entity + Service + Controller | Backend | 438 | M | 439A, 439B | **Done** (PRs #923, #924) |
-| 440 | TrustTransaction + ClientLedgerCard Entity + Deposit/Transfer Service | Backend | 439 | L | 440A, 440B | 440A Done (PR #925) |
+| 440 | TrustTransaction + ClientLedgerCard Entity + Deposit/Transfer Service | Backend | 439 | L | 440A, 440B | **Done** (PRs #925, #926) |
 | 441 | Approval Workflow + Payment/FeeTransfer/Refund Recording | Backend | 440 | L | 441A, 441B | Not started |
 | 442 | Transaction Controller + Approval Endpoints + Client Ledger Controller | Backend | 441 | M | 442A, 442B | Not started |
 | 443 | Bank Statement Import + CSV Parsers | Backend | 439 | M | 443A, 443B | Not started |
@@ -225,14 +225,14 @@ FRONTEND CORE                           FRONTEND ADVANCED
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 3a (parallel) | 440 | 440B | Transaction reversal conditional approval (credit vs debit reversals), `getCashbookBalance()`, client ledger card query methods. Additional integration tests (~8). Backend only. | Not started |
+| 3a (parallel) | 440 | 440B | Transaction reversal conditional approval (credit vs debit reversals), `getCashbookBalance()`, client ledger card query methods. Additional integration tests (~8). Backend only. | **Done** (PR #926) |
 | 3b (parallel) | 443 | 443B | `TrustReconciliationController` bank statement endpoints: multipart upload (S3 storage at `trust-statements/{tenantSchema}/{accountId}/{filename}`), statement list, statement detail with lines. Integration tests (~5). Backend only. | Not started |
 
 ### Stage 4: Approval Workflow (sequential)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 4a | 441 | 441A | `recordPayment()`, `recordFeeTransfer()`, `recordRefund()` (all create in AWAITING_APPROVAL status). `approveTransaction()` with single approval mode + self-approval prevention + negative balance check. `rejectTransaction()`. Integration tests (~10). Backend only. | Not started |
+| 4a | 441 | 441A | `recordPayment()`, `recordFeeTransfer()`, `recordRefund()` (all create in AWAITING_APPROVAL status). `approveTransaction()` with single approval mode + self-approval prevention + negative balance check. `rejectTransaction()`. Integration tests (~10). Backend only. | **Done** (PR #928) |
 | 4b | 441 | 441B | Dual approval mode + threshold-based dual approval + concurrent approval race condition tests. Fee transfer → `InvoiceService.recordPayment()` integration. `TrustNotificationHandler` skeleton for approval notifications. Integration tests (~10). Backend only. | Not started |
 
 ### Stage 5: Controllers + Matching + Interest + Investments (parallel tracks)
@@ -451,7 +451,7 @@ Stage 11: [451A] -> [451B]                                                <- int
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **440A** | 440.1--440.8 | `TrustTransaction` entity + `ClientLedgerCard` entity + repos (including `@Lock(PESSIMISTIC_WRITE)` query) + `TrustTransactionService` (recordDeposit, recordTransfer with paired TRANSFER_IN/TRANSFER_OUT) + `ClientLedgerService` (getClientLedger, listClientLedgers, getClientTransactionHistory). Negative balance prevention. Integration tests (~12). Backend only. | **Done** (PR #925) |
-| **440B** | 440.9--440.14 | `reverseTransaction()` with conditional approval (credit vs debit reversals). `getCashbookBalance()`. `getClientBalanceAsOfDate()`. `getTotalTrustBalance()`. `getClientLedgerStatement()`. Additional integration tests (~8). Backend only. | Not started |
+| **440B** | 440.9--440.14 | `reverseTransaction()` with conditional approval (credit vs debit reversals). `getCashbookBalance()`. `getClientBalanceAsOfDate()`. `getTotalTrustBalance()`. `getClientLedgerStatement()`. Additional integration tests (~8). Backend only. | **Done** (PR #926) |
 
 ### Tasks
 
@@ -515,7 +515,7 @@ Stage 11: [451A] -> [451B]                                                <- int
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **441A** | 441.1--441.6 | `recordPayment()`, `recordFeeTransfer()`, `recordRefund()` creating transactions in AWAITING_APPROVAL status. `approveTransaction()` with single approval mode + self-approval prevention + negative balance check on approval. `rejectTransaction()` with reason. Integration tests (~10). Backend only. | Not started |
+| **441A** | 441.1--441.6 | `recordPayment()`, `recordFeeTransfer()`, `recordRefund()` creating transactions in AWAITING_APPROVAL status. `approveTransaction()` with single approval mode + self-approval prevention + negative balance check on approval. `rejectTransaction()` with reason. Integration tests (~10). Backend only. | **Done** (PR #928) |
 | **441B** | 441.7--441.12 | Dual approval mode + threshold-based dual approval. Fee transfer → `InvoiceService.recordPayment()` on approval. `TrustNotificationHandler` skeleton for approval notification fan-out. Concurrent approval race condition tests. Integration tests (~10). Backend only. | Not started |
 
 ### Tasks

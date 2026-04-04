@@ -499,7 +499,7 @@
 | 438 | Foundation: V85 Migration + Module Registration + RBAC Capabilities | Backend | -- | M | 438A, 438B | **Done** (PRs #921, #922) |
 | 439 | TrustAccount + LpffRate Entity + Service + Controller | Backend | 438 | M | 439A, 439B | **Done** (PRs #923, #924) |
 | 440 | TrustTransaction + ClientLedgerCard Entity + Deposit/Transfer Service | Backend | 439 | L | 440A, 440B | **Done** (PRs #925, #926) |
-| 441 | Approval Workflow + Payment/FeeTransfer/Refund Recording | Backend | 440 | L | 441A, 441B | |
+| 441 | Approval Workflow + Payment/FeeTransfer/Refund Recording | Backend | 440 | L | 441A, 441B | 441A **Done** (PR #928) |
 | 442 | Transaction Controller + Approval Endpoints + Client Ledger Controller | Backend | 441 | M | 442A, 442B | |
 | 443 | Bank Statement Import + CSV Parsers | Backend | 439 | M | 443A, 443B | |
 | 444 | Auto-Matching + Manual Matching + Reconciliation | Backend | 440, 443 | L | 444A, 444B | |
@@ -510,6 +510,14 @@
 | 449 | Frontend: Client Ledger + Reconciliation Split-Pane | Frontend | 442, 444 | L | 449A, 449B | |
 | 450 | Frontend: Interest + Investments + Reports Pages | Frontend | 445, 446, 447 | M | 450A, 450B | |
 | 451 | Frontend: Matter/Customer Trust Tabs + Settings + Sidebar + Coexistence Tests | Frontend | 448, 449, 450 | M | 451A, 451B | |
+| **Phase 61 — Legal Compliance Refinements: Section 86 Investment Distinction & KYC Verification** | | | | | | See [tasks/phase61-legal-compliance-refinements.md](tasks/phase61-legal-compliance-refinements.md) |
+| 452 | Foundation: V86 Migration + InvestmentBasis Enum + TrustAccountingConstants | Backend | -- | S | 452A | |
+| 453 | Interest Calculation Basis Distinction + Audit Trail | Backend | 452 | M | 453A, 453B | |
+| 454 | Investment Register Report + Section 35 Data Pack Updates | Backend | 453 | S | 454A | |
+| 455 | Frontend: Investment Form + Register + Interest Table Updates | Frontend | 453 | M | 455A | |
+| 456 | KYC Adapter Infrastructure: Port, Adapters, Service | Backend | 452 | M | 456A, 456B | |
+| 457 | KYC Controller + Integration Status Endpoint | Backend | 456 | S | 457A | |
+| 458 | Frontend: KYC Verification Dialog + Checklist Integration + Settings Card | Frontend | 457 | M | 458A, 458B | |
 
 ---
 

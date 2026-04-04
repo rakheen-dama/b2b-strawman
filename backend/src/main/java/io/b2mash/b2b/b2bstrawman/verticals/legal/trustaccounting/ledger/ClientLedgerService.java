@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger;
 
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
@@ -166,7 +167,8 @@ public class ClientLedgerService {
     } else if (DEBIT_TYPES.contains(txn.getTransactionType())) {
       return txn.getAmount().negate();
     }
-    throw new IllegalStateException("Unknown transaction type: " + txn.getTransactionType());
+    throw new InvalidStateException(
+        "Unsupported transaction type for ledger statement", txn.getTransactionType());
   }
 
   // --- Private Helpers ---

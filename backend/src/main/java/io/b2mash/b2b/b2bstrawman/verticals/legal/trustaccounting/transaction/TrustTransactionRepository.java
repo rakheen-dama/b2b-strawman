@@ -111,6 +111,7 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
         AND t.transactionDate >= :startDate
         AND t.transactionDate <= :endDate
         AND t.status IN ('RECORDED', 'APPROVED')
+        AND t.transactionType <> 'REVERSAL'
       ORDER BY t.transactionDate ASC, t.createdAt ASC
       """)
   List<TrustTransaction> findForStatement(

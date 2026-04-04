@@ -104,6 +104,38 @@ public class ClientLedgerCard {
     updateLastTransactionDate(transactionDate);
   }
 
+  /** Debits balance for a PAYMENT transaction. Updates totalPayments running total. */
+  public void recordPayment(BigDecimal amount, LocalDate transactionDate) {
+    Objects.requireNonNull(amount, "amount must not be null");
+    if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+      throw new IllegalArgumentException("amount must be positive");
+    }
+    this.balance = this.balance.subtract(amount);
+    this.totalPayments = this.totalPayments.add(amount);
+    updateLastTransactionDate(transactionDate);
+  }
+
+  /** Debits balance for a FEE_TRANSFER transaction. Updates totalFeeTransfers running total. */
+  public void recordFeeTransfer(BigDecimal amount, LocalDate transactionDate) {
+    Objects.requireNonNull(amount, "amount must not be null");
+    if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+      throw new IllegalArgumentException("amount must be positive");
+    }
+    this.balance = this.balance.subtract(amount);
+    this.totalFeeTransfers = this.totalFeeTransfers.add(amount);
+    updateLastTransactionDate(transactionDate);
+  }
+
+  /** Debits balance for a REFUND transaction. Updates balance only (no separate refund total). */
+  public void recordRefund(BigDecimal amount, LocalDate transactionDate) {
+    Objects.requireNonNull(amount, "amount must not be null");
+    if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+      throw new IllegalArgumentException("amount must be positive");
+    }
+    this.balance = this.balance.subtract(amount);
+    updateLastTransactionDate(transactionDate);
+  }
+
   /** Only advances lastTransactionDate — never moves it backwards for backdated transactions. */
   private void updateLastTransactionDate(LocalDate transactionDate) {
     if (this.lastTransactionDate == null

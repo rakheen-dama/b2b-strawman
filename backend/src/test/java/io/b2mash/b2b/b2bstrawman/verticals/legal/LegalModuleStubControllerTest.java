@@ -83,19 +83,17 @@ class LegalModuleStubControllerTest {
   }
 
   @Test
-  void trustAccountingStatus_returns200_whenModuleEnabled() throws Exception {
+  void trustAccountingList_returns200_whenModuleEnabled() throws Exception {
     mockMvc
-        .perform(get("/api/trust-accounting/status").with(enabledOwnerJwt()))
+        .perform(get("/api/trust-accounts").with(enabledOwnerJwt()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.module").value("trust_accounting"))
-        .andExpect(jsonPath("$.status").value("active"))
-        .andExpect(jsonPath("$.message").exists());
+        .andExpect(jsonPath("$").isArray());
   }
 
   @Test
-  void trustAccountingStatus_returns403_whenModuleDisabled() throws Exception {
+  void trustAccountingList_returns403_whenModuleDisabled() throws Exception {
     mockMvc
-        .perform(get("/api/trust-accounting/status").with(disabledOwnerJwt()))
+        .perform(get("/api/trust-accounts").with(disabledOwnerJwt()))
         .andExpect(status().isForbidden());
   }
 

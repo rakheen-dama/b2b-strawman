@@ -57,6 +57,8 @@ class TrustAccountingControllerTest {
         "trust_ctrl_member@test.com",
         "Trust Ctrl Member",
         "member");
+    syncMember(
+        ORG_ID, "user_trust_ctrl_admin", "trust_ctrl_admin@test.com", "Trust Ctrl Admin", "admin");
 
     // Enable the trust_accounting module
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -305,6 +307,86 @@ class TrustAccountingControllerTest {
         .andExpect(status().isForbidden());
   }
 
+  @Test
+  void getLpffRates_returnsCreatedRate() throws Exception {
+    // Create an account
+    var accountResult =
+        mockMvc
+            .perform(
+                post("/api/trust-accounts")
+                    .with(ownerJwt())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "accountName": "LPFF List Test Account",
+                          "bankName": "FNB",
+                          "branchCode": "250655",
+                          "accountNumber": "77000000001",
+                          "isPrimary": false
+                        }
+                        """))
+            .andExpect(status().isCreated())
+            .andReturn();
+
+    String accountId = JsonPath.read(accountResult.getResponse().getContentAsString(), "$.id");
+
+    // Create an LPFF rate
+    mockMvc
+        .perform(
+            post("/api/trust-accounts/" + accountId + "/lpff-rates")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "effectiveFrom": "2026-07-01",
+                      "ratePercent": 0.0800,
+                      "lpffSharePercent": 0.0175,
+                      "notes": "Q3 2026 rate"
+                    }
+                    """))
+        .andExpect(status().isCreated());
+
+    // GET the rates and verify the created rate is returned
+    mockMvc
+        .perform(get("/api/trust-accounts/" + accountId + "/lpff-rates").with(ownerJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$").isArray())
+        .andExpect(jsonPath("$.length()").value(org.hamcrest.Matchers.greaterThanOrEqualTo(1)))
+        .andExpect(jsonPath("$[0].trustAccountId").value(accountId))
+        .andExpect(jsonPath("$[0].effectiveFrom").value("2026-07-01"))
+        .andExpect(jsonPath("$[0].notes").value("Q3 2026 rate"));
+  }
+
+  @Test
+  void getTrustAccounts_adminWithViewTrust_returns200() throws Exception {
+    // Create an account as owner first
+    mockMvc
+        .perform(
+            post("/api/trust-accounts")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "accountName": "Admin View Test Account",
+                      "bankName": "Nedbank",
+                      "branchCode": "198765",
+                      "accountNumber": "66000000001",
+                      "isPrimary": false
+                    }
+                    """))
+        .andExpect(status().isCreated());
+
+    // Admin role has VIEW_TRUST capability — verify read access succeeds
+    mockMvc
+        .perform(get("/api/trust-accounts").with(adminJwt()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$").isArray())
+        .andExpect(jsonPath("$.length()").value(org.hamcrest.Matchers.greaterThanOrEqualTo(1)));
+  }
+
   // --- Helpers ---
 
   private String syncMember(
@@ -340,5 +422,13 @@ class TrustAccountingControllerTest {
             j ->
                 j.subject("user_trust_ctrl_member")
                     .claim("o", Map.of("id", ORG_ID, "rol", "member")));
+  }
+
+  private JwtRequestPostProcessor adminJwt() {
+    return jwt()
+        .jwt(
+            j ->
+                j.subject("user_trust_ctrl_admin")
+                    .claim("o", Map.of("id", ORG_ID, "rol", "admin")));
   }
 }

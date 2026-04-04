@@ -32,7 +32,7 @@ Phase 60 replaces the `trust_accounting` module stub (registered in Phase 49) wi
 |------|------|-------|------|--------|--------|--------|
 | 438 | Foundation: V85 Migration + Module Registration + RBAC Capabilities | Backend | -- | M | 438A, 438B | **Done** (PRs #921, #922) |
 | 439 | TrustAccount + LpffRate Entity + Service + Controller | Backend | 438 | M | 439A, 439B | **Done** (PRs #923, #924) |
-| 440 | TrustTransaction + ClientLedgerCard Entity + Deposit/Transfer Service | Backend | 439 | L | 440A, 440B | Not started |
+| 440 | TrustTransaction + ClientLedgerCard Entity + Deposit/Transfer Service | Backend | 439 | L | 440A, 440B | 440A Done (PR #925) |
 | 441 | Approval Workflow + Payment/FeeTransfer/Refund Recording | Backend | 440 | L | 441A, 441B | Not started |
 | 442 | Transaction Controller + Approval Endpoints + Client Ledger Controller | Backend | 441 | M | 442A, 442B | Not started |
 | 443 | Bank Statement Import + CSV Parsers | Backend | 439 | M | 443A, 443B | Not started |
@@ -218,7 +218,7 @@ FRONTEND CORE                           FRONTEND ADVANCED
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 2a (parallel) | 440 | 440A | `TrustTransaction` entity + `ClientLedgerCard` entity + repos + `TrustTransactionService` (recordDeposit, recordTransfer with paired TRANSFER_IN/TRANSFER_OUT, reverseTransaction) + `ClientLedgerService` (getClientLedger, listClientLedgers, getClientTransactionHistory, getClientBalanceAsOfDate, getTotalTrustBalance). Negative balance prevention (SELECT FOR UPDATE + CHECK constraint verification). Integration tests (~12). Backend only. | Not started |
+| 2a (parallel) | 440 | 440A | `TrustTransaction` entity + `ClientLedgerCard` entity + repos + `TrustTransactionService` (recordDeposit, recordTransfer with paired TRANSFER_IN/TRANSFER_OUT, reverseTransaction) + `ClientLedgerService` (getClientLedger, listClientLedgers, getClientTransactionHistory, getClientBalanceAsOfDate, getTotalTrustBalance). Negative balance prevention (SELECT FOR UPDATE + CHECK constraint verification). Integration tests (~12). Backend only. | **Done** (PR #925) |
 | 2b (parallel) | 443 | 443A | `BankStatement` entity + `BankStatementLine` entity + repos + `BankStatementParser` interface + `CsvBankStatementParser` abstract base + `FnbCsvParser` + `StandardBankCsvParser` + `NedbankCsvParser` + `AbsaCsvParser` + `GenericCsvParser`. CSV fixture files in `src/test/resources/fixtures/trust/`. Unit tests (~10). Backend only. | Not started |
 
 ### Stage 3: Transaction Controllers + Bank Statement Controller (parallel tracks)
@@ -450,7 +450,7 @@ Stage 11: [451A] -> [451B]                                                <- int
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **440A** | 440.1--440.8 | `TrustTransaction` entity + `ClientLedgerCard` entity + repos (including `@Lock(PESSIMISTIC_WRITE)` query) + `TrustTransactionService` (recordDeposit, recordTransfer with paired TRANSFER_IN/TRANSFER_OUT) + `ClientLedgerService` (getClientLedger, listClientLedgers, getClientTransactionHistory). Negative balance prevention. Integration tests (~12). Backend only. | Not started |
+| **440A** | 440.1--440.8 | `TrustTransaction` entity + `ClientLedgerCard` entity + repos (including `@Lock(PESSIMISTIC_WRITE)` query) + `TrustTransactionService` (recordDeposit, recordTransfer with paired TRANSFER_IN/TRANSFER_OUT) + `ClientLedgerService` (getClientLedger, listClientLedgers, getClientTransactionHistory). Negative balance prevention. Integration tests (~12). Backend only. | **Done** (PR #925) |
 | **440B** | 440.9--440.14 | `reverseTransaction()` with conditional approval (credit vs debit reversals). `getCashbookBalance()`. `getClientBalanceAsOfDate()`. `getTotalTrustBalance()`. `getClientLedgerStatement()`. Additional integration tests (~8). Backend only. | Not started |
 
 ### Tasks

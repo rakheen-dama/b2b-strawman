@@ -20,7 +20,16 @@ export default async function TariffsPage({
 
   const enabledModules = settings.enabledModules ?? [];
   if (!enabledModules.includes("lssa_tariff")) {
-    notFound();
+    return (
+      <div className="flex flex-col items-center justify-center py-20">
+        <h2 className="font-display text-xl font-semibold text-slate-950 dark:text-slate-50">
+          Module Not Available
+        </h2>
+        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+          The Tariff Schedules module is not enabled for your organization.
+        </p>
+      </div>
+    );
   }
 
   let initialSchedules: TariffSchedule[] = [];

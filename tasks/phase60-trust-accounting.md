@@ -31,7 +31,7 @@ Phase 60 replaces the `trust_accounting` module stub (registered in Phase 49) wi
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 438 | Foundation: V85 Migration + Module Registration + RBAC Capabilities | Backend | -- | M | 438A, 438B | **Done** (PRs #921, #922) |
-| 439 | TrustAccount + LpffRate Entity + Service + Controller | Backend | 438 | M | 439A, 439B | Not started |
+| 439 | TrustAccount + LpffRate Entity + Service + Controller | Backend | 438 | M | 439A, 439B | **Done** (PRs #923, #924) |
 | 440 | TrustTransaction + ClientLedgerCard Entity + Deposit/Transfer Service | Backend | 439 | L | 440A, 440B | Not started |
 | 441 | Approval Workflow + Payment/FeeTransfer/Refund Recording | Backend | 440 | L | 441A, 441B | Not started |
 | 442 | Transaction Controller + Approval Endpoints + Client Ledger Controller | Backend | 441 | M | 442A, 442B | Not started |
@@ -212,7 +212,7 @@ FRONTEND CORE                           FRONTEND ADVANCED
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 1a | 439 | 439A | `TrustAccount` entity + `LpffRate` entity + `TrustAccountRepository` + `LpffRateRepository` + `TrustAccountService` (CRUD, close guard, LPFF rate management, module guard, audit events). Integration tests (~8). Backend only. | **Done** (PR #923) |
-| 1b | 439 | 439B | Replace stub `TrustAccountingController` with 7 endpoints (list, get, create, update, close, listRates, addRate). `@RequiresCapability` on all endpoints. Integration tests (~6). Backend only. | Not started |
+| 1b | 439 | 439B | Replace stub `TrustAccountingController` with 7 endpoints (list, get, create, update, close, listRates, addRate). `@RequiresCapability` on all endpoints. Integration tests (~6). Backend only. | **Done** (PR #924) |
 
 ### Stage 2: Trust Ledger Core + Bank Statement Import (parallel tracks)
 
@@ -386,7 +386,7 @@ Stage 11: [451A] -> [451B]                                                <- int
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **439A** | 439.1--439.7 | `TrustAccount` entity + `LpffRate` entity + `TrustAccountRepository` + `LpffRateRepository` + `TrustAccountService` (list, get, create, update, close with guard, LPFF rate CRUD, module guard, audit events). Integration tests (~8). Backend only. | **Done** (PR #923) |
-| **439B** | 439.8--439.12 | Replace stub `TrustAccountingController` with full implementation (7 endpoints: list accounts, get account, create account, update account, close account, list LPFF rates, add LPFF rate). `@RequiresCapability` on all endpoints. Integration tests (~6). Backend only. | Not started |
+| **439B** | 439.8--439.12 | Replace stub `TrustAccountingController` with full implementation (7 endpoints: list accounts, get account, create account, update account, close account, list LPFF rates, add LPFF rate). `@RequiresCapability` on all endpoints. Integration tests (~6). Backend only. | **Done** (PR #924) |
 
 ### Tasks
 

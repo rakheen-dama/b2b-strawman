@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger;
 
 import jakarta.persistence.LockModeType;
+import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -22,4 +23,9 @@ public interface ClientLedgerCardRepository extends JpaRepository<ClientLedgerCa
       @Param("accountId") UUID accountId, @Param("customerId") UUID customerId);
 
   Page<ClientLedgerCard> findByTrustAccountId(UUID trustAccountId, Pageable pageable);
+
+  /** Sums the balance across all client ledger cards for a trust account. */
+  @Query(
+      "SELECT COALESCE(SUM(c.balance), 0) FROM ClientLedgerCard c WHERE c.trustAccountId = :trustAccountId")
+  BigDecimal calculateTotalTrustBalance(@Param("trustAccountId") UUID trustAccountId);
 }

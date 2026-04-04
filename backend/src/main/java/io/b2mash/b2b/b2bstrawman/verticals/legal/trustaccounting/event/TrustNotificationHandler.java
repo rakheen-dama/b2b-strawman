@@ -125,19 +125,32 @@ public class TrustNotificationHandler {
               .findById(notification.getRecipientMemberId())
               .map(Member::getEmail)
               .orElse(null);
+      if (recipientEmail == null) {
+        log.debug(
+            "No email found for member {} — in-app notification will still be dispatched",
+            notification.getRecipientMemberId());
+      }
       notificationDispatcher.dispatch(notification, recipientEmail);
     }
   }
 
+  /**
+   * Runs the action within a tenant scope. Only binds TENANT_ID and ORG_ID intentionally —
+   * notification handlers run outside of a member/request context, so MEMBER_ID, ORG_ROLE, and
+   * CAPABILITIES are not bound. The handler only needs tenant scope for database routing.
+   */
   private void handleInTenantScope(String tenantId, String orgId, Runnable action) {
-    if (tenantId != null) {
-      var carrier = ScopedValue.where(RequestScopes.TENANT_ID, tenantId);
-      if (orgId != null) {
-        carrier = carrier.where(RequestScopes.ORG_ID, orgId);
-      }
-      carrier.run(action);
-    } else {
-      action.run();
+    if (tenantId == null) {
+      // Trust accounting events should always have a tenant context.
+      // Without one, queries would hit the public schema — skip rather than corrupt.
+      log.warn("Trust notification event received without tenantId — skipping notification");
+      return;
     }
+
+    var carrier = ScopedValue.where(RequestScopes.TENANT_ID, tenantId);
+    if (orgId != null) {
+      carrier = carrier.where(RequestScopes.ORG_ID, orgId);
+    }
+    carrier.run(action);
   }
 }

@@ -656,19 +656,13 @@ public class TrustTransactionService {
       return toResponse(transaction);
     } else {
       // Second approval in dual mode
-      // Must differ from first approver
+      // Must differ from first approver.
+      // This also implicitly prevents the recorder from being both approvers:
+      // if the recorder was the first approver, this check blocks them from also being
+      // the second approver (since approverId would equal approvedBy).
       if (approverId.equals(transaction.getApprovedBy())) {
         throw new InvalidStateException(
             "Duplicate approver", "Second approver must be different from the first approver");
-      }
-
-      // Self-approval check in dual mode: recorder cannot be BOTH approvers
-      if (approverId.equals(transaction.getRecordedBy())
-          && transaction.getApprovedBy().equals(transaction.getRecordedBy())) {
-        throw new InvalidStateException(
-            "Self-approval not allowed",
-            "The transaction recorder cannot be the sole approver. A different member with"
-                + " APPROVE_TRUST_PAYMENT capability must approve this transaction.");
       }
 
       transaction.setSecondApprovedBy(approverId);
@@ -727,10 +721,24 @@ public class TrustTransactionService {
 
       ledgerCardRepository.save(ledgerCard);
 
-      // 441.9: Fee transfer invoice integration — mark invoice as PAID on approval
+      // 441.9: Fee transfer invoice integration — mark invoice as PAID on approval.
+      // Use fromWebhook=true to skip PSP gateway call: a trust fee transfer is an internal
+      // accounting operation, not an external payment through a payment service provider.
+      // Pre-check: the webhook path silently accepts already-PAID invoices (idempotent),
+      // but trust fee transfers must reject this to prevent double debit from trust balance.
       if ("FEE_TRANSFER".equals(transaction.getTransactionType())
           && transaction.getInvoiceId() != null) {
-        invoiceService.recordPayment(transaction.getInvoiceId(), transaction.getReference());
+        var invoice =
+            invoiceRepository
+                .findById(transaction.getInvoiceId())
+                .orElseThrow(
+                    () -> new ResourceNotFoundException("Invoice", transaction.getInvoiceId()));
+        if (invoice.getStatus() == InvoiceStatus.PAID) {
+          throw new InvalidStateException(
+              "Invoice already paid",
+              "Cannot complete fee transfer — invoice is already in PAID status");
+        }
+        invoiceService.recordPayment(transaction.getInvoiceId(), transaction.getReference(), true);
       }
     }
 

@@ -9,7 +9,6 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
-import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -2407,8 +2406,8 @@ class TrustTransactionServiceTest {
     runAsApprover(
         () ->
             assertThatThrownBy(() -> transactionService.approveTransaction(txnId[0], approverId))
-                .isInstanceOf(ResourceConflictException.class)
-                .hasMessageContaining("Only sent invoices can be paid"));
+                .isInstanceOf(InvalidStateException.class)
+                .hasMessageContaining("invoice is already in PAID status"));
   }
 
   @Test

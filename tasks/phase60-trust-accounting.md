@@ -39,7 +39,7 @@ Phase 60 replaces the `trust_accounting` module stub (registered in Phase 49) wi
 | 444 | Auto-Matching + Manual Matching + Reconciliation | Backend | 440, 443 | L | 444A, 444B | **Done** (PRs #935, #936) |
 | 445 | Interest Calculation + Posting | Backend | 440 | L | 445A, 445B | **Done** (PRs #937, #938) |
 | 446 | Trust Investments | Backend | 441 | M | 446A, 446B | **Done** (PRs #939, #940) |
-| 447 | Trust Reports (Section 35) + Event/Notification Handlers | Backend | 442, 444, 445, 446 | M | 447A, 447B | 447A done (PR #941) |
+| 447 | Trust Reports (Section 35) + Event/Notification Handlers | Backend | 442, 444, 445, 446 | M | 447A, 447B | **Done** (PRs #941, #942) |
 | 448 | Frontend: Trust Dashboard + Transaction Entry + Approval UX | Frontend | 442 | L | 448A, 448B | Not started |
 | 449 | Frontend: Client Ledger + Reconciliation Split-Pane | Frontend | 442, 444 | L | 449A, 449B | Not started |
 | 450 | Frontend: Interest + Investments + Reports Pages | Frontend | 445, 446, 447 | M | 450A, 450B | Not started |
@@ -258,7 +258,7 @@ FRONTEND CORE                           FRONTEND ADVANCED
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 7a | 447 | 447A | 7 trust `ReportDefinition` seed registrations (TRUST_RECEIPTS_PAYMENTS, CLIENT_TRUST_BALANCES, CLIENT_LEDGER_STATEMENT, TRUST_RECONCILIATION, INVESTMENT_REGISTER, INTEREST_ALLOCATION, SECTION_35_DATA_PACK). Data provider implementations for each. Integration tests (~7). Backend only. | **Done** (PR #941) |
-| 7b | 447 | 447B | `TrustDomainEvent` sealed interface + `TrustNotificationHandler` (approval pending, approved, rejected, reconciliation overdue, investment maturing, approval aging). Legal pack content extension (trust templates + automation rules). Integration tests (~5). Backend only. | Not started |
+| 7b | 447 | 447B | `TrustDomainEvent` sealed interface + `TrustNotificationHandler` (approval pending, approved, rejected, reconciliation overdue, investment maturing, approval aging). Legal pack content extension (trust templates + automation rules). Integration tests (~5). Backend only. | **Done** (PR #942) |
 
 ### Stage 8: Frontend Core (sequential)
 
@@ -880,7 +880,7 @@ Stage 11: [451A] -> [451B]                                                <- int
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **447A** | 447.1--447.5 | 7 `ReportDefinition` seed registrations + data provider implementations for each report type + Section 35 data pack (composite report). Integration tests (~7). Backend only. | **Done** (PR #941) |
-| **447B** | 447.6--447.10 | `TrustDomainEvent` sealed interface + `TrustNotificationHandler` completion (6 notification types) + legal pack content extension (trust templates + automation rules). Integration tests (~5). Backend only. | Not started |
+| **447B** | 447.6--447.10 | `TrustDomainEvent` sealed interface + `TrustNotificationHandler` completion (6 notification types) + legal pack content extension (trust templates + automation rules). Integration tests (~5). Backend only. | **Done** (PR #942) |
 
 ### Tasks
 

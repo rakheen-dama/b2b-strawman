@@ -177,7 +177,15 @@ public class NotificationService {
           "DSAR_DEADLINE_WARNING",
           "POST_CREATE_ACTION_FAILED",
           "COURT_DATE_REMINDER",
-          "PRESCRIPTION_WARNING");
+          "PRESCRIPTION_WARNING",
+          "TRUST_PAYMENT_AWAITING_APPROVAL",
+          "TRUST_PAYMENT_APPROVED",
+          "TRUST_PAYMENT_REJECTED",
+          "TRUST_RECONCILIATION_OVERDUE",
+          "TRUST_INVESTMENT_MATURING",
+          "TRUST_APPROVAL_AGING",
+          "TRUST_RECONCILIATION_COMPLETED",
+          "TRUST_INTEREST_POSTED");
 
   // --- Preference methods ---
 

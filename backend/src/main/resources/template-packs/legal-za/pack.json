@@ -1,6 +1,6 @@
 {
   "packId": "legal-za",
-  "version": 1,
+  "version": 2,
   "verticalProfile": "legal-za",
   "name": "SA Legal Templates",
   "description": "Document templates for South African law firms: engagement letters, court filings, and correspondence",
@@ -74,6 +74,36 @@
       "cssFile": null,
       "description": "Demand letter for collections and debt recovery matters.",
       "sortOrder": 7
+    },
+    {
+      "templateKey": "client-trust-statement",
+      "name": "Client Trust Statement",
+      "category": "REPORT",
+      "primaryEntityType": "CUSTOMER",
+      "contentFile": "client-trust-statement.json",
+      "cssFile": null,
+      "description": "Statement of trust account transactions and balances for a specific client.",
+      "sortOrder": 8
+    },
+    {
+      "templateKey": "trust-receipt",
+      "name": "Trust Receipt",
+      "category": "OTHER",
+      "primaryEntityType": "CUSTOMER",
+      "contentFile": "trust-receipt.json",
+      "cssFile": null,
+      "description": "Receipt for funds received into the trust account on behalf of a client.",
+      "sortOrder": 9
+    },
+    {
+      "templateKey": "section-35-cover-letter",
+      "name": "Section 35 Cover Letter",
+      "category": "COVER_LETTER",
+      "primaryEntityType": "ORGANIZATION",
+      "contentFile": "section-35-cover-letter.json",
+      "cssFile": null,
+      "description": "Cover letter for Section 35 trust account audit submission to the Legal Practice Council.",
+      "sortOrder": 10
     }
   ]
 }

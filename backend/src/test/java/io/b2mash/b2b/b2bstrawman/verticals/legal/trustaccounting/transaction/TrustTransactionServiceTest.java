@@ -2470,7 +2470,7 @@ class TrustTransactionServiceTest {
                   var notifications = notificationRepository.findAll();
                   var trustNotifications =
                       notifications.stream()
-                          .filter(n -> "trust_transaction.awaiting_approval".equals(n.getType()))
+                          .filter(n -> "TRUST_PAYMENT_AWAITING_APPROVAL".equals(n.getType()))
                           .toList();
                   // At least one notification should have been created for approvers
                   assertThat(trustNotifications).isNotEmpty();

@@ -35,7 +35,7 @@ Phase 60 replaces the `trust_accounting` module stub (registered in Phase 49) wi
 | 440 | TrustTransaction + ClientLedgerCard Entity + Deposit/Transfer Service | Backend | 439 | L | 440A, 440B | **Done** (PRs #925, #926) |
 | 441 | Approval Workflow + Payment/FeeTransfer/Refund Recording | Backend | 440 | L | 441A, 441B | **Done** (PRs #928, #929) |
 | 442 | Transaction Controller + Approval Endpoints + Client Ledger Controller | Backend | 441 | M | 442A, 442B | **Done** (PRs #931, #932) |
-| 443 | Bank Statement Import + CSV Parsers | Backend | 439 | M | 443A, 443B | Not started |
+| 443 | Bank Statement Import + CSV Parsers | Backend | 439 | M | 443A, 443B | **Done** (PRs #933, #934) |
 | 444 | Auto-Matching + Manual Matching + Reconciliation | Backend | 440, 443 | L | 444A, 444B | Not started |
 | 445 | Interest Calculation + Posting | Backend | 440 | L | 445A, 445B | Not started |
 | 446 | Trust Investments | Backend | 441 | M | 446A, 446B | Not started |
@@ -226,7 +226,7 @@ FRONTEND CORE                           FRONTEND ADVANCED
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 3a (parallel) | 440 | 440B | Transaction reversal conditional approval (credit vs debit reversals), `getCashbookBalance()`, client ledger card query methods. Additional integration tests (~8). Backend only. | **Done** (PR #926) |
-| 3b (parallel) | 443 | 443B | `TrustReconciliationController` bank statement endpoints: multipart upload (S3 storage at `trust-statements/{tenantSchema}/{accountId}/{filename}`), statement list, statement detail with lines. Integration tests (~5). Backend only. | Not started |
+| 3b (parallel) | 443 | 443B | `TrustReconciliationController` bank statement endpoints: multipart upload (S3 storage at `trust-statements/{tenantSchema}/{accountId}/{filename}`), statement list, statement detail with lines. Integration tests (~5). Backend only. | **Done** (PR #934) |
 
 ### Stage 4: Approval Workflow (sequential)
 
@@ -635,7 +635,7 @@ Stage 11: [451A] -> [451B]                                                <- int
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **443A** | 443.1--443.7 | `BankStatement` + `BankStatementLine` entities + repos + `BankStatementParser` interface + 5 CSV parser implementations (FNB, StandardBank, Nedbank, ABSA, Generic) + CSV fixture files. Unit tests (~10). Backend only. | **Done** (PR #933) |
-| **443B** | 443.8--443.12 | Bank statement import endpoint (multipart upload + S3 storage) + list/detail endpoints in reconciliation controller. Integration tests (~5). Backend only. | Not started |
+| **443B** | 443.8--443.12 | Bank statement import endpoint (multipart upload + S3 storage) + list/detail endpoints in reconciliation controller. Integration tests (~5). Backend only. | **Done** (PR #934) |
 
 ### Tasks
 

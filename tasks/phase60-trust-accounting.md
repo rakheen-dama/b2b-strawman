@@ -38,7 +38,7 @@ Phase 60 replaces the `trust_accounting` module stub (registered in Phase 49) wi
 | 443 | Bank Statement Import + CSV Parsers | Backend | 439 | M | 443A, 443B | **Done** (PRs #933, #934) |
 | 444 | Auto-Matching + Manual Matching + Reconciliation | Backend | 440, 443 | L | 444A, 444B | **Done** (PRs #935, #936) |
 | 445 | Interest Calculation + Posting | Backend | 440 | L | 445A, 445B | **Done** (PRs #937, #938) |
-| 446 | Trust Investments | Backend | 441 | M | 446A, 446B | 446A **Done** (PR #939) |
+| 446 | Trust Investments | Backend | 441 | M | 446A, 446B | **Done** (PRs #939, #940) |
 | 447 | Trust Reports (Section 35) + Event/Notification Handlers | Backend | 442, 444, 445, 446 | M | 447A, 447B | Not started |
 | 448 | Frontend: Trust Dashboard + Transaction Entry + Approval UX | Frontend | 442 | L | 448A, 448B | Not started |
 | 449 | Frontend: Client Ledger + Reconciliation Split-Pane | Frontend | 442, 444 | L | 449A, 449B | Not started |
@@ -251,7 +251,7 @@ FRONTEND CORE                           FRONTEND ADVANCED
 | 6a (parallel) | 442 | 442B | `ClientLedgerController` (5 endpoints: list, getByCustomer, history, statement, totalBalance). Trust account closing guard integration (sum of ledger balances check). Controller integration tests (~6). Backend only. | **Done** (PR #932) |
 | 6b (parallel) | 444 | 444B | `TrustReconciliation` entity + repo + `TrustReconciliationService` (createReconciliation, calculateReconciliation with three-way balance check, completeReconciliation with is_balanced guard, outstanding items query). Auto-match + match controller endpoints. Reconciliation controller (5 endpoints). Integration tests (~8). Backend only. | **Done** (PR #936) |
 | 6c (parallel) | 445 | 445B | `InterestService.approveInterestRun()` + `postInterestRun()` (creates INTEREST_CREDIT + INTEREST_LPFF transactions atomically). `InterestController` (6 endpoints: create, list, get, calculate, approve, post). Integration tests (~7). Backend only. | **Done** (PR #938) |
-| 6d (parallel) | 446 | 446B | `TrustInvestmentController` (6 endpoints: list, get, place, recordInterest, withdraw, maturing). Integration tests (~5). Backend only. | Not started |
+| 6d (parallel) | 446 | 446B | `TrustInvestmentController` (6 endpoints: list, get, place, recordInterest, withdraw, maturing). Integration tests (~5). Backend only. | **Done** (PR #940) |
 
 ### Stage 7: Reports + Events
 
@@ -824,7 +824,7 @@ Stage 11: [451A] -> [451B]                                                <- int
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **446A** | 446.1--446.5 | `TrustInvestment` entity + repo + `TrustInvestmentService` (placeInvestment, recordInterestEarned, withdrawInvestment, getMaturing). Integration tests (~6). Backend only. | **Done** (PR #939) |
-| **446B** | 446.6--446.9 | `TrustInvestmentController` (6 endpoints: list, get, place, recordInterest, withdraw, maturing). Integration tests (~5). Backend only. | Not started |
+| **446B** | 446.6--446.9 | `TrustInvestmentController` (6 endpoints: list, get, place, recordInterest, withdraw, maturing). Integration tests (~5). Backend only. | **Done** (PR #940) |
 
 ### Tasks
 

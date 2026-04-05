@@ -76,7 +76,7 @@ export function RecordDepositDialog({
     setIsSubmitting(true);
 
     try {
-      const result = await recordDeposit(accountId, slug, data);
+      const result = await recordDeposit(accountId, data);
       if (result.success) {
         handleOpenChange(false);
       } else {

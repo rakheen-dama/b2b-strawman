@@ -66,25 +66,21 @@ export function TransactionActions({
       />
       <RecordPaymentDialog
         accountId={accountId}
-        slug={slug}
         open={paymentOpen}
         onOpenChange={setPaymentOpen}
       />
       <RecordTransferDialog
         accountId={accountId}
-        slug={slug}
         open={transferOpen}
         onOpenChange={setTransferOpen}
       />
       <RecordFeeTransferDialog
         accountId={accountId}
-        slug={slug}
         open={feeTransferOpen}
         onOpenChange={setFeeTransferOpen}
       />
       <RecordRefundDialog
         accountId={accountId}
-        slug={slug}
         open={refundOpen}
         onOpenChange={setRefundOpen}
       />

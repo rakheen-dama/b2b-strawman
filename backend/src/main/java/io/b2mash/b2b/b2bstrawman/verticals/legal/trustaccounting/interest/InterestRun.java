@@ -45,6 +45,9 @@ public class InterestRun {
   @Column(name = "status", nullable = false, length = 20)
   private String status;
 
+  @Column(name = "created_by")
+  private UUID createdBy;
+
   @Column(name = "approved_by")
   private UUID approvedBy;
 
@@ -141,6 +144,14 @@ public class InterestRun {
 
   public void setApprovedBy(UUID approvedBy) {
     this.approvedBy = approvedBy;
+  }
+
+  public UUID getCreatedBy() {
+    return createdBy;
+  }
+
+  public void setCreatedBy(UUID createdBy) {
+    this.createdBy = createdBy;
   }
 
   public Instant getPostedAt() {

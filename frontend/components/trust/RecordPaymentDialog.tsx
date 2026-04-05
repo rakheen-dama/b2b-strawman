@@ -35,6 +35,19 @@ interface RecordPaymentDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+function getDefaultValues() {
+  const now = new Date();
+  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60_000);
+  return {
+    customerId: "",
+    projectId: "",
+    amount: 0,
+    reference: "",
+    description: "",
+    transactionDate: local.toISOString().slice(0, 10),
+  };
+}
+
 export function RecordPaymentDialog({
   accountId,
   open,
@@ -45,20 +58,13 @@ export function RecordPaymentDialog({
 
   const form = useForm<RecordPaymentFormData>({
     resolver: zodResolver(recordPaymentSchema),
-    defaultValues: {
-      customerId: "",
-      projectId: "",
-      amount: 0,
-      reference: "",
-      description: "",
-      transactionDate: new Date().toISOString().split("T")[0],
-    },
+    defaultValues: getDefaultValues(),
   });
 
   function handleOpenChange(newOpen: boolean) {
     onOpenChange(newOpen);
     if (!newOpen) {
-      form.reset();
+      form.reset(getDefaultValues());
       setError(null);
     }
   }

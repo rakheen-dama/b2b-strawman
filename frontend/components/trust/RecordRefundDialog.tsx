@@ -35,6 +35,18 @@ interface RecordRefundDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
+function getDefaultValues() {
+  const now = new Date();
+  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60_000);
+  return {
+    customerId: "",
+    amount: 0,
+    reference: "",
+    description: "",
+    transactionDate: local.toISOString().slice(0, 10),
+  };
+}
+
 export function RecordRefundDialog({
   accountId,
   open,
@@ -45,19 +57,13 @@ export function RecordRefundDialog({
 
   const form = useForm<RecordRefundFormData>({
     resolver: zodResolver(recordRefundSchema),
-    defaultValues: {
-      customerId: "",
-      amount: 0,
-      reference: "",
-      description: "",
-      transactionDate: new Date().toISOString().split("T")[0],
-    },
+    defaultValues: getDefaultValues(),
   });
 
   function handleOpenChange(newOpen: boolean) {
     onOpenChange(newOpen);
     if (!newOpen) {
-      form.reset();
+      form.reset(getDefaultValues());
       setError(null);
     }
   }

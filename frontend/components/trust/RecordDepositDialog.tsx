@@ -31,12 +31,27 @@ import {
 
 interface RecordDepositDialogProps {
   accountId: string;
+  slug: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
+function getDefaultValues() {
+  const now = new Date();
+  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60_000);
+  return {
+    customerId: "",
+    projectId: "",
+    amount: 0,
+    reference: "",
+    description: "",
+    transactionDate: local.toISOString().slice(0, 10),
+  };
+}
+
 export function RecordDepositDialog({
   accountId,
+  slug,
   open,
   onOpenChange,
 }: RecordDepositDialogProps) {
@@ -45,20 +60,13 @@ export function RecordDepositDialog({
 
   const form = useForm<RecordDepositFormData>({
     resolver: zodResolver(recordDepositSchema),
-    defaultValues: {
-      customerId: "",
-      projectId: "",
-      amount: 0,
-      reference: "",
-      description: "",
-      transactionDate: new Date().toISOString().split("T")[0],
-    },
+    defaultValues: getDefaultValues(),
   });
 
   function handleOpenChange(newOpen: boolean) {
     onOpenChange(newOpen);
     if (!newOpen) {
-      form.reset();
+      form.reset(getDefaultValues());
       setError(null);
     }
   }
@@ -68,7 +76,7 @@ export function RecordDepositDialog({
     setIsSubmitting(true);
 
     try {
-      const result = await recordDeposit(accountId, data);
+      const result = await recordDeposit(accountId, slug, data);
       if (result.success) {
         handleOpenChange(false);
       } else {

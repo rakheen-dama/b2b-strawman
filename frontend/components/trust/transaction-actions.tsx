@@ -17,10 +17,12 @@ import { RecordRefundDialog } from "./RecordRefundDialog";
 
 interface TransactionActionsProps {
   accountId: string;
+  slug: string;
 }
 
 export function TransactionActions({
   accountId,
+  slug,
 }: TransactionActionsProps) {
   const [depositOpen, setDepositOpen] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
@@ -58,26 +60,31 @@ export function TransactionActions({
 
       <RecordDepositDialog
         accountId={accountId}
+        slug={slug}
         open={depositOpen}
         onOpenChange={setDepositOpen}
       />
       <RecordPaymentDialog
         accountId={accountId}
+        slug={slug}
         open={paymentOpen}
         onOpenChange={setPaymentOpen}
       />
       <RecordTransferDialog
         accountId={accountId}
+        slug={slug}
         open={transferOpen}
         onOpenChange={setTransferOpen}
       />
       <RecordFeeTransferDialog
         accountId={accountId}
+        slug={slug}
         open={feeTransferOpen}
         onOpenChange={setFeeTransferOpen}
       />
       <RecordRefundDialog
         accountId={accountId}
+        slug={slug}
         open={refundOpen}
         onOpenChange={setRefundOpen}
       />

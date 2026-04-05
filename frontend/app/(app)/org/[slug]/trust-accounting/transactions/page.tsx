@@ -17,14 +17,15 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { fetchTrustAccounts } from "../actions";
+import { fetchTrustAccounts } from "@/app/(app)/org/[slug]/trust-accounting/actions";
 import {
   fetchTransactions,
   type TransactionPage,
-} from "./actions";
+} from "@/app/(app)/org/[slug]/trust-accounting/transactions/actions";
 import { TransactionActions } from "@/components/trust/transaction-actions";
 import { ApprovalBadge } from "@/components/trust/approval-badge";
 import { ReversalButton } from "@/components/trust/reversal-button";
+import { TransactionFilters } from "@/components/trust/transaction-filters";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
 import type {
   TrustTransactionStatus,
@@ -137,6 +138,7 @@ export default async function TransactionsPage({
 
   // Fetch primary trust account
   let accountId: string | null = null;
+  let accountFetchError = false;
   try {
     const accounts = await fetchTrustAccounts();
     const primary = accounts.find((a) => a.isPrimary) ?? accounts[0];
@@ -144,7 +146,7 @@ export default async function TransactionsPage({
       accountId = primary.id;
     }
   } catch {
-    // Non-fatal
+    accountFetchError = true;
   }
 
   // Fetch transactions
@@ -208,6 +210,7 @@ export default async function TransactionsPage({
         {canManageTrust && accountId && (
           <TransactionActions
             accountId={accountId}
+            slug={slug}
           />
         )}
       </div>
@@ -274,6 +277,12 @@ export default async function TransactionsPage({
         ))}
       </div>
 
+      {/* Date Range, Client & Matter Filters */}
+      <TransactionFilters
+        slug={slug}
+        search={search}
+      />
+
       {/* Error State */}
       {fetchError && (
         <Card>
@@ -285,8 +294,19 @@ export default async function TransactionsPage({
         </Card>
       )}
 
+      {/* Account Fetch Error State */}
+      {accountFetchError && (
+        <Card>
+          <CardContent className="py-10 text-center">
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Unable to load trust accounts. Please try again later.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
       {/* No Account State */}
-      {!fetchError && !accountId && (
+      {!fetchError && !accountFetchError && !accountId && (
         <Card>
           <CardContent className="py-10 text-center">
             <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -413,12 +433,12 @@ export default async function TransactionsPage({
                     </p>
                     <div className="flex items-center gap-2">
                       {currentPage > 0 ? (
-                        <Link href={pageUrl(currentPage - 1)}>
-                          <Button variant="outline" size="sm">
+                        <Button asChild variant="outline" size="sm">
+                          <Link href={pageUrl(currentPage - 1)}>
                             <ChevronLeft className="mr-1 size-4" />
                             Previous
-                          </Button>
-                        </Link>
+                          </Link>
+                        </Button>
                       ) : (
                         <Button variant="outline" size="sm" disabled>
                           <ChevronLeft className="mr-1 size-4" />
@@ -426,12 +446,12 @@ export default async function TransactionsPage({
                         </Button>
                       )}
                       {currentPage < totalPages - 1 ? (
-                        <Link href={pageUrl(currentPage + 1)}>
-                          <Button variant="outline" size="sm">
+                        <Button asChild variant="outline" size="sm">
+                          <Link href={pageUrl(currentPage + 1)}>
                             Next
                             <ChevronRight className="ml-1 size-4" />
-                          </Button>
-                        </Link>
+                          </Link>
+                        </Button>
                       ) : (
                         <Button variant="outline" size="sm" disabled>
                           Next

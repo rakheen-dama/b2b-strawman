@@ -199,6 +199,7 @@ describe("Trust Transactions", () => {
     render(
       <RecordDepositDialog
         accountId="acc-1"
+        slug="acme"
         open={true}
         onOpenChange={vi.fn()}
       />,
@@ -231,6 +232,7 @@ describe("Trust Transactions", () => {
     await waitFor(() => {
       expect(mockRecordDeposit).toHaveBeenCalledWith(
         "acc-1",
+        "acme",
         expect.objectContaining({
           customerId: "550e8400-e29b-41d4-a716-446655440000",
           reference: "DEP/2026/TEST",

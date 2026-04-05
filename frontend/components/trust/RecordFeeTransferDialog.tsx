@@ -30,12 +30,14 @@ import {
 
 interface RecordFeeTransferDialogProps {
   accountId: string;
+  slug: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
 export function RecordFeeTransferDialog({
   accountId,
+  slug,
   open,
   onOpenChange,
 }: RecordFeeTransferDialogProps) {
@@ -65,7 +67,7 @@ export function RecordFeeTransferDialog({
     setIsSubmitting(true);
 
     try {
-      const result = await recordFeeTransfer(accountId, data);
+      const result = await recordFeeTransfer(accountId, slug, data);
       if (result.success) {
         handleOpenChange(false);
       } else {
@@ -135,9 +137,10 @@ export function RecordFeeTransferDialog({
                       min="0.01"
                       placeholder="0.00"
                       {...field}
-                      onChange={(e) =>
-                        field.onChange(parseFloat(e.target.value) || 0)
-                      }
+                      onChange={(e) => {
+                        const val = parseFloat(e.target.value);
+                        field.onChange(Number.isNaN(val) ? undefined : val);
+                      }}
                     />
                   </FormControl>
                   <FormMessage />

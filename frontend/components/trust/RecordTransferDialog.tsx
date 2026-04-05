@@ -31,6 +31,7 @@ import {
 
 interface RecordTransferDialogProps {
   accountId: string;
+  slug: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -51,6 +52,7 @@ function getDefaultValues() {
 
 export function RecordTransferDialog({
   accountId,
+  slug,
   open,
   onOpenChange,
 }: RecordTransferDialogProps) {
@@ -75,7 +77,7 @@ export function RecordTransferDialog({
     setIsSubmitting(true);
 
     try {
-      const result = await recordTransfer(accountId, data);
+      const result = await recordTransfer(accountId, slug, data);
       if (result.success) {
         handleOpenChange(false);
       } else {
@@ -161,9 +163,10 @@ export function RecordTransferDialog({
                       min="0.01"
                       placeholder="0.00"
                       {...field}
-                      onChange={(e) =>
-                        field.onChange(parseFloat(e.target.value) || 0)
-                      }
+                      onChange={(e) => {
+                        const val = parseFloat(e.target.value);
+                        field.onChange(Number.isNaN(val) ? undefined : val);
+                      }}
                     />
                   </FormControl>
                   <FormMessage />

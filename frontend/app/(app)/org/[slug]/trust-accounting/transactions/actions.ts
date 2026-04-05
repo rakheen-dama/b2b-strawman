@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { api } from "@/lib/api";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import type { TrustTransaction } from "@/lib/types";
 import type {
   RecordDepositFormData,
@@ -34,6 +35,37 @@ export interface TransactionPage {
 interface ActionResult {
   success: boolean;
   error?: string;
+}
+
+// ── Capability helpers ────────────────────────────────────────────
+
+async function requireManageTrust(): Promise<ActionResult | null> {
+  const caps = await fetchMyCapabilities();
+  if (
+    !caps.isAdmin &&
+    !caps.isOwner &&
+    !caps.capabilities.includes("MANAGE_TRUST")
+  ) {
+    return { success: false, error: "Forbidden" };
+  }
+  return null;
+}
+
+async function requireApproveTrust(): Promise<ActionResult | null> {
+  const caps = await fetchMyCapabilities();
+  if (
+    !caps.isAdmin &&
+    !caps.isOwner &&
+    !caps.capabilities.includes("APPROVE_TRUST_PAYMENT")
+  ) {
+    return { success: false, error: "Forbidden" };
+  }
+  return null;
+}
+
+function revalidateTrust(slug: string) {
+  revalidatePath(`/org/${slug}/trust-accounting`);
+  revalidatePath(`/org/${slug}/trust-accounting/transactions`);
 }
 
 // ── Fetch actions ─────────────────────────────────────────────────
@@ -80,8 +112,12 @@ export async function fetchTransactions(
 
 export async function recordDeposit(
   accountId: string,
+  slug: string,
   data: RecordDepositFormData,
 ): Promise<ActionResult> {
+  const denied = await requireManageTrust();
+  if (denied) return denied;
+
   try {
     await api.post(`/api/trust-accounts/${accountId}/transactions/deposit`, {
       customerId: data.customerId,
@@ -91,7 +127,7 @@ export async function recordDeposit(
       description: data.description || null,
       transactionDate: data.transactionDate,
     });
-    revalidatePath("/", "layout");
+    revalidateTrust(slug);
     return { success: true };
   } catch (error) {
     return {
@@ -104,8 +140,12 @@ export async function recordDeposit(
 
 export async function recordPayment(
   accountId: string,
+  slug: string,
   data: RecordPaymentFormData,
 ): Promise<ActionResult> {
+  const denied = await requireManageTrust();
+  if (denied) return denied;
+
   try {
     await api.post(`/api/trust-accounts/${accountId}/transactions/payment`, {
       customerId: data.customerId,
@@ -115,7 +155,7 @@ export async function recordPayment(
       description: data.description || null,
       transactionDate: data.transactionDate,
     });
-    revalidatePath("/", "layout");
+    revalidateTrust(slug);
     return { success: true };
   } catch (error) {
     return {
@@ -128,8 +168,12 @@ export async function recordPayment(
 
 export async function recordTransfer(
   accountId: string,
+  slug: string,
   data: RecordTransferFormData,
 ): Promise<ActionResult> {
+  const denied = await requireManageTrust();
+  if (denied) return denied;
+
   try {
     await api.post(`/api/trust-accounts/${accountId}/transactions/transfer`, {
       sourceCustomerId: data.sourceCustomerId,
@@ -140,7 +184,7 @@ export async function recordTransfer(
       description: data.description || null,
       transactionDate: data.transactionDate,
     });
-    revalidatePath("/", "layout");
+    revalidateTrust(slug);
     return { success: true };
   } catch (error) {
     return {
@@ -153,8 +197,12 @@ export async function recordTransfer(
 
 export async function recordFeeTransfer(
   accountId: string,
+  slug: string,
   data: RecordFeeTransferFormData,
 ): Promise<ActionResult> {
+  const denied = await requireManageTrust();
+  if (denied) return denied;
+
   try {
     await api.post(
       `/api/trust-accounts/${accountId}/transactions/fee-transfer`,
@@ -165,7 +213,7 @@ export async function recordFeeTransfer(
         reference: data.reference,
       },
     );
-    revalidatePath("/", "layout");
+    revalidateTrust(slug);
     return { success: true };
   } catch (error) {
     return {
@@ -180,8 +228,12 @@ export async function recordFeeTransfer(
 
 export async function recordRefund(
   accountId: string,
+  slug: string,
   data: RecordRefundFormData,
 ): Promise<ActionResult> {
+  const denied = await requireManageTrust();
+  if (denied) return denied;
+
   try {
     await api.post(`/api/trust-accounts/${accountId}/transactions/refund`, {
       customerId: data.customerId,
@@ -190,7 +242,7 @@ export async function recordRefund(
       description: data.description || null,
       transactionDate: data.transactionDate,
     });
-    revalidatePath("/", "layout");
+    revalidateTrust(slug);
     return { success: true };
   } catch (error) {
     return {
@@ -206,6 +258,9 @@ export async function recordRefund(
 export async function approveTransaction(
   transactionId: string,
 ): Promise<ActionResult> {
+  const denied = await requireApproveTrust();
+  if (denied) return denied;
+
   try {
     await api.post(`/api/trust-transactions/${transactionId}/approve`);
     revalidatePath("/", "layout");
@@ -225,6 +280,9 @@ export async function rejectTransaction(
   transactionId: string,
   reason: string,
 ): Promise<ActionResult> {
+  const denied = await requireApproveTrust();
+  if (denied) return denied;
+
   try {
     await api.post(`/api/trust-transactions/${transactionId}/reject`, {
       reason,
@@ -246,6 +304,9 @@ export async function reverseTransaction(
   transactionId: string,
   reason: string,
 ): Promise<ActionResult> {
+  const denied = await requireManageTrust();
+  if (denied) return denied;
+
   try {
     await api.post(`/api/trust-transactions/${transactionId}/reverse`, {
       reason,

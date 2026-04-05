@@ -31,6 +31,7 @@ import {
 
 interface RecordPaymentDialogProps {
   accountId: string;
+  slug: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -50,6 +51,7 @@ function getDefaultValues() {
 
 export function RecordPaymentDialog({
   accountId,
+  slug,
   open,
   onOpenChange,
 }: RecordPaymentDialogProps) {
@@ -74,7 +76,7 @@ export function RecordPaymentDialog({
     setIsSubmitting(true);
 
     try {
-      const result = await recordPayment(accountId, data);
+      const result = await recordPayment(accountId, slug, data);
       if (result.success) {
         handleOpenChange(false);
       } else {
@@ -147,9 +149,10 @@ export function RecordPaymentDialog({
                       min="0.01"
                       placeholder="0.00"
                       {...field}
-                      onChange={(e) =>
-                        field.onChange(parseFloat(e.target.value) || 0)
-                      }
+                      onChange={(e) => {
+                        const val = parseFloat(e.target.value);
+                        field.onChange(Number.isNaN(val) ? undefined : val);
+                      }}
                     />
                   </FormControl>
                   <FormMessage />

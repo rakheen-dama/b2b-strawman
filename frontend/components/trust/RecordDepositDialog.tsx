@@ -151,9 +151,10 @@ export function RecordDepositDialog({
                       min="0.01"
                       placeholder="0.00"
                       {...field}
-                      onChange={(e) =>
-                        field.onChange(parseFloat(e.target.value) || 0)
-                      }
+                      onChange={(e) => {
+                        const val = parseFloat(e.target.value);
+                        field.onChange(Number.isNaN(val) ? undefined : val);
+                      }}
                     />
                   </FormControl>
                   <FormMessage />

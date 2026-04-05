@@ -2,6 +2,8 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -51,8 +53,9 @@ public class TrustReconciliation {
   @Column(name = "is_balanced", nullable = false)
   private boolean isBalanced;
 
+  @Enumerated(EnumType.STRING)
   @Column(name = "status", nullable = false, length = 20)
-  private String status;
+  private ReconciliationStatus status;
 
   @Column(name = "completed_by")
   private UUID completedBy;
@@ -82,7 +85,7 @@ public class TrustReconciliation {
     this.outstandingPayments = BigDecimal.ZERO;
     this.adjustedBankBalance = BigDecimal.ZERO;
     this.isBalanced = false;
-    this.status = "DRAFT";
+    this.status = ReconciliationStatus.DRAFT;
   }
 
   @PrePersist
@@ -169,11 +172,11 @@ public class TrustReconciliation {
     this.isBalanced = balanced;
   }
 
-  public String getStatus() {
+  public ReconciliationStatus getStatus() {
     return status;
   }
 
-  public void setStatus(String status) {
+  public void setStatus(ReconciliationStatus status) {
     this.status = status;
   }
 

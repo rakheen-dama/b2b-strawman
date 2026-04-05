@@ -51,6 +51,7 @@ class TrustReconciliationControllerTest {
   private String tenantSchema;
   private String trustAccountId;
   private String customerId;
+  private int isolatedAccountCounter = 0;
 
   @BeforeAll
   void setup() throws Exception {
@@ -103,6 +104,37 @@ class TrustReconciliationControllerTest {
     customerId =
         TestEntityHelper.createCustomer(
             mockMvc, ownerJwt, "Recon Controller Test Customer", "recon_ctrl_cust@test.com");
+  }
+
+  /**
+   * Creates a fresh trust account isolated from other tests, ensuring deterministic reconciliation
+   * state.
+   */
+  private String createIsolatedTrustAccount() throws Exception {
+    isolatedAccountCounter++;
+    var accountResult =
+        mockMvc
+            .perform(
+                post("/api/trust-accounts")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_recon_owner"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "accountName": "Isolated Ctrl Trust Account %d",
+                          "bankName": "First National Bank",
+                          "branchCode": "250655",
+                          "accountNumber": "62200000%03d",
+                          "accountType": "GENERAL",
+                          "isPrimary": false,
+                          "requireDualApproval": false,
+                          "openedDate": "2026-01-15"
+                        }
+                        """
+                            .formatted(isolatedAccountCounter, isolatedAccountCounter)))
+            .andExpect(status().isCreated())
+            .andReturn();
+    return TestEntityHelper.extractId(accountResult);
   }
 
   @Test
@@ -309,10 +341,13 @@ class TrustReconciliationControllerTest {
 
   @Test
   void completeReconciliation_returns200WhenBalanced() throws Exception {
-    // Create deposit and matching bank statement
+    // Use an isolated trust account so the test is deterministic (no shared state from other tests)
+    String isolatedAccountId = createIsolatedTrustAccount();
+
+    // Create a single deposit on the isolated account
     mockMvc
         .perform(
-            post("/api/trust-accounts/" + trustAccountId + "/transactions/deposit")
+            post("/api/trust-accounts/" + isolatedAccountId + "/transactions/deposit")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_recon_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
@@ -328,11 +363,12 @@ class TrustReconciliationControllerTest {
                         .formatted(customerId)))
         .andExpect(status().isCreated());
 
+    // Import statement whose closing balance matches the single deposit (20000)
     var csv =
         """
-        FNB Trust Account Statement - Account 62000000001
+        FNB Trust Account Statement - Account 62200000001
         Date,Description,Amount,Balance,Reference
-        25/03/2026,Deposit received,20000.00,30000.00,DEP-CTRL-COMP
+        25/03/2026,Deposit received,20000.00,20000.00,DEP-CTRL-COMP
         """;
 
     var csvFile =
@@ -342,7 +378,7 @@ class TrustReconciliationControllerTest {
     var importResult =
         mockMvc
             .perform(
-                multipart("/api/trust-accounts/{accountId}/bank-statements", trustAccountId)
+                multipart("/api/trust-accounts/{accountId}/bank-statements", isolatedAccountId)
                     .file(csvFile)
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_recon_owner")))
             .andExpect(status().isCreated())
@@ -362,7 +398,7 @@ class TrustReconciliationControllerTest {
     var reconResult =
         mockMvc
             .perform(
-                post("/api/trust-accounts/{accountId}/reconciliations", trustAccountId)
+                post("/api/trust-accounts/{accountId}/reconciliations", isolatedAccountId)
                     .with(TestJwtFactory.ownerJwt(ORG_ID, "user_recon_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
@@ -391,18 +427,18 @@ class TrustReconciliationControllerTest {
     boolean isBalanced =
         JsonPath.read(calcResult.getResponse().getContentAsString(), "$.isBalanced");
 
-    if (isBalanced) {
-      // Complete
-      mockMvc
-          .perform(
-              post("/api/trust-reconciliations/{reconciliationId}/complete", reconciliationId)
-                  .with(TestJwtFactory.ownerJwt(ORG_ID, "user_recon_owner")))
-          .andExpect(status().isOk())
-          .andExpect(jsonPath("$.status").value("COMPLETED"))
-          .andExpect(jsonPath("$.completedBy").isNotEmpty())
-          .andExpect(jsonPath("$.completedAt").isNotEmpty());
-    }
-    // If not balanced due to shared test state, the test still passes
-    // (completeReconciliation when not balanced is tested in the service test)
+    assertThat(isBalanced)
+        .as("Reconciliation must be balanced before completing — check test data setup")
+        .isTrue();
+
+    // Complete
+    mockMvc
+        .perform(
+            post("/api/trust-reconciliations/{reconciliationId}/complete", reconciliationId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_recon_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("COMPLETED"))
+        .andExpect(jsonPath("$.completedBy").isNotEmpty())
+        .andExpect(jsonPath("$.completedAt").isNotEmpty());
   }
 }

@@ -5,6 +5,9 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService.CreateReconciliationRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService.MatchResult;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.TrustReconciliationService.TrustReconciliationResponse;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
@@ -62,7 +65,7 @@ public class TrustReconciliationController {
   @PostMapping("/api/bank-statement-lines/{lineId}/match")
   @RequiresCapability("MANAGE_TRUST")
   public ResponseEntity<Void> manualMatch(
-      @PathVariable UUID lineId, @RequestBody ManualMatchRequest request) {
+      @PathVariable UUID lineId, @Valid @RequestBody ManualMatchRequest request) {
     trustReconciliationService.manualMatch(lineId, request.transactionId());
     return ResponseEntity.ok().build();
   }
@@ -77,7 +80,7 @@ public class TrustReconciliationController {
   @PostMapping("/api/bank-statement-lines/{lineId}/exclude")
   @RequiresCapability("MANAGE_TRUST")
   public ResponseEntity<Void> excludeLine(
-      @PathVariable UUID lineId, @RequestBody ExcludeLineRequest request) {
+      @PathVariable UUID lineId, @Valid @RequestBody ExcludeLineRequest request) {
     trustReconciliationService.excludeLine(lineId, request.reason());
     return ResponseEntity.ok().build();
   }
@@ -87,7 +90,7 @@ public class TrustReconciliationController {
   @PostMapping("/api/trust-accounts/{accountId}/reconciliations")
   @RequiresCapability("MANAGE_TRUST")
   public ResponseEntity<TrustReconciliationResponse> createReconciliation(
-      @PathVariable UUID accountId, @RequestBody CreateReconciliationRequest request) {
+      @PathVariable UUID accountId, @Valid @RequestBody CreateReconciliationRequest request) {
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(
             trustReconciliationService.createReconciliation(
@@ -124,7 +127,7 @@ public class TrustReconciliationController {
 
   // --- Request Records ---
 
-  record ManualMatchRequest(UUID transactionId) {}
+  record ManualMatchRequest(@NotNull UUID transactionId) {}
 
-  record ExcludeLineRequest(String reason) {}
+  record ExcludeLineRequest(@NotBlank String reason) {}
 }

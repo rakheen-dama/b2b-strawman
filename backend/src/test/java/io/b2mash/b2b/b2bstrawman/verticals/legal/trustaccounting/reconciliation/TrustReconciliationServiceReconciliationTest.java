@@ -55,6 +55,9 @@ class TrustReconciliationServiceReconciliationTest {
   private UUID trustAccountId;
   private String customerId;
 
+  /** Counter to generate unique account numbers for isolated trust accounts. */
+  private int isolatedAccountCounter = 0;
+
   @BeforeAll
   void setup() throws Exception {
     tenantSchema =
@@ -103,6 +106,81 @@ class TrustReconciliationServiceReconciliationTest {
     customerId =
         TestEntityHelper.createCustomer(
             mockMvc, ownerJwt, "Recon Calc Test Customer", "rcalc_cust@test.com");
+  }
+
+  /**
+   * Creates a fresh trust account isolated from other tests, ensuring deterministic reconciliation
+   * state.
+   */
+  private UUID createIsolatedTrustAccount() throws Exception {
+    isolatedAccountCounter++;
+    var ownerJwt = TestJwtFactory.ownerJwt(ORG_ID, "user_rcalc_owner");
+    var accountResult =
+        mockMvc
+            .perform(
+                post("/api/trust-accounts")
+                    .with(ownerJwt)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "accountName": "Isolated Trust Account %d",
+                          "bankName": "First National Bank",
+                          "branchCode": "250655",
+                          "accountNumber": "62100000%03d",
+                          "accountType": "GENERAL",
+                          "isPrimary": false,
+                          "requireDualApproval": false,
+                          "openedDate": "2026-01-15"
+                        }
+                        """
+                            .formatted(isolatedAccountCounter, isolatedAccountCounter)))
+            .andExpect(status().isCreated())
+            .andReturn();
+    return UUID.fromString(TestEntityHelper.extractId(accountResult));
+  }
+
+  private String createDepositForAccount(
+      UUID accountId, String reference, String amount, String date) throws Exception {
+    var result =
+        mockMvc
+            .perform(
+                post("/api/trust-accounts/" + accountId + "/transactions/deposit")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rcalc_owner"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "customerId": "%s",
+                          "amount": %s,
+                          "reference": "%s",
+                          "description": "Test deposit",
+                          "transactionDate": "%s"
+                        }
+                        """
+                            .formatted(customerId, amount, reference, date)))
+            .andExpect(status().isCreated())
+            .andReturn();
+    return JsonPath.read(result.getResponse().getContentAsString(), "$.id").toString();
+  }
+
+  private String importStatementForAccount(UUID accountId, String csv) throws Exception {
+    var csvFile =
+        new MockMultipartFile(
+            "file",
+            "recon-calc-test-" + System.nanoTime() + ".csv",
+            "text/csv",
+            csv.getBytes(StandardCharsets.UTF_8));
+
+    var result =
+        mockMvc
+            .perform(
+                multipart("/api/trust-accounts/{accountId}/bank-statements", accountId)
+                    .file(csvFile)
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rcalc_owner")))
+            .andExpect(status().isCreated())
+            .andReturn();
+    return JsonPath.read(result.getResponse().getContentAsString(), "$.id").toString();
   }
 
   private String createDeposit(String reference, String amount, String date) throws Exception {
@@ -214,17 +292,23 @@ class TrustReconciliationServiceReconciliationTest {
 
   @Test
   void calculateReconciliation_isBalancedTrueWhenAllThreeAgree() throws Exception {
-    // Create deposit and match it fully so there are no outstanding items
-    createDeposit("DEP-BAL-001", "25000.00", "2026-03-05");
+    // Use an isolated trust account so the test is deterministic (no shared state from other tests)
+    UUID isolatedAccountId = createIsolatedTrustAccount();
 
+    // Create a single deposit — the only transaction on this account
+    createDepositForAccount(isolatedAccountId, "DEP-BAL-001", "25000.00", "2026-03-05");
+
+    // Import a statement whose closing balance matches the single deposit (25000)
     var statementId =
-        importStatement(
+        importStatementForAccount(
+            isolatedAccountId,
             """
-            FNB Trust Account Statement - Account 62000000002
+            FNB Trust Account Statement - Account 62100000001
             Date,Description,Amount,Balance,Reference
-            05/03/2026,Deposit received,25000.00,75000.00,DEP-BAL-001
+            05/03/2026,Deposit received,25000.00,25000.00,DEP-BAL-001
             """);
 
+    // Auto-match the deposit to the bank statement line (eliminates outstanding items)
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .run(() -> reconciliationService.autoMatchStatement(UUID.fromString(statementId)));
 
@@ -233,22 +317,24 @@ class TrustReconciliationServiceReconciliationTest {
             .call(
                 () ->
                     reconciliationService.createReconciliation(
-                        trustAccountId, LocalDate.of(2026, 3, 31), UUID.fromString(statementId)));
+                        isolatedAccountId,
+                        LocalDate.of(2026, 3, 31),
+                        UUID.fromString(statementId)));
 
     var calculated =
         ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
             .call(() -> reconciliationService.calculateReconciliation(reconResponse.id()));
 
-    // The calculation uses all transactions for the account, not just within the statement period.
-    // Since we have multiple deposits across tests (shared state), we assert the formula holds:
-    // isBalanced = (adjustedBankBalance == cashbookBalance) AND (cashbookBalance ==
-    // clientLedgerTotal)
-    if (calculated.adjustedBankBalance().compareTo(calculated.cashbookBalance()) == 0
-        && calculated.cashbookBalance().compareTo(calculated.clientLedgerTotal()) == 0) {
-      assertThat(calculated.isBalanced()).isTrue();
-    }
-    // The key assertion: the calculation ran and produced values
-    assertThat(calculated.bankBalance()).isNotNull();
+    // All three values must agree for isBalanced to be true:
+    // adjustedBankBalance == cashbookBalance == clientLedgerTotal
+    assertThat(calculated.adjustedBankBalance().compareTo(calculated.cashbookBalance()))
+        .as("adjustedBankBalance should equal cashbookBalance")
+        .isZero();
+    assertThat(calculated.cashbookBalance().compareTo(calculated.clientLedgerTotal()))
+        .as("cashbookBalance should equal clientLedgerTotal")
+        .isZero();
+    assertThat(calculated.isBalanced()).isTrue();
+    assertThat(calculated.bankBalance()).isEqualByComparingTo(new BigDecimal("25000.00"));
   }
 
   @Test
@@ -316,16 +402,20 @@ class TrustReconciliationServiceReconciliationTest {
 
   @Test
   void completeReconciliation_succeedsWhenBalanced() throws Exception {
-    // We need a reconciliation that is balanced.
-    // Create a fresh scenario: deposit + matching bank statement
-    createDeposit("DEP-COMP-001", "30000.00", "2026-03-20");
+    // Use an isolated trust account so the test is deterministic (no shared state from other tests)
+    UUID isolatedAccountId = createIsolatedTrustAccount();
 
+    // Create a single deposit — the only transaction on this account
+    createDepositForAccount(isolatedAccountId, "DEP-COMP-001", "30000.00", "2026-03-20");
+
+    // Import a statement whose closing balance matches the single deposit (30000)
     var statementId =
-        importStatement(
+        importStatementForAccount(
+            isolatedAccountId,
             """
-            FNB Trust Account Statement - Account 62000000002
+            FNB Trust Account Statement - Account 62100000002
             Date,Description,Amount,Balance,Reference
-            20/03/2026,Deposit received,30000.00,109900.00,DEP-COMP-001
+            20/03/2026,Deposit received,30000.00,30000.00,DEP-COMP-001
             """);
 
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -336,24 +426,26 @@ class TrustReconciliationServiceReconciliationTest {
             .call(
                 () ->
                     reconciliationService.createReconciliation(
-                        trustAccountId, LocalDate.of(2026, 3, 31), UUID.fromString(statementId)));
+                        isolatedAccountId,
+                        LocalDate.of(2026, 3, 31),
+                        UUID.fromString(statementId)));
 
     var calculated =
         ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
             .call(() -> reconciliationService.calculateReconciliation(reconResponse.id()));
 
-    if (calculated.isBalanced()) {
-      var completed =
-          ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-              .where(RequestScopes.MEMBER_ID, UUID.randomUUID())
-              .call(() -> reconciliationService.completeReconciliation(reconResponse.id()));
+    assertThat(calculated.isBalanced())
+        .as("Reconciliation must be balanced before completing — check test data setup")
+        .isTrue();
 
-      assertThat(completed.status()).isEqualTo("COMPLETED");
-      assertThat(completed.completedBy()).isNotNull();
-      assertThat(completed.completedAt()).isNotNull();
-    }
-    // If not balanced due to accumulated test state, the test still passes
-    // (the code path is tested; completing an unbalanced recon is tested separately below)
+    var completed =
+        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+            .where(RequestScopes.MEMBER_ID, UUID.randomUUID())
+            .call(() -> reconciliationService.completeReconciliation(reconResponse.id()));
+
+    assertThat(completed.status()).isEqualTo("COMPLETED");
+    assertThat(completed.completedBy()).isNotNull();
+    assertThat(completed.completedAt()).isNotNull();
   }
 
   @Test

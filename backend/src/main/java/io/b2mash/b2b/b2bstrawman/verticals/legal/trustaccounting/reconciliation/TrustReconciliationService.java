@@ -529,7 +529,8 @@ public class TrustReconciliationService {
       Instant createdAt,
       Instant updatedAt) {}
 
-  public record CreateReconciliationRequest(LocalDate periodEnd, UUID bankStatementId) {}
+  public record CreateReconciliationRequest(
+      @jakarta.validation.constraints.NotNull LocalDate periodEnd, UUID bankStatementId) {}
 
   // --- Reconciliation Methods ---
 
@@ -556,6 +557,16 @@ public class TrustReconciliationService {
 
     var reconciliation = new TrustReconciliation(accountId, periodEnd, bankStatementId);
     reconciliation = trustReconciliationRepository.save(reconciliation);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("trust_reconciliation.created")
+            .entityType("trust_reconciliation")
+            .entityId(reconciliation.getId())
+            .details(
+                Map.of(
+                    "trust_account_id", accountId.toString(), "period_end", periodEnd.toString()))
+            .build());
 
     return toReconciliationResponse(reconciliation);
   }
@@ -598,7 +609,7 @@ public class TrustReconciliationService {
             .orElseThrow(
                 () -> new ResourceNotFoundException("TrustReconciliation", reconciliationId));
 
-    if (!"DRAFT".equals(reconciliation.getStatus())) {
+    if (reconciliation.getStatus() != ReconciliationStatus.DRAFT) {
       throw new InvalidStateException(
           "Invalid reconciliation state", "Cannot recalculate a COMPLETED reconciliation");
     }
@@ -640,6 +651,25 @@ public class TrustReconciliationService {
 
     reconciliation = trustReconciliationRepository.save(reconciliation);
 
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("trust_reconciliation.calculated")
+            .entityType("trust_reconciliation")
+            .entityId(reconciliation.getId())
+            .details(
+                Map.of(
+                    "trust_account_id",
+                    accountId.toString(),
+                    "bank_balance",
+                    bankBalance.toString(),
+                    "cashbook_balance",
+                    cashbookBalance.toString(),
+                    "client_ledger_total",
+                    clientLedgerTotal.toString(),
+                    "is_balanced",
+                    isBalanced))
+            .build());
+
     return toReconciliationResponse(reconciliation);
   }
 
@@ -653,7 +683,7 @@ public class TrustReconciliationService {
             .orElseThrow(
                 () -> new ResourceNotFoundException("TrustReconciliation", reconciliationId));
 
-    if (!"DRAFT".equals(reconciliation.getStatus())) {
+    if (reconciliation.getStatus() != ReconciliationStatus.DRAFT) {
       throw new InvalidStateException(
           "Invalid reconciliation state", "Reconciliation is already COMPLETED");
     }
@@ -668,7 +698,7 @@ public class TrustReconciliationService {
                   reconciliation.getClientLedgerTotal()));
     }
 
-    reconciliation.setStatus("COMPLETED");
+    reconciliation.setStatus(ReconciliationStatus.COMPLETED);
     reconciliation.setCompletedBy(RequestScopes.requireMemberId());
     reconciliation.setCompletedAt(Instant.now());
 
@@ -709,7 +739,7 @@ public class TrustReconciliationService {
         recon.getOutstandingPayments(),
         recon.getAdjustedBankBalance(),
         recon.isBalanced(),
-        recon.getStatus(),
+        recon.getStatus().name(),
         recon.getCompletedBy(),
         recon.getCompletedAt(),
         recon.getNotes(),

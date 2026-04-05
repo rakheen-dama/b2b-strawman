@@ -20,9 +20,13 @@ This prevents the builder from burning 50%+ of its context on research it only n
 
 ## Arguments
 
-Epic number (e.g., `/epic_v2 7` or `/epic_v2 5A` for slices).
+Epic number or slice ID:
+- **Full epic** (`/epic_v2 450`): Implements ALL slices (450A, 450B, ...) in a **single PR**. This is the default for `run-phase.sh`.
+- **Single slice** (`/epic_v2 450A`): Implements only that slice. Use for manual reruns or targeted fixes.
 
-Append `auto-merge` to skip merge confirmation (e.g., `/epic_v2 83A auto-merge`). Used by the `run-phase.sh` wrapper for hands-off execution.
+The orchestrator detects the input type: digits-only = full epic, digits + letter = single slice.
+
+Append `auto-merge` to skip merge confirmation (e.g., `/epic_v2 450 auto-merge`). Used by the `run-phase.sh` wrapper for hands-off execution.
 
 ## Auto-Merge Mode
 
@@ -44,22 +48,30 @@ Create high-level tasks for visibility:
 ## Step 0 — Validate (Orchestrator, Lightweight)
 
 1. Extract the epic number from the user's input.
-2. Read `TASKS.md` (overview-only) to identify the phase and linked task file.
-3. Read ONLY the Epic overview, Dependency Graph and Implementation order of the phase task file to get the Epic Overview table.
-4. If the epic is marked **Done**, stop and inform the user.
-5. Extract: **scope** (Frontend/Backend/Both), **dependencies** (verify Done), **task IDs**.
-6. Check for existing work:
+2. **Detect input type**:
+   - Digits only (e.g., `450`) → **full epic mode** — will implement all slices in one PR
+   - Digits + letter (e.g., `450A`) → **single slice mode** — implements only that slice
+3. Read `TASKS.md` (overview-only) to identify the phase and linked task file.
+4. Read ONLY the Epic overview, Dependency Graph and Implementation order of the phase task file to get the Epic Overview table.
+5. If the epic is marked **Done**, stop and inform the user.
+6. **For full epic mode**: Read the Slices table under the epic heading to identify ALL slices (e.g., 450A, 450B). Check which are already **Done** — skip those. If ALL slices are Done, stop. Collect task IDs from ALL remaining slices.
+7. Extract: **scope** (Frontend/Backend/Both), **dependencies** (verify Done), **task IDs** (across all remaining slices if full epic).
+8. Check for existing work:
 ```bash
 git branch -a | grep "epic-{N}" ; gh pr list --state all --search "Epic {N}" | head -5
 ```
-If work exists, inform the user and ask how to proceed.
+If work exists (open PRs, merged slice PRs covering remaining work), inform the user and ask how to proceed.
 
 ## Step 1 — Create Worktree (Orchestrator)
 
 ```bash
 cd /Users/rakheendama/Projects/2026/b2b-strawman
-git worktree add ../worktree-epic-<N> -b epic-<N>/<descriptive-name>
+# Full epic mode: use the epic number (e.g., epic-450)
+# Single slice mode: use the slice ID (e.g., epic-450A)
+git worktree add ../worktree-epic-<ID> -b epic-<ID>/<descriptive-name>
 ```
+
+Where `<ID>` is the epic number (full epic mode) or slice ID (single slice mode).
 
 Create this BEFORE dispatching agents so the scout can write the brief into it.
 
@@ -70,10 +82,11 @@ Launch a **blocking** `general-purpose` subagent. The scout explores the main re
 ### Scout Prompt Template
 
 ```
-You are a **codebase scout** preparing an implementation brief for Epic {SLICE}.
+You are a **codebase scout** preparing an implementation brief for Epic {ID}.
+({ID} is the epic number in full-epic mode, or slice ID in single-slice mode.)
 
 Your job: explore the codebase thoroughly and write a SELF-CONTAINED brief to:
-  /Users/rakheendama/Projects/2026/worktree-epic-{SLICE}/.epic-brief.md
+  /Users/rakheendama/Projects/2026/worktree-epic-{ID}/.epic-brief.md
 
 The brief must give an implementer EVERYTHING they need to build this epic correctly
 WITHOUT reading any other files. Include actual code — not summaries.
@@ -125,11 +138,11 @@ Check where similar files live and mirror that structure.
 
 ## Brief Format
 
-Write the brief to `/Users/rakheendama/Projects/2026/worktree-epic-{SLICE}/.epic-brief.md`
+Write the brief to `/Users/rakheendama/Projects/2026/worktree-epic-{ID}/.epic-brief.md`
 using this exact structure:
 
 ---
-# Implementation Brief: Epic {SLICE} — {TITLE}
+# Implementation Brief: Epic {ID} — {TITLE}
 
 ## Scope
 {Backend | Frontend | Both}
@@ -175,7 +188,7 @@ using this exact structure:
 
 ### Backend — Tiered Build Strategy (minimizes build time AND context usage)
 
-All commands run from: cd /Users/rakheendama/Projects/2026/worktree-epic-{SLICE}/backend
+All commands run from: cd /Users/rakheendama/Projects/2026/worktree-epic-{ID}/backend
 
 The strategy has 3 tiers. Use the CHEAPEST tier that answers your current question:
 - **Tier 1 (Compile)**: ~30s — "Does it compile?" Use while iterating on code.
@@ -189,12 +202,12 @@ The strategy has 3 tiers. Use the CHEAPEST tier that answers your current questi
   ./mvnw spotless:apply 2>&1 | tail -3
 
 **Step 2: Tier 1 — Compile check (run after writing code, before tests)**
-  ./mvnw compile test-compile -q > /tmp/mvn-epic-{SLICE}.log 2>&1; if [ $? -eq 0 ]; then echo "COMPILE OK"; else echo "COMPILE FAILED"; grep -E '\[ERROR\]' /tmp/mvn-epic-{SLICE}.log | head -20; fi
+  ./mvnw compile test-compile -q > /tmp/mvn-epic-{ID}.log 2>&1; if [ $? -eq 0 ]; then echo "COMPILE OK"; else echo "COMPILE FAILED"; grep -E '\[ERROR\]' /tmp/mvn-epic-{ID}.log | head -20; fi
 
   Fix any compilation errors. Repeat Tier 1 until clean. This is fast — use it freely.
 
 **Step 3: Tier 2 — Targeted tests (run only YOUR new/modified test classes)**
-  ./mvnw test -Dtest="{NEW_TEST_CLASSES}" -q > /tmp/mvn-epic-{SLICE}.log 2>&1; MVN_EXIT=$?; if [ $MVN_EXIT -eq 0 ]; then echo "TARGETED TESTS PASSED"; grep 'Tests run:' /tmp/mvn-epic-{SLICE}.log | tail -1; else echo "TARGETED TESTS FAILED"; FAILED=$(grep -rl 'failures="[1-9]\|errors="[1-9]' target/surefire-reports/TEST-*.xml 2>/dev/null | sed 's|.*/TEST-||;s|\.xml||' | paste -sd,); echo "FAILED: $FAILED"; fi
+  ./mvnw test -Dtest="{NEW_TEST_CLASSES}" -q > /tmp/mvn-epic-{ID}.log 2>&1; MVN_EXIT=$?; if [ $MVN_EXIT -eq 0 ]; then echo "TARGETED TESTS PASSED"; grep 'Tests run:' /tmp/mvn-epic-{ID}.log | tail -1; else echo "TARGETED TESTS FAILED"; FAILED=$(grep -rl 'failures="[1-9]\|errors="[1-9]' target/surefire-reports/TEST-*.xml 2>/dev/null | sed 's|.*/TEST-||;s|\.xml||' | paste -sd,); echo "FAILED: $FAILED"; fi
 
   Replace {NEW_TEST_CLASSES} with the comma-separated test class names from this epic
   (e.g., "ChecklistTemplateServiceTest,ChecklistTemplateControllerTest").
@@ -206,7 +219,7 @@ The strategy has 3 tiers. Use the CHEAPEST tier that answers your current questi
   Fix and repeat Tier 2 until your tests pass. Do NOT jump to Tier 3 with failing targeted tests.
 
 **Step 4: Tier 3 — Full verify (run ONCE before commit, confirms no regressions)**
-  ./mvnw clean verify -q > /tmp/mvn-epic-{SLICE}.log 2>&1; MVN_EXIT=$?; if [ $MVN_EXIT -eq 0 ]; then echo "FULL BUILD SUCCESS"; grep 'Tests run:' /tmp/mvn-epic-{SLICE}.log | tail -1; else echo "FULL BUILD FAILED (exit $MVN_EXIT)"; FAILED=$(grep -rl 'failures="[1-9]\|errors="[1-9]' target/surefire-reports/TEST-*.xml target/failsafe-reports/TEST-*.xml 2>/dev/null | sed 's|.*/TEST-||;s|\.xml||' | paste -sd,); if [ -n "$FAILED" ]; then echo "FAILED TESTS: $FAILED"; else grep -E '\[ERROR\]' /tmp/mvn-epic-{SLICE}.log | head -20; fi; fi
+  ./mvnw clean verify -q > /tmp/mvn-epic-{ID}.log 2>&1; MVN_EXIT=$?; if [ $MVN_EXIT -eq 0 ]; then echo "FULL BUILD SUCCESS"; grep 'Tests run:' /tmp/mvn-epic-{ID}.log | tail -1; else echo "FULL BUILD FAILED (exit $MVN_EXIT)"; FAILED=$(grep -rl 'failures="[1-9]\|errors="[1-9]' target/surefire-reports/TEST-*.xml target/failsafe-reports/TEST-*.xml 2>/dev/null | sed 's|.*/TEST-||;s|\.xml||' | paste -sd,); if [ -n "$FAILED" ]; then echo "FAILED TESTS: $FAILED"; else grep -E '\[ERROR\]' /tmp/mvn-epic-{ID}.log | head -20; fi; fi
 
   If Tier 3 fails on tests that are NOT yours: fix the regression (you likely broke an import or
   changed a shared method signature). Re-run ONLY the failed tests with full logging:
@@ -215,19 +228,19 @@ The strategy has 3 tiers. Use the CHEAPEST tier that answers your current questi
 
 IMPORTANT: NEVER run ./mvnw clean verify without -q — full output burns 30-60KB of context per run.
 If you need to debug a compilation error, read the log file with grep:
-  grep -n 'ERROR\|cannot find symbol\|Caused by' /tmp/mvn-epic-{SLICE}.log | head -30
+  grep -n 'ERROR\|cannot find symbol\|Caused by' /tmp/mvn-epic-{ID}.log | head -30
 
 IMPORTANT: Do NOT skip tiers. Always go 1→2→3. Do NOT run Tier 3 repeatedly to iterate on
 failures — drop back to Tier 1 or 2, fix, then re-run Tier 3 once.
 
 ### Frontend
 
-All commands run from: cd /Users/rakheendama/Projects/2026/worktree-epic-{SLICE}/frontend
+All commands run from: cd /Users/rakheendama/Projects/2026/worktree-epic-{ID}/frontend
 
   NODE_OPTIONS="" /opt/homebrew/bin/pnpm install > /dev/null 2>&1
-  NODE_OPTIONS="" /opt/homebrew/bin/pnpm run lint > /tmp/lint-epic-{SLICE}.log 2>&1; LINT_EXIT=$?; if [ $LINT_EXIT -ne 0 ]; then echo "LINT FAILED"; tail -20 /tmp/lint-epic-{SLICE}.log; fi
-  NODE_OPTIONS="" /opt/homebrew/bin/pnpm run build > /tmp/build-epic-{SLICE}.log 2>&1; BUILD_EXIT=$?; if [ $BUILD_EXIT -ne 0 ]; then echo "BUILD FAILED"; tail -30 /tmp/build-epic-{SLICE}.log; fi
-  NODE_OPTIONS="" /opt/homebrew/bin/pnpm test > /tmp/test-epic-{SLICE}.log 2>&1; TEST_EXIT=$?; if [ $TEST_EXIT -ne 0 ]; then echo "TESTS FAILED"; tail -30 /tmp/test-epic-{SLICE}.log; else echo "ALL TESTS PASSED"; tail -3 /tmp/test-epic-{SLICE}.log; fi
+  NODE_OPTIONS="" /opt/homebrew/bin/pnpm run lint > /tmp/lint-epic-{ID}.log 2>&1; LINT_EXIT=$?; if [ $LINT_EXIT -ne 0 ]; then echo "LINT FAILED"; tail -20 /tmp/lint-epic-{ID}.log; fi
+  NODE_OPTIONS="" /opt/homebrew/bin/pnpm run build > /tmp/build-epic-{ID}.log 2>&1; BUILD_EXIT=$?; if [ $BUILD_EXIT -ne 0 ]; then echo "BUILD FAILED"; tail -30 /tmp/build-epic-{ID}.log; fi
+  NODE_OPTIONS="" /opt/homebrew/bin/pnpm test > /tmp/test-epic-{ID}.log 2>&1; TEST_EXIT=$?; if [ $TEST_EXIT -ne 0 ]; then echo "TESTS FAILED"; tail -30 /tmp/test-epic-{ID}.log; else echo "ALL TESTS PASSED"; tail -3 /tmp/test-epic-{ID}.log; fi
 
 IMPORTANT: Include FULL code for reference patterns. The implementer's ONLY reference
 material is this brief. Be generous with code, strict with structure.
@@ -242,11 +255,11 @@ Verify the brief file exists, then launch a **blocking** `general-purpose` subag
 ### Builder Prompt Template
 
 ```
-You are implementing **Epic {SLICE}** in the worktree at:
-  /Users/rakheendama/Projects/2026/worktree-epic-{SLICE}
+You are implementing **Epic {ID}** in the worktree at:
+  /Users/rakheendama/Projects/2026/worktree-epic-{ID}
 
 ## First Step — Read Your Brief
-Read: /Users/rakheendama/Projects/2026/worktree-epic-{SLICE}/.epic-brief.md
+Read: /Users/rakheendama/Projects/2026/worktree-epic-{ID}/.epic-brief.md
 This file contains EVERYTHING you need: tasks, file plan, code patterns, conventions,
 build commands, and integration points. Do NOT read ARCHITECTURE.md, TASKS.md, or
 CLAUDE.md files — the brief already contains the relevant extracts.
@@ -276,16 +289,16 @@ If the build fails:
   5. If still failing after 3 Tier-3 attempts, stop and report what's failing and your hypotheses. Do NOT keep retrying — zombie processes accumulate and cause connection pool exhaustion.
 
 When reading log files for errors, use targeted reads:
-  grep -n "ERROR\|FAILURE\|Caused by" /tmp/mvn-epic-{SLICE}.log | tail -20
-  NOT: cat /tmp/mvn-epic-{SLICE}.log (this defeats the purpose of output redirection)
+  grep -n "ERROR\|FAILURE\|Caused by" /tmp/mvn-epic-{ID}.log | tail -20
+  NOT: cat /tmp/mvn-epic-{ID}.log (this defeats the purpose of output redirection)
 
 ### 3. Commit & Push
 - Stage only files you changed: `git add <specific files>`
-- Commit: `git commit -m "feat(epic-{SLICE}): {DESCRIPTION}"`
-- Push: `git push -u origin epic-{SLICE}/{BRANCH_NAME}`
+- Commit: `git commit -m "feat(epic-{ID}): {DESCRIPTION}"`
+- Push: `git push -u origin epic-{ID}/{BRANCH_NAME}`
 
 ### 4. Create PR
-gh pr create --title "Epic {SLICE}: {TITLE}" --body "$(cat <<'EOF'
+gh pr create --title "Epic {ID}: {TITLE}" --body "$(cat <<'EOF'
 ## Summary
 {What this epic implements — from the brief's Tasks section}
 
@@ -418,7 +431,7 @@ to fix them all in one pass:
 
 ```
 You are fixing code review findings for PR #{PR_NUMBER} in worktree:
-  /Users/rakheendama/Projects/2026/worktree-epic-{SLICE}
+  /Users/rakheendama/Projects/2026/worktree-epic-{ID}
 
 ## CodeRabbit Findings (PRIMARY — address ALL of these)
 {Paste ALL CodeRabbit inline comments here — file paths, line numbers, full descriptions.
@@ -429,7 +442,7 @@ You are fixing code review findings for PR #{PR_NUMBER} in worktree:
 {Paste internal review findings here. If verdict was APPROVE with no findings, write "None".}
 
 ## Implementation Brief (for context)
-Read: /Users/rakheendama/Projects/2026/worktree-epic-{SLICE}/.epic-brief.md
+Read: /Users/rakheendama/Projects/2026/worktree-epic-{ID}/.epic-brief.md
 
 ## Instructions
 1. Read each finding carefully. Verify the issue exists in the current code before fixing.
@@ -438,10 +451,10 @@ Read: /Users/rakheendama/Projects/2026/worktree-epic-{SLICE}/.epic-brief.md
    different packages", "already handled by filter X at line Y").
 3. For internal review findings: fix Critical and High issues only.
 4. After fixing, run the appropriate build tier to verify you didn't break anything:
-   - Format: cd /Users/rakheendama/Projects/2026/worktree-epic-{SLICE}/backend && ./mvnw spotless:apply 2>&1 | tail -3
-   - Compile check: ./mvnw compile test-compile -q > /tmp/mvn-fix-{SLICE}.log 2>&1; echo $?
-   - Full verify (once): ./mvnw clean verify -q > /tmp/mvn-fix-{SLICE}.log 2>&1; echo $?
-5. Commit: git commit -m "fix: address review findings for Epic {SLICE}"
+   - Format: cd /Users/rakheendama/Projects/2026/worktree-epic-{ID}/backend && ./mvnw spotless:apply 2>&1 | tail -3
+   - Compile check: ./mvnw compile test-compile -q > /tmp/mvn-fix-{ID}.log 2>&1; echo $?
+   - Full verify (once): ./mvnw clean verify -q > /tmp/mvn-fix-{ID}.log 2>&1; echo $?
+5. Commit: git commit -m "fix: address review findings for Epic {ID}"
 6. Push: git push
 
 ## Report Format
@@ -485,11 +498,14 @@ git pull origin main
 git fetch --prune
 ```
 
-Then update task status — **ALL FOUR locations must be updated**:
-1. Mark the slice **Done** in the **Detail Section** row (the row starting with `| **{SLICE}** |` under the epic's Tasks heading — add `**Done** (PR #{PR_NUMBER})` in the last column). **THIS IS THE MOST CRITICAL** — the `run-phase.sh` script's `extract_slices()` function checks ONLY these rows to determine completion. If you skip this, the phase script will re-run the slice or crash.
-2. Mark the slice **Done** in the **Implementation Order table** row (the row with `| {order} | Epic {N} | {SLICE} |` — update the last column).
-3. Mark the epic **Done** in the **Epic Overview table** at the top of the task file (if all slices in the epic are done).
+Then update task status — **for EACH slice implemented in this PR** (all slices in full-epic mode, one slice in single-slice mode), update **ALL FOUR locations**:
+1. Mark the slice **Done** in the **Detail Section** row (the row starting with `| **{SLICE_ID}** |` under the epic's Tasks heading — add `**Done** (PR #{PR_NUMBER})` in the last column). **THIS IS THE MOST CRITICAL** — the `run-phase.sh` script checks these rows to determine completion. If you skip this, the phase script will re-run the epic or crash.
+2. Mark the slice **Done** in the **Implementation Order table** row (the row with `| {order} | Epic {N} | {SLICE_ID} |` — update the last column).
+3. Mark the epic **Done** in the **Epic Overview table** at the top of the task file (when all slices in the epic are done — which is always true in full-epic mode).
 4. Update the status column in `TASKS.md` overview.
+
+In **full-epic mode**, you must update ALL slices (e.g., both 450A and 450B) in a single pass. Do not mark only one slice.
+
 - Commit and push from main repo
 
 ## Guardrails

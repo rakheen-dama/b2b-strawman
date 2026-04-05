@@ -42,6 +42,10 @@ public class TrustReconciliationService {
   private static final String MODULE_ID = "trust_accounting";
   private static final BigDecimal AUTO_MATCH_THRESHOLD = new BigDecimal("0.80");
 
+  // Note: TRANSFER_IN appears in CREDIT_TYPES because from the bank statement's perspective,
+  // an inter-account transfer creates a credit on the receiving account. Transfer transactions
+  // create two records (TRANSFER_OUT on source, TRANSFER_IN on destination), but each record
+  // belongs to its respective trust account, so sign matching is correct per-account.
   private static final Set<String> CREDIT_TYPES =
       Set.of("DEPOSIT", "TRANSFER_IN", "INTEREST_CREDIT");
   private static final Set<String> DEBIT_TYPES =
@@ -264,9 +268,11 @@ public class TrustReconciliationService {
     // Build candidate pool: APPROVED/RECORDED transactions, unmatched, within date range
     LocalDate startDate = statement.getPeriodStart().minusDays(7);
     LocalDate endDate = statement.getPeriodEnd().plusDays(7);
+    // Wrap in ArrayList so removeIf() doesn't mutate the JPA-managed result list
     List<TrustTransaction> candidatePool =
-        trustTransactionRepository.findUnmatchedCandidates(
-            statement.getTrustAccountId(), startDate, endDate);
+        new java.util.ArrayList<>(
+            trustTransactionRepository.findUnmatchedCandidates(
+                statement.getTrustAccountId(), startDate, endDate));
 
     // Get all UNMATCHED lines for this statement
     List<BankStatementLine> unmatchedLines =
@@ -359,6 +365,18 @@ public class TrustReconciliationService {
           "Invalid match state", "Transaction must be APPROVED or RECORDED to match");
     }
 
+    // Verify the line and transaction belong to the same trust account
+    var statement =
+        bankStatementRepository
+            .findById(line.getBankStatementId())
+            .orElseThrow(
+                () -> new ResourceNotFoundException("BankStatement", line.getBankStatementId()));
+    if (!statement.getTrustAccountId().equals(transaction.getTrustAccountId())) {
+      throw new InvalidStateException(
+          "Trust account mismatch",
+          "Bank statement line and transaction belong to different trust accounts");
+    }
+
     // Link both sides
     line.setMatchStatus("MANUALLY_MATCHED");
     line.setTrustTransactionId(transactionId);
@@ -368,12 +386,7 @@ public class TrustReconciliationService {
     transaction.setBankStatementLineId(lineId);
     trustTransactionRepository.save(transaction);
 
-    // Update matched count
-    var statement =
-        bankStatementRepository
-            .findById(line.getBankStatementId())
-            .orElseThrow(
-                () -> new ResourceNotFoundException("BankStatement", line.getBankStatementId()));
+    // Update matched count (statement already loaded above for trust account validation)
     statement.setMatchedCount(statement.getMatchedCount() + 1);
     bankStatementRepository.save(statement);
 
@@ -455,6 +468,9 @@ public class TrustReconciliationService {
           "Invalid match state", "Only UNMATCHED lines can be excluded");
     }
 
+    // Intentionally does NOT update matchedCount: excluded lines are not "matched" in the
+    // reconciliation sense. matchedCount tracks only AUTO_MATCHED + MANUALLY_MATCHED lines,
+    // so the reconciliation progress percentage remains accurate.
     line.setMatchStatus("EXCLUDED");
     line.setExcludedReason(reason);
     bankStatementLineRepository.save(line);
@@ -513,7 +529,7 @@ public class TrustReconciliationService {
             .toList();
 
     if (matches.size() == 1) {
-      applyAutoMatch(line, matches.getFirst(), new BigDecimal("0.80"), statement);
+      applyAutoMatch(line, matches.getFirst(), AUTO_MATCH_THRESHOLD, statement);
       return true;
     }
     return false;
@@ -536,8 +552,10 @@ public class TrustReconciliationService {
             .toList();
 
     if (matches.size() == 1) {
-      // Below auto-match threshold -- set confidence but remain UNMATCHED
+      // Below auto-match threshold -- set confidence and suggest the transaction, but remain
+      // UNMATCHED so the user can review and manually confirm the match.
       line.setMatchConfidence(new BigDecimal("0.60"));
+      line.setTrustTransactionId(matches.getFirst().getId());
       bankStatementLineRepository.save(line);
       return true;
     }

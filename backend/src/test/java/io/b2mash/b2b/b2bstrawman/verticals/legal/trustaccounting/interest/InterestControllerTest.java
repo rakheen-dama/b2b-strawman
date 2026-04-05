@@ -69,6 +69,14 @@ class InterestControllerTest {
         "Interest Ctrl Admin",
         "admin");
 
+    TestMemberHelper.syncMember(
+        mockMvc,
+        ORG_ID,
+        "user_interest_ctrl_owner2",
+        "interest_ctrl_owner2@test.com",
+        "Interest Ctrl Owner2",
+        "owner");
+
     // Enable the trust_accounting module
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .run(
@@ -217,10 +225,111 @@ class InterestControllerTest {
         .andExpect(jsonPath("$.allocations.length()").value(org.hamcrest.Matchers.greaterThan(0)));
   }
 
+  @Test
+  void listInterestRuns_returnsRunsForAccount() throws Exception {
+    var ownerJwt = TestJwtFactory.ownerJwt(ORG_ID, "user_interest_ctrl_owner");
+
+    // Create an interest run so the list is non-empty
+    mockMvc
+        .perform(
+            post("/api/trust-accounts/" + trustAccountId + "/interest-runs")
+                .with(ownerJwt)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "periodStart": "2027-09-01",
+                      "periodEnd": "2027-09-30"
+                    }
+                    """))
+        .andExpect(status().isCreated());
+
+    mockMvc
+        .perform(get("/api/trust-accounts/" + trustAccountId + "/interest-runs").with(ownerJwt))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$").isArray())
+        .andExpect(jsonPath("$.length()").value(org.hamcrest.Matchers.greaterThanOrEqualTo(1)));
+  }
+
+  @Test
+  void approveInterestRun_returnsApprovedStatus() throws Exception {
+    var ownerJwt = TestJwtFactory.ownerJwt(ORG_ID, "user_interest_ctrl_owner");
+    var owner2Jwt = TestJwtFactory.ownerJwt(ORG_ID, "user_interest_ctrl_owner2");
+
+    // Create and calculate an interest run
+    var createResult =
+        mockMvc
+            .perform(
+                post("/api/trust-accounts/" + trustAccountId + "/interest-runs")
+                    .with(ownerJwt)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "periodStart": "2027-10-01",
+                          "periodEnd": "2027-10-31"
+                        }
+                        """))
+            .andExpect(status().isCreated())
+            .andReturn();
+
+    var runId = JsonPath.read(createResult.getResponse().getContentAsString(), "$.id").toString();
+
+    mockMvc
+        .perform(post("/api/interest-runs/" + runId + "/calculate").with(ownerJwt))
+        .andExpect(status().isOk());
+
+    // Approve with a different owner (self-approval prevention)
+    mockMvc
+        .perform(post("/api/interest-runs/" + runId + "/approve").with(owner2Jwt))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("APPROVED"))
+        .andExpect(jsonPath("$.approvedBy").isNotEmpty());
+  }
+
+  @Test
+  void postInterestRun_returnsPostedStatus() throws Exception {
+    var ownerJwt = TestJwtFactory.ownerJwt(ORG_ID, "user_interest_ctrl_owner");
+    var owner2Jwt = TestJwtFactory.ownerJwt(ORG_ID, "user_interest_ctrl_owner2");
+
+    // Create, calculate, approve, then post
+    var createResult =
+        mockMvc
+            .perform(
+                post("/api/trust-accounts/" + trustAccountId + "/interest-runs")
+                    .with(ownerJwt)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "periodStart": "2027-11-01",
+                          "periodEnd": "2027-11-30"
+                        }
+                        """))
+            .andExpect(status().isCreated())
+            .andReturn();
+
+    var runId = JsonPath.read(createResult.getResponse().getContentAsString(), "$.id").toString();
+
+    mockMvc
+        .perform(post("/api/interest-runs/" + runId + "/calculate").with(ownerJwt))
+        .andExpect(status().isOk());
+
+    mockMvc
+        .perform(post("/api/interest-runs/" + runId + "/approve").with(owner2Jwt))
+        .andExpect(status().isOk());
+
+    mockMvc
+        .perform(post("/api/interest-runs/" + runId + "/post").with(ownerJwt))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("POSTED"))
+        .andExpect(jsonPath("$.postedAt").isNotEmpty());
+  }
+
   private void assertResultIsNotEmpty(org.springframework.test.web.servlet.MvcResult result)
       throws Exception {
     var content = result.getResponse().getContentAsString();
     var id = JsonPath.read(content, "$.id");
-    assert id != null;
+    org.assertj.core.api.Assertions.assertThat(id).isNotNull();
   }
 }

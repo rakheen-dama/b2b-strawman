@@ -399,8 +399,16 @@ public class InterestService {
           "Invalid interest run state", "Interest run must be in DRAFT status to be approved");
     }
 
+    // Prevent approval of uncalculated runs (no allocations = nothing to post)
+    var allocations = interestAllocationRepository.findByInterestRunId(runId);
+    if (allocations.isEmpty()) {
+      throw new InvalidStateException(
+          "Interest run not calculated",
+          "Cannot approve an interest run with no calculated allocations");
+    }
+
     // Self-approval prevention: approver cannot be the creator
-    if (approverId.equals(run.getCreatedBy())) {
+    if (run.getCreatedBy() != null && approverId.equals(run.getCreatedBy())) {
       throw new InvalidStateException(
           "Self-approval not allowed",
           "The interest run creator cannot approve their own interest run");
@@ -438,6 +446,18 @@ public class InterestService {
     if (!"APPROVED".equals(run.getStatus())) {
       throw new InvalidStateException(
           "Invalid interest run state", "Interest run must be in APPROVED status to be posted");
+    }
+
+    // Re-validate trust account is still ACTIVE (may have been frozen/closed since approval)
+    var trustAccountIdForCheck = run.getTrustAccountId();
+    var account =
+        trustAccountRepository
+            .findById(trustAccountIdForCheck)
+            .orElseThrow(
+                () -> new ResourceNotFoundException("TrustAccount", trustAccountIdForCheck));
+    if (account.getStatus() != TrustAccountStatus.ACTIVE) {
+      throw new InvalidStateException(
+          "Invalid account state", "Trust account must be ACTIVE to post an interest run");
     }
 
     var allocations = interestAllocationRepository.findByInterestRunId(runId);

@@ -155,3 +155,84 @@ export interface TrustDashboardData {
   recentTransactions: TrustTransaction[];
   alerts: TrustAlert[];
 }
+
+// Bank Statement types
+
+export type BankStatementStatus =
+  | "IMPORTED"
+  | "MATCHING_IN_PROGRESS"
+  | "MATCHED"
+  | "RECONCILED";
+
+export type BankStatementLineMatchStatus =
+  | "UNMATCHED"
+  | "AUTO_MATCHED"
+  | "MANUALLY_MATCHED"
+  | "EXCLUDED";
+
+export interface BankStatement {
+  id: string;
+  trustAccountId: string;
+  periodStart: string;
+  periodEnd: string;
+  openingBalance: number;
+  closingBalance: number;
+  fileKey: string;
+  fileName: string;
+  format: "CSV" | "OFX";
+  lineCount: number;
+  matchedCount: number;
+  status: BankStatementStatus;
+  importedBy: string;
+  createdAt: string;
+  updatedAt: string;
+  lines?: BankStatementLine[]; // included in detail endpoint
+}
+
+export interface BankStatementLine {
+  id: string;
+  bankStatementId: string;
+  lineNumber: number;
+  transactionDate: string;
+  description: string;
+  reference: string | null;
+  amount: number; // signed: positive = credit, negative = debit
+  runningBalance: number | null;
+  matchStatus: BankStatementLineMatchStatus;
+  trustTransactionId: string | null;
+  matchConfidence: number | null;
+  excludedReason: string | null;
+  createdAt: string;
+}
+
+// Reconciliation types
+
+export type TrustReconciliationStatus = "DRAFT" | "COMPLETED";
+
+export interface TrustReconciliation {
+  id: string;
+  trustAccountId: string;
+  periodEnd: string;
+  bankStatementId: string | null;
+  bankBalance: number;
+  cashbookBalance: number;
+  clientLedgerTotal: number;
+  outstandingDeposits: number;
+  outstandingPayments: number;
+  adjustedBankBalance: number;
+  isBalanced: boolean;
+  status: TrustReconciliationStatus;
+  completedBy: string | null;
+  completedAt: string | null;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MatchResult {
+  statementId: string;
+  totalLines: number;
+  autoMatchedCount: number;
+  unmatchedCount: number;
+  excludedCount: number;
+}

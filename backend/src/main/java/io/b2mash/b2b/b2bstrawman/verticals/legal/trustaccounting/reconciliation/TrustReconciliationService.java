@@ -111,15 +111,14 @@ public class TrustReconciliationService {
 
     String tenantSchema = RequestScopes.requireTenantId();
     UUID memberId = RequestScopes.requireMemberId();
-    String fileName =
-        file.getOriginalFilename() != null ? file.getOriginalFilename() : "upload.csv";
+    String fileName = sanitizeFileName(file.getOriginalFilename());
 
     // Read file bytes so we can use them for both S3 upload and parsing
     byte[] fileBytes;
     try {
       fileBytes = file.getBytes();
     } catch (IOException e) {
-      throw new IllegalStateException("Failed to read uploaded file", e);
+      throw new BankStatementParseException("Failed to read uploaded file", e);
     }
 
     // Store file in S3
@@ -136,6 +135,10 @@ public class TrustReconciliationService {
         matchedParser = parser;
         break;
       }
+    }
+
+    if (matchedParser == null) {
+      throw new BankStatementParseException("No suitable parser found for file: " + fileName);
     }
 
     // Parse the statement
@@ -267,6 +270,22 @@ public class TrustReconciliationService {
         statement.getCreatedAt(),
         statement.getUpdatedAt(),
         lines.stream().map(this::toLineResponse).toList());
+  }
+
+  /**
+   * Sanitize an uploaded filename to prevent path traversal in S3 keys. Returns "upload.csv" for
+   * null/blank input, strips directory components, and replaces unsafe characters with underscores.
+   */
+  static String sanitizeFileName(String original) {
+    if (original == null || original.isBlank()) {
+      return "upload.csv";
+    }
+    // Strip path components (everything before the last / or \)
+    int lastSlash = Math.max(original.lastIndexOf('/'), original.lastIndexOf('\\'));
+    String name = lastSlash >= 0 ? original.substring(lastSlash + 1) : original;
+    // Replace characters not in the safe set with underscores
+    name = name.replaceAll("[^a-zA-Z0-9._-]", "_");
+    return name.isBlank() ? "upload.csv" : name;
   }
 
   private BankStatementLineResponse toLineResponse(BankStatementLine line) {

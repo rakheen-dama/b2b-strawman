@@ -505,7 +505,7 @@
 | 444 | Auto-Matching + Manual Matching + Reconciliation | Backend | 440, 443 | L | 444A, 444B | **Done** (PRs #935, #936) |
 | 445 | Interest Calculation + Posting | Backend | 440 | L | 445A, 445B | **Done** (PRs #937, #938) |
 | 446 | Trust Investments | Backend | 441 | M | 446A, 446B | **Done** (PRs #939, #940) |
-| 447 | Trust Reports (Section 35) + Event/Notification Handlers | Backend | 442, 444, 445, 446 | M | 447A, 447B | |
+| 447 | Trust Reports (Section 35) + Event/Notification Handlers | Backend | 442, 444, 445, 446 | M | 447A, 447B | 447A done (PR #941) |
 | 448 | Frontend: Trust Dashboard + Transaction Entry + Approval UX | Frontend | 442 | L | 448A, 448B | |
 | 449 | Frontend: Client Ledger + Reconciliation Split-Pane | Frontend | 442, 444 | L | 449A, 449B | |
 | 450 | Frontend: Interest + Investments + Reports Pages | Frontend | 445, 446, 447 | M | 450A, 450B | |

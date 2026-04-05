@@ -66,8 +66,12 @@ public class MemberFilter extends OncePerRequestFilter {
         try {
           capabilities = orgRoleService.resolveCapabilities(info.memberId());
         } catch (Exception e) {
-          log.warn(
-              "Failed to resolve capabilities for member {}: {}", info.memberId(), e.getMessage());
+          log.error(
+              "Failed to resolve capabilities for member {} in tenant {} — "
+                  + "this will cause 403 errors on capability-protected endpoints",
+              info.memberId(),
+              tenantId,
+              e);
           capabilities = Collections.emptySet();
         }
         carrier = carrier.where(RequestScopes.CAPABILITIES, capabilities);

@@ -215,6 +215,8 @@ describe("Trust Interest", () => {
         open={true}
         onOpenChange={vi.fn()}
         onSuccess={vi.fn()}
+        canApprove={true}
+        currency="ZAR"
       />,
     );
 
@@ -350,6 +352,8 @@ describe("Trust Interest", () => {
         open={true}
         onOpenChange={vi.fn()}
         onSuccess={onSuccess}
+        canApprove={true}
+        currency="ZAR"
       />,
     );
 

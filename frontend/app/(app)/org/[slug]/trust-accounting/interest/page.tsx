@@ -36,7 +36,7 @@ export default async function InterestPage({
 }: {
   params: Promise<{ slug: string }>;
 }) {
-  await params;
+  const { slug: _slug } = await params; // destructured for consistency with sibling pages
 
   // Module gating
   let settings;
@@ -65,6 +65,10 @@ export default async function InterestPage({
     capData.isAdmin ||
     capData.isOwner ||
     capData.capabilities.includes("MANAGE_TRUST");
+  const canApproveTrust =
+    capData.isAdmin ||
+    capData.isOwner ||
+    capData.capabilities.includes("APPROVE_TRUST_PAYMENT");
 
   // Fetch primary trust account
   let accountId: string | null = null;
@@ -137,6 +141,8 @@ export default async function InterestPage({
                 <InterestPageClient
                   accountId={accountId}
                   variant="wizard"
+                  canApprove={canApproveTrust}
+                  currency={currency}
                 />
               )}
             </div>

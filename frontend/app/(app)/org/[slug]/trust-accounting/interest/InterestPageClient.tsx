@@ -9,11 +9,15 @@ import { LpffRateDialog } from "@/components/trust/LpffRateDialog";
 interface InterestPageClientProps {
   accountId: string;
   variant: "wizard" | "rate";
+  canApprove?: boolean;
+  currency?: string;
 }
 
 export function InterestPageClient({
   accountId,
   variant,
+  canApprove,
+  currency,
 }: InterestPageClientProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -31,6 +35,8 @@ export function InterestPageClient({
           open={open}
           onOpenChange={setOpen}
           onSuccess={handleSuccess}
+          canApprove={canApprove ?? false}
+          currency={currency ?? "ZAR"}
         />
       </>
     );

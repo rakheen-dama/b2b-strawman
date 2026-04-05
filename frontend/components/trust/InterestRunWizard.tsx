@@ -43,6 +43,8 @@ interface InterestRunWizardProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
+  canApprove: boolean;
+  currency: string;
 }
 
 const STATUS_BADGE_VARIANT: Record<
@@ -59,6 +61,8 @@ export function InterestRunWizard({
   open,
   onOpenChange,
   onSuccess,
+  canApprove,
+  currency,
 }: InterestRunWizardProps) {
   const router = useRouter();
   const [step, setStep] = useState(1);
@@ -329,16 +333,16 @@ export function InterestRunWizard({
                           {a.customerId}
                         </td>
                         <td className="py-3 pr-4 text-right font-mono tabular-nums">
-                          {formatCurrency(a.averageDailyBalance, "ZAR")}
+                          {formatCurrency(a.averageDailyBalance, currency)}
                         </td>
                         <td className="py-3 pr-4 text-right font-mono tabular-nums">
-                          {formatCurrency(a.grossInterest, "ZAR")}
+                          {formatCurrency(a.grossInterest, currency)}
                         </td>
                         <td className="py-3 pr-4 text-right font-mono tabular-nums">
-                          {formatCurrency(a.lpffShare, "ZAR")}
+                          {formatCurrency(a.lpffShare, currency)}
                         </td>
                         <td className="py-3 text-right font-mono tabular-nums">
-                          {formatCurrency(a.clientShare, "ZAR")}
+                          {formatCurrency(a.clientShare, currency)}
                         </td>
                       </tr>
                     ))}
@@ -373,7 +377,7 @@ export function InterestRunWizard({
                     "Calculate Interest"
                   )}
                 </Button>
-              ) : (
+              ) : canApprove ? (
                 <Button
                   type="button"
                   onClick={() => setStep(3)}
@@ -381,6 +385,11 @@ export function InterestRunWizard({
                 >
                   Approve
                 </Button>
+              ) : (
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  Pending Approval — you do not have permission to approve
+                  interest runs.
+                </p>
               )}
             </DialogFooter>
           </div>
@@ -400,7 +409,7 @@ export function InterestRunWizard({
                       Total Interest
                     </dt>
                     <dd className="font-mono tabular-nums text-slate-950 dark:text-slate-50">
-                      {formatCurrency(run.totalInterest, "ZAR")}
+                      {formatCurrency(run.totalInterest, currency)}
                     </dd>
                   </div>
                   <div className="flex justify-between">
@@ -408,7 +417,7 @@ export function InterestRunWizard({
                       LPFF Share
                     </dt>
                     <dd className="font-mono tabular-nums text-slate-950 dark:text-slate-50">
-                      {formatCurrency(run.totalLpffShare, "ZAR")}
+                      {formatCurrency(run.totalLpffShare, currency)}
                     </dd>
                   </div>
                   <div className="flex justify-between">
@@ -416,7 +425,7 @@ export function InterestRunWizard({
                       Client Share
                     </dt>
                     <dd className="font-mono tabular-nums text-slate-950 dark:text-slate-50">
-                      {formatCurrency(run.totalClientShare, "ZAR")}
+                      {formatCurrency(run.totalClientShare, currency)}
                     </dd>
                   </div>
                 </dl>
@@ -434,20 +443,27 @@ export function InterestRunWizard({
               >
                 Cancel
               </Button>
-              <Button
-                type="button"
-                onClick={handleApprove}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-1.5 size-4 animate-spin" />
-                    Approving...
-                  </>
-                ) : (
-                  "Approve Run"
-                )}
-              </Button>
+              {canApprove ? (
+                <Button
+                  type="button"
+                  onClick={handleApprove}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-1.5 size-4 animate-spin" />
+                      Approving...
+                    </>
+                  ) : (
+                    "Approve Run"
+                  )}
+                </Button>
+              ) : (
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  Pending Approval — you do not have permission to approve
+                  interest runs.
+                </p>
+              )}
             </DialogFooter>
           </div>
         )}
@@ -469,7 +485,7 @@ export function InterestRunWizard({
                       Total Interest
                     </dt>
                     <dd className="font-mono tabular-nums text-slate-950 dark:text-slate-50">
-                      {formatCurrency(run.totalInterest, "ZAR")}
+                      {formatCurrency(run.totalInterest, currency)}
                     </dd>
                   </div>
                   <div className="flex justify-between">
@@ -477,7 +493,7 @@ export function InterestRunWizard({
                       LPFF Share
                     </dt>
                     <dd className="font-mono tabular-nums text-slate-950 dark:text-slate-50">
-                      {formatCurrency(run.totalLpffShare, "ZAR")}
+                      {formatCurrency(run.totalLpffShare, currency)}
                     </dd>
                   </div>
                   <div className="flex justify-between">
@@ -485,7 +501,7 @@ export function InterestRunWizard({
                       Client Share
                     </dt>
                     <dd className="font-mono tabular-nums text-slate-950 dark:text-slate-50">
-                      {formatCurrency(run.totalClientShare, "ZAR")}
+                      {formatCurrency(run.totalClientShare, currency)}
                     </dd>
                   </div>
                 </dl>
@@ -503,20 +519,27 @@ export function InterestRunWizard({
               >
                 Cancel
               </Button>
-              <Button
-                type="button"
-                onClick={handlePost}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-1.5 size-4 animate-spin" />
-                    Posting...
-                  </>
-                ) : (
-                  "Post to Ledger"
-                )}
-              </Button>
+              {canApprove ? (
+                <Button
+                  type="button"
+                  onClick={handlePost}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-1.5 size-4 animate-spin" />
+                      Posting...
+                    </>
+                  ) : (
+                    "Post to Ledger"
+                  )}
+                </Button>
+              ) : (
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  Pending Approval — you do not have permission to post
+                  interest runs.
+                </p>
+              )}
             </DialogFooter>
           </div>
         )}

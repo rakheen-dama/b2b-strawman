@@ -112,3 +112,22 @@ export const addLpffRateSchema = z.object({
 });
 
 export type AddLpffRateFormData = z.infer<typeof addLpffRateSchema>;
+
+export const placeInvestmentSchema = z.object({
+  customerId: z.string().uuid("Must be a valid client UUID"),
+  institution: z.string().min(1, "Institution is required").max(200),
+  accountNumber: z.string().min(1, "Account number is required").max(50),
+  principal: z.number().positive("Principal must be greater than zero"),
+  interestRate: z.number().min(0, "Rate must be non-negative").max(100, "Rate cannot exceed 100"),
+  depositDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD"),
+  maturityDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD").optional().or(z.literal("")),
+  notes: z.string().max(2000).optional().or(z.literal("")),
+});
+
+export type PlaceInvestmentFormData = z.infer<typeof placeInvestmentSchema>;
+
+export const recordInvestmentInterestSchema = z.object({
+  amount: z.number().positive("Amount must be greater than zero"),
+});
+
+export type RecordInvestmentInterestFormData = z.infer<typeof recordInvestmentInterestSchema>;

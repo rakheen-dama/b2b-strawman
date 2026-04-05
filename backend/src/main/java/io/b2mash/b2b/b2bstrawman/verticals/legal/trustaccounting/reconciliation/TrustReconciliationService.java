@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.parser.AbsaCsvParser;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.parser.BankStatementParseException;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.parser.BankStatementParser;
@@ -55,6 +56,8 @@ public class TrustReconciliationService {
   private final BankStatementLineRepository bankStatementLineRepository;
   private final TrustAccountRepository trustAccountRepository;
   private final TrustTransactionRepository trustTransactionRepository;
+  private final TrustReconciliationRepository trustReconciliationRepository;
+  private final ClientLedgerCardRepository clientLedgerCardRepository;
   private final StorageService storageService;
   private final VerticalModuleGuard moduleGuard;
   private final AuditService auditService;
@@ -65,6 +68,8 @@ public class TrustReconciliationService {
       BankStatementLineRepository bankStatementLineRepository,
       TrustAccountRepository trustAccountRepository,
       TrustTransactionRepository trustTransactionRepository,
+      TrustReconciliationRepository trustReconciliationRepository,
+      ClientLedgerCardRepository clientLedgerCardRepository,
       StorageService storageService,
       VerticalModuleGuard moduleGuard,
       AuditService auditService) {
@@ -72,6 +77,8 @@ public class TrustReconciliationService {
     this.bankStatementLineRepository = bankStatementLineRepository;
     this.trustAccountRepository = trustAccountRepository;
     this.trustTransactionRepository = trustTransactionRepository;
+    this.trustReconciliationRepository = trustReconciliationRepository;
+    this.clientLedgerCardRepository = clientLedgerCardRepository;
     this.storageService = storageService;
     this.moduleGuard = moduleGuard;
     this.auditService = auditService;
@@ -499,6 +506,215 @@ public class TrustReconciliationService {
             .entityId(lineId)
             .details(Map.of("reason", reason))
             .build());
+  }
+
+  // --- Reconciliation DTOs ---
+
+  public record TrustReconciliationResponse(
+      UUID id,
+      UUID trustAccountId,
+      LocalDate periodEnd,
+      UUID bankStatementId,
+      BigDecimal bankBalance,
+      BigDecimal cashbookBalance,
+      BigDecimal clientLedgerTotal,
+      BigDecimal outstandingDeposits,
+      BigDecimal outstandingPayments,
+      BigDecimal adjustedBankBalance,
+      boolean isBalanced,
+      String status,
+      UUID completedBy,
+      Instant completedAt,
+      String notes,
+      Instant createdAt,
+      Instant updatedAt) {}
+
+  public record CreateReconciliationRequest(LocalDate periodEnd, UUID bankStatementId) {}
+
+  // --- Reconciliation Methods ---
+
+  @Transactional
+  public TrustReconciliationResponse createReconciliation(
+      UUID accountId, LocalDate periodEnd, UUID bankStatementId) {
+    moduleGuard.requireModule(MODULE_ID);
+
+    trustAccountRepository
+        .findById(accountId)
+        .orElseThrow(() -> new ResourceNotFoundException("TrustAccount", accountId));
+
+    if (bankStatementId != null) {
+      var statement =
+          bankStatementRepository
+              .findById(bankStatementId)
+              .orElseThrow(() -> new ResourceNotFoundException("BankStatement", bankStatementId));
+      if (!statement.getTrustAccountId().equals(accountId)) {
+        throw new InvalidStateException(
+            "Trust account mismatch",
+            "Bank statement does not belong to the specified trust account");
+      }
+    }
+
+    var reconciliation = new TrustReconciliation(accountId, periodEnd, bankStatementId);
+    reconciliation = trustReconciliationRepository.save(reconciliation);
+
+    return toReconciliationResponse(reconciliation);
+  }
+
+  @Transactional(readOnly = true)
+  public List<TrustReconciliationResponse> listReconciliations(UUID accountId) {
+    moduleGuard.requireModule(MODULE_ID);
+
+    trustAccountRepository
+        .findById(accountId)
+        .orElseThrow(() -> new ResourceNotFoundException("TrustAccount", accountId));
+
+    return trustReconciliationRepository
+        .findByTrustAccountIdOrderByPeriodEndDesc(accountId)
+        .stream()
+        .map(this::toReconciliationResponse)
+        .toList();
+  }
+
+  @Transactional(readOnly = true)
+  public TrustReconciliationResponse getReconciliation(UUID reconciliationId) {
+    moduleGuard.requireModule(MODULE_ID);
+
+    var reconciliation =
+        trustReconciliationRepository
+            .findById(reconciliationId)
+            .orElseThrow(
+                () -> new ResourceNotFoundException("TrustReconciliation", reconciliationId));
+
+    return toReconciliationResponse(reconciliation);
+  }
+
+  @Transactional
+  public TrustReconciliationResponse calculateReconciliation(UUID reconciliationId) {
+    moduleGuard.requireModule(MODULE_ID);
+
+    var reconciliation =
+        trustReconciliationRepository
+            .findById(reconciliationId)
+            .orElseThrow(
+                () -> new ResourceNotFoundException("TrustReconciliation", reconciliationId));
+
+    if (!"DRAFT".equals(reconciliation.getStatus())) {
+      throw new InvalidStateException(
+          "Invalid reconciliation state", "Cannot recalculate a COMPLETED reconciliation");
+    }
+
+    UUID bankStatementId = reconciliation.getBankStatementId();
+    if (bankStatementId == null) {
+      throw new InvalidStateException(
+          "Missing bank statement",
+          "A bank statement must be linked to calculate the reconciliation");
+    }
+
+    var bankStatement =
+        bankStatementRepository
+            .findById(bankStatementId)
+            .orElseThrow(() -> new ResourceNotFoundException("BankStatement", bankStatementId));
+
+    UUID accountId = reconciliation.getTrustAccountId();
+    BigDecimal bankBalance = bankStatement.getClosingBalance();
+    BigDecimal cashbookBalance = trustTransactionRepository.calculateCashbookBalance(accountId);
+    BigDecimal clientLedgerTotal = clientLedgerCardRepository.calculateTotalTrustBalance(accountId);
+    BigDecimal outstandingDeposits =
+        trustTransactionRepository.calculateOutstandingDeposits(accountId);
+    BigDecimal outstandingPayments =
+        trustTransactionRepository.calculateOutstandingPayments(accountId);
+    BigDecimal adjustedBankBalance =
+        bankBalance.add(outstandingDeposits).subtract(outstandingPayments);
+
+    boolean isBalanced =
+        adjustedBankBalance.compareTo(cashbookBalance) == 0
+            && cashbookBalance.compareTo(clientLedgerTotal) == 0;
+
+    reconciliation.setBankBalance(bankBalance);
+    reconciliation.setCashbookBalance(cashbookBalance);
+    reconciliation.setClientLedgerTotal(clientLedgerTotal);
+    reconciliation.setOutstandingDeposits(outstandingDeposits);
+    reconciliation.setOutstandingPayments(outstandingPayments);
+    reconciliation.setAdjustedBankBalance(adjustedBankBalance);
+    reconciliation.setBalanced(isBalanced);
+
+    reconciliation = trustReconciliationRepository.save(reconciliation);
+
+    return toReconciliationResponse(reconciliation);
+  }
+
+  @Transactional
+  public TrustReconciliationResponse completeReconciliation(UUID reconciliationId) {
+    moduleGuard.requireModule(MODULE_ID);
+
+    var reconciliation =
+        trustReconciliationRepository
+            .findById(reconciliationId)
+            .orElseThrow(
+                () -> new ResourceNotFoundException("TrustReconciliation", reconciliationId));
+
+    if (!"DRAFT".equals(reconciliation.getStatus())) {
+      throw new InvalidStateException(
+          "Invalid reconciliation state", "Reconciliation is already COMPLETED");
+    }
+
+    if (!reconciliation.isBalanced()) {
+      throw new InvalidStateException(
+          "Reconciliation not balanced",
+          "Cannot complete reconciliation: adjustedBankBalance=%s, cashbookBalance=%s, clientLedgerTotal=%s"
+              .formatted(
+                  reconciliation.getAdjustedBankBalance(),
+                  reconciliation.getCashbookBalance(),
+                  reconciliation.getClientLedgerTotal()));
+    }
+
+    reconciliation.setStatus("COMPLETED");
+    reconciliation.setCompletedBy(RequestScopes.requireMemberId());
+    reconciliation.setCompletedAt(Instant.now());
+
+    reconciliation = trustReconciliationRepository.save(reconciliation);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("trust_reconciliation.completed")
+            .entityType("trust_reconciliation")
+            .entityId(reconciliation.getId())
+            .details(
+                Map.of(
+                    "trust_account_id",
+                    reconciliation.getTrustAccountId().toString(),
+                    "period_end",
+                    reconciliation.getPeriodEnd().toString(),
+                    "bank_balance",
+                    reconciliation.getBankBalance().toString(),
+                    "cashbook_balance",
+                    reconciliation.getCashbookBalance().toString(),
+                    "client_ledger_total",
+                    reconciliation.getClientLedgerTotal().toString()))
+            .build());
+
+    return toReconciliationResponse(reconciliation);
+  }
+
+  private TrustReconciliationResponse toReconciliationResponse(TrustReconciliation recon) {
+    return new TrustReconciliationResponse(
+        recon.getId(),
+        recon.getTrustAccountId(),
+        recon.getPeriodEnd(),
+        recon.getBankStatementId(),
+        recon.getBankBalance(),
+        recon.getCashbookBalance(),
+        recon.getClientLedgerTotal(),
+        recon.getOutstandingDeposits(),
+        recon.getOutstandingPayments(),
+        recon.getAdjustedBankBalance(),
+        recon.isBalanced(),
+        recon.getStatus(),
+        recon.getCompletedBy(),
+        recon.getCompletedAt(),
+        recon.getNotes(),
+        recon.getCreatedAt(),
+        recon.getUpdatedAt());
   }
 
   // --- Auto-Match Strategy Helpers ---

@@ -17,6 +17,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTran
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
 import jakarta.persistence.EntityManager;
+import jakarta.validation.constraints.NotBlank;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -25,6 +26,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -130,7 +133,57 @@ public class TrustTransactionService {
       UUID recordedBy,
       Instant createdAt) {}
 
+  public record RejectRequest(@NotBlank String reason) {}
+
+  public record ReverseRequest(@NotBlank String reason) {}
+
+  public record CashbookBalanceResponse(BigDecimal balance) {}
+
   // --- Service Methods ---
+
+  @Transactional(readOnly = true)
+  public Page<TrustTransactionResponse> listTransactions(UUID trustAccountId, Pageable pageable) {
+    moduleGuard.requireModule(MODULE_ID);
+
+    trustAccountRepository
+        .findById(trustAccountId)
+        .orElseThrow(() -> new ResourceNotFoundException("TrustAccount", trustAccountId));
+
+    return transactionRepository
+        .findByTrustAccountIdOrderByTransactionDateDesc(trustAccountId, pageable)
+        .map(this::toResponse);
+  }
+
+  @Transactional(readOnly = true)
+  public TrustTransactionResponse getTransactionById(UUID accountId, UUID transactionId) {
+    moduleGuard.requireModule(MODULE_ID);
+
+    var transaction =
+        transactionRepository
+            .findById(transactionId)
+            .orElseThrow(() -> new ResourceNotFoundException("TrustTransaction", transactionId));
+
+    if (!transaction.getTrustAccountId().equals(accountId)) {
+      throw new ResourceNotFoundException("TrustTransaction", transactionId);
+    }
+
+    return toResponse(transaction);
+  }
+
+  @Transactional(readOnly = true)
+  public List<TrustTransactionResponse> getPendingApprovals(UUID trustAccountId) {
+    moduleGuard.requireModule(MODULE_ID);
+
+    trustAccountRepository
+        .findById(trustAccountId)
+        .orElseThrow(() -> new ResourceNotFoundException("TrustAccount", trustAccountId));
+
+    return transactionRepository
+        .findByStatusAndTrustAccountId("AWAITING_APPROVAL", trustAccountId)
+        .stream()
+        .map(this::toResponse)
+        .toList();
+  }
 
   @Transactional
   public TrustTransactionResponse recordDeposit(UUID trustAccountId, RecordDepositRequest request) {
@@ -1117,14 +1170,15 @@ public class TrustTransactionService {
   // --- 440.10: Cashbook Balance ---
 
   @Transactional(readOnly = true)
-  public BigDecimal getCashbookBalance(UUID trustAccountId) {
+  public CashbookBalanceResponse getCashbookBalance(UUID trustAccountId) {
     moduleGuard.requireModule(MODULE_ID);
 
     trustAccountRepository
         .findById(trustAccountId)
         .orElseThrow(() -> new ResourceNotFoundException("TrustAccount", trustAccountId));
 
-    return transactionRepository.calculateCashbookBalance(trustAccountId);
+    return new CashbookBalanceResponse(
+        transactionRepository.calculateCashbookBalance(trustAccountId));
   }
 
   // --- Private Helpers ---

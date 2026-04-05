@@ -12,8 +12,10 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -97,9 +99,17 @@ public class ClientLedgerService {
   public Page<ClientLedgerCardResponse> listClientLedgers(UUID trustAccountId, Pageable pageable) {
     moduleGuard.requireModule(MODULE_ID);
 
-    return ledgerCardRepository
-        .findByTrustAccountId(trustAccountId, pageable)
-        .map(this::toResponse);
+    Page<ClientLedgerCard> page =
+        ledgerCardRepository.findByTrustAccountId(trustAccountId, pageable);
+
+    // Batch-load customer names to avoid N+1
+    Set<UUID> customerIds =
+        page.getContent().stream().map(ClientLedgerCard::getCustomerId).collect(Collectors.toSet());
+    Map<UUID, String> customerNames =
+        customerRepository.findByIdIn(customerIds).stream()
+            .collect(Collectors.toMap(c -> c.getId(), c -> c.getName()));
+
+    return page.map(entity -> toResponse(entity, customerNames));
   }
 
   @Transactional(readOnly = true)
@@ -134,6 +144,11 @@ public class ClientLedgerService {
   public LedgerStatementResponse getClientLedgerStatement(
       UUID customerId, UUID trustAccountId, LocalDate startDate, LocalDate endDate) {
     moduleGuard.requireModule(MODULE_ID);
+
+    if (endDate.isBefore(startDate)) {
+      throw new InvalidStateException(
+          "Invalid ledger statement range", "endDate must be on or after startDate");
+    }
 
     // Get the opening balance as of the day before the start date
     BigDecimal openingBalance =
@@ -190,8 +205,22 @@ public class ClientLedgerService {
 
   private ClientLedgerCardResponse toResponse(ClientLedgerCard entity) {
     String customerName =
-        customerRepository.findById(entity.getCustomerId()).map(c -> c.getName()).orElse(null);
+        customerRepository
+            .findById(entity.getCustomerId())
+            .map(c -> c.getName())
+            .orElse("(deleted customer)");
 
+    return toResponse(entity, customerName);
+  }
+
+  /** Batch-aware overload that uses a pre-loaded customer name map. */
+  private ClientLedgerCardResponse toResponse(
+      ClientLedgerCard entity, Map<UUID, String> customerNames) {
+    String customerName = customerNames.getOrDefault(entity.getCustomerId(), "(deleted customer)");
+    return toResponse(entity, customerName);
+  }
+
+  private ClientLedgerCardResponse toResponse(ClientLedgerCard entity, String customerName) {
     return new ClientLedgerCardResponse(
         entity.getId(),
         entity.getTrustAccountId(),

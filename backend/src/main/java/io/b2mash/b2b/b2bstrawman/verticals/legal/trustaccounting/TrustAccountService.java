@@ -220,9 +220,10 @@ public class TrustAccountService {
   public TrustAccountResponse closeTrustAccount(UUID id) {
     moduleGuard.requireModule(MODULE_ID);
 
+    // Pessimistic lock to prevent concurrent deposits/approvals during close
     var account =
         trustAccountRepository
-            .findById(id)
+            .findByIdForUpdate(id)
             .orElseThrow(() -> new ResourceNotFoundException("TrustAccount", id));
 
     if (TrustAccountStatus.CLOSED == account.getStatus()) {
@@ -231,12 +232,12 @@ public class TrustAccountService {
 
     // Closing guard: check client ledger balances sum to zero
     BigDecimal totalBalance = ledgerCardRepository.calculateTotalTrustBalance(id);
-    if (totalBalance.compareTo(BigDecimal.ZERO) > 0) {
+    if (totalBalance.compareTo(BigDecimal.ZERO) != 0) {
       throw new InvalidStateException(
           "Cannot close trust account",
-          "R"
+          "Non-zero client trust balance of R"
               + totalBalance.toPlainString()
-              + " in client trust balances must be disbursed first.");
+              + " must be resolved first.");
     }
 
     account.setStatus(TrustAccountStatus.CLOSED);

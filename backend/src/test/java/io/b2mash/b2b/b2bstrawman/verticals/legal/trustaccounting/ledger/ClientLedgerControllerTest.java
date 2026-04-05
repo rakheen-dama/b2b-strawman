@@ -178,6 +178,42 @@ class ClientLedgerControllerTest {
         .andExpect(jsonPath("$.balance").value(25000.00));
   }
 
+  @Test
+  void getStatement_returnsStatementWithBalances() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/trust-accounts/"
+                    + trustAccountId
+                    + "/client-ledgers/"
+                    + customerId
+                    + "/statement")
+                .param("startDate", "2026-02-01")
+                .param("endDate", "2026-03-31")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ledger_ctrl_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.openingBalance").isNumber())
+        .andExpect(jsonPath("$.closingBalance").isNumber())
+        .andExpect(jsonPath("$.closingBalance").value(25000.00))
+        .andExpect(jsonPath("$.transactions").isArray())
+        .andExpect(jsonPath("$.transactions").isNotEmpty());
+  }
+
+  @Test
+  void getStatement_rejectsInvalidDateRange() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/trust-accounts/"
+                    + trustAccountId
+                    + "/client-ledgers/"
+                    + customerId
+                    + "/statement")
+                .param("startDate", "2026-04-10")
+                .param("endDate", "2026-04-01")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ledger_ctrl_owner")))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.detail").value("endDate must be on or after startDate"));
+  }
+
   // --- 442.10: Closing guard integration tests ---
 
   @Test
@@ -233,7 +269,7 @@ class ClientLedgerControllerTest {
         .andExpect(status().isBadRequest())
         .andExpect(
             jsonPath("$.detail")
-                .value("R5000.00 in client trust balances must be disbursed first."));
+                .value("Non-zero client trust balance of R5000.00 must be resolved first."));
   }
 
   @Test

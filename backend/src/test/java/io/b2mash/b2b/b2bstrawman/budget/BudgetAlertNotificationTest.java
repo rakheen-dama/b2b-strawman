@@ -2,7 +2,7 @@ package io.b2mash.b2b.b2bstrawman.budget;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.TestPostgresConfiguration;
 import io.b2mash.b2b.b2bstrawman.billingrate.BillingRateService;
 import io.b2mash.b2b.b2bstrawman.event.BudgetThresholdEvent;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
@@ -42,7 +42,7 @@ import org.springframework.test.web.servlet.MockMvc;
  */
 @SpringBootTest
 @AutoConfigureMockMvc
-@Import(TestcontainersConfiguration.class)
+@Import(TestPostgresConfiguration.class)
 @ActiveProfiles("test")
 @RecordApplicationEvents
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)

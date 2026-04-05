@@ -3,7 +3,7 @@ package io.b2mash.b2b.b2bstrawman.assistant.tool.read;
 import static io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.createActiveCustomerWithPrerequisiteFields;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.TestPostgresConfiguration;
 import io.b2mash.b2b.b2bstrawman.assistant.tool.AssistantToolRegistry;
 import io.b2mash.b2b.b2bstrawman.assistant.tool.TenantToolContext;
 import io.b2mash.b2b.b2bstrawman.budget.ProjectBudgetService;
@@ -42,7 +42,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Import(TestcontainersConfiguration.class)
+@Import(TestPostgresConfiguration.class)
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class FinancialReadToolsTest {

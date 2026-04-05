@@ -6,7 +6,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
 
-import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.TestPostgresConfiguration;
 import io.b2mash.b2b.b2bstrawman.assistant.provider.ChatRequest;
 import io.b2mash.b2b.b2bstrawman.assistant.provider.LlmChatProvider;
 import io.b2mash.b2b.b2bstrawman.assistant.provider.LlmChatProviderRegistry;
@@ -45,7 +45,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@Import(TestcontainersConfiguration.class)
+@Import(TestPostgresConfiguration.class)
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AssistantServiceTest {

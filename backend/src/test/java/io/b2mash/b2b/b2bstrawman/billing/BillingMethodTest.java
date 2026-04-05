@@ -3,7 +3,7 @@ package io.b2mash.b2b.b2bstrawman.billing;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.TestPostgresConfiguration;
 import io.b2mash.b2b.b2bstrawman.billing.Subscription.SubscriptionStatus;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.provisioning.Organization;
@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
@@ -129,7 +130,8 @@ class BillingMethodTest {
 
   @Nested
   @SpringBootTest
-  @Import(TestcontainersConfiguration.class)
+  @AutoConfigureMockMvc
+  @Import(TestPostgresConfiguration.class)
   @ActiveProfiles("test")
   @Transactional
   class PersistenceTests {

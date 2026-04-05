@@ -2,7 +2,7 @@ package io.b2mash.b2b.b2bstrawman.notification;
 
 import static org.assertj.core.api.Assertions.*;
 
-import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.TestPostgresConfiguration;
 import io.b2mash.b2b.b2bstrawman.event.DocumentUploadedEvent;
 import io.b2mash.b2b.b2bstrawman.event.MemberAddedToProjectEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskAssignedEvent;
@@ -22,12 +22,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
-@Import(TestcontainersConfiguration.class)
+@AutoConfigureMockMvc
+@Import(TestPostgresConfiguration.class)
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class NotificationServiceIntegrationTest {

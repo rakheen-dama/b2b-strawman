@@ -6,7 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.TestPostgresConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ScopedFilterChain;
 import jakarta.servlet.FilterChain;
@@ -42,7 +42,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
  */
 @SpringBootTest
 @AutoConfigureMockMvc
-@Import({TestcontainersConfiguration.class, CapabilityAuthorizationTest.TestConfig.class})
+@Import({TestPostgresConfiguration.class, CapabilityAuthorizationTest.TestConfig.class})
 @ActiveProfiles("test")
 class CapabilityAuthorizationTest {
 

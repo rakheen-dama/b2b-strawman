@@ -274,9 +274,11 @@ public class TrustReconciliationService {
             trustTransactionRepository.findUnmatchedCandidates(
                 statement.getTrustAccountId(), startDate, endDate));
 
-    // Get all UNMATCHED lines for this statement
+    // Get all UNMATCHED lines for this statement (deterministic order for reproducible matching)
     List<BankStatementLine> unmatchedLines =
-        bankStatementLineRepository.findByBankStatementIdAndMatchStatus(statementId, "UNMATCHED");
+        bankStatementLineRepository
+            .findByBankStatementIdAndMatchStatusOrderByTransactionDateAscIdAsc(
+                statementId, "UNMATCHED");
 
     int autoMatched = 0;
     int alreadyMatched = statement.getMatchedCount();
@@ -317,7 +319,9 @@ public class TrustReconciliationService {
     bankStatementRepository.save(statement);
 
     int totalLines = statement.getLineCount();
-    int totalUnmatched = totalLines - statement.getMatchedCount();
+    // Compute actual unmatched count: unmatchedLines only contains UNMATCHED (not EXCLUDED) lines,
+    // so subtracting autoMatched gives the remaining truly unmatched lines.
+    int totalUnmatched = unmatchedLines.size() - autoMatched;
 
     auditService.log(
         AuditEventBuilder.builder()
@@ -349,9 +353,10 @@ public class TrustReconciliationService {
           "Invalid match state", "Bank statement line is already " + line.getMatchStatus());
     }
 
+    // Acquire pessimistic write lock to prevent concurrent match claims
     var transaction =
         trustTransactionRepository
-            .findById(transactionId)
+            .findByIdForUpdate(transactionId)
             .orElseThrow(() -> new ResourceNotFoundException("TrustTransaction", transactionId));
 
     if (transaction.getBankStatementLineId() != null) {
@@ -375,6 +380,18 @@ public class TrustReconciliationService {
       throw new InvalidStateException(
           "Trust account mismatch",
           "Bank statement line and transaction belong to different trust accounts");
+    }
+
+    // Validate amount equality (transaction amount must equal absolute line amount)
+    if (transaction.getAmount().compareTo(line.getAmount().abs()) != 0) {
+      throw new InvalidStateException(
+          "Amount mismatch", "Transaction amount does not match bank statement line amount");
+    }
+
+    // Validate sign compatibility (credit line must match credit transaction type, etc.)
+    if (!isSignCompatible(line, transaction)) {
+      throw new InvalidStateException(
+          "Sign mismatch", "Transaction type is not compatible with bank statement line sign");
     }
 
     // Link both sides
@@ -506,7 +523,8 @@ public class TrustReconciliationService {
             .filter(
                 c ->
                     c.getReference() != null
-                        && c.getReference().equalsIgnoreCase(line.getReference()))
+                        && c.getReference().equalsIgnoreCase(line.getReference())
+                        && c.getAmount().compareTo(line.getAmount().abs()) == 0)
             .toList();
 
     if (refMatches.size() == 1) {
@@ -579,13 +597,27 @@ public class TrustReconciliationService {
       TrustTransaction transaction,
       BigDecimal confidence,
       BankStatement statement) {
+    // Re-fetch with pessimistic write lock to prevent concurrent match claims.
+    // While auto-match on the same statement is inherently sequential (one transaction per loop
+    // iteration), this guards against a concurrent manualMatch claiming the same transaction.
+    var locked =
+        trustTransactionRepository
+            .findByIdForUpdate(transaction.getId())
+            .orElseThrow(
+                () -> new ResourceNotFoundException("TrustTransaction", transaction.getId()));
+
+    // Double-check the transaction hasn't been claimed since we built the candidate pool
+    if (locked.getBankStatementLineId() != null) {
+      return; // Already claimed by a concurrent operation — skip silently
+    }
+
     line.setMatchStatus("AUTO_MATCHED");
-    line.setTrustTransactionId(transaction.getId());
+    line.setTrustTransactionId(locked.getId());
     line.setMatchConfidence(confidence);
     bankStatementLineRepository.save(line);
 
-    transaction.setBankStatementLineId(line.getId());
-    trustTransactionRepository.save(transaction);
+    locked.setBankStatementLineId(line.getId());
+    trustTransactionRepository.save(locked);
   }
 
   // --- Private Helpers ---

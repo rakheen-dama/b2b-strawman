@@ -10,6 +10,6 @@ public interface BankStatementLineRepository extends JpaRepository<BankStatement
 
   List<BankStatementLine> findByMatchStatus(String matchStatus);
 
-  List<BankStatementLine> findByBankStatementIdAndMatchStatus(
+  List<BankStatementLine> findByBankStatementIdAndMatchStatusOrderByTransactionDateAscIdAsc(
       UUID bankStatementId, String matchStatus);
 }

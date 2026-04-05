@@ -69,6 +69,11 @@ Organize by **feature**, not by layer. Each feature package contains its entity,
 - Never duplicate error helper methods in controllers — use `RequestScopes.requireMemberId()` and the shared exception classes
 - Never return `Page<T>` from controllers without `@EnableSpringDataWebSupport(pageSerializationMode = PageSerializationMode.VIA_DTO)` on the application class — raw `PageImpl` serialization produces an unstable JSON structure. The `VIA_DTO` mode nests pagination metadata under a `page` object: `{ content: [...], page: { totalElements, totalPages, size, number } }`
 - Never create `Customer` objects in tests using the raw constructor without explicit `LifecycleStatus` — use `TestCustomerFactory` instead. Customers default to `PROSPECT`, so tests that need ACTIVE customers will fail without it.
+- Never define private `syncMember()` helpers in tests — use `TestMemberHelper.syncMember(mockMvc, ORG_ID, ...)` from `testutil/`
+- Never define private `ownerJwt()`/`adminJwt()`/`memberJwt()` helpers in tests — use `TestJwtFactory.ownerJwt(ORG_ID, "subject")` from `testutil/`
+- Never define private `createProject()`/`createCustomer()`/`createTask()`/`createTag()` helpers in tests — use `TestEntityHelper.*` from `testutil/`. Exception: domain-specific entity creation that includes lifecycle transitions or extra fields beyond what TestEntityHelper covers.
+- Never define private `extractIdFromLocation()` helpers in tests — use `TestEntityHelper.extractIdFromLocation(result)`
+- `TestEntityHelper.createCustomer()` creates a PROSPECT customer via the API — if your test needs an ACTIVE customer, you must still call `transitionCustomerToActive()` afterward
 
 ## Spring Boot 4 / Hibernate 7 Gotchas
 
@@ -227,25 +232,88 @@ Authorization uses `@RequiresCapability` annotations on controllers. Capabilitie
 - **Test config**: `TestcontainersConfiguration.java` provides `@ServiceConnection` PostgreSQL container
 - Run `TestBackendApplication.main()` for local dev with Testcontainers (no Docker Compose needed)
 
-### Test Factories
-Always use `TestCustomerFactory` (in `testutil/`) to create customers in tests:
+### Shared Test Utilities (`testutil/`)
+
+All integration tests should use the shared utilities in `testutil/` instead of defining private helper methods. This keeps tests concise and ensures consistent patterns.
+
+| Utility | Purpose |
+|---------|---------|
+| `TestMemberHelper` | Sync members via `POST /internal/members/sync` |
+| `TestJwtFactory` | Create mock JWT processors for any role/org |
+| `TestEntityHelper` | Create projects, customers, tasks, tags via API; extract IDs |
+| `TestCustomerFactory` | Create `Customer` entities with explicit lifecycle status |
+| `TestChecklistHelper` | Complete checklist items for lifecycle transitions |
+| `TestIds` | Inject IDs into JPA entities via reflection |
+
+#### Member Sync
 ```java
-// For tests that need an ACTIVE customer (most common)
+// Sync a member and get memberId back
+String memberId = TestMemberHelper.syncMember(mockMvc, ORG_ID,
+    "user_owner", "owner@test.com", "Owner", "owner");
+
+// Update an existing member (expects 200 OK)
+TestMemberHelper.updateMember(mockMvc, ORG_ID, "user_owner", "owner@new.com", "Owner", "owner");
+
+// Sync without capturing the memberId
+TestMemberHelper.syncMemberQuietly(mockMvc, ORG_ID, "user_member", "m@test.com", "Member", "member");
+```
+
+#### JWT Mocks
+```java
+// Role-based JWTs — subject must match the synced member's clerkUserId
+TestJwtFactory.ownerJwt(ORG_ID, "user_owner")
+TestJwtFactory.adminJwt(ORG_ID, "user_admin")
+TestJwtFactory.memberJwt(ORG_ID, "user_member")
+
+// Fully custom
+TestJwtFactory.jwtAs(ORG_ID, "user_custom", "member")
+
+// Multi-org tests
+TestJwtFactory.ownerJwt(ORG_B_ID, "user_tenant_b_owner")
+```
+No `.authorities()` needed — authorization uses `@RequiresCapability` with capabilities resolved from the member's `OrgRole` entity by `MemberFilter`.
+
+#### Entity Creation via API
+```java
+String projectId = TestEntityHelper.createProject(mockMvc, jwt, "My Project");
+String customerId = TestEntityHelper.createCustomer(mockMvc, jwt, "Acme", "acme@test.com");
+String taskId = TestEntityHelper.createTask(mockMvc, jwt, projectId, "Task 1");
+String tagId = TestEntityHelper.createTag(mockMvc, jwt, "Priority", "#EF4444");
+
+// Extract ID from Location header (for endpoints that don't return body)
+String id = TestEntityHelper.extractIdFromLocation(result);
+```
+
+#### Customer Factory (direct entity creation, not via API)
+```java
+// ACTIVE customer — safe for guard-checked operations
 var customer = TestCustomerFactory.createActiveCustomer("Name", "email@test.com", memberId);
 
-// For tests that need a specific lifecycle status
+// Specific lifecycle status
 var customer = TestCustomerFactory.createCustomerWithStatus("Name", "email@test.com", memberId, LifecycleStatus.PROSPECT);
+
+// With prerequisite fields (address, tax number) for invoice/proposal flows
+var customer = TestCustomerFactory.createActiveCustomerWithPrerequisiteFields("Name", "email@test.com", memberId);
 ```
-Never use the raw `new Customer(...)` constructor without explicit `LifecycleStatus.ACTIVE` — the default is `PROSPECT`, which blocks operations guarded by `CustomerLifecycleGuard` (project creation, invoicing, time entries, etc.).
 
 ### Integration Test Setup
 ```java
 @SpringBootTest
 @AutoConfigureMockMvc  // from boot.webmvc.test.autoconfigure
 @Import(TestcontainersConfiguration.class)
+@ActiveProfiles("test")
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class MyIntegrationTest {
-    @Autowired MockMvc mockMvc;
-    // Postgres auto-started, Flyway auto-applied
+    private static final String ORG_ID = "org_my_test";
+    @Autowired private MockMvc mockMvc;
+    @Autowired private TenantProvisioningService provisioningService;
+
+    @BeforeAll
+    void setup() throws Exception {
+        provisioningService.provisionTenant(ORG_ID, "My Test Org", null);
+        TestMemberHelper.syncMember(mockMvc, ORG_ID,
+            "user_my_owner", "my_owner@test.com", "My Owner", "owner");
+    }
 }
 ```
 
@@ -255,16 +323,6 @@ ScopedValue.where(RequestScopes.TENANT_ID, "tenant_test123").run(() -> {
     // perform operations — auto-cleans up when lambda exits
 });
 ```
-
-### JWT Mocks in Tests (Clerk v2 format)
-```java
-// Mock JWT with v2 nested org claims
-private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-}
-```
-No `.authorities()` needed — authorization uses `@RequiresCapability` with capabilities resolved from the member's `OrgRole` entity by `MemberFilter`.
 
 ## Error Handling & Resilience
 

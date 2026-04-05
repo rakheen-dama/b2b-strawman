@@ -34,7 +34,7 @@ Phase 60 replaces the `trust_accounting` module stub (registered in Phase 49) wi
 | 439 | TrustAccount + LpffRate Entity + Service + Controller | Backend | 438 | M | 439A, 439B | **Done** (PRs #923, #924) |
 | 440 | TrustTransaction + ClientLedgerCard Entity + Deposit/Transfer Service | Backend | 439 | L | 440A, 440B | **Done** (PRs #925, #926) |
 | 441 | Approval Workflow + Payment/FeeTransfer/Refund Recording | Backend | 440 | L | 441A, 441B | **Done** (PRs #928, #929) |
-| 442 | Transaction Controller + Approval Endpoints + Client Ledger Controller | Backend | 441 | M | 442A, 442B | 442A Done (PR #931) |
+| 442 | Transaction Controller + Approval Endpoints + Client Ledger Controller | Backend | 441 | M | 442A, 442B | **Done** (PRs #931, #932) |
 | 443 | Bank Statement Import + CSV Parsers | Backend | 439 | M | 443A, 443B | Not started |
 | 444 | Auto-Matching + Manual Matching + Reconciliation | Backend | 440, 443 | L | 444A, 444B | Not started |
 | 445 | Interest Calculation + Posting | Backend | 440 | L | 445A, 445B | Not started |
@@ -248,7 +248,7 @@ FRONTEND CORE                           FRONTEND ADVANCED
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 6a (parallel) | 442 | 442B | `ClientLedgerController` (5 endpoints: list, getByCustomer, history, statement, totalBalance). Trust account closing guard integration (sum of ledger balances check). Controller integration tests (~6). Backend only. | Not started |
+| 6a (parallel) | 442 | 442B | `ClientLedgerController` (5 endpoints: list, getByCustomer, history, statement, totalBalance). Trust account closing guard integration (sum of ledger balances check). Controller integration tests (~6). Backend only. | **Done** (PR #932) |
 | 6b (parallel) | 444 | 444B | `TrustReconciliation` entity + repo + `TrustReconciliationService` (createReconciliation, calculateReconciliation with three-way balance check, completeReconciliation with is_balanced guard, outstanding items query). Auto-match + match controller endpoints. Reconciliation controller (5 endpoints). Integration tests (~8). Backend only. | Not started |
 | 6c (parallel) | 445 | 445B | `InterestService.approveInterestRun()` + `postInterestRun()` (creates INTEREST_CREDIT + INTEREST_LPFF transactions atomically). `InterestController` (6 endpoints: create, list, get, calculate, approve, post). Integration tests (~7). Backend only. | Not started |
 | 6d (parallel) | 446 | 446B | `TrustInvestmentController` (6 endpoints: list, get, place, recordInterest, withdraw, maturing). Integration tests (~5). Backend only. | Not started |
@@ -577,7 +577,7 @@ Stage 11: [451A] -> [451B]                                                <- int
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **442A** | 442.1--442.5 | `TrustTransactionController` (7 recording endpoints + 3 approval endpoints + pending-approvals + cashbook-balance). Integration tests (~8). Backend only. | **Done** (PR #931) |
-| **442B** | 442.6--442.10 | `ClientLedgerController` (5 endpoints). Trust account closing guard integration (real ledger balance check). Controller integration tests (~6). Backend only. | Not started |
+| **442B** | 442.6--442.10 | `ClientLedgerController` (5 endpoints). Trust account closing guard integration (real ledger balance check). Controller integration tests (~6). Backend only. | **Done** (PR #932) |
 
 ### Tasks
 

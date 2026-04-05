@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.template;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -14,6 +13,8 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -25,7 +26,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -48,8 +48,6 @@ class TemplatePreviewControllerTest {
                   "paragraph",
                   "content",
                   List.of(Map.of("type", "variable", "attrs", Map.of("key", "project.name"))))));
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_preview_ctrl_test";
 
   @Autowired private MockMvc mockMvc;
@@ -69,8 +67,13 @@ class TemplatePreviewControllerTest {
     provisioningService.provisionTenant(ORG_ID, "Preview Controller Test Org", null);
 
     memberIdOwner =
-        syncMember(
-            ORG_ID, "user_preview_owner", "preview_owner@test.com", "Preview Owner", "owner");
+        TestMemberHelper.syncMember(
+            mockMvc,
+            ORG_ID,
+            "user_preview_owner",
+            "preview_owner@test.com",
+            "Preview Owner",
+            "owner");
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
@@ -110,7 +113,7 @@ class TemplatePreviewControllerTest {
         mockMvc
             .perform(
                 post("/api/templates/" + testTemplateId + "/preview")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_preview_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -133,7 +136,7 @@ class TemplatePreviewControllerTest {
     mockMvc
         .perform(
             post("/api/templates/" + UUID.randomUUID() + "/preview")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_preview_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -148,7 +151,7 @@ class TemplatePreviewControllerTest {
     mockMvc
         .perform(
             post("/api/templates/" + testTemplateId + "/preview")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_preview_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -166,7 +169,7 @@ class TemplatePreviewControllerTest {
     mockMvc
         .perform(
             post("/api/templates/" + testTemplateId + "/preview")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_preview_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -188,47 +191,5 @@ class TemplatePreviewControllerTest {
                     """
                         .formatted(testProjectId)))
         .andExpect(status().isUnauthorized());
-  }
-
-  // --- JWT Helpers ---
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_preview_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_preview_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  // --- Helpers ---
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

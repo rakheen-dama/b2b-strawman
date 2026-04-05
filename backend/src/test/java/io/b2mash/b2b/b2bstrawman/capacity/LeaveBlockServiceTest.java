@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.capacity;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -12,9 +11,10 @@ import io.b2mash.b2b.b2bstrawman.capacity.dto.LeaveDtos.LeaveBlockResponse;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +22,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -33,8 +32,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class LeaveBlockServiceTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_leave_test";
 
   @Autowired private MockMvc mockMvc;
@@ -54,24 +51,15 @@ class LeaveBlockServiceTest {
   void provisionAndSeed() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Leave Test Org", null);
     memberIdOwnerStr =
-        syncMember(ORG_ID, "user_leave_owner", "leave_owner@test.com", "Owner", "owner");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_leave_owner", "leave_owner@test.com", "Owner", "owner");
     memberIdOwner = UUID.fromString(memberIdOwnerStr);
     memberIdMemberStr =
-        syncMember(ORG_ID, "user_leave_member", "leave_member@test.com", "Member", "member");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_leave_member", "leave_member@test.com", "Member", "member");
     memberIdMember = UUID.fromString(memberIdMemberStr);
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
-  }
-
-  // --- JWT Helpers ---
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_leave_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_leave_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 
   private <T> T runInTenant(java.util.concurrent.Callable<T> callable) {
@@ -98,33 +86,6 @@ class LeaveBlockServiceTest {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-  }
-
-  // --- Member Sync Helper ---
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                    {
-                      "clerkOrgId": "%s",
-                      "clerkUserId": "%s",
-                      "email": "%s",
-                      "name": "%s",
-                      "avatarUrl": null,
-                      "orgRole": "%s"
-                    }
-                    """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 
   // ===== Service-level tests =====
@@ -269,7 +230,7 @@ class LeaveBlockServiceTest {
         mockMvc
             .perform(
                 post("/api/members/{memberId}/leave", memberIdOwnerStr)
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_leave_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -292,7 +253,9 @@ class LeaveBlockServiceTest {
   @Order(21)
   void controller_listLeaveForMember_returns200() throws Exception {
     mockMvc
-        .perform(get("/api/members/{memberId}/leave", memberIdOwnerStr).with(ownerJwt()))
+        .perform(
+            get("/api/members/{memberId}/leave", memberIdOwnerStr)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_leave_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$.length()").value(org.hamcrest.Matchers.greaterThanOrEqualTo(1)));
@@ -304,7 +267,7 @@ class LeaveBlockServiceTest {
     mockMvc
         .perform(
             put("/api/members/{memberId}/leave/{id}", memberIdOwnerStr, createdLeaveBlockId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_leave_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -325,7 +288,7 @@ class LeaveBlockServiceTest {
     mockMvc
         .perform(
             delete("/api/members/{memberId}/leave/{id}", memberIdOwnerStr, createdLeaveBlockId)
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_leave_owner")))
         .andExpect(status().isNoContent());
   }
 
@@ -337,7 +300,7 @@ class LeaveBlockServiceTest {
             get("/api/leave")
                 .param("startDate", "2026-01-01")
                 .param("endDate", "2026-12-31")
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_leave_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray());
   }
@@ -348,7 +311,7 @@ class LeaveBlockServiceTest {
     mockMvc
         .perform(
             post("/api/members/{memberId}/leave", memberIdMemberStr)
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_leave_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -368,7 +331,7 @@ class LeaveBlockServiceTest {
     mockMvc
         .perform(
             post("/api/members/{memberId}/leave", memberIdOwnerStr)
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_leave_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -387,7 +350,7 @@ class LeaveBlockServiceTest {
     mockMvc
         .perform(
             post("/api/members/{memberId}/leave", memberIdOwnerStr)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_leave_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """

@@ -1,12 +1,9 @@
 package io.b2mash.b2b.b2bstrawman.dashboard;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
@@ -15,8 +12,9 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.TaskService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.time.LocalDate;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -25,8 +23,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -36,8 +32,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class DashboardProjectIntegrationTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_dashboard_test";
 
   @Autowired private MockMvc mockMvc;
@@ -73,15 +67,26 @@ class DashboardProjectIntegrationTest {
 
     memberIdOwner =
         UUID.fromString(
-            syncMember(
-                ORG_ID, "user_dash_owner", "dash_owner@test.com", "Dashboard Owner", "owner"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_dash_owner",
+                "dash_owner@test.com",
+                "Dashboard Owner",
+                "owner"));
     memberIdMember =
         UUID.fromString(
-            syncMember(
-                ORG_ID, "user_dash_member", "dash_member@test.com", "Dashboard Member", "member"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_dash_member",
+                "dash_member@test.com",
+                "Dashboard Member",
+                "member"));
     memberIdNonMember =
         UUID.fromString(
-            syncMember(
+            TestMemberHelper.syncMember(
+                mockMvc,
                 ORG_ID,
                 "user_dash_nonmember",
                 "dash_nonmember@test.com",
@@ -346,7 +351,9 @@ class DashboardProjectIntegrationTest {
   @Test
   void healthReturnsHealthyForProjectWithAllTasksDone() throws Exception {
     mockMvc
-        .perform(get("/api/projects/{projectId}/health", projectAllDone).with(ownerJwt()))
+        .perform(
+            get("/api/projects/{projectId}/health", projectAllDone)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dash_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.healthStatus").value("HEALTHY"))
         .andExpect(jsonPath("$.metrics.totalTasks").value(2))
@@ -357,7 +364,9 @@ class DashboardProjectIntegrationTest {
   @Test
   void healthReturnsAtRiskOrCriticalWithOverdueTasks() throws Exception {
     mockMvc
-        .perform(get("/api/projects/{projectId}/health", projectOverdue).with(ownerJwt()))
+        .perform(
+            get("/api/projects/{projectId}/health", projectOverdue)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dash_owner")))
         .andExpect(status().isOk())
         .andExpect(
             jsonPath("$.healthStatus")
@@ -370,7 +379,9 @@ class DashboardProjectIntegrationTest {
   @Test
   void healthReturnsUnknownForProjectWithNoTasks() throws Exception {
     mockMvc
-        .perform(get("/api/projects/{projectId}/health", projectNoTasks).with(ownerJwt()))
+        .perform(
+            get("/api/projects/{projectId}/health", projectNoTasks)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dash_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.healthStatus").value("UNKNOWN"))
         .andExpect(jsonPath("$.healthReasons[0]").value("No tasks created yet"))
@@ -380,7 +391,9 @@ class DashboardProjectIntegrationTest {
   @Test
   void healthIncludesReasonsArray() throws Exception {
     mockMvc
-        .perform(get("/api/projects/{projectId}/health", projectOverdue).with(ownerJwt()))
+        .perform(
+            get("/api/projects/{projectId}/health", projectOverdue)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dash_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.healthReasons").isArray())
         .andExpect(jsonPath("$.healthReasons").isNotEmpty());
@@ -391,7 +404,9 @@ class DashboardProjectIntegrationTest {
   @Test
   void taskSummaryReturnsCorrectCountsByStatus() throws Exception {
     mockMvc
-        .perform(get("/api/projects/{projectId}/task-summary", projectWithTasks).with(ownerJwt()))
+        .perform(
+            get("/api/projects/{projectId}/task-summary", projectWithTasks)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dash_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.todo").value(3)) // 2 OPEN + 1 overdue (still OPEN)
         .andExpect(jsonPath("$.inProgress").value(2))
@@ -403,7 +418,9 @@ class DashboardProjectIntegrationTest {
   @Test
   void taskSummaryIncludesOverdueCount() throws Exception {
     mockMvc
-        .perform(get("/api/projects/{projectId}/task-summary", projectWithTasks).with(ownerJwt()))
+        .perform(
+            get("/api/projects/{projectId}/task-summary", projectWithTasks)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dash_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.overdueCount").value(1));
   }
@@ -414,7 +431,9 @@ class DashboardProjectIntegrationTest {
   void nonMemberCannotAccessProjectHealth() throws Exception {
     // nonMember is not a project member on any of the projects
     mockMvc
-        .perform(get("/api/projects/{projectId}/health", projectWithTasks).with(nonMemberJwt()))
+        .perform(
+            get("/api/projects/{projectId}/health", projectWithTasks)
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_dash_nonmember")))
         .andExpect(status().isNotFound());
   }
 
@@ -422,56 +441,15 @@ class DashboardProjectIntegrationTest {
   void adminCanAccessAnyProjectHealth() throws Exception {
     // Admin can access any project even without explicit membership
     mockMvc
-        .perform(get("/api/projects/{projectId}/health", projectWithTasks).with(adminJwt()))
+        .perform(
+            get("/api/projects/{projectId}/health", projectWithTasks)
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_dash_member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.healthStatus").exists());
   }
 
   // --- JWT Helpers ---
 
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_dash_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor nonMemberJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_dash_nonmember").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor adminJwt() {
-    // Sync a separate admin member to avoid confusion
-    return jwt()
-        .jwt(j -> j.subject("user_dash_member").claim("o", Map.of("id", ORG_ID, "rol", "admin")));
-  }
-
   // --- Member Sync Helper ---
 
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
 }

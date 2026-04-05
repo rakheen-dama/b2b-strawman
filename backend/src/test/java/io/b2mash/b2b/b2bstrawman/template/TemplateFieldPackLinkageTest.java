@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.template;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -14,6 +13,8 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldType;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -23,7 +24,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
@@ -34,8 +34,6 @@ import tools.jackson.databind.ObjectMapper;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class TemplateFieldPackLinkageTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_fpl_test";
 
   @Autowired private MockMvc mockMvc;
@@ -49,7 +47,8 @@ class TemplateFieldPackLinkageTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "FPL Test Org", null);
-    syncMember(ORG_ID, "user_fpl_owner", "fpl_owner@test.com", "FPL Owner", "owner");
+    TestMemberHelper.syncMemberQuietly(
+        mockMvc, ORG_ID, "user_fpl_owner", "fpl_owner@test.com", "FPL Owner", "owner");
 
     // Create field definitions with packId in tenant context
     String tenantId =
@@ -104,7 +103,7 @@ class TemplateFieldPackLinkageTest {
     mockMvc
         .perform(
             get("/api/templates/" + templateWithFieldsId + "/required-field-packs")
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_fpl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$.length()").value(2))
@@ -122,7 +121,8 @@ class TemplateFieldPackLinkageTest {
   void shouldReturnEmptyListForTemplateWithNoCustomFields() throws Exception {
     mockMvc
         .perform(
-            get("/api/templates/" + templateNoFieldsId + "/required-field-packs").with(ownerJwt()))
+            get("/api/templates/" + templateNoFieldsId + "/required-field-packs")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_fpl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$.length()").value(0));
@@ -133,23 +133,9 @@ class TemplateFieldPackLinkageTest {
     mockMvc
         .perform(
             get("/api/templates/" + templateWithFieldsId + "/required-field-packs")
-                .with(memberJwt()))
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_fpl_member")))
         .andExpect(status().isForbidden());
   }
-
-  // --- JWT Helpers ---
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_fpl_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_fpl_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  // --- Helpers ---
 
   private String createTemplate(String name, Map<String, Object> content) throws Exception {
     var requestBody = new java.util.LinkedHashMap<String, Object>();
@@ -162,35 +148,12 @@ class TemplateFieldPackLinkageTest {
         mockMvc
             .perform(
                 post("/api/templates")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_fpl_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(requestBody)))
             .andExpect(status().isCreated())
             .andReturn();
 
     return JsonPath.read(result.getResponse().getContentAsString(), "$.id");
-  }
-
-  private void syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    mockMvc
-        .perform(
-            post("/internal/members/sync")
-                .header("X-API-KEY", API_KEY)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {
-                      "clerkOrgId": "%s",
-                      "clerkUserId": "%s",
-                      "email": "%s",
-                      "name": "%s",
-                      "avatarUrl": null,
-                      "orgRole": "%s"
-                    }
-                    """
-                        .formatted(orgId, clerkUserId, email, name, orgRole)))
-        .andExpect(status().isCreated());
   }
 }

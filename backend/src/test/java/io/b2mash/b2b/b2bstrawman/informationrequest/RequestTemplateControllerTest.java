@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.informationrequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -17,8 +16,9 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -32,7 +32,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -43,8 +42,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class RequestTemplateControllerTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_req_tmpl_test";
 
   @Autowired private MockMvc mockMvc;
@@ -65,20 +62,32 @@ class RequestTemplateControllerTest {
     provisioningService.provisionTenant(ORG_ID, "Request Template Test Org", null);
     memberIdOwner =
         UUID.fromString(
-            syncMember(ORG_ID, "user_req_owner", "req_owner@test.com", "Req Owner", "owner"));
-    syncMember(ORG_ID, "user_req_member", "req_member@test.com", "Req Member", "member");
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, "user_req_owner", "req_owner@test.com", "Req Owner", "owner"));
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_req_member", "req_member@test.com", "Req Member", "member");
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
 
     customRoleMemberId =
         UUID.fromString(
-            syncMember(
-                ORG_ID, "user_rt_315a_custom", "rt_custom@test.com", "RT Custom User", "member"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_rt_315a_custom",
+                "rt_custom@test.com",
+                "RT Custom User",
+                "member"));
     noCapMemberId =
         UUID.fromString(
-            syncMember(
-                ORG_ID, "user_rt_315a_nocap", "rt_nocap@test.com", "RT NoCap User", "member"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_rt_315a_nocap",
+                "rt_nocap@test.com",
+                "RT NoCap User",
+                "member"));
 
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)
@@ -112,7 +121,8 @@ class RequestTemplateControllerTest {
   @Order(1)
   void shouldListPlatformTemplatesSeededDuringProvisioning() throws Exception {
     mockMvc
-        .perform(get("/api/request-templates").with(ownerJwt()))
+        .perform(
+            get("/api/request-templates").with(TestJwtFactory.ownerJwt(ORG_ID, "user_req_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(4))
         .andExpect(jsonPath("$[0].source").value("PLATFORM"));
@@ -125,7 +135,7 @@ class RequestTemplateControllerTest {
         mockMvc
             .perform(
                 post("/api/request-templates")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_req_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -167,7 +177,9 @@ class RequestTemplateControllerTest {
   @Order(3)
   void shouldGetTemplateById() throws Exception {
     mockMvc
-        .perform(get("/api/request-templates/" + createdTemplateId).with(ownerJwt()))
+        .perform(
+            get("/api/request-templates/" + createdTemplateId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_req_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(createdTemplateId))
         .andExpect(jsonPath("$.name").value("Custom Onboarding Docs"))
@@ -180,7 +192,7 @@ class RequestTemplateControllerTest {
     mockMvc
         .perform(
             put("/api/request-templates/" + createdTemplateId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_req_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -211,7 +223,9 @@ class RequestTemplateControllerTest {
     // First get the current name (may differ depending on test ordering/caching)
     var current =
         mockMvc
-            .perform(get("/api/request-templates/" + createdTemplateId).with(ownerJwt()))
+            .perform(
+                get("/api/request-templates/" + createdTemplateId)
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_req_owner")))
             .andExpect(status().isOk())
             .andReturn();
     String currentName = JsonPath.read(current.getResponse().getContentAsString(), "$.name");
@@ -219,7 +233,8 @@ class RequestTemplateControllerTest {
     var result =
         mockMvc
             .perform(
-                post("/api/request-templates/" + createdTemplateId + "/duplicate").with(ownerJwt()))
+                post("/api/request-templates/" + createdTemplateId + "/duplicate")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_req_owner")))
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.name").value(currentName + " (Copy)"))
             .andExpect(jsonPath("$.source").value("CUSTOM"))
@@ -233,12 +248,16 @@ class RequestTemplateControllerTest {
   @Order(6)
   void shouldDeactivateTemplate() throws Exception {
     mockMvc
-        .perform(delete("/api/request-templates/" + createdTemplateId).with(ownerJwt()))
+        .perform(
+            delete("/api/request-templates/" + createdTemplateId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_req_owner")))
         .andExpect(status().isNoContent());
 
     // Verify it's deactivated
     mockMvc
-        .perform(get("/api/request-templates/" + createdTemplateId).with(ownerJwt()))
+        .perform(
+            get("/api/request-templates/" + createdTemplateId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_req_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.active").value(false));
   }
@@ -248,13 +267,17 @@ class RequestTemplateControllerTest {
   void shouldFilterByActive() throws Exception {
     // Only active templates (platform packs + duplicate from test 5)
     mockMvc
-        .perform(get("/api/request-templates?active=true").with(ownerJwt()))
+        .perform(
+            get("/api/request-templates?active=true")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_req_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(5));
 
     // Only inactive templates (the one deactivated in test 6)
     mockMvc
-        .perform(get("/api/request-templates?active=false").with(ownerJwt()))
+        .perform(
+            get("/api/request-templates?active=false")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_req_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(1));
   }
@@ -262,7 +285,10 @@ class RequestTemplateControllerTest {
   @Test
   @Order(10)
   void memberShouldBeAbleToListTemplates() throws Exception {
-    mockMvc.perform(get("/api/request-templates").with(memberJwt())).andExpect(status().isOk());
+    mockMvc
+        .perform(
+            get("/api/request-templates").with(TestJwtFactory.memberJwt(ORG_ID, "user_req_member")))
+        .andExpect(status().isOk());
   }
 
   @Test
@@ -271,13 +297,17 @@ class RequestTemplateControllerTest {
     // Use a platform template that we know exists
     var result =
         mockMvc
-            .perform(get("/api/request-templates").with(memberJwt()))
+            .perform(
+                get("/api/request-templates")
+                    .with(TestJwtFactory.memberJwt(ORG_ID, "user_req_member")))
             .andExpect(status().isOk())
             .andReturn();
     String firstTemplateId = JsonPath.read(result.getResponse().getContentAsString(), "$[0].id");
 
     mockMvc
-        .perform(get("/api/request-templates/" + firstTemplateId).with(memberJwt()))
+        .perform(
+            get("/api/request-templates/" + firstTemplateId)
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_req_member")))
         .andExpect(status().isOk());
   }
 
@@ -287,7 +317,7 @@ class RequestTemplateControllerTest {
     mockMvc
         .perform(
             post("/api/request-templates")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_req_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -302,7 +332,7 @@ class RequestTemplateControllerTest {
     mockMvc
         .perform(
             put("/api/request-templates/" + createdTemplateId)
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_req_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -315,7 +345,9 @@ class RequestTemplateControllerTest {
   @Order(14)
   void memberShouldNotBeAbleToDeleteTemplate() throws Exception {
     mockMvc
-        .perform(delete("/api/request-templates/" + createdTemplateId).with(memberJwt()))
+        .perform(
+            delete("/api/request-templates/" + createdTemplateId)
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_req_member")))
         .andExpect(status().isForbidden());
   }
 
@@ -324,7 +356,8 @@ class RequestTemplateControllerTest {
   void memberShouldNotBeAbleToDuplicateTemplate() throws Exception {
     mockMvc
         .perform(
-            post("/api/request-templates/" + createdTemplateId + "/duplicate").with(memberJwt()))
+            post("/api/request-templates/" + createdTemplateId + "/duplicate")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_req_member")))
         .andExpect(status().isForbidden());
   }
 
@@ -333,14 +366,20 @@ class RequestTemplateControllerTest {
   void shouldReturnNotFoundForNonExistentTemplate() throws Exception {
     mockMvc
         .perform(
-            get("/api/request-templates/00000000-0000-0000-0000-000000000000").with(ownerJwt()))
+            get("/api/request-templates/00000000-0000-0000-0000-000000000000")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_req_owner")))
         .andExpect(status().isNotFound());
   }
 
   @Test
   @Order(21)
   void platformTemplatesShouldHavePackId() throws Exception {
-    var result = mockMvc.perform(get("/api/request-templates").with(ownerJwt())).andReturn();
+    var result =
+        mockMvc
+            .perform(
+                get("/api/request-templates")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_req_owner")))
+            .andReturn();
     String content = result.getResponse().getContentAsString();
     // Platform templates have packId set
     List<String> packIds = JsonPath.read(content, "$[?(@.source == 'PLATFORM')].packId");
@@ -351,7 +390,12 @@ class RequestTemplateControllerTest {
   @Test
   @Order(22)
   void platformTemplatesShouldHaveItems() throws Exception {
-    var result = mockMvc.perform(get("/api/request-templates").with(ownerJwt())).andReturn();
+    var result =
+        mockMvc
+            .perform(
+                get("/api/request-templates")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_req_owner")))
+            .andReturn();
     String content = result.getResponse().getContentAsString();
     // All platform templates should have at least one item
     List<List<?>> itemLists = JsonPath.read(content, "$[?(@.source == 'PLATFORM')].items");
@@ -366,7 +410,7 @@ class RequestTemplateControllerTest {
     mockMvc
         .perform(
             post("/api/request-templates")
-                .with(customRoleJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_rt_315a_custom"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -381,61 +425,12 @@ class RequestTemplateControllerTest {
     mockMvc
         .perform(
             post("/api/request-templates")
-                .with(noCapabilityJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_rt_315a_nocap"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
                 {"name": "NoCap RT", "description": "Should fail", "items": []}
                 """))
         .andExpect(status().isForbidden());
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_req_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_req_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor customRoleJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_rt_315a_custom").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor noCapabilityJwt() {
-    return jwt()
-        .jwt(
-            j -> j.subject("user_rt_315a_nocap").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                    {
-                      "clerkOrgId": "%s",
-                      "clerkUserId": "%s",
-                      "email": "%s",
-                      "name": "%s",
-                      "avatarUrl": null,
-                      "orgRole": "%s"
-                    }
-                    """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

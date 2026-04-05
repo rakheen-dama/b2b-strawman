@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.capacity;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -22,10 +21,11 @@ import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.*;
@@ -34,7 +34,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.event.ApplicationEvents;
 import org.springframework.test.context.event.RecordApplicationEvents;
@@ -48,8 +47,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ResourceAllocationServiceTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_alloc_test";
 
   @Autowired private MockMvc mockMvc;
@@ -78,17 +75,20 @@ class ResourceAllocationServiceTest {
   void provisionAndSeed() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Alloc Test Org", null);
     memberIdOwnerStr =
-        syncMember(ORG_ID, "user_alloc_owner", "alloc_owner@test.com", "Owner", "owner");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_alloc_owner", "alloc_owner@test.com", "Owner", "owner");
     memberIdOwner = UUID.fromString(memberIdOwnerStr);
     memberIdMemberStr =
-        syncMember(ORG_ID, "user_alloc_member", "alloc_member@test.com", "Member", "member");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_alloc_member", "alloc_member@test.com", "Member", "member");
     memberIdMember = UUID.fromString(memberIdMemberStr);
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
 
     customRoleMemberId =
         UUID.fromString(
-            syncMember(
+            TestMemberHelper.syncMember(
+                mockMvc,
                 ORG_ID,
                 "user_alloc_315b_custom",
                 "alloc_custom@test.com",
@@ -96,8 +96,13 @@ class ResourceAllocationServiceTest {
                 "member"));
     noCapMemberId =
         UUID.fromString(
-            syncMember(
-                ORG_ID, "user_alloc_315b_nocap", "alloc_nocap@test.com", "Alloc NoCap", "member"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_alloc_315b_nocap",
+                "alloc_nocap@test.com",
+                "Alloc NoCap",
+                "member"));
 
     // Create projects in tenant scope
     runInTenant(
@@ -132,17 +137,6 @@ class ResourceAllocationServiceTest {
         });
   }
 
-  // --- JWT Helpers ---
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_alloc_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_alloc_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
   private <T> T runInTenant(java.util.concurrent.Callable<T> callable) {
     try {
       return ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -155,35 +149,7 @@ class ResourceAllocationServiceTest {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                    {
-                      "clerkOrgId": "%s",
-                      "clerkUserId": "%s",
-                      "email": "%s",
-                      "name": "%s",
-                      "avatarUrl": null,
-                      "orgRole": "%s"
-                    }
-                    """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  // ===== Service-level tests =====
+  } // ===== Service-level tests =====
 
   @Test
   @Order(1)
@@ -542,7 +508,7 @@ class ResourceAllocationServiceTest {
     mockMvc
         .perform(
             post("/api/resource-allocations")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_alloc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -568,7 +534,7 @@ class ResourceAllocationServiceTest {
     mockMvc
         .perform(
             get("/api/resource-allocations")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_alloc_owner"))
                 .param("memberId", memberIdOwnerStr)
                 .param("weekStart", "2026-01-01")
                 .param("weekEnd", "2026-12-31"))
@@ -585,7 +551,7 @@ class ResourceAllocationServiceTest {
         mockMvc
             .perform(
                 post("/api/resource-allocations")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_alloc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -605,7 +571,7 @@ class ResourceAllocationServiceTest {
     mockMvc
         .perform(
             put("/api/resource-allocations/{id}", allocId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_alloc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -627,7 +593,7 @@ class ResourceAllocationServiceTest {
         mockMvc
             .perform(
                 post("/api/resource-allocations")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_alloc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -645,7 +611,9 @@ class ResourceAllocationServiceTest {
     String allocId = JsonPath.read(result.getResponse().getContentAsString(), "$.id");
 
     mockMvc
-        .perform(delete("/api/resource-allocations/{id}", allocId).with(ownerJwt()))
+        .perform(
+            delete("/api/resource-allocations/{id}", allocId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_alloc_owner")))
         .andExpect(status().isNoContent());
   }
 
@@ -655,7 +623,7 @@ class ResourceAllocationServiceTest {
     mockMvc
         .perform(
             post("/api/resource-allocations/bulk")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_alloc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -691,7 +659,7 @@ class ResourceAllocationServiceTest {
     mockMvc
         .perform(
             post("/api/resource-allocations")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_alloc_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -713,7 +681,7 @@ class ResourceAllocationServiceTest {
     mockMvc
         .perform(
             get("/api/resource-allocations")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_alloc_member"))
                 .param("weekStart", "2026-01-01")
                 .param("weekEnd", "2026-12-31"))
         .andExpect(status().isOk());
@@ -727,7 +695,7 @@ class ResourceAllocationServiceTest {
     mockMvc
         .perform(
             post("/api/resource-allocations")
-                .with(customRoleJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_alloc_315b_custom"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -749,7 +717,7 @@ class ResourceAllocationServiceTest {
     mockMvc
         .perform(
             post("/api/resource-allocations")
-                .with(noCapabilityJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_alloc_315b_nocap"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -763,21 +731,5 @@ class ResourceAllocationServiceTest {
                     """
                         .formatted(noCapMemberId, projectId)))
         .andExpect(status().isForbidden());
-  }
-
-  private JwtRequestPostProcessor customRoleJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_alloc_315b_custom")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor noCapabilityJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_alloc_315b_nocap")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 }

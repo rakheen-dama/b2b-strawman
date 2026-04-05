@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.comment;
 
 import static org.hamcrest.Matchers.hasSize;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -13,8 +12,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.List;
-import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -26,7 +27,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -34,8 +34,6 @@ import org.springframework.test.web.servlet.MvcResult;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CommentControllerTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_comment_ctrl_test";
 
   @Autowired private MockMvc mockMvc;
@@ -52,18 +50,24 @@ class CommentControllerTest {
   void provisionAndSeed() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Comment Ctrl Test Org", null);
 
-    memberIdOwner = syncMember(ORG_ID, "user_cc_owner", "cc_owner@test.com", "CC Owner", "owner");
-    memberIdAdmin = syncMember(ORG_ID, "user_cc_admin", "cc_admin@test.com", "CC Admin", "admin");
+    memberIdOwner =
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_cc_owner", "cc_owner@test.com", "CC Owner", "owner");
+    memberIdAdmin =
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_cc_admin", "cc_admin@test.com", "CC Admin", "admin");
     memberIdMember =
-        syncMember(ORG_ID, "user_cc_member", "cc_member@test.com", "CC Member", "member");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_cc_member", "cc_member@test.com", "CC Member", "member");
     memberIdMember2 =
-        syncMember(ORG_ID, "user_cc_member2", "cc_member2@test.com", "CC Member2", "member");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_cc_member2", "cc_member2@test.com", "CC Member2", "member");
 
     var projectResult =
         mockMvc
             .perform(
                 post("/api/projects")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -71,14 +75,14 @@ class CommentControllerTest {
                         """))
             .andExpect(status().isCreated())
             .andReturn();
-    projectId = extractIdFromLocation(projectResult);
+    projectId = TestEntityHelper.extractIdFromLocation(projectResult);
 
     // Add all members to the project
     for (String mid : List.of(memberIdAdmin, memberIdMember, memberIdMember2)) {
       mockMvc
           .perform(
               post("/api/projects/" + projectId + "/members")
-                  .with(ownerJwt())
+                  .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cc_owner"))
                   .contentType(MediaType.APPLICATION_JSON)
                   .content("{\"memberId\": \"%s\"}".formatted(mid)))
           .andExpect(status().isCreated());
@@ -88,7 +92,7 @@ class CommentControllerTest {
         mockMvc
             .perform(
                 post("/api/projects/" + projectId + "/tasks")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -96,7 +100,7 @@ class CommentControllerTest {
                         """))
             .andExpect(status().isCreated())
             .andReturn();
-    taskId = extractIdFromLocation(taskResult);
+    taskId = TestEntityHelper.extractIdFromLocation(taskResult);
   }
 
   @Test
@@ -104,7 +108,7 @@ class CommentControllerTest {
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/comments")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_cc_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -132,14 +136,14 @@ class CommentControllerTest {
   @Test
   void getListsCommentsOrderedByCreatedAtAsc() throws Exception {
     // Create multiple comments
-    createComment(ownerJwt(), "First comment");
-    createComment(memberJwt(), "Second comment");
-    createComment(adminJwt(), "Third comment");
+    createComment(TestJwtFactory.ownerJwt(ORG_ID, "user_cc_owner"), "First comment");
+    createComment(TestJwtFactory.memberJwt(ORG_ID, "user_cc_member"), "Second comment");
+    createComment(TestJwtFactory.adminJwt(ORG_ID, "user_cc_admin"), "Third comment");
 
     mockMvc
         .perform(
             get("/api/projects/" + projectId + "/comments")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cc_owner"))
                 .param("entityType", "TASK")
                 .param("entityId", taskId))
         .andExpect(status().isOk())
@@ -151,14 +155,14 @@ class CommentControllerTest {
   void getWithPagination() throws Exception {
     // Create enough comments to test pagination
     for (int i = 0; i < 3; i++) {
-      createComment(ownerJwt(), "Pagination comment " + i);
+      createComment(TestJwtFactory.ownerJwt(ORG_ID, "user_cc_owner"), "Pagination comment " + i);
     }
 
     // Request page 0 with size 2
     mockMvc
         .perform(
             get("/api/projects/" + projectId + "/comments")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cc_owner"))
                 .param("entityType", "TASK")
                 .param("entityId", taskId)
                 .param("page", "0")
@@ -170,12 +174,13 @@ class CommentControllerTest {
 
   @Test
   void putUpdatesBodyAndReturns200() throws Exception {
-    var commentId = createComment(memberJwt(), "Body to update");
+    var commentId =
+        createComment(TestJwtFactory.memberJwt(ORG_ID, "user_cc_member"), "Body to update");
 
     mockMvc
         .perform(
             put("/api/projects/" + projectId + "/comments/" + commentId)
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_cc_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -189,13 +194,14 @@ class CommentControllerTest {
   @Test
   void putByNonAuthorNonAdminReturns403() throws Exception {
     // Create comment as member
-    var commentId = createComment(memberJwt(), "Protected comment");
+    var commentId =
+        createComment(TestJwtFactory.memberJwt(ORG_ID, "user_cc_member"), "Protected comment");
 
     // Try to update as member2 (not author, not admin/owner)
     mockMvc
         .perform(
             put("/api/projects/" + projectId + "/comments/" + commentId)
-                .with(member2Jwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_cc_member2"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -206,20 +212,29 @@ class CommentControllerTest {
 
   @Test
   void deleteByAuthorReturns204() throws Exception {
-    var commentId = createComment(memberJwt(), "Comment to delete by author");
+    var commentId =
+        createComment(
+            TestJwtFactory.memberJwt(ORG_ID, "user_cc_member"), "Comment to delete by author");
 
     mockMvc
-        .perform(delete("/api/projects/" + projectId + "/comments/" + commentId).with(memberJwt()))
+        .perform(
+            delete("/api/projects/" + projectId + "/comments/" + commentId)
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_cc_member")))
         .andExpect(status().isNoContent());
   }
 
   @Test
   void deleteByNonAuthorNonAdminReturns403() throws Exception {
-    var commentId = createComment(memberJwt(), "Comment non-author tries to delete");
+    var commentId =
+        createComment(
+            TestJwtFactory.memberJwt(ORG_ID, "user_cc_member"),
+            "Comment non-author tries to delete");
 
     // member2 is not the author and not admin/owner
     mockMvc
-        .perform(delete("/api/projects/" + projectId + "/comments/" + commentId).with(member2Jwt()))
+        .perform(
+            delete("/api/projects/" + projectId + "/comments/" + commentId)
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_cc_member2")))
         .andExpect(status().isForbidden());
   }
 
@@ -230,7 +245,7 @@ class CommentControllerTest {
         mockMvc
             .perform(
                 post("/api/projects")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -238,14 +253,14 @@ class CommentControllerTest {
                         """))
             .andExpect(status().isCreated())
             .andReturn();
-    var archiveProjectId = extractIdFromLocation(archiveProjectResult);
+    var archiveProjectId = TestEntityHelper.extractIdFromLocation(archiveProjectResult);
 
     // Create a task on the project before archiving
     var archiveTaskResult =
         mockMvc
             .perform(
                 post("/api/projects/" + archiveProjectId + "/tasks")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -253,18 +268,20 @@ class CommentControllerTest {
                         """))
             .andExpect(status().isCreated())
             .andReturn();
-    var archiveTaskId = extractIdFromLocation(archiveTaskResult);
+    var archiveTaskId = TestEntityHelper.extractIdFromLocation(archiveTaskResult);
 
     // Archive the project
     mockMvc
-        .perform(patch("/api/projects/" + archiveProjectId + "/archive").with(ownerJwt()))
+        .perform(
+            patch("/api/projects/" + archiveProjectId + "/archive")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cc_owner")))
         .andExpect(status().isOk());
 
     // Attempt to create a comment on the archived project — should be rejected
     mockMvc
         .perform(
             post("/api/projects/" + archiveProjectId + "/comments")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -281,14 +298,16 @@ class CommentControllerTest {
   @Test
   void putCommentOnArchivedProjectReturns400() throws Exception {
     // Create a comment on a non-archived project first
-    var commentId = createComment(ownerJwt(), "Comment to test archive update");
+    var commentId =
+        createComment(
+            TestJwtFactory.ownerJwt(ORG_ID, "user_cc_owner"), "Comment to test archive update");
 
     // Create a separate project, add a comment, then archive it
     var archiveProjectResult =
         mockMvc
             .perform(
                 post("/api/projects")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -296,14 +315,14 @@ class CommentControllerTest {
                         """))
             .andExpect(status().isCreated())
             .andReturn();
-    var archiveProjectId = extractIdFromLocation(archiveProjectResult);
+    var archiveProjectId = TestEntityHelper.extractIdFromLocation(archiveProjectResult);
 
     // Create a task on the project
     var archiveTaskResult =
         mockMvc
             .perform(
                 post("/api/projects/" + archiveProjectId + "/tasks")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -311,14 +330,14 @@ class CommentControllerTest {
                         """))
             .andExpect(status().isCreated())
             .andReturn();
-    var archiveTaskId = extractIdFromLocation(archiveTaskResult);
+    var archiveTaskId = TestEntityHelper.extractIdFromLocation(archiveTaskResult);
 
     // Create a comment before archiving
     var archiveCommentResult =
         mockMvc
             .perform(
                 post("/api/projects/" + archiveProjectId + "/comments")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -336,14 +355,16 @@ class CommentControllerTest {
 
     // Archive the project
     mockMvc
-        .perform(patch("/api/projects/" + archiveProjectId + "/archive").with(ownerJwt()))
+        .perform(
+            patch("/api/projects/" + archiveProjectId + "/archive")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cc_owner")))
         .andExpect(status().isOk());
 
     // Attempt to update the comment on the archived project — should be rejected
     mockMvc
         .perform(
             put("/api/projects/" + archiveProjectId + "/comments/" + archiveCommentId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -373,57 +394,5 @@ class CommentControllerTest {
             .andExpect(status().isCreated())
             .andReturn();
     return JsonPath.read(result.getResponse().getContentAsString(), "$.id").toString();
-  }
-
-  private String extractIdFromLocation(MvcResult result) {
-    String location = result.getResponse().getHeader("Location");
-    return location.substring(location.lastIndexOf('/') + 1);
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_cc_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor adminJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_cc_admin").claim("o", Map.of("id", ORG_ID, "rol", "admin")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_cc_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor member2Jwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_cc_member2").claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 }

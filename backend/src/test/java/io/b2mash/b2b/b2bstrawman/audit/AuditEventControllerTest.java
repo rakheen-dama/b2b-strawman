@@ -6,17 +6,17 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.time.Instant;
-import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -25,10 +25,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -36,8 +34,6 @@ import org.springframework.test.web.servlet.MvcResult;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AuditEventControllerTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_audit_ctrl_test";
 
   @Autowired private MockMvc mockMvc;
@@ -57,10 +53,15 @@ class AuditEventControllerTest {
   void provisionTenantAndSeedData() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Audit Controller Test Org", null);
 
-    memberIdOwner = syncMember(ORG_ID, "user_ac_owner", "ac_owner@test.com", "AC Owner", "owner");
-    memberIdAdmin = syncMember(ORG_ID, "user_ac_admin", "ac_admin@test.com", "AC Admin", "admin");
+    memberIdOwner =
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_ac_owner", "ac_owner@test.com", "AC Owner", "owner");
+    memberIdAdmin =
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_ac_admin", "ac_admin@test.com", "AC Admin", "admin");
     memberIdMember =
-        syncMember(ORG_ID, "user_ac_member", "ac_member@test.com", "AC Member", "member");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_ac_member", "ac_member@test.com", "AC Member", "member");
 
     beforeCreation = Instant.now();
 
@@ -69,7 +70,7 @@ class AuditEventControllerTest {
         mockMvc
             .perform(
                 post("/api/projects")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ac_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -77,13 +78,13 @@ class AuditEventControllerTest {
                         """))
             .andExpect(status().isCreated())
             .andReturn();
-    projectId = extractIdFromLocation(projectResult);
+    projectId = TestEntityHelper.extractIdFromLocation(projectResult);
 
     // Add member to project so we can create tasks
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/members")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ac_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -97,7 +98,7 @@ class AuditEventControllerTest {
         mockMvc
             .perform(
                 post("/api/projects/" + projectId + "/tasks")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ac_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -105,14 +106,14 @@ class AuditEventControllerTest {
                         """))
             .andExpect(status().isCreated())
             .andReturn();
-    taskId = extractIdFromLocation(taskResult);
+    taskId = TestEntityHelper.extractIdFromLocation(taskResult);
 
     // Create additional projects for pagination tests
     var project2Result =
         mockMvc
             .perform(
                 post("/api/projects")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ac_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -120,13 +121,13 @@ class AuditEventControllerTest {
                         """))
             .andExpect(status().isCreated())
             .andReturn();
-    project2Id = extractIdFromLocation(project2Result);
+    project2Id = TestEntityHelper.extractIdFromLocation(project2Result);
 
     var project3Result =
         mockMvc
             .perform(
                 post("/api/projects")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ac_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -134,7 +135,7 @@ class AuditEventControllerTest {
                         """))
             .andExpect(status().isCreated())
             .andReturn();
-    project3Id = extractIdFromLocation(project3Result);
+    project3Id = TestEntityHelper.extractIdFromLocation(project3Result);
 
     afterCreation = Instant.now();
   }
@@ -142,7 +143,7 @@ class AuditEventControllerTest {
   @Test
   void ownerCanListAuditEvents() throws Exception {
     mockMvc
-        .perform(get("/api/audit-events").with(ownerJwt()))
+        .perform(get("/api/audit-events").with(TestJwtFactory.ownerJwt(ORG_ID, "user_ac_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray())
         .andExpect(jsonPath("$.content", hasSize(greaterThanOrEqualTo(1))))
@@ -152,7 +153,7 @@ class AuditEventControllerTest {
   @Test
   void adminCanListAuditEvents() throws Exception {
     mockMvc
-        .perform(get("/api/audit-events").with(adminJwt()))
+        .perform(get("/api/audit-events").with(TestJwtFactory.adminJwt(ORG_ID, "user_ac_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray())
         .andExpect(jsonPath("$.page.totalElements", greaterThanOrEqualTo(1)));
@@ -160,13 +161,18 @@ class AuditEventControllerTest {
 
   @Test
   void regularMemberDenied() throws Exception {
-    mockMvc.perform(get("/api/audit-events").with(memberJwt())).andExpect(status().isForbidden());
+    mockMvc
+        .perform(get("/api/audit-events").with(TestJwtFactory.memberJwt(ORG_ID, "user_ac_member")))
+        .andExpect(status().isForbidden());
   }
 
   @Test
   void filterByEntityTypeReturnsOnlyMatchingEvents() throws Exception {
     mockMvc
-        .perform(get("/api/audit-events").with(ownerJwt()).param("entityType", "project"))
+        .perform(
+            get("/api/audit-events")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ac_owner"))
+                .param("entityType", "project"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray())
         .andExpect(jsonPath("$.content", hasSize(greaterThanOrEqualTo(1))))
@@ -179,7 +185,7 @@ class AuditEventControllerTest {
     mockMvc
         .perform(
             get("/api/audit-events")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ac_owner"))
                 .param("entityType", "task")
                 .param("entityId", taskId))
         .andExpect(status().isOk())
@@ -192,7 +198,10 @@ class AuditEventControllerTest {
   void filterByEventTypePrefixMatchesMultipleTypes() throws Exception {
     // "project." should match project.created (and any other project.* events)
     mockMvc
-        .perform(get("/api/audit-events").with(ownerJwt()).param("eventType", "project."))
+        .perform(
+            get("/api/audit-events")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ac_owner"))
+                .param("eventType", "project."))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray())
         .andExpect(jsonPath("$.content", hasSize(greaterThanOrEqualTo(1))))
@@ -204,7 +213,7 @@ class AuditEventControllerTest {
     mockMvc
         .perform(
             get("/api/audit-events")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ac_owner"))
                 .param("from", beforeCreation.toString())
                 .param("to", afterCreation.toString()))
         .andExpect(status().isOk())
@@ -215,7 +224,7 @@ class AuditEventControllerTest {
     mockMvc
         .perform(
             get("/api/audit-events")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ac_owner"))
                 .param("from", "2020-01-01T00:00:00Z")
                 .param("to", "2020-01-02T00:00:00Z"))
         .andExpect(status().isOk())
@@ -227,7 +236,11 @@ class AuditEventControllerTest {
     // We created at least 3 projects + 1 task = 4+ audit events
     // Request page 0 with size 2
     mockMvc
-        .perform(get("/api/audit-events").with(ownerJwt()).param("size", "2").param("page", "0"))
+        .perform(
+            get("/api/audit-events")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ac_owner"))
+                .param("size", "2")
+                .param("page", "0"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content", hasSize(2)))
         .andExpect(jsonPath("$.page.size").value(2))
@@ -236,7 +249,11 @@ class AuditEventControllerTest {
 
     // Request page 1
     mockMvc
-        .perform(get("/api/audit-events").with(ownerJwt()).param("size", "2").param("page", "1"))
+        .perform(
+            get("/api/audit-events")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ac_owner"))
+                .param("size", "2")
+                .param("page", "1"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content", hasSize(greaterThanOrEqualTo(1))))
         .andExpect(jsonPath("$.page.number").value(1));
@@ -245,7 +262,9 @@ class AuditEventControllerTest {
   @Test
   void entitySpecificEndpointReturnsCorrectEvents() throws Exception {
     mockMvc
-        .perform(get("/api/audit-events/task/" + taskId).with(ownerJwt()))
+        .perform(
+            get("/api/audit-events/task/" + taskId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ac_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray())
         .andExpect(jsonPath("$.content", hasSize(greaterThanOrEqualTo(1))))
@@ -257,7 +276,8 @@ class AuditEventControllerTest {
   void responseIncludesSecurityFieldsButExcludesTenantId() throws Exception {
     var result =
         mockMvc
-            .perform(get("/api/audit-events").with(ownerJwt()))
+            .perform(
+                get("/api/audit-events").with(TestJwtFactory.ownerJwt(ORG_ID, "user_ac_owner")))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.content[0]").exists())
             .andExpect(jsonPath("$.content[0].ipAddress", is("127.0.0.1")))
@@ -273,54 +293,5 @@ class AuditEventControllerTest {
     // Verify userAgent key is present in JSON (even if null — MockMvc doesn't set User-Agent)
     String body = result.getResponse().getContentAsString();
     assertTrue(body.contains("\"userAgent\""), "Response should include userAgent field");
-  }
-
-  // --- Helpers ---
-
-  private String extractIdFromLocation(MvcResult result) {
-    String location = result.getResponse().getHeader("Location");
-    return location.substring(location.lastIndexOf('/') + 1);
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_ac_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor adminJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_ac_admin").claim("o", Map.of("id", ORG_ID, "rol", "admin")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_ac_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 }

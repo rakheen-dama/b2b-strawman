@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.fielddefinition;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -18,6 +17,8 @@ import io.b2mash.b2b.b2bstrawman.template.DocumentTemplate;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateRepository;
 import io.b2mash.b2b.b2bstrawman.template.TemplateCategory;
 import io.b2mash.b2b.b2bstrawman.template.TemplateEntityType;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -29,7 +30,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -40,8 +40,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class FieldUsageEndpointTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_fu_test";
 
   @Autowired private MockMvc mockMvc;
@@ -61,7 +59,8 @@ class FieldUsageEndpointTest {
 
     memberIdOwner =
         UUID.fromString(
-            syncMember(ORG_ID, "user_fu_owner", "fu_owner@test.com", "FU Owner", "owner"));
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, "user_fu_owner", "fu_owner@test.com", "FU Owner", "owner"));
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
@@ -137,7 +136,9 @@ class FieldUsageEndpointTest {
       var listResult =
           mockMvc
               .perform(
-                  get("/api/field-definitions").param("entityType", "CUSTOMER").with(ownerJwt()))
+                  get("/api/field-definitions")
+                      .param("entityType", "CUSTOMER")
+                      .with(TestJwtFactory.ownerJwt(ORG_ID, "user_fu_owner")))
               .andExpect(status().isOk())
               .andReturn();
 
@@ -154,7 +155,9 @@ class FieldUsageEndpointTest {
 
       // Call usage endpoint
       mockMvc
-          .perform(get("/api/field-definitions/" + fieldId + "/usage").with(ownerJwt()))
+          .perform(
+              get("/api/field-definitions/" + fieldId + "/usage")
+                  .with(TestJwtFactory.ownerJwt(ORG_ID, "user_fu_owner")))
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.templates").isArray())
           .andExpect(jsonPath("$.templates.length()").value(1))
@@ -175,7 +178,7 @@ class FieldUsageEndpointTest {
         mockMvc
             .perform(
                 post("/api/field-definitions")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_fu_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -193,7 +196,9 @@ class FieldUsageEndpointTest {
     String fieldId = JsonPath.read(result.getResponse().getContentAsString(), "$.id");
 
     mockMvc
-        .perform(get("/api/field-definitions/" + fieldId + "/usage").with(ownerJwt()))
+        .perform(
+            get("/api/field-definitions/" + fieldId + "/usage")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_fu_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.templates").isArray())
         .andExpect(jsonPath("$.templates.length()").value(0))
@@ -207,7 +212,7 @@ class FieldUsageEndpointTest {
         mockMvc
             .perform(
                 post("/api/field-definitions")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_fu_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -225,23 +230,11 @@ class FieldUsageEndpointTest {
     String fieldId = JsonPath.read(result.getResponse().getContentAsString(), "$.id");
 
     mockMvc
-        .perform(get("/api/field-definitions/" + fieldId + "/usage").with(memberJwt()))
+        .perform(
+            get("/api/field-definitions/" + fieldId + "/usage")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_fu_member")))
         .andExpect(status().isForbidden());
   }
-
-  // --- JWT Helpers ---
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_fu_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_fu_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  // --- Helpers ---
 
   private void runInTenant(Runnable action) {
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -249,31 +242,5 @@ class FieldUsageEndpointTest {
         .where(RequestScopes.MEMBER_ID, memberIdOwner)
         .where(RequestScopes.ORG_ROLE, "owner")
         .run(action);
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

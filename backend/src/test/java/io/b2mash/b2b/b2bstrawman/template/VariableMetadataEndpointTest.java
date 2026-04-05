@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -16,7 +15,8 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldType;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -25,7 +25,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -35,8 +34,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class VariableMetadataEndpointTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_var_meta_test";
 
   @Autowired private MockMvc mockMvc;
@@ -46,8 +43,10 @@ class VariableMetadataEndpointTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Variable Metadata Test Org", null);
-    syncMember(ORG_ID, "user_vm_owner", "vm_owner@test.com", "VM Owner", "owner");
-    syncMember(ORG_ID, "user_vm_member", "vm_member@test.com", "VM Member", "member");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_vm_owner", "vm_owner@test.com", "VM Owner", "owner");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_vm_member", "vm_member@test.com", "VM Member", "member");
   }
 
   @Test
@@ -57,7 +56,7 @@ class VariableMetadataEndpointTest {
         .perform(
             get("/api/templates/variables")
                 .param("entityType", "PROJECT")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_vm_member"))
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.groups").isArray())
@@ -90,7 +89,7 @@ class VariableMetadataEndpointTest {
         .perform(
             get("/api/templates/variables")
                 .param("entityType", "CUSTOMER")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_vm_member"))
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.groups").isArray())
@@ -118,7 +117,7 @@ class VariableMetadataEndpointTest {
         .perform(
             get("/api/templates/variables")
                 .param("entityType", "INVOICE")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_vm_member"))
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.groups").isArray())
@@ -149,7 +148,7 @@ class VariableMetadataEndpointTest {
         .perform(
             get("/api/templates/variables")
                 .param("entityType", "PROJECT")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_vm_member"))
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.loopSources").isArray())
@@ -164,7 +163,7 @@ class VariableMetadataEndpointTest {
         .perform(
             get("/api/templates/variables")
                 .param("entityType", "INVOICE")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_vm_member"))
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.loopSources.length()").value(1))
@@ -177,7 +176,7 @@ class VariableMetadataEndpointTest {
         .perform(
             get("/api/templates/variables")
                 .param("entityType", "CUSTOMER")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_vm_member"))
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.loopSources.length()").value(3))
@@ -194,7 +193,7 @@ class VariableMetadataEndpointTest {
         .perform(
             get("/api/templates/variables")
                 .param("entityType", "INVALID")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_vm_member"))
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isBadRequest());
   }
@@ -206,7 +205,7 @@ class VariableMetadataEndpointTest {
         .perform(
             get("/api/templates/variables")
                 .param("entityType", "PROJECT")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_vm_member"))
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.groups").isArray());
@@ -220,7 +219,7 @@ class VariableMetadataEndpointTest {
         .perform(
             get("/api/templates/variables")
                 .param("entityType", "PROJECT")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_vm_member"))
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         // Project custom fields group (position-independent)
@@ -251,7 +250,7 @@ class VariableMetadataEndpointTest {
         .perform(
             get("/api/templates/variables")
                 .param("entityType", "INVOICE")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_vm_member"))
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         // Customer custom fields group in invoice context (position-independent)
@@ -299,7 +298,7 @@ class VariableMetadataEndpointTest {
         .perform(
             get("/api/templates/variables")
                 .param("entityType", "INVOICE")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_vm_member"))
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         // Invoice custom fields group should NOT appear (only inactive field exists for INVOICE)
@@ -320,7 +319,7 @@ class VariableMetadataEndpointTest {
         .perform(
             get("/api/templates/variables")
                 .param("entityType", "CUSTOMER")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_vm_member"))
                 .accept(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(
@@ -347,42 +346,5 @@ class VariableMetadataEndpointTest {
     for (FieldType ft : FieldType.values()) {
       assertThat(VariableMetadataRegistry.FIELD_TYPE_TO_VARIABLE_TYPE).containsKey(ft);
     }
-  }
-
-  // --- JWT Helpers ---
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_vm_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  // --- Helpers ---
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post(
-                        "/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return com.jayway.jsonpath.JsonPath.read(
-        result.getResponse().getContentAsString(), "$.memberId");
   }
 }

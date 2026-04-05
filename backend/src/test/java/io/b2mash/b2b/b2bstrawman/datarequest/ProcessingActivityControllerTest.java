@@ -7,6 +7,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -17,7 +19,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -27,8 +28,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ProcessingActivityControllerTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_proc_activity_ctrl_test";
 
   @Autowired private MockMvc mockMvc;
@@ -37,14 +36,18 @@ class ProcessingActivityControllerTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Processing Activity Controller Test Org", null);
-    syncMember(ORG_ID, "user_pa_owner", "pa_owner@test.com", "PA Owner", "owner");
-    syncMember(ORG_ID, "user_pa_member", "pa_member@test.com", "PA Member", "member");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_pa_owner", "pa_owner@test.com", "PA Owner", "owner");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_pa_member", "pa_member@test.com", "PA Member", "member");
   }
 
   @Test
   void getList_returns200WithPage() throws Exception {
     mockMvc
-        .perform(get("/api/settings/processing-activities").with(ownerJwt()))
+        .perform(
+            get("/api/settings/processing-activities")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pa_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray())
         .andExpect(jsonPath("$.page").exists());
@@ -53,7 +56,9 @@ class ProcessingActivityControllerTest {
   @Test
   void list_memberRole_returns403() throws Exception {
     mockMvc
-        .perform(get("/api/settings/processing-activities").with(memberJwt()))
+        .perform(
+            get("/api/settings/processing-activities")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_pa_member")))
         .andExpect(status().isForbidden());
   }
 
@@ -62,7 +67,7 @@ class ProcessingActivityControllerTest {
     mockMvc
         .perform(
             post("/api/settings/processing-activities")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pa_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -82,7 +87,7 @@ class ProcessingActivityControllerTest {
         mockMvc
             .perform(
                 post("/api/settings/processing-activities")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pa_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -97,7 +102,7 @@ class ProcessingActivityControllerTest {
     mockMvc
         .perform(
             put("/api/settings/processing-activities/" + id)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pa_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -117,7 +122,7 @@ class ProcessingActivityControllerTest {
         mockMvc
             .perform(
                 post("/api/settings/processing-activities")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pa_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -130,12 +135,16 @@ class ProcessingActivityControllerTest {
     String id = JsonPath.read(result.getResponse().getContentAsString(), "$.id");
 
     mockMvc
-        .perform(delete("/api/settings/processing-activities/" + id).with(ownerJwt()))
+        .perform(
+            delete("/api/settings/processing-activities/" + id)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pa_owner")))
         .andExpect(status().isNoContent());
 
     // Verify gone — the deleted ID should not appear in the list
     mockMvc
-        .perform(get("/api/settings/processing-activities").with(ownerJwt()))
+        .perform(
+            get("/api/settings/processing-activities")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pa_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content[?(@.id == '%s')]".formatted(id)).doesNotExist());
   }
@@ -145,7 +154,8 @@ class ProcessingActivityControllerTest {
     // Use a separate org to avoid cross-test contamination
     String seedOrgId = "org_pa_seed_test_" + UUID.randomUUID().toString().substring(0, 8);
     provisioningService.provisionTenant(seedOrgId, "Seed Test Org", null);
-    syncMember(
+    TestMemberHelper.syncMember(
+        mockMvc,
         seedOrgId,
         "user_seed_owner_" + seedOrgId,
         "seed_owner_" + seedOrgId + "@test.com",
@@ -181,34 +191,5 @@ class ProcessingActivityControllerTest {
                                     .claim("o", Map.of("id", seedOrgId, "rol", "owner")))))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.page.totalElements").value(6));
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_pa_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_pa_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"clerkOrgId":"%s","clerkUserId":"%s","email":"%s","name":"%s","avatarUrl":null,"orgRole":"%s"}
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

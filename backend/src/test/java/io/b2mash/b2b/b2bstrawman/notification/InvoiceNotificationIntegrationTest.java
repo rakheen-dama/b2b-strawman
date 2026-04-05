@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.notification;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -21,11 +20,12 @@ import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -55,8 +55,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 @RecordApplicationEvents
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class InvoiceNotificationIntegrationTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_inv_notif_test";
 
   @Autowired private MockMvc mockMvc;
@@ -87,10 +85,22 @@ class InvoiceNotificationIntegrationTest {
 
     memberIdOwner =
         UUID.fromString(
-            syncMember("user_inv_notif_owner", "inv_notif_owner@test.com", "Notif Owner", "owner"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_inv_notif_owner",
+                "inv_notif_owner@test.com",
+                "Notif Owner",
+                "owner"));
     memberIdAdmin =
         UUID.fromString(
-            syncMember("user_inv_notif_admin", "inv_notif_admin@test.com", "Notif Admin", "admin"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_inv_notif_admin",
+                "inv_notif_admin@test.com",
+                "Notif Admin",
+                "admin"));
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
@@ -137,12 +147,14 @@ class InvoiceNotificationIntegrationTest {
 
   @Test
   void approveInvoice_publishesInvoiceApprovedEvent() throws Exception {
-    String invoiceId = createInvoiceAs(ownerJwt());
+    String invoiceId = createInvoiceAs(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_notif_owner"));
 
     events.clear();
 
     mockMvc
-        .perform(post("/api/invoices/" + invoiceId + "/approve").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + invoiceId + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_notif_owner")))
         .andExpect(status().isOk());
 
     var approvedEvents = events.stream(InvoiceApprovedEvent.class).toList();
@@ -158,10 +170,12 @@ class InvoiceNotificationIntegrationTest {
   @Test
   void approveInvoice_createsNotificationForCreator() throws Exception {
     // Create as admin, approve as owner
-    String invoiceId = createInvoiceAs(adminJwt());
+    String invoiceId = createInvoiceAs(TestJwtFactory.adminJwt(ORG_ID, "user_inv_notif_admin"));
 
     mockMvc
-        .perform(post("/api/invoices/" + invoiceId + "/approve").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + invoiceId + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_notif_owner")))
         .andExpect(status().isOk());
 
     // Admin (creator) should receive INVOICE_APPROVED notification
@@ -184,15 +198,19 @@ class InvoiceNotificationIntegrationTest {
   @Test
   void sendInvoice_publishesEvent_andNotifiesAdminsOwners() throws Exception {
     // Create and approve as admin
-    String invoiceId = createInvoiceAs(adminJwt());
+    String invoiceId = createInvoiceAs(TestJwtFactory.adminJwt(ORG_ID, "user_inv_notif_admin"));
 
     mockMvc
-        .perform(post("/api/invoices/" + invoiceId + "/approve").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + invoiceId + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_notif_owner")))
         .andExpect(status().isOk());
 
     // Send as admin -- owner should get notification
     mockMvc
-        .perform(post("/api/invoices/" + invoiceId + "/send").with(adminJwt()))
+        .perform(
+            post("/api/invoices/" + invoiceId + "/send")
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_inv_notif_admin")))
         .andExpect(status().isOk());
 
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -212,14 +230,18 @@ class InvoiceNotificationIntegrationTest {
 
   @Test
   void recordPayment_publishesPaidEvent() throws Exception {
-    String invoiceId = createInvoiceAs(ownerJwt());
+    String invoiceId = createInvoiceAs(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_notif_owner"));
 
     // Approve -> Send -> Pay
     mockMvc
-        .perform(post("/api/invoices/" + invoiceId + "/approve").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + invoiceId + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_notif_owner")))
         .andExpect(status().isOk());
     mockMvc
-        .perform(post("/api/invoices/" + invoiceId + "/send").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + invoiceId + "/send")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_notif_owner")))
         .andExpect(status().isOk());
 
     events.clear();
@@ -227,7 +249,7 @@ class InvoiceNotificationIntegrationTest {
     mockMvc
         .perform(
             post("/api/invoices/" + invoiceId + "/payment")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_notif_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -243,16 +265,20 @@ class InvoiceNotificationIntegrationTest {
   @Test
   void voidInvoice_publishesVoidedEvent_andNotifiesCreator() throws Exception {
     // Create as admin, approve+void as owner
-    String invoiceId = createInvoiceAs(adminJwt());
+    String invoiceId = createInvoiceAs(TestJwtFactory.adminJwt(ORG_ID, "user_inv_notif_admin"));
 
     mockMvc
-        .perform(post("/api/invoices/" + invoiceId + "/approve").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + invoiceId + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_notif_owner")))
         .andExpect(status().isOk());
 
     events.clear();
 
     mockMvc
-        .perform(post("/api/invoices/" + invoiceId + "/void").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + invoiceId + "/void")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_notif_owner")))
         .andExpect(status().isOk());
 
     var voidedEvents = events.stream(InvoiceVoidedEvent.class).toList();
@@ -324,44 +350,5 @@ class InvoiceNotificationIntegrationTest {
                       holder[0] = te.getId();
                     }));
     return holder[0];
-  }
-
-  private String syncMember(String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(ORG_ID, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_inv_notif_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor adminJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_inv_notif_admin").claim("o", Map.of("id", ORG_ID, "rol", "admin")));
   }
 }

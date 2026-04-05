@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.billingrun;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -25,10 +24,11 @@ import io.b2mash.b2b.b2bstrawman.retainer.RolloverPolicy;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
@@ -41,7 +41,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -82,7 +81,9 @@ class BillingRunRetainerTest {
     provisioningService.provisionTenant(ORG_ID, "Retainer Test Org", null);
 
     memberIdOwner =
-        UUID.fromString(syncMember("user_ret_owner", "ret_owner@test.com", "Ret Owner", "owner"));
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, "user_ret_owner", "ret_owner@test.com", "Ret Owner", "owner"));
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
@@ -188,7 +189,9 @@ class BillingRunRetainerTest {
     String runId = createBillingRunWithRetainers("Retainer Run 1");
 
     mockMvc
-        .perform(get("/api/billing-runs/" + runId + "/retainer-preview").with(ownerJwt()))
+        .perform(
+            get("/api/billing-runs/" + runId + "/retainer-preview")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ret_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$.length()").value(1))
@@ -204,7 +207,9 @@ class BillingRunRetainerTest {
 
     var result =
         mockMvc
-            .perform(get("/api/billing-runs/" + runId + "/retainer-preview").with(ownerJwt()))
+            .perform(
+                get("/api/billing-runs/" + runId + "/retainer-preview")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ret_owner")))
             .andExpect(status().isOk())
             .andReturn();
 
@@ -262,7 +267,7 @@ class BillingRunRetainerTest {
     mockMvc
         .perform(
             post("/api/billing-runs/" + runId + "/retainer-generate")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ret_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -323,7 +328,7 @@ class BillingRunRetainerTest {
         mockMvc
             .perform(
                 post("/api/billing-runs/" + runId + "/retainer-generate")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ret_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -361,7 +366,7 @@ class BillingRunRetainerTest {
     mockMvc
         .perform(
             post("/api/billing-runs/" + runId + "/retainer-generate")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ret_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -382,7 +387,7 @@ class BillingRunRetainerTest {
         mockMvc
             .perform(
                 post("/api/billing-runs")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ret_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -399,29 +404,5 @@ class BillingRunRetainerTest {
             .andExpect(status().isCreated())
             .andReturn();
     return JsonPath.read(result.getResponse().getContentAsString(), "$.id");
-  }
-
-  private String syncMember(String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        { "clerkOrgId": "%s", "clerkUserId": "%s", "email": "%s", "name": "%s",
-                          "avatarUrl": null, "orgRole": "%s" }
-                        """
-                            .formatted(ORG_ID, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_ret_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
   }
 }

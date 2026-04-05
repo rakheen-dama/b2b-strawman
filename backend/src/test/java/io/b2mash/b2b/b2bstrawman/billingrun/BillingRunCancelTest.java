@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.billingrun;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -24,11 +23,12 @@ import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
@@ -42,7 +42,6 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -88,7 +87,13 @@ class BillingRunCancelTest {
 
     memberIdOwner =
         UUID.fromString(
-            syncMember("user_cancel_owner", "cancel_owner@test.com", "Cancel Owner", "owner"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_cancel_owner",
+                "cancel_owner@test.com",
+                "Cancel Owner",
+                "owner"));
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
@@ -208,12 +213,16 @@ class BillingRunCancelTest {
 
     // Cancel the PREVIEW run
     mockMvc
-        .perform(delete("/api/billing-runs/" + runId).with(ownerJwt()))
+        .perform(
+            delete("/api/billing-runs/" + runId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cancel_owner")))
         .andExpect(status().isNoContent());
 
     // Verify the run is gone
     mockMvc
-        .perform(get("/api/billing-runs/" + runId).with(ownerJwt()))
+        .perform(
+            get("/api/billing-runs/" + runId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cancel_owner")))
         .andExpect(status().isNotFound());
   }
 
@@ -225,13 +234,17 @@ class BillingRunCancelTest {
 
     // Generate invoices
     mockMvc
-        .perform(post("/api/billing-runs/" + runId + "/generate").with(ownerJwt()))
+        .perform(
+            post("/api/billing-runs/" + runId + "/generate")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cancel_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("COMPLETED"));
 
     // Cancel the COMPLETED run
     mockMvc
-        .perform(delete("/api/billing-runs/" + runId).with(ownerJwt()))
+        .perform(
+            delete("/api/billing-runs/" + runId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cancel_owner")))
         .andExpect(status().isNoContent());
 
     // Verify DRAFT invoices are now VOID
@@ -263,7 +276,9 @@ class BillingRunCancelTest {
 
     // Generate invoices
     mockMvc
-        .perform(post("/api/billing-runs/" + runId + "/generate").with(ownerJwt()))
+        .perform(
+            post("/api/billing-runs/" + runId + "/generate")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cancel_owner")))
         .andExpect(status().isOk());
 
     // Verify time entries are billed (have invoiceId)
@@ -285,7 +300,9 @@ class BillingRunCancelTest {
 
     // Cancel the run
     mockMvc
-        .perform(delete("/api/billing-runs/" + runId).with(ownerJwt()))
+        .perform(
+            delete("/api/billing-runs/" + runId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cancel_owner")))
         .andExpect(status().isNoContent());
 
     // Verify time entries are unbilled (invoiceId is null)
@@ -320,17 +337,23 @@ class BillingRunCancelTest {
 
     // Generate invoices
     mockMvc
-        .perform(post("/api/billing-runs/" + runId + "/generate").with(ownerJwt()))
+        .perform(
+            post("/api/billing-runs/" + runId + "/generate")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cancel_owner")))
         .andExpect(status().isOk());
 
     // Cancel the run
     mockMvc
-        .perform(delete("/api/billing-runs/" + runId).with(ownerJwt()))
+        .perform(
+            delete("/api/billing-runs/" + runId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cancel_owner")))
         .andExpect(status().isNoContent());
 
     // Verify the run status is CANCELLED
     mockMvc
-        .perform(get("/api/billing-runs/" + runId).with(ownerJwt()))
+        .perform(
+            get("/api/billing-runs/" + runId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cancel_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("CANCELLED"));
   }
@@ -343,7 +366,9 @@ class BillingRunCancelTest {
 
     // Generate invoices
     mockMvc
-        .perform(post("/api/billing-runs/" + runId + "/generate").with(ownerJwt()))
+        .perform(
+            post("/api/billing-runs/" + runId + "/generate")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cancel_owner")))
         .andExpect(status().isOk());
 
     // Approve one invoice
@@ -368,7 +393,9 @@ class BillingRunCancelTest {
 
     // Cancel the run
     mockMvc
-        .perform(delete("/api/billing-runs/" + runId).with(ownerJwt()))
+        .perform(
+            delete("/api/billing-runs/" + runId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cancel_owner")))
         .andExpect(status().isNoContent());
 
     // Verify: approved invoice is preserved, other(s) are voided
@@ -405,12 +432,16 @@ class BillingRunCancelTest {
 
     // Generate invoices
     mockMvc
-        .perform(post("/api/billing-runs/" + runId + "/generate").with(ownerJwt()))
+        .perform(
+            post("/api/billing-runs/" + runId + "/generate")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cancel_owner")))
         .andExpect(status().isOk());
 
     // Cancel the run
     mockMvc
-        .perform(delete("/api/billing-runs/" + runId).with(ownerJwt()))
+        .perform(
+            delete("/api/billing-runs/" + runId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cancel_owner")))
         .andExpect(status().isNoContent());
 
     // Verify audit event exists
@@ -443,17 +474,23 @@ class BillingRunCancelTest {
 
     // Generate invoices
     mockMvc
-        .perform(post("/api/billing-runs/" + runId + "/generate").with(ownerJwt()))
+        .perform(
+            post("/api/billing-runs/" + runId + "/generate")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cancel_owner")))
         .andExpect(status().isOk());
 
     // First cancel — should succeed
     mockMvc
-        .perform(delete("/api/billing-runs/" + runId).with(ownerJwt()))
+        .perform(
+            delete("/api/billing-runs/" + runId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cancel_owner")))
         .andExpect(status().isNoContent());
 
     // Second cancel — should fail with 400 (InvalidStateException)
     mockMvc
-        .perform(delete("/api/billing-runs/" + runId).with(ownerJwt()))
+        .perform(
+            delete("/api/billing-runs/" + runId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cancel_owner")))
         .andExpect(status().isBadRequest());
   }
 
@@ -466,7 +503,7 @@ class BillingRunCancelTest {
     mockMvc
         .perform(
             post("/api/billing-runs/" + runId + "/preview")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cancel_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{}"))
         .andExpect(status().isOk());
@@ -481,7 +518,7 @@ class BillingRunCancelTest {
         mockMvc
             .perform(
                 post("/api/billing-runs")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cancel_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -498,29 +535,5 @@ class BillingRunCancelTest {
             .andExpect(status().isCreated())
             .andReturn();
     return JsonPath.read(result.getResponse().getContentAsString(), "$.id");
-  }
-
-  private String syncMember(String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        { "clerkOrgId": "%s", "clerkUserId": "%s", "email": "%s", "name": "%s",
-                          "avatarUrl": null, "orgRole": "%s" }
-                        """
-                            .formatted(ORG_ID, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_cancel_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
   }
 }

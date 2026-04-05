@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.proposal;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -16,7 +15,9 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -30,7 +31,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -38,8 +38,6 @@ import org.springframework.test.web.servlet.MvcResult;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ProposalControllerTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_proposal_ctrl_test";
 
   @Autowired private MockMvc mockMvc;
@@ -63,13 +61,31 @@ class ProposalControllerTest {
     provisioningService.provisionTenant(ORG_ID, "Proposal Controller Test Org", null);
 
     memberIdOwner =
-        syncMember("user_prop_ctrl_owner", "prop_ctrl_owner@test.com", "PROP Owner", "owner");
+        TestMemberHelper.syncMember(
+            mockMvc,
+            ORG_ID,
+            "user_prop_ctrl_owner",
+            "prop_ctrl_owner@test.com",
+            "PROP Owner",
+            "owner");
     memberIdAdmin =
-        syncMember("user_prop_ctrl_admin", "prop_ctrl_admin@test.com", "PROP Admin", "admin");
+        TestMemberHelper.syncMember(
+            mockMvc,
+            ORG_ID,
+            "user_prop_ctrl_admin",
+            "prop_ctrl_admin@test.com",
+            "PROP Admin",
+            "admin");
     memberIdMember =
-        syncMember("user_prop_ctrl_member", "prop_ctrl_member@test.com", "PROP Member", "member");
+        TestMemberHelper.syncMember(
+            mockMvc,
+            ORG_ID,
+            "user_prop_ctrl_member",
+            "prop_ctrl_member@test.com",
+            "PROP Member",
+            "member");
 
-    customerId = createCustomer(ownerJwt());
+    customerId = createCustomer(TestJwtFactory.ownerJwt(ORG_ID, "user_prop_ctrl_owner"));
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
@@ -95,10 +111,22 @@ class ProposalControllerTest {
     // Sync custom-role members for capability tests
     customRoleMemberId =
         UUID.fromString(
-            syncMember("user_prop_314b_custom", "prop_custom@test.com", "Custom User", "member"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_prop_314b_custom",
+                "prop_custom@test.com",
+                "Custom User",
+                "member"));
     noCapMemberId =
         UUID.fromString(
-            syncMember("user_prop_314b_nocap", "prop_nocap@test.com", "NoCap User", "member"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_prop_314b_nocap",
+                "prop_nocap@test.com",
+                "NoCap User",
+                "member"));
 
     // Assign OrgRoles within tenant scope
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -134,7 +162,7 @@ class ProposalControllerTest {
     mockMvc
         .perform(
             post("/api/proposals")
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_prop_ctrl_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -159,7 +187,7 @@ class ProposalControllerTest {
     mockMvc
         .perform(
             post("/api/proposals")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prop_ctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -183,7 +211,8 @@ class ProposalControllerTest {
     createProposal("List Test Proposal", "HOURLY", null, null);
 
     mockMvc
-        .perform(get("/api/proposals").with(memberJwt()))
+        .perform(
+            get("/api/proposals").with(TestJwtFactory.memberJwt(ORG_ID, "user_prop_ctrl_member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray())
         .andExpect(jsonPath("$.page.totalElements").isNumber());
@@ -194,7 +223,9 @@ class ProposalControllerTest {
     String proposalId = createProposal("Get Test Proposal", "HOURLY", null, null);
 
     mockMvc
-        .perform(get("/api/proposals/" + proposalId).with(memberJwt()))
+        .perform(
+            get("/api/proposals/" + proposalId)
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_prop_ctrl_member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(proposalId))
         .andExpect(jsonPath("$.title").value("Get Test Proposal"));
@@ -207,7 +238,7 @@ class ProposalControllerTest {
     mockMvc
         .perform(
             put("/api/proposals/" + proposalId)
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_prop_ctrl_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -226,12 +257,16 @@ class ProposalControllerTest {
     String proposalId = createProposal("To Be Deleted", "HOURLY", null, null);
 
     mockMvc
-        .perform(delete("/api/proposals/" + proposalId).with(ownerJwt()))
+        .perform(
+            delete("/api/proposals/" + proposalId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prop_ctrl_owner")))
         .andExpect(status().isNoContent());
 
     // Verify it's gone
     mockMvc
-        .perform(get("/api/proposals/" + proposalId).with(memberJwt()))
+        .perform(
+            get("/api/proposals/" + proposalId)
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_prop_ctrl_member")))
         .andExpect(status().isNotFound());
   }
 
@@ -240,7 +275,10 @@ class ProposalControllerTest {
     createProposal("Filtered Proposal", "HOURLY", null, null);
 
     mockMvc
-        .perform(get("/api/proposals").with(memberJwt()).param("status", "DRAFT"))
+        .perform(
+            get("/api/proposals")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_prop_ctrl_member"))
+                .param("status", "DRAFT"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray());
   }
@@ -252,7 +290,7 @@ class ProposalControllerTest {
     mockMvc
         .perform(
             post("/api/proposals")
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_prop_ctrl_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -270,7 +308,7 @@ class ProposalControllerTest {
     mockMvc
         .perform(
             post("/api/proposals")
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_prop_ctrl_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -287,7 +325,7 @@ class ProposalControllerTest {
     mockMvc
         .perform(
             post("/api/proposals")
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_prop_ctrl_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -303,7 +341,9 @@ class ProposalControllerTest {
   @Test
   void shouldReturn404ForNonexistentProposal() throws Exception {
     mockMvc
-        .perform(get("/api/proposals/" + UUID.randomUUID()).with(memberJwt()))
+        .perform(
+            get("/api/proposals/" + UUID.randomUUID())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_prop_ctrl_member")))
         .andExpect(status().isNotFound());
   }
 
@@ -312,7 +352,7 @@ class ProposalControllerTest {
     mockMvc
         .perform(
             post("/api/proposals")
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_prop_ctrl_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -331,7 +371,9 @@ class ProposalControllerTest {
     String proposalId = createProposal("Member Cannot Delete", "HOURLY", null, null);
 
     mockMvc
-        .perform(delete("/api/proposals/" + proposalId).with(memberJwt()))
+        .perform(
+            delete("/api/proposals/" + proposalId)
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_prop_ctrl_member")))
         .andExpect(status().isForbidden());
   }
 
@@ -340,7 +382,7 @@ class ProposalControllerTest {
     mockMvc
         .perform(
             post("/api/proposals")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_prop_ctrl_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -359,7 +401,9 @@ class ProposalControllerTest {
     String proposalId = createProposal("Admin Cannot Delete", "HOURLY", null, null);
 
     mockMvc
-        .perform(delete("/api/proposals/" + proposalId).with(adminJwt()))
+        .perform(
+            delete("/api/proposals/" + proposalId)
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_prop_ctrl_admin")))
         .andExpect(status().isForbidden());
   }
 
@@ -371,7 +415,7 @@ class ProposalControllerTest {
     mockMvc
         .perform(
             put("/api/proposals/" + proposalId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prop_ctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -388,7 +432,9 @@ class ProposalControllerTest {
     transitionToSent(proposalId);
 
     mockMvc
-        .perform(delete("/api/proposals/" + proposalId).with(ownerJwt()))
+        .perform(
+            delete("/api/proposals/" + proposalId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prop_ctrl_owner")))
         .andExpect(status().isConflict());
   }
 
@@ -401,7 +447,7 @@ class ProposalControllerTest {
     mockMvc
         .perform(
             put("/api/proposals/" + proposalId + "/milestones")
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_prop_ctrl_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -427,7 +473,7 @@ class ProposalControllerTest {
     mockMvc
         .perform(
             put("/api/proposals/" + proposalId + "/milestones")
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_prop_ctrl_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -447,7 +493,7 @@ class ProposalControllerTest {
     mockMvc
         .perform(
             put("/api/proposals/" + proposalId + "/team")
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_prop_ctrl_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -471,7 +517,7 @@ class ProposalControllerTest {
     mockMvc
         .perform(
             put("/api/proposals/" + proposalId + "/team")
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_prop_ctrl_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -489,7 +535,9 @@ class ProposalControllerTest {
   @Test
   void shouldReturnPipelineStats() throws Exception {
     mockMvc
-        .perform(get("/api/proposals/stats").with(adminJwt()))
+        .perform(
+            get("/api/proposals/stats")
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_prop_ctrl_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.totalDraft").isNumber())
         .andExpect(jsonPath("$.totalSent").isNumber())
@@ -503,7 +551,9 @@ class ProposalControllerTest {
   @Test
   void shouldRejectMemberFromStats() throws Exception {
     mockMvc
-        .perform(get("/api/proposals/stats").with(memberJwt()))
+        .perform(
+            get("/api/proposals/stats")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_prop_ctrl_member")))
         .andExpect(status().isForbidden());
   }
 
@@ -515,7 +565,9 @@ class ProposalControllerTest {
     createProposal("Customer Scoped Proposal", "HOURLY", null, null);
 
     mockMvc
-        .perform(get("/api/customers/" + customerId + "/proposals").with(memberJwt()))
+        .perform(
+            get("/api/customers/" + customerId + "/proposals")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_prop_ctrl_member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray())
         .andExpect(jsonPath("$.page.totalElements").isNumber());
@@ -525,13 +577,19 @@ class ProposalControllerTest {
 
   @Test
   void customRoleWithCapability_accessesProposalEndpoint_returns200() throws Exception {
-    mockMvc.perform(get("/api/proposals/stats").with(customRoleJwt())).andExpect(status().isOk());
+    mockMvc
+        .perform(
+            get("/api/proposals/stats")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_prop_314b_custom")))
+        .andExpect(status().isOk());
   }
 
   @Test
   void customRoleWithoutCapability_accessesProposalEndpoint_returns403() throws Exception {
     mockMvc
-        .perform(get("/api/proposals/stats").with(noCapabilityJwt()))
+        .perform(
+            get("/api/proposals/stats")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_prop_314b_nocap")))
         .andExpect(status().isForbidden());
   }
 
@@ -557,12 +615,12 @@ class ProposalControllerTest {
         mockMvc
             .perform(
                 post("/api/proposals")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prop_ctrl_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(json.toString()))
             .andExpect(status().isCreated())
             .andReturn();
-    return extractIdFromLocation(result);
+    return TestEntityHelper.extractIdFromLocation(result);
   }
 
   private String createCustomer(JwtRequestPostProcessor jwt) throws Exception {
@@ -581,12 +639,6 @@ class ProposalControllerTest {
     return JsonPath.read(result.getResponse().getContentAsString(), "$.id").toString();
   }
 
-  private String extractIdFromLocation(MvcResult result) {
-    String location = result.getResponse().getHeader("Location");
-    assert location != null : "Expected Location header to be present";
-    return location.substring(location.lastIndexOf('/') + 1);
-  }
-
   private void transitionToSent(String proposalId) {
     String schema =
         io.b2mash.b2b.b2bstrawman.provisioning.SchemaNameGenerator.generateSchemaName(ORG_ID);
@@ -594,64 +646,5 @@ class ProposalControllerTest {
         "UPDATE \"%s\".proposals SET status = 'SENT', sent_at = now() WHERE id = ?::uuid"
             .formatted(schema),
         proposalId);
-  }
-
-  private String syncMember(String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s", "clerkUserId": "%s", "email": "%s",
-                          "name": "%s", "avatarUrl": null, "orgRole": "%s"
-                        }
-                        """
-                            .formatted(ORG_ID, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_prop_ctrl_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor adminJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_prop_ctrl_admin").claim("o", Map.of("id", ORG_ID, "rol", "admin")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_prop_ctrl_member")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor customRoleJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_prop_314b_custom")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor noCapabilityJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_prop_314b_nocap")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 }

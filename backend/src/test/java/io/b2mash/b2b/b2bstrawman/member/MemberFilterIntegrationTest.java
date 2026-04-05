@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.member;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -11,7 +10,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMapping;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -20,7 +19,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -59,13 +57,17 @@ class MemberFilterIntegrationTest {
         ORG_ID, "user_existing_filter", "existing@test.com", "Existing User", null, "admin");
 
     // Make API request — MemberFilter resolves existing member
-    mockMvc.perform(get("/api/projects").with(existingMemberJwt())).andExpect(status().isOk());
+    mockMvc
+        .perform(get("/api/projects").with(TestJwtFactory.adminJwt(ORG_ID, "user_existing_filter")))
+        .andExpect(status().isOk());
   }
 
   @Test
   void shouldLazyCreateMemberForUnknownUser() throws Exception {
     // Make API request with user not in members table
-    mockMvc.perform(get("/api/projects").with(unknownUserJwt())).andExpect(status().isOk());
+    mockMvc
+        .perform(get("/api/projects").with(TestJwtFactory.memberJwt(ORG_ID, "user_lazy_create")))
+        .andExpect(status().isOk());
 
     // Verify member was lazy-created in tenant schema
     ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
@@ -105,10 +107,14 @@ class MemberFilterIntegrationTest {
   @Test
   void shouldCacheMemberAndNotDuplicateOnSecondRequest() throws Exception {
     // First request — lazy-creates and caches
-    mockMvc.perform(get("/api/projects").with(cacheTestJwt())).andExpect(status().isOk());
+    mockMvc
+        .perform(get("/api/projects").with(TestJwtFactory.memberJwt(ORG_ID, "user_cache_test")))
+        .andExpect(status().isOk());
 
     // Second request — hits cache
-    mockMvc.perform(get("/api/projects").with(cacheTestJwt())).andExpect(status().isOk());
+    mockMvc
+        .perform(get("/api/projects").with(TestJwtFactory.memberJwt(ORG_ID, "user_cache_test")))
+        .andExpect(status().isOk());
 
     // Verify exactly one member record exists (not duplicated)
     ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
@@ -121,20 +127,4 @@ class MemberFilterIntegrationTest {
 
   // --- JWT helpers ---
 
-  private JwtRequestPostProcessor existingMemberJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_existing_filter").claim("o", Map.of("id", ORG_ID, "rol", "admin")));
-  }
-
-  private JwtRequestPostProcessor unknownUserJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_lazy_create").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor cacheTestJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_cache_test").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
 }

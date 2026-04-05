@@ -1,12 +1,11 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -20,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -30,8 +28,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class LegalMigrationTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_v83_migration_test";
 
   @Autowired private MockMvc mockMvc;
@@ -45,7 +41,8 @@ class LegalMigrationTest {
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "V83 Migration Test Org", null);
 
-    syncMember(ORG_ID, "user_v83_owner", "v83_owner@test.com", "V83 Owner", "owner");
+    TestMemberHelper.syncMemberQuietly(
+        mockMvc, ORG_ID, "user_v83_owner", "v83_owner@test.com", "V83 Owner", "owner");
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
@@ -109,28 +106,5 @@ class LegalMigrationTest {
       assertThat(rs.next()).isTrue();
       assertThat(rs.getInt(1)).as("pg_trgm extension should be installed").isEqualTo(1);
     }
-  }
-
-  private void syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    mockMvc
-        .perform(
-            post("/internal/members/sync")
-                .header("X-API-KEY", API_KEY)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {
-                      "clerkOrgId": "%s",
-                      "clerkUserId": "%s",
-                      "email": "%s",
-                      "name": "%s",
-                      "avatarUrl": null,
-                      "orgRole": "%s"
-                    }
-                    """
-                        .formatted(orgId, clerkUserId, email, name, orgRole)))
-        .andExpect(status().isCreated());
   }
 }

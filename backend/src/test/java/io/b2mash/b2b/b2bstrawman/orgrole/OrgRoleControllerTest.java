@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.orgrole;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -14,6 +13,8 @@ import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -26,7 +27,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -36,8 +36,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class OrgRoleControllerTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_role_ctrl_test";
 
   @Autowired private MockMvc mockMvc;
@@ -55,9 +53,15 @@ class OrgRoleControllerTest {
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Role Ctrl Test Org", null);
 
-    ownerMemberId = syncMember("user_rc_owner", "rc_owner@test.com", "RC Owner", "owner");
-    adminMemberId = syncMember("user_rc_admin", "rc_admin@test.com", "RC Admin", "admin");
-    memberMemberId = syncMember("user_rc_member", "rc_member@test.com", "RC Member", "member");
+    ownerMemberId =
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_rc_owner", "rc_owner@test.com", "RC Owner", "owner");
+    adminMemberId =
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_rc_admin", "rc_admin@test.com", "RC Admin", "admin");
+    memberMemberId =
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_rc_member", "rc_member@test.com", "RC Member", "member");
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
@@ -66,7 +70,7 @@ class OrgRoleControllerTest {
   @Test
   void listRoles_returnsSystemAndCustomRoles() throws Exception {
     mockMvc
-        .perform(get("/api/org-roles").with(memberJwt()))
+        .perform(get("/api/org-roles").with(TestJwtFactory.memberJwt(ORG_ID, "user_rc_member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$.length()").value(org.hamcrest.Matchers.greaterThanOrEqualTo(3)));
@@ -75,7 +79,7 @@ class OrgRoleControllerTest {
   @Test
   void listRoles_includesMemberCount() throws Exception {
     mockMvc
-        .perform(get("/api/org-roles").with(ownerJwt()))
+        .perform(get("/api/org-roles").with(TestJwtFactory.ownerJwt(ORG_ID, "user_rc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[0].memberCount").exists());
   }
@@ -84,13 +88,14 @@ class OrgRoleControllerTest {
   void getRole_byId_returns200() throws Exception {
     var listResult =
         mockMvc
-            .perform(get("/api/org-roles").with(ownerJwt()))
+            .perform(get("/api/org-roles").with(TestJwtFactory.ownerJwt(ORG_ID, "user_rc_owner")))
             .andExpect(status().isOk())
             .andReturn();
     String firstId = JsonPath.read(listResult.getResponse().getContentAsString(), "$[0].id");
 
     mockMvc
-        .perform(get("/api/org-roles/" + firstId).with(ownerJwt()))
+        .perform(
+            get("/api/org-roles/" + firstId).with(TestJwtFactory.ownerJwt(ORG_ID, "user_rc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(firstId))
         .andExpect(jsonPath("$.name").isString())
@@ -102,7 +107,9 @@ class OrgRoleControllerTest {
   @Test
   void getRole_notFound_returns404() throws Exception {
     mockMvc
-        .perform(get("/api/org-roles/" + UUID.randomUUID()).with(ownerJwt()))
+        .perform(
+            get("/api/org-roles/" + UUID.randomUUID())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rc_owner")))
         .andExpect(status().isNotFound());
   }
 
@@ -111,7 +118,7 @@ class OrgRoleControllerTest {
     mockMvc
         .perform(
             post("/api/org-roles")
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_rc_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -135,7 +142,7 @@ class OrgRoleControllerTest {
     mockMvc
         .perform(
             post("/api/org-roles")
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_rc_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -146,7 +153,7 @@ class OrgRoleControllerTest {
     mockMvc
         .perform(
             post("/api/org-roles")
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_rc_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -160,7 +167,7 @@ class OrgRoleControllerTest {
     mockMvc
         .perform(
             post("/api/org-roles")
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_rc_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -174,7 +181,7 @@ class OrgRoleControllerTest {
     mockMvc
         .perform(
             post("/api/org-roles")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_rc_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -190,7 +197,7 @@ class OrgRoleControllerTest {
     mockMvc
         .perform(
             put("/api/org-roles/" + roleId)
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_rc_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -210,7 +217,7 @@ class OrgRoleControllerTest {
   void updateRole_systemRole_returns400() throws Exception {
     var listResult =
         mockMvc
-            .perform(get("/api/org-roles").with(ownerJwt()))
+            .perform(get("/api/org-roles").with(TestJwtFactory.ownerJwt(ORG_ID, "user_rc_owner")))
             .andExpect(status().isOk())
             .andReturn();
     List<Map<String, Object>> roles =
@@ -225,7 +232,7 @@ class OrgRoleControllerTest {
     mockMvc
         .perform(
             put("/api/org-roles/" + systemRoleId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -239,11 +246,14 @@ class OrgRoleControllerTest {
     String roleId = createCustomRole("Delete Me", Set.of());
 
     mockMvc
-        .perform(delete("/api/org-roles/" + roleId).with(ownerJwt()))
+        .perform(
+            delete("/api/org-roles/" + roleId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rc_owner")))
         .andExpect(status().isNoContent());
 
     mockMvc
-        .perform(get("/api/org-roles/" + roleId).with(ownerJwt()))
+        .perform(
+            get("/api/org-roles/" + roleId).with(TestJwtFactory.ownerJwt(ORG_ID, "user_rc_owner")))
         .andExpect(status().isNotFound());
   }
 
@@ -263,7 +273,9 @@ class OrgRoleControllerTest {
             });
 
     mockMvc
-        .perform(delete("/api/org-roles/" + roleId).with(ownerJwt()))
+        .perform(
+            delete("/api/org-roles/" + roleId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rc_owner")))
         .andExpect(status().isConflict());
   }
 
@@ -271,7 +283,7 @@ class OrgRoleControllerTest {
   void deleteRole_systemRole_returns400() throws Exception {
     var listResult =
         mockMvc
-            .perform(get("/api/org-roles").with(ownerJwt()))
+            .perform(get("/api/org-roles").with(TestJwtFactory.ownerJwt(ORG_ID, "user_rc_owner")))
             .andExpect(status().isOk())
             .andReturn();
     List<Map<String, Object>> roles =
@@ -284,37 +296,12 @@ class OrgRoleControllerTest {
             .orElseThrow();
 
     mockMvc
-        .perform(delete("/api/org-roles/" + systemRoleId).with(ownerJwt()))
+        .perform(
+            delete("/api/org-roles/" + systemRoleId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rc_owner")))
         .andExpect(status().isBadRequest());
   }
 
-  // --- Helper: sync member via internal API ---
-  private String syncMember(String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(ORG_ID, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  // --- Helper: create a custom role via API ---
   private String createCustomRole(String name, Set<String> capabilities) throws Exception {
     var body =
         """
@@ -334,27 +321,11 @@ class OrgRoleControllerTest {
         mockMvc
             .perform(
                 post("/api/org-roles")
-                    .with(adminJwt())
+                    .with(TestJwtFactory.adminJwt(ORG_ID, "user_rc_admin"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(body))
             .andExpect(status().isCreated())
             .andReturn();
     return JsonPath.read(result.getResponse().getContentAsString(), "$.id");
-  }
-
-  // --- JWT helpers ---
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_rc_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor adminJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_rc_admin").claim("o", Map.of("id", ORG_ID, "rol", "admin")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_rc_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 }

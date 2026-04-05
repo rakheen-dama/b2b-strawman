@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.member;
 
 import static org.hamcrest.Matchers.hasSize;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -9,10 +8,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -31,8 +30,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ProjectMemberIntegrationTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_pm_test";
   private static final String ORG_B_ID = "org_pm_test_b";
 
@@ -49,22 +46,34 @@ class ProjectMemberIntegrationTest {
     provisioningService.provisionTenant(ORG_ID, "PM Test Org", null);
     provisioningService.provisionTenant(ORG_B_ID, "PM Test Org B", null);
 
-    ownerMemberId = syncMember(ORG_ID, "user_pm_owner", "owner@test.com", "Owner", "owner");
-    adminMemberId = syncMember(ORG_ID, "user_pm_admin", "admin@test.com", "Admin", "admin");
-    memberMemberId = syncMember(ORG_ID, "user_pm_member", "member@test.com", "Member", "member");
-    extraMemberId = syncMember(ORG_ID, "user_pm_extra", "extra@test.com", "Extra", "member");
+    ownerMemberId =
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_pm_owner", "owner@test.com", "Owner", "owner");
+    adminMemberId =
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_pm_admin", "admin@test.com", "Admin", "admin");
+    memberMemberId =
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_pm_member", "member@test.com", "Member", "member");
+    extraMemberId =
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_pm_extra", "extra@test.com", "Extra", "member");
 
-    syncMember(ORG_B_ID, "user_pm_tenant_b", "tenantb@test.com", "Tenant B User", "member");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_B_ID, "user_pm_tenant_b", "tenantb@test.com", "Tenant B User", "member");
   }
 
   // --- Creator becomes lead ---
 
   @Test
   void creatorBecomesLeadOnProjectCreation() throws Exception {
-    var projectId = createProject(ownerJwt(), "Lead Test Project");
+    var projectId =
+        createProject(TestJwtFactory.ownerJwt(ORG_ID, "user_pm_owner"), "Lead Test Project");
 
     mockMvc
-        .perform(get("/api/projects/" + projectId + "/members").with(ownerJwt()))
+        .perform(
+            get("/api/projects/" + projectId + "/members")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pm_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$", hasSize(1)))
         .andExpect(jsonPath("$[0].memberId").value(ownerMemberId))
@@ -76,19 +85,22 @@ class ProjectMemberIntegrationTest {
 
   @Test
   void memberListIncludesOrgRoleForAdminAddedAsProjectMember() throws Exception {
-    var projectId = createProject(adminJwt(), "OrgRole Test Project");
+    var projectId =
+        createProject(TestJwtFactory.adminJwt(ORG_ID, "user_pm_admin"), "OrgRole Test Project");
 
     // Admin created the project (lead), add a regular member
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/members")
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_pm_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"memberId\": \"%s\"}".formatted(memberMemberId)))
         .andExpect(status().isCreated());
 
     mockMvc
-        .perform(get("/api/projects/" + projectId + "/members").with(adminJwt()))
+        .perform(
+            get("/api/projects/" + projectId + "/members")
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_pm_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$", hasSize(2)))
         .andExpect(
@@ -101,30 +113,34 @@ class ProjectMemberIntegrationTest {
 
   @Test
   void shouldAddMemberToProject() throws Exception {
-    var projectId = createProject(adminJwt(), "Add Member Test");
+    var projectId =
+        createProject(TestJwtFactory.adminJwt(ORG_ID, "user_pm_admin"), "Add Member Test");
 
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/members")
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_pm_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"memberId\": \"%s\"}".formatted(memberMemberId)))
         .andExpect(status().isCreated());
 
     mockMvc
-        .perform(get("/api/projects/" + projectId + "/members").with(memberJwt()))
+        .perform(
+            get("/api/projects/" + projectId + "/members")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_pm_member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$", hasSize(2)));
   }
 
   @Test
   void shouldReturn409WhenAddingDuplicateMember() throws Exception {
-    var projectId = createProject(adminJwt(), "Duplicate Test");
+    var projectId =
+        createProject(TestJwtFactory.adminJwt(ORG_ID, "user_pm_admin"), "Duplicate Test");
 
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/members")
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_pm_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"memberId\": \"%s\"}".formatted(memberMemberId)))
         .andExpect(status().isCreated());
@@ -132,7 +148,7 @@ class ProjectMemberIntegrationTest {
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/members")
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_pm_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"memberId\": \"%s\"}".formatted(memberMemberId)))
         .andExpect(status().isConflict());
@@ -140,12 +156,13 @@ class ProjectMemberIntegrationTest {
 
   @Test
   void shouldReturn404WhenAddingNonexistentMember() throws Exception {
-    var projectId = createProject(adminJwt(), "Nonexistent Member Test");
+    var projectId =
+        createProject(TestJwtFactory.adminJwt(ORG_ID, "user_pm_admin"), "Nonexistent Member Test");
 
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/members")
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_pm_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"memberId\": \"00000000-0000-0000-0000-000000000000\"}"))
         .andExpect(status().isNotFound());
@@ -155,44 +172,52 @@ class ProjectMemberIntegrationTest {
 
   @Test
   void shouldRemoveMemberFromProject() throws Exception {
-    var projectId = createProject(adminJwt(), "Remove Member Test");
+    var projectId =
+        createProject(TestJwtFactory.adminJwt(ORG_ID, "user_pm_admin"), "Remove Member Test");
 
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/members")
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_pm_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"memberId\": \"%s\"}".formatted(memberMemberId)))
         .andExpect(status().isCreated());
 
     mockMvc
         .perform(
-            delete("/api/projects/" + projectId + "/members/" + memberMemberId).with(adminJwt()))
+            delete("/api/projects/" + projectId + "/members/" + memberMemberId)
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_pm_admin")))
         .andExpect(status().isNoContent());
 
     mockMvc
-        .perform(get("/api/projects/" + projectId + "/members").with(adminJwt()))
+        .perform(
+            get("/api/projects/" + projectId + "/members")
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_pm_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$", hasSize(1)));
   }
 
   @Test
   void shouldReturn400WhenRemovingLead() throws Exception {
-    var projectId = createProject(adminJwt(), "Remove Lead Test");
+    var projectId =
+        createProject(TestJwtFactory.adminJwt(ORG_ID, "user_pm_admin"), "Remove Lead Test");
 
     mockMvc
         .perform(
-            delete("/api/projects/" + projectId + "/members/" + adminMemberId).with(adminJwt()))
+            delete("/api/projects/" + projectId + "/members/" + adminMemberId)
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_pm_admin")))
         .andExpect(status().isBadRequest());
   }
 
   @Test
   void shouldReturn404WhenRemovingNonMember() throws Exception {
-    var projectId = createProject(adminJwt(), "Remove Non-Member Test");
+    var projectId =
+        createProject(TestJwtFactory.adminJwt(ORG_ID, "user_pm_admin"), "Remove Non-Member Test");
 
     mockMvc
         .perform(
-            delete("/api/projects/" + projectId + "/members/" + extraMemberId).with(adminJwt()))
+            delete("/api/projects/" + projectId + "/members/" + extraMemberId)
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_pm_admin")))
         .andExpect(status().isNotFound());
   }
 
@@ -200,13 +225,14 @@ class ProjectMemberIntegrationTest {
 
   @Test
   void shouldTransferLead() throws Exception {
-    var projectId = createProject(adminJwt(), "Transfer Lead Test");
+    var projectId =
+        createProject(TestJwtFactory.adminJwt(ORG_ID, "user_pm_admin"), "Transfer Lead Test");
 
     // Add another member
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/members")
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_pm_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"memberId\": \"%s\"}".formatted(memberMemberId)))
         .andExpect(status().isCreated());
@@ -215,14 +241,16 @@ class ProjectMemberIntegrationTest {
     mockMvc
         .perform(
             put("/api/projects/" + projectId + "/members/" + memberMemberId + "/role")
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_pm_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"role\": \"lead\"}"))
         .andExpect(status().isNoContent());
 
     // Verify roles swapped
     mockMvc
-        .perform(get("/api/projects/" + projectId + "/members").with(adminJwt()))
+        .perform(
+            get("/api/projects/" + projectId + "/members")
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_pm_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$", hasSize(2)))
         .andExpect(
@@ -235,12 +263,14 @@ class ProjectMemberIntegrationTest {
 
   @Test
   void shouldReturn404WhenTransferTargetNotOnProject() throws Exception {
-    var projectId = createProject(adminJwt(), "Transfer Not On Project Test");
+    var projectId =
+        createProject(
+            TestJwtFactory.adminJwt(ORG_ID, "user_pm_admin"), "Transfer Not On Project Test");
 
     mockMvc
         .perform(
             put("/api/projects/" + projectId + "/members/" + memberMemberId + "/role")
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_pm_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"role\": \"lead\"}"))
         .andExpect(status().isNotFound());
@@ -251,7 +281,7 @@ class ProjectMemberIntegrationTest {
   @Test
   void shouldListOrgMembers() throws Exception {
     mockMvc
-        .perform(get("/api/members").with(memberJwt()))
+        .perform(get("/api/members").with(TestJwtFactory.memberJwt(ORG_ID, "user_pm_member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$[0].id").exists())
@@ -269,21 +299,25 @@ class ProjectMemberIntegrationTest {
 
   @Test
   void memberCanListProjectMembers() throws Exception {
-    var projectId = createProject(ownerJwt(), "RBAC List Test");
+    var projectId =
+        createProject(TestJwtFactory.ownerJwt(ORG_ID, "user_pm_owner"), "RBAC List Test");
 
     mockMvc
-        .perform(get("/api/projects/" + projectId + "/members").with(memberJwt()))
+        .perform(
+            get("/api/projects/" + projectId + "/members")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_pm_member")))
         .andExpect(status().isOk());
   }
 
   @Test
   void memberCanAddMemberToProject() throws Exception {
-    var projectId = createProject(ownerJwt(), "RBAC Add Test");
+    var projectId =
+        createProject(TestJwtFactory.ownerJwt(ORG_ID, "user_pm_owner"), "RBAC Add Test");
 
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/members")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_pm_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"memberId\": \"%s\"}".formatted(extraMemberId)))
         .andExpect(status().isCreated());
@@ -300,11 +334,14 @@ class ProjectMemberIntegrationTest {
 
   @Test
   void projectMembersAreIsolatedBetweenTenants() throws Exception {
-    var projectId = createProject(ownerJwt(), "Tenant Isolation PM");
+    var projectId =
+        createProject(TestJwtFactory.ownerJwt(ORG_ID, "user_pm_owner"), "Tenant Isolation PM");
 
     // Tenant B cannot see tenant A's project members
     mockMvc
-        .perform(get("/api/projects/" + projectId + "/members").with(tenantBMemberJwt()))
+        .perform(
+            get("/api/projects/" + projectId + "/members")
+                .with(TestJwtFactory.memberJwt(ORG_B_ID, "user_pm_tenant_b")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$", hasSize(0)));
   }
@@ -313,40 +350,13 @@ class ProjectMemberIntegrationTest {
   void orgMembersAreIsolatedBetweenTenants() throws Exception {
     // Tenant B should see only tenant B's members
     mockMvc
-        .perform(get("/api/members").with(tenantBMemberJwt()))
+        .perform(get("/api/members").with(TestJwtFactory.memberJwt(ORG_B_ID, "user_pm_tenant_b")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$", hasSize(1)))
         .andExpect(jsonPath("$[0].email").value("tenantb@test.com"));
   }
 
   // --- Helpers ---
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
 
   private String createProject(JwtRequestPostProcessor jwt, String name) throws Exception {
     var result =
@@ -361,26 +371,5 @@ class ProjectMemberIntegrationTest {
 
     String location = result.getResponse().getHeader("Location");
     return location.substring(location.lastIndexOf('/') + 1);
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_pm_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor adminJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_pm_admin").claim("o", Map.of("id", ORG_ID, "rol", "admin")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_pm_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor tenantBMemberJwt() {
-    return jwt()
-        .jwt(
-            j -> j.subject("user_pm_tenant_b").claim("o", Map.of("id", ORG_B_ID, "rol", "member")));
   }
 }

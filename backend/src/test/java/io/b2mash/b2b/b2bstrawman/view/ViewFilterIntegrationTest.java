@@ -1,13 +1,10 @@
 package io.b2mash.b2b.b2bstrawman.view;
 
 import static io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.createActiveCustomer;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
@@ -23,6 +20,8 @@ import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskPriority;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.task.TaskStatus;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -33,8 +32,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -45,8 +42,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ViewFilterIntegrationTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_vf_test";
 
   @Autowired private MockMvc mockMvc;
@@ -80,7 +75,8 @@ class ViewFilterIntegrationTest {
 
     memberIdOwner =
         UUID.fromString(
-            syncMember(ORG_ID, "user_vf_owner", "vf_owner@test.com", "VF Owner", "owner"));
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, "user_vf_owner", "vf_owner@test.com", "VF Owner", "owner"));
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
@@ -185,7 +181,10 @@ class ViewFilterIntegrationTest {
     var viewId = createSavedView("PROJECT", "Search Acme", Map.of("search", "Acme"));
 
     mockMvc
-        .perform(get("/api/projects").param("view", viewId).with(ownerJwt()))
+        .perform(
+            get("/api/projects")
+                .param("view", viewId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_vf_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(1))
         .andExpect(jsonPath("$[0].name").value("Acme Corp Case"));
@@ -202,7 +201,10 @@ class ViewFilterIntegrationTest {
                 Map.of("court", Map.of("op", "eq", "value", "high_court_gauteng"))));
 
     mockMvc
-        .perform(get("/api/projects").param("view", viewId).with(ownerJwt()))
+        .perform(
+            get("/api/projects")
+                .param("view", viewId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_vf_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(2));
   }
@@ -230,7 +232,10 @@ class ViewFilterIntegrationTest {
             "PROJECT", "Both Tags Filter", Map.of("tags", List.of(vipSlug[0], urgentSlug[0])));
 
     mockMvc
-        .perform(get("/api/projects").param("view", viewId).with(ownerJwt()))
+        .perform(
+            get("/api/projects")
+                .param("view", viewId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_vf_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(1))
         .andExpect(jsonPath("$[0].name").value("Acme Corp Case"));
@@ -243,7 +248,10 @@ class ViewFilterIntegrationTest {
 
     // Empty filters → whereClause is empty → falls through to existing logic
     mockMvc
-        .perform(get("/api/projects").param("view", viewId).with(ownerJwt()))
+        .perform(
+            get("/api/projects")
+                .param("view", viewId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_vf_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(3));
   }
@@ -253,7 +261,10 @@ class ViewFilterIntegrationTest {
     var nonExistentId = UUID.randomUUID().toString();
 
     mockMvc
-        .perform(get("/api/projects").param("view", nonExistentId).with(ownerJwt()))
+        .perform(
+            get("/api/projects")
+                .param("view", nonExistentId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_vf_owner")))
         .andExpect(status().isNotFound());
   }
 
@@ -265,7 +276,10 @@ class ViewFilterIntegrationTest {
         createSavedView("CUSTOMER", "Active Customers", Map.of("status", List.of("ACTIVE")));
 
     mockMvc
-        .perform(get("/api/customers").param("view", viewId).with(ownerJwt()))
+        .perform(
+            get("/api/customers")
+                .param("view", viewId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_vf_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(1))
         .andExpect(jsonPath("$[0].name").value("Active Customer"));
@@ -276,7 +290,10 @@ class ViewFilterIntegrationTest {
     var viewId = createSavedView("CUSTOMER", "Search Archived", Map.of("search", "Archived"));
 
     mockMvc
-        .perform(get("/api/customers").param("view", viewId).with(ownerJwt()))
+        .perform(
+            get("/api/customers")
+                .param("view", viewId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_vf_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(1))
         .andExpect(jsonPath("$[0].name").value("Archived Customer"));
@@ -292,7 +309,7 @@ class ViewFilterIntegrationTest {
         .perform(
             get("/api/projects/{projectId}/tasks", projectActiveId)
                 .param("view", viewId)
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_vf_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(1))
         .andExpect(jsonPath("$[0].title").value("Open Task"));
@@ -306,7 +323,7 @@ class ViewFilterIntegrationTest {
         .perform(
             get("/api/projects/{projectId}/tasks", projectActiveId)
                 .param("view", viewId)
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_vf_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(1))
         .andExpect(jsonPath("$[0].title").value("Done Task"));
@@ -327,18 +344,16 @@ class ViewFilterIntegrationTest {
                 Map.of("court", Map.of("op", "eq", "value", "magistrate_court"))));
 
     mockMvc
-        .perform(get("/api/projects").param("view", viewId).with(ownerJwt()))
+        .perform(
+            get("/api/projects")
+                .param("view", viewId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_vf_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(1))
         .andExpect(jsonPath("$[0].name").value("Beta Inc Case"));
   }
 
   // --- Helpers ---
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_vf_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
 
   private String createSavedView(String entityType, String name, Map<String, Object> filters) {
     var idHolder = new String[1];
@@ -365,31 +380,5 @@ class ViewFilterIntegrationTest {
         .where(RequestScopes.MEMBER_ID, memberId)
         .where(RequestScopes.ORG_ROLE, orgRole)
         .run(action);
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

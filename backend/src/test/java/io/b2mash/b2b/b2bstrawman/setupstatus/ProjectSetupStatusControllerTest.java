@@ -1,18 +1,16 @@
 package io.b2mash.b2b.b2bstrawman.setupstatus;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
@@ -24,8 +22,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -36,8 +32,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ProjectSetupStatusControllerTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_setupstatus_test";
   private static final String ORG_ID_B = "org_setupstatus_test_b";
 
@@ -61,7 +55,8 @@ class ProjectSetupStatusControllerTest {
 
     memberIdOwner =
         UUID.fromString(
-            syncMember(
+            TestMemberHelper.syncMember(
+                mockMvc,
                 ORG_ID,
                 "user_setupstatus_owner",
                 "setupstatus_owner@test.com",
@@ -87,7 +82,8 @@ class ProjectSetupStatusControllerTest {
 
     memberIdOwnerB =
         UUID.fromString(
-            syncMember(
+            TestMemberHelper.syncMember(
+                mockMvc,
                 ORG_ID_B,
                 "user_setupstatus_owner_b",
                 "setupstatus_owner_b@test.com",
@@ -114,7 +110,9 @@ class ProjectSetupStatusControllerTest {
   @Order(1)
   void getSetupStatus_returns200_withExpectedShape() throws Exception {
     mockMvc
-        .perform(get("/api/projects/" + projectId + "/setup-status").with(ownerJwt()))
+        .perform(
+            get("/api/projects/" + projectId + "/setup-status")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_setupstatus_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.projectId").value(projectId.toString()))
         .andExpect(jsonPath("$.customerAssigned").isBoolean())
@@ -132,7 +130,9 @@ class ProjectSetupStatusControllerTest {
   @Order(2)
   void getSetupStatus_freshProject_hasFalseChecks() throws Exception {
     mockMvc
-        .perform(get("/api/projects/" + projectId + "/setup-status").with(ownerJwt()))
+        .perform(
+            get("/api/projects/" + projectId + "/setup-status")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_setupstatus_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.customerAssigned").value(false))
         .andExpect(jsonPath("$.budgetConfigured").value(false))
@@ -145,7 +145,9 @@ class ProjectSetupStatusControllerTest {
   void getSetupStatus_nonExistentProject_returns404() throws Exception {
     var nonExistent = UUID.randomUUID();
     mockMvc
-        .perform(get("/api/projects/" + nonExistent + "/setup-status").with(ownerJwt()))
+        .perform(
+            get("/api/projects/" + nonExistent + "/setup-status")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_setupstatus_owner")))
         .andExpect(status().isNotFound());
   }
 
@@ -162,51 +164,9 @@ class ProjectSetupStatusControllerTest {
   void getSetupStatus_crossTenant_returns404() throws Exception {
     // Tenant B tries to access Tenant A's project — should get 404 (schema isolation)
     mockMvc
-        .perform(get("/api/projects/" + projectId + "/setup-status").with(ownerJwtTenantB()))
+        .perform(
+            get("/api/projects/" + projectId + "/setup-status")
+                .with(TestJwtFactory.ownerJwt(ORG_ID_B, "user_setupstatus_owner_b")))
         .andExpect(status().isNotFound());
-  }
-
-  // --- Helpers ---
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_setupstatus_owner")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor ownerJwtTenantB() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_setupstatus_owner_b")
-                    .claim("o", Map.of("id", ORG_ID_B, "rol", "owner")));
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

@@ -1,12 +1,9 @@
 package io.b2mash.b2b.b2bstrawman.report;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.billingrate.BillingRateService;
 import io.b2mash.b2b.b2bstrawman.costrate.CostRateService;
@@ -16,10 +13,11 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.TaskService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
@@ -31,8 +29,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -69,7 +65,8 @@ class ProjectProfitabilityTest {
 
     memberIdOwner =
         UUID.fromString(
-            syncMember(
+            TestMemberHelper.syncMember(
+                mockMvc,
                 ORG_ID,
                 "user_projprofit_owner",
                 "projprofit_owner@test.com",
@@ -77,7 +74,8 @@ class ProjectProfitabilityTest {
                 "owner"));
     memberIdMember =
         UUID.fromString(
-            syncMember(
+            TestMemberHelper.syncMember(
+                mockMvc,
                 ORG_ID,
                 "user_projprofit_member",
                 "projprofit_member@test.com",
@@ -177,7 +175,9 @@ class ProjectProfitabilityTest {
   @Order(1)
   void projectWithAllBillableFieldsReturnsCorrectRevenue() throws Exception {
     mockMvc
-        .perform(get("/api/projects/{projectId}/profitability", projectId).with(ownerJwt()))
+        .perform(
+            get("/api/projects/{projectId}/profitability", projectId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_projprofit_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.projectId").value(projectId.toString()))
         .andExpect(jsonPath("$.projectName").value("Profit Test Project"))
@@ -193,7 +193,9 @@ class ProjectProfitabilityTest {
   @Order(2)
   void projectWithMixedBillableNonBillableShowsCorrectHours() throws Exception {
     mockMvc
-        .perform(get("/api/projects/{projectId}/profitability", projectId).with(ownerJwt()))
+        .perform(
+            get("/api/projects/{projectId}/profitability", projectId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_projprofit_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.currencies[0].totalBillableHours").value(2.5))
         .andExpect(jsonPath("$.currencies[0].totalNonBillableHours").value(1.0))
@@ -209,7 +211,7 @@ class ProjectProfitabilityTest {
             get("/api/projects/{projectId}/profitability", projectId)
                 .param("from", "2025-01-01")
                 .param("to", "2025-01-31")
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_projprofit_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.currencies[0].totalBillableHours").value(2.0))
         .andExpect(jsonPath("$.currencies[0].totalNonBillableHours").value(1.0))
@@ -224,7 +226,9 @@ class ProjectProfitabilityTest {
     // margin: 250 - 175 = 75
     // marginPercent: 75 / 250 * 100 = 30.00
     mockMvc
-        .perform(get("/api/projects/{projectId}/profitability", projectId).with(ownerJwt()))
+        .perform(
+            get("/api/projects/{projectId}/profitability", projectId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_projprofit_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.currencies[0].costValue").isNumber())
         .andExpect(jsonPath("$.currencies[0].margin").isNumber())
@@ -235,7 +239,9 @@ class ProjectProfitabilityTest {
   @Order(5)
   void emptyProjectReturnsEmptyCurrencies() throws Exception {
     mockMvc
-        .perform(get("/api/projects/{projectId}/profitability", projectIdEmpty).with(ownerJwt()))
+        .perform(
+            get("/api/projects/{projectId}/profitability", projectIdEmpty)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_projprofit_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.projectId").value(projectIdEmpty.toString()))
         .andExpect(jsonPath("$.currencies").isArray())
@@ -247,7 +253,9 @@ class ProjectProfitabilityTest {
   void nonProjectMemberRejectedWith404() throws Exception {
     // memberIdMember is not a member of the project — should get 404 (security-by-obscurity)
     mockMvc
-        .perform(get("/api/projects/{projectId}/profitability", projectId).with(memberJwt()))
+        .perform(
+            get("/api/projects/{projectId}/profitability", projectId)
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_projprofit_member", "member")))
         .andExpect(status().isNotFound());
   }
 
@@ -256,7 +264,9 @@ class ProjectProfitabilityTest {
   void noDateParamsReturnsAllTimeData() throws Exception {
     // Without from/to, all 3 entries should be included
     mockMvc
-        .perform(get("/api/projects/{projectId}/profitability", projectId).with(ownerJwt()))
+        .perform(
+            get("/api/projects/{projectId}/profitability", projectId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_projprofit_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.currencies[0].totalHours").value(3.5));
   }
@@ -267,49 +277,5 @@ class ProjectProfitabilityTest {
     mockMvc
         .perform(get("/api/projects/{projectId}/profitability", projectId))
         .andExpect(status().isUnauthorized());
-  }
-
-  // --- Helpers ---
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_projprofit_owner")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_projprofit_member")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                {
-                  "clerkOrgId": "%s",
-                  "clerkUserId": "%s",
-                  "email": "%s",
-                  "name": "%s",
-                  "avatarUrl": null,
-                  "orgRole": "%s"
-                }
-                """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

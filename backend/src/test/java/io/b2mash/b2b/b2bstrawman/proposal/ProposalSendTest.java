@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.proposal;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -11,7 +10,9 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.SchemaNameGenerator;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -25,7 +26,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -33,8 +33,6 @@ import org.springframework.test.web.servlet.MvcResult;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ProposalSendTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_proposal_send_test";
 
   @Autowired private MockMvc mockMvc;
@@ -52,15 +50,36 @@ class ProposalSendTest {
     provisioningService.provisionTenant(ORG_ID, "Proposal Send Test Org", null);
 
     memberIdOwner =
-        syncMember("user_prop_send_owner", "prop_send_owner@test.com", "SEND Owner", "owner");
-    syncMember("user_prop_send_admin", "prop_send_admin@test.com", "SEND Admin", "admin");
-    syncMember("user_prop_send_member", "prop_send_member@test.com", "SEND Member", "member");
+        TestMemberHelper.syncMember(
+            mockMvc,
+            ORG_ID,
+            "user_prop_send_owner",
+            "prop_send_owner@test.com",
+            "SEND Owner",
+            "owner");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_prop_send_admin", "prop_send_admin@test.com", "SEND Admin", "admin");
+    TestMemberHelper.syncMember(
+        mockMvc,
+        ORG_ID,
+        "user_prop_send_member",
+        "prop_send_member@test.com",
+        "SEND Member",
+        "member");
 
-    customerId = createCustomer(ownerJwt(), "Send Test Customer", "send-customer@test.com");
+    customerId =
+        createCustomer(
+            TestJwtFactory.ownerJwt(ORG_ID, "user_prop_send_owner"),
+            "Send Test Customer",
+            "send-customer@test.com");
     fillPrerequisiteFields(customerId);
     portalContactId = createPortalContact(customerId, "contact@send-test.com", "Send Contact");
 
-    secondCustomerId = createCustomer(ownerJwt(), "Second Customer", "second-customer@test.com");
+    secondCustomerId =
+        createCustomer(
+            TestJwtFactory.ownerJwt(ORG_ID, "user_prop_send_owner"),
+            "Second Customer",
+            "second-customer@test.com");
     fillPrerequisiteFields(secondCustomerId);
     secondCustomerContactId =
         createPortalContact(secondCustomerId, "contact2@send-test.com", "Second Contact");
@@ -75,7 +94,7 @@ class ProposalSendTest {
     mockMvc
         .perform(
             post("/api/proposals/{id}/send", proposalId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prop_send_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"portalContactId\": \"%s\"}".formatted(portalContactId)))
         .andExpect(status().isOk())
@@ -92,7 +111,7 @@ class ProposalSendTest {
         .perform(
             org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put(
                     "/api/proposals/{id}/milestones", proposalId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prop_send_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -106,7 +125,7 @@ class ProposalSendTest {
     mockMvc
         .perform(
             post("/api/proposals/{id}/send", proposalId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prop_send_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"portalContactId\": \"%s\"}".formatted(portalContactId)))
         .andExpect(status().isOk())
@@ -120,7 +139,7 @@ class ProposalSendTest {
     mockMvc
         .perform(
             post("/api/proposals/{id}/send", proposalId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prop_send_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"portalContactId\": \"%s\"}".formatted(portalContactId)))
         .andExpect(status().isOk())
@@ -134,7 +153,7 @@ class ProposalSendTest {
     mockMvc
         .perform(
             post("/api/proposals/{id}/send", proposalId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prop_send_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"portalContactId\": \"%s\"}".formatted(portalContactId)))
         .andExpect(status().isOk())
@@ -148,7 +167,7 @@ class ProposalSendTest {
     mockMvc
         .perform(
             post("/api/proposals/{id}/send", proposalId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prop_send_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"portalContactId\": \"%s\"}".formatted(portalContactId)))
         .andExpect(status().isOk());
@@ -172,7 +191,7 @@ class ProposalSendTest {
     mockMvc
         .perform(
             post("/api/proposals/{id}/send", proposalId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prop_send_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"portalContactId\": \"%s\"}".formatted(portalContactId)))
         .andExpect(status().isOk());
@@ -181,7 +200,7 @@ class ProposalSendTest {
     mockMvc
         .perform(
             post("/api/proposals/{id}/send", proposalId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prop_send_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"portalContactId\": \"%s\"}".formatted(portalContactId)))
         .andExpect(status().isConflict());
@@ -195,7 +214,7 @@ class ProposalSendTest {
     mockMvc
         .perform(
             post("/api/proposals/{id}/send", proposalId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prop_send_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"portalContactId\": \"%s\"}".formatted(portalContactId)))
         .andExpect(status().isBadRequest());
@@ -208,7 +227,7 @@ class ProposalSendTest {
     mockMvc
         .perform(
             post("/api/proposals/{id}/send", proposalId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prop_send_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"portalContactId\": \"%s\"}".formatted(UUID.randomUUID())))
         .andExpect(status().isNotFound());
@@ -222,7 +241,7 @@ class ProposalSendTest {
     mockMvc
         .perform(
             post("/api/proposals/{id}/send", proposalId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prop_send_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"portalContactId\": \"%s\"}".formatted(secondCustomerContactId)))
         .andExpect(status().isBadRequest());
@@ -243,7 +262,7 @@ class ProposalSendTest {
     mockMvc
         .perform(
             post("/api/proposals/{id}/send", proposalId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prop_send_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"portalContactId\": \"%s\"}".formatted(portalContactId)))
         .andExpect(status().isBadRequest());
@@ -258,7 +277,7 @@ class ProposalSendTest {
     mockMvc
         .perform(
             post("/api/proposals/{id}/send", proposalId)
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_prop_send_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"portalContactId\": \"%s\"}".formatted(portalContactId)))
         .andExpect(status().isForbidden());
@@ -272,14 +291,16 @@ class ProposalSendTest {
     mockMvc
         .perform(
             post("/api/proposals/{id}/send", proposalId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prop_send_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"portalContactId\": \"%s\"}".formatted(portalContactId)))
         .andExpect(status().isOk());
 
     // Try to withdraw with member — should fail 403
     mockMvc
-        .perform(post("/api/proposals/{id}/withdraw", proposalId).with(memberJwt()))
+        .perform(
+            post("/api/proposals/{id}/withdraw", proposalId)
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_prop_send_member")))
         .andExpect(status().isForbidden());
   }
 
@@ -293,14 +314,16 @@ class ProposalSendTest {
     mockMvc
         .perform(
             post("/api/proposals/{id}/send", proposalId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prop_send_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"portalContactId\": \"%s\"}".formatted(portalContactId)))
         .andExpect(status().isOk());
 
     // Withdraw
     mockMvc
-        .perform(post("/api/proposals/{id}/withdraw", proposalId).with(ownerJwt()))
+        .perform(
+            post("/api/proposals/{id}/withdraw", proposalId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prop_send_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("DRAFT"))
         .andExpect(jsonPath("$.sentAt").isEmpty());
@@ -333,12 +356,12 @@ class ProposalSendTest {
         mockMvc
             .perform(
                 post("/api/proposals")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prop_send_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(json.toString()))
             .andExpect(status().isCreated())
             .andReturn();
-    return extractIdFromLocation(result);
+    return TestEntityHelper.extractIdFromLocation(result);
   }
 
   private String createProposalWithRetainer(
@@ -372,12 +395,12 @@ class ProposalSendTest {
         mockMvc
             .perform(
                 post("/api/proposals")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prop_send_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(json))
             .andExpect(status().isCreated())
             .andReturn();
-    return extractIdFromLocation(result);
+    return TestEntityHelper.extractIdFromLocation(result);
   }
 
   private String createProposalWithoutContent(String title, String feeModel) throws Exception {
@@ -391,12 +414,12 @@ class ProposalSendTest {
         mockMvc
             .perform(
                 post("/api/proposals")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prop_send_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(json))
             .andExpect(status().isCreated())
             .andReturn();
-    return extractIdFromLocation(result);
+    return TestEntityHelper.extractIdFromLocation(result);
   }
 
   private String createCustomer(JwtRequestPostProcessor jwt, String name, String email)
@@ -431,48 +454,6 @@ class ProposalSendTest {
         email,
         displayName);
     return contactId;
-  }
-
-  private String extractIdFromLocation(MvcResult result) {
-    String location = result.getResponse().getHeader("Location");
-    assert location != null : "Expected Location header to be present";
-    return location.substring(location.lastIndexOf('/') + 1);
-  }
-
-  private String syncMember(String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s", "clerkUserId": "%s", "email": "%s",
-                          "name": "%s", "avatarUrl": null, "orgRole": "%s"
-                        }
-                        """
-                            .formatted(ORG_ID, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_prop_send_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_prop_send_member")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 
   private void fillPrerequisiteFields(String customerIdStr) {

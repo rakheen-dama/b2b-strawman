@@ -2,7 +2,6 @@ package io.b2mash.b2b.b2bstrawman.tax;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -13,7 +12,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -25,7 +25,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -51,20 +50,24 @@ class TaxRateControllerIntegrationTest {
     provisioningService.provisionTenant(ORG_ID, "Tax Rate Ctrl Test Org", null);
 
     // Sync members
-    syncMember(ORG_ID, "user_tax_owner", "tax_owner@test.com", "Tax Owner", "owner");
-    syncMember(ORG_ID, "user_tax_admin", "tax_admin@test.com", "Tax Admin", "admin");
-    syncMember(ORG_ID, "user_tax_member", "tax_member@test.com", "Tax Member", "member");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_tax_owner", "tax_owner@test.com", "Tax Owner", "owner");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_tax_admin", "tax_admin@test.com", "Tax Admin", "admin");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_tax_member", "tax_member@test.com", "Tax Member", "member");
 
     // Provision Tenant B for isolation test
     provisioningService.provisionTenant(ORG_ID_B, "Tax Rate Ctrl Test Org B", null);
-    syncMember(ORG_ID_B, "user_tax_owner_b", "tax_owner_b@test.com", "Tax Owner B", "owner");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID_B, "user_tax_owner_b", "tax_owner_b@test.com", "Tax Owner B", "owner");
   }
 
   @Test
   @Order(1)
   void get_listsTaxRates_returns200() throws Exception {
     mockMvc
-        .perform(get("/api/tax-rates").with(ownerJwt()))
+        .perform(get("/api/tax-rates").with(TestJwtFactory.ownerJwt(ORG_ID, "user_tax_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$.length()").value(greaterThanOrEqualTo(3))); // at least seed data
@@ -77,7 +80,7 @@ class TaxRateControllerIntegrationTest {
         mockMvc
             .perform(
                 post("/api/tax-rates")
-                    .with(adminJwt())
+                    .with(TestJwtFactory.adminJwt(ORG_ID, "user_tax_admin"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -105,7 +108,7 @@ class TaxRateControllerIntegrationTest {
     mockMvc
         .perform(
             post("/api/tax-rates")
-                .with(memberJwt())
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_tax_member", "member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -126,7 +129,7 @@ class TaxRateControllerIntegrationTest {
     mockMvc
         .perform(
             post("/api/tax-rates")
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_tax_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -148,7 +151,7 @@ class TaxRateControllerIntegrationTest {
     mockMvc
         .perform(
             put("/api/tax-rates/" + createdRateId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tax_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -174,7 +177,7 @@ class TaxRateControllerIntegrationTest {
         mockMvc
             .perform(
                 post("/api/tax-rates")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tax_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -192,7 +195,9 @@ class TaxRateControllerIntegrationTest {
     var rateId = JsonPath.read(result.getResponse().getContentAsString(), "$.id").toString();
 
     mockMvc
-        .perform(delete("/api/tax-rates/" + rateId).with(ownerJwt()))
+        .perform(
+            delete("/api/tax-rates/" + rateId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tax_owner")))
         .andExpect(status().isNoContent());
   }
 
@@ -201,58 +206,10 @@ class TaxRateControllerIntegrationTest {
   void tenantIsolation_taxRateInTenantANotVisibleInTenantB() throws Exception {
     // Tenant B should have its own seed rates, not Tenant A's custom rates
     mockMvc
-        .perform(get("/api/tax-rates").with(ownerJwtTenantB()))
+        .perform(get("/api/tax-rates").with(TestJwtFactory.ownerJwt(ORG_ID_B, "user_tax_owner_b")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         // Tenant B has its own 3 seed rates; the "Updated VAT" from Tenant A is not visible
         .andExpect(jsonPath("$[?(@.name == 'Updated VAT')]").isEmpty());
-  }
-
-  // --- Helpers ---
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_tax_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor adminJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_tax_admin").claim("o", Map.of("id", ORG_ID, "rol", "admin")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_tax_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor ownerJwtTenantB() {
-    return jwt()
-        .jwt(j -> j.subject("user_tax_owner_b").claim("o", Map.of("id", ORG_ID_B, "rol", "owner")));
   }
 }

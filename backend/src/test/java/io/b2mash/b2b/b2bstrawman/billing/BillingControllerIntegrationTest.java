@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.billing;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -10,7 +9,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -19,7 +19,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -41,7 +40,8 @@ class BillingControllerIntegrationTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Billing Ctrl Test Org", null);
-    syncMember(ORG_ID, "user_ctrl_owner", "owner@test.com", "Owner", "owner");
+    TestMemberHelper.syncMemberQuietly(
+        mockMvc, ORG_ID, "user_ctrl_owner", "owner@test.com", "Owner", "owner");
   }
 
   // --- GET /api/billing/subscription ---
@@ -49,7 +49,9 @@ class BillingControllerIntegrationTest {
   @Test
   void getSubscription_returnsTrialingStatus() throws Exception {
     mockMvc
-        .perform(get("/api/billing/subscription").with(ownerJwt()))
+        .perform(
+            get("/api/billing/subscription")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("TRIALING"))
         .andExpect(jsonPath("$.canSubscribe").value(true))
@@ -75,7 +77,9 @@ class BillingControllerIntegrationTest {
 
     try {
       mockMvc
-          .perform(get("/api/billing/subscription").with(ownerJwt()))
+          .perform(
+              get("/api/billing/subscription")
+                  .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ctrl_owner")))
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.billingMethod").value("PILOT"))
           .andExpect(jsonPath("$.adminManaged").value(true))
@@ -91,13 +95,18 @@ class BillingControllerIntegrationTest {
 
   @Test
   void subscribe_withOwner_returns200() throws Exception {
-    mockMvc.perform(post("/api/billing/subscribe").with(ownerJwt())).andExpect(status().isOk());
+    mockMvc
+        .perform(
+            post("/api/billing/subscribe").with(TestJwtFactory.ownerJwt(ORG_ID, "user_ctrl_owner")))
+        .andExpect(status().isOk());
   }
 
   @Test
   void subscribe_withMember_returns403() throws Exception {
     mockMvc
-        .perform(post("/api/billing/subscribe").with(memberJwt()))
+        .perform(
+            post("/api/billing/subscribe")
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_ctrl_member", "member")))
         .andExpect(status().isForbidden());
   }
 
@@ -107,7 +116,8 @@ class BillingControllerIntegrationTest {
   void cancel_whenTrialing_returns400() throws Exception {
     // Subscription starts TRIALING — cancel should fail
     mockMvc
-        .perform(post("/api/billing/cancel").with(ownerJwt()))
+        .perform(
+            post("/api/billing/cancel").with(TestJwtFactory.ownerJwt(ORG_ID, "user_ctrl_owner")))
         .andExpect(status().isBadRequest());
   }
 
@@ -116,7 +126,8 @@ class BillingControllerIntegrationTest {
   @Test
   void getPayments_withOwner_returnsEmptyPage() throws Exception {
     mockMvc
-        .perform(get("/api/billing/payments").with(ownerJwt()))
+        .perform(
+            get("/api/billing/payments").with(TestJwtFactory.ownerJwt(ORG_ID, "user_ctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray());
   }
@@ -190,40 +201,5 @@ class BillingControllerIntegrationTest {
                         .formatted(org.getId())))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("ACTIVE"));
-  }
-
-  // --- Helpers ---
-
-  private void syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    mockMvc
-        .perform(
-            post("/internal/members/sync")
-                .header("X-API-KEY", API_KEY)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {
-                      "clerkOrgId": "%s",
-                      "clerkUserId": "%s",
-                      "email": "%s",
-                      "name": "%s",
-                      "avatarUrl": null,
-                      "orgRole": "%s"
-                    }
-                    """
-                        .formatted(orgId, clerkUserId, email, name, orgRole)))
-        .andExpect(status().isCreated());
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_ctrl_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_ctrl_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 }

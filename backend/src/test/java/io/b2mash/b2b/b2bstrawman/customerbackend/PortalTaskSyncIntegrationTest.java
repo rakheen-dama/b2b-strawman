@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.customerbackend;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -9,7 +8,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalReadModelRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
@@ -19,7 +17,9 @@ import io.b2mash.b2b.b2bstrawman.portal.PortalContactService;
 import io.b2mash.b2b.b2bstrawman.portal.PortalJwtService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestChecklistHelper;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -29,10 +29,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
 /**
  * Integration tests verifying the task sync pipeline: staff API call -> PortalTaskEvent ->
@@ -44,8 +42,6 @@ import org.springframework.test.web.servlet.MvcResult;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class PortalTaskSyncIntegrationTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_portal_task_sync_test";
 
   @Autowired private MockMvc mockMvc;
@@ -63,12 +59,28 @@ class PortalTaskSyncIntegrationTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Portal Task Sync Test Org", null);
-    syncMember(
-        ORG_ID, "user_task_sync_owner", "task_sync_owner@test.com", "Task Sync Owner", "owner");
+    TestMemberHelper.syncMember(
+        mockMvc,
+        ORG_ID,
+        "user_task_sync_owner",
+        "task_sync_owner@test.com",
+        "Task Sync Owner",
+        "owner");
 
     tenantSchema = orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).get().getSchemaName();
-    projectId = createProject("Task Sync Project", "For portal task sync tests");
-    customerId = createCustomer("Task Sync Customer", "task_sync_cust@test.com");
+    projectId =
+        TestEntityHelper.createProject(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, "user_task_sync_owner"),
+            "Task Sync Project",
+            "For portal task sync tests");
+    customerId =
+        TestEntityHelper.createCustomer(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, "user_task_sync_owner"),
+            "Task Sync Customer",
+            "task_sync_cust@test.com");
+    transitionCustomerToActive(customerId);
     linkProjectToCustomer(customerId, projectId);
 
     // Create portal contact and issue token
@@ -88,7 +100,12 @@ class PortalTaskSyncIntegrationTest {
 
   @Test
   void createTask_syncsToPortalReadModel() throws Exception {
-    String taskId = createTask(projectId, "Task Alpha");
+    String taskId =
+        TestEntityHelper.createTask(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, "user_task_sync_owner"),
+            projectId,
+            "Task Alpha");
 
     var tasks = readModelRepo.findTasksByProject(UUID.fromString(projectId), ORG_ID);
     assertThat(tasks)
@@ -97,12 +114,17 @@ class PortalTaskSyncIntegrationTest {
 
   @Test
   void updateTask_updatesPortalReadModel() throws Exception {
-    String taskId = createTask(projectId, "Task Beta");
+    String taskId =
+        TestEntityHelper.createTask(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, "user_task_sync_owner"),
+            projectId,
+            "Task Beta");
 
     mockMvc
         .perform(
             put("/api/tasks/" + taskId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_task_sync_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -118,12 +140,19 @@ class PortalTaskSyncIntegrationTest {
 
   @Test
   void deleteTask_removesFromPortalReadModel() throws Exception {
-    String taskId = createTask(projectId, "Task Gamma");
+    String taskId =
+        TestEntityHelper.createTask(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, "user_task_sync_owner"),
+            projectId,
+            "Task Gamma");
     assertThat(readModelRepo.findTasksByProject(UUID.fromString(projectId), ORG_ID))
         .anyMatch(t -> t.id().equals(UUID.fromString(taskId)));
 
     mockMvc
-        .perform(delete("/api/tasks/" + taskId).with(ownerJwt()))
+        .perform(
+            delete("/api/tasks/" + taskId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_task_sync_owner")))
         .andExpect(status().isNoContent());
 
     assertThat(readModelRepo.findTasksByProject(UUID.fromString(projectId), ORG_ID))
@@ -132,7 +161,12 @@ class PortalTaskSyncIntegrationTest {
 
   @Test
   void portalEndpoint_listsTasks() throws Exception {
-    String taskId = createTask(projectId, "Task Delta");
+    String taskId =
+        TestEntityHelper.createTask(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, "user_task_sync_owner"),
+            projectId,
+            "Task Delta");
 
     mockMvc
         .perform(
@@ -145,7 +179,12 @@ class PortalTaskSyncIntegrationTest {
   @Test
   void portalEndpoint_empty_whenNoTasks() throws Exception {
     // Create separate project with no tasks for isolation
-    String emptyProjectId = createProject("Empty Task Project", "no tasks");
+    String emptyProjectId =
+        TestEntityHelper.createProject(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, "user_task_sync_owner"),
+            "Empty Task Project",
+            "no tasks");
     linkProjectToCustomer(customerId, emptyProjectId);
 
     mockMvc
@@ -165,7 +204,12 @@ class PortalTaskSyncIntegrationTest {
 
   @Test
   void portalEndpoint_returns404_forUnlinkedProject() throws Exception {
-    String unlinkedProjectId = createProject("Unlinked Project", "not linked to customer");
+    String unlinkedProjectId =
+        TestEntityHelper.createProject(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, "user_task_sync_owner"),
+            "Unlinked Project",
+            "not linked to customer");
 
     mockMvc
         .perform(
@@ -177,122 +221,42 @@ class PortalTaskSyncIntegrationTest {
   @Test
   void taskNotLinkedToCustomer_notSyncedToPortal() throws Exception {
     // Create a project NOT linked to any customer
-    String unlinkedProjectId = createProject("Unlinked Task Project", "no customer");
+    String unlinkedProjectId =
+        TestEntityHelper.createProject(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, "user_task_sync_owner"),
+            "Unlinked Task Project",
+            "no customer");
 
-    String taskId = createTask(unlinkedProjectId, "Orphan Task");
+    String taskId =
+        TestEntityHelper.createTask(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, "user_task_sync_owner"),
+            unlinkedProjectId,
+            "Orphan Task");
 
     // This task's project has no customer link — should NOT appear in portal_tasks
     var tasks = readModelRepo.findTasksByProject(UUID.fromString(unlinkedProjectId), ORG_ID);
     assertThat(tasks).noneMatch(t -> t.id().equals(UUID.fromString(taskId)));
   }
 
-  // --- Helpers ---
-
-  private String createProject(String name, String description) throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/api/projects")
-                    .with(ownerJwt())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"name": "%s", "description": "%s"}
-                        """
-                            .formatted(name, description)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return extractIdFromLocation(result);
-  }
-
-  private String createCustomer(String name, String email) throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/api/customers")
-                    .with(ownerJwt())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"name": "%s", "email": "%s"}
-                        """
-                            .formatted(name, email)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    var id = extractIdFromLocation(result);
-    transitionCustomerToActive(id);
-    return id;
-  }
-
   private void transitionCustomerToActive(String customerId) throws Exception {
     mockMvc
         .perform(
             post("/api/customers/" + customerId + "/transition")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_task_sync_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"targetStatus\": \"ONBOARDING\"}"))
         .andExpect(status().isOk());
-    TestChecklistHelper.completeChecklistItems(mockMvc, customerId, ownerJwt());
+    TestChecklistHelper.completeChecklistItems(
+        mockMvc, customerId, TestJwtFactory.ownerJwt(ORG_ID, "user_task_sync_owner"));
   }
 
   private void linkProjectToCustomer(String customerId, String projectId) throws Exception {
     mockMvc
-        .perform(post("/api/customers/" + customerId + "/projects/" + projectId).with(ownerJwt()))
+        .perform(
+            post("/api/customers/" + customerId + "/projects/" + projectId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_task_sync_owner")))
         .andExpect(status().isCreated());
-  }
-
-  private String createTask(String projectId, String title) throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/api/projects/" + projectId + "/tasks")
-                    .with(ownerJwt())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"title": "%s", "priority": "MEDIUM"}
-                        """
-                            .formatted(title)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return extractIdFromLocation(result);
-  }
-
-  private String extractIdFromLocation(MvcResult result) {
-    String location = result.getResponse().getHeader("Location");
-    return location.substring(location.lastIndexOf('/') + 1);
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_task_sync_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
   }
 }

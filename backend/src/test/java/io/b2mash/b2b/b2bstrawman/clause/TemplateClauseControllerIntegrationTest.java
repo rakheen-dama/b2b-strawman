@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.clause;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -8,11 +7,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -25,7 +24,6 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -36,8 +34,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class TemplateClauseControllerIntegrationTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_tc_ctrl_test";
 
   @Autowired private MockMvc mockMvc;
@@ -52,9 +48,12 @@ class TemplateClauseControllerIntegrationTest {
   @BeforeAll
   void provisionAndSeed() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "TC Ctrl Test Org", null);
-    syncMember(ORG_ID, "user_tc_owner", "tc_owner@test.com", "TC Owner", "owner");
-    syncMember(ORG_ID, "user_tc_admin", "tc_admin@test.com", "TC Admin", "admin");
-    syncMember(ORG_ID, "user_tc_member", "tc_member@test.com", "TC Member", "member");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_tc_owner", "tc_owner@test.com", "TC Owner", "owner");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_tc_admin", "tc_admin@test.com", "TC Admin", "admin");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_tc_member", "tc_member@test.com", "TC Member", "member");
 
     // Create a template
     var schema = orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
@@ -94,7 +93,9 @@ class TemplateClauseControllerIntegrationTest {
   @Order(1)
   void get_returnsEmptyList() throws Exception {
     mockMvc
-        .perform(get("/api/templates/" + templateId + "/clauses").with(ownerJwt()))
+        .perform(
+            get("/api/templates/" + templateId + "/clauses")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$.length()").value(0));
@@ -106,7 +107,7 @@ class TemplateClauseControllerIntegrationTest {
     mockMvc
         .perform(
             put("/api/templates/" + templateId + "/clauses")
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_tc_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -126,7 +127,9 @@ class TemplateClauseControllerIntegrationTest {
   @Order(3)
   void get_returnsEnrichedClauses() throws Exception {
     mockMvc
-        .perform(get("/api/templates/" + templateId + "/clauses").with(memberJwt()))
+        .perform(
+            get("/api/templates/" + templateId + "/clauses")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_tc_member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(2))
         .andExpect(jsonPath("$[0].clauseId").value(clause1Id))
@@ -140,7 +143,7 @@ class TemplateClauseControllerIntegrationTest {
     mockMvc
         .perform(
             put("/api/templates/" + templateId + "/clauses")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_tc_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -156,7 +159,7 @@ class TemplateClauseControllerIntegrationTest {
     mockMvc
         .perform(
             put("/api/templates/" + templateId + "/clauses")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -168,7 +171,7 @@ class TemplateClauseControllerIntegrationTest {
     mockMvc
         .perform(
             post("/api/templates/" + templateId + "/clauses")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -187,7 +190,7 @@ class TemplateClauseControllerIntegrationTest {
     mockMvc
         .perform(
             post("/api/templates/" + templateId + "/clauses")
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_tc_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -201,49 +204,17 @@ class TemplateClauseControllerIntegrationTest {
   @Order(7)
   void delete_removesClause() throws Exception {
     mockMvc
-        .perform(delete("/api/templates/" + templateId + "/clauses/" + clause1Id).with(adminJwt()))
+        .perform(
+            delete("/api/templates/" + templateId + "/clauses/" + clause1Id)
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_tc_admin")))
         .andExpect(status().isNoContent());
 
     // Verify it's gone
     mockMvc
-        .perform(get("/api/templates/" + templateId + "/clauses").with(ownerJwt()))
+        .perform(
+            get("/api/templates/" + templateId + "/clauses")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(0));
-  }
-
-  // --- Helper: sync member ---
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                {"clerkOrgId":"%s","clerkUserId":"%s","email":"%s","name":"%s","avatarUrl":null,"orgRole":"%s"}
-                """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  // --- JWT helpers ---
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_tc_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor adminJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_tc_admin").claim("o", Map.of("id", ORG_ID, "rol", "admin")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_tc_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 }

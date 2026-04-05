@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -13,8 +12,9 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.List;
-import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -23,7 +23,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -34,8 +33,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class TrustAccountingControllerTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_trust_ctrl_test";
 
   @Autowired private MockMvc mockMvc;
@@ -50,15 +47,27 @@ class TrustAccountingControllerTest {
   void setup() throws Exception {
     tenantSchema =
         provisioningService.provisionTenant(ORG_ID, "Trust Controller Test Org", null).schemaName();
-    syncMember(ORG_ID, "user_trust_ctrl_owner", "trust_ctrl@test.com", "Trust Ctrl Owner", "owner");
-    syncMember(
+    TestMemberHelper.syncMember(
+        mockMvc,
+        ORG_ID,
+        "user_trust_ctrl_owner",
+        "trust_ctrl@test.com",
+        "Trust Ctrl Owner",
+        "owner");
+    TestMemberHelper.syncMember(
+        mockMvc,
         ORG_ID,
         "user_trust_ctrl_member",
         "trust_ctrl_member@test.com",
         "Trust Ctrl Member",
         "member");
-    syncMember(
-        ORG_ID, "user_trust_ctrl_admin", "trust_ctrl_admin@test.com", "Trust Ctrl Admin", "admin");
+    TestMemberHelper.syncMember(
+        mockMvc,
+        ORG_ID,
+        "user_trust_ctrl_admin",
+        "trust_ctrl_admin@test.com",
+        "Trust Ctrl Admin",
+        "admin");
 
     // Enable the trust_accounting module
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -79,7 +88,7 @@ class TrustAccountingControllerTest {
     mockMvc
         .perform(
             post("/api/trust-accounts")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_trust_ctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -111,7 +120,7 @@ class TrustAccountingControllerTest {
     mockMvc
         .perform(
             post("/api/trust-accounts")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_trust_ctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -126,7 +135,9 @@ class TrustAccountingControllerTest {
         .andExpect(status().isCreated());
 
     mockMvc
-        .perform(get("/api/trust-accounts").with(ownerJwt()))
+        .perform(
+            get("/api/trust-accounts")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_trust_ctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$.length()").value(org.hamcrest.Matchers.greaterThanOrEqualTo(1)));
@@ -139,7 +150,7 @@ class TrustAccountingControllerTest {
         mockMvc
             .perform(
                 post("/api/trust-accounts")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_trust_ctrl_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -157,7 +168,9 @@ class TrustAccountingControllerTest {
     String id = JsonPath.read(result.getResponse().getContentAsString(), "$.id");
 
     mockMvc
-        .perform(get("/api/trust-accounts/" + id).with(ownerJwt()))
+        .perform(
+            get("/api/trust-accounts/" + id)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_trust_ctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(id))
         .andExpect(jsonPath("$.accountName").value("Detail Test Account"))
@@ -171,7 +184,7 @@ class TrustAccountingControllerTest {
         mockMvc
             .perform(
                 post("/api/trust-accounts")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_trust_ctrl_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -191,7 +204,7 @@ class TrustAccountingControllerTest {
     mockMvc
         .perform(
             put("/api/trust-accounts/" + id)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_trust_ctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -215,7 +228,7 @@ class TrustAccountingControllerTest {
         mockMvc
             .perform(
                 post("/api/trust-accounts")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_trust_ctrl_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -233,7 +246,9 @@ class TrustAccountingControllerTest {
     String id = JsonPath.read(result.getResponse().getContentAsString(), "$.id");
 
     mockMvc
-        .perform(post("/api/trust-accounts/" + id + "/close").with(ownerJwt()))
+        .perform(
+            post("/api/trust-accounts/" + id + "/close")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_trust_ctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(id))
         .andExpect(jsonPath("$.status").value("CLOSED"))
@@ -247,7 +262,7 @@ class TrustAccountingControllerTest {
         mockMvc
             .perform(
                 post("/api/trust-accounts")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_trust_ctrl_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -267,7 +282,7 @@ class TrustAccountingControllerTest {
     mockMvc
         .perform(
             post("/api/trust-accounts/" + id + "/lpff-rates")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_trust_ctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -292,7 +307,7 @@ class TrustAccountingControllerTest {
     mockMvc
         .perform(
             post("/api/trust-accounts")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_trust_ctrl_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -314,7 +329,7 @@ class TrustAccountingControllerTest {
         mockMvc
             .perform(
                 post("/api/trust-accounts")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_trust_ctrl_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -335,7 +350,7 @@ class TrustAccountingControllerTest {
     mockMvc
         .perform(
             post("/api/trust-accounts/" + accountId + "/lpff-rates")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_trust_ctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -350,7 +365,9 @@ class TrustAccountingControllerTest {
 
     // GET the rates and verify the created rate is returned
     mockMvc
-        .perform(get("/api/trust-accounts/" + accountId + "/lpff-rates").with(ownerJwt()))
+        .perform(
+            get("/api/trust-accounts/" + accountId + "/lpff-rates")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_trust_ctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$.length()").value(org.hamcrest.Matchers.greaterThanOrEqualTo(1)))
@@ -365,7 +382,7 @@ class TrustAccountingControllerTest {
     mockMvc
         .perform(
             post("/api/trust-accounts")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_trust_ctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -381,54 +398,11 @@ class TrustAccountingControllerTest {
 
     // Admin role has VIEW_TRUST capability — verify read access succeeds
     mockMvc
-        .perform(get("/api/trust-accounts").with(adminJwt()))
+        .perform(
+            get("/api/trust-accounts")
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_trust_ctrl_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$.length()").value(org.hamcrest.Matchers.greaterThanOrEqualTo(1)));
-  }
-
-  // --- Helpers ---
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"clerkOrgId":"%s","clerkUserId":"%s","email":"%s","name":"%s","avatarUrl":null,"orgRole":"%s"}
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_trust_ctrl_owner")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_trust_ctrl_member")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor adminJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_trust_ctrl_admin")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "admin")));
   }
 }

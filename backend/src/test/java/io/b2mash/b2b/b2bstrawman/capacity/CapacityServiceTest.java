@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.capacity;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -10,9 +9,10 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +20,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -31,8 +30,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class CapacityServiceTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_capacity_test";
 
   @Autowired private MockMvc mockMvc;
@@ -58,39 +55,44 @@ class CapacityServiceTest {
   @BeforeAll
   void provisionAndSeed() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Capacity Test Org", null);
-    memberIdOwnerStr = syncMember(ORG_ID, "user_cap_owner", "cap_owner@test.com", "Owner", "owner");
+    memberIdOwnerStr =
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_cap_owner", "cap_owner@test.com", "Owner", "owner");
     memberIdOwner = UUID.fromString(memberIdOwnerStr);
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
     memberFallback =
-        UUID.fromString(syncMember(ORG_ID, "user_cap_fb", "cap_fb@test.com", "Fallback", "member"));
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, "user_cap_fb", "cap_fb@test.com", "Fallback", "member"));
     memberOverlap =
-        UUID.fromString(syncMember(ORG_ID, "user_cap_ol", "cap_ol@test.com", "Overlap", "member"));
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, "user_cap_ol", "cap_ol@test.com", "Overlap", "member"));
     memberExpired =
-        UUID.fromString(syncMember(ORG_ID, "user_cap_ex", "cap_ex@test.com", "Expired", "member"));
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, "user_cap_ex", "cap_ex@test.com", "Expired", "member"));
     memberNoLeave =
-        UUID.fromString(syncMember(ORG_ID, "user_cap_nl", "cap_nl@test.com", "NoLeave", "member"));
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, "user_cap_nl", "cap_nl@test.com", "NoLeave", "member"));
     memberLeave2 =
-        UUID.fromString(syncMember(ORG_ID, "user_cap_l2", "cap_l2@test.com", "Leave2", "member"));
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, "user_cap_l2", "cap_l2@test.com", "Leave2", "member"));
     memberFullLeave =
         UUID.fromString(
-            syncMember(ORG_ID, "user_cap_fl", "cap_fl@test.com", "FullLeave", "member"));
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, "user_cap_fl", "cap_fl@test.com", "FullLeave", "member"));
     memberOverlapLeave =
         UUID.fromString(
-            syncMember(ORG_ID, "user_cap_orl", "cap_orl@test.com", "OverlapLeave", "member"));
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, "user_cap_orl", "cap_orl@test.com", "OverlapLeave", "member"));
     memberWeekend =
-        UUID.fromString(syncMember(ORG_ID, "user_cap_wk", "cap_wk@test.com", "Weekend", "member"));
-  }
-
-  // --- JWT Helpers ---
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_cap_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_cap_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, "user_cap_wk", "cap_wk@test.com", "Weekend", "member"));
   }
 
   private <T> T runInTenant(java.util.concurrent.Callable<T> callable) {
@@ -104,33 +106,6 @@ class CapacityServiceTest {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-  }
-
-  // --- Member Sync Helper ---
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                    {
-                      "clerkOrgId": "%s",
-                      "clerkUserId": "%s",
-                      "email": "%s",
-                      "name": "%s",
-                      "avatarUrl": null,
-                      "orgRole": "%s"
-                    }
-                    """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 
   // ===== Service-level tests (290.6) =====
@@ -365,7 +340,7 @@ class CapacityServiceTest {
     mockMvc
         .perform(
             post("/api/members/{memberId}/capacity", memberIdOwnerStr)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cap_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -386,7 +361,9 @@ class CapacityServiceTest {
   @Order(21)
   void controller_listCapacityRecords_returnsRecords() throws Exception {
     mockMvc
-        .perform(get("/api/members/{memberId}/capacity", memberIdOwnerStr).with(ownerJwt()))
+        .perform(
+            get("/api/members/{memberId}/capacity", memberIdOwnerStr)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cap_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(org.hamcrest.Matchers.greaterThanOrEqualTo(1)));
   }
@@ -399,7 +376,7 @@ class CapacityServiceTest {
         mockMvc
             .perform(
                 post("/api/members/{memberId}/capacity", memberIdOwnerStr)
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cap_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -418,7 +395,7 @@ class CapacityServiceTest {
     mockMvc
         .perform(
             put("/api/members/{memberId}/capacity/{id}", memberIdOwnerStr, recordId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cap_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -441,7 +418,7 @@ class CapacityServiceTest {
         mockMvc
             .perform(
                 post("/api/members/{memberId}/capacity", memberIdOwnerStr)
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cap_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -460,7 +437,7 @@ class CapacityServiceTest {
     mockMvc
         .perform(
             delete("/api/members/{memberId}/capacity/{id}", memberIdOwnerStr, recordId)
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cap_owner")))
         .andExpect(status().isNoContent());
   }
 
@@ -468,7 +445,9 @@ class CapacityServiceTest {
   @Order(24)
   void controller_memberRole_gets403() throws Exception {
     mockMvc
-        .perform(get("/api/members/{memberId}/capacity", memberIdOwnerStr).with(memberJwt()))
+        .perform(
+            get("/api/members/{memberId}/capacity", memberIdOwnerStr)
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_cap_member")))
         .andExpect(status().isForbidden());
   }
 
@@ -478,7 +457,7 @@ class CapacityServiceTest {
     mockMvc
         .perform(
             post("/api/members/{memberId}/capacity", memberIdOwnerStr)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cap_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -497,7 +476,7 @@ class CapacityServiceTest {
     mockMvc
         .perform(
             post("/api/members/{memberId}/capacity", memberIdOwnerStr)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cap_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -516,7 +495,7 @@ class CapacityServiceTest {
   @Order(30)
   void orgSettings_defaultCapacityIs40() throws Exception {
     mockMvc
-        .perform(get("/api/settings").with(ownerJwt()))
+        .perform(get("/api/settings").with(TestJwtFactory.ownerJwt(ORG_ID, "user_cap_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.defaultWeeklyCapacityHours").value(40.00));
   }
@@ -527,7 +506,7 @@ class CapacityServiceTest {
     mockMvc
         .perform(
             patch("/api/settings/capacity")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cap_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -543,7 +522,7 @@ class CapacityServiceTest {
   @Order(32)
   void orgSettings_readBackUpdatedCapacity() throws Exception {
     mockMvc
-        .perform(get("/api/settings").with(ownerJwt()))
+        .perform(get("/api/settings").with(TestJwtFactory.ownerJwt(ORG_ID, "user_cap_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.defaultWeeklyCapacityHours").value(32.00));
   }

@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.clause;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -13,6 +12,8 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.template.TestDocumentBuilder;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
@@ -27,7 +28,6 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
@@ -39,8 +39,6 @@ import tools.jackson.databind.ObjectMapper;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ClauseControllerIntegrationTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_clause_ctrl_test";
 
   @Autowired private MockMvc mockMvc;
@@ -54,16 +52,19 @@ class ClauseControllerIntegrationTest {
   @BeforeAll
   void provisionAndSeed() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Clause Ctrl Test Org", null);
-    syncMember(ORG_ID, "user_clause_owner", "clause_owner@test.com", "Clause Owner", "owner");
-    syncMember(ORG_ID, "user_clause_admin", "clause_admin@test.com", "Clause Admin", "admin");
-    syncMember(ORG_ID, "user_clause_member", "clause_member@test.com", "Clause Member", "member");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_clause_owner", "clause_owner@test.com", "Clause Owner", "owner");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_clause_admin", "clause_admin@test.com", "Clause Admin", "admin");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_clause_member", "clause_member@test.com", "Clause Member", "member");
   }
 
   @Test
   @Order(1)
   void get_listClauses_returns200() throws Exception {
     mockMvc
-        .perform(get("/api/clauses").with(ownerJwt()))
+        .perform(get("/api/clauses").with(TestJwtFactory.ownerJwt(ORG_ID, "user_clause_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray());
   }
@@ -83,7 +84,7 @@ class ClauseControllerIntegrationTest {
         mockMvc
             .perform(
                 post("/api/clauses")
-                    .with(adminJwt())
+                    .with(TestJwtFactory.adminJwt(ORG_ID, "user_clause_admin"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(requestBody)))
             .andExpect(status().isCreated())
@@ -110,7 +111,7 @@ class ClauseControllerIntegrationTest {
     mockMvc
         .perform(
             post("/api/clauses")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_clause_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestBody)))
         .andExpect(status().isForbidden());
@@ -129,7 +130,7 @@ class ClauseControllerIntegrationTest {
     mockMvc
         .perform(
             post("/api/clauses")
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_clause_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(invalidBody)))
         .andExpect(status().isBadRequest());
@@ -139,7 +140,9 @@ class ClauseControllerIntegrationTest {
   @Order(5)
   void get_getClause_returns200() throws Exception {
     mockMvc
-        .perform(get("/api/clauses/" + createdClauseId).with(ownerJwt()))
+        .perform(
+            get("/api/clauses/" + createdClauseId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_clause_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(createdClauseId))
         .andExpect(jsonPath("$.title").value("Ctrl Test Clause"));
@@ -159,7 +162,7 @@ class ClauseControllerIntegrationTest {
     mockMvc
         .perform(
             put("/api/clauses/" + createdClauseId)
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_clause_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestBody)))
         .andExpect(status().isOk())
@@ -172,7 +175,9 @@ class ClauseControllerIntegrationTest {
   @Order(7)
   void post_deactivateClause_returns200() throws Exception {
     mockMvc
-        .perform(post("/api/clauses/" + createdClauseId + "/deactivate").with(adminJwt()))
+        .perform(
+            post("/api/clauses/" + createdClauseId + "/deactivate")
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_clause_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.active").value(false));
   }
@@ -181,7 +186,9 @@ class ClauseControllerIntegrationTest {
   @Order(8)
   void post_cloneClause_returns201() throws Exception {
     mockMvc
-        .perform(post("/api/clauses/" + createdClauseId + "/clone").with(adminJwt()))
+        .perform(
+            post("/api/clauses/" + createdClauseId + "/clone")
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_clause_admin")))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.source").value("CLONED"))
         .andExpect(jsonPath("$.sourceClauseId").value(createdClauseId));
@@ -191,7 +198,9 @@ class ClauseControllerIntegrationTest {
   @Order(9)
   void get_listCategories_returns200() throws Exception {
     mockMvc
-        .perform(get("/api/clauses/categories").with(memberJwt()))
+        .perform(
+            get("/api/clauses/categories")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_clause_member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray());
   }
@@ -211,7 +220,7 @@ class ClauseControllerIntegrationTest {
         mockMvc
             .perform(
                 post("/api/clauses")
-                    .with(adminJwt())
+                    .with(TestJwtFactory.adminJwt(ORG_ID, "user_clause_admin"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(requestBody)))
             .andExpect(status().isCreated())
@@ -219,7 +228,9 @@ class ClauseControllerIntegrationTest {
     var deleteId = JsonPath.read(result.getResponse().getContentAsString(), "$.id");
 
     mockMvc
-        .perform(delete("/api/clauses/" + deleteId).with(adminJwt()))
+        .perform(
+            delete("/api/clauses/" + deleteId)
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_clause_admin")))
         .andExpect(status().isNoContent());
   }
 
@@ -238,7 +249,7 @@ class ClauseControllerIntegrationTest {
         mockMvc
             .perform(
                 post("/api/clauses")
-                    .with(adminJwt())
+                    .with(TestJwtFactory.adminJwt(ORG_ID, "user_clause_admin"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(requestBody)))
             .andExpect(status().isCreated())
@@ -262,7 +273,7 @@ class ClauseControllerIntegrationTest {
     mockMvc
         .perform(
             put("/api/clauses/" + sysClauseId)
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_clause_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updateRequestBody)))
         .andExpect(status().isBadRequest());
@@ -272,7 +283,9 @@ class ClauseControllerIntegrationTest {
   @Order(12)
   void get_listClauses_withCategoryFilter_returns200() throws Exception {
     mockMvc
-        .perform(get("/api/clauses?category=legal").with(ownerJwt()))
+        .perform(
+            get("/api/clauses?category=legal")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_clause_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray());
   }
@@ -298,7 +311,7 @@ class ClauseControllerIntegrationTest {
         mockMvc
             .perform(
                 post("/api/clauses")
-                    .with(adminJwt())
+                    .with(TestJwtFactory.adminJwt(ORG_ID, "user_clause_admin"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(requestBody)))
             .andExpect(status().isCreated())
@@ -311,47 +324,12 @@ class ClauseControllerIntegrationTest {
 
     // GET by ID should return the same body structure
     mockMvc
-        .perform(get("/api/clauses/" + clauseId).with(ownerJwt()))
+        .perform(
+            get("/api/clauses/" + clauseId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_clause_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.body.type").value("doc"))
         .andExpect(jsonPath("$.body.content[0].type").value("heading"))
         .andExpect(jsonPath("$.body.content[1].type").value("paragraph"));
-  }
-
-  // --- Helper: sync member ---
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                {"clerkOrgId":"%s","clerkUserId":"%s","email":"%s","name":"%s","avatarUrl":null,"orgRole":"%s"}
-                """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  // --- JWT helpers ---
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_clause_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor adminJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_clause_admin").claim("o", Map.of("id", ORG_ID, "rol", "admin")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(
-            j -> j.subject("user_clause_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 }

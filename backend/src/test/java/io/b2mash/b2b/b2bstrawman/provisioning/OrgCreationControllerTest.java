@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
@@ -74,7 +75,7 @@ class OrgCreationControllerTest {
     mockMvc
         .perform(
             post("/api/orgs")
-                .with(regularMemberJwt())
+                .with(TestJwtFactory.memberJwt(EXISTING_ORG_ID, "user_regular_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -121,13 +122,5 @@ class OrgCreationControllerTest {
                 j.subject("user_platform_admin")
                     .claim("groups", List.of("platform-admins"))
                     .claim("o", Map.of("id", EXISTING_ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor regularMemberJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_regular_member")
-                    .claim("o", Map.of("id", EXISTING_ORG_ID, "rol", "member")));
   }
 }

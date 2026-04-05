@@ -1,16 +1,17 @@
 package io.b2mash.b2b.b2bstrawman.customerbackend;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalReadModelRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestChecklistHelper;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
@@ -23,10 +24,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
 /**
  * Integration tests verifying the invoice sync pipeline: staff API call -> InvoiceSyncEvent ->
@@ -39,8 +38,6 @@ import org.springframework.test.web.servlet.MvcResult;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class InvoiceSyncIntegrationTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_invoice_sync_test";
 
   @Autowired private MockMvc mockMvc;
@@ -55,10 +52,24 @@ class InvoiceSyncIntegrationTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Invoice Sync Test Org", null);
-    syncMember(ORG_ID, "user_inv_owner", "inv_owner@test.com", "Inv Owner", "owner");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_inv_owner", "inv_owner@test.com", "Inv Owner", "owner");
 
-    projectId = createProject("Invoice Test Project", "For invoice sync tests");
-    customerId = createCustomer("Invoice Test Customer", "inv_cust@test.com");
+    projectId =
+        TestEntityHelper.createProject(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, "user_inv_owner"),
+            "Invoice Test Project",
+            "For invoice sync tests");
+    customerId =
+        TestEntityHelper.createCustomer(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, "user_inv_owner"),
+            "Invoice Test Customer",
+            "inv_cust@test.com");
+    // Fill prerequisite custom fields for invoice/proposal checks
+    fillPrerequisiteFields(customerId, "Invoice Test Customer", "inv_cust@test.com");
+    transitionCustomerToActive(customerId);
 
     // Link project to customer to enable portal sync
     linkProjectToCustomer(customerId, projectId);
@@ -83,7 +94,9 @@ class InvoiceSyncIntegrationTest {
 
     // Approve the invoice
     mockMvc
-        .perform(post("/api/invoices/" + invoiceId + "/approve").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + invoiceId + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_owner")))
         .andExpect(status().isOk());
 
     // Verify APPROVED does NOT appear in portal
@@ -96,7 +109,9 @@ class InvoiceSyncIntegrationTest {
   void markSent_syncsInvoiceToPortal() throws Exception {
     // Mark as sent
     mockMvc
-        .perform(post("/api/invoices/" + invoiceId + "/send").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + invoiceId + "/send")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_owner")))
         .andExpect(status().isOk());
 
     // Verify portal contains the invoice with status SENT
@@ -120,7 +135,9 @@ class InvoiceSyncIntegrationTest {
   void markPaid_updatesPortalStatus() throws Exception {
     // Record payment
     mockMvc
-        .perform(post("/api/invoices/" + invoiceId + "/payment").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + invoiceId + "/payment")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_owner")))
         .andExpect(status().isOk());
 
     // Verify status updated to PAID in portal
@@ -137,10 +154,14 @@ class InvoiceSyncIntegrationTest {
     addLineItem(voidInvoiceId, "Void test line", "2", "50.00", 0);
 
     mockMvc
-        .perform(post("/api/invoices/" + voidInvoiceId + "/approve").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + voidInvoiceId + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_owner")))
         .andExpect(status().isOk());
     mockMvc
-        .perform(post("/api/invoices/" + voidInvoiceId + "/send").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + voidInvoiceId + "/send")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_owner")))
         .andExpect(status().isOk());
 
     // Verify it was synced
@@ -149,7 +170,9 @@ class InvoiceSyncIntegrationTest {
 
     // Void it
     mockMvc
-        .perform(post("/api/invoices/" + voidInvoiceId + "/void").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + voidInvoiceId + "/void")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_owner")))
         .andExpect(status().isOk());
 
     // Verify it's removed from portal (cascade should remove lines too)
@@ -160,71 +183,23 @@ class InvoiceSyncIntegrationTest {
     assertThat(lines).isEmpty();
   }
 
-  // --- Helpers ---
-
-  private String createProject(String name, String description) throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/api/projects")
-                    .with(ownerJwt())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"name": "%s", "description": "%s"}
-                        """
-                            .formatted(name, description)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return extractIdFromLocation(result);
-  }
-
-  private String createCustomer(String name, String email) throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/api/customers")
-                    .with(ownerJwt())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"name": "%s", "email": "%s"}
-                        """
-                            .formatted(name, email)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    var id = extractIdFromLocation(result);
-    // Fill prerequisite custom fields for invoice/proposal checks
-    mockMvc
-        .perform(
-            org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put(
-                    "/api/customers/{id}", id)
-                .with(ownerJwt())
-                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {"name": "%s", "email": "%s", "customFields": {"address_line1": "123 Test St", "city": "Test City", "country": "ZA", "tax_number": "VAT123"}}
-                    """
-                        .formatted(name, email)))
-        .andExpect(status().isOk());
-    transitionCustomerToActive(id);
-    return id;
-  }
-
   private void transitionCustomerToActive(String customerId) throws Exception {
     mockMvc
         .perform(
             post("/api/customers/" + customerId + "/transition")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"targetStatus\": \"ONBOARDING\"}"))
         .andExpect(status().isOk());
-    TestChecklistHelper.completeChecklistItems(mockMvc, customerId, ownerJwt());
+    TestChecklistHelper.completeChecklistItems(
+        mockMvc, customerId, TestJwtFactory.ownerJwt(ORG_ID, "user_inv_owner"));
   }
 
   private void linkProjectToCustomer(String customerId, String projectId) throws Exception {
     mockMvc
-        .perform(post("/api/customers/" + customerId + "/projects/" + projectId).with(ownerJwt()))
+        .perform(
+            post("/api/customers/" + customerId + "/projects/" + projectId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_owner")))
         .andExpect(status().isCreated());
   }
 
@@ -233,7 +208,7 @@ class InvoiceSyncIntegrationTest {
         mockMvc
             .perform(
                 post("/api/invoices")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -242,7 +217,22 @@ class InvoiceSyncIntegrationTest {
                             .formatted(customerId, currency)))
             .andExpect(status().isCreated())
             .andReturn();
-    return extractIdFromLocation(result);
+    return TestEntityHelper.extractIdFromLocation(result);
+  }
+
+  private void fillPrerequisiteFields(String customerId, String name, String email)
+      throws Exception {
+    mockMvc
+        .perform(
+            put("/api/customers/{id}", customerId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"name": "%s", "email": "%s", "customFields": {"address_line1": "123 Test St", "city": "Test City", "country": "ZA", "tax_number": "VAT123"}}
+                    """
+                        .formatted(name, email)))
+        .andExpect(status().isOk());
   }
 
   private void addLineItem(
@@ -251,7 +241,7 @@ class InvoiceSyncIntegrationTest {
     mockMvc
         .perform(
             post("/api/invoices/" + invoiceId + "/lines")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -259,41 +249,5 @@ class InvoiceSyncIntegrationTest {
                     """
                         .formatted(description, quantity, unitPrice, sortOrder)))
         .andExpect(status().isCreated());
-  }
-
-  private String extractIdFromLocation(MvcResult result) {
-    String location = result.getResponse().getHeader("Location");
-    return location.substring(location.lastIndexOf('/') + 1);
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_inv_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
   }
 }

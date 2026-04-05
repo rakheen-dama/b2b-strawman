@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.checklist;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -16,7 +15,8 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -30,7 +30,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -41,8 +40,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ChecklistTemplateControllerTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_checklist_ctrl_test";
 
   @Autowired private MockMvc mockMvc;
@@ -63,21 +60,37 @@ class ChecklistTemplateControllerTest {
     provisioningService.provisionTenant(ORG_ID, "Checklist Controller Test Org", null);
     memberIdOwner =
         UUID.fromString(
-            syncMember(
-                ORG_ID, "user_cl_ctrl_owner", "cl_ctrl_owner@test.com", "CL Owner", "owner"));
-    syncMember(ORG_ID, "user_cl_ctrl_member", "cl_ctrl_member@test.com", "CL Member", "member");
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_cl_ctrl_owner",
+                "cl_ctrl_owner@test.com",
+                "CL Owner",
+                "owner"));
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_cl_ctrl_member", "cl_ctrl_member@test.com", "CL Member", "member");
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
 
     customRoleMemberId =
         UUID.fromString(
-            syncMember(
-                ORG_ID, "user_cl_315a_custom", "cl_custom@test.com", "CL Custom User", "member"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_cl_315a_custom",
+                "cl_custom@test.com",
+                "CL Custom User",
+                "member"));
     noCapMemberId =
         UUID.fromString(
-            syncMember(
-                ORG_ID, "user_cl_315a_nocap", "cl_nocap@test.com", "CL NoCap User", "member"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_cl_315a_nocap",
+                "cl_nocap@test.com",
+                "CL NoCap User",
+                "member"));
 
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)
@@ -114,7 +127,7 @@ class ChecklistTemplateControllerTest {
         mockMvc
             .perform(
                 post("/api/checklist-templates")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cl_ctrl_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -159,7 +172,9 @@ class ChecklistTemplateControllerTest {
   @Order(2)
   void shouldListActiveTemplates() throws Exception {
     mockMvc
-        .perform(get("/api/checklist-templates").with(ownerJwt()))
+        .perform(
+            get("/api/checklist-templates")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cl_ctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(org.hamcrest.Matchers.greaterThanOrEqualTo(1)));
   }
@@ -168,7 +183,9 @@ class ChecklistTemplateControllerTest {
   @Order(3)
   void shouldGetByIdWithItems() throws Exception {
     mockMvc
-        .perform(get("/api/checklist-templates/" + createdTemplateId).with(ownerJwt()))
+        .perform(
+            get("/api/checklist-templates/" + createdTemplateId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cl_ctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(createdTemplateId))
         .andExpect(jsonPath("$.name").value("Client Onboarding"))
@@ -181,7 +198,7 @@ class ChecklistTemplateControllerTest {
     mockMvc
         .perform(
             put("/api/checklist-templates/" + createdTemplateId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cl_ctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -225,18 +242,24 @@ class ChecklistTemplateControllerTest {
   @Order(5)
   void shouldSoftDeleteTemplate() throws Exception {
     mockMvc
-        .perform(delete("/api/checklist-templates/" + createdTemplateId).with(ownerJwt()))
+        .perform(
+            delete("/api/checklist-templates/" + createdTemplateId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cl_ctrl_owner")))
         .andExpect(status().isNoContent());
 
     // Verify it's not in the active list
     mockMvc
-        .perform(get("/api/checklist-templates").with(ownerJwt()))
+        .perform(
+            get("/api/checklist-templates")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cl_ctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[?(@.id == '" + createdTemplateId + "')]").doesNotExist());
 
     // But can still be fetched by ID and shows active=false
     mockMvc
-        .perform(get("/api/checklist-templates/" + createdTemplateId).with(ownerJwt()))
+        .perform(
+            get("/api/checklist-templates/" + createdTemplateId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cl_ctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.active").value(false));
   }
@@ -247,7 +270,7 @@ class ChecklistTemplateControllerTest {
     mockMvc
         .perform(
             post("/api/checklist-templates")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_cl_ctrl_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -268,7 +291,7 @@ class ChecklistTemplateControllerTest {
     mockMvc
         .perform(
             post("/api/checklist-templates")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cl_ctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -285,7 +308,7 @@ class ChecklistTemplateControllerTest {
     mockMvc
         .perform(
             post("/api/checklist-templates")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cl_ctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -301,7 +324,9 @@ class ChecklistTemplateControllerTest {
     // Filter by INDIVIDUAL — should NOT contain COMPANY templates
     mockMvc
         .perform(
-            get("/api/checklist-templates").param("customerType", "INDIVIDUAL").with(ownerJwt()))
+            get("/api/checklist-templates")
+                .param("customerType", "INDIVIDUAL")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cl_ctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[?(@.customerType == 'COMPANY')]").doesNotExist());
   }
@@ -314,7 +339,7 @@ class ChecklistTemplateControllerTest {
     mockMvc
         .perform(
             post("/api/checklist-templates")
-                .with(customRoleJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_cl_315a_custom"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -334,7 +359,7 @@ class ChecklistTemplateControllerTest {
     mockMvc
         .perform(
             post("/api/checklist-templates")
-                .with(noCapabilityJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_cl_315a_nocap"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -346,56 +371,5 @@ class ChecklistTemplateControllerTest {
                     }
                     """))
         .andExpect(status().isForbidden());
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_cl_ctrl_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_cl_ctrl_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor customRoleJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_cl_315a_custom").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor noCapabilityJwt() {
-    return jwt()
-        .jwt(
-            j -> j.subject("user_cl_315a_nocap").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

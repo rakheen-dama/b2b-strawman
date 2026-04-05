@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.conflictcheck;
 
 import static io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.createActiveCustomer;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -16,8 +15,9 @@ import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -27,7 +27,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -38,8 +37,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AdversePartyControllerTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_adverse_ctrl_test";
 
   @Autowired private MockMvc mockMvc;
@@ -65,13 +62,15 @@ class AdversePartyControllerTest {
             .schemaName();
     memberId =
         UUID.fromString(
-            syncMember(
+            TestMemberHelper.syncMember(
+                mockMvc,
                 ORG_ID,
                 "user_adverse_ctrl_owner",
                 "adverse_ctrl@test.com",
                 "Adverse Ctrl Owner",
                 "owner"));
-    syncMember(
+    TestMemberHelper.syncMember(
+        mockMvc,
         ORG_ID,
         "user_adverse_ctrl_member",
         "adverse_ctrl_member@test.com",
@@ -117,7 +116,7 @@ class AdversePartyControllerTest {
     mockMvc
         .perform(
             post("/api/adverse-parties")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_adverse_ctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -158,7 +157,9 @@ class AdversePartyControllerTest {
 
     mockMvc
         .perform(
-            get("/api/adverse-parties").with(ownerJwt()).param("search", "Springbok Industries"))
+            get("/api/adverse-parties")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_adverse_ctrl_owner"))
+                .param("search", "Springbok Industries"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray())
         .andExpect(jsonPath("$.content[0].name").value("Springbok Industries (Pty) Ltd"));
@@ -187,7 +188,9 @@ class AdversePartyControllerTest {
                     }));
 
     mockMvc
-        .perform(delete("/api/adverse-parties/" + partyId[0]).with(ownerJwt()))
+        .perform(
+            delete("/api/adverse-parties/" + partyId[0])
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_adverse_ctrl_owner")))
         .andExpect(status().isConflict());
   }
 
@@ -212,7 +215,7 @@ class AdversePartyControllerTest {
     mockMvc
         .perform(
             post("/api/adverse-parties/" + partyId[0] + "/links")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_adverse_ctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -252,7 +255,9 @@ class AdversePartyControllerTest {
                     }));
 
     mockMvc
-        .perform(get("/api/projects/" + projectId + "/adverse-parties").with(ownerJwt()))
+        .perform(
+            get("/api/projects/" + projectId + "/adverse-parties")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_adverse_ctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$[?(@.relationship == 'GUARANTOR')]").isNotEmpty());
@@ -278,45 +283,9 @@ class AdversePartyControllerTest {
                     }));
 
     mockMvc
-        .perform(delete("/api/adverse-parties/" + partyId[0]).with(memberJwt()))
+        .perform(
+            delete("/api/adverse-parties/" + partyId[0])
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_adverse_ctrl_member")))
         .andExpect(status().isForbidden());
-  }
-
-  // --- Helpers ---
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"clerkOrgId":"%s","clerkUserId":"%s","email":"%s","name":"%s","avatarUrl":null,"orgRole":"%s"}
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return com.jayway.jsonpath.JsonPath.read(
-        result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_adverse_ctrl_owner")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_adverse_ctrl_member")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 }

@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.orgrole;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -13,6 +12,8 @@ import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -25,7 +26,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -35,8 +35,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class RoleAssignmentTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_role_assign_test";
 
   @Autowired private MockMvc mockMvc;
@@ -54,9 +52,15 @@ class RoleAssignmentTest {
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Role Assign Test Org", null);
 
-    ownerMemberId = syncMember("user_ra_owner", "ra_owner@test.com", "RA Owner", "owner");
-    adminMemberId = syncMember("user_ra_admin", "ra_admin@test.com", "RA Admin", "admin");
-    memberMemberId = syncMember("user_ra_member", "ra_member@test.com", "RA Member", "member");
+    ownerMemberId =
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_ra_owner", "ra_owner@test.com", "RA Owner", "owner");
+    adminMemberId =
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_ra_admin", "ra_admin@test.com", "RA Admin", "admin");
+    memberMemberId =
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_ra_member", "ra_member@test.com", "RA Member", "member");
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
@@ -70,7 +74,7 @@ class RoleAssignmentTest {
     mockMvc
         .perform(
             put("/api/members/" + memberMemberId + "/role")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ra_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -90,7 +94,7 @@ class RoleAssignmentTest {
     mockMvc
         .perform(
             put("/api/members/" + memberMemberId + "/role")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ra_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -109,7 +113,7 @@ class RoleAssignmentTest {
     mockMvc
         .perform(
             put("/api/members/" + ownerMemberId + "/role")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ra_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -127,7 +131,7 @@ class RoleAssignmentTest {
     mockMvc
         .perform(
             put("/api/members/" + memberMemberId + "/role")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ra_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -144,7 +148,7 @@ class RoleAssignmentTest {
     mockMvc
         .perform(
             put("/api/members/" + memberMemberId + "/role")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ra_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -159,7 +163,7 @@ class RoleAssignmentTest {
     mockMvc
         .perform(
             put("/api/members/" + memberMemberId + "/role")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ra_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -176,7 +180,7 @@ class RoleAssignmentTest {
     mockMvc
         .perform(
             put("/api/members/" + memberMemberId + "/role")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_ra_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -193,7 +197,7 @@ class RoleAssignmentTest {
     mockMvc
         .perform(
             put("/api/members/" + memberMemberId + "/role")
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_ra_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -210,7 +214,7 @@ class RoleAssignmentTest {
     mockMvc
         .perform(
             put("/api/members/" + memberMemberId + "/role")
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_ra_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -224,7 +228,9 @@ class RoleAssignmentTest {
   @Test
   void lazyCreateMember_setsDefaultSystemRole() throws Exception {
     // Sync a new member and verify they get an orgRoleId
-    String newMemberId = syncMember("user_ra_lazy", "ra_lazy@test.com", "RA Lazy", "member");
+    String newMemberId =
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_ra_lazy", "ra_lazy@test.com", "RA Lazy", "member");
 
     UUID memberUuid = UUID.fromString(newMemberId);
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -246,7 +252,7 @@ class RoleAssignmentTest {
     mockMvc
         .perform(
             put("/api/members/" + memberMemberId + "/role")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ra_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -259,7 +265,7 @@ class RoleAssignmentTest {
     mockMvc
         .perform(
             put("/api/members/" + memberMemberId + "/role")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ra_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -270,33 +276,6 @@ class RoleAssignmentTest {
         .andExpect(jsonPath("$.overrides").isEmpty());
   }
 
-  // --- Helper: sync member via internal API ---
-  private String syncMember(String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(ORG_ID, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  // --- Helper: create a custom role via API ---
   private String createCustomRole(String name, Set<String> capabilities) throws Exception {
     var body =
         """
@@ -316,7 +295,7 @@ class RoleAssignmentTest {
         mockMvc
             .perform(
                 post("/api/org-roles")
-                    .with(adminJwt())
+                    .with(TestJwtFactory.adminJwt(ORG_ID, "user_ra_admin"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(body))
             .andExpect(status().isCreated())
@@ -328,7 +307,7 @@ class RoleAssignmentTest {
   private String findSystemRoleId(String slug) throws Exception {
     var listResult =
         mockMvc
-            .perform(get("/api/org-roles").with(ownerJwt()))
+            .perform(get("/api/org-roles").with(TestJwtFactory.ownerJwt(ORG_ID, "user_ra_owner")))
             .andExpect(status().isOk())
             .andReturn();
     List<Map<String, Object>> roles =
@@ -338,21 +317,5 @@ class RoleAssignmentTest {
         .findFirst()
         .map(r -> r.get("id").toString())
         .orElseThrow(() -> new AssertionError("System role '" + slug + "' not found"));
-  }
-
-  // --- JWT helpers ---
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_ra_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor adminJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_ra_admin").claim("o", Map.of("id", ORG_ID, "rol", "admin")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_ra_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 }

@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.costrate;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -16,7 +15,8 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -30,7 +30,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -73,16 +72,20 @@ class CostRateControllerTest {
     provisioningService.provisionTenant(ORG_ID, "Cost Ctrl Test Org", null);
 
     memberIdOwner =
-        syncMember(ORG_ID, "user_crc_owner", "crc_owner@test.com", "CRC Owner", "owner");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_crc_owner", "crc_owner@test.com", "CRC Owner", "owner");
     memberIdAdmin =
-        syncMember(ORG_ID, "user_crc_admin", "crc_admin@test.com", "CRC Admin", "admin");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_crc_admin", "crc_admin@test.com", "CRC Admin", "admin");
     memberIdMember =
-        syncMember(ORG_ID, "user_crc_member", "crc_member@test.com", "CRC Member", "member");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_crc_member", "crc_member@test.com", "CRC Member", "member");
 
     // Provision tenant B for isolation tests
     provisioningService.provisionTenant(ORG_ID_B, "Cost Ctrl Test Org B", null);
     memberIdOwnerB =
-        syncMember(ORG_ID_B, "user_crc_owner_b", "crc_owner_b@test.com", "CRC Owner B", "owner");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID_B, "user_crc_owner_b", "crc_owner_b@test.com", "CRC Owner B", "owner");
 
     var tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
@@ -138,7 +141,8 @@ class CostRateControllerTest {
     // Sync custom-role members for capability tests
     customRoleMemberId =
         UUID.fromString(
-            syncMember(
+            TestMemberHelper.syncMember(
+                mockMvc,
                 ORG_ID,
                 "user_crc_314a_custom",
                 "crc_custom@test.com",
@@ -146,8 +150,13 @@ class CostRateControllerTest {
                 "member"));
     noCapMemberId =
         UUID.fromString(
-            syncMember(
-                ORG_ID, "user_crc_314a_nocap", "crc_nocap@test.com", "CRC NoCap User", "member"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_crc_314a_nocap",
+                "crc_nocap@test.com",
+                "CRC NoCap User",
+                "member"));
 
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)
@@ -186,7 +195,7 @@ class CostRateControllerTest {
         mockMvc
             .perform(
                 post("/api/cost-rates")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_crc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -215,7 +224,7 @@ class CostRateControllerTest {
   @Order(2)
   void getListsCostRates() throws Exception {
     mockMvc
-        .perform(get("/api/cost-rates").with(ownerJwt()))
+        .perform(get("/api/cost-rates").with(TestJwtFactory.ownerJwt(ORG_ID, "user_crc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray())
         .andExpect(jsonPath("$.content.length()").value(1))
@@ -229,7 +238,7 @@ class CostRateControllerTest {
     mockMvc
         .perform(
             post("/api/cost-rates")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_crc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -245,7 +254,10 @@ class CostRateControllerTest {
 
     // Filter by the original member — should only return 1
     mockMvc
-        .perform(get("/api/cost-rates").param("memberId", memberIdMember).with(ownerJwt()))
+        .perform(
+            get("/api/cost-rates")
+                .param("memberId", memberIdMember)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_crc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content.length()").value(1))
         .andExpect(jsonPath("$.content[0].memberId").value(memberIdMember));
@@ -257,7 +269,7 @@ class CostRateControllerTest {
     mockMvc
         .perform(
             put("/api/cost-rates/" + createdCostRateId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_crc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -282,7 +294,7 @@ class CostRateControllerTest {
         mockMvc
             .perform(
                 post("/api/cost-rates")
-                    .with(adminJwt())
+                    .with(TestJwtFactory.adminJwt(ORG_ID, "user_crc_admin"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -300,7 +312,9 @@ class CostRateControllerTest {
     var rateId = JsonPath.read(result.getResponse().getContentAsString(), "$.id").toString();
 
     mockMvc
-        .perform(delete("/api/cost-rates/" + rateId).with(adminJwt()))
+        .perform(
+            delete("/api/cost-rates/" + rateId)
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_crc_admin")))
         .andExpect(status().isNoContent());
   }
 
@@ -312,7 +326,7 @@ class CostRateControllerTest {
     mockMvc
         .perform(
             post("/api/cost-rates")
-                .with(memberJwt())
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_crc_member", "member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -330,7 +344,10 @@ class CostRateControllerTest {
   @Test
   @Order(7)
   void memberCannotListCostRates() throws Exception {
-    mockMvc.perform(get("/api/cost-rates").with(memberJwt())).andExpect(status().isForbidden());
+    mockMvc
+        .perform(
+            get("/api/cost-rates").with(TestJwtFactory.jwtAs(ORG_ID, "user_crc_member", "member")))
+        .andExpect(status().isForbidden());
   }
 
   @Test
@@ -339,7 +356,7 @@ class CostRateControllerTest {
     mockMvc
         .perform(
             put("/api/cost-rates/" + createdCostRateId)
-                .with(memberJwt())
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_crc_member", "member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -356,7 +373,9 @@ class CostRateControllerTest {
   @Order(9)
   void memberCannotDeleteCostRate() throws Exception {
     mockMvc
-        .perform(delete("/api/cost-rates/" + createdCostRateId).with(memberJwt()))
+        .perform(
+            delete("/api/cost-rates/" + createdCostRateId)
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_crc_member", "member")))
         .andExpect(status().isForbidden());
   }
 
@@ -368,7 +387,7 @@ class CostRateControllerTest {
     mockMvc
         .perform(
             post("/api/cost-rates")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_crc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -389,7 +408,7 @@ class CostRateControllerTest {
   @Order(11)
   void costRateInTenantAIsInvisibleInTenantB() throws Exception {
     mockMvc
-        .perform(get("/api/cost-rates").with(ownerJwtTenantB()))
+        .perform(get("/api/cost-rates").with(TestJwtFactory.ownerJwt(ORG_ID_B, "user_crc_owner_b")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content.length()").value(0));
   }
@@ -397,78 +416,20 @@ class CostRateControllerTest {
   @Test
   @Order(12)
   void customRoleWithCapability_accessesCostRateEndpoint_returns200() throws Exception {
-    mockMvc.perform(get("/api/cost-rates").with(customRoleJwt())).andExpect(status().isOk());
+    mockMvc
+        .perform(
+            get("/api/cost-rates")
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_crc_314a_custom", "member")))
+        .andExpect(status().isOk());
   }
 
   @Test
   @Order(13)
   void customRoleWithoutCapability_accessesCostRateEndpoint_returns403() throws Exception {
     mockMvc
-        .perform(get("/api/cost-rates").with(noCapabilityJwt()))
+        .perform(
+            get("/api/cost-rates")
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_crc_314a_nocap", "member")))
         .andExpect(status().isForbidden());
-  }
-
-  // --- Helpers ---
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_crc_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor adminJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_crc_admin").claim("o", Map.of("id", ORG_ID, "rol", "admin")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_crc_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor ownerJwtTenantB() {
-    return jwt()
-        .jwt(j -> j.subject("user_crc_owner_b").claim("o", Map.of("id", ORG_ID_B, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor customRoleJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_crc_314a_custom")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor noCapabilityJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_crc_314a_nocap").claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 }

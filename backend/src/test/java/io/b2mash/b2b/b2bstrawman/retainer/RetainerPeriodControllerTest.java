@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.retainer;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -13,8 +12,10 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.tax.TaxRateRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestChecklistHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.time.LocalDate;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
@@ -27,7 +28,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -38,8 +38,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class RetainerPeriodControllerTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_retainer_period_ctrl_test";
 
   @Autowired private MockMvc mockMvc;
@@ -58,14 +56,35 @@ class RetainerPeriodControllerTest {
   void provisionAndSeed() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Retainer Period Ctrl Test Org", null);
 
-    syncMember(ORG_ID, "user_rpc_owner", "rpc_owner@test.com", "RPC Owner", "owner");
-    syncMember(ORG_ID, "user_rpc_admin", "rpc_admin@test.com", "RPC Admin", "admin");
-    syncMember(ORG_ID, "user_rpc_member", "rpc_member@test.com", "RPC Member", "member");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_rpc_owner", "rpc_owner@test.com", "RPC Owner", "owner");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_rpc_admin", "rpc_admin@test.com", "RPC Admin", "admin");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_rpc_member", "rpc_member@test.com", "RPC Member", "member");
 
     // Create separate customers (one active retainer per customer constraint)
-    String customerId1 = createCustomer("Past Retainer Customer", "past-ret@test.com");
-    String customerId2 = createCustomer("Future Retainer Customer", "future-ret@test.com");
-    String customerId3 = createCustomer("Invoice Line Customer", "invoice-line@test.com");
+    String customerId1 =
+        TestEntityHelper.createCustomer(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, "user_rpc_owner"),
+            "Past Retainer Customer",
+            "past-ret@test.com");
+    transitionCustomerToActive(customerId1);
+    String customerId2 =
+        TestEntityHelper.createCustomer(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, "user_rpc_owner"),
+            "Future Retainer Customer",
+            "future-ret@test.com");
+    transitionCustomerToActive(customerId2);
+    String customerId3 =
+        TestEntityHelper.createCustomer(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, "user_rpc_owner"),
+            "Invoice Line Customer",
+            "invoice-line@test.com");
+    transitionCustomerToActive(customerId3);
 
     // Create retainer with past start date (period end is in the past — closeable)
     LocalDate pastStart = LocalDate.now().minusMonths(2);
@@ -103,31 +122,17 @@ class RetainerPeriodControllerTest {
         .run(() -> transactionTemplate.executeWithoutResult(tx -> taxRateRepository.deleteAll()));
   }
 
-  private String createCustomer(String name, String email) throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/api/customers")
-                    .with(ownerJwt())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content("{\"name\":\"%s\",\"email\":\"%s\"}".formatted(name, email)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    String id = JsonPath.read(result.getResponse().getContentAsString(), "$.id").toString();
-    transitionCustomerToActive(id);
-    return id;
-  }
-
   private void transitionCustomerToActive(String custId) throws Exception {
     mockMvc
         .perform(
             post("/api/customers/" + custId + "/transition")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rpc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"targetStatus\": \"ONBOARDING\"}"))
         .andExpect(status().isOk());
     // Completing all checklist items auto-transitions ONBOARDING -> ACTIVE
-    TestChecklistHelper.completeChecklistItems(mockMvc, custId, ownerJwt());
+    TestChecklistHelper.completeChecklistItems(
+        mockMvc, custId, TestJwtFactory.ownerJwt(ORG_ID, "user_rpc_owner"));
   }
 
   private String createRetainer(
@@ -137,7 +142,7 @@ class RetainerPeriodControllerTest {
         mockMvc
             .perform(
                 post("/api/retainers")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rpc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -161,7 +166,9 @@ class RetainerPeriodControllerTest {
   @Order(1)
   void listPeriods_asMember_returns200WithPaginatedContent() throws Exception {
     mockMvc
-        .perform(get("/api/retainers/" + pastRetainerId + "/periods").with(memberJwt()))
+        .perform(
+            get("/api/retainers/" + pastRetainerId + "/periods")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_rpc_member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray())
         .andExpect(jsonPath("$.content[0].id").exists())
@@ -174,7 +181,9 @@ class RetainerPeriodControllerTest {
   @Order(2)
   void getCurrentPeriod_openPeriodExists_returns200WithPeriodData() throws Exception {
     mockMvc
-        .perform(get("/api/retainers/" + pastRetainerId + "/periods/current").with(memberJwt()))
+        .perform(
+            get("/api/retainers/" + pastRetainerId + "/periods/current")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_rpc_member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").exists())
         .andExpect(jsonPath("$.status").value("OPEN"))
@@ -187,7 +196,9 @@ class RetainerPeriodControllerTest {
   @Order(3)
   void listPeriods_nonExistentRetainer_returns404() throws Exception {
     mockMvc
-        .perform(get("/api/retainers/" + UUID.randomUUID() + "/periods").with(memberJwt()))
+        .perform(
+            get("/api/retainers/" + UUID.randomUUID() + "/periods")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_rpc_member")))
         .andExpect(status().isNotFound());
   }
 
@@ -196,7 +207,8 @@ class RetainerPeriodControllerTest {
   void closePeriod_asMember_returns403() throws Exception {
     mockMvc
         .perform(
-            post("/api/retainers/" + pastRetainerId + "/periods/current/close").with(memberJwt()))
+            post("/api/retainers/" + pastRetainerId + "/periods/current/close")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_rpc_member")))
         .andExpect(status().isForbidden());
   }
 
@@ -205,7 +217,8 @@ class RetainerPeriodControllerTest {
   void closePeriod_beforeEndDate_returns400() throws Exception {
     mockMvc
         .perform(
-            post("/api/retainers/" + futureRetainerId + "/periods/current/close").with(adminJwt()))
+            post("/api/retainers/" + futureRetainerId + "/periods/current/close")
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_rpc_admin")))
         .andExpect(status().isBadRequest());
   }
 
@@ -214,7 +227,8 @@ class RetainerPeriodControllerTest {
   void closePeriod_asAdmin_returns200WithAllThreeTopLevelFields() throws Exception {
     mockMvc
         .perform(
-            post("/api/retainers/" + pastRetainerId + "/periods/current/close").with(adminJwt()))
+            post("/api/retainers/" + pastRetainerId + "/periods/current/close")
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_rpc_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.closedPeriod").exists())
         .andExpect(jsonPath("$.closedPeriod.status").value("CLOSED"))
@@ -230,7 +244,9 @@ class RetainerPeriodControllerTest {
     // After Order 6 closed the period, a new OPEN period should have been created
     // (retainer is active with no endDate)
     mockMvc
-        .perform(get("/api/retainers/" + pastRetainerId + "/periods/current").with(memberJwt()))
+        .perform(
+            get("/api/retainers/" + pastRetainerId + "/periods/current")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_rpc_member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("OPEN"));
   }
@@ -241,46 +257,11 @@ class RetainerPeriodControllerTest {
     // Close the overageRetainerId (no time entries => 0 consumed, 1 base line)
     mockMvc
         .perform(
-            post("/api/retainers/" + overageRetainerId + "/periods/current/close").with(adminJwt()))
+            post("/api/retainers/" + overageRetainerId + "/periods/current/close")
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_rpc_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.generatedInvoice.lines").isArray())
         .andExpect(jsonPath("$.generatedInvoice.lines[0].description").exists())
         .andExpect(jsonPath("$.generatedInvoice.total").value(5000.0));
-  }
-
-  // --- Helpers ---
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"clerkOrgId":"%s","clerkUserId":"%s","email":"%s","name":"%s","avatarUrl":null,"orgRole":"%s"}
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_rpc_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor adminJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_rpc_admin").claim("o", Map.of("id", ORG_ID, "rol", "admin")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_rpc_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 }

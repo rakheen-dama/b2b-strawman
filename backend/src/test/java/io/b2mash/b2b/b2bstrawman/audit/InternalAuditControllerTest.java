@@ -9,14 +9,14 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -24,9 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -54,12 +51,16 @@ class InternalAuditControllerTest {
     provisioningService.provisionTenant(EMPTY_ORG_ID, "Empty Audit Org", null);
 
     // Sync members into main org
-    syncMember(ORG_ID, "user_iat_owner", "iat_owner@test.com", "IAT Owner", "owner");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_iat_owner", "iat_owner@test.com", "IAT Owner", "owner");
 
     // Create projects to generate audit events (project.created events include ipAddress/userAgent)
-    createProject("Internal Audit Project 1");
-    createProject("Internal Audit Project 2");
-    createProject("Internal Audit Project 3");
+    TestEntityHelper.createProject(
+        mockMvc, TestJwtFactory.ownerJwt(ORG_ID, "user_iat_owner"), "Internal Audit Project 1");
+    TestEntityHelper.createProject(
+        mockMvc, TestJwtFactory.ownerJwt(ORG_ID, "user_iat_owner"), "Internal Audit Project 2");
+    TestEntityHelper.createProject(
+        mockMvc, TestJwtFactory.ownerJwt(ORG_ID, "user_iat_owner"), "Internal Audit Project 3");
   }
 
   @Test
@@ -158,53 +159,5 @@ class InternalAuditControllerTest {
     // Verify userAgent key is present in JSON (even if null -- proves PII field is included)
     String body = result.getResponse().getContentAsString();
     assertTrue(body.contains("\"userAgent\""), "Response should include userAgent field");
-  }
-
-  // --- Helpers ---
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private void createProject(String name) throws Exception {
-    mockMvc
-        .perform(
-            post("/api/projects")
-                .with(ownerJwt())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {"name": "%s", "description": "For internal audit tests"}
-                    """
-                        .formatted(name)))
-        .andExpect(status().isCreated());
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return SecurityMockMvcRequestPostProcessors.jwt()
-        .jwt(j -> j.subject("user_iat_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
   }
 }

@@ -1,20 +1,19 @@
 package io.b2mash.b2b.b2bstrawman.project;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -34,8 +33,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ProjectAccessIntegrationTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_access_test";
 
   @Autowired private MockMvc mockMvc;
@@ -55,15 +52,25 @@ class ProjectAccessIntegrationTest {
     provisioningService.provisionTenant(ORG_ID, "Access Test Org", null);
 
     ownerMemberId =
-        syncMember(ORG_ID, "user_access_owner", "access_owner@test.com", "Owner", "owner");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_access_owner", "access_owner@test.com", "Owner", "owner");
     adminMemberId =
-        syncMember(ORG_ID, "user_access_admin", "access_admin@test.com", "Admin", "admin");
-    leadMemberId = syncMember(ORG_ID, "user_access_lead", "access_lead@test.com", "Lead", "member");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_access_admin", "access_admin@test.com", "Admin", "admin");
+    leadMemberId =
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_access_lead", "access_lead@test.com", "Lead", "member");
     regularMemberId =
-        syncMember(ORG_ID, "user_access_regular", "access_regular@test.com", "Regular", "member");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_access_regular", "access_regular@test.com", "Regular", "member");
     nonMemberMemberId =
-        syncMember(
-            ORG_ID, "user_access_nonmember", "access_nonmember@test.com", "NonMember", "member");
+        TestMemberHelper.syncMember(
+            mockMvc,
+            ORG_ID,
+            "user_access_nonmember",
+            "access_nonmember@test.com",
+            "NonMember",
+            "member");
 
     // Assign system roles to owner and admin members for capability-based auth
     var tenantSchema =
@@ -101,20 +108,20 @@ class ProjectAccessIntegrationTest {
   @Test
   void ownerSeesAllProjects() throws Exception {
     // Lead creates a project (only lead is on it)
-    createProjectAs(ownerJwt(), "Owner Sees All");
+    createProjectAs(TestJwtFactory.ownerJwt(ORG_ID, "user_access_owner"), "Owner Sees All");
 
     mockMvc
-        .perform(get("/api/projects").with(ownerJwt()))
+        .perform(get("/api/projects").with(TestJwtFactory.ownerJwt(ORG_ID, "user_access_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[?(@.name == 'Owner Sees All')]").exists());
   }
 
   @Test
   void adminSeesAllProjects() throws Exception {
-    createProjectAs(ownerJwt(), "Admin Sees All");
+    createProjectAs(TestJwtFactory.ownerJwt(ORG_ID, "user_access_owner"), "Admin Sees All");
 
     mockMvc
-        .perform(get("/api/projects").with(adminJwt()))
+        .perform(get("/api/projects").with(TestJwtFactory.adminJwt(ORG_ID, "user_access_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[?(@.name == 'Admin Sees All')]").exists());
   }
@@ -122,54 +129,57 @@ class ProjectAccessIntegrationTest {
   @Test
   void memberSeesOnlyTheirProjects() throws Exception {
     // Lead creates a project — nonMember is NOT added
-    createProjectAs(ownerJwt(), "Not For NonMember");
+    createProjectAs(TestJwtFactory.ownerJwt(ORG_ID, "user_access_owner"), "Not For NonMember");
 
     mockMvc
-        .perform(get("/api/projects").with(nonMemberJwt()))
+        .perform(
+            get("/api/projects").with(TestJwtFactory.memberJwt(ORG_ID, "user_access_nonmember")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[?(@.name == 'Not For NonMember')]").doesNotExist());
   }
 
   @Test
   void memberSeesProjectsTheyAreOn() throws Exception {
-    var projectId = createProjectAs(ownerJwt(), "Member Is On This");
+    var projectId =
+        createProjectAs(TestJwtFactory.ownerJwt(ORG_ID, "user_access_owner"), "Member Is On This");
 
     // Add regular member to this project
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/members")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_access_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"memberId\": \"%s\"}".formatted(regularMemberId)))
         .andExpect(status().isCreated());
 
     mockMvc
-        .perform(get("/api/projects").with(regularJwt()))
+        .perform(get("/api/projects").with(TestJwtFactory.memberJwt(ORG_ID, "user_access_regular")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[?(@.name == 'Member Is On This')]").exists());
   }
 
   @Test
   void listingIncludesProjectRole() throws Exception {
-    var projectId = createProjectAs(ownerJwt(), "Role In Listing");
+    var projectId =
+        createProjectAs(TestJwtFactory.ownerJwt(ORG_ID, "user_access_owner"), "Role In Listing");
 
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/members")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_access_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"memberId\": \"%s\"}".formatted(regularMemberId)))
         .andExpect(status().isCreated());
 
     // Creator (owner) sees their lead role
     mockMvc
-        .perform(get("/api/projects").with(ownerJwt()))
+        .perform(get("/api/projects").with(TestJwtFactory.ownerJwt(ORG_ID, "user_access_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[?(@.name == 'Role In Listing')].projectRole").value("lead"));
 
     // Regular member sees their role
     mockMvc
-        .perform(get("/api/projects").with(regularJwt()))
+        .perform(get("/api/projects").with(TestJwtFactory.memberJwt(ORG_ID, "user_access_regular")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[?(@.name == 'Role In Listing')].projectRole").value("member"));
   }
@@ -178,47 +188,60 @@ class ProjectAccessIntegrationTest {
 
   @Test
   void nonMemberGets404OnGetProject() throws Exception {
-    var projectId = createProjectAs(ownerJwt(), "No Access For NonMember");
+    var projectId =
+        createProjectAs(
+            TestJwtFactory.ownerJwt(ORG_ID, "user_access_owner"), "No Access For NonMember");
 
     mockMvc
-        .perform(get("/api/projects/" + projectId).with(nonMemberJwt()))
+        .perform(
+            get("/api/projects/" + projectId)
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_access_nonmember")))
         .andExpect(status().isNotFound());
   }
 
   @Test
   void ownerCanGetAnyProject() throws Exception {
-    var projectId = createProjectAs(ownerJwt(), "Owner Can Get");
+    var projectId =
+        createProjectAs(TestJwtFactory.ownerJwt(ORG_ID, "user_access_owner"), "Owner Can Get");
 
     mockMvc
-        .perform(get("/api/projects/" + projectId).with(ownerJwt()))
+        .perform(
+            get("/api/projects/" + projectId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_access_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.name").value("Owner Can Get"));
   }
 
   @Test
   void adminCanGetAnyProject() throws Exception {
-    var projectId = createProjectAs(ownerJwt(), "Admin Can Get");
+    var projectId =
+        createProjectAs(TestJwtFactory.ownerJwt(ORG_ID, "user_access_owner"), "Admin Can Get");
 
     mockMvc
-        .perform(get("/api/projects/" + projectId).with(adminJwt()))
+        .perform(
+            get("/api/projects/" + projectId)
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_access_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.name").value("Admin Can Get"));
   }
 
   @Test
   void projectMemberCanGetProject() throws Exception {
-    var projectId = createProjectAs(ownerJwt(), "Regular Can Get");
+    var projectId =
+        createProjectAs(TestJwtFactory.ownerJwt(ORG_ID, "user_access_owner"), "Regular Can Get");
 
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/members")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_access_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"memberId\": \"%s\"}".formatted(regularMemberId)))
         .andExpect(status().isCreated());
 
     mockMvc
-        .perform(get("/api/projects/" + projectId).with(regularJwt()))
+        .perform(
+            get("/api/projects/" + projectId)
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_access_regular")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.name").value("Regular Can Get"))
         .andExpect(jsonPath("$.projectRole").value("member"));
@@ -226,21 +249,27 @@ class ProjectAccessIntegrationTest {
 
   @Test
   void getProjectIncludesProjectRole() throws Exception {
-    var projectId = createProjectAs(ownerJwt(), "Get With Role");
+    var projectId =
+        createProjectAs(TestJwtFactory.ownerJwt(ORG_ID, "user_access_owner"), "Get With Role");
 
     // Owner is not on the project member list (unless they created it — they did as owner)
     mockMvc
-        .perform(get("/api/projects/" + projectId).with(ownerJwt()))
+        .perform(
+            get("/api/projects/" + projectId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_access_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.projectRole").value("lead"));
   }
 
   @Test
   void adminNotOnProjectSeesNullRole() throws Exception {
-    var projectId = createProjectAs(ownerJwt(), "Admin Not Member");
+    var projectId =
+        createProjectAs(TestJwtFactory.ownerJwt(ORG_ID, "user_access_owner"), "Admin Not Member");
 
     mockMvc
-        .perform(get("/api/projects/" + projectId).with(adminJwt()))
+        .perform(
+            get("/api/projects/" + projectId)
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_access_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.name").value("Admin Not Member"))
         .andExpect(jsonPath("$.projectRole").isEmpty());
@@ -248,10 +277,13 @@ class ProjectAccessIntegrationTest {
 
   @Test
   void ownerNotOnProjectSeesNullRole() throws Exception {
-    var projectId = createProjectAs(adminJwt(), "Owner Not Member");
+    var projectId =
+        createProjectAs(TestJwtFactory.adminJwt(ORG_ID, "user_access_admin"), "Owner Not Member");
 
     mockMvc
-        .perform(get("/api/projects/" + projectId).with(ownerJwt()))
+        .perform(
+            get("/api/projects/" + projectId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_access_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.name").value("Owner Not Member"))
         .andExpect(jsonPath("$.projectRole").isEmpty());
@@ -264,7 +296,7 @@ class ProjectAccessIntegrationTest {
     mockMvc
         .perform(
             post("/api/projects")
-                .with(regularJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_access_regular"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -275,10 +307,13 @@ class ProjectAccessIntegrationTest {
 
   @Test
   void creatorBecomesLeadAndCanGetTheirProject() throws Exception {
-    var projectId = createProjectAs(ownerJwt(), "Creator Is Lead");
+    var projectId =
+        createProjectAs(TestJwtFactory.ownerJwt(ORG_ID, "user_access_owner"), "Creator Is Lead");
 
     mockMvc
-        .perform(get("/api/projects/" + projectId).with(ownerJwt()))
+        .perform(
+            get("/api/projects/" + projectId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_access_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.projectRole").value("lead"));
   }
@@ -287,12 +322,13 @@ class ProjectAccessIntegrationTest {
 
   @Test
   void leadCanUpdateProject() throws Exception {
-    var projectId = createProjectAs(ownerJwt(), "Lead Can Update");
+    var projectId =
+        createProjectAs(TestJwtFactory.ownerJwt(ORG_ID, "user_access_owner"), "Lead Can Update");
 
     mockMvc
         .perform(
             put("/api/projects/" + projectId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_access_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -304,12 +340,13 @@ class ProjectAccessIntegrationTest {
 
   @Test
   void adminCanUpdateAnyProject() throws Exception {
-    var projectId = createProjectAs(ownerJwt(), "Admin Can Update");
+    var projectId =
+        createProjectAs(TestJwtFactory.ownerJwt(ORG_ID, "user_access_owner"), "Admin Can Update");
 
     mockMvc
         .perform(
             put("/api/projects/" + projectId)
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_access_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -321,12 +358,14 @@ class ProjectAccessIntegrationTest {
 
   @Test
   void regularMemberCannotUpdateProject() throws Exception {
-    var projectId = createProjectAs(ownerJwt(), "Regular Cannot Update");
+    var projectId =
+        createProjectAs(
+            TestJwtFactory.ownerJwt(ORG_ID, "user_access_owner"), "Regular Cannot Update");
 
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/members")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_access_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"memberId\": \"%s\"}".formatted(regularMemberId)))
         .andExpect(status().isCreated());
@@ -334,7 +373,7 @@ class ProjectAccessIntegrationTest {
     mockMvc
         .perform(
             put("/api/projects/" + projectId)
-                .with(regularJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_access_regular"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -345,12 +384,14 @@ class ProjectAccessIntegrationTest {
 
   @Test
   void nonMemberGets404OnUpdateProject() throws Exception {
-    var projectId = createProjectAs(ownerJwt(), "NonMember Cannot Update");
+    var projectId =
+        createProjectAs(
+            TestJwtFactory.ownerJwt(ORG_ID, "user_access_owner"), "NonMember Cannot Update");
 
     mockMvc
         .perform(
             put("/api/projects/" + projectId)
-                .with(nonMemberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_access_nonmember"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -374,62 +415,5 @@ class ProjectAccessIntegrationTest {
 
     String location = result.getResponse().getHeader("Location");
     return location.substring(location.lastIndexOf('/') + 1);
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_access_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor adminJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_access_admin").claim("o", Map.of("id", ORG_ID, "rol", "admin")));
-  }
-
-  private JwtRequestPostProcessor leadJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_access_lead").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor regularJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_access_regular").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor nonMemberJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_access_nonmember")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 }

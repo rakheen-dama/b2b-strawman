@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.billing;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -12,7 +11,8 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.Organization;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,7 +22,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -47,7 +46,8 @@ class SubscriptionGuardFilterTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Guard Filter Test Org", null);
-    syncMember(ORG_ID, "user_guard_owner", "guard-owner@test.com", "Guard Owner", "owner");
+    TestMemberHelper.syncMemberQuietly(
+        mockMvc, ORG_ID, "user_guard_owner", "guard-owner@test.com", "Guard Owner", "owner");
     organization = organizationRepository.findByExternalOrgId(ORG_ID).orElseThrow();
   }
 
@@ -62,7 +62,11 @@ class SubscriptionGuardFilterTest {
   @Test
   void trialing_get_passes() throws Exception {
     setSubscriptionStatus(Subscription.SubscriptionStatus.TRIALING);
-    mockMvc.perform(get("/api/billing/subscription").with(ownerJwt())).andExpect(status().isOk());
+    mockMvc
+        .perform(
+            get("/api/billing/subscription")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_guard_owner")))
+        .andExpect(status().isOk());
   }
 
   @Test
@@ -70,7 +74,9 @@ class SubscriptionGuardFilterTest {
     setSubscriptionStatus(Subscription.SubscriptionStatus.TRIALING);
     // POST to billing endpoint — should pass (TRIALING allows writes)
     mockMvc
-        .perform(post("/api/billing/subscribe").with(ownerJwt()))
+        .perform(
+            post("/api/billing/subscribe")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_guard_owner")))
         .andExpect(
             result -> {
               int s = result.getResponse().getStatus();
@@ -86,7 +92,9 @@ class SubscriptionGuardFilterTest {
   void active_post_passes() throws Exception {
     setSubscriptionStatus(Subscription.SubscriptionStatus.ACTIVE);
     mockMvc
-        .perform(post("/api/billing/subscribe").with(ownerJwt()))
+        .perform(
+            post("/api/billing/subscribe")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_guard_owner")))
         .andExpect(
             result -> {
               int s = result.getResponse().getStatus();
@@ -101,7 +109,11 @@ class SubscriptionGuardFilterTest {
   void gracePeriod_get_passes() throws Exception {
     setSubscriptionStatus(Subscription.SubscriptionStatus.GRACE_PERIOD);
     // GET should pass through (read-only state allows reads)
-    mockMvc.perform(get("/api/billing/subscription").with(ownerJwt())).andExpect(status().isOk());
+    mockMvc
+        .perform(
+            get("/api/billing/subscription")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_guard_owner")))
+        .andExpect(status().isOk());
   }
 
   @Test
@@ -110,7 +122,7 @@ class SubscriptionGuardFilterTest {
     mockMvc
         .perform(
             post("/api/projects")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_guard_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\": \"Test\"}"))
         .andExpect(status().isForbidden())
@@ -124,7 +136,7 @@ class SubscriptionGuardFilterTest {
     mockMvc
         .perform(
             put("/api/projects/00000000-0000-0000-0000-000000000001")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_guard_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\": \"Test\"}"))
         .andExpect(status().isForbidden())
@@ -135,7 +147,9 @@ class SubscriptionGuardFilterTest {
   void gracePeriod_delete_blocked() throws Exception {
     setSubscriptionStatus(Subscription.SubscriptionStatus.GRACE_PERIOD);
     mockMvc
-        .perform(delete("/api/projects/00000000-0000-0000-0000-000000000001").with(ownerJwt()))
+        .perform(
+            delete("/api/projects/00000000-0000-0000-0000-000000000001")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_guard_owner")))
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.type").value("subscription_required"));
   }
@@ -145,7 +159,9 @@ class SubscriptionGuardFilterTest {
     setSubscriptionStatus(Subscription.SubscriptionStatus.GRACE_PERIOD);
     // POST to billing path should pass even in GRACE_PERIOD
     mockMvc
-        .perform(post("/api/billing/subscribe").with(ownerJwt()))
+        .perform(
+            post("/api/billing/subscribe")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_guard_owner")))
         .andExpect(
             result -> {
               int s = result.getResponse().getStatus();
@@ -162,7 +178,7 @@ class SubscriptionGuardFilterTest {
     mockMvc
         .perform(
             post("/api/projects")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_guard_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\": \"Test\"}"))
         .andExpect(status().isForbidden())
@@ -177,7 +193,7 @@ class SubscriptionGuardFilterTest {
     mockMvc
         .perform(
             post("/api/projects")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_guard_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\": \"Test\"}"))
         .andExpect(status().isForbidden())
@@ -190,7 +206,7 @@ class SubscriptionGuardFilterTest {
   void locked_get_blocked() throws Exception {
     setSubscriptionStatus(Subscription.SubscriptionStatus.LOCKED);
     mockMvc
-        .perform(get("/api/projects").with(ownerJwt()))
+        .perform(get("/api/projects").with(TestJwtFactory.ownerJwt(ORG_ID, "user_guard_owner")))
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.type").value("subscription_locked"))
         .andExpect(jsonPath("$.resubscribeUrl").value("/settings/billing"));
@@ -202,7 +218,7 @@ class SubscriptionGuardFilterTest {
     mockMvc
         .perform(
             post("/api/projects")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_guard_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\": \"Test\"}"))
         .andExpect(status().isForbidden())
@@ -213,7 +229,11 @@ class SubscriptionGuardFilterTest {
   void locked_billingPath_passes() throws Exception {
     setSubscriptionStatus(Subscription.SubscriptionStatus.LOCKED);
     // GET billing path should pass even when LOCKED
-    mockMvc.perform(get("/api/billing/subscription").with(ownerJwt())).andExpect(status().isOk());
+    mockMvc
+        .perform(
+            get("/api/billing/subscription")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_guard_owner")))
+        .andExpect(status().isOk());
   }
 
   // --- No org context ---
@@ -287,33 +307,5 @@ class SubscriptionGuardFilterTest {
 
     // Evict cache so the new status is picked up
     statusCache.evict(organization.getId());
-  }
-
-  private void syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    mockMvc
-        .perform(
-            post("/internal/members/sync")
-                .header("X-API-KEY", API_KEY)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {
-                      "clerkOrgId": "%s",
-                      "clerkUserId": "%s",
-                      "email": "%s",
-                      "name": "%s",
-                      "avatarUrl": null,
-                      "orgRole": "%s"
-                    }
-                    """
-                        .formatted(orgId, clerkUserId, email, name, orgRole)))
-        .andExpect(status().isCreated());
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_guard_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
   }
 }

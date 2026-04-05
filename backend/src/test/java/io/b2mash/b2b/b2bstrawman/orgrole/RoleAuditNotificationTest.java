@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.orgrole;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -15,9 +14,10 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -28,7 +28,6 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -38,8 +37,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class RoleAuditNotificationTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_role_audit_notif_test";
 
   @Autowired private MockMvc mockMvc;
@@ -59,10 +56,13 @@ class RoleAuditNotificationTest {
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
 
     ownerMemberId =
-        UUID.fromString(syncMember("user_ran_owner", "ran_owner@test.com", "RAN Owner", "owner"));
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, "user_ran_owner", "ran_owner@test.com", "RAN Owner", "owner"));
     regularMemberId =
         UUID.fromString(
-            syncMember("user_ran_member", "ran_member@test.com", "RAN Member", "member"));
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, "user_ran_member", "ran_member@test.com", "RAN Member", "member"));
   }
 
   // --- Test 1: createRole logs audit event ---
@@ -73,7 +73,7 @@ class RoleAuditNotificationTest {
         mockMvc
             .perform(
                 post("/api/org-roles")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ran_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -115,7 +115,7 @@ class RoleAuditNotificationTest {
         mockMvc
             .perform(
                 post("/api/org-roles")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ran_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -135,7 +135,7 @@ class RoleAuditNotificationTest {
     mockMvc
         .perform(
             put("/api/org-roles/" + roleId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ran_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -175,7 +175,7 @@ class RoleAuditNotificationTest {
         mockMvc
             .perform(
                 post("/api/org-roles")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ran_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -192,7 +192,9 @@ class RoleAuditNotificationTest {
         UUID.fromString(JsonPath.read(createResult.getResponse().getContentAsString(), "$.id"));
 
     mockMvc
-        .perform(delete("/api/org-roles/" + roleId).with(ownerJwt()))
+        .perform(
+            delete("/api/org-roles/" + roleId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ran_owner")))
         .andExpect(status().isNoContent());
 
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -218,7 +220,7 @@ class RoleAuditNotificationTest {
         mockMvc
             .perform(
                 post("/api/org-roles")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ran_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -239,7 +241,7 @@ class RoleAuditNotificationTest {
     mockMvc
         .perform(
             put("/api/members/" + regularMemberId + "/role")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ran_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -277,7 +279,7 @@ class RoleAuditNotificationTest {
         mockMvc
             .perform(
                 post("/api/org-roles")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ran_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -297,7 +299,7 @@ class RoleAuditNotificationTest {
     mockMvc
         .perform(
             put("/api/members/" + regularMemberId + "/role")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ran_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -331,7 +333,7 @@ class RoleAuditNotificationTest {
         mockMvc
             .perform(
                 post("/api/org-roles")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ran_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -351,7 +353,7 @@ class RoleAuditNotificationTest {
     mockMvc
         .perform(
             put("/api/members/" + regularMemberId + "/role")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ran_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -369,7 +371,7 @@ class RoleAuditNotificationTest {
     mockMvc
         .perform(
             put("/api/org-roles/" + roleId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ran_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -390,37 +392,5 @@ class RoleAuditNotificationTest {
                       "Member should receive ROLE_PERMISSIONS_CHANGED notification after role capability update")
                   .isTrue();
             });
-  }
-
-  // --- Helpers ---
-
-  private String syncMember(String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(ORG_ID, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_ran_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
   }
 }

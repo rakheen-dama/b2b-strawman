@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.datarequest;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -13,9 +12,10 @@ import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,7 +27,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -38,8 +37,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class DataExportControllerTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_data_export_ctrl_test";
 
   @Autowired private MockMvc mockMvc;
@@ -56,14 +53,16 @@ class DataExportControllerTest {
     setupMocks();
 
     provisioningService.provisionTenant(ORG_ID, "Data Export Controller Test Org", null);
-    syncMember(ORG_ID, "user_dex_owner", "dex_owner@test.com", "DEX Owner", "owner");
-    syncMember(ORG_ID, "user_dex_member", "dex_member@test.com", "DEX Member", "member");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_dex_owner", "dex_owner@test.com", "DEX Owner", "owner");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_dex_member", "dex_member@test.com", "DEX Member", "member");
 
     var result =
         mockMvc
             .perform(
                 post("/api/customers")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dex_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -87,7 +86,9 @@ class DataExportControllerTest {
   @Test
   void postExport_returns202WithExportId() throws Exception {
     mockMvc
-        .perform(post("/api/customers/" + customerId + "/data-export").with(ownerJwt()))
+        .perform(
+            post("/api/customers/" + customerId + "/data-export")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dex_owner")))
         .andExpect(status().isAccepted())
         .andExpect(jsonPath("$.exportId").exists())
         .andExpect(jsonPath("$.status").exists());
@@ -98,7 +99,9 @@ class DataExportControllerTest {
     // Trigger an export first
     var postResult =
         mockMvc
-            .perform(post("/api/customers/" + customerId + "/data-export").with(ownerJwt()))
+            .perform(
+                post("/api/customers/" + customerId + "/data-export")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dex_owner")))
             .andExpect(status().isAccepted())
             .andReturn();
     String exportId = JsonPath.read(postResult.getResponse().getContentAsString(), "$.exportId");
@@ -114,7 +117,9 @@ class DataExportControllerTest {
     Mockito.when(storageService.listKeys(Mockito.any())).thenReturn(List.of(fakeS3Key));
 
     mockMvc
-        .perform(get("/api/data-exports/" + exportId).with(ownerJwt()))
+        .perform(
+            get("/api/data-exports/" + exportId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dex_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.exportId").value(exportId))
         .andExpect(jsonPath("$.status").value("COMPLETED"));
@@ -123,7 +128,7 @@ class DataExportControllerTest {
   @Test
   void listExports_returns200() throws Exception {
     mockMvc
-        .perform(get("/api/data-exports").with(ownerJwt()))
+        .perform(get("/api/data-exports").with(TestJwtFactory.ownerJwt(ORG_ID, "user_dex_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray());
   }
@@ -131,56 +136,35 @@ class DataExportControllerTest {
   @Test
   void postExport_memberRole_returns403() throws Exception {
     mockMvc
-        .perform(post("/api/customers/" + customerId + "/data-export").with(memberJwt()))
+        .perform(
+            post("/api/customers/" + customerId + "/data-export")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_dex_member")))
         .andExpect(status().isForbidden());
   }
 
   @Test
   void postExport_nonExistentCustomer_returns404() throws Exception {
     mockMvc
-        .perform(post("/api/customers/" + UUID.randomUUID() + "/data-export").with(ownerJwt()))
+        .perform(
+            post("/api/customers/" + UUID.randomUUID() + "/data-export")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dex_owner")))
         .andExpect(status().isNotFound());
   }
 
   @Test
   void listExports_memberRole_returns403() throws Exception {
     // Verifies MANAGE_COMPLIANCE capability enforcement on data export endpoints
-    mockMvc.perform(get("/api/data-exports").with(memberJwt())).andExpect(status().isForbidden());
+    mockMvc
+        .perform(get("/api/data-exports").with(TestJwtFactory.memberJwt(ORG_ID, "user_dex_member")))
+        .andExpect(status().isForbidden());
   }
 
   @Test
   void getExportStatus_memberRole_returns403() throws Exception {
     mockMvc
-        .perform(get("/api/data-exports/" + UUID.randomUUID()).with(memberJwt()))
+        .perform(
+            get("/api/data-exports/" + UUID.randomUUID())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_dex_member")))
         .andExpect(status().isForbidden());
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_dex_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_dex_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"clerkOrgId":"%s","clerkUserId":"%s","email":"%s","name":"%s","avatarUrl":null,"orgRole":"%s"}
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

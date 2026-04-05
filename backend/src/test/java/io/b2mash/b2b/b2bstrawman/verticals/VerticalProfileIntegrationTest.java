@@ -3,10 +3,8 @@ package io.b2mash.b2b.b2bstrawman.verticals;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.nullValue;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -15,7 +13,8 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditEventFilter;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -28,7 +27,6 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -43,8 +41,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class VerticalProfileIntegrationTest {
-
-  private static final String API_KEY = "test-api-key";
 
   // Separate org IDs per test group to ensure independence
   private static final String LIFECYCLE_ORG_ID = "org_vpi_lifecycle";
@@ -64,7 +60,8 @@ class VerticalProfileIntegrationTest {
         provisioningService
             .provisionTenant(LIFECYCLE_ORG_ID, "Lifecycle Test Org", null)
             .schemaName();
-    syncMember(
+    TestMemberHelper.syncMemberQuietly(
+        mockMvc,
         LIFECYCLE_ORG_ID,
         "user_vpi_lifecycle_owner",
         "vpi_lifecycle@test.com",
@@ -76,7 +73,13 @@ class VerticalProfileIntegrationTest {
         provisioningService
             .provisionTenant(GUARD_ORG_ID, "Guard Test Org", "consulting-generic")
             .schemaName();
-    syncMember(GUARD_ORG_ID, "user_vpi_guard_owner", "vpi_guard@test.com", "Guard Owner", "owner");
+    TestMemberHelper.syncMemberQuietly(
+        mockMvc,
+        GUARD_ORG_ID,
+        "user_vpi_guard_owner",
+        "vpi_guard@test.com",
+        "Guard Owner",
+        "owner");
   }
 
   // --- Task 372.1: Profile Switching Lifecycle ---
@@ -88,7 +91,7 @@ class VerticalProfileIntegrationTest {
     mockMvc
         .perform(
             patch("/api/settings/vertical-profile")
-                .with(lifecycleOwnerJwt())
+                .with(TestJwtFactory.ownerJwt(LIFECYCLE_ORG_ID, "user_vpi_lifecycle_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -133,7 +136,7 @@ class VerticalProfileIntegrationTest {
     mockMvc
         .perform(
             patch("/api/settings/vertical-profile")
-                .with(lifecycleOwnerJwt())
+                .with(TestJwtFactory.ownerJwt(LIFECYCLE_ORG_ID, "user_vpi_lifecycle_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -144,7 +147,7 @@ class VerticalProfileIntegrationTest {
     mockMvc
         .perform(
             patch("/api/settings/vertical-profile")
-                .with(lifecycleOwnerJwt())
+                .with(TestJwtFactory.ownerJwt(LIFECYCLE_ORG_ID, "user_vpi_lifecycle_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -163,14 +166,16 @@ class VerticalProfileIntegrationTest {
     // Guard tenant was provisioned with consulting-generic (no modules)
     // Court calendar should be denied (403)
     mockMvc
-        .perform(get("/api/court-dates").with(guardOwnerJwt()))
+        .perform(
+            get("/api/court-dates")
+                .with(TestJwtFactory.ownerJwt(GUARD_ORG_ID, "user_vpi_guard_owner")))
         .andExpect(status().isForbidden());
 
     // Switch guard tenant to legal-za
     mockMvc
         .perform(
             patch("/api/settings/vertical-profile")
-                .with(guardOwnerJwt())
+                .with(TestJwtFactory.ownerJwt(GUARD_ORG_ID, "user_vpi_guard_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -179,49 +184,10 @@ class VerticalProfileIntegrationTest {
 
     // Now court calendar should be allowed (200)
     mockMvc
-        .perform(get("/api/court-dates").with(guardOwnerJwt()))
+        .perform(
+            get("/api/court-dates")
+                .with(TestJwtFactory.ownerJwt(GUARD_ORG_ID, "user_vpi_guard_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray());
-  }
-
-  // --- Helpers ---
-
-  private void syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    mockMvc
-        .perform(
-            post("/internal/members/sync")
-                .header("X-API-KEY", API_KEY)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {
-                      "clerkOrgId": "%s",
-                      "clerkUserId": "%s",
-                      "email": "%s",
-                      "name": "%s",
-                      "avatarUrl": null,
-                      "orgRole": "%s"
-                    }
-                    """
-                        .formatted(orgId, clerkUserId, email, name, orgRole)))
-        .andExpect(status().isCreated());
-  }
-
-  private JwtRequestPostProcessor lifecycleOwnerJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_vpi_lifecycle_owner")
-                    .claim("o", Map.of("id", LIFECYCLE_ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor guardOwnerJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_vpi_guard_owner")
-                    .claim("o", Map.of("id", GUARD_ORG_ID, "rol", "owner")));
   }
 }

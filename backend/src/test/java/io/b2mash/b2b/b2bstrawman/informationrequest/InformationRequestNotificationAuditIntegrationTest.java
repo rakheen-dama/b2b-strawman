@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.informationrequest;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -12,6 +11,8 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.SchemaNameGenerator;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestChecklistHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -37,8 +38,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class InformationRequestNotificationAuditIntegrationTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_inforeq_notif_test";
 
   @Autowired private MockMvc mockMvc;
@@ -58,10 +57,12 @@ class InformationRequestNotificationAuditIntegrationTest {
     provisioningService.provisionTenant(ORG_ID, "InfoReq Notif Test Org", null);
     schema = SchemaNameGenerator.generateSchemaName(ORG_ID);
 
-    memberIdOwner = syncMember("user_notif_owner", "notif_owner@test.com", "Notif Owner", "owner");
+    memberIdOwner =
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_notif_owner", "notif_owner@test.com", "Notif Owner", "owner");
 
     // Create active customer for project creation
-    customerId = createActiveCustomer(ownerJwt());
+    customerId = createActiveCustomer(TestJwtFactory.ownerJwt(ORG_ID, "user_notif_owner"));
 
     // Create portal contact
     portalContactId = createPortalContact(customerId, "portal@test.com", "Portal User");
@@ -71,7 +72,7 @@ class InformationRequestNotificationAuditIntegrationTest {
         mockMvc
             .perform(
                 post("/api/projects")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_notif_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -90,7 +91,7 @@ class InformationRequestNotificationAuditIntegrationTest {
         mockMvc
             .perform(
                 post("/api/information-requests")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_notif_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -131,7 +132,9 @@ class InformationRequestNotificationAuditIntegrationTest {
   @Order(3)
   void auditEventCreatedOnSend() throws Exception {
     mockMvc
-        .perform(post("/api/information-requests/%s/send".formatted(requestId)).with(ownerJwt()))
+        .perform(
+            post("/api/information-requests/%s/send".formatted(requestId))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_notif_owner")))
         .andExpect(status().isOk());
 
     var auditEvents = findAuditEvents("information_request.sent");
@@ -155,7 +158,7 @@ class InformationRequestNotificationAuditIntegrationTest {
     mockMvc
         .perform(
             post("/api/information-requests/%s/items/%s/accept".formatted(requestId, itemId))
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_notif_owner")))
         .andExpect(status().isOk());
 
     var auditEvents = findAuditEvents("information_request.item_accepted");
@@ -178,7 +181,7 @@ class InformationRequestNotificationAuditIntegrationTest {
     mockMvc
         .perform(
             post("/api/information-requests/%s/items/%s/reject".formatted(requestId, secondItemId))
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_notif_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"reason\": \"Incomplete data\"}"))
         .andExpect(status().isOk());
@@ -202,7 +205,7 @@ class InformationRequestNotificationAuditIntegrationTest {
     mockMvc
         .perform(
             post("/api/information-requests/%s/items/%s/accept".formatted(requestId, secondItemId))
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_notif_owner")))
         .andExpect(status().isOk());
 
     var auditEvents = findAuditEvents("information_request.completed");
@@ -220,7 +223,7 @@ class InformationRequestNotificationAuditIntegrationTest {
         mockMvc
             .perform(
                 post("/api/information-requests")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_notif_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -242,11 +245,13 @@ class InformationRequestNotificationAuditIntegrationTest {
     // Send then cancel
     mockMvc
         .perform(
-            post("/api/information-requests/%s/send".formatted(cancelRequestId)).with(ownerJwt()))
+            post("/api/information-requests/%s/send".formatted(cancelRequestId))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_notif_owner")))
         .andExpect(status().isOk());
     mockMvc
         .perform(
-            post("/api/information-requests/%s/cancel".formatted(cancelRequestId)).with(ownerJwt()))
+            post("/api/information-requests/%s/cancel".formatted(cancelRequestId))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_notif_owner")))
         .andExpect(status().isOk());
 
     var auditEvents = findAuditEvents("information_request.cancelled");
@@ -272,7 +277,9 @@ class InformationRequestNotificationAuditIntegrationTest {
   @Order(9)
   void activityFeedReturnsRequestEventsForProject() throws Exception {
     mockMvc
-        .perform(get("/api/projects/%s/activity".formatted(projectId)).with(ownerJwt()))
+        .perform(
+            get("/api/projects/%s/activity".formatted(projectId))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_notif_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray())
         .andExpect(jsonPath("$.content.length()").value(org.hamcrest.Matchers.greaterThan(0)));
@@ -283,7 +290,9 @@ class InformationRequestNotificationAuditIntegrationTest {
   void activityMessageFormattedCorrectly() throws Exception {
     var result =
         mockMvc
-            .perform(get("/api/projects/%s/activity".formatted(projectId)).with(ownerJwt()))
+            .perform(
+                get("/api/projects/%s/activity".formatted(projectId))
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_notif_owner")))
             .andExpect(status().isOk())
             .andReturn();
 
@@ -412,29 +421,5 @@ class InformationRequestNotificationAuditIntegrationTest {
         email,
         displayName);
     return contactId;
-  }
-
-  private String syncMember(String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        { "clerkOrgId": "%s", "clerkUserId": "%s", "email": "%s",
-                          "name": "%s", "avatarUrl": null, "orgRole": "%s" }
-                        """
-                            .formatted(ORG_ID, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_notif_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
   }
 }

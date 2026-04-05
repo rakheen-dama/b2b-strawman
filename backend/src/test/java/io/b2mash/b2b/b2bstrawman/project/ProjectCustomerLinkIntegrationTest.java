@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.project;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -12,8 +11,9 @@ import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestChecklistHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.List;
-import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -22,7 +22,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -32,8 +31,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ProjectCustomerLinkIntegrationTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_proj_cust_link";
 
   @Autowired private MockMvc mockMvc;
@@ -48,7 +45,8 @@ class ProjectCustomerLinkIntegrationTest {
   void provisionTenantAndMembers() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Project Customer Link Test Org", null);
 
-    syncMember(ORG_ID, "user_pcl_owner", "pcl_owner@test.com", "PCL Owner", "owner");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_pcl_owner", "pcl_owner@test.com", "PCL Owner", "owner");
 
     // Create an ACTIVE customer
     activeCustomerId = createCustomerAndActivate("Active Customer", "pcl_active@test.com");
@@ -73,7 +71,7 @@ class ProjectCustomerLinkIntegrationTest {
     mockMvc
         .perform(
             post("/api/projects")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -91,7 +89,7 @@ class ProjectCustomerLinkIntegrationTest {
     mockMvc
         .perform(
             post("/api/projects")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -107,7 +105,7 @@ class ProjectCustomerLinkIntegrationTest {
     mockMvc
         .perform(
             post("/api/projects")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -122,7 +120,7 @@ class ProjectCustomerLinkIntegrationTest {
     mockMvc
         .perform(
             post("/api/projects")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -138,7 +136,7 @@ class ProjectCustomerLinkIntegrationTest {
     mockMvc
         .perform(
             post("/api/projects")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -158,7 +156,7 @@ class ProjectCustomerLinkIntegrationTest {
     mockMvc
         .perform(
             put("/api/projects/" + projectId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -180,7 +178,7 @@ class ProjectCustomerLinkIntegrationTest {
     mockMvc
         .perform(
             put("/api/projects/" + projectId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -197,7 +195,7 @@ class ProjectCustomerLinkIntegrationTest {
     mockMvc
         .perform(
             put("/api/projects/" + projectId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -214,7 +212,7 @@ class ProjectCustomerLinkIntegrationTest {
     mockMvc
         .perform(
             put("/api/projects/" + projectId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -232,7 +230,7 @@ class ProjectCustomerLinkIntegrationTest {
     mockMvc
         .perform(
             put("/api/projects/" + projectId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -255,7 +253,7 @@ class ProjectCustomerLinkIntegrationTest {
         mockMvc
             .perform(
                 get("/api/projects")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner"))
                     .param("status", "ALL")
                     .param("customerId", activeCustomerId))
             .andExpect(status().isOk())
@@ -281,7 +279,7 @@ class ProjectCustomerLinkIntegrationTest {
     mockMvc
         .perform(
             post("/api/projects")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -300,7 +298,7 @@ class ProjectCustomerLinkIntegrationTest {
     mockMvc
         .perform(
             post("/api/projects")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -318,7 +316,7 @@ class ProjectCustomerLinkIntegrationTest {
     mockMvc
         .perform(
             put("/api/projects/" + projectId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -338,7 +336,9 @@ class ProjectCustomerLinkIntegrationTest {
 
     // Attempt to archive (DELETE) the customer — should be blocked with 409
     mockMvc
-        .perform(delete("/api/customers/" + custId).with(ownerJwt()))
+        .perform(
+            delete("/api/customers/" + custId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner")))
         .andExpect(status().isConflict())
         .andExpect(
             jsonPath("$.detail").value(org.hamcrest.Matchers.containsString("linked projects")));
@@ -350,7 +350,11 @@ class ProjectCustomerLinkIntegrationTest {
     String custId = createCustomerAndActivate("Archive OK Customer", "pcl_archive_ok@test.com");
 
     // Archive should succeed
-    mockMvc.perform(delete("/api/customers/" + custId).with(ownerJwt())).andExpect(status().isOk());
+    mockMvc
+        .perform(
+            delete("/api/customers/" + custId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner")))
+        .andExpect(status().isOk());
   }
 
   // --- Helpers ---
@@ -360,7 +364,7 @@ class ProjectCustomerLinkIntegrationTest {
         mockMvc
             .perform(
                 post("/api/projects")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -377,7 +381,7 @@ class ProjectCustomerLinkIntegrationTest {
         mockMvc
             .perform(
                 post("/api/projects")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -394,7 +398,7 @@ class ProjectCustomerLinkIntegrationTest {
         mockMvc
             .perform(
                 post("/api/customers")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -413,7 +417,7 @@ class ProjectCustomerLinkIntegrationTest {
     mockMvc
         .perform(
             post("/api/customers/" + custId + "/transition")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"targetStatus\": \"OFFBOARDING\"}"))
         .andExpect(status().isOk());
@@ -422,7 +426,7 @@ class ProjectCustomerLinkIntegrationTest {
     mockMvc
         .perform(
             post("/api/customers/" + custId + "/transition")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"targetStatus\": \"OFFBOARDED\"}"))
         .andExpect(status().isOk());
@@ -437,13 +441,14 @@ class ProjectCustomerLinkIntegrationTest {
     mockMvc
         .perform(
             post("/api/customers/" + custId + "/transition")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"targetStatus\": \"ONBOARDING\"}"))
         .andExpect(status().isOk());
 
     // Complete all checklist items (auto-transitions ONBOARDING -> ACTIVE)
-    TestChecklistHelper.completeChecklistItems(mockMvc, custId, ownerJwt());
+    TestChecklistHelper.completeChecklistItems(
+        mockMvc, custId, TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner"));
 
     return custId;
   }
@@ -456,42 +461,11 @@ class ProjectCustomerLinkIntegrationTest {
     mockMvc
         .perform(
             post("/api/customers/" + custId + "/transition")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"targetStatus\": \"OFFBOARDING\"}"))
         .andExpect(status().isOk());
 
     return custId;
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_pcl_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
   }
 }

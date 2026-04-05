@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.expense;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -17,8 +16,10 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -32,7 +33,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -64,18 +64,25 @@ class ExpenseControllerTest {
   void provisionTenantAndSeedData() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Expense Test Org", null);
 
-    memberIdOwner = syncMember("user_exp_owner", "exp_owner@test.com", "EXP Owner", "owner");
-    memberIdAdmin = syncMember("user_exp_admin", "exp_admin@test.com", "EXP Admin", "admin");
-    memberIdMember = syncMember("user_exp_member", "exp_member@test.com", "EXP Member", "member");
+    memberIdOwner =
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_exp_owner", "exp_owner@test.com", "EXP Owner", "owner");
+    memberIdAdmin =
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_exp_admin", "exp_admin@test.com", "EXP Admin", "admin");
+    memberIdMember =
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_exp_member", "exp_member@test.com", "EXP Member", "member");
     memberIdMember2 =
-        syncMember("user_exp_member2", "exp_member2@test.com", "EXP Member2", "member");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_exp_member2", "exp_member2@test.com", "EXP Member2", "member");
 
     // Create project and add all members
     var projectResult =
         mockMvc
             .perform(
                 post("/api/projects")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_exp_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -83,13 +90,13 @@ class ExpenseControllerTest {
                         """))
             .andExpect(status().isCreated())
             .andReturn();
-    projectId = extractIdFromLocation(projectResult);
+    projectId = TestEntityHelper.extractIdFromLocation(projectResult);
 
     for (String mid : List.of(memberIdAdmin, memberIdMember, memberIdMember2)) {
       mockMvc
           .perform(
               post("/api/projects/" + projectId + "/members")
-                  .with(ownerJwt())
+                  .with(TestJwtFactory.ownerJwt(ORG_ID, "user_exp_owner"))
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(
                       """
@@ -104,7 +111,7 @@ class ExpenseControllerTest {
         mockMvc
             .perform(
                 post("/api/projects")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_exp_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -112,7 +119,7 @@ class ExpenseControllerTest {
                         """))
             .andExpect(status().isCreated())
             .andReturn();
-    projectId2 = extractIdFromLocation(project2Result);
+    projectId2 = TestEntityHelper.extractIdFromLocation(project2Result);
 
     // Assign system owner/admin roles for capability-based auth
     var tenantSchema =
@@ -147,17 +154,29 @@ class ExpenseControllerTest {
     // Sync custom-role members for capability tests
     customRoleMemberId =
         UUID.fromString(
-            syncMember("user_exp_314a_custom", "exp_custom@test.com", "EXP Custom User", "member"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_exp_314a_custom",
+                "exp_custom@test.com",
+                "EXP Custom User",
+                "member"));
     noCapMemberId =
         UUID.fromString(
-            syncMember("user_exp_314a_nocap", "exp_nocap@test.com", "EXP NoCap User", "member"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_exp_314a_nocap",
+                "exp_nocap@test.com",
+                "EXP NoCap User",
+                "member"));
 
     // Add custom role members to the project so they can create expenses for the write-off test
     for (String mid : List.of(customRoleMemberId.toString(), noCapMemberId.toString())) {
       mockMvc
           .perform(
               post("/api/projects/" + projectId + "/members")
-                  .with(ownerJwt())
+                  .with(TestJwtFactory.ownerJwt(ORG_ID, "user_exp_owner"))
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(
                       """
@@ -202,7 +221,7 @@ class ExpenseControllerTest {
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/expenses")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_exp_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -232,7 +251,7 @@ class ExpenseControllerTest {
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/expenses")
-                .with(memberJwt())
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_exp_member", "member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -261,13 +280,21 @@ class ExpenseControllerTest {
   @Test
   void shouldListExpensesForProject() throws Exception {
     // Create two expenses
-    createExpense(memberJwt(), "Filing fee 1", "250.00", "FILING_FEE");
-    createExpense(memberJwt(), "Courier service", "80.00", "COURIER");
+    createExpense(
+        TestJwtFactory.jwtAs(ORG_ID, "user_exp_member", "member"),
+        "Filing fee 1",
+        "250.00",
+        "FILING_FEE");
+    createExpense(
+        TestJwtFactory.jwtAs(ORG_ID, "user_exp_member", "member"),
+        "Courier service",
+        "80.00",
+        "COURIER");
 
     mockMvc
         .perform(
             get("/api/projects/" + projectId + "/expenses")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_exp_owner"))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray())
@@ -277,14 +304,23 @@ class ExpenseControllerTest {
   @Test
   void shouldListExpensesWithCategoryFilter() throws Exception {
     // Create expenses with different categories
-    createExpense(ownerJwt(), "Software license", "100.00", "SOFTWARE");
-    createExpense(ownerJwt(), "Another software", "200.00", "SOFTWARE");
-    createExpense(ownerJwt(), "Printing cost", "50.00", "PRINTING");
+    createExpense(
+        TestJwtFactory.ownerJwt(ORG_ID, "user_exp_owner"),
+        "Software license",
+        "100.00",
+        "SOFTWARE");
+    createExpense(
+        TestJwtFactory.ownerJwt(ORG_ID, "user_exp_owner"),
+        "Another software",
+        "200.00",
+        "SOFTWARE");
+    createExpense(
+        TestJwtFactory.ownerJwt(ORG_ID, "user_exp_owner"), "Printing cost", "50.00", "PRINTING");
 
     mockMvc
         .perform(
             get("/api/projects/" + projectId + "/expenses")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_exp_owner"))
                 .param("category", "SOFTWARE"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray());
@@ -292,10 +328,17 @@ class ExpenseControllerTest {
 
   @Test
   void shouldGetSingleExpense() throws Exception {
-    var expenseId = createExpense(ownerJwt(), "Single expense test", "300.00", "OTHER");
+    var expenseId =
+        createExpense(
+            TestJwtFactory.ownerJwt(ORG_ID, "user_exp_owner"),
+            "Single expense test",
+            "300.00",
+            "OTHER");
 
     mockMvc
-        .perform(get("/api/projects/" + projectId + "/expenses/" + expenseId).with(ownerJwt()))
+        .perform(
+            get("/api/projects/" + projectId + "/expenses/" + expenseId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_exp_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(expenseId))
         .andExpect(jsonPath("$.description").value("Single expense test"))
@@ -306,11 +349,21 @@ class ExpenseControllerTest {
   @Test
   void shouldGetMyExpenses() throws Exception {
     // Create expenses as member
-    createExpense(member2Jwt(), "My expense 1", "100.00", "OTHER");
-    createExpense(member2Jwt(), "My expense 2", "200.00", "TRAVEL");
+    createExpense(
+        TestJwtFactory.jwtAs(ORG_ID, "user_exp_member2", "member"),
+        "My expense 1",
+        "100.00",
+        "OTHER");
+    createExpense(
+        TestJwtFactory.jwtAs(ORG_ID, "user_exp_member2", "member"),
+        "My expense 2",
+        "200.00",
+        "TRAVEL");
 
     mockMvc
-        .perform(get("/api/expenses/mine").with(member2Jwt()))
+        .perform(
+            get("/api/expenses/mine")
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_exp_member2", "member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray())
         .andExpect(jsonPath("$.page.totalElements").isNumber());
@@ -321,17 +374,26 @@ class ExpenseControllerTest {
     var fakeId = UUID.randomUUID().toString();
 
     mockMvc
-        .perform(get("/api/projects/" + projectId + "/expenses/" + fakeId).with(ownerJwt()))
+        .perform(
+            get("/api/projects/" + projectId + "/expenses/" + fakeId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_exp_owner")))
         .andExpect(status().isNotFound());
   }
 
   @Test
   void shouldReturn404ForExpenseInWrongProject() throws Exception {
-    var expenseId = createExpense(ownerJwt(), "Wrong project test", "100.00", "OTHER");
+    var expenseId =
+        createExpense(
+            TestJwtFactory.ownerJwt(ORG_ID, "user_exp_owner"),
+            "Wrong project test",
+            "100.00",
+            "OTHER");
 
     // Try to get the expense using a different project
     mockMvc
-        .perform(get("/api/projects/" + projectId2 + "/expenses/" + expenseId).with(ownerJwt()))
+        .perform(
+            get("/api/projects/" + projectId2 + "/expenses/" + expenseId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_exp_owner")))
         .andExpect(status().isNotFound());
   }
 
@@ -339,12 +401,17 @@ class ExpenseControllerTest {
 
   @Test
   void creatorCanUpdateOwnExpense() throws Exception {
-    var expenseId = createExpense(memberJwt(), "Original description", "100.00", "OTHER");
+    var expenseId =
+        createExpense(
+            TestJwtFactory.jwtAs(ORG_ID, "user_exp_member", "member"),
+            "Original description",
+            "100.00",
+            "OTHER");
 
     mockMvc
         .perform(
             put("/api/projects/" + projectId + "/expenses/" + expenseId)
-                .with(memberJwt())
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_exp_member", "member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -362,12 +429,17 @@ class ExpenseControllerTest {
 
   @Test
   void adminCanUpdateAnyExpense() throws Exception {
-    var expenseId = createExpense(memberJwt(), "Member's expense", "100.00", "COURIER");
+    var expenseId =
+        createExpense(
+            TestJwtFactory.jwtAs(ORG_ID, "user_exp_member", "member"),
+            "Member's expense",
+            "100.00",
+            "COURIER");
 
     mockMvc
         .perform(
             put("/api/projects/" + projectId + "/expenses/" + expenseId)
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_exp_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -379,12 +451,17 @@ class ExpenseControllerTest {
 
   @Test
   void memberCannotUpdateOthersExpense() throws Exception {
-    var expenseId = createExpense(memberJwt(), "Cannot touch this", "100.00", "OTHER");
+    var expenseId =
+        createExpense(
+            TestJwtFactory.jwtAs(ORG_ID, "user_exp_member", "member"),
+            "Cannot touch this",
+            "100.00",
+            "OTHER");
 
     mockMvc
         .perform(
             put("/api/projects/" + projectId + "/expenses/" + expenseId)
-                .with(member2Jwt())
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_exp_member2", "member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -395,33 +472,56 @@ class ExpenseControllerTest {
 
   @Test
   void creatorCanDeleteOwnExpense() throws Exception {
-    var expenseId = createExpense(memberJwt(), "Delete me", "50.00", "OTHER");
+    var expenseId =
+        createExpense(
+            TestJwtFactory.jwtAs(ORG_ID, "user_exp_member", "member"),
+            "Delete me",
+            "50.00",
+            "OTHER");
 
     mockMvc
-        .perform(delete("/api/projects/" + projectId + "/expenses/" + expenseId).with(memberJwt()))
+        .perform(
+            delete("/api/projects/" + projectId + "/expenses/" + expenseId)
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_exp_member", "member")))
         .andExpect(status().isNoContent());
 
     // Verify it's gone
     mockMvc
-        .perform(get("/api/projects/" + projectId + "/expenses/" + expenseId).with(memberJwt()))
+        .perform(
+            get("/api/projects/" + projectId + "/expenses/" + expenseId)
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_exp_member", "member")))
         .andExpect(status().isNotFound());
   }
 
   @Test
   void adminCanDeleteAnyExpense() throws Exception {
-    var expenseId = createExpense(memberJwt(), "Admin will delete", "75.00", "PRINTING");
+    var expenseId =
+        createExpense(
+            TestJwtFactory.jwtAs(ORG_ID, "user_exp_member", "member"),
+            "Admin will delete",
+            "75.00",
+            "PRINTING");
 
     mockMvc
-        .perform(delete("/api/projects/" + projectId + "/expenses/" + expenseId).with(adminJwt()))
+        .perform(
+            delete("/api/projects/" + projectId + "/expenses/" + expenseId)
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_exp_admin")))
         .andExpect(status().isNoContent());
   }
 
   @Test
   void memberCannotDeleteOthersExpense() throws Exception {
-    var expenseId = createExpense(memberJwt(), "Protected expense", "100.00", "OTHER");
+    var expenseId =
+        createExpense(
+            TestJwtFactory.jwtAs(ORG_ID, "user_exp_member", "member"),
+            "Protected expense",
+            "100.00",
+            "OTHER");
 
     mockMvc
-        .perform(delete("/api/projects/" + projectId + "/expenses/" + expenseId).with(member2Jwt()))
+        .perform(
+            delete("/api/projects/" + projectId + "/expenses/" + expenseId)
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_exp_member2", "member")))
         .andExpect(status().isForbidden());
   }
 
@@ -429,12 +529,14 @@ class ExpenseControllerTest {
 
   @Test
   void adminCanWriteOffExpense() throws Exception {
-    var expenseId = createExpense(ownerJwt(), "Write off test", "200.00", "OTHER");
+    var expenseId =
+        createExpense(
+            TestJwtFactory.ownerJwt(ORG_ID, "user_exp_owner"), "Write off test", "200.00", "OTHER");
 
     mockMvc
         .perform(
             patch("/api/projects/" + projectId + "/expenses/" + expenseId + "/write-off")
-                .with(adminJwt()))
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_exp_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.billable").value(false))
         .andExpect(jsonPath("$.billingStatus").value("NON_BILLABLE"))
@@ -443,12 +545,17 @@ class ExpenseControllerTest {
 
   @Test
   void memberCannotWriteOffExpense() throws Exception {
-    var expenseId = createExpense(memberJwt(), "Member cannot write off", "100.00", "OTHER");
+    var expenseId =
+        createExpense(
+            TestJwtFactory.jwtAs(ORG_ID, "user_exp_member", "member"),
+            "Member cannot write off",
+            "100.00",
+            "OTHER");
 
     mockMvc
         .perform(
             patch("/api/projects/" + projectId + "/expenses/" + expenseId + "/write-off")
-                .with(memberJwt()))
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_exp_member", "member")))
         .andExpect(status().isForbidden());
   }
 
@@ -459,7 +566,7 @@ class ExpenseControllerTest {
         mockMvc
             .perform(
                 post("/api/projects/" + projectId + "/expenses")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_exp_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -478,26 +585,28 @@ class ExpenseControllerTest {
     mockMvc
         .perform(
             patch("/api/projects/" + projectId + "/expenses/" + expenseId + "/write-off")
-                .with(adminJwt()))
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_exp_admin")))
         .andExpect(status().isConflict());
   }
 
   @Test
   void adminCanRestoreExpense() throws Exception {
-    var expenseId = createExpense(ownerJwt(), "Restore test", "150.00", "OTHER");
+    var expenseId =
+        createExpense(
+            TestJwtFactory.ownerJwt(ORG_ID, "user_exp_owner"), "Restore test", "150.00", "OTHER");
 
     // First write it off
     mockMvc
         .perform(
             patch("/api/projects/" + projectId + "/expenses/" + expenseId + "/write-off")
-                .with(adminJwt()))
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_exp_admin")))
         .andExpect(status().isOk());
 
     // Then restore it
     mockMvc
         .perform(
             patch("/api/projects/" + projectId + "/expenses/" + expenseId + "/restore")
-                .with(adminJwt()))
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_exp_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.billable").value(true))
         .andExpect(jsonPath("$.billingStatus").value("UNBILLED"));
@@ -505,32 +614,42 @@ class ExpenseControllerTest {
 
   @Test
   void memberCannotRestoreExpense() throws Exception {
-    var expenseId = createExpense(ownerJwt(), "Member cannot restore", "100.00", "OTHER");
+    var expenseId =
+        createExpense(
+            TestJwtFactory.ownerJwt(ORG_ID, "user_exp_owner"),
+            "Member cannot restore",
+            "100.00",
+            "OTHER");
 
     // Write it off first as admin
     mockMvc
         .perform(
             patch("/api/projects/" + projectId + "/expenses/" + expenseId + "/write-off")
-                .with(adminJwt()))
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_exp_admin")))
         .andExpect(status().isOk());
 
     // Member tries to restore
     mockMvc
         .perform(
             patch("/api/projects/" + projectId + "/expenses/" + expenseId + "/restore")
-                .with(memberJwt()))
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_exp_member", "member")))
         .andExpect(status().isForbidden());
   }
 
   @Test
   void restoreAlreadyBillableReturns409() throws Exception {
-    var expenseId = createExpense(ownerJwt(), "Already billable", "100.00", "OTHER");
+    var expenseId =
+        createExpense(
+            TestJwtFactory.ownerJwt(ORG_ID, "user_exp_owner"),
+            "Already billable",
+            "100.00",
+            "OTHER");
 
     // Try to restore an expense that is already billable
     mockMvc
         .perform(
             patch("/api/projects/" + projectId + "/expenses/" + expenseId + "/restore")
-                .with(adminJwt()))
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_exp_admin")))
         .andExpect(status().isConflict());
   }
 
@@ -538,23 +657,33 @@ class ExpenseControllerTest {
 
   @Test
   void customRoleWithCapability_accessesWriteOffEndpoint_returns200() throws Exception {
-    var expenseId = createExpense(customRoleJwt(), "Cap write-off test", "100.00", "OTHER");
+    var expenseId =
+        createExpense(
+            TestJwtFactory.jwtAs(ORG_ID, "user_exp_314a_custom", "member"),
+            "Cap write-off test",
+            "100.00",
+            "OTHER");
 
     mockMvc
         .perform(
             patch("/api/projects/" + projectId + "/expenses/" + expenseId + "/write-off")
-                .with(customRoleJwt()))
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_exp_314a_custom", "member")))
         .andExpect(status().isOk());
   }
 
   @Test
   void customRoleWithoutCapability_accessesWriteOffEndpoint_returns403() throws Exception {
-    var expenseId = createExpense(ownerJwt(), "NoCap write-off test", "100.00", "OTHER");
+    var expenseId =
+        createExpense(
+            TestJwtFactory.ownerJwt(ORG_ID, "user_exp_owner"),
+            "NoCap write-off test",
+            "100.00",
+            "OTHER");
 
     mockMvc
         .perform(
             patch("/api/projects/" + projectId + "/expenses/" + expenseId + "/write-off")
-                .with(noCapabilityJwt()))
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_exp_314a_nocap", "member")))
         .andExpect(status().isForbidden());
   }
 
@@ -582,66 +711,5 @@ class ExpenseControllerTest {
             .andExpect(status().isCreated())
             .andReturn();
     return JsonPath.read(result.getResponse().getContentAsString(), "$.id").toString();
-  }
-
-  private String extractIdFromLocation(MvcResult result) {
-    String location = result.getResponse().getHeader("Location");
-    return location.substring(location.lastIndexOf('/') + 1);
-  }
-
-  private String syncMember(String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s", "clerkUserId": "%s", "email": "%s",
-                          "name": "%s", "avatarUrl": null, "orgRole": "%s"
-                        }
-                        """
-                            .formatted(ORG_ID, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_exp_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor adminJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_exp_admin").claim("o", Map.of("id", ORG_ID, "rol", "admin")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_exp_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor member2Jwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_exp_member2").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor customRoleJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_exp_314a_custom")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor noCapabilityJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_exp_314a_nocap").claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 }

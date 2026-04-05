@@ -16,6 +16,8 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -45,8 +47,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @Disabled(
     "Transient S3/LocalStack connection refusal — test depends on stable LocalStack container, fails intermittently in CI/agent runs")
 class AcceptanceControllerIntegrationTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_acceptance_ctrl_test";
 
   @Autowired private MockMvc mockMvc;
@@ -74,15 +74,29 @@ class AcceptanceControllerIntegrationTest {
     provisioningService.provisionTenant(ORG_ID, "Acceptance Ctrl Test Org", null);
 
     ownerMemberId =
-        syncMember(ORG_ID, "user_acc_ctrl_owner", "acc_ctrl_owner@test.com", "Acc Owner", "owner");
-    syncMember(ORG_ID, "user_acc_ctrl_admin", "acc_ctrl_admin@test.com", "Acc Admin", "admin");
-    syncMember(ORG_ID, "user_acc_ctrl_member", "acc_ctrl_member@test.com", "Acc Member", "member");
+        TestMemberHelper.syncMember(
+            mockMvc,
+            ORG_ID,
+            "user_acc_ctrl_owner",
+            "acc_ctrl_owner@test.com",
+            "Acc Owner",
+            "owner");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_acc_ctrl_admin", "acc_ctrl_admin@test.com", "Acc Admin", "admin");
+    TestMemberHelper.syncMember(
+        mockMvc,
+        ORG_ID,
+        "user_acc_ctrl_member",
+        "acc_ctrl_member@test.com",
+        "Acc Member",
+        "member");
 
     schema = orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
 
     customRoleMemberId =
         UUID.fromString(
-            syncMember(
+            TestMemberHelper.syncMember(
+                mockMvc,
                 ORG_ID,
                 "user_acc_315a_custom",
                 "acc_custom@test.com",
@@ -90,8 +104,13 @@ class AcceptanceControllerIntegrationTest {
                 "member"));
     noCapMemberId =
         UUID.fromString(
-            syncMember(
-                ORG_ID, "user_acc_315a_nocap", "acc_nocap@test.com", "Acc NoCap User", "member"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_acc_315a_nocap",
+                "acc_nocap@test.com",
+                "Acc NoCap User",
+                "member"));
 
     UUID ownerUuid = UUID.fromString(ownerMemberId);
     ScopedValue.where(RequestScopes.TENANT_ID, schema)
@@ -179,7 +198,7 @@ class AcceptanceControllerIntegrationTest {
         mockMvc
             .perform(
                 post("/api/acceptance-requests")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_acc_ctrl_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -205,7 +224,7 @@ class AcceptanceControllerIntegrationTest {
     mockMvc
         .perform(
             post("/api/acceptance-requests")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_acc_ctrl_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -222,7 +241,7 @@ class AcceptanceControllerIntegrationTest {
         .perform(
             get("/api/acceptance-requests")
                 .param("documentId", generatedDocumentId.toString())
-                .with(memberJwt()))
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_acc_ctrl_member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$[0].id").value(createdRequestId));
@@ -235,7 +254,7 @@ class AcceptanceControllerIntegrationTest {
         .perform(
             get("/api/acceptance-requests")
                 .param("customerId", customerId.toString())
-                .with(memberJwt()))
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_acc_ctrl_member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$[0].id").value(createdRequestId));
@@ -245,7 +264,9 @@ class AcceptanceControllerIntegrationTest {
   @Order(5)
   void get_detail_returns200() throws Exception {
     mockMvc
-        .perform(get("/api/acceptance-requests/" + createdRequestId).with(memberJwt()))
+        .perform(
+            get("/api/acceptance-requests/" + createdRequestId)
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_acc_ctrl_member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(createdRequestId))
         .andExpect(jsonPath("$.status").value("SENT"))
@@ -257,7 +278,9 @@ class AcceptanceControllerIntegrationTest {
   @Order(6)
   void post_remind_returns200_asAdmin() throws Exception {
     mockMvc
-        .perform(post("/api/acceptance-requests/" + createdRequestId + "/remind").with(adminJwt()))
+        .perform(
+            post("/api/acceptance-requests/" + createdRequestId + "/remind")
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_acc_ctrl_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(createdRequestId))
         .andExpect(jsonPath("$.reminderCount").value(1));
@@ -267,7 +290,9 @@ class AcceptanceControllerIntegrationTest {
   @Order(7)
   void post_remind_returns403_asMember() throws Exception {
     mockMvc
-        .perform(post("/api/acceptance-requests/" + createdRequestId + "/remind").with(memberJwt()))
+        .perform(
+            post("/api/acceptance-requests/" + createdRequestId + "/remind")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_acc_ctrl_member")))
         .andExpect(status().isForbidden());
   }
 
@@ -275,7 +300,9 @@ class AcceptanceControllerIntegrationTest {
   @Order(8)
   void post_revoke_returns200_asOwner() throws Exception {
     mockMvc
-        .perform(post("/api/acceptance-requests/" + createdRequestId + "/revoke").with(ownerJwt()))
+        .perform(
+            post("/api/acceptance-requests/" + createdRequestId + "/revoke")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_acc_ctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(createdRequestId))
         .andExpect(jsonPath("$.status").value("REVOKED"));
@@ -285,7 +312,9 @@ class AcceptanceControllerIntegrationTest {
   @Order(9)
   void post_revoke_returns403_asMember() throws Exception {
     mockMvc
-        .perform(post("/api/acceptance-requests/" + createdRequestId + "/revoke").with(memberJwt()))
+        .perform(
+            post("/api/acceptance-requests/" + createdRequestId + "/revoke")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_acc_ctrl_member")))
         .andExpect(status().isForbidden());
   }
 
@@ -297,7 +326,7 @@ class AcceptanceControllerIntegrationTest {
         mockMvc
             .perform(
                 post("/api/acceptance-requests")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_acc_ctrl_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -310,7 +339,9 @@ class AcceptanceControllerIntegrationTest {
 
     // Certificate not generated yet => 404
     mockMvc
-        .perform(get("/api/acceptance-requests/" + newRequestId + "/certificate").with(memberJwt()))
+        .perform(
+            get("/api/acceptance-requests/" + newRequestId + "/certificate")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_acc_ctrl_member")))
         .andExpect(status().isNotFound());
   }
 
@@ -348,7 +379,8 @@ class AcceptanceControllerIntegrationTest {
 
     mockMvc
         .perform(
-            get("/api/acceptance-requests/" + certRequestId + "/certificate").with(memberJwt()))
+            get("/api/acceptance-requests/" + certRequestId + "/certificate")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_acc_ctrl_member")))
         .andExpect(status().isOk())
         .andExpect(header().string("Content-Type", "application/pdf"))
         .andExpect(
@@ -365,7 +397,8 @@ class AcceptanceControllerIntegrationTest {
     String otherOrgId = "org_acceptance_other_tenant";
     provisioningService.provisionTenant(otherOrgId, "Other Tenant Org", null);
 
-    syncMember(otherOrgId, "user_other_owner", "other_owner@test.com", "Other Owner", "owner");
+    TestMemberHelper.syncMember(
+        mockMvc, otherOrgId, "user_other_owner", "other_owner@test.com", "Other Owner", "owner");
 
     // Authenticate as the other tenant's owner and try to access the first tenant's request
     JwtRequestPostProcessor otherTenantJwt =
@@ -388,7 +421,7 @@ class AcceptanceControllerIntegrationTest {
     mockMvc
         .perform(
             post("/api/acceptance-requests")
-                .with(customRoleJwt())
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_acc_315a_custom", "member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -404,7 +437,7 @@ class AcceptanceControllerIntegrationTest {
     mockMvc
         .perform(
             post("/api/acceptance-requests")
-                .with(noCapabilityJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_acc_315a_nocap"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -412,61 +445,5 @@ class AcceptanceControllerIntegrationTest {
                     """
                         .formatted(generatedDocumentId, portalContactId)))
         .andExpect(status().isForbidden());
-  }
-
-  // --- Helper: sync member ---
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"clerkOrgId":"%s","clerkUserId":"%s","email":"%s","name":"%s","avatarUrl":null,"orgRole":"%s"}
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  // --- JWT helpers ---
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(
-            j -> j.subject("user_acc_ctrl_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor adminJwt() {
-    return jwt()
-        .jwt(
-            j -> j.subject("user_acc_ctrl_admin").claim("o", Map.of("id", ORG_ID, "rol", "admin")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_acc_ctrl_member")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor customRoleJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_acc_315a_custom")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor noCapabilityJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_acc_315a_nocap").claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 }

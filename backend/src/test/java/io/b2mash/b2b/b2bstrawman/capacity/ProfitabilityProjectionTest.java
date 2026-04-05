@@ -1,12 +1,9 @@
 package io.b2mash.b2b.b2bstrawman.capacity;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.billingrate.BillingRateService;
 import io.b2mash.b2b.b2bstrawman.capacity.dto.AllocationDtos.CreateAllocationRequest;
@@ -17,12 +14,13 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.TaskService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryService;
 import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.TemporalAdjusters;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
@@ -34,8 +32,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -46,8 +42,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ProfitabilityProjectionTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_profitability_projection_test";
 
   // Dynamically compute a Monday far in the future so it's always "future" relative to today
@@ -78,7 +72,8 @@ class ProfitabilityProjectionTest {
 
     memberIdOwner =
         UUID.fromString(
-            syncMember(
+            TestMemberHelper.syncMember(
+                mockMvc,
                 ORG_ID,
                 "user_profproj_owner",
                 "profproj_owner@test.com",
@@ -86,7 +81,8 @@ class ProfitabilityProjectionTest {
                 "owner"));
     memberIdMember =
         UUID.fromString(
-            syncMember(
+            TestMemberHelper.syncMember(
+                mockMvc,
                 ORG_ID,
                 "user_profproj_member",
                 "profproj_member@test.com",
@@ -187,7 +183,7 @@ class ProfitabilityProjectionTest {
         .perform(
             get("/api/projects/{projectId}/profitability", projectId)
                 .param("includeProjections", "true")
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_profproj_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.projections").isNotEmpty())
         .andExpect(jsonPath("$.projections.projectedRevenue").value(4500.00))
@@ -199,7 +195,9 @@ class ProfitabilityProjectionTest {
   @Order(2)
   void projectionsOmittedWhenIncludeProjectionsFalse() throws Exception {
     mockMvc
-        .perform(get("/api/projects/{projectId}/profitability", projectId).with(ownerJwt()))
+        .perform(
+            get("/api/projects/{projectId}/profitability", projectId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_profproj_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.projections").doesNotExist());
   }
@@ -235,7 +233,7 @@ class ProfitabilityProjectionTest {
                     .perform(
                         get("/api/projects/{projectId}/profitability", project.getId())
                             .param("includeProjections", "true")
-                            .with(ownerJwt()))
+                            .with(TestJwtFactory.ownerJwt(ORG_ID, "user_profproj_owner")))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.projections.projectedRevenue").value(0))
                     .andExpect(jsonPath("$.projections.projectedCost").value(0));
@@ -255,7 +253,7 @@ class ProfitabilityProjectionTest {
                 .param("from", "2025-01-01")
                 .param("to", "2025-01-31")
                 .param("includeProjections", "true")
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_profproj_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.currencies[0].totalBillableHours").value(2.0))
         .andExpect(jsonPath("$.projections.projectedRevenue").value(0))
@@ -294,7 +292,7 @@ class ProfitabilityProjectionTest {
                     .perform(
                         get("/api/projects/{projectId}/profitability", project.getId())
                             .param("includeProjections", "true")
-                            .with(ownerJwt()))
+                            .with(TestJwtFactory.ownerJwt(ORG_ID, "user_profproj_owner")))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.projections.projectedRevenue").value(1200.00))
                     .andExpect(jsonPath("$.projections.projectedCost").value(600.00))
@@ -312,7 +310,9 @@ class ProfitabilityProjectionTest {
     // This test confirms aggregation via org-level endpoint
     mockMvc
         .perform(
-            get("/api/reports/profitability").param("includeProjections", "true").with(ownerJwt()))
+            get("/api/reports/profitability")
+                .param("includeProjections", "true")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_profproj_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.projections").isNotEmpty())
         .andExpect(jsonPath("$.projections.projectedRevenue").isNumber())
@@ -360,7 +360,7 @@ class ProfitabilityProjectionTest {
                     .perform(
                         get("/api/projects/{projectId}/profitability", project.getId())
                             .param("includeProjections", "true")
-                            .with(ownerJwt()))
+                            .with(TestJwtFactory.ownerJwt(ORG_ID, "user_profproj_owner")))
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.projections.projectedRevenue").value(1000.00))
                     .andExpect(jsonPath("$.projections.projectedCost").value(375.00))
@@ -378,7 +378,7 @@ class ProfitabilityProjectionTest {
         .perform(
             get("/api/projects/{projectId}/profitability", projectIdEmpty)
                 .param("includeProjections", "true")
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_profproj_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.projections.projectedRevenue").value(0))
         .andExpect(jsonPath("$.projections.projectedCost").value(0))
@@ -390,7 +390,9 @@ class ProfitabilityProjectionTest {
   void controllerIncludeProjectionsQueryParamDefaultsToFalse() throws Exception {
     // Without includeProjections param, projections should be null/absent
     mockMvc
-        .perform(get("/api/projects/{projectId}/profitability", projectId).with(ownerJwt()))
+        .perform(
+            get("/api/projects/{projectId}/profitability", projectId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_profproj_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.projections").doesNotExist());
 
@@ -399,42 +401,8 @@ class ProfitabilityProjectionTest {
         .perform(
             get("/api/projects/{projectId}/profitability", projectId)
                 .param("includeProjections", "true")
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_profproj_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.projections").isNotEmpty());
-  }
-
-  // --- Helpers ---
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(
-            j -> j.subject("user_profproj_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                {
-                  "clerkOrgId": "%s",
-                  "clerkUserId": "%s",
-                  "email": "%s",
-                  "name": "%s",
-                  "avatarUrl": null,
-                  "orgRole": "%s"
-                }
-                """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

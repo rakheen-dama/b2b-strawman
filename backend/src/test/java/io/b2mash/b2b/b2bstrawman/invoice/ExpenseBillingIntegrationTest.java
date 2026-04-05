@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.invoice;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -23,12 +22,13 @@ import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -38,7 +38,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -78,7 +77,13 @@ class ExpenseBillingIntegrationTest {
 
     memberIdOwner =
         UUID.fromString(
-            syncMember("user_exp_billing_owner", "exp_billing@test.com", "EB Owner", "owner"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_exp_billing_owner",
+                "exp_billing@test.com",
+                "EB Owner",
+                "owner"));
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
@@ -125,7 +130,9 @@ class ExpenseBillingIntegrationTest {
     UUID expId = createExpense(new BigDecimal("250.00"), "ZAR", new BigDecimal("20.00"));
 
     mockMvc
-        .perform(get("/api/customers/" + customerId + "/unbilled-time").with(ownerJwt()))
+        .perform(
+            get("/api/customers/" + customerId + "/unbilled-time")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_exp_billing_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.unbilledExpenses").isArray())
         .andExpect(jsonPath("$.unbilledExpenses[?(@.id=='" + expId + "')]").exists())
@@ -144,7 +151,9 @@ class ExpenseBillingIntegrationTest {
     String invoiceId = createAndApproveInvoiceWithExpense(expId);
 
     mockMvc
-        .perform(get("/api/customers/" + customerId + "/unbilled-time").with(ownerJwt()))
+        .perform(
+            get("/api/customers/" + customerId + "/unbilled-time")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_exp_billing_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.unbilledExpenses[?(@.id=='" + expId + "')]").doesNotExist());
 
@@ -158,7 +167,9 @@ class ExpenseBillingIntegrationTest {
     UUID expId = createNonBillableExpense(new BigDecimal("50.00"), "ZAR");
 
     mockMvc
-        .perform(get("/api/customers/" + customerId + "/unbilled-time").with(ownerJwt()))
+        .perform(
+            get("/api/customers/" + customerId + "/unbilled-time")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_exp_billing_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.unbilledExpenses[?(@.id=='" + expId + "')]").doesNotExist());
 
@@ -187,7 +198,7 @@ class ExpenseBillingIntegrationTest {
             post("/api/invoices")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body)
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_exp_billing_owner")))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.lines[0].lineType").value("EXPENSE"))
         .andExpect(jsonPath("$.lines[0].expenseId").value(expId.toString()));
@@ -216,7 +227,7 @@ class ExpenseBillingIntegrationTest {
                 post("/api/invoices")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(body)
-                    .with(ownerJwt()))
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_exp_billing_owner")))
             .andExpect(status().isCreated())
             .andReturn();
 
@@ -247,7 +258,7 @@ class ExpenseBillingIntegrationTest {
             post("/api/invoices")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body)
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_exp_billing_owner")))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.lines[0].unitPrice").value(250.00));
 
@@ -275,7 +286,7 @@ class ExpenseBillingIntegrationTest {
             post("/api/invoices")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body)
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_exp_billing_owner")))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.lines.length()").value(2))
         .andExpect(jsonPath("$.lines[0].lineType").value("TIME"))
@@ -291,7 +302,9 @@ class ExpenseBillingIntegrationTest {
 
     // Approve
     mockMvc
-        .perform(post("/api/invoices/" + invoiceId + "/approve").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + invoiceId + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_exp_billing_owner")))
         .andExpect(status().isOk());
 
     // Verify expense is stamped
@@ -333,7 +346,9 @@ class ExpenseBillingIntegrationTest {
 
     // Void
     mockMvc
-        .perform(post("/api/invoices/" + invoiceId + "/void").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + invoiceId + "/void")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_exp_billing_owner")))
         .andExpect(status().isOk());
 
     // Verify expense is unbilled
@@ -354,7 +369,9 @@ class ExpenseBillingIntegrationTest {
     String invoiceId = createAndApproveInvoiceWithExpense(expId);
 
     mockMvc
-        .perform(post("/api/invoices/" + invoiceId + "/void").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + invoiceId + "/void")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_exp_billing_owner")))
         .andExpect(status().isOk());
 
     runInTenant(
@@ -373,7 +390,9 @@ class ExpenseBillingIntegrationTest {
     UUID expId = createExpense(new BigDecimal("500.00"), "ZAR", null);
 
     mockMvc
-        .perform(get("/api/projects/" + projectId + "/profitability").with(ownerJwt()))
+        .perform(
+            get("/api/projects/" + projectId + "/profitability")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_exp_billing_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.currencies[?(@.currency=='ZAR')].totalExpenseCost").exists());
 
@@ -386,7 +405,9 @@ class ExpenseBillingIntegrationTest {
     String invoiceId = createAndApproveInvoiceWithExpense(expId);
 
     mockMvc
-        .perform(get("/api/projects/" + projectId + "/profitability").with(ownerJwt()))
+        .perform(
+            get("/api/projects/" + projectId + "/profitability")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_exp_billing_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.currencies[?(@.currency=='ZAR')].totalExpenseRevenue").exists());
 
@@ -400,7 +421,9 @@ class ExpenseBillingIntegrationTest {
 
     var result =
         mockMvc
-            .perform(get("/api/projects/" + projectId + "/profitability").with(ownerJwt()))
+            .perform(
+                get("/api/projects/" + projectId + "/profitability")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_exp_billing_owner")))
             .andExpect(status().isOk())
             .andReturn();
 
@@ -422,7 +445,9 @@ class ExpenseBillingIntegrationTest {
 
     var result =
         mockMvc
-            .perform(get("/api/projects/" + projectId + "/profitability").with(ownerJwt()))
+            .perform(
+                get("/api/projects/" + projectId + "/profitability")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_exp_billing_owner")))
             .andExpect(status().isOk())
             .andReturn();
 
@@ -526,7 +551,7 @@ class ExpenseBillingIntegrationTest {
                 post("/api/invoices")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(body)
-                    .with(ownerJwt()))
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_exp_billing_owner")))
             .andExpect(status().isCreated())
             .andReturn();
 
@@ -537,7 +562,9 @@ class ExpenseBillingIntegrationTest {
     String invoiceId = createDraftInvoiceWithExpense(expenseId);
 
     mockMvc
-        .perform(post("/api/invoices/" + invoiceId + "/approve").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + invoiceId + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_exp_billing_owner")))
         .andExpect(status().isOk());
 
     return invoiceId;
@@ -545,7 +572,9 @@ class ExpenseBillingIntegrationTest {
 
   private void voidInvoice(String invoiceId) throws Exception {
     mockMvc
-        .perform(post("/api/invoices/" + invoiceId + "/void").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + invoiceId + "/void")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_exp_billing_owner")))
         .andExpect(status().isOk());
   }
 
@@ -611,39 +640,5 @@ class ExpenseBillingIntegrationTest {
         .where(RequestScopes.MEMBER_ID, memberIdOwner)
         .where(RequestScopes.ORG_ROLE, "owner")
         .run(action);
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_exp_billing_owner")
-                    .claim(
-                        "o", Map.of("id", ORG_ID, "rol", "owner", "slg", "exp-billing-test-org")));
-  }
-
-  private String syncMember(String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(ORG_ID, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

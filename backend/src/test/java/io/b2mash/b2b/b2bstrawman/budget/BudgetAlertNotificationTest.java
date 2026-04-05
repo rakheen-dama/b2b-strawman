@@ -1,10 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.budget;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.billingrate.BillingRateService;
 import io.b2mash.b2b.b2bstrawman.event.BudgetThresholdEvent;
@@ -17,6 +14,7 @@ import io.b2mash.b2b.b2bstrawman.notification.NotificationRepository;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.TaskService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -32,7 +30,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.event.ApplicationEvents;
 import org.springframework.test.context.event.RecordApplicationEvents;
@@ -81,13 +78,16 @@ class BudgetAlertNotificationTest {
 
     memberIdOwner =
         UUID.fromString(
-            syncMember(ORG_ID, "user_ba_owner", "ba_owner@test.com", "BA Owner", "owner"));
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, "user_ba_owner", "ba_owner@test.com", "BA Owner", "owner"));
     memberIdAdmin =
         UUID.fromString(
-            syncMember(ORG_ID, "user_ba_admin", "ba_admin@test.com", "BA Admin", "admin"));
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, "user_ba_admin", "ba_admin@test.com", "BA Admin", "admin"));
     memberIdMember =
         UUID.fromString(
-            syncMember(ORG_ID, "user_ba_member", "ba_member@test.com", "BA Member", "member"));
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, "user_ba_member", "ba_member@test.com", "BA Member", "member"));
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
@@ -465,32 +465,5 @@ class BudgetAlertNotificationTest {
         .where(RequestScopes.MEMBER_ID, actorId)
         .where(RequestScopes.ORG_ROLE, role)
         .run(action);
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

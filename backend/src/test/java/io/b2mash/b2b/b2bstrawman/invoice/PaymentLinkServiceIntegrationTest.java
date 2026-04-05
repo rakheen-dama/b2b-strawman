@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.invoice;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -16,7 +15,8 @@ import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -26,7 +26,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -62,7 +61,13 @@ class PaymentLinkServiceIntegrationTest {
 
     memberIdOwner =
         UUID.fromString(
-            syncMember("user_pay_link_owner", "pay_link_owner@test.com", "PayLink Owner", "owner"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_pay_link_owner",
+                "pay_link_owner@test.com",
+                "PayLink Owner",
+                "owner"));
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
@@ -145,7 +150,9 @@ class PaymentLinkServiceIntegrationTest {
     sendInvoice(invoiceId);
 
     mockMvc
-        .perform(post("/api/invoices/" + invoiceId + "/refresh-payment-link").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + invoiceId + "/refresh-payment-link")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pay_link_owner")))
         .andExpect(status().isOk());
   }
 
@@ -155,39 +162,10 @@ class PaymentLinkServiceIntegrationTest {
     addLineItem(invoiceId);
 
     mockMvc
-        .perform(post("/api/invoices/" + invoiceId + "/refresh-payment-link").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + invoiceId + "/refresh-payment-link")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pay_link_owner")))
         .andExpect(status().isConflict());
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(
-            j -> j.subject("user_pay_link_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private String syncMember(String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(ORG_ID, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 
   private String createDraftInvoice() throws Exception {
@@ -195,7 +173,7 @@ class PaymentLinkServiceIntegrationTest {
         mockMvc
             .perform(
                 post("/api/invoices")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pay_link_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -214,7 +192,7 @@ class PaymentLinkServiceIntegrationTest {
     mockMvc
         .perform(
             post("/api/invoices/" + invoiceId + "/lines")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pay_link_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -232,13 +210,17 @@ class PaymentLinkServiceIntegrationTest {
 
   private void approveInvoice(String invoiceId) throws Exception {
     mockMvc
-        .perform(post("/api/invoices/" + invoiceId + "/approve").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + invoiceId + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pay_link_owner")))
         .andExpect(status().isOk());
   }
 
   private void sendInvoice(String invoiceId) throws Exception {
     mockMvc
-        .perform(post("/api/invoices/" + invoiceId + "/send").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + invoiceId + "/send")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pay_link_owner")))
         .andExpect(status().isOk());
   }
 }

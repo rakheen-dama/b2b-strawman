@@ -1,16 +1,15 @@
 package io.b2mash.b2b.b2bstrawman.template;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.io.ByteArrayOutputStream;
-import java.util.Map;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
@@ -24,9 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -37,8 +34,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class DocxUploadEndpointTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_docx_upload_test";
   private static final String DOCX_CONTENT_TYPE =
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
@@ -49,49 +44,12 @@ class DocxUploadEndpointTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "DOCX Upload Test Org", null);
-    syncMember(ORG_ID, "user_docx_owner", "docx_owner@test.com", "DOCX Owner", "owner");
-    syncMember(ORG_ID, "user_docx_member", "docx_member@test.com", "DOCX Member", "member");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_docx_owner", "docx_owner@test.com", "DOCX Owner", "owner");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_docx_member", "docx_member@test.com", "DOCX Member", "member");
   }
 
-  // --- JWT Helpers ---
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_docx_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_docx_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  // --- Member sync helper ---
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  // --- .docx creation helpers ---
   private byte[] createTestDocx(String text) throws Exception {
     try (XWPFDocument doc = new XWPFDocument()) {
       XWPFParagraph para = doc.createParagraph();
@@ -119,7 +77,7 @@ class DocxUploadEndpointTest {
                 .param("name", "Valid Upload Template")
                 .param("category", "ENGAGEMENT_LETTER")
                 .param("entityType", "PROJECT")
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_docx_owner")))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.format").value("DOCX"))
         .andExpect(jsonPath("$.name").value("Valid Upload Template"))
@@ -143,7 +101,7 @@ class DocxUploadEndpointTest {
                 .param("name", "Bad Mime Template")
                 .param("category", "ENGAGEMENT_LETTER")
                 .param("entityType", "PROJECT")
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_docx_owner")))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.title").value("Invalid file type"));
   }
@@ -162,7 +120,7 @@ class DocxUploadEndpointTest {
                 .param("name", "")
                 .param("category", "ENGAGEMENT_LETTER")
                 .param("entityType", "PROJECT")
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_docx_owner")))
         .andExpect(status().isBadRequest());
   }
 
@@ -180,7 +138,7 @@ class DocxUploadEndpointTest {
                 .param("name", "Corrupt Template")
                 .param("category", "ENGAGEMENT_LETTER")
                 .param("entityType", "PROJECT")
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_docx_owner")))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.title").value("Corrupt file"));
   }
@@ -199,7 +157,7 @@ class DocxUploadEndpointTest {
                 .param("name", "Member Upload Attempt")
                 .param("category", "ENGAGEMENT_LETTER")
                 .param("entityType", "PROJECT")
-                .with(memberJwt()))
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_docx_member")))
         .andExpect(status().isForbidden());
   }
 
@@ -218,7 +176,7 @@ class DocxUploadEndpointTest {
                 .param("name", "Duplicate Slug Test")
                 .param("category", "ENGAGEMENT_LETTER")
                 .param("entityType", "PROJECT")
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_docx_owner")))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.slug").value("duplicate-slug-test"));
 
@@ -232,7 +190,7 @@ class DocxUploadEndpointTest {
                 .param("name", "Duplicate Slug Test")
                 .param("category", "ENGAGEMENT_LETTER")
                 .param("entityType", "PROJECT")
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_docx_owner")))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.slug").value("duplicate-slug-test-2"));
   }
@@ -252,7 +210,7 @@ class DocxUploadEndpointTest {
                     .param("name", "Audit Event Template")
                     .param("category", "ENGAGEMENT_LETTER")
                     .param("entityType", "PROJECT")
-                    .with(ownerJwt()))
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_docx_owner")))
             .andExpect(status().isCreated())
             .andReturn();
 
@@ -263,7 +221,7 @@ class DocxUploadEndpointTest {
         .perform(
             org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get(
                     "/api/audit-events/document_template/" + templateId)
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_docx_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray())
         .andExpect(jsonPath("$.content[0].eventType").value("docx_template.uploaded"));
@@ -284,7 +242,7 @@ class DocxUploadEndpointTest {
                 .param("name", "Oversized Template")
                 .param("category", "ENGAGEMENT_LETTER")
                 .param("entityType", "PROJECT")
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_docx_owner")))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.title").value("File too large"));
   }
@@ -303,7 +261,7 @@ class DocxUploadEndpointTest {
                 .param("name", "No Fields Template")
                 .param("category", "REPORT")
                 .param("entityType", "CUSTOMER")
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_docx_owner")))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.format").value("DOCX"))
         .andExpect(jsonPath("$.discoveredFields").isArray())

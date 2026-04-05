@@ -2,11 +2,9 @@ package io.b2mash.b2b.b2bstrawman.compliance;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
@@ -14,6 +12,8 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -24,8 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -35,8 +33,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CompliancePackControllerTest {
-
-  private static final String API_KEY = "test-api-key";
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
@@ -58,19 +54,32 @@ class CompliancePackControllerTest {
 
     memberIdOwner =
         UUID.fromString(
-            syncMember("user_pack_owner", "pack_owner@test.com", "Pack Owner", "owner"));
-    syncMember("user_admin", "pack_admin@test.com", "Pack Admin", "admin");
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, "user_pack_owner", "pack_owner@test.com", "Pack Owner", "owner"));
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_admin", "pack_admin@test.com", "Pack Admin", "admin");
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
 
     customRoleMemberId =
         UUID.fromString(
-            syncMember(
-                "user_pack_315a_custom", "pack_custom@test.com", "Pack Custom User", "member"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_pack_315a_custom",
+                "pack_custom@test.com",
+                "Pack Custom User",
+                "member"));
     noCapMemberId =
         UUID.fromString(
-            syncMember("user_pack_315a_nocap", "pack_nocap@test.com", "Pack NoCap User", "member"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_pack_315a_nocap",
+                "pack_nocap@test.com",
+                "Pack NoCap User",
+                "member"));
 
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)
@@ -98,64 +107,32 @@ class CompliancePackControllerTest {
             });
   }
 
-  private JwtRequestPostProcessor adminJwt() {
-    return jwt().jwt(j -> j.subject("user_admin").claim("o", Map.of("id", ORG_ID, "rol", "admin")));
-  }
-
-  private JwtRequestPostProcessor customRoleJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_pack_315a_custom")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor noCapabilityJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_pack_315a_nocap")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private String syncMember(String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"clerkOrgId":"%s","clerkUserId":"%s","email":"%s","name":"%s","avatarUrl":null,"orgRole":"%s"}
-                        """
-                            .formatted(ORG_ID, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
   // --- Capability Tests (added in Epic 315A) ---
 
   @Test
   void customRoleWithCapability_accessesPackEndpoint_returns200() throws Exception {
     mockMvc
-        .perform(get("/api/compliance-packs/generic-onboarding").with(customRoleJwt()))
+        .perform(
+            get("/api/compliance-packs/generic-onboarding")
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_pack_315a_custom", "member")))
         .andExpect(status().isOk());
   }
 
   @Test
   void customRoleWithoutCapability_accessesPackEndpoint_returns403() throws Exception {
     mockMvc
-        .perform(get("/api/compliance-packs/generic-onboarding").with(noCapabilityJwt()))
+        .perform(
+            get("/api/compliance-packs/generic-onboarding")
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_pack_315a_nocap", "member")))
         .andExpect(status().isForbidden());
   }
 
   @Test
   void getPackDefinition_returnsPackForGenericOnboarding() throws Exception {
     mockMvc
-        .perform(get("/api/compliance-packs/generic-onboarding").with(adminJwt()))
+        .perform(
+            get("/api/compliance-packs/generic-onboarding")
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.packId").value("generic-onboarding"))
         .andExpect(jsonPath("$.name").value("Generic Client Onboarding"))
@@ -167,7 +144,9 @@ class CompliancePackControllerTest {
   @Test
   void getPackDefinition_returns404ForNonexistentPack() throws Exception {
     mockMvc
-        .perform(get("/api/compliance-packs/nonexistent-pack").with(adminJwt()))
+        .perform(
+            get("/api/compliance-packs/nonexistent-pack")
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_admin")))
         .andExpect(status().isNotFound());
   }
 

@@ -2,7 +2,6 @@ package io.b2mash.b2b.b2bstrawman.customerbackend.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -13,7 +12,9 @@ import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalReadModelRepos
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestChecklistHelper;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -23,10 +24,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -34,8 +33,6 @@ import org.springframework.test.web.servlet.MvcResult;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class PortalResyncIntegrationTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_resync_test";
   private static final String EMPTY_ORG_ID = "org_resync_empty";
 
@@ -52,27 +49,54 @@ class PortalResyncIntegrationTest {
   @BeforeAll
   void provisionAndSeedData() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Resync Test Org", null);
-    syncMember(ORG_ID, "user_resync_owner", "resync_owner@test.com", "Resync Owner", "owner");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_resync_owner", "resync_owner@test.com", "Resync Owner", "owner");
 
     // Provision a separate empty org (no projects, customers, or documents)
     provisioningService.provisionTenant(EMPTY_ORG_ID, "Resync Empty Org", null);
 
     // Create two projects
-    projectId = createProject("Resync Project A", "First project for resync");
-    project2Id = createProject("Resync Project B", "Second project for resync");
+    projectId =
+        TestEntityHelper.createProject(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, "user_resync_owner"),
+            "Resync Project A",
+            "First project for resync");
+    project2Id =
+        TestEntityHelper.createProject(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, "user_resync_owner"),
+            "Resync Project B",
+            "Second project for resync");
 
     // Create two customers
-    customerId = createCustomer("Resync Customer A", "resync_a@test.com");
-    customer2Id = createCustomer("Resync Customer B", "resync_b@test.com");
+    customerId =
+        TestEntityHelper.createCustomer(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, "user_resync_owner"),
+            "Resync Customer A",
+            "resync_a@test.com");
+    transitionCustomerToActive(customerId);
+    customer2Id =
+        TestEntityHelper.createCustomer(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, "user_resync_owner"),
+            "Resync Customer B",
+            "resync_b@test.com");
+    transitionCustomerToActive(customer2Id);
 
     // Link customer A to project A
     mockMvc
-        .perform(post("/api/customers/" + customerId + "/projects/" + projectId).with(ownerJwt()))
+        .perform(
+            post("/api/customers/" + customerId + "/projects/" + projectId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_resync_owner")))
         .andExpect(status().isCreated());
 
     // Link customer B to project B
     mockMvc
-        .perform(post("/api/customers/" + customer2Id + "/projects/" + project2Id).with(ownerJwt()))
+        .perform(
+            post("/api/customers/" + customer2Id + "/projects/" + project2Id)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_resync_owner")))
         .andExpect(status().isCreated());
 
     // Upload and confirm a document on project A, then make it SHARED
@@ -148,54 +172,17 @@ class PortalResyncIntegrationTest {
         .isInstanceOf(ResourceNotFoundException.class);
   }
 
-  // --- Helpers ---
-
-  private String createProject(String name, String description) throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/api/projects")
-                    .with(ownerJwt())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"name": "%s", "description": "%s"}
-                        """
-                            .formatted(name, description)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return extractIdFromLocation(result);
-  }
-
-  private String createCustomer(String name, String email) throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/api/customers")
-                    .with(ownerJwt())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"name": "%s", "email": "%s"}
-                        """
-                            .formatted(name, email)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    var customerId = extractIdFromLocation(result);
-    transitionCustomerToActive(customerId);
-    return customerId;
-  }
-
   private void transitionCustomerToActive(String customerId) throws Exception {
     mockMvc
         .perform(
             post("/api/customers/" + customerId + "/transition")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_resync_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"targetStatus\": \"ONBOARDING\"}"))
         .andExpect(status().isOk());
     // Completing all checklist items auto-transitions ONBOARDING -> ACTIVE
-    TestChecklistHelper.completeChecklistItems(mockMvc, customerId, ownerJwt());
+    TestChecklistHelper.completeChecklistItems(
+        mockMvc, customerId, TestJwtFactory.ownerJwt(ORG_ID, "user_resync_owner"));
   }
 
   private String uploadAndConfirmDocument(String projectId) throws Exception {
@@ -203,7 +190,7 @@ class PortalResyncIntegrationTest {
         mockMvc
             .perform(
                 post("/api/projects/" + projectId + "/documents/upload-init")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_resync_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -215,7 +202,9 @@ class PortalResyncIntegrationTest {
         JsonPath.read(initResult.getResponse().getContentAsString(), "$.documentId").toString();
 
     mockMvc
-        .perform(post("/api/documents/" + docId + "/confirm").with(ownerJwt()))
+        .perform(
+            post("/api/documents/" + docId + "/confirm")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_resync_owner")))
         .andExpect(status().isOk());
 
     return docId;
@@ -225,7 +214,7 @@ class PortalResyncIntegrationTest {
     mockMvc
         .perform(
             patch("/api/documents/" + documentId + "/visibility")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_resync_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -233,41 +222,5 @@ class PortalResyncIntegrationTest {
                     """
                         .formatted(visibility)))
         .andExpect(status().isOk());
-  }
-
-  private String extractIdFromLocation(MvcResult result) {
-    String location = result.getResponse().getHeader("Location");
-    return location.substring(location.lastIndexOf('/') + 1);
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_resync_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
   }
 }

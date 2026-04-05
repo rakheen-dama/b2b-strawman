@@ -3,13 +3,10 @@ package io.b2mash.b2b.b2bstrawman.invoice;
 import static io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.createActiveCustomer;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
@@ -24,9 +21,10 @@ import io.b2mash.b2b.b2bstrawman.tax.TaxCalculationService;
 import io.b2mash.b2b.b2bstrawman.tax.TaxRate;
 import io.b2mash.b2b.b2bstrawman.tax.TaxRateRepository;
 import io.b2mash.b2b.b2bstrawman.template.PdfRenderingService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -35,8 +33,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -87,7 +83,8 @@ class InvoicePreviewTaxIntegrationTest {
 
     memberIdOwner =
         UUID.fromString(
-            syncMember(
+            TestMemberHelper.syncMember(
+                mockMvc,
                 ORG_ID,
                 "user_inv_preview_tax_owner",
                 "inv_preview_tax_owner@test.com",
@@ -225,7 +222,8 @@ class InvoicePreviewTaxIntegrationTest {
 
     memberIdInclusive =
         UUID.fromString(
-            syncMember(
+            TestMemberHelper.syncMember(
+                mockMvc,
                 ORG_ID_INCLUSIVE,
                 "user_inv_preview_tax_incl",
                 "inv_preview_tax_incl@test.com",
@@ -302,7 +300,9 @@ class InvoicePreviewTaxIntegrationTest {
   @Test
   void previewContainsTaxBreakdownSection() throws Exception {
     mockMvc
-        .perform(get("/api/invoices/" + taxInvoiceId + "/preview").with(ownerJwt()))
+        .perform(
+            get("/api/invoices/" + taxInvoiceId + "/preview")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_preview_tax_owner")))
         .andExpect(status().isOk())
         .andExpect(content().string(containsString("VAT (15.00%)")));
   }
@@ -310,7 +310,9 @@ class InvoicePreviewTaxIntegrationTest {
   @Test
   void previewContainsRegistrationNumber() throws Exception {
     mockMvc
-        .perform(get("/api/invoices/" + taxInvoiceId + "/preview").with(ownerJwt()))
+        .perform(
+            get("/api/invoices/" + taxInvoiceId + "/preview")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_preview_tax_owner")))
         .andExpect(status().isOk())
         .andExpect(content().string(containsString("VAT Number")))
         .andExpect(content().string(containsString("4012345678")));
@@ -319,7 +321,9 @@ class InvoicePreviewTaxIntegrationTest {
   @Test
   void previewContainsTaxColumnOnLines() throws Exception {
     mockMvc
-        .perform(get("/api/invoices/" + taxInvoiceId + "/preview").with(ownerJwt()))
+        .perform(
+            get("/api/invoices/" + taxInvoiceId + "/preview")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_preview_tax_owner")))
         .andExpect(status().isOk())
         .andExpect(content().string(containsString("VAT 15.00%")));
   }
@@ -327,7 +331,9 @@ class InvoicePreviewTaxIntegrationTest {
   @Test
   void previewShowsInclusiveNoteWhenTaxInclusive() throws Exception {
     mockMvc
-        .perform(get("/api/invoices/" + inclusiveInvoiceId + "/preview").with(inclusiveOwnerJwt()))
+        .perform(
+            get("/api/invoices/" + inclusiveInvoiceId + "/preview")
+                .with(TestJwtFactory.ownerJwt(ORG_ID_INCLUSIVE, "user_inv_preview_tax_incl")))
         .andExpect(status().isOk())
         .andExpect(content().string(containsString("All amounts include")))
         .andExpect(content().string(containsString("VAT")));
@@ -336,7 +342,9 @@ class InvoicePreviewTaxIntegrationTest {
   @Test
   void previewLegacyInvoiceShowsFlatTax() throws Exception {
     mockMvc
-        .perform(get("/api/invoices/" + legacyInvoiceId + "/preview").with(ownerJwt()))
+        .perform(
+            get("/api/invoices/" + legacyInvoiceId + "/preview")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_preview_tax_owner")))
         .andExpect(status().isOk())
         .andExpect(content().string(containsString(">Tax<")));
   }
@@ -344,7 +352,9 @@ class InvoicePreviewTaxIntegrationTest {
   @Test
   void previewExemptLinesShowExemptLabel() throws Exception {
     mockMvc
-        .perform(get("/api/invoices/" + taxInvoiceId + "/preview").with(ownerJwt()))
+        .perform(
+            get("/api/invoices/" + taxInvoiceId + "/preview")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_preview_tax_owner")))
         .andExpect(status().isOk())
         .andExpect(content().string(containsString("Exempt")));
   }
@@ -353,7 +363,9 @@ class InvoicePreviewTaxIntegrationTest {
   void pdfGenerationWithTaxBreakdown() throws Exception {
     var result =
         mockMvc
-            .perform(get("/api/invoices/" + taxInvoiceId + "/preview").with(ownerJwt()))
+            .perform(
+                get("/api/invoices/" + taxInvoiceId + "/preview")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_preview_tax_owner")))
             .andExpect(status().isOk())
             .andReturn();
 
@@ -368,7 +380,9 @@ class InvoicePreviewTaxIntegrationTest {
   void previewLegacyInvoiceNoTaxColumn() throws Exception {
     var result =
         mockMvc
-            .perform(get("/api/invoices/" + legacyInvoiceId + "/preview").with(ownerJwt()))
+            .perform(
+                get("/api/invoices/" + legacyInvoiceId + "/preview")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_preview_tax_owner")))
             .andExpect(status().isOk())
             .andReturn();
 
@@ -380,47 +394,4 @@ class InvoicePreviewTaxIntegrationTest {
 
   // --- JWT Helpers ---
 
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_inv_preview_tax_owner")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor inclusiveOwnerJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_inv_preview_tax_incl")
-                    .claim("o", Map.of("id", ORG_ID_INCLUSIVE, "rol", "owner")));
-  }
-
-  // --- Member sync helper ---
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
 }

@@ -1,12 +1,10 @@
 package io.b2mash.b2b.b2bstrawman.notification;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.event.MemberAddedToProjectEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskAssignedEvent;
@@ -14,7 +12,9 @@ import io.b2mash.b2b.b2bstrawman.event.TaskClaimedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskStatusChangedEvent;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -25,12 +25,10 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.event.ApplicationEvents;
 import org.springframework.test.context.event.RecordApplicationEvents;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
 /**
  * Integration test verifying that domain events carry the orgId field and that the
@@ -43,8 +41,6 @@ import org.springframework.test.web.servlet.MvcResult;
 @RecordApplicationEvents
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class NotificationEventHandlerIntegrationTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_notif_handler_test";
 
   @Autowired private MockMvc mockMvc;
@@ -64,16 +60,18 @@ class NotificationEventHandlerIntegrationTest {
 
     memberIdOwner =
         UUID.fromString(
-            syncMember(ORG_ID, "user_nh_owner", "nh_owner@test.com", "NH Owner", "owner"));
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, "user_nh_owner", "nh_owner@test.com", "NH Owner", "owner"));
     memberIdMember =
         UUID.fromString(
-            syncMember(ORG_ID, "user_nh_member", "nh_member@test.com", "NH Member", "member"));
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, "user_nh_member", "nh_member@test.com", "NH Member", "member"));
 
     var projectResult =
         mockMvc
             .perform(
                 post("/api/projects")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_nh_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -81,13 +79,13 @@ class NotificationEventHandlerIntegrationTest {
                         """))
             .andExpect(status().isCreated())
             .andReturn();
-    projectId = extractIdFromLocation(projectResult);
+    projectId = TestEntityHelper.extractIdFromLocation(projectResult);
 
     // Add member to project
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/members")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_nh_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"memberId\": \"%s\"}".formatted(memberIdMember)))
         .andExpect(status().isCreated());
@@ -99,7 +97,7 @@ class NotificationEventHandlerIntegrationTest {
         mockMvc
             .perform(
                 post("/api/projects/" + projectId + "/tasks")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_nh_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -107,14 +105,14 @@ class NotificationEventHandlerIntegrationTest {
                         """))
             .andExpect(status().isCreated())
             .andReturn();
-    var taskId = extractIdFromLocation(taskResult);
+    var taskId = TestEntityHelper.extractIdFromLocation(taskResult);
 
     events.clear();
 
     mockMvc
         .perform(
             put("/api/tasks/" + taskId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_nh_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -137,7 +135,7 @@ class NotificationEventHandlerIntegrationTest {
         mockMvc
             .perform(
                 post("/api/projects/" + projectId + "/tasks")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_nh_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -145,13 +143,13 @@ class NotificationEventHandlerIntegrationTest {
                         """))
             .andExpect(status().isCreated())
             .andReturn();
-    var taskId = extractIdFromLocation(taskResult);
+    var taskId = TestEntityHelper.extractIdFromLocation(taskResult);
 
     // Assign task to member (actor = owner)
     mockMvc
         .perform(
             put("/api/tasks/" + taskId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_nh_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -194,7 +192,7 @@ class NotificationEventHandlerIntegrationTest {
         mockMvc
             .perform(
                 post("/api/projects/" + projectId + "/tasks")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_nh_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -202,13 +200,13 @@ class NotificationEventHandlerIntegrationTest {
                         """))
             .andExpect(status().isCreated())
             .andReturn();
-    var taskId = extractIdFromLocation(taskResult);
+    var taskId = TestEntityHelper.extractIdFromLocation(taskResult);
 
     // Owner assigns to self
     mockMvc
         .perform(
             put("/api/tasks/" + taskId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_nh_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -239,7 +237,7 @@ class NotificationEventHandlerIntegrationTest {
         mockMvc
             .perform(
                 post("/api/projects/" + projectId + "/tasks")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_nh_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -247,12 +245,14 @@ class NotificationEventHandlerIntegrationTest {
                         """))
             .andExpect(status().isCreated())
             .andReturn();
-    var taskId = extractIdFromLocation(taskResult);
+    var taskId = TestEntityHelper.extractIdFromLocation(taskResult);
 
     events.clear();
 
     mockMvc
-        .perform(post("/api/tasks/" + taskId + "/claim").with(memberJwt()))
+        .perform(
+            post("/api/tasks/" + taskId + "/claim")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_nh_member")))
         .andExpect(status().isOk());
 
     var claimedEvents = events.stream(TaskClaimedEvent.class).toList();
@@ -266,7 +266,7 @@ class NotificationEventHandlerIntegrationTest {
         mockMvc
             .perform(
                 post("/api/projects/" + projectId + "/tasks")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_nh_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -274,14 +274,14 @@ class NotificationEventHandlerIntegrationTest {
                         """))
             .andExpect(status().isCreated())
             .andReturn();
-    var taskId = extractIdFromLocation(taskResult);
+    var taskId = TestEntityHelper.extractIdFromLocation(taskResult);
 
     events.clear();
 
     mockMvc
         .perform(
             put("/api/tasks/" + taskId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_nh_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -300,7 +300,7 @@ class NotificationEventHandlerIntegrationTest {
         mockMvc
             .perform(
                 post("/api/projects/" + projectId + "/tasks")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_nh_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -308,13 +308,13 @@ class NotificationEventHandlerIntegrationTest {
                         """))
             .andExpect(status().isCreated())
             .andReturn();
-    var taskId = extractIdFromLocation(taskResult);
+    var taskId = TestEntityHelper.extractIdFromLocation(taskResult);
 
     // Assign to member first
     mockMvc
         .perform(
             put("/api/tasks/" + taskId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_nh_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -327,7 +327,7 @@ class NotificationEventHandlerIntegrationTest {
     mockMvc
         .perform(
             put("/api/tasks/" + taskId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_nh_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -355,14 +355,15 @@ class NotificationEventHandlerIntegrationTest {
   @Test
   void memberAddedEvent_carriesOrgId() throws Exception {
     var newMemberId =
-        syncMember(ORG_ID, "user_nh_new", "nh_new@test.com", "NH New Member", "member");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_nh_new", "nh_new@test.com", "NH New Member", "member");
 
     events.clear();
 
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/members")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_nh_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"memberId\": \"%s\"}".formatted(newMemberId)))
         .andExpect(status().isCreated());
@@ -375,12 +376,13 @@ class NotificationEventHandlerIntegrationTest {
   @Test
   void memberAdded_createsNotificationForAddedMember() throws Exception {
     var newMemberId =
-        syncMember(ORG_ID, "user_nh_added", "nh_added@test.com", "NH Added Member", "member");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_nh_added", "nh_added@test.com", "NH Added Member", "member");
 
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/members")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_nh_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"memberId\": \"%s\"}".formatted(newMemberId)))
         .andExpect(status().isCreated());
@@ -398,49 +400,5 @@ class NotificationEventHandlerIntegrationTest {
                           "MEMBER_INVITED".equals(n.getType())
                               && n.getTitle().contains("You were added to project"));
             });
-  }
-
-  // --- Helpers ---
-
-  private String extractIdFromLocation(MvcResult result) {
-    String location = result.getResponse().getHeader("Location");
-    return location.substring(location.lastIndexOf('/') + 1);
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_nh_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_nh_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 }

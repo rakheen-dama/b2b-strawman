@@ -1,13 +1,10 @@
 package io.b2mash.b2b.b2bstrawman.setupstatus;
 
 import static io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.createActiveCustomer;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
@@ -23,12 +20,13 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
@@ -40,8 +38,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -53,8 +49,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class UnbilledTimeSummaryControllerTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_unbilled_summary_test";
 
   @Autowired private MockMvc mockMvc;
@@ -89,7 +83,8 @@ class UnbilledTimeSummaryControllerTest {
 
     memberIdOwner =
         UUID.fromString(
-            syncMember(
+            TestMemberHelper.syncMember(
+                mockMvc,
                 ORG_ID,
                 "user_unbilled_owner",
                 "unbilled_owner@test.com",
@@ -242,7 +237,9 @@ class UnbilledTimeSummaryControllerTest {
   void projectUnbilledSummary_withBillableEntries_returnsCorrectTotals() throws Exception {
     // Project A: 2 entries, 120+60=180 min = 3.00 hours, amount = 3000+1500 = 4500
     mockMvc
-        .perform(get("/api/projects/" + projectIdA + "/unbilled-summary").with(ownerJwt()))
+        .perform(
+            get("/api/projects/" + projectIdA + "/unbilled-summary")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_unbilled_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.totalHours").value(3.0))
         .andExpect(jsonPath("$.totalAmount").value(4500.0))
@@ -256,7 +253,9 @@ class UnbilledTimeSummaryControllerTest {
   void projectUnbilledSummary_allInvoiced_returnsZeros() throws Exception {
     // Project B: all entries have invoice_id set
     mockMvc
-        .perform(get("/api/projects/" + projectIdB + "/unbilled-summary").with(ownerJwt()))
+        .perform(
+            get("/api/projects/" + projectIdB + "/unbilled-summary")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_unbilled_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.totalHours").value(0))
         .andExpect(jsonPath("$.totalAmount").value(0))
@@ -271,7 +270,8 @@ class UnbilledTimeSummaryControllerTest {
     // Total: 3 entries, 180+90=270 min = 4.50 hours, amount = 4500+3000 = 7500
     mockMvc
         .perform(
-            get("/api/customers/" + customerIdWithEntries + "/unbilled-summary").with(ownerJwt()))
+            get("/api/customers/" + customerIdWithEntries + "/unbilled-summary")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_unbilled_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.entryCount").value(3))
         .andExpect(jsonPath("$.byProject").isArray())
@@ -282,7 +282,9 @@ class UnbilledTimeSummaryControllerTest {
   @Order(4)
   void customerUnbilledSummary_noEntries_returnsZeros() throws Exception {
     mockMvc
-        .perform(get("/api/customers/" + customerIdEmpty + "/unbilled-summary").with(ownerJwt()))
+        .perform(
+            get("/api/customers/" + customerIdEmpty + "/unbilled-summary")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_unbilled_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.totalHours").value(0))
         .andExpect(jsonPath("$.totalAmount").value(0))
@@ -312,7 +314,9 @@ class UnbilledTimeSummaryControllerTest {
     // Project C: 1 billable (90 min, rate 2000) + 1 non-billable
     // Only billable counted: 90 min = 1.50 hours, amount = (90/60)*2000 = 3000
     mockMvc
-        .perform(get("/api/projects/" + projectIdC + "/unbilled-summary").with(ownerJwt()))
+        .perform(
+            get("/api/projects/" + projectIdC + "/unbilled-summary")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_unbilled_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.totalHours").value(1.5))
         .andExpect(jsonPath("$.totalAmount").value(3000.0))
@@ -325,7 +329,9 @@ class UnbilledTimeSummaryControllerTest {
   void projectUnbilledSummary_nonExistentProject_returns404() throws Exception {
     var nonExistent = UUID.randomUUID();
     mockMvc
-        .perform(get("/api/projects/" + nonExistent + "/unbilled-summary").with(ownerJwt()))
+        .perform(
+            get("/api/projects/" + nonExistent + "/unbilled-summary")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_unbilled_owner")))
         .andExpect(status().isNotFound());
   }
 
@@ -334,7 +340,9 @@ class UnbilledTimeSummaryControllerTest {
   void customerUnbilledSummary_nonExistentCustomer_returns404() throws Exception {
     var nonExistent = UUID.randomUUID();
     mockMvc
-        .perform(get("/api/customers/" + nonExistent + "/unbilled-summary").with(ownerJwt()))
+        .perform(
+            get("/api/customers/" + nonExistent + "/unbilled-summary")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_unbilled_owner")))
         .andExpect(status().isNotFound());
   }
 
@@ -342,7 +350,9 @@ class UnbilledTimeSummaryControllerTest {
   @Order(10)
   void projectUnbilledSummary_memberRole_returns403() throws Exception {
     mockMvc
-        .perform(get("/api/projects/" + projectIdA + "/unbilled-summary").with(memberJwt()))
+        .perform(
+            get("/api/projects/" + projectIdA + "/unbilled-summary")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_unbilled_member")))
         .andExpect(status().isForbidden());
   }
 
@@ -351,49 +361,8 @@ class UnbilledTimeSummaryControllerTest {
   void customerUnbilledSummary_memberRole_returns403() throws Exception {
     mockMvc
         .perform(
-            get("/api/customers/" + customerIdWithEntries + "/unbilled-summary").with(memberJwt()))
+            get("/api/customers/" + customerIdWithEntries + "/unbilled-summary")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_unbilled_member")))
         .andExpect(status().isForbidden());
-  }
-
-  // --- Helpers ---
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(
-            j -> j.subject("user_unbilled_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_unbilled_member")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

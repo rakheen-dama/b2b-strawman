@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.portal;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -10,7 +9,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -19,7 +20,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -29,8 +29,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class PortalContactAutoCreationTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_portal_contact_auto_test";
 
   @Autowired private MockMvc mockMvc;
@@ -41,18 +39,24 @@ class PortalContactAutoCreationTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Portal Contact Auto Test Org", null);
-    syncMember(ORG_ID, "user_pc_owner", "pc_owner@test.com", "PC Owner", "owner");
+    TestMemberHelper.syncMemberQuietly(
+        mockMvc, ORG_ID, "user_pc_owner", "pc_owner@test.com", "PC Owner", "owner");
   }
 
   @Test
   void shouldReturnPortalContactsForCustomer() throws Exception {
     // Create customer and transition to ONBOARDING (auto-creates portal contact)
-    String customerId = createCustomer("Portal Contacts List Corp", nextEmail());
+    String customerId =
+        TestEntityHelper.createCustomer(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, "user_pc_owner"),
+            "Portal Contacts List Corp",
+            nextEmail());
 
     mockMvc
         .perform(
             post("/api/customers/" + customerId + "/transition")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -62,7 +66,9 @@ class PortalContactAutoCreationTest {
 
     // GET portal contacts should return the auto-created contact
     mockMvc
-        .perform(get("/api/customers/" + customerId + "/portal-contacts").with(ownerJwt()))
+        .perform(
+            get("/api/customers/" + customerId + "/portal-contacts")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$.length()").value(1))
@@ -74,11 +80,15 @@ class PortalContactAutoCreationTest {
   @Test
   void shouldAutoCreatePortalContactOnProspectToOnboarding() throws Exception {
     String email = nextEmail();
-    String customerId = createCustomer("Auto Contact Corp", email);
+    String customerId =
+        TestEntityHelper.createCustomer(
+            mockMvc, TestJwtFactory.ownerJwt(ORG_ID, "user_pc_owner"), "Auto Contact Corp", email);
 
     // Verify no portal contacts before transition
     mockMvc
-        .perform(get("/api/customers/" + customerId + "/portal-contacts").with(ownerJwt()))
+        .perform(
+            get("/api/customers/" + customerId + "/portal-contacts")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(0));
 
@@ -86,7 +96,7 @@ class PortalContactAutoCreationTest {
     mockMvc
         .perform(
             post("/api/customers/" + customerId + "/transition")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -96,7 +106,9 @@ class PortalContactAutoCreationTest {
 
     // Verify portal contact was auto-created
     mockMvc
-        .perform(get("/api/customers/" + customerId + "/portal-contacts").with(ownerJwt()))
+        .perform(
+            get("/api/customers/" + customerId + "/portal-contacts")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(1))
         .andExpect(jsonPath("$[0].email").value(email))
@@ -106,13 +118,15 @@ class PortalContactAutoCreationTest {
   @Test
   void shouldNotDuplicatePortalContactIfAlreadyExists() throws Exception {
     String email = nextEmail();
-    String customerId = createCustomer("No Dup Corp", email);
+    String customerId =
+        TestEntityHelper.createCustomer(
+            mockMvc, TestJwtFactory.ownerJwt(ORG_ID, "user_pc_owner"), "No Dup Corp", email);
 
     // Transition to ONBOARDING — creates the portal contact
     mockMvc
         .perform(
             post("/api/customers/" + customerId + "/transition")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -123,7 +137,9 @@ class PortalContactAutoCreationTest {
     // Confirm one portal contact exists
     var result =
         mockMvc
-            .perform(get("/api/customers/" + customerId + "/portal-contacts").with(ownerJwt()))
+            .perform(
+                get("/api/customers/" + customerId + "/portal-contacts")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pc_owner")))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.length()").value(1))
             .andReturn();
@@ -135,7 +151,9 @@ class PortalContactAutoCreationTest {
     // the transition logic were called again, no duplicate would be created.
     // We verify by checking that still only 1 contact exists.
     mockMvc
-        .perform(get("/api/customers/" + customerId + "/portal-contacts").with(ownerJwt()))
+        .perform(
+            get("/api/customers/" + customerId + "/portal-contacts")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(1))
         .andExpect(jsonPath("$[0].id").value(firstContactId));
@@ -146,16 +164,23 @@ class PortalContactAutoCreationTest {
     mockMvc
         .perform(
             get("/api/customers/00000000-0000-0000-0000-000000000099/portal-contacts")
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pc_owner")))
         .andExpect(status().isNotFound());
   }
 
   @Test
   void shouldReturnEmptyListForCustomerWithNoContacts() throws Exception {
-    String customerId = createCustomer("No Contacts Corp", nextEmail());
+    String customerId =
+        TestEntityHelper.createCustomer(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, "user_pc_owner"),
+            "No Contacts Corp",
+            nextEmail());
 
     mockMvc
-        .perform(get("/api/customers/" + customerId + "/portal-contacts").with(ownerJwt()))
+        .perform(
+            get("/api/customers/" + customerId + "/portal-contacts")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$.length()").value(0));
@@ -165,50 +190,5 @@ class PortalContactAutoCreationTest {
 
   private String nextEmail() {
     return "pc_auto_" + (++emailCounter) + "@test.com";
-  }
-
-  private String createCustomer(String name, String email) throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/api/customers")
-                    .with(ownerJwt())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"name": "%s", "email": "%s"}
-                        """
-                            .formatted(name, email)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.id");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_pc_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private void syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    mockMvc
-        .perform(
-            post("/internal/members/sync")
-                .header("X-API-KEY", API_KEY)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {
-                      "clerkOrgId": "%s",
-                      "clerkUserId": "%s",
-                      "email": "%s",
-                      "name": "%s",
-                      "avatarUrl": null,
-                      "orgRole": "%s"
-                    }
-                    """
-                        .formatted(orgId, clerkUserId, email, name, orgRole)))
-        .andExpect(status().isCreated());
   }
 }

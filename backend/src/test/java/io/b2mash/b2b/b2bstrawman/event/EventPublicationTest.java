@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.event;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -9,7 +8,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -19,7 +20,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.event.ApplicationEvents;
 import org.springframework.test.context.event.RecordApplicationEvents;
@@ -33,8 +33,6 @@ import org.springframework.test.web.servlet.MvcResult;
 @RecordApplicationEvents
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class EventPublicationTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_event_pub_test";
 
   @Autowired private MockMvc mockMvc;
@@ -49,15 +47,18 @@ class EventPublicationTest {
   void provisionTenantAndSeedData() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Event Pub Test Org", null);
 
-    memberIdOwner = syncMember(ORG_ID, "user_ep_owner", "ep_owner@test.com", "EP Owner", "owner");
+    memberIdOwner =
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_ep_owner", "ep_owner@test.com", "EP Owner", "owner");
     memberIdMember =
-        syncMember(ORG_ID, "user_ep_member", "ep_member@test.com", "EP Member", "member");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_ep_member", "ep_member@test.com", "EP Member", "member");
 
     var projectResult =
         mockMvc
             .perform(
                 post("/api/projects")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ep_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -65,13 +66,13 @@ class EventPublicationTest {
                         """))
             .andExpect(status().isCreated())
             .andReturn();
-    projectId = extractIdFromLocation(projectResult);
+    projectId = TestEntityHelper.extractIdFromLocation(projectResult);
 
     // Add member to the project
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/members")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ep_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"memberId\": \"%s\"}".formatted(memberIdMember)))
         .andExpect(status().isCreated());
@@ -84,7 +85,7 @@ class EventPublicationTest {
         mockMvc
             .perform(
                 post("/api/projects/" + projectId + "/tasks")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ep_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -92,7 +93,7 @@ class EventPublicationTest {
                         """))
             .andExpect(status().isCreated())
             .andReturn();
-    var taskId = extractIdFromLocation(taskResult);
+    var taskId = TestEntityHelper.extractIdFromLocation(taskResult);
 
     // Clear events accumulated from setup/create
     events.clear();
@@ -101,7 +102,7 @@ class EventPublicationTest {
     mockMvc
         .perform(
             put("/api/tasks/" + taskId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ep_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -133,7 +134,7 @@ class EventPublicationTest {
         mockMvc
             .perform(
                 post("/api/projects/" + projectId + "/tasks")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ep_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -141,14 +142,16 @@ class EventPublicationTest {
                         """))
             .andExpect(status().isCreated())
             .andReturn();
-    var taskId = extractIdFromLocation(taskResult);
+    var taskId = TestEntityHelper.extractIdFromLocation(taskResult);
 
     // Clear events
     events.clear();
 
     // Claim the task as member
     mockMvc
-        .perform(post("/api/tasks/" + taskId + "/claim").with(memberJwt()))
+        .perform(
+            post("/api/tasks/" + taskId + "/claim")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_ep_member")))
         .andExpect(status().isOk());
 
     var claimedEvents = events.stream(TaskClaimedEvent.class).toList();
@@ -173,7 +176,7 @@ class EventPublicationTest {
         mockMvc
             .perform(
                 post("/api/projects/" + projectId + "/tasks")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ep_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -181,13 +184,13 @@ class EventPublicationTest {
                         """))
             .andExpect(status().isCreated())
             .andReturn();
-    var taskId = extractIdFromLocation(taskResult);
+    var taskId = TestEntityHelper.extractIdFromLocation(taskResult);
 
     // Assign the member first (so we can verify assigneeMemberId in the status event)
     mockMvc
         .perform(
             put("/api/tasks/" + taskId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ep_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -203,7 +206,7 @@ class EventPublicationTest {
     mockMvc
         .perform(
             put("/api/tasks/" + taskId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ep_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -234,7 +237,7 @@ class EventPublicationTest {
         mockMvc
             .perform(
                 post("/api/projects/" + projectId + "/documents/upload-init")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ep_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -249,7 +252,9 @@ class EventPublicationTest {
 
     // Confirm the upload
     mockMvc
-        .perform(post("/api/documents/" + documentId + "/confirm").with(ownerJwt()))
+        .perform(
+            post("/api/documents/" + documentId + "/confirm")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ep_owner")))
         .andExpect(status().isOk());
 
     var uploadedEvents = events.stream(DocumentUploadedEvent.class).toList();
@@ -270,7 +275,8 @@ class EventPublicationTest {
   void addMember_publishesMemberAddedToProjectEvent() throws Exception {
     // Sync a new member to add
     var newMemberId =
-        syncMember(ORG_ID, "user_ep_new", "ep_new@test.com", "EP New Member", "member");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_ep_new", "ep_new@test.com", "EP New Member", "member");
 
     // Clear events
     events.clear();
@@ -279,7 +285,7 @@ class EventPublicationTest {
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/members")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ep_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"memberId\": \"%s\"}".formatted(newMemberId)))
         .andExpect(status().isCreated());
@@ -301,49 +307,7 @@ class EventPublicationTest {
 
   // --- Helpers ---
 
-  private String extractIdFromLocation(MvcResult result) {
-    String location = result.getResponse().getHeader("Location");
-    return location.substring(location.lastIndexOf('/') + 1);
-  }
-
   private String extractJsonField(MvcResult result, String field) throws Exception {
     return JsonPath.read(result.getResponse().getContentAsString(), "$." + field).toString();
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_ep_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_ep_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 }

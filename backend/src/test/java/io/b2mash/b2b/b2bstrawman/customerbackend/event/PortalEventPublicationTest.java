@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.customerbackend.event;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -12,7 +11,9 @@ import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestChecklistHelper;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -22,7 +23,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.event.ApplicationEvents;
 import org.springframework.test.context.event.RecordApplicationEvents;
@@ -36,8 +36,6 @@ import org.springframework.test.web.servlet.MvcResult;
 @RecordApplicationEvents
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class PortalEventPublicationTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_portal_event_pub_test";
 
   @Autowired private MockMvc mockMvc;
@@ -52,13 +50,14 @@ class PortalEventPublicationTest {
     provisioningService.provisionTenant(ORG_ID, "Portal Event Pub Test Org", null);
 
     memberIdOwner =
-        syncMember(ORG_ID, "user_pep_owner", "pep_owner@test.com", "PEP Owner", "owner");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_pep_owner", "pep_owner@test.com", "PEP Owner", "owner");
 
     var projectResult =
         mockMvc
             .perform(
                 post("/api/projects")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pep_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -66,7 +65,7 @@ class PortalEventPublicationTest {
                         """))
             .andExpect(status().isCreated())
             .andReturn();
-    projectId = extractIdFromLocation(projectResult);
+    projectId = TestEntityHelper.extractIdFromLocation(projectResult);
   }
 
   @Test
@@ -76,7 +75,7 @@ class PortalEventPublicationTest {
     mockMvc
         .perform(
             post("/api/customers")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pep_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -103,7 +102,7 @@ class PortalEventPublicationTest {
     mockMvc
         .perform(
             put("/api/projects/" + projectId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pep_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -129,7 +128,7 @@ class PortalEventPublicationTest {
         mockMvc
             .perform(
                 post("/api/customers")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pep_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -137,7 +136,7 @@ class PortalEventPublicationTest {
                         """))
             .andExpect(status().isCreated())
             .andReturn();
-    var customerId = extractIdFromLocation(customerResult);
+    var customerId = TestEntityHelper.extractIdFromLocation(customerResult);
 
     // Transition PROSPECT -> ONBOARDING -> ACTIVE so lifecycle guard permits linking
     transitionCustomerToActive(customerId);
@@ -145,7 +144,9 @@ class PortalEventPublicationTest {
     events.clear();
 
     mockMvc
-        .perform(post("/api/customers/" + customerId + "/projects/" + projectId).with(ownerJwt()))
+        .perform(
+            post("/api/customers/" + customerId + "/projects/" + projectId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pep_owner")))
         .andExpect(status().isCreated());
 
     var linkedEvents = events.stream(CustomerProjectLinkedEvent.class).toList();
@@ -164,7 +165,7 @@ class PortalEventPublicationTest {
         mockMvc
             .perform(
                 post("/api/projects/" + projectId + "/documents/upload-init")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pep_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -177,7 +178,9 @@ class PortalEventPublicationTest {
     events.clear();
 
     mockMvc
-        .perform(post("/api/documents/" + documentId + "/confirm").with(ownerJwt()))
+        .perform(
+            post("/api/documents/" + documentId + "/confirm")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pep_owner")))
         .andExpect(status().isOk());
 
     var createdEvents =
@@ -200,7 +203,7 @@ class PortalEventPublicationTest {
         mockMvc
             .perform(
                 post("/api/projects/" + projectId + "/documents/upload-init")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pep_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -211,7 +214,9 @@ class PortalEventPublicationTest {
     var documentId = extractJsonField(docInitResult, "documentId");
 
     mockMvc
-        .perform(post("/api/documents/" + documentId + "/confirm").with(ownerJwt()))
+        .perform(
+            post("/api/documents/" + documentId + "/confirm")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pep_owner")))
         .andExpect(status().isOk());
 
     events.clear();
@@ -219,7 +224,7 @@ class PortalEventPublicationTest {
     mockMvc
         .perform(
             patch("/api/documents/" + documentId + "/visibility")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pep_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -244,7 +249,7 @@ class PortalEventPublicationTest {
         mockMvc
             .perform(
                 post("/api/projects/" + projectId + "/documents/upload-init")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pep_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -257,7 +262,9 @@ class PortalEventPublicationTest {
     events.clear();
 
     mockMvc
-        .perform(delete("/api/documents/" + documentId + "/cancel").with(ownerJwt()))
+        .perform(
+            delete("/api/documents/" + documentId + "/cancel")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pep_owner")))
         .andExpect(status().isNoContent());
 
     var deletedEvents = events.stream(DocumentDeletedEvent.class).toList();
@@ -269,58 +276,20 @@ class PortalEventPublicationTest {
     assertThat(event.getTenantId()).isNotNull();
   }
 
-  // --- Helpers ---
-
-  private String extractIdFromLocation(MvcResult result) {
-    String location = result.getResponse().getHeader("Location");
-    return location.substring(location.lastIndexOf('/') + 1);
-  }
-
   private String extractJsonField(MvcResult result, String field) throws Exception {
     return JsonPath.read(result.getResponse().getContentAsString(), "$." + field).toString();
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 
   private void transitionCustomerToActive(String customerId) throws Exception {
     mockMvc
         .perform(
             post("/api/customers/" + customerId + "/transition")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pep_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"targetStatus\": \"ONBOARDING\"}"))
         .andExpect(status().isOk());
     // Completing all checklist items auto-transitions ONBOARDING -> ACTIVE
-    TestChecklistHelper.completeChecklistItems(mockMvc, customerId, ownerJwt());
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_pep_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
+    TestChecklistHelper.completeChecklistItems(
+        mockMvc, customerId, TestJwtFactory.ownerJwt(ORG_ID, "user_pep_owner"));
   }
 }

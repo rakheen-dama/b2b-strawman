@@ -1,17 +1,15 @@
 package io.b2mash.b2b.b2bstrawman.notification;
 
 import static org.hamcrest.Matchers.hasSize;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -23,7 +21,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -34,8 +31,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class NotificationPreferenceControllerTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_notif_pref_ctrl_test";
 
   @Autowired private MockMvc mockMvc;
@@ -53,9 +48,11 @@ class NotificationPreferenceControllerTest {
             .schemaName();
 
     memberIdOwner =
-        syncMember(ORG_ID, "user_npc_owner", "npc_owner@test.com", "NPC Owner", "owner");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_npc_owner", "npc_owner@test.com", "NPC Owner", "owner");
     memberIdMember =
-        syncMember(ORG_ID, "user_npc_member", "npc_member@test.com", "NPC Member", "member");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_npc_member", "npc_member@test.com", "NPC Member", "member");
   }
 
   // --- GET defaults ---
@@ -64,7 +61,9 @@ class NotificationPreferenceControllerTest {
   @Order(1)
   void getPreferencesReturnsAllTypesWithDefaults() throws Exception {
     mockMvc
-        .perform(get("/api/notifications/preferences").with(ownerJwt()))
+        .perform(
+            get("/api/notifications/preferences")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_npc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.preferences", hasSize(48)))
         .andExpect(jsonPath("$.preferences[0].notificationType").value("TASK_ASSIGNED"))
@@ -86,7 +85,7 @@ class NotificationPreferenceControllerTest {
     mockMvc
         .perform(
             put("/api/notifications/preferences")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_npc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -104,7 +103,9 @@ class NotificationPreferenceControllerTest {
 
     // Verify via GET
     mockMvc
-        .perform(get("/api/notifications/preferences").with(ownerJwt()))
+        .perform(
+            get("/api/notifications/preferences")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_npc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.preferences[0].notificationType").value("TASK_ASSIGNED"))
         .andExpect(jsonPath("$.preferences[0].inAppEnabled").value(false))
@@ -119,7 +120,7 @@ class NotificationPreferenceControllerTest {
     mockMvc
         .perform(
             put("/api/notifications/preferences")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_npc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -146,7 +147,9 @@ class NotificationPreferenceControllerTest {
   void defaultsPreservedForTypesNotInPutRequest() throws Exception {
     // TASK_CLAIMED was never updated — should still be default
     mockMvc
-        .perform(get("/api/notifications/preferences").with(ownerJwt()))
+        .perform(
+            get("/api/notifications/preferences")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_npc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.preferences[1].notificationType").value("TASK_CLAIMED"))
         .andExpect(jsonPath("$.preferences[1].inAppEnabled").value(true))
@@ -162,7 +165,7 @@ class NotificationPreferenceControllerTest {
     mockMvc
         .perform(
             put("/api/notifications/preferences")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_npc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -186,7 +189,7 @@ class NotificationPreferenceControllerTest {
     mockMvc
         .perform(
             put("/api/notifications/preferences")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_npc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -211,7 +214,7 @@ class NotificationPreferenceControllerTest {
     mockMvc
         .perform(
             put("/api/notifications/preferences")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_npc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -227,7 +230,7 @@ class NotificationPreferenceControllerTest {
     mockMvc
         .perform(
             put("/api/notifications/preferences")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_npc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -244,7 +247,9 @@ class NotificationPreferenceControllerTest {
 
     // Verify via GET
     mockMvc
-        .perform(get("/api/notifications/preferences").with(ownerJwt()))
+        .perform(
+            get("/api/notifications/preferences")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_npc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.preferences[3].notificationType").value("TASK_UPDATED"))
         .andExpect(jsonPath("$.preferences[3].inAppEnabled").value(true))
@@ -258,7 +263,9 @@ class NotificationPreferenceControllerTest {
   void memberSeesOwnPreferencesNotOwnerChanges() throws Exception {
     // Member should see all defaults (owner's changes should not affect member)
     mockMvc
-        .perform(get("/api/notifications/preferences").with(memberJwt()))
+        .perform(
+            get("/api/notifications/preferences")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_npc_member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.preferences", hasSize(48)))
         .andExpect(jsonPath("$.preferences[0].notificationType").value("TASK_ASSIGNED"))
@@ -267,44 +274,5 @@ class NotificationPreferenceControllerTest {
         .andExpect(jsonPath("$.preferences[4].notificationType").value("COMMENT_ADDED"))
         .andExpect(jsonPath("$.preferences[4].inAppEnabled").value(true))
         .andExpect(jsonPath("$.preferences[4].emailEnabled").value(false));
-  }
-
-  // --- Helpers ---
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_npc_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_npc_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 }

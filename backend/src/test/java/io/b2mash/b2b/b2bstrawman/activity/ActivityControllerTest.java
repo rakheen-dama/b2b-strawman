@@ -7,12 +7,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventRecord;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
@@ -25,10 +27,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
 /**
  * Integration tests for {@link ActivityController}. Tests the activity feed endpoint with MockMvc
@@ -41,8 +41,6 @@ import org.springframework.test.web.servlet.MvcResult;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ActivityControllerTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_activity_ctrl_test";
 
   @Autowired private MockMvc mockMvc;
@@ -63,9 +61,12 @@ class ActivityControllerTest {
     tenantSchema =
         provisioningService.provisionTenant(ORG_ID, "Activity Ctrl Test Org", null).schemaName();
 
-    memberIdOwner = syncMember(ORG_ID, "user_ac_owner", "ac_owner@test.com", "AC Owner", "owner");
+    memberIdOwner =
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_ac_owner", "ac_owner@test.com", "AC Owner", "owner");
     memberIdMember =
-        syncMember(ORG_ID, "user_ac_member", "ac_member@test.com", "AC Member", "member");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_ac_member", "ac_member@test.com", "AC Member", "member");
 
     ownerUuid = UUID.fromString(memberIdOwner);
     memberUuid = UUID.fromString(memberIdMember);
@@ -75,7 +76,7 @@ class ActivityControllerTest {
         mockMvc
             .perform(
                 post("/api/projects")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ac_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -83,14 +84,14 @@ class ActivityControllerTest {
                         """))
             .andExpect(status().isCreated())
             .andReturn();
-    projectId = extractIdFromLocation(projectResult);
+    projectId = TestEntityHelper.extractIdFromLocation(projectResult);
     projectUuid = UUID.fromString(projectId);
 
     // Add member to the project
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/members")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ac_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"memberId\": \"%s\"}".formatted(memberIdMember)))
         .andExpect(status().isCreated());
@@ -170,7 +171,9 @@ class ActivityControllerTest {
   @Test
   void getActivityReturnsPaginatedItemsWithCorrectShape() throws Exception {
     mockMvc
-        .perform(get("/api/projects/" + projectId + "/activity").with(ownerJwt()))
+        .perform(
+            get("/api/projects/" + projectId + "/activity")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ac_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray())
         .andExpect(jsonPath("$.content", hasSize(5)))
@@ -190,7 +193,7 @@ class ActivityControllerTest {
         .perform(
             get("/api/projects/" + projectId + "/activity")
                 .param("entityType", "TASK")
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ac_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content", hasSize(2)))
         .andExpect(jsonPath("$.content[0].entityType").value("task"))
@@ -206,7 +209,7 @@ class ActivityControllerTest {
         .perform(
             get("/api/projects/" + projectId + "/activity")
                 .param("since", futureTimestamp)
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ac_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content", hasSize(0)))
         .andExpect(jsonPath("$.page.totalElements").value(0));
@@ -219,7 +222,7 @@ class ActivityControllerTest {
         mockMvc
             .perform(
                 post("/api/projects")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ac_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -227,10 +230,12 @@ class ActivityControllerTest {
                         """))
             .andExpect(status().isCreated())
             .andReturn();
-    String emptyProjectId = extractIdFromLocation(emptyProjectResult);
+    String emptyProjectId = TestEntityHelper.extractIdFromLocation(emptyProjectResult);
 
     mockMvc
-        .perform(get("/api/projects/" + emptyProjectId + "/activity").with(ownerJwt()))
+        .perform(
+            get("/api/projects/" + emptyProjectId + "/activity")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ac_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray())
         .andExpect(jsonPath("$.content", hasSize(0)))
@@ -244,7 +249,8 @@ class ActivityControllerTest {
     provisioningService.provisionTenant(otherOrgId, "Other Org", null);
 
     String otherMemberId =
-        syncMember(otherOrgId, "user_ac_other", "ac_other@test.com", "AC Other", "member");
+        TestMemberHelper.syncMember(
+            mockMvc, otherOrgId, "user_ac_other", "ac_other@test.com", "AC Other", "member");
 
     // This member is in a different org, so they should get a 404
     var otherJwt =
@@ -265,7 +271,7 @@ class ActivityControllerTest {
         .perform(
             get("/api/projects/" + projectId + "/activity")
                 .param("entityType", "DOCUMENT")
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ac_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content", hasSize(1)))
         .andExpect(jsonPath("$.content[0].actorName").value("AC Owner"))
@@ -277,48 +283,6 @@ class ActivityControllerTest {
   }
 
   // --- Helpers ---
-
-  private String extractIdFromLocation(MvcResult result) {
-    String location = result.getResponse().getHeader("Location");
-    return location.substring(location.lastIndexOf('/') + 1);
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_ac_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_ac_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
 
   private static void sleep(long millis) {
     try {

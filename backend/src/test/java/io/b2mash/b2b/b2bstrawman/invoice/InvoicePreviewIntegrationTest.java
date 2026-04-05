@@ -2,13 +2,10 @@ package io.b2mash.b2b.b2bstrawman.invoice;
 
 import static io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.createActiveCustomer;
 import static org.hamcrest.Matchers.containsString;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
@@ -20,11 +17,12 @@ import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -34,7 +32,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -74,7 +71,8 @@ class InvoicePreviewIntegrationTest {
 
     memberIdOwner =
         UUID.fromString(
-            syncMember(
+            TestMemberHelper.syncMember(
+                mockMvc,
                 ORG_ID,
                 "user_inv_preview_owner",
                 "inv_preview_owner@test.com",
@@ -184,7 +182,8 @@ class InvoicePreviewIntegrationTest {
 
     // --- Tenant B (for cross-tenant isolation test) ---
     provisioningService.provisionTenant(ORG_ID_B, "Preview Test Org B", null);
-    syncMember(
+    TestMemberHelper.syncMember(
+        mockMvc,
         ORG_ID_B,
         "user_inv_preview_owner_b",
         "inv_preview_owner_b@test.com",
@@ -195,7 +194,9 @@ class InvoicePreviewIntegrationTest {
   @Test
   void shouldReturnHtmlWithCorrectContentType() throws Exception {
     mockMvc
-        .perform(get("/api/invoices/" + invoiceId + "/preview").with(ownerJwt()))
+        .perform(
+            get("/api/invoices/" + invoiceId + "/preview")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_preview_owner")))
         .andExpect(status().isOk())
         .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_HTML));
   }
@@ -203,7 +204,9 @@ class InvoicePreviewIntegrationTest {
   @Test
   void shouldIncludeInvoiceNumberAndCustomerName() throws Exception {
     mockMvc
-        .perform(get("/api/invoices/" + invoiceId + "/preview").with(ownerJwt()))
+        .perform(
+            get("/api/invoices/" + invoiceId + "/preview")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_preview_owner")))
         .andExpect(status().isOk())
         .andExpect(content().string(containsString("Preview Corp")))
         .andExpect(content().string(containsString("Preview Test Org")))
@@ -214,7 +217,9 @@ class InvoicePreviewIntegrationTest {
   @Test
   void shouldIncludeGroupedLineItems() throws Exception {
     mockMvc
-        .perform(get("/api/invoices/" + invoiceId + "/preview").with(ownerJwt()))
+        .perform(
+            get("/api/invoices/" + invoiceId + "/preview")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_preview_owner")))
         .andExpect(status().isOk())
         .andExpect(content().string(containsString("Website Redesign")))
         .andExpect(content().string(containsString("Backend API dev")))
@@ -225,7 +230,9 @@ class InvoicePreviewIntegrationTest {
   @Test
   void shouldIncludeTotals() throws Exception {
     mockMvc
-        .perform(get("/api/invoices/" + invoiceId + "/preview").with(ownerJwt()))
+        .perform(
+            get("/api/invoices/" + invoiceId + "/preview")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_preview_owner")))
         .andExpect(status().isOk())
         .andExpect(content().string(containsString("Subtotal")))
         .andExpect(content().string(containsString("Tax")))
@@ -237,14 +244,18 @@ class InvoicePreviewIntegrationTest {
   @Test
   void shouldReturn403ForMemberRole() throws Exception {
     mockMvc
-        .perform(get("/api/invoices/" + invoiceId + "/preview").with(memberJwt()))
+        .perform(
+            get("/api/invoices/" + invoiceId + "/preview")
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_inv_preview_member", "member")))
         .andExpect(status().isForbidden());
   }
 
   @Test
   void shouldReturn404ForNonExistentInvoice() throws Exception {
     mockMvc
-        .perform(get("/api/invoices/" + UUID.randomUUID() + "/preview").with(ownerJwt()))
+        .perform(
+            get("/api/invoices/" + UUID.randomUUID() + "/preview")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_preview_owner")))
         .andExpect(status().isNotFound());
   }
 
@@ -252,61 +263,9 @@ class InvoicePreviewIntegrationTest {
   void shouldReturn404WhenAccessingPreviewFromDifferentTenant() throws Exception {
     // Invoice was created in tenant A — accessing from tenant B's admin should return 404
     mockMvc
-        .perform(get("/api/invoices/" + invoiceId + "/preview").with(ownerJwtTenantB()))
+        .perform(
+            get("/api/invoices/" + invoiceId + "/preview")
+                .with(TestJwtFactory.ownerJwt(ORG_ID_B, "user_inv_preview_owner_b")))
         .andExpect(status().isNotFound());
-  }
-
-  // --- JWT Helpers ---
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_inv_preview_owner")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_inv_preview_member")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor ownerJwtTenantB() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_inv_preview_owner_b")
-                    .claim("o", Map.of("id", ORG_ID_B, "rol", "owner")));
-  }
-
-  // --- Helpers ---
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

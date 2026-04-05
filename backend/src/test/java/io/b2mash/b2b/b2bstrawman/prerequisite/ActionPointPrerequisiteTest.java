@@ -10,7 +10,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -21,8 +20,10 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.SchemaNameGenerator;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -33,7 +34,6 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -48,8 +48,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ActionPointPrerequisiteTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_action_prereq_test";
 
   @Autowired private MockMvc mockMvc;
@@ -84,10 +82,17 @@ class ActionPointPrerequisiteTest {
     provisioningService.provisionTenant(ORG_ID, "Action Prereq Test Org", null);
     schemaName = SchemaNameGenerator.generateSchemaName(ORG_ID);
 
-    ownerMemberId = syncMember("user_ap_owner", "ap_owner@test.com", "AP Owner", "owner");
+    ownerMemberId =
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_ap_owner", "ap_owner@test.com", "AP Owner", "owner");
 
     // Customer missing portal contact AND with blank email — structural prereqs will fail
-    incompleteCustomerId = createCustomer("Incomplete Customer", "temp@test.com");
+    incompleteCustomerId =
+        TestEntityHelper.createCustomer(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, "user_ap_owner"),
+            "Incomplete Customer",
+            "temp@test.com");
     TestCustomerFactory.fillPrerequisiteFields(jdbcTemplate, schemaName, incompleteCustomerId);
     // Blank email + no portal contact + ACTIVE lifecycle = structural check fails
     jdbcTemplate.update(
@@ -97,7 +102,12 @@ class ActionPointPrerequisiteTest {
         incompleteCustomerId);
 
     // Customer with portal contact and email — passes prerequisites
-    completeCustomerId = createCustomer("Complete Customer", "complete@test.com");
+    completeCustomerId =
+        TestEntityHelper.createCustomer(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, "user_ap_owner"),
+            "Complete Customer",
+            "complete@test.com");
     TestCustomerFactory.fillPrerequisiteFields(jdbcTemplate, schemaName, completeCustomerId);
     // Set ACTIVE so lifecycle guard passes
     jdbcTemplate.update(
@@ -109,7 +119,11 @@ class ActionPointPrerequisiteTest {
 
     // Customer missing BOTH custom fields AND structural data (no email, no portal contact)
     combinedViolationsCustomerId =
-        createCustomer("Combined Violations Customer", "temp-combined@test.com");
+        TestEntityHelper.createCustomer(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, "user_ap_owner"),
+            "Combined Violations Customer",
+            "temp-combined@test.com");
     // Do NOT call fillPrerequisiteFields — custom fields remain empty
     // Blank-ish email (whitespace) + no portal contact = structural violation
     // Use single space — triggers isBlank() structural violation while avoiding duplicate key with
@@ -121,7 +135,12 @@ class ActionPointPrerequisiteTest {
         combinedViolationsCustomerId);
 
     // Customer for combined flow test — starts without prerequisites
-    flowCustomerId = createCustomer("Flow Test Customer", "temp-flow@test.com");
+    flowCustomerId =
+        TestEntityHelper.createCustomer(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, "user_ap_owner"),
+            "Flow Test Customer",
+            "temp-flow@test.com");
     // Use double space — triggers isBlank() structural violation while remaining unique
     jdbcTemplate.update(
         ("UPDATE \"%s\".customers SET email = '  ', custom_fields = '{}'::jsonb,"
@@ -137,7 +156,7 @@ class ActionPointPrerequisiteTest {
     mockMvc
         .perform(
             post("/api/invoices")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ap_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -156,7 +175,7 @@ class ActionPointPrerequisiteTest {
     mockMvc
         .perform(
             post("/api/invoices")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ap_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -179,7 +198,7 @@ class ActionPointPrerequisiteTest {
     mockMvc
         .perform(
             post("/api/proposals/{id}/send", proposalId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ap_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"portalContactId\": \"%s\"}".formatted(UUID.randomUUID())))
         .andExpect(status().isUnprocessableEntity())
@@ -193,7 +212,7 @@ class ActionPointPrerequisiteTest {
     mockMvc
         .perform(
             post("/api/proposals/{id}/send", proposalId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ap_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"portalContactId\": \"%s\"}".formatted(completeCustomerContactId)))
         .andExpect(status().isOk())
@@ -207,7 +226,7 @@ class ActionPointPrerequisiteTest {
     mockMvc
         .perform(
             post("/api/invoices")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ap_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -228,7 +247,7 @@ class ActionPointPrerequisiteTest {
     mockMvc
         .perform(
             post("/api/invoices")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ap_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -247,7 +266,7 @@ class ActionPointPrerequisiteTest {
     mockMvc
         .perform(
             post("/api/invoices")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ap_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -267,7 +286,7 @@ class ActionPointPrerequisiteTest {
     mockMvc
         .perform(
             post("/api/invoices")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ap_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -294,7 +313,7 @@ class ActionPointPrerequisiteTest {
         mockMvc
             .perform(
                 post("/api/invoices")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ap_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -311,7 +330,7 @@ class ActionPointPrerequisiteTest {
         mockMvc
             .perform(
                 post("/api/proposals/{id}/send", proposalId)
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ap_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{\"portalContactId\": \"%s\"}".formatted(UUID.randomUUID())))
             .andExpect(status().isUnprocessableEntity())
@@ -352,7 +371,7 @@ class ActionPointPrerequisiteTest {
     mockMvc
         .perform(
             post("/api/invoices")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ap_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -367,7 +386,7 @@ class ActionPointPrerequisiteTest {
     mockMvc
         .perform(
             get("/api/prerequisites/check")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ap_owner"))
                 .param("context", "INVOICE_GENERATION")
                 .param("entityType", "CUSTOMER")
                 .param("entityId", flowCustomerId))
@@ -384,7 +403,7 @@ class ActionPointPrerequisiteTest {
     mockMvc
         .perform(
             get("/api/prerequisites/check")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ap_owner"))
                 .param("context", "INVOICE_GENERATION")
                 .param("entityType", "CUSTOMER")
                 .param("entityId", flowCustomerId))
@@ -395,7 +414,7 @@ class ActionPointPrerequisiteTest {
     mockMvc
         .perform(
             post("/api/invoices")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ap_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -403,25 +422,6 @@ class ActionPointPrerequisiteTest {
                     """
                         .formatted(flowCustomerId)))
         .andExpect(status().isCreated());
-  }
-
-  // --- Helpers ---
-
-  private String createCustomer(String name, String email) throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/api/customers")
-                    .with(ownerJwt())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"name": "%s", "email": "%s", "type": "INDIVIDUAL"}
-                        """
-                            .formatted(name, email)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.id").toString();
   }
 
   private String createProposalWithContent(String customerIdStr, String title) throws Exception {
@@ -433,7 +433,7 @@ class ActionPointPrerequisiteTest {
         mockMvc
             .perform(
                 post("/api/proposals")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ap_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -465,31 +465,5 @@ class ActionPointPrerequisiteTest {
         email,
         displayName);
     return contactId;
-  }
-
-  private String syncMember(String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s", "clerkUserId": "%s", "email": "%s",
-                          "name": "%s", "avatarUrl": null, "orgRole": "%s"
-                        }
-                        """
-                            .formatted(ORG_ID, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_ap_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
   }
 }

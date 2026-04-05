@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -16,7 +15,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -25,10 +26,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -36,8 +35,6 @@ import org.springframework.test.web.servlet.MvcResult;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class TaskRecurrenceIntegrationTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_recurrence_test";
 
   @Autowired private MockMvc mockMvc;
@@ -52,15 +49,17 @@ class TaskRecurrenceIntegrationTest {
     provisioningService.provisionTenant(ORG_ID, "Recurrence Test Org", null);
 
     memberIdOwner =
-        syncMember(ORG_ID, "user_rec_owner", "rec_owner@test.com", "Rec Owner", "owner");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_rec_owner", "rec_owner@test.com", "Rec Owner", "owner");
     memberIdMember =
-        syncMember(ORG_ID, "user_rec_member", "rec_member@test.com", "Rec Member", "member");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_rec_member", "rec_member@test.com", "Rec Member", "member");
 
     var projectResult =
         mockMvc
             .perform(
                 post("/api/projects")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rec_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -68,12 +67,12 @@ class TaskRecurrenceIntegrationTest {
                         """))
             .andExpect(status().isCreated())
             .andReturn();
-    projectId = extractIdFromLocation(projectResult);
+    projectId = TestEntityHelper.extractIdFromLocation(projectResult);
 
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/members")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rec_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -91,12 +90,16 @@ class TaskRecurrenceIntegrationTest {
 
     // Claim the task as member
     mockMvc
-        .perform(post("/api/tasks/" + taskId + "/claim").with(memberJwt()))
+        .perform(
+            post("/api/tasks/" + taskId + "/claim")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_rec_member")))
         .andExpect(status().isOk());
 
     // Complete the task — should create next instance
     mockMvc
-        .perform(patch("/api/tasks/" + taskId + "/complete").with(memberJwt()))
+        .perform(
+            patch("/api/tasks/" + taskId + "/complete")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_rec_member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("DONE"))
         .andExpect(jsonPath("$.completedAt", notNullValue()))
@@ -118,11 +121,15 @@ class TaskRecurrenceIntegrationTest {
 
     // Claim and complete
     mockMvc
-        .perform(post("/api/tasks/" + taskId + "/claim").with(memberJwt()))
+        .perform(
+            post("/api/tasks/" + taskId + "/claim")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_rec_member")))
         .andExpect(status().isOk());
 
     mockMvc
-        .perform(patch("/api/tasks/" + taskId + "/complete").with(memberJwt()))
+        .perform(
+            patch("/api/tasks/" + taskId + "/complete")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_rec_member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("DONE"))
         .andExpect(jsonPath("$.nextInstance").doesNotExist());
@@ -137,12 +144,16 @@ class TaskRecurrenceIntegrationTest {
 
     // Claim and complete
     mockMvc
-        .perform(post("/api/tasks/" + taskId + "/claim").with(memberJwt()))
+        .perform(
+            post("/api/tasks/" + taskId + "/claim")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_rec_member")))
         .andExpect(status().isOk());
 
     // Next due date would be 2026-04-15 which is after end date 2026-04-01
     mockMvc
-        .perform(patch("/api/tasks/" + taskId + "/complete").with(memberJwt()))
+        .perform(
+            patch("/api/tasks/" + taskId + "/complete")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_rec_member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("DONE"))
         .andExpect(jsonPath("$.nextInstance").doesNotExist());
@@ -155,11 +166,15 @@ class TaskRecurrenceIntegrationTest {
 
     // Claim and complete
     mockMvc
-        .perform(post("/api/tasks/" + taskId + "/claim").with(memberJwt()))
+        .perform(
+            post("/api/tasks/" + taskId + "/claim")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_rec_member")))
         .andExpect(status().isOk());
 
     mockMvc
-        .perform(patch("/api/tasks/" + taskId + "/complete").with(memberJwt()))
+        .perform(
+            patch("/api/tasks/" + taskId + "/complete")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_rec_member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("DONE"))
         .andExpect(jsonPath("$.nextInstance").doesNotExist());
@@ -173,7 +188,9 @@ class TaskRecurrenceIntegrationTest {
 
     // Cancel (no recurrence should happen)
     mockMvc
-        .perform(patch("/api/tasks/" + taskId + "/cancel").with(ownerJwt()))
+        .perform(
+            patch("/api/tasks/" + taskId + "/cancel")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rec_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("CANCELLED"));
 
@@ -189,12 +206,16 @@ class TaskRecurrenceIntegrationTest {
 
     // Claim as member
     mockMvc
-        .perform(post("/api/tasks/" + taskId + "/claim").with(memberJwt()))
+        .perform(
+            post("/api/tasks/" + taskId + "/claim")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_rec_member")))
         .andExpect(status().isOk());
 
     // Complete — next instance should have same assignee
     mockMvc
-        .perform(patch("/api/tasks/" + taskId + "/complete").with(memberJwt()))
+        .perform(
+            patch("/api/tasks/" + taskId + "/complete")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_rec_member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.nextInstance.assigneeId").value(memberIdMember))
         .andExpect(jsonPath("$.nextInstance.assigneeName").value("Rec Member"));
@@ -208,12 +229,16 @@ class TaskRecurrenceIntegrationTest {
 
     // Claim and complete root → should create child1
     mockMvc
-        .perform(post("/api/tasks/" + rootTaskId + "/claim").with(memberJwt()))
+        .perform(
+            post("/api/tasks/" + rootTaskId + "/claim")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_rec_member")))
         .andExpect(status().isOk());
 
     var completeResult =
         mockMvc
-            .perform(patch("/api/tasks/" + rootTaskId + "/complete").with(memberJwt()))
+            .perform(
+                patch("/api/tasks/" + rootTaskId + "/complete")
+                    .with(TestJwtFactory.memberJwt(ORG_ID, "user_rec_member")))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.nextInstance.parentTaskId").value(rootTaskId))
             .andReturn();
@@ -224,7 +249,9 @@ class TaskRecurrenceIntegrationTest {
     // Complete child1 → should create child2 with parentTaskId still = root
     var completeResult2 =
         mockMvc
-            .perform(patch("/api/tasks/" + child1Id + "/complete").with(memberJwt()))
+            .perform(
+                patch("/api/tasks/" + child1Id + "/complete")
+                    .with(TestJwtFactory.memberJwt(ORG_ID, "user_rec_member")))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.nextInstance.parentTaskId").value(rootTaskId))
             .andExpect(jsonPath("$.nextInstance.dueDate").value("2026-05-15"))
@@ -236,7 +263,7 @@ class TaskRecurrenceIntegrationTest {
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/tasks")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rec_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -252,7 +279,7 @@ class TaskRecurrenceIntegrationTest {
     mockMvc
         .perform(
             put("/api/tasks/" + taskId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rec_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -273,7 +300,8 @@ class TaskRecurrenceIntegrationTest {
             "Recurrence fields test", "FREQ=MONTHLY;INTERVAL=2", "2026-06-01", "2026-12-31");
 
     mockMvc
-        .perform(get("/api/tasks/" + taskId).with(ownerJwt()))
+        .perform(
+            get("/api/tasks/" + taskId).with(TestJwtFactory.ownerJwt(ORG_ID, "user_rec_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.recurrenceRule").value("FREQ=MONTHLY;INTERVAL=2"))
         .andExpect(jsonPath("$.recurrenceEndDate").value("2026-12-31"))
@@ -288,7 +316,7 @@ class TaskRecurrenceIntegrationTest {
     mockMvc
         .perform(
             put("/api/tasks/" + taskId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rec_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -314,7 +342,8 @@ class TaskRecurrenceIntegrationTest {
 
     // Verify it's recurring
     mockMvc
-        .perform(get("/api/tasks/" + taskId).with(ownerJwt()))
+        .perform(
+            get("/api/tasks/" + taskId).with(TestJwtFactory.ownerJwt(ORG_ID, "user_rec_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.isRecurring").value(true));
 
@@ -322,7 +351,7 @@ class TaskRecurrenceIntegrationTest {
     mockMvc
         .perform(
             put("/api/tasks/" + taskId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rec_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -349,7 +378,7 @@ class TaskRecurrenceIntegrationTest {
             get("/api/projects/" + projectId + "/tasks")
                 .param("recurring", "true")
                 .param("status", "OPEN")
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rec_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$.length()").value(greaterThan(0)))
@@ -371,7 +400,7 @@ class TaskRecurrenceIntegrationTest {
                 .param("recurring", "true")
                 .param("assigneeFilter", "unassigned")
                 .param("status", "OPEN")
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rec_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$.length()").value(greaterThan(0)))
@@ -387,7 +416,9 @@ class TaskRecurrenceIntegrationTest {
     // List without recurring filter — should include recurring tasks
     mockMvc
         .perform(
-            get("/api/projects/" + projectId + "/tasks").param("status", "OPEN").with(ownerJwt()))
+            get("/api/projects/" + projectId + "/tasks")
+                .param("status", "OPEN")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rec_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$.length()").value(greaterThanOrEqualTo(1)));
@@ -400,7 +431,7 @@ class TaskRecurrenceIntegrationTest {
         mockMvc
             .perform(
                 post("/api/projects/" + projectId + "/tasks")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rec_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -423,7 +454,7 @@ class TaskRecurrenceIntegrationTest {
         mockMvc
             .perform(
                 post("/api/projects/" + projectId + "/tasks")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rec_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -437,46 +468,5 @@ class TaskRecurrenceIntegrationTest {
             .andExpect(status().isCreated())
             .andReturn();
     return JsonPath.read(result.getResponse().getContentAsString(), "$.id");
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private String extractIdFromLocation(MvcResult result) {
-    String location = result.getResponse().getHeader("Location");
-    return location.substring(location.lastIndexOf('/') + 1);
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_rec_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_rec_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
   }
 }

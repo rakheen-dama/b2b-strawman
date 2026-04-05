@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.invoice;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -24,11 +23,12 @@ import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -39,7 +39,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -84,7 +83,13 @@ class InvoiceControllerIntegrationTest {
 
     memberIdOwner =
         UUID.fromString(
-            syncMember("user_inv_ctrl_owner", "inv_ctrl_owner@test.com", "Ctrl Owner", "owner"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_inv_ctrl_owner",
+                "inv_ctrl_owner@test.com",
+                "Ctrl Owner",
+                "owner"));
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
@@ -190,10 +195,22 @@ class InvoiceControllerIntegrationTest {
     // Sync custom-role members for capability tests
     customRoleMemberId =
         UUID.fromString(
-            syncMember("user_inv_314a_custom", "inv_custom@test.com", "Inv Custom User", "member"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_inv_314a_custom",
+                "inv_custom@test.com",
+                "Inv Custom User",
+                "member"));
     noCapMemberId =
         UUID.fromString(
-            syncMember("user_inv_314a_nocap", "inv_nocap@test.com", "Inv NoCap User", "member"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_inv_314a_nocap",
+                "inv_nocap@test.com",
+                "Inv NoCap User",
+                "member"));
 
     // Assign OrgRoles within tenant scope
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -227,7 +244,7 @@ class InvoiceControllerIntegrationTest {
     mockMvc
         .perform(
             post("/api/invoices")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_ctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -259,7 +276,7 @@ class InvoiceControllerIntegrationTest {
     mockMvc
         .perform(
             post("/api/invoices")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_ctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -277,7 +294,7 @@ class InvoiceControllerIntegrationTest {
     mockMvc
         .perform(
             post("/api/invoices")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_ctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -298,7 +315,7 @@ class InvoiceControllerIntegrationTest {
         mockMvc
             .perform(
                 post("/api/invoices")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_ctrl_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -319,7 +336,7 @@ class InvoiceControllerIntegrationTest {
     mockMvc
         .perform(
             put("/api/invoices/" + invoiceId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_ctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -367,7 +384,7 @@ class InvoiceControllerIntegrationTest {
     mockMvc
         .perform(
             put("/api/invoices/" + invoiceIdHolder[0])
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_ctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -385,7 +402,7 @@ class InvoiceControllerIntegrationTest {
         mockMvc
             .perform(
                 post("/api/invoices")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_ctrl_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -402,12 +419,16 @@ class InvoiceControllerIntegrationTest {
 
     // Delete it
     mockMvc
-        .perform(delete("/api/invoices/" + invoiceId).with(ownerJwt()))
+        .perform(
+            delete("/api/invoices/" + invoiceId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_ctrl_owner")))
         .andExpect(status().isNoContent());
 
     // Verify it's gone
     mockMvc
-        .perform(get("/api/invoices/" + invoiceId).with(ownerJwt()))
+        .perform(
+            get("/api/invoices/" + invoiceId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_ctrl_owner")))
         .andExpect(status().isNotFound());
   }
 
@@ -418,7 +439,7 @@ class InvoiceControllerIntegrationTest {
         mockMvc
             .perform(
                 post("/api/invoices")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_ctrl_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -436,7 +457,9 @@ class InvoiceControllerIntegrationTest {
 
     // Get detail
     mockMvc
-        .perform(get("/api/invoices/" + invoiceId).with(ownerJwt()))
+        .perform(
+            get("/api/invoices/" + invoiceId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_ctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(invoiceId))
         .andExpect(jsonPath("$.status").value("DRAFT"))
@@ -448,19 +471,25 @@ class InvoiceControllerIntegrationTest {
   void shouldListInvoicesWithFilters() throws Exception {
     // List all
     mockMvc
-        .perform(get("/api/invoices").with(ownerJwt()))
+        .perform(get("/api/invoices").with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_ctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray());
 
     // List by customerId
     mockMvc
-        .perform(get("/api/invoices").param("customerId", customerId.toString()).with(ownerJwt()))
+        .perform(
+            get("/api/invoices")
+                .param("customerId", customerId.toString())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_ctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray());
 
     // List by status
     mockMvc
-        .perform(get("/api/invoices").param("status", "DRAFT").with(ownerJwt()))
+        .perform(
+            get("/api/invoices")
+                .param("status", "DRAFT")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_ctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray());
   }
@@ -472,7 +501,7 @@ class InvoiceControllerIntegrationTest {
         mockMvc
             .perform(
                 post("/api/invoices")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_ctrl_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -492,7 +521,7 @@ class InvoiceControllerIntegrationTest {
         mockMvc
             .perform(
                 post("/api/invoices/" + invoiceId + "/lines")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_ctrl_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -517,7 +546,7 @@ class InvoiceControllerIntegrationTest {
     mockMvc
         .perform(
             put("/api/invoices/" + invoiceId + "/lines/" + lineId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_ctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -534,12 +563,16 @@ class InvoiceControllerIntegrationTest {
 
     // Delete the line item
     mockMvc
-        .perform(delete("/api/invoices/" + invoiceId + "/lines/" + lineId).with(ownerJwt()))
+        .perform(
+            delete("/api/invoices/" + invoiceId + "/lines/" + lineId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_ctrl_owner")))
         .andExpect(status().isNoContent());
 
     // Verify subtotal is now zero
     mockMvc
-        .perform(get("/api/invoices/" + invoiceId).with(ownerJwt()))
+        .perform(
+            get("/api/invoices/" + invoiceId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_ctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.lines.length()").value(0))
         .andExpect(jsonPath("$.subtotal").value(0.0));
@@ -577,7 +610,7 @@ class InvoiceControllerIntegrationTest {
     mockMvc
         .perform(
             post("/api/invoices/" + invoiceIdHolder[0] + "/lines")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_ctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -594,12 +627,16 @@ class InvoiceControllerIntegrationTest {
   @Test
   void shouldDenyMemberAccessToInvoiceEndpoints() throws Exception {
     // Members should be denied access to all invoice endpoints (admin/owner only)
-    mockMvc.perform(get("/api/invoices").with(memberJwt())).andExpect(status().isForbidden());
+    mockMvc
+        .perform(
+            get("/api/invoices")
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_inv_ctrl_member", "member")))
+        .andExpect(status().isForbidden());
 
     mockMvc
         .perform(
             post("/api/invoices")
-                .with(memberJwt())
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_inv_ctrl_member", "member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -614,7 +651,7 @@ class InvoiceControllerIntegrationTest {
     mockMvc
         .perform(
             put("/api/invoices/" + UUID.randomUUID())
-                .with(memberJwt())
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_inv_ctrl_member", "member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -623,7 +660,9 @@ class InvoiceControllerIntegrationTest {
         .andExpect(status().isForbidden());
 
     mockMvc
-        .perform(delete("/api/invoices/" + UUID.randomUUID()).with(memberJwt()))
+        .perform(
+            delete("/api/invoices/" + UUID.randomUUID())
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_inv_ctrl_member", "member")))
         .andExpect(status().isForbidden());
   }
 
@@ -631,71 +670,23 @@ class InvoiceControllerIntegrationTest {
 
   @Test
   void customRoleWithCapability_accessesInvoicingEndpoint_returns200() throws Exception {
-    mockMvc.perform(get("/api/invoices").with(customRoleJwt())).andExpect(status().isOk());
+    mockMvc
+        .perform(
+            get("/api/invoices")
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_inv_314a_custom", "member")))
+        .andExpect(status().isOk());
   }
 
   @Test
   void customRoleWithoutCapability_accessesInvoicingEndpoint_returns403() throws Exception {
-    mockMvc.perform(get("/api/invoices").with(noCapabilityJwt())).andExpect(status().isForbidden());
-  }
-
-  // --- JWT Helpers ---
-
-  private JwtRequestPostProcessor customRoleJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_inv_314a_custom")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor noCapabilityJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_inv_314a_nocap").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(
-            j -> j.subject("user_inv_ctrl_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_inv_ctrl_member")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
+    mockMvc
+        .perform(
+            get("/api/invoices")
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_inv_314a_nocap", "member")))
+        .andExpect(status().isForbidden());
   }
 
   // --- Helpers ---
 
   @Autowired private InvoiceRepository invoiceRepository;
-
-  private String syncMember(String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(ORG_ID, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
 }

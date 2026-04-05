@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.task;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -9,7 +8,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -18,7 +19,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -28,8 +28,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class TaskTagIntegrationTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_task_tag_test";
 
   @Autowired private MockMvc mockMvc;
@@ -43,11 +41,16 @@ class TaskTagIntegrationTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Task Tag Test Org", null);
-    syncMember(ORG_ID, "user_tt_owner", "tt_owner@test.com", "TT Owner", "owner");
+    TestMemberHelper.syncMemberQuietly(
+        mockMvc, ORG_ID, "user_tt_owner", "tt_owner@test.com", "TT Owner", "owner");
 
     // Create tags
-    tagId1 = createTag("Task Urgent", "#EF4444");
-    tagId2 = createTag("Task Review", "#3B82F6");
+    tagId1 =
+        TestEntityHelper.createTag(
+            mockMvc, TestJwtFactory.ownerJwt(ORG_ID, "user_tt_owner"), "Task Urgent", "#EF4444");
+    tagId2 =
+        TestEntityHelper.createTag(
+            mockMvc, TestJwtFactory.ownerJwt(ORG_ID, "user_tt_owner"), "Task Review", "#3B82F6");
 
     // Create project and task
     projectId = createProject("Task Tag Test Project");
@@ -59,7 +62,7 @@ class TaskTagIntegrationTest {
     mockMvc
         .perform(
             post("/api/tasks/" + taskId + "/tags")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tt_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -76,7 +79,7 @@ class TaskTagIntegrationTest {
     mockMvc
         .perform(
             post("/api/tasks/" + taskId + "/tags")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tt_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -87,7 +90,9 @@ class TaskTagIntegrationTest {
 
     // Get tags
     mockMvc
-        .perform(get("/api/tasks/" + taskId + "/tags").with(ownerJwt()))
+        .perform(
+            get("/api/tasks/" + taskId + "/tags")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tt_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[0].name").value("Task Urgent"));
   }
@@ -101,7 +106,7 @@ class TaskTagIntegrationTest {
     mockMvc
         .perform(
             post("/api/tasks/" + taskId + "/tags")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tt_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -114,7 +119,7 @@ class TaskTagIntegrationTest {
     mockMvc
         .perform(
             get("/api/projects/" + projectId + "/tasks")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tt_owner"))
                 .param("tags", "task_urgent"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[?(@.title == 'Tag Test Task')]").exists())
@@ -124,7 +129,7 @@ class TaskTagIntegrationTest {
     mockMvc
         .perform(
             get("/api/projects/" + projectId + "/tasks")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tt_owner"))
                 .param("tags", "task_urgent,task_review"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[?(@.title == 'Tag Test Task')]").exists());
@@ -132,34 +137,12 @@ class TaskTagIntegrationTest {
 
   // --- Helpers ---
 
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_tt_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private String createTag(String name, String color) throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/api/tags")
-                    .with(ownerJwt())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"name": "%s", "color": "%s"}
-                        """
-                            .formatted(name, color)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.id");
-  }
-
   private String createProject(String name) throws Exception {
     var result =
         mockMvc
             .perform(
                 post("/api/projects")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tt_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -176,7 +159,7 @@ class TaskTagIntegrationTest {
         mockMvc
             .perform(
                 post("/api/projects/" + projectId + "/tasks")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tt_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -186,28 +169,5 @@ class TaskTagIntegrationTest {
             .andExpect(status().isCreated())
             .andReturn();
     return JsonPath.read(result.getResponse().getContentAsString(), "$.id");
-  }
-
-  private void syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    mockMvc
-        .perform(
-            post("/internal/members/sync")
-                .header("X-API-KEY", API_KEY)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {
-                      "clerkOrgId": "%s",
-                      "clerkUserId": "%s",
-                      "email": "%s",
-                      "name": "%s",
-                      "avatarUrl": null,
-                      "orgRole": "%s"
-                    }
-                    """
-                        .formatted(orgId, clerkUserId, email, name, orgRole)))
-        .andExpect(status().isCreated());
   }
 }

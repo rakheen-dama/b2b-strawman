@@ -2,7 +2,6 @@ package io.b2mash.b2b.b2bstrawman.compliance;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -31,8 +30,8 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import org.junit.jupiter.api.BeforeAll;
@@ -44,7 +43,6 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -366,7 +364,7 @@ class CustomerLifecyclePrerequisiteTest {
       mockMvc
           .perform(
               post("/api/customers/" + customerId + "/transition")
-                  .with(adminJwt())
+                  .with(TestJwtFactory.adminJwt(ORG_ID, "user_prereq_242b"))
                   .contentType(MediaType.APPLICATION_JSON)
                   .content(
                       """
@@ -469,11 +467,6 @@ class CustomerLifecyclePrerequisiteTest {
 
   private String uuid8() {
     return UUID.randomUUID().toString().substring(0, 8);
-  }
-
-  private JwtRequestPostProcessor adminJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_prereq_242b").claim("o", Map.of("id", ORG_ID, "rol", "admin")));
   }
 
   private <T> T runInTenant(Callable<T> callable) {

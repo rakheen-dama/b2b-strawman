@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.template;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -11,6 +10,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
@@ -24,7 +25,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
@@ -36,8 +36,6 @@ import tools.jackson.databind.ObjectMapper;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class DocumentTemplateControllerTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_dt_ctrl_test";
   private static final String ORG_ID_B = "org_dt_ctrl_test_b";
 
@@ -54,15 +52,26 @@ class DocumentTemplateControllerTest {
     provisioningService.provisionTenant(ORG_ID, "DT Controller Test Org", null);
 
     memberIdOwner =
-        syncMember(
-            ORG_ID, "user_dt_ctrl_owner", "dt_ctrl_owner@test.com", "DT Ctrl Owner", "owner");
-    syncMember(
-        ORG_ID, "user_dt_ctrl_member", "dt_ctrl_member@test.com", "DT Ctrl Member", "member");
+        TestMemberHelper.syncMember(
+            mockMvc,
+            ORG_ID,
+            "user_dt_ctrl_owner",
+            "dt_ctrl_owner@test.com",
+            "DT Ctrl Owner",
+            "owner");
+    TestMemberHelper.syncMember(
+        mockMvc,
+        ORG_ID,
+        "user_dt_ctrl_member",
+        "dt_ctrl_member@test.com",
+        "DT Ctrl Member",
+        "member");
 
     // Provision tenant B for isolation tests
     provisioningService.provisionTenant(ORG_ID_B, "DT Controller Test Org B", null);
     memberIdOwnerB =
-        syncMember(
+        TestMemberHelper.syncMember(
+            mockMvc,
             ORG_ID_B,
             "user_dt_ctrl_owner_b",
             "dt_ctrl_owner_b@test.com",
@@ -87,7 +96,7 @@ class DocumentTemplateControllerTest {
         mockMvc
             .perform(
                 post("/api/templates")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dt_ctrl_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(requestBody)))
             .andExpect(status().isCreated())
@@ -117,7 +126,7 @@ class DocumentTemplateControllerTest {
     mockMvc
         .perform(
             post("/api/templates")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dt_ctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestBody)))
         .andExpect(status().isCreated())
@@ -128,7 +137,7 @@ class DocumentTemplateControllerTest {
   @Order(3)
   void shouldListActiveTemplates() throws Exception {
     mockMvc
-        .perform(get("/api/templates").with(ownerJwt()))
+        .perform(get("/api/templates").with(TestJwtFactory.ownerJwt(ORG_ID, "user_dt_ctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$.length()").value(org.hamcrest.Matchers.greaterThanOrEqualTo(2)));
@@ -138,7 +147,9 @@ class DocumentTemplateControllerTest {
   @Order(4)
   void shouldFilterByCategory() throws Exception {
     mockMvc
-        .perform(get("/api/templates?category=ENGAGEMENT_LETTER").with(ownerJwt()))
+        .perform(
+            get("/api/templates?category=ENGAGEMENT_LETTER")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dt_ctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$[0].category").value("ENGAGEMENT_LETTER"));
@@ -148,7 +159,9 @@ class DocumentTemplateControllerTest {
   @Order(5)
   void shouldFilterByEntityType() throws Exception {
     mockMvc
-        .perform(get("/api/templates?primaryEntityType=CUSTOMER").with(ownerJwt()))
+        .perform(
+            get("/api/templates?primaryEntityType=CUSTOMER")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dt_ctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$[0].primaryEntityType").value("CUSTOMER"));
@@ -168,7 +181,7 @@ class DocumentTemplateControllerTest {
     mockMvc
         .perform(
             put("/api/templates/" + createdTemplateId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dt_ctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updateBody)))
         .andExpect(status().isOk())
@@ -181,12 +194,16 @@ class DocumentTemplateControllerTest {
   @Order(7)
   void shouldDeactivateTemplate() throws Exception {
     mockMvc
-        .perform(delete("/api/templates/" + createdTemplateId).with(ownerJwt()))
+        .perform(
+            delete("/api/templates/" + createdTemplateId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dt_ctrl_owner")))
         .andExpect(status().isNoContent());
 
     // Verify deactivated
     mockMvc
-        .perform(get("/api/templates/" + createdTemplateId).with(ownerJwt()))
+        .perform(
+            get("/api/templates/" + createdTemplateId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dt_ctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.active").value(false));
   }
@@ -207,14 +224,14 @@ class DocumentTemplateControllerTest {
     mockMvc
         .perform(
             post("/api/templates")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dt_ctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestBody)))
         .andExpect(status().isCreated());
 
     // List should NOT include content or css fields
     mockMvc
-        .perform(get("/api/templates").with(ownerJwt()))
+        .perform(get("/api/templates").with(TestJwtFactory.ownerJwt(ORG_ID, "user_dt_ctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[0].content").doesNotExist())
         .andExpect(jsonPath("$[0].css").doesNotExist());
@@ -234,7 +251,7 @@ class DocumentTemplateControllerTest {
     mockMvc
         .perform(
             post("/api/templates")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_dt_ctrl_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestBody)))
         .andExpect(status().isForbidden());
@@ -248,7 +265,9 @@ class DocumentTemplateControllerTest {
     // createdTemplateId was created by tenant A in order 1
     // Attempt to GET it from tenant B — should return 404
     mockMvc
-        .perform(get("/api/templates/" + createdTemplateId).with(ownerJwtTenantB()))
+        .perform(
+            get("/api/templates/" + createdTemplateId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID_B, "user_dt_ctrl_owner_b")))
         .andExpect(status().isNotFound());
   }
 
@@ -274,7 +293,7 @@ class DocumentTemplateControllerTest {
         mockMvc
             .perform(
                 post("/api/templates")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dt_ctrl_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(requestBody)))
             .andExpect(status().isCreated())
@@ -287,60 +306,12 @@ class DocumentTemplateControllerTest {
 
     // GET by ID should return the same content structure
     mockMvc
-        .perform(get("/api/templates/" + templateId).with(ownerJwt()))
+        .perform(
+            get("/api/templates/" + templateId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dt_ctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content.type").value("doc"))
         .andExpect(jsonPath("$.content.content[0].type").value("heading"))
         .andExpect(jsonPath("$.content.content[1].type").value("paragraph"));
-  }
-
-  // --- JWT Helpers ---
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_dt_ctrl_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_dt_ctrl_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor ownerJwtTenantB() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_dt_ctrl_owner_b")
-                    .claim("o", Map.of("id", ORG_ID_B, "rol", "owner")));
-  }
-
-  // --- Helpers ---
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

@@ -2,7 +2,6 @@ package io.b2mash.b2b.b2bstrawman.task;
 
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -12,7 +11,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -21,10 +22,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -32,8 +31,6 @@ import org.springframework.test.web.servlet.MvcResult;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class TaskLifecycleIntegrationTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_lifecycle_test";
 
   @Autowired private MockMvc mockMvc;
@@ -49,18 +46,21 @@ class TaskLifecycleIntegrationTest {
     provisioningService.provisionTenant(ORG_ID, "Lifecycle Test Org", null);
 
     memberIdOwner =
-        syncMember(ORG_ID, "user_lc_owner", "lc_owner@test.com", "Lifecycle Owner", "owner");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_lc_owner", "lc_owner@test.com", "Lifecycle Owner", "owner");
     memberIdAdmin =
-        syncMember(ORG_ID, "user_lc_admin", "lc_admin@test.com", "Lifecycle Admin", "admin");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_lc_admin", "lc_admin@test.com", "Lifecycle Admin", "admin");
     memberIdMember =
-        syncMember(ORG_ID, "user_lc_member", "lc_member@test.com", "Lifecycle Member", "member");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_lc_member", "lc_member@test.com", "Lifecycle Member", "member");
 
     // Create a project (owner is auto-assigned as lead)
     var projectResult =
         mockMvc
             .perform(
                 post("/api/projects")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_lc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -68,13 +68,13 @@ class TaskLifecycleIntegrationTest {
                         """))
             .andExpect(status().isCreated())
             .andReturn();
-    projectId = extractIdFromLocation(projectResult);
+    projectId = TestEntityHelper.extractIdFromLocation(projectResult);
 
     // Add admin and member to the project
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/members")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_lc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -86,7 +86,7 @@ class TaskLifecycleIntegrationTest {
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/members")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_lc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -104,12 +104,16 @@ class TaskLifecycleIntegrationTest {
 
     // Claim the task as member
     mockMvc
-        .perform(post("/api/tasks/" + taskId + "/claim").with(memberJwt()))
+        .perform(
+            post("/api/tasks/" + taskId + "/claim")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_lc_member")))
         .andExpect(status().isOk());
 
     // Complete as the assignee (member)
     mockMvc
-        .perform(patch("/api/tasks/" + taskId + "/complete").with(memberJwt()))
+        .perform(
+            patch("/api/tasks/" + taskId + "/complete")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_lc_member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("DONE"))
         .andExpect(jsonPath("$.completedAt", notNullValue()))
@@ -124,12 +128,16 @@ class TaskLifecycleIntegrationTest {
 
     // Claim the task as member
     mockMvc
-        .perform(post("/api/tasks/" + taskId + "/claim").with(memberJwt()))
+        .perform(
+            post("/api/tasks/" + taskId + "/claim")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_lc_member")))
         .andExpect(status().isOk());
 
     // Admin completes the task
     mockMvc
-        .perform(patch("/api/tasks/" + taskId + "/complete").with(adminJwt()))
+        .perform(
+            patch("/api/tasks/" + taskId + "/complete")
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_lc_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("DONE"))
         .andExpect(jsonPath("$.completedAt", notNullValue()))
@@ -142,12 +150,16 @@ class TaskLifecycleIntegrationTest {
 
     // Claim the task as admin
     mockMvc
-        .perform(post("/api/tasks/" + taskId + "/claim").with(adminJwt()))
+        .perform(
+            post("/api/tasks/" + taskId + "/claim")
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_lc_admin")))
         .andExpect(status().isOk());
 
     // Regular member (not assignee) tries to complete — should be 403
     mockMvc
-        .perform(patch("/api/tasks/" + taskId + "/complete").with(memberJwt()))
+        .perform(
+            patch("/api/tasks/" + taskId + "/complete")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_lc_member")))
         .andExpect(status().isForbidden());
   }
 
@@ -157,7 +169,9 @@ class TaskLifecycleIntegrationTest {
 
     // Try to complete task in OPEN status — should be 400 (invalid state transition)
     mockMvc
-        .perform(patch("/api/tasks/" + taskId + "/complete").with(ownerJwt()))
+        .perform(
+            patch("/api/tasks/" + taskId + "/complete")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_lc_owner")))
         .andExpect(status().isBadRequest());
   }
 
@@ -169,7 +183,9 @@ class TaskLifecycleIntegrationTest {
 
     // Admin cancels the task
     mockMvc
-        .perform(patch("/api/tasks/" + taskId + "/cancel").with(adminJwt()))
+        .perform(
+            patch("/api/tasks/" + taskId + "/cancel")
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_lc_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("CANCELLED"))
         .andExpect(jsonPath("$.cancelledAt", notNullValue()));
@@ -181,7 +197,9 @@ class TaskLifecycleIntegrationTest {
 
     // Regular member tries to cancel — should be 403
     mockMvc
-        .perform(patch("/api/tasks/" + taskId + "/cancel").with(memberJwt()))
+        .perform(
+            patch("/api/tasks/" + taskId + "/cancel")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_lc_member")))
         .andExpect(status().isForbidden());
   }
 
@@ -193,15 +211,21 @@ class TaskLifecycleIntegrationTest {
 
     // Claim then complete the task
     mockMvc
-        .perform(post("/api/tasks/" + taskId + "/claim").with(memberJwt()))
+        .perform(
+            post("/api/tasks/" + taskId + "/claim")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_lc_member")))
         .andExpect(status().isOk());
     mockMvc
-        .perform(patch("/api/tasks/" + taskId + "/complete").with(memberJwt()))
+        .perform(
+            patch("/api/tasks/" + taskId + "/complete")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_lc_member")))
         .andExpect(status().isOk());
 
     // Admin reopens
     mockMvc
-        .perform(patch("/api/tasks/" + taskId + "/reopen").with(adminJwt()))
+        .perform(
+            patch("/api/tasks/" + taskId + "/reopen")
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_lc_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("OPEN"))
         .andExpect(jsonPath("$.completedAt", nullValue()))
@@ -214,17 +238,23 @@ class TaskLifecycleIntegrationTest {
 
     // Claim the task as member, then admin cancels it
     mockMvc
-        .perform(post("/api/tasks/" + taskId + "/claim").with(memberJwt()))
+        .perform(
+            post("/api/tasks/" + taskId + "/claim")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_lc_member")))
         .andExpect(status().isOk());
     mockMvc
-        .perform(patch("/api/tasks/" + taskId + "/cancel").with(adminJwt()))
+        .perform(
+            patch("/api/tasks/" + taskId + "/cancel")
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_lc_admin")))
         .andExpect(status().isOk());
 
     // Assignee (member) reopens — the assignee is cleared by cancel via reopen, but
     // the task entity stores assigneeId through cancel. Let's check with admin instead
     // since cancel doesn't clear assigneeId but reopen permission checks assigneeId.
     mockMvc
-        .perform(patch("/api/tasks/" + taskId + "/reopen").with(memberJwt()))
+        .perform(
+            patch("/api/tasks/" + taskId + "/reopen")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_lc_member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("OPEN"))
         .andExpect(jsonPath("$.cancelledAt", nullValue()));
@@ -236,7 +266,9 @@ class TaskLifecycleIntegrationTest {
 
     // Try to reopen an already OPEN task — should be 400
     mockMvc
-        .perform(patch("/api/tasks/" + taskId + "/reopen").with(ownerJwt()))
+        .perform(
+            patch("/api/tasks/" + taskId + "/reopen")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_lc_owner")))
         .andExpect(status().isBadRequest());
   }
 
@@ -250,19 +282,23 @@ class TaskLifecycleIntegrationTest {
 
     // Claim task2 to make it IN_PROGRESS
     mockMvc
-        .perform(post("/api/tasks/" + taskId2 + "/claim").with(memberJwt()))
+        .perform(
+            post("/api/tasks/" + taskId2 + "/claim")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_lc_member")))
         .andExpect(status().isOk());
 
     // Cancel task3
     mockMvc
-        .perform(patch("/api/tasks/" + taskId3 + "/cancel").with(adminJwt()))
+        .perform(
+            patch("/api/tasks/" + taskId3 + "/cancel")
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_lc_admin")))
         .andExpect(status().isOk());
 
     // Filter for OPEN,IN_PROGRESS — should return task1 and task2 (not task3)
     mockMvc
         .perform(
             get("/api/projects/" + projectId + "/tasks")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_lc_owner"))
                 .param("status", "OPEN,IN_PROGRESS"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[?(@.id == '%s')]", taskId1).exists())
@@ -277,15 +313,21 @@ class TaskLifecycleIntegrationTest {
 
     // Claim then complete taskIdDone
     mockMvc
-        .perform(post("/api/tasks/" + taskIdDone + "/claim").with(memberJwt()))
+        .perform(
+            post("/api/tasks/" + taskIdDone + "/claim")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_lc_member")))
         .andExpect(status().isOk());
     mockMvc
-        .perform(patch("/api/tasks/" + taskIdDone + "/complete").with(memberJwt()))
+        .perform(
+            patch("/api/tasks/" + taskIdDone + "/complete")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_lc_member")))
         .andExpect(status().isOk());
 
     // Default (no status param) should exclude DONE tasks
     mockMvc
-        .perform(get("/api/projects/" + projectId + "/tasks").with(ownerJwt()))
+        .perform(
+            get("/api/projects/" + projectId + "/tasks")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_lc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[?(@.id == '%s')]", taskIdOpen).exists())
         .andExpect(jsonPath("$[?(@.id == '%s')]", taskIdDone).doesNotExist());
@@ -297,11 +339,15 @@ class TaskLifecycleIntegrationTest {
 
     // Claim and complete
     mockMvc
-        .perform(post("/api/tasks/" + taskId + "/claim").with(memberJwt()))
+        .perform(
+            post("/api/tasks/" + taskId + "/claim")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_lc_member")))
         .andExpect(status().isOk());
 
     mockMvc
-        .perform(patch("/api/tasks/" + taskId + "/complete").with(memberJwt()))
+        .perform(
+            patch("/api/tasks/" + taskId + "/complete")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_lc_member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.completedAt", notNullValue()))
         .andExpect(jsonPath("$.completedBy").value(memberIdMember))
@@ -310,7 +356,8 @@ class TaskLifecycleIntegrationTest {
 
     // Verify GET also returns the fields
     mockMvc
-        .perform(get("/api/tasks/" + taskId).with(memberJwt()))
+        .perform(
+            get("/api/tasks/" + taskId).with(TestJwtFactory.memberJwt(ORG_ID, "user_lc_member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.completedAt", notNullValue()))
         .andExpect(jsonPath("$.completedBy").value(memberIdMember))
@@ -325,7 +372,7 @@ class TaskLifecycleIntegrationTest {
         mockMvc
             .perform(
                 post("/api/projects/" + projectId + "/tasks")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_lc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -335,52 +382,5 @@ class TaskLifecycleIntegrationTest {
             .andExpect(status().isCreated())
             .andReturn();
     return JsonPath.read(result.getResponse().getContentAsString(), "$.id");
-  }
-
-  private String extractIdFromLocation(MvcResult result) {
-    String location = result.getResponse().getHeader("Location");
-    return location.substring(location.lastIndexOf('/') + 1);
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_lc_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor adminJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_lc_admin").claim("o", Map.of("id", ORG_ID, "rol", "admin")));
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_lc_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
   }
 }

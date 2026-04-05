@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.template;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -11,8 +10,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.io.ByteArrayOutputStream;
-import java.util.Map;
 import java.util.UUID;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
@@ -29,7 +29,6 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -40,8 +39,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class DocxEndpointsTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_docx_endpoints_test";
   private static final String ORG_ID_B = "org_docx_endpoints_test_b";
   private static final String DOCX_CONTENT_TYPE =
@@ -55,14 +52,25 @@ class DocxEndpointsTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "DOCX Endpoints Test Org", null);
-    syncMember(
-        ORG_ID, "user_endpoints_owner", "endpoints_owner@test.com", "Endpoints Owner", "owner");
-    syncMember(
-        ORG_ID, "user_endpoints_member", "endpoints_member@test.com", "Endpoints Member", "member");
+    TestMemberHelper.syncMember(
+        mockMvc,
+        ORG_ID,
+        "user_endpoints_owner",
+        "endpoints_owner@test.com",
+        "Endpoints Owner",
+        "owner");
+    TestMemberHelper.syncMember(
+        mockMvc,
+        ORG_ID,
+        "user_endpoints_member",
+        "endpoints_member@test.com",
+        "Endpoints Member",
+        "member");
 
     // --- Tenant B (for cross-tenant isolation test) ---
     provisioningService.provisionTenant(ORG_ID_B, "DOCX Endpoints Test Org B", null);
-    syncMember(
+    TestMemberHelper.syncMember(
+        mockMvc,
         ORG_ID_B,
         "user_endpoints_owner_b",
         "endpoints_owner_b@test.com",
@@ -82,65 +90,13 @@ class DocxEndpointsTest {
                     .param("name", "Endpoints Test Template")
                     .param("category", "ENGAGEMENT_LETTER")
                     .param("entityType", "PROJECT")
-                    .with(ownerJwt()))
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_endpoints_owner")))
             .andExpect(status().isCreated())
             .andReturn();
 
     uploadedTemplateId = JsonPath.read(result.getResponse().getContentAsString(), "$.id");
   }
 
-  // --- JWT Helpers ---
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_endpoints_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_endpoints_member")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor ownerJwtTenantB() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_endpoints_owner_b")
-                    .claim("o", Map.of("id", ORG_ID_B, "rol", "owner")));
-  }
-
-  // --- Member sync helper ---
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  // --- .docx creation helpers ---
   private byte[] createTestDocx(String text) throws Exception {
     try (XWPFDocument doc = new XWPFDocument()) {
       XWPFParagraph para = doc.createParagraph();
@@ -158,7 +114,9 @@ class DocxEndpointsTest {
   @Order(1)
   void getFields_validDocxTemplate_returnsFields() throws Exception {
     mockMvc
-        .perform(get("/api/templates/" + uploadedTemplateId + "/docx/fields").with(ownerJwt()))
+        .perform(
+            get("/api/templates/" + uploadedTemplateId + "/docx/fields")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_endpoints_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$.length()").value(2));
@@ -182,14 +140,16 @@ class DocxEndpointsTest {
                           "content": {"type": "doc", "content": []}
                         }
                         """)
-                    .with(ownerJwt()))
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_endpoints_owner")))
             .andExpect(status().isCreated())
             .andReturn();
 
     String tiptapId = JsonPath.read(result.getResponse().getContentAsString(), "$.id");
 
     mockMvc
-        .perform(get("/api/templates/" + tiptapId + "/docx/fields").with(ownerJwt()))
+        .perform(
+            get("/api/templates/" + tiptapId + "/docx/fields")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_endpoints_owner")))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.title").value("Not a DOCX template"));
   }
@@ -198,7 +158,9 @@ class DocxEndpointsTest {
   @Order(3)
   void getFields_notFound_returns404() throws Exception {
     mockMvc
-        .perform(get("/api/templates/" + UUID.randomUUID() + "/docx/fields").with(ownerJwt()))
+        .perform(
+            get("/api/templates/" + UUID.randomUUID() + "/docx/fields")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_endpoints_owner")))
         .andExpect(status().isNotFound());
   }
 
@@ -206,7 +168,9 @@ class DocxEndpointsTest {
   @Order(4)
   void download_validDocxTemplate_returns302() throws Exception {
     mockMvc
-        .perform(get("/api/templates/" + uploadedTemplateId + "/docx/download").with(ownerJwt()))
+        .perform(
+            get("/api/templates/" + uploadedTemplateId + "/docx/download")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_endpoints_owner")))
         .andExpect(status().isFound())
         .andExpect(header().exists("Location"));
   }
@@ -229,14 +193,16 @@ class DocxEndpointsTest {
                           "content": {"type": "doc", "content": []}
                         }
                         """)
-                    .with(ownerJwt()))
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_endpoints_owner")))
             .andExpect(status().isCreated())
             .andReturn();
 
     String tiptapId = JsonPath.read(result.getResponse().getContentAsString(), "$.id");
 
     mockMvc
-        .perform(get("/api/templates/" + tiptapId + "/docx/download").with(ownerJwt()))
+        .perform(
+            get("/api/templates/" + tiptapId + "/docx/download")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_endpoints_owner")))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.title").value("Not a DOCX template"));
   }
@@ -258,7 +224,7 @@ class DocxEndpointsTest {
                       request.setMethod("PUT");
                       return request;
                     })
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_endpoints_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.format").value("DOCX"))
         .andExpect(jsonPath("$.discoveredFields").isArray())
@@ -280,7 +246,7 @@ class DocxEndpointsTest {
                       request.setMethod("PUT");
                       return request;
                     })
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_endpoints_owner")))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.title").value("Invalid file type"));
   }
@@ -301,7 +267,7 @@ class DocxEndpointsTest {
                       request.setMethod("PUT");
                       return request;
                     })
-                .with(memberJwt()))
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_endpoints_member")))
         .andExpect(status().isForbidden());
   }
 
@@ -311,7 +277,8 @@ class DocxEndpointsTest {
     // Tenant B's owner tries to access Tenant A's template — should get 404 (schema isolation)
     mockMvc
         .perform(
-            get("/api/templates/" + uploadedTemplateId + "/docx/fields").with(ownerJwtTenantB()))
+            get("/api/templates/" + uploadedTemplateId + "/docx/fields")
+                .with(TestJwtFactory.ownerJwt(ORG_ID_B, "user_endpoints_owner_b")))
         .andExpect(status().isNotFound());
   }
 }

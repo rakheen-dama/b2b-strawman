@@ -1,10 +1,8 @@
 package io.b2mash.b2b.b2bstrawman.report;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
@@ -14,7 +12,8 @@ import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -24,8 +23,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -58,13 +55,31 @@ class ReportCapabilityTest {
 
     ownerMemberId =
         UUID.fromString(
-            syncMember("user_rpt_cap_owner", "rpt_cap_owner@test.com", "RPT Owner", "owner"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_rpt_cap_owner",
+                "rpt_cap_owner@test.com",
+                "RPT Owner",
+                "owner"));
     customRoleMemberId =
         UUID.fromString(
-            syncMember("user_rpt_314a_custom", "rpt_custom@test.com", "RPT Custom User", "member"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_rpt_314a_custom",
+                "rpt_custom@test.com",
+                "RPT Custom User",
+                "member"));
     noCapMemberId =
         UUID.fromString(
-            syncMember("user_rpt_314a_nocap", "rpt_nocap@test.com", "RPT NoCap User", "member"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_rpt_314a_nocap",
+                "rpt_nocap@test.com",
+                "RPT NoCap User",
+                "member"));
 
     var tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
@@ -120,7 +135,7 @@ class ReportCapabilityTest {
             get("/api/reports/profitability")
                 .param("from", "2026-01-01")
                 .param("to", "2026-12-31")
-                .with(customRoleJwt()))
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_rpt_314a_custom", "member")))
         .andExpect(status().isOk());
   }
 
@@ -131,7 +146,7 @@ class ReportCapabilityTest {
             get("/api/reports/profitability")
                 .param("from", "2026-01-01")
                 .param("to", "2026-12-31")
-                .with(noCapabilityJwt()))
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_rpt_314a_nocap", "member")))
         .andExpect(status().isForbidden());
   }
 
@@ -142,7 +157,7 @@ class ReportCapabilityTest {
             get("/api/customers/{customerId}/profitability", testCustomerId)
                 .param("from", "2026-01-01")
                 .param("to", "2026-12-31")
-                .with(customRoleJwt()))
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_rpt_314a_custom", "member")))
         .andExpect(status().isOk());
   }
 
@@ -153,57 +168,7 @@ class ReportCapabilityTest {
             get("/api/customers/{customerId}/profitability", testCustomerId)
                 .param("from", "2026-01-01")
                 .param("to", "2026-12-31")
-                .with(noCapabilityJwt()))
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_rpt_314a_nocap", "member")))
         .andExpect(status().isForbidden());
-  }
-
-  // --- JWT Helpers ---
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_rpt_cap_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor customRoleJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_rpt_314a_custom")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor noCapabilityJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_rpt_314a_nocap").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  // --- Helpers ---
-
-  private String syncMember(String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post(
-                        "/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(ORG_ID, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

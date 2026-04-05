@@ -2,7 +2,6 @@ package io.b2mash.b2b.b2bstrawman.automation;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -14,6 +13,8 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
@@ -27,7 +28,6 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -37,8 +37,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AutomationRuleControllerTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_auto_ctrl";
 
   @Autowired private MockMvc mockMvc;
@@ -59,18 +57,32 @@ class AutomationRuleControllerTest {
   @BeforeAll
   void provisionTenantAndSeedData() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Automation Controller Test Org", null);
-    memberIdOwner = syncMember("user_auto_owner", "auto_owner@test.com", "Auto Owner", "owner");
-    syncMember("user_auto_member", "auto_member@test.com", "Auto Member", "member");
+    memberIdOwner =
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_auto_owner", "auto_owner@test.com", "Auto Owner", "owner");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_auto_member", "auto_member@test.com", "Auto Member", "member");
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
 
     customRoleMemberId =
         UUID.fromString(
-            syncMember(
-                "user_auto_315b_custom", "auto_custom@test.com", "Auto Custom User", "member"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_auto_315b_custom",
+                "auto_custom@test.com",
+                "Auto Custom User",
+                "member"));
     noCapMemberId =
         UUID.fromString(
-            syncMember("user_auto_315b_nocap", "auto_nocap@test.com", "Auto NoCap User", "member"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_auto_315b_nocap",
+                "auto_nocap@test.com",
+                "Auto NoCap User",
+                "member"));
 
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)
@@ -103,7 +115,7 @@ class AutomationRuleControllerTest {
     mockMvc
         .perform(
             post("/api/automation-rules")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -130,7 +142,7 @@ class AutomationRuleControllerTest {
         mockMvc
             .perform(
                 post("/api/automation-rules")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -148,7 +160,7 @@ class AutomationRuleControllerTest {
     mockMvc
         .perform(
             post("/api/automation-rules/" + ruleId + "/actions")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -162,7 +174,9 @@ class AutomationRuleControllerTest {
 
     // Get rule with actions
     mockMvc
-        .perform(get("/api/automation-rules/" + ruleId).with(ownerJwt()))
+        .perform(
+            get("/api/automation-rules/" + ruleId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.name").value("Get Test Rule"))
         .andExpect(jsonPath("$.actions", hasSize(1)))
@@ -175,7 +189,7 @@ class AutomationRuleControllerTest {
     mockMvc
         .perform(
             post("/api/automation-rules")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -188,7 +202,10 @@ class AutomationRuleControllerTest {
         .andExpect(status().isCreated());
 
     mockMvc
-        .perform(get("/api/automation-rules").with(ownerJwt()).param("enabled", "true"))
+        .perform(
+            get("/api/automation-rules")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
+                .param("enabled", "true"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray());
   }
@@ -198,7 +215,7 @@ class AutomationRuleControllerTest {
     mockMvc
         .perform(
             get("/api/automation-rules")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
                 .param("triggerType", "TASK_STATUS_CHANGED"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray());
@@ -210,7 +227,7 @@ class AutomationRuleControllerTest {
         mockMvc
             .perform(
                 post("/api/automation-rules")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -227,7 +244,7 @@ class AutomationRuleControllerTest {
     mockMvc
         .perform(
             put("/api/automation-rules/" + ruleId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -248,7 +265,7 @@ class AutomationRuleControllerTest {
         mockMvc
             .perform(
                 post("/api/automation-rules")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -266,7 +283,7 @@ class AutomationRuleControllerTest {
     mockMvc
         .perform(
             post("/api/automation-rules/" + ruleId + "/actions")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -275,12 +292,16 @@ class AutomationRuleControllerTest {
         .andExpect(status().isCreated());
 
     mockMvc
-        .perform(delete("/api/automation-rules/" + ruleId).with(ownerJwt()))
+        .perform(
+            delete("/api/automation-rules/" + ruleId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner")))
         .andExpect(status().isNoContent());
 
     // Verify deleted
     mockMvc
-        .perform(get("/api/automation-rules/" + ruleId).with(ownerJwt()))
+        .perform(
+            get("/api/automation-rules/" + ruleId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner")))
         .andExpect(status().isNotFound());
   }
 
@@ -290,7 +311,7 @@ class AutomationRuleControllerTest {
         mockMvc
             .perform(
                 post("/api/automation-rules")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -306,13 +327,17 @@ class AutomationRuleControllerTest {
 
     // Toggle off
     mockMvc
-        .perform(post("/api/automation-rules/" + ruleId + "/toggle").with(ownerJwt()))
+        .perform(
+            post("/api/automation-rules/" + ruleId + "/toggle")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.enabled").value(false));
 
     // Toggle on
     mockMvc
-        .perform(post("/api/automation-rules/" + ruleId + "/toggle").with(ownerJwt()))
+        .perform(
+            post("/api/automation-rules/" + ruleId + "/toggle")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.enabled").value(true));
   }
@@ -323,7 +348,7 @@ class AutomationRuleControllerTest {
         mockMvc
             .perform(
                 post("/api/automation-rules")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -341,7 +366,7 @@ class AutomationRuleControllerTest {
     mockMvc
         .perform(
             post("/api/automation-rules/" + ruleId + "/actions")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -350,7 +375,9 @@ class AutomationRuleControllerTest {
         .andExpect(status().isCreated());
 
     mockMvc
-        .perform(post("/api/automation-rules/" + ruleId + "/duplicate").with(ownerJwt()))
+        .perform(
+            post("/api/automation-rules/" + ruleId + "/duplicate")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner")))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.name").value("Original Rule (Copy)"))
         .andExpect(jsonPath("$.source").value("CUSTOM"))
@@ -364,7 +391,7 @@ class AutomationRuleControllerTest {
         mockMvc
             .perform(
                 post("/api/automation-rules")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -377,7 +404,7 @@ class AutomationRuleControllerTest {
     mockMvc
         .perform(
             post("/api/automation-rules/" + ruleId + "/actions")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -401,7 +428,7 @@ class AutomationRuleControllerTest {
         mockMvc
             .perform(
                 post("/api/automation-rules")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -415,7 +442,7 @@ class AutomationRuleControllerTest {
         mockMvc
             .perform(
                 post("/api/automation-rules/" + ruleId + "/actions")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -428,7 +455,7 @@ class AutomationRuleControllerTest {
     mockMvc
         .perform(
             put("/api/automation-rules/" + ruleId + "/actions/" + actionId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -445,7 +472,7 @@ class AutomationRuleControllerTest {
         mockMvc
             .perform(
                 post("/api/automation-rules")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -459,7 +486,7 @@ class AutomationRuleControllerTest {
         mockMvc
             .perform(
                 post("/api/automation-rules/" + ruleId + "/actions")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -471,12 +498,15 @@ class AutomationRuleControllerTest {
 
     mockMvc
         .perform(
-            delete("/api/automation-rules/" + ruleId + "/actions/" + actionId).with(ownerJwt()))
+            delete("/api/automation-rules/" + ruleId + "/actions/" + actionId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner")))
         .andExpect(status().isNoContent());
 
     // Verify action removed
     mockMvc
-        .perform(get("/api/automation-rules/" + ruleId).with(ownerJwt()))
+        .perform(
+            get("/api/automation-rules/" + ruleId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.actions", hasSize(0)));
   }
@@ -487,7 +517,7 @@ class AutomationRuleControllerTest {
         mockMvc
             .perform(
                 post("/api/automation-rules")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -501,7 +531,7 @@ class AutomationRuleControllerTest {
         mockMvc
             .perform(
                 post("/api/automation-rules/" + ruleId + "/actions")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -515,7 +545,7 @@ class AutomationRuleControllerTest {
         mockMvc
             .perform(
                 post("/api/automation-rules/" + ruleId + "/actions")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -529,7 +559,7 @@ class AutomationRuleControllerTest {
     mockMvc
         .perform(
             put("/api/automation-rules/" + ruleId + "/actions/reorder")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -549,7 +579,7 @@ class AutomationRuleControllerTest {
         mockMvc
             .perform(
                 post("/api/automation-rules")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -567,7 +597,7 @@ class AutomationRuleControllerTest {
     mockMvc
         .perform(
             post("/api/automation-rules/" + ruleId + "/test")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -584,7 +614,7 @@ class AutomationRuleControllerTest {
         mockMvc
             .perform(
                 post("/api/automation-rules")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -602,7 +632,7 @@ class AutomationRuleControllerTest {
     mockMvc
         .perform(
             post("/api/automation-rules/" + ruleId + "/test")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -619,7 +649,7 @@ class AutomationRuleControllerTest {
         mockMvc
             .perform(
                 post("/api/automation-rules")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -644,7 +674,9 @@ class AutomationRuleControllerTest {
             });
 
     mockMvc
-        .perform(get("/api/automation-rules/" + ruleId + "/executions").with(ownerJwt()))
+        .perform(
+            get("/api/automation-rules/" + ruleId + "/executions")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray())
         .andExpect(jsonPath("$.content[0].ruleId").value(ruleId));
@@ -657,7 +689,7 @@ class AutomationRuleControllerTest {
         mockMvc
             .perform(
                 post("/api/automation-rules")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -691,7 +723,9 @@ class AutomationRuleControllerTest {
             });
 
     mockMvc
-        .perform(get("/api/automation-executions/" + executionIdHolder[0]).with(ownerJwt()))
+        .perform(
+            get("/api/automation-executions/" + executionIdHolder[0])
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(executionIdHolder[0].toString()))
         .andExpect(jsonPath("$.ruleName").value("Exec Detail Rule"))
@@ -703,7 +737,7 @@ class AutomationRuleControllerTest {
     mockMvc
         .perform(
             post("/api/automation-rules")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_auto_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -712,11 +746,14 @@ class AutomationRuleControllerTest {
         .andExpect(status().isForbidden());
 
     mockMvc
-        .perform(get("/api/automation-rules").with(memberJwt()))
+        .perform(
+            get("/api/automation-rules").with(TestJwtFactory.memberJwt(ORG_ID, "user_auto_member")))
         .andExpect(status().isForbidden());
 
     mockMvc
-        .perform(get("/api/automation-executions").with(memberJwt()))
+        .perform(
+            get("/api/automation-executions")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_auto_member")))
         .andExpect(status().isForbidden());
   }
 
@@ -727,7 +764,7 @@ class AutomationRuleControllerTest {
         mockMvc
             .perform(
                 post("/api/automation-rules")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -751,7 +788,9 @@ class AutomationRuleControllerTest {
 
     // Toggle to generate enabled/disabled audit events
     mockMvc
-        .perform(post("/api/automation-rules/" + ruleId + "/toggle").with(ownerJwt()))
+        .perform(
+            post("/api/automation-rules/" + ruleId + "/toggle")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner")))
         .andExpect(status().isOk());
 
     Integer disabledCount =
@@ -767,7 +806,9 @@ class AutomationRuleControllerTest {
 
     // Delete to generate deletion audit
     mockMvc
-        .perform(delete("/api/automation-rules/" + ruleId).with(ownerJwt()))
+        .perform(
+            delete("/api/automation-rules/" + ruleId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner")))
         .andExpect(status().isNoContent());
 
     Integer deletedCount =
@@ -789,7 +830,7 @@ class AutomationRuleControllerTest {
     mockMvc
         .perform(
             post("/api/automation-rules")
-                .with(customRoleJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_auto_315b_custom"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -803,60 +844,13 @@ class AutomationRuleControllerTest {
     mockMvc
         .perform(
             post("/api/automation-rules")
-                .with(noCapabilityJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_auto_315b_nocap"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
                     {"name": "NoCap Rule", "triggerType": "TASK_STATUS_CHANGED", "triggerConfig": {}}
                     """))
         .andExpect(status().isForbidden());
-  }
-
-  // --- Helper methods ---
-
-  private String syncMember(String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        { "clerkOrgId": "%s", "clerkUserId": "%s", "email": "%s",
-                          "name": "%s", "avatarUrl": null, "orgRole": "%s" }
-                        """
-                            .formatted(ORG_ID, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_auto_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_auto_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor customRoleJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_auto_315b_custom")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor noCapabilityJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_auto_315b_nocap")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 
   /**

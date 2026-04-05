@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.prerequisite;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -20,9 +19,10 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldType;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -32,7 +32,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -43,8 +42,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class PrerequisiteControllerTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_prereq_ctrl_test";
 
   @Autowired private MockMvc mockMvc;
@@ -65,22 +62,26 @@ class PrerequisiteControllerTest {
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Prereq Controller Test Org", null);
 
-    syncMember("user_prc_owner", "prc_owner@test.com", "PRC Owner", "owner");
-    syncMember("user_prc_admin", "prc_admin@test.com", "PRC Admin", "admin");
-    syncMember("user_prc_member", "prc_member@test.com", "PRC Member", "member");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_prc_owner", "prc_owner@test.com", "PRC Owner", "owner");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_prc_admin", "prc_admin@test.com", "PRC Admin", "admin");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_prc_member", "prc_member@test.com", "PRC Member", "member");
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
     memberIdOwner =
         UUID.fromString(
-            syncMember("user_prc_owner2", "prc_owner2@test.com", "PRC Owner2", "owner"));
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, "user_prc_owner2", "prc_owner2@test.com", "PRC Owner2", "owner"));
 
     // Create a customer
     var customerResult =
         mockMvc
             .perform(
                 post("/api/customers")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -98,7 +99,7 @@ class PrerequisiteControllerTest {
         mockMvc
             .perform(
                 post("/api/field-definitions")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -118,7 +119,7 @@ class PrerequisiteControllerTest {
     mockMvc
         .perform(
             patch("/api/field-definitions/" + fieldDefinitionId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -167,7 +168,7 @@ class PrerequisiteControllerTest {
     mockMvc
         .perform(
             get("/api/prerequisites/check")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prc_owner"))
                 .param("context", "PROJECT_CREATION")
                 .param("entityType", "CUSTOMER")
                 .param("entityId", customerId))
@@ -183,7 +184,7 @@ class PrerequisiteControllerTest {
     mockMvc
         .perform(
             get("/api/prerequisites/check")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prc_owner"))
                 .param("context", "INVOICE_GENERATION")
                 .param("entityType", "CUSTOMER")
                 .param("entityId", customerId))
@@ -203,7 +204,7 @@ class PrerequisiteControllerTest {
         mockMvc
             .perform(
                 post("/api/field-definitions")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -223,7 +224,7 @@ class PrerequisiteControllerTest {
     mockMvc
         .perform(
             patch("/api/field-definitions/" + fd2Id)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -236,7 +237,7 @@ class PrerequisiteControllerTest {
     mockMvc
         .perform(
             get("/api/prerequisites/check")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prc_owner"))
                 .param("context", "INVOICE_GENERATION")
                 .param("entityType", "CUSTOMER")
                 .param("entityId", customerId))
@@ -251,7 +252,7 @@ class PrerequisiteControllerTest {
     mockMvc
         .perform(
             get("/api/prerequisites/check")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prc_owner"))
                 .param("context", "INVALID_CONTEXT")
                 .param("entityType", "CUSTOMER")
                 .param("entityId", customerId))
@@ -263,7 +264,7 @@ class PrerequisiteControllerTest {
     mockMvc
         .perform(
             get("/api/prerequisites/check")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prc_owner"))
                 .param("context", "INVOICE_GENERATION")
                 .param("entityType", "CUSTOMER")
                 .param("entityId", UUID.randomUUID().toString()))
@@ -287,7 +288,9 @@ class PrerequisiteControllerTest {
   void shouldReturnIntakeFieldGroups() throws Exception {
     mockMvc
         .perform(
-            get("/api/field-definitions/intake").with(ownerJwt()).param("entityType", "CUSTOMER"))
+            get("/api/field-definitions/intake")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prc_owner"))
+                .param("entityType", "CUSTOMER"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.groups").isArray())
         .andExpect(jsonPath("$.groups[?(@.slug == 'intake_group_prc')]").exists())
@@ -326,7 +329,9 @@ class PrerequisiteControllerTest {
 
     mockMvc
         .perform(
-            get("/api/field-definitions/intake").with(ownerJwt()).param("entityType", "CUSTOMER"))
+            get("/api/field-definitions/intake")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prc_owner"))
+                .param("entityType", "CUSTOMER"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.groups[?(@.slug == 'manual_group_prc')]").doesNotExist());
   }
@@ -354,7 +359,9 @@ class PrerequisiteControllerTest {
 
     mockMvc
         .perform(
-            get("/api/field-definitions/intake").with(ownerJwt()).param("entityType", "INVOICE"))
+            get("/api/field-definitions/intake")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prc_owner"))
+                .param("entityType", "INVOICE"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.groups").isArray())
         .andExpect(jsonPath("$.groups").isEmpty());
@@ -368,7 +375,7 @@ class PrerequisiteControllerTest {
         mockMvc
             .perform(
                 post("/api/field-definitions")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -388,7 +395,7 @@ class PrerequisiteControllerTest {
     mockMvc
         .perform(
             patch("/api/field-definitions/" + id)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -408,7 +415,7 @@ class PrerequisiteControllerTest {
     mockMvc
         .perform(
             patch("/api/field-definitions/" + fieldDefinitionId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -424,7 +431,7 @@ class PrerequisiteControllerTest {
     mockMvc
         .perform(
             patch("/api/field-definitions/" + fieldDefinitionId)
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_prc_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -444,7 +451,7 @@ class PrerequisiteControllerTest {
         mockMvc
             .perform(
                 post("/api/field-definitions")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -463,7 +470,7 @@ class PrerequisiteControllerTest {
     mockMvc
         .perform(
             post("/api/customers")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -484,7 +491,7 @@ class PrerequisiteControllerTest {
     mockMvc
         .perform(
             post("/api/customers")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -507,40 +514,5 @@ class PrerequisiteControllerTest {
         .where(RequestScopes.MEMBER_ID, memberId)
         .where(RequestScopes.ORG_ROLE, "owner")
         .run(action);
-  }
-
-  private String syncMember(String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(ORG_ID, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_prc_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_prc_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 }

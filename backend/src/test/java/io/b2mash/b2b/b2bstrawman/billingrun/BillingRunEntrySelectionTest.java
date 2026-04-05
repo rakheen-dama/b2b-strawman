@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.billingrun;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -20,11 +19,12 @@ import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
@@ -37,7 +37,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -80,8 +79,13 @@ class BillingRunEntrySelectionTest {
 
     memberIdOwner =
         UUID.fromString(
-            syncMember(
-                "user_selection_owner", "selection_owner@test.com", "Selection Owner", "owner"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_selection_owner",
+                "selection_owner@test.com",
+                "Selection Owner",
+                "owner"));
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
@@ -166,7 +170,7 @@ class BillingRunEntrySelectionTest {
         mockMvc
             .perform(
                 post("/api/billing-runs/" + billingRunId + "/preview")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_selection_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content("{}"))
             .andExpect(status().isOk())
@@ -181,7 +185,7 @@ class BillingRunEntrySelectionTest {
     mockMvc
         .perform(
             put("/api/billing-runs/" + billingRunId + "/items/" + itemId + "/selections")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_selection_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -206,7 +210,7 @@ class BillingRunEntrySelectionTest {
         mockMvc
             .perform(
                 put("/api/billing-runs/" + billingRunId + "/items/" + itemId + "/selections")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_selection_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -251,7 +255,7 @@ class BillingRunEntrySelectionTest {
             put("/api/billing-runs/"
                     + statusTestRunId
                     + "/items/00000000-0000-0000-0000-000000000001/selections")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_selection_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -271,7 +275,7 @@ class BillingRunEntrySelectionTest {
     mockMvc
         .perform(
             put("/api/billing-runs/" + billingRunId + "/items/" + itemId + "/exclude")
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_selection_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(itemId))
         .andExpect(jsonPath("$.status").value("EXCLUDED"));
@@ -284,7 +288,7 @@ class BillingRunEntrySelectionTest {
     mockMvc
         .perform(
             put("/api/billing-runs/" + billingRunId + "/items/" + itemId + "/include")
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_selection_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(itemId))
         .andExpect(jsonPath("$.status").value("PENDING"));
@@ -317,7 +321,7 @@ class BillingRunEntrySelectionTest {
             put("/api/billing-runs/"
                     + statusTestRunId
                     + "/items/00000000-0000-0000-0000-000000000001/exclude")
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_selection_owner")))
         .andExpect(status().isBadRequest());
   }
 
@@ -327,7 +331,7 @@ class BillingRunEntrySelectionTest {
     mockMvc
         .perform(
             put("/api/billing-runs/" + billingRunId + "/items/" + itemId + "/selections")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_selection_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -348,7 +352,7 @@ class BillingRunEntrySelectionTest {
         mockMvc
             .perform(
                 put("/api/billing-runs/" + billingRunId + "/items/" + itemId + "/selections")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_selection_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -376,7 +380,7 @@ class BillingRunEntrySelectionTest {
         mockMvc
             .perform(
                 post("/api/billing-runs")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_selection_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -393,31 +397,5 @@ class BillingRunEntrySelectionTest {
             .andExpect(status().isCreated())
             .andReturn();
     return JsonPath.read(result.getResponse().getContentAsString(), "$.id");
-  }
-
-  private String syncMember(String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        { "clerkOrgId": "%s", "clerkUserId": "%s", "email": "%s", "name": "%s",
-                          "avatarUrl": null, "orgRole": "%s" }
-                        """
-                            .formatted(ORG_ID, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_selection_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
   }
 }

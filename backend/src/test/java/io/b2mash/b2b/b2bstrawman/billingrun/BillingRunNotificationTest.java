@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.billingrun;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -20,6 +19,8 @@ import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.math.BigDecimal;
@@ -39,7 +40,6 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -83,7 +83,9 @@ class BillingRunNotificationTest {
     provisioningService.provisionTenant(ORG_ID, "BR Notif Test Org", null);
 
     memberIdOwner =
-        UUID.fromString(syncMember("user_brn_owner", "brn_owner@test.com", "BRN Owner", "owner"));
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, "user_brn_owner", "brn_owner@test.com", "BRN Owner", "owner"));
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
@@ -137,7 +139,7 @@ class BillingRunNotificationTest {
         mockMvc
             .perform(
                 post("/api/billing-runs")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_brn_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -161,14 +163,16 @@ class BillingRunNotificationTest {
     mockMvc
         .perform(
             post("/api/billing-runs/" + billingRunId + "/preview")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_brn_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{}"))
         .andExpect(status().isOk());
 
     // Generate invoices
     mockMvc
-        .perform(post("/api/billing-runs/" + billingRunId + "/generate").with(ownerJwt()))
+        .perform(
+            post("/api/billing-runs/" + billingRunId + "/generate")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_brn_owner")))
         .andExpect(status().isOk());
 
     // Verify audit event for generation
@@ -191,7 +195,9 @@ class BillingRunNotificationTest {
     // Batch approve
     var approveResult =
         mockMvc
-            .perform(post("/api/billing-runs/" + billingRunId + "/approve").with(ownerJwt()))
+            .perform(
+                post("/api/billing-runs/" + billingRunId + "/approve")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_brn_owner")))
             .andExpect(status().isOk())
             .andReturn();
 
@@ -215,7 +221,7 @@ class BillingRunNotificationTest {
         mockMvc
             .perform(
                 post("/api/billing-runs/" + billingRunId + "/send")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_brn_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -261,7 +267,7 @@ class BillingRunNotificationTest {
     mockMvc
         .perform(
             patch("/api/settings/batch-billing")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_brn_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -283,7 +289,7 @@ class BillingRunNotificationTest {
     mockMvc
         .perform(
             patch("/api/settings/batch-billing")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_brn_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -294,30 +300,6 @@ class BillingRunNotificationTest {
                     }
                     """))
         .andExpect(status().isBadRequest());
-  }
-
-  private String syncMember(String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        { "clerkOrgId": "%s", "clerkUserId": "%s", "email": "%s", "name": "%s",
-                          "avatarUrl": null, "orgRole": "%s" }
-                        """
-                            .formatted(ORG_ID, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_brn_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
   }
 
   private record AuditRow(

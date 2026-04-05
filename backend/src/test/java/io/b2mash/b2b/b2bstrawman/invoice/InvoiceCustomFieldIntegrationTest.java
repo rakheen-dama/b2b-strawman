@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.invoice;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -14,7 +13,8 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -24,7 +24,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -55,7 +54,13 @@ class InvoiceCustomFieldIntegrationTest {
 
     memberIdOwner =
         UUID.fromString(
-            syncMember("user_inv_cf_owner", "inv_cf_owner@test.com", "CF Owner", "owner"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_inv_cf_owner",
+                "inv_cf_owner@test.com",
+                "CF Owner",
+                "owner"));
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
@@ -90,7 +95,7 @@ class InvoiceCustomFieldIntegrationTest {
     mockMvc
         .perform(
             put("/api/invoices/" + invoiceId + "/custom-fields")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_cf_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -107,7 +112,9 @@ class InvoiceCustomFieldIntegrationTest {
 
     // Verify GET returns custom fields
     mockMvc
-        .perform(get("/api/invoices/" + invoiceId).with(ownerJwt()))
+        .perform(
+            get("/api/invoices/" + invoiceId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_cf_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.customFields.reference_number").value("REF-001"))
         .andExpect(jsonPath("$.customFields.priority").value(true));
@@ -120,7 +127,7 @@ class InvoiceCustomFieldIntegrationTest {
     mockMvc
         .perform(
             put("/api/invoices/" + invoiceId + "/custom-fields")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_cf_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -140,7 +147,7 @@ class InvoiceCustomFieldIntegrationTest {
         mockMvc
             .perform(
                 post("/api/field-groups")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_cf_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -160,7 +167,7 @@ class InvoiceCustomFieldIntegrationTest {
     mockMvc
         .perform(
             put("/api/invoices/" + invoiceId + "/field-groups")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_cf_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -171,7 +178,9 @@ class InvoiceCustomFieldIntegrationTest {
 
     // Verify GET shows appliedFieldGroups
     mockMvc
-        .perform(get("/api/invoices/" + invoiceId).with(ownerJwt()))
+        .perform(
+            get("/api/invoices/" + invoiceId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_cf_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.appliedFieldGroups[0]").value(groupId));
   }
@@ -183,7 +192,7 @@ class InvoiceCustomFieldIntegrationTest {
         mockMvc
             .perform(
                 post("/api/field-groups")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_cf_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -203,7 +212,9 @@ class InvoiceCustomFieldIntegrationTest {
     String invoiceId = createDraftInvoice();
 
     mockMvc
-        .perform(get("/api/invoices/" + invoiceId).with(ownerJwt()))
+        .perform(
+            get("/api/invoices/" + invoiceId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_cf_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.appliedFieldGroups").isArray())
         .andExpect(jsonPath("$.appliedFieldGroups[?(@=='" + groupId + "')]").exists());
@@ -217,7 +228,7 @@ class InvoiceCustomFieldIntegrationTest {
     mockMvc
         .perform(
             post("/api/invoices/" + invoiceId + "/lines")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_cf_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -232,14 +243,16 @@ class InvoiceCustomFieldIntegrationTest {
 
     // Approve the invoice
     mockMvc
-        .perform(post("/api/invoices/" + invoiceId + "/approve").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + invoiceId + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_cf_owner")))
         .andExpect(status().isOk());
 
     // Try to update custom fields on approved invoice
     mockMvc
         .perform(
             put("/api/invoices/" + invoiceId + "/custom-fields")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_cf_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -260,7 +273,7 @@ class InvoiceCustomFieldIntegrationTest {
     mockMvc
         .perform(
             post("/api/invoices/" + invoiceId + "/lines")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_cf_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -275,7 +288,9 @@ class InvoiceCustomFieldIntegrationTest {
 
     // Approve the invoice
     mockMvc
-        .perform(post("/api/invoices/" + invoiceId + "/approve").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + invoiceId + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_cf_owner")))
         .andExpect(status().isOk());
 
     // Create a field group
@@ -283,7 +298,7 @@ class InvoiceCustomFieldIntegrationTest {
         mockMvc
             .perform(
                 post("/api/field-groups")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_cf_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -302,7 +317,7 @@ class InvoiceCustomFieldIntegrationTest {
     mockMvc
         .perform(
             put("/api/invoices/" + invoiceId + "/field-groups")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_cf_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -319,7 +334,7 @@ class InvoiceCustomFieldIntegrationTest {
         mockMvc
             .perform(
                 post("/api/invoices")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_cf_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -335,42 +350,12 @@ class InvoiceCustomFieldIntegrationTest {
     return JsonPath.read(result.getResponse().getContentAsString(), "$.id");
   }
 
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_inv_cf_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private String syncMember(String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(ORG_ID, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
   private void createFieldDefinition(String name, String slug, String fieldType, String entityType)
       throws Exception {
     mockMvc
         .perform(
             post("/api/field-definitions")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_cf_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """

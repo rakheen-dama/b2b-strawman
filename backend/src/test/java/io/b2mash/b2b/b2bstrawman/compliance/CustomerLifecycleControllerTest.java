@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.compliance;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -10,7 +9,8 @@ import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestChecklistHelper;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -19,7 +19,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -29,8 +28,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CustomerLifecycleControllerTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_lifecycle_ctrl_test";
 
   @Autowired private MockMvc mockMvc;
@@ -41,8 +38,10 @@ class CustomerLifecycleControllerTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Lifecycle Controller Test Org", null);
-    syncMember(ORG_ID, "user_lc_owner", "lc_owner@test.com", "LC Owner", "owner");
-    syncMember(ORG_ID, "user_lc_member", "lc_member@test.com", "LC Member", "member");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_lc_owner", "lc_owner@test.com", "LC Owner", "owner");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_lc_member", "lc_member@test.com", "LC Member", "member");
   }
 
   @Test
@@ -54,7 +53,7 @@ class CustomerLifecycleControllerTest {
     mockMvc
         .perform(
             post("/api/customers/" + customerId + "/transition")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_lc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -64,11 +63,14 @@ class CustomerLifecycleControllerTest {
         .andExpect(jsonPath("$.lifecycleStatus").value("ONBOARDING"));
 
     // Complete all auto-instantiated checklist items — this auto-transitions to ACTIVE
-    TestChecklistHelper.completeChecklistItems(mockMvc, customerId, ownerJwt());
+    TestChecklistHelper.completeChecklistItems(
+        mockMvc, customerId, TestJwtFactory.ownerJwt(ORG_ID, "user_lc_owner"));
 
     // Verify customer is now ACTIVE (auto-transitioned by checklist completion)
     mockMvc
-        .perform(get("/api/customers/" + customerId).with(ownerJwt()))
+        .perform(
+            get("/api/customers/" + customerId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_lc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.lifecycleStatus").value("ACTIVE"));
 
@@ -76,7 +78,7 @@ class CustomerLifecycleControllerTest {
     mockMvc
         .perform(
             post("/api/customers/" + customerId + "/transition")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_lc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -93,7 +95,7 @@ class CustomerLifecycleControllerTest {
     mockMvc
         .perform(
             post("/api/customers/" + customerId + "/transition")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_lc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -110,7 +112,7 @@ class CustomerLifecycleControllerTest {
     mockMvc
         .perform(
             post("/api/customers/" + customerId + "/transition")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_lc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -127,7 +129,7 @@ class CustomerLifecycleControllerTest {
     mockMvc
         .perform(
             post("/api/customers/" + customerId + "/transition")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_lc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -136,11 +138,14 @@ class CustomerLifecycleControllerTest {
         .andExpect(status().isOk());
 
     // Complete checklists — auto-transitions to ACTIVE
-    TestChecklistHelper.completeChecklistItems(mockMvc, customerId, ownerJwt());
+    TestChecklistHelper.completeChecklistItems(
+        mockMvc, customerId, TestJwtFactory.ownerJwt(ORG_ID, "user_lc_owner"));
 
     // Get lifecycle history
     mockMvc
-        .perform(get("/api/customers/" + customerId + "/lifecycle").with(ownerJwt()))
+        .perform(
+            get("/api/customers/" + customerId + "/lifecycle")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_lc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray());
   }
@@ -148,7 +153,9 @@ class CustomerLifecycleControllerTest {
   @Test
   void shouldReturnDormancyCheckResult() throws Exception {
     mockMvc
-        .perform(post("/api/customers/dormancy-check").with(ownerJwt()))
+        .perform(
+            post("/api/customers/dormancy-check")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_lc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.thresholdDays").isNumber())
         .andExpect(jsonPath("$.candidates").isArray());
@@ -157,7 +164,9 @@ class CustomerLifecycleControllerTest {
   @Test
   void shouldReturn403ForMemberOnDormancyCheck() throws Exception {
     mockMvc
-        .perform(post("/api/customers/dormancy-check").with(memberJwt()))
+        .perform(
+            post("/api/customers/dormancy-check")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_lc_member")))
         .andExpect(status().isForbidden());
   }
 
@@ -168,7 +177,7 @@ class CustomerLifecycleControllerTest {
     mockMvc
         .perform(
             post("/api/customers/" + customerId + "/transition")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_lc_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -182,7 +191,9 @@ class CustomerLifecycleControllerTest {
     String customerId = createCustomer("Member View Corp", nextEmail());
 
     mockMvc
-        .perform(get("/api/customers/" + customerId + "/lifecycle").with(memberJwt()))
+        .perform(
+            get("/api/customers/" + customerId + "/lifecycle")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_lc_member")))
         .andExpect(status().isOk());
   }
 
@@ -191,7 +202,9 @@ class CustomerLifecycleControllerTest {
     createCustomer("Summary Test Corp", nextEmail());
 
     mockMvc
-        .perform(get("/api/customers/lifecycle-summary").with(ownerJwt()))
+        .perform(
+            get("/api/customers/lifecycle-summary")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_lc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isMap());
   }
@@ -199,7 +212,9 @@ class CustomerLifecycleControllerTest {
   @Test
   void shouldReturn403ForMemberOnLifecycleSummary() throws Exception {
     mockMvc
-        .perform(get("/api/customers/lifecycle-summary").with(memberJwt()))
+        .perform(
+            get("/api/customers/lifecycle-summary")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_lc_member")))
         .andExpect(status().isForbidden());
   }
 
@@ -214,7 +229,7 @@ class CustomerLifecycleControllerTest {
         mockMvc
             .perform(
                 post("/api/customers")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_lc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -224,41 +239,5 @@ class CustomerLifecycleControllerTest {
             .andExpect(status().isCreated())
             .andReturn();
     return JsonPath.read(result.getResponse().getContentAsString(), "$.id");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_lc_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_lc_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

@@ -1,14 +1,14 @@
 package io.b2mash.b2b.b2bstrawman.task;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -17,10 +17,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -28,8 +26,6 @@ import org.springframework.test.web.servlet.MvcResult;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class TaskCreateWithAssigneeIntegrationTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_task_assignee_test";
 
   @Autowired private MockMvc mockMvc;
@@ -44,17 +40,28 @@ class TaskCreateWithAssigneeIntegrationTest {
     provisioningService.provisionTenant(ORG_ID, "Task Assignee Test Org", null);
 
     memberIdAdmin =
-        syncMember(ORG_ID, "user_assignee_admin", "admin@assignee-test.com", "Admin User", "admin");
+        TestMemberHelper.syncMember(
+            mockMvc,
+            ORG_ID,
+            "user_assignee_admin",
+            "admin@assignee-test.com",
+            "Admin User",
+            "admin");
     memberIdMember =
-        syncMember(
-            ORG_ID, "user_assignee_member", "member@assignee-test.com", "Regular Member", "member");
+        TestMemberHelper.syncMember(
+            mockMvc,
+            ORG_ID,
+            "user_assignee_member",
+            "member@assignee-test.com",
+            "Regular Member",
+            "member");
 
     // Create project (admin is project lead by default)
     var projectResult =
         mockMvc
             .perform(
                 post("/api/projects")
-                    .with(adminJwt())
+                    .with(TestJwtFactory.adminJwt(ORG_ID, "user_assignee_admin"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -62,13 +69,13 @@ class TaskCreateWithAssigneeIntegrationTest {
                         """))
             .andExpect(status().isCreated())
             .andReturn();
-    projectId = extractIdFromLocation(projectResult);
+    projectId = TestEntityHelper.extractIdFromLocation(projectResult);
 
     // Add regular member to the project
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/members")
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_assignee_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -83,7 +90,7 @@ class TaskCreateWithAssigneeIntegrationTest {
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/tasks")
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_assignee_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -105,7 +112,7 @@ class TaskCreateWithAssigneeIntegrationTest {
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/tasks")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_assignee_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -123,48 +130,4 @@ class TaskCreateWithAssigneeIntegrationTest {
 
   // --- Helpers ---
 
-  private String extractIdFromLocation(MvcResult result) {
-    String location = result.getResponse().getHeader("Location");
-    return location.substring(location.lastIndexOf('/') + 1);
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor adminJwt() {
-    return jwt()
-        .jwt(
-            j -> j.subject("user_assignee_admin").claim("o", Map.of("id", ORG_ID, "rol", "admin")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_assignee_member")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
 }

@@ -1,13 +1,12 @@
 package io.b2mash.b2b.b2bstrawman.billing;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.Organization;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.time.Duration;
 import java.time.Instant;
 import org.junit.jupiter.api.BeforeAll;
@@ -18,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -44,7 +42,8 @@ class SubscriptionExpiryJobBillingMethodTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Expiry BM Test Org", null);
-    syncMember(ORG_ID, "user_expiry_bm", "expiry_bm@test.com", "Expiry BM User", "owner");
+    TestMemberHelper.syncMemberQuietly(
+        mockMvc, ORG_ID, "user_expiry_bm", "expiry_bm@test.com", "Expiry BM User", "owner");
     organization = organizationRepository.findByExternalOrgId(ORG_ID).orElseThrow();
   }
 
@@ -157,28 +156,5 @@ class SubscriptionExpiryJobBillingMethodTest {
     fresh.transitionTo(Subscription.SubscriptionStatus.PENDING_CANCELLATION);
     fresh.transitionTo(Subscription.SubscriptionStatus.GRACE_PERIOD);
     return subscriptionRepository.saveAndFlush(fresh);
-  }
-
-  private void syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    mockMvc
-        .perform(
-            post("/internal/members/sync")
-                .header("X-API-KEY", API_KEY)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {
-                      "clerkOrgId": "%s",
-                      "clerkUserId": "%s",
-                      "email": "%s",
-                      "name": "%s",
-                      "avatarUrl": null,
-                      "orgRole": "%s"
-                    }
-                    """
-                        .formatted(orgId, clerkUserId, email, name, orgRole)))
-        .andExpect(status().isCreated());
   }
 }

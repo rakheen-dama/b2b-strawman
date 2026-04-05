@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.view;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -14,6 +13,8 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -36,8 +37,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SavedViewIntegrationTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_view_test";
   private static final String ORG_ID_B = "org_view_test_b";
 
@@ -60,11 +59,17 @@ class SavedViewIntegrationTest {
 
     memberIdOwner =
         UUID.fromString(
-            syncMember(ORG_ID, "user_view_owner", "view_owner@test.com", "View Owner", "owner"));
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, "user_view_owner", "view_owner@test.com", "View Owner", "owner"));
     memberIdMember =
         UUID.fromString(
-            syncMember(
-                ORG_ID, "user_view_member", "view_member@test.com", "View Member", "member"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_view_member",
+                "view_member@test.com",
+                "View Member",
+                "member"));
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
@@ -74,8 +79,13 @@ class SavedViewIntegrationTest {
 
     memberIdOwnerB =
         UUID.fromString(
-            syncMember(
-                ORG_ID_B, "user_view_owner_b", "view_owner_b@test.com", "View Owner B", "owner"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID_B,
+                "user_view_owner_b",
+                "view_owner_b@test.com",
+                "View Owner B",
+                "owner"));
 
     tenantSchemaB =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID_B).orElseThrow().getSchemaName();
@@ -181,25 +191,48 @@ class SavedViewIntegrationTest {
     String entityType = "LIST_TEST";
 
     // Create 2 shared views as owner
-    createView(ownerJwt(), entityType, "Shared View 1", true, 1);
-    createView(ownerJwt(), entityType, "Shared View 2", true, 2);
+    createView(
+        TestJwtFactory.ownerJwt(ORG_ID, "user_view_owner"), entityType, "Shared View 1", true, 1);
+    createView(
+        TestJwtFactory.ownerJwt(ORG_ID, "user_view_owner"), entityType, "Shared View 2", true, 2);
 
     // Create 2 personal views as owner
-    createView(ownerJwt(), entityType, "Owner Personal 1", false, 3);
-    createView(ownerJwt(), entityType, "Owner Personal 2", false, 4);
+    createView(
+        TestJwtFactory.ownerJwt(ORG_ID, "user_view_owner"),
+        entityType,
+        "Owner Personal 1",
+        false,
+        3);
+    createView(
+        TestJwtFactory.ownerJwt(ORG_ID, "user_view_owner"),
+        entityType,
+        "Owner Personal 2",
+        false,
+        4);
 
     // Create 1 personal view as member
-    createView(memberJwt(), entityType, "Member Personal 1", false, 5);
+    createView(
+        TestJwtFactory.memberJwt(ORG_ID, "user_view_member"),
+        entityType,
+        "Member Personal 1",
+        false,
+        5);
 
     // List as owner — should see 2 shared + 2 personal = 4
     mockMvc
-        .perform(get("/api/views").param("entityType", entityType).with(ownerJwt()))
+        .perform(
+            get("/api/views")
+                .param("entityType", entityType)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_view_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(4));
 
     // List as member — should see 2 shared + 1 personal = 3
     mockMvc
-        .perform(get("/api/views").param("entityType", entityType).with(memberJwt()))
+        .perform(
+            get("/api/views")
+                .param("entityType", entityType)
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_view_member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(3));
   }
@@ -210,7 +243,7 @@ class SavedViewIntegrationTest {
     mockMvc
         .perform(
             post("/api/views")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_view_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -228,7 +261,7 @@ class SavedViewIntegrationTest {
     mockMvc
         .perform(
             post("/api/views")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_view_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -249,7 +282,7 @@ class SavedViewIntegrationTest {
     mockMvc
         .perform(
             post("/api/views")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_view_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -273,7 +306,7 @@ class SavedViewIntegrationTest {
         mockMvc
             .perform(
                 post("/api/views")
-                    .with(memberJwt())
+                    .with(TestJwtFactory.memberJwt(ORG_ID, "user_view_member"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -294,7 +327,7 @@ class SavedViewIntegrationTest {
     mockMvc
         .perform(
             put("/api/views/" + id)
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_view_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -322,7 +355,7 @@ class SavedViewIntegrationTest {
         mockMvc
             .perform(
                 post("/api/views")
-                    .with(memberJwt())
+                    .with(TestJwtFactory.memberJwt(ORG_ID, "user_view_member"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -343,7 +376,7 @@ class SavedViewIntegrationTest {
     mockMvc
         .perform(
             put("/api/views/" + id)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_view_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -365,7 +398,7 @@ class SavedViewIntegrationTest {
         mockMvc
             .perform(
                 post("/api/views")
-                    .with(memberJwt())
+                    .with(TestJwtFactory.memberJwt(ORG_ID, "user_view_member"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -383,13 +416,16 @@ class SavedViewIntegrationTest {
     String id = JsonPath.read(result.getResponse().getContentAsString(), "$.id");
 
     // Creator deletes own view — expect 204
-    mockMvc.perform(delete("/api/views/" + id).with(memberJwt())).andExpect(status().isNoContent());
+    mockMvc
+        .perform(
+            delete("/api/views/" + id).with(TestJwtFactory.memberJwt(ORG_ID, "user_view_member")))
+        .andExpect(status().isNoContent());
 
     // Verify it's gone — expect 404 on update attempt
     mockMvc
         .perform(
             put("/api/views/" + id)
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_view_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -409,7 +445,7 @@ class SavedViewIntegrationTest {
         mockMvc
             .perform(
                 post("/api/views")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_view_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -427,20 +463,13 @@ class SavedViewIntegrationTest {
     String id = JsonPath.read(result.getResponse().getContentAsString(), "$.id");
 
     // Member (non-creator, non-admin) tries to delete — expect 403
-    mockMvc.perform(delete("/api/views/" + id).with(memberJwt())).andExpect(status().isForbidden());
+    mockMvc
+        .perform(
+            delete("/api/views/" + id).with(TestJwtFactory.memberJwt(ORG_ID, "user_view_member")))
+        .andExpect(status().isForbidden());
   }
 
   // --- JWT Helpers ---
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_view_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_view_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
 
   // --- Helpers ---
 
@@ -451,32 +480,6 @@ class SavedViewIntegrationTest {
         .where(RequestScopes.MEMBER_ID, memberId)
         .where(RequestScopes.ORG_ROLE, orgRole)
         .run(action);
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 
   private void createView(

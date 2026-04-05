@@ -25,7 +25,8 @@ import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.dto.InstantiateTemplateRequest;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -35,8 +36,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -47,8 +46,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AutoDraftInformationRequestTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_autodraft_test";
 
   @Autowired private MockMvc mockMvc;
@@ -72,8 +69,13 @@ class AutoDraftInformationRequestTest {
     provisioningService.provisionTenant(ORG_ID, "Auto-Draft Test Org", null);
     memberId =
         UUID.fromString(
-            syncMember(
-                ORG_ID, "user_autodraft_owner", "autodraft_owner@test.com", "Owner", "owner"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_autodraft_owner",
+                "autodraft_owner@test.com",
+                "Owner",
+                "owner"));
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
   }
@@ -361,7 +363,7 @@ class AutoDraftInformationRequestTest {
         mockMvc
             .perform(
                 post("/api/project-templates")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_autodraft_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -399,7 +401,7 @@ class AutoDraftInformationRequestTest {
     mockMvc
         .perform(
             put("/api/project-templates/" + templateId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_autodraft_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -418,7 +420,9 @@ class AutoDraftInformationRequestTest {
 
     // GET should also return the requestTemplateId
     mockMvc
-        .perform(get("/api/project-templates/" + templateId).with(ownerJwt()))
+        .perform(
+            get("/api/project-templates/" + templateId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_autodraft_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.requestTemplateId").value(rtIdHolder[0].toString()));
   }
@@ -456,32 +460,5 @@ class AutoDraftInformationRequestTest {
         .where(RequestScopes.MEMBER_ID, memberId)
         .where(RequestScopes.ORG_ROLE, "owner")
         .run(action);
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return SecurityMockMvcRequestPostProcessors.jwt()
-        .jwt(
-            j ->
-                j.subject("user_autodraft_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"clerkOrgId":"%s","clerkUserId":"%s","email":"%s","name":"%s","avatarUrl":null,"orgRole":"%s"}
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return com.jayway.jsonpath.JsonPath.read(
-        result.getResponse().getContentAsString(), "$.memberId");
   }
 }

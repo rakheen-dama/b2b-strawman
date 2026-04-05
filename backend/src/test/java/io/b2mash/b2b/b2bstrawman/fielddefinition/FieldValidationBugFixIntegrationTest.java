@@ -2,7 +2,6 @@ package io.b2mash.b2b.b2bstrawman.fielddefinition;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -14,6 +13,8 @@ import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -24,7 +25,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -34,8 +34,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class FieldValidationBugFixIntegrationTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_validation_bugfix";
 
   @Autowired private MockMvc mockMvc;
@@ -52,19 +50,12 @@ class FieldValidationBugFixIntegrationTest {
 
     memberIdOwner =
         UUID.fromString(
-            syncMember(ORG_ID, "user_vbf_owner", "vbf_owner@test.com", "VBF Owner", "owner"));
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, "user_vbf_owner", "vbf_owner@test.com", "VBF Owner", "owner"));
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
   }
-
-  // --- JWT Helpers ---
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_vbf_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  // --- DATE Validation Tests (166.12) ---
 
   @Test
   void date_below_min_rejected() {
@@ -170,7 +161,7 @@ class FieldValidationBugFixIntegrationTest {
         mockMvc
             .perform(
                 post("/api/field-definitions")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_vbf_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -192,7 +183,7 @@ class FieldValidationBugFixIntegrationTest {
     mockMvc
         .perform(
             post("/api/projects")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_vbf_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -208,7 +199,7 @@ class FieldValidationBugFixIntegrationTest {
     mockMvc
         .perform(
             put("/api/field-definitions/" + fieldId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_vbf_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -233,7 +224,7 @@ class FieldValidationBugFixIntegrationTest {
         mockMvc
             .perform(
                 post("/api/field-definitions")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_vbf_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -254,7 +245,7 @@ class FieldValidationBugFixIntegrationTest {
     mockMvc
         .perform(
             put("/api/field-definitions/" + fieldId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_vbf_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -277,31 +268,5 @@ class FieldValidationBugFixIntegrationTest {
         .where(RequestScopes.MEMBER_ID, memberIdOwner)
         .where(RequestScopes.ORG_ROLE, "owner")
         .run(action);
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

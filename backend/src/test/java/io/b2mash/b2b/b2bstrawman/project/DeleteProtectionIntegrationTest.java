@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.project;
 
 import static org.hamcrest.Matchers.containsString;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -13,7 +12,9 @@ import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestChecklistHelper;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -23,10 +24,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
 /**
  * Comprehensive integration tests for delete protection guards and cross-entity integrity. Covers
@@ -40,8 +39,6 @@ import org.springframework.test.web.servlet.MvcResult;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class DeleteProtectionIntegrationTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_del_prot_test";
 
   @Autowired private MockMvc mockMvc;
@@ -53,7 +50,9 @@ class DeleteProtectionIntegrationTest {
   void provisionTenantAndMembers() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Delete Protection Test Org", null);
 
-    memberIdOwner = syncMember(ORG_ID, "user_dp_owner", "dp_owner@test.com", "DP Owner", "owner");
+    memberIdOwner =
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_dp_owner", "dp_owner@test.com", "DP Owner", "owner");
   }
 
   // ---- Project delete protection tests ----
@@ -62,7 +61,9 @@ class DeleteProtectionIntegrationTest {
   void delete_empty_active_project_succeeds() throws Exception {
     var projectId = createProject("Empty Active Project");
     mockMvc
-        .perform(delete("/api/projects/" + projectId).with(ownerJwt()))
+        .perform(
+            delete("/api/projects/" + projectId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner")))
         .andExpect(status().isNoContent());
   }
 
@@ -72,7 +73,9 @@ class DeleteProtectionIntegrationTest {
     createTaskInProject(projectId, "Blocking Task");
 
     mockMvc
-        .perform(delete("/api/projects/" + projectId).with(ownerJwt()))
+        .perform(
+            delete("/api/projects/" + projectId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner")))
         .andExpect(status().isConflict())
         .andExpect(jsonPath("$.detail", containsString("task(s)")));
   }
@@ -85,7 +88,9 @@ class DeleteProtectionIntegrationTest {
 
     // Project has tasks (which have time entries), so the task guard triggers first
     mockMvc
-        .perform(delete("/api/projects/" + projectId).with(ownerJwt()))
+        .perform(
+            delete("/api/projects/" + projectId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner")))
         .andExpect(status().isConflict())
         .andExpect(jsonPath("$.detail", containsString("task(s)")));
   }
@@ -105,7 +110,9 @@ class DeleteProtectionIntegrationTest {
 
     // Now try to delete the project -- should be rejected because of invoice link
     mockMvc
-        .perform(delete("/api/projects/" + projectId).with(ownerJwt()))
+        .perform(
+            delete("/api/projects/" + projectId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner")))
         .andExpect(status().isConflict())
         .andExpect(jsonPath("$.detail", containsString("invoice(s)")));
   }
@@ -116,7 +123,9 @@ class DeleteProtectionIntegrationTest {
     completeProject(projectId);
 
     mockMvc
-        .perform(delete("/api/projects/" + projectId).with(ownerJwt()))
+        .perform(
+            delete("/api/projects/" + projectId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner")))
         .andExpect(status().isConflict())
         .andExpect(jsonPath("$.detail", containsString("completed")));
   }
@@ -127,7 +136,9 @@ class DeleteProtectionIntegrationTest {
     archiveProject(projectId);
 
     mockMvc
-        .perform(delete("/api/projects/" + projectId).with(ownerJwt()))
+        .perform(
+            delete("/api/projects/" + projectId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner")))
         .andExpect(status().isConflict())
         .andExpect(jsonPath("$.detail", containsString("archived")));
   }
@@ -141,7 +152,8 @@ class DeleteProtectionIntegrationTest {
     createTimeEntry(taskId);
 
     mockMvc
-        .perform(delete("/api/tasks/" + taskId).with(ownerJwt()))
+        .perform(
+            delete("/api/tasks/" + taskId).with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner")))
         .andExpect(status().isConflict())
         .andExpect(jsonPath("$.detail", containsString("time entry")));
   }
@@ -152,7 +164,8 @@ class DeleteProtectionIntegrationTest {
     var taskId = createTaskInProject(projectId, "Task No Time");
 
     mockMvc
-        .perform(delete("/api/tasks/" + taskId).with(ownerJwt()))
+        .perform(
+            delete("/api/tasks/" + taskId).with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner")))
         .andExpect(status().isNoContent());
   }
 
@@ -166,7 +179,7 @@ class DeleteProtectionIntegrationTest {
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/tasks")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -185,7 +198,7 @@ class DeleteProtectionIntegrationTest {
     mockMvc
         .perform(
             post("/api/tasks/" + taskId + "/time-entries")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -209,7 +222,7 @@ class DeleteProtectionIntegrationTest {
 
     // Task should still be OPEN (not auto-completed by archive)
     mockMvc
-        .perform(get("/api/tasks/" + taskId).with(ownerJwt()))
+        .perform(get("/api/tasks/" + taskId).with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("OPEN"));
   }
@@ -227,7 +240,9 @@ class DeleteProtectionIntegrationTest {
 
     // Project should still be active
     mockMvc
-        .perform(get("/api/projects/" + projectId).with(ownerJwt()))
+        .perform(
+            get("/api/projects/" + projectId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("ACTIVE"));
   }
@@ -242,7 +257,9 @@ class DeleteProtectionIntegrationTest {
 
     // Project should still be accessible and active
     mockMvc
-        .perform(get("/api/projects/" + projectId).with(ownerJwt()))
+        .perform(
+            get("/api/projects/" + projectId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("ACTIVE"));
   }
@@ -258,7 +275,9 @@ class DeleteProtectionIntegrationTest {
 
     // Archive should be rejected
     mockMvc
-        .perform(delete("/api/customers/" + customerId).with(ownerJwt()))
+        .perform(
+            delete("/api/customers/" + customerId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner")))
         .andExpect(status().isConflict())
         .andExpect(jsonPath("$.detail", containsString("invoice")));
   }
@@ -272,7 +291,9 @@ class DeleteProtectionIntegrationTest {
 
     // Archive should be rejected
     mockMvc
-        .perform(delete("/api/customers/" + customerId).with(ownerJwt()))
+        .perform(
+            delete("/api/customers/" + customerId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner")))
         .andExpect(status().isConflict())
         .andExpect(jsonPath("$.detail", containsString("retainer")));
   }
@@ -284,7 +305,7 @@ class DeleteProtectionIntegrationTest {
         mockMvc
             .perform(
                 post("/api/projects")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -293,7 +314,7 @@ class DeleteProtectionIntegrationTest {
                             .formatted(name)))
             .andExpect(status().isCreated())
             .andReturn();
-    return extractIdFromLocation(result);
+    return TestEntityHelper.extractIdFromLocation(result);
   }
 
   private String createTaskInProject(String projectId, String title) throws Exception {
@@ -301,7 +322,7 @@ class DeleteProtectionIntegrationTest {
         mockMvc
             .perform(
                 post("/api/projects/" + projectId + "/tasks")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -317,7 +338,7 @@ class DeleteProtectionIntegrationTest {
     mockMvc
         .perform(
             post("/api/tasks/" + taskId + "/time-entries")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -328,19 +349,25 @@ class DeleteProtectionIntegrationTest {
 
   private void archiveProject(String projectId) throws Exception {
     mockMvc
-        .perform(patch("/api/projects/" + projectId + "/archive").with(ownerJwt()))
+        .perform(
+            patch("/api/projects/" + projectId + "/archive")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner")))
         .andExpect(status().isOk());
   }
 
   private void completeProject(String projectId) throws Exception {
     mockMvc
-        .perform(patch("/api/projects/" + projectId + "/complete").with(ownerJwt()))
+        .perform(
+            patch("/api/projects/" + projectId + "/complete")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner")))
         .andExpect(status().isOk());
   }
 
   private void reopenProject(String projectId) throws Exception {
     mockMvc
-        .perform(patch("/api/projects/" + projectId + "/reopen").with(ownerJwt()))
+        .perform(
+            patch("/api/projects/" + projectId + "/reopen")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner")))
         .andExpect(status().isOk());
   }
 
@@ -350,7 +377,7 @@ class DeleteProtectionIntegrationTest {
         mockMvc
             .perform(
                 post("/api/customers")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -366,7 +393,7 @@ class DeleteProtectionIntegrationTest {
         .perform(
             org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put(
                     "/api/customers/{id}", customerId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -379,7 +406,8 @@ class DeleteProtectionIntegrationTest {
     transitionCustomerLifecycle(customerId, "ONBOARDING");
 
     // Complete all checklist items to auto-transition to ACTIVE
-    TestChecklistHelper.completeChecklistItems(mockMvc, customerId, ownerJwt());
+    TestChecklistHelper.completeChecklistItems(
+        mockMvc, customerId, TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner"));
 
     return UUID.fromString(customerId);
   }
@@ -389,7 +417,7 @@ class DeleteProtectionIntegrationTest {
     mockMvc
         .perform(
             post("/api/customers/" + customerId + "/transition")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -404,7 +432,7 @@ class DeleteProtectionIntegrationTest {
         mockMvc
             .perform(
                 post("/api/invoices")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -420,7 +448,7 @@ class DeleteProtectionIntegrationTest {
     mockMvc
         .perform(
             post("/api/invoices/" + invoiceId + "/lines")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -434,7 +462,7 @@ class DeleteProtectionIntegrationTest {
     mockMvc
         .perform(
             post("/api/retainers")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -454,43 +482,9 @@ class DeleteProtectionIntegrationTest {
 
   private void linkProjectToCustomer(String projectId, UUID customerId) throws Exception {
     mockMvc
-        .perform(post("/api/projects/" + projectId + "/customers/" + customerId).with(ownerJwt()))
+        .perform(
+            post("/api/projects/" + projectId + "/customers/" + customerId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner")))
         .andExpect(status().isCreated());
-  }
-
-  private String extractIdFromLocation(MvcResult result) {
-    String location = result.getResponse().getHeader("Location");
-    return location.substring(location.lastIndexOf('/') + 1);
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_dp_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
   }
 }

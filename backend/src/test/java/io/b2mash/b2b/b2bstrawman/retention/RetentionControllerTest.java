@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.retention;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -16,7 +15,8 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -27,7 +27,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -37,8 +36,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class RetentionControllerTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_retention_ctrl_test";
 
   @Autowired private MockMvc mockMvc;
@@ -59,17 +56,28 @@ class RetentionControllerTest {
     provisioningService.provisionTenant(ORG_ID, "Retention Controller Test Org", null);
     memberIdOwner =
         UUID.fromString(
-            syncMember(
-                ORG_ID, "user_retctrl_owner", "retctrl_owner@test.com", "RetCtrl Owner", "owner"));
-    syncMember(
-        ORG_ID, "user_retctrl_member", "retctrl_member@test.com", "RetCtrl Member", "member");
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_retctrl_owner",
+                "retctrl_owner@test.com",
+                "RetCtrl Owner",
+                "owner"));
+    TestMemberHelper.syncMemberQuietly(
+        mockMvc,
+        ORG_ID,
+        "user_retctrl_member",
+        "retctrl_member@test.com",
+        "RetCtrl Member",
+        "member");
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
 
     customRoleMemberId =
         UUID.fromString(
-            syncMember(
+            TestMemberHelper.syncMember(
+                mockMvc,
                 ORG_ID,
                 "user_ret_315a_custom",
                 "ret_custom@test.com",
@@ -77,8 +85,13 @@ class RetentionControllerTest {
                 "member"));
     noCapMemberId =
         UUID.fromString(
-            syncMember(
-                ORG_ID, "user_ret_315a_nocap", "ret_nocap@test.com", "Ret NoCap User", "member"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_ret_315a_nocap",
+                "ret_nocap@test.com",
+                "Ret NoCap User",
+                "member"));
 
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)
@@ -112,7 +125,7 @@ class RetentionControllerTest {
         mockMvc
             .perform(
                 post("/api/customers")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_retctrl_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -127,7 +140,9 @@ class RetentionControllerTest {
   void getList_returnsActivePolicies() throws Exception {
     // The FICA pack seeds retention policies during provisioning
     mockMvc
-        .perform(get("/api/retention-policies").with(ownerJwt()))
+        .perform(
+            get("/api/retention-policies")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_retctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$[0].recordType").exists())
@@ -139,7 +154,7 @@ class RetentionControllerTest {
     mockMvc
         .perform(
             post("/api/retention-policies")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_retctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -157,7 +172,7 @@ class RetentionControllerTest {
     mockMvc
         .perform(
             post("/api/retention-policies")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_retctrl_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -172,7 +187,7 @@ class RetentionControllerTest {
     mockMvc
         .perform(
             post("/api/retention-policies")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_retctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -184,7 +199,7 @@ class RetentionControllerTest {
     mockMvc
         .perform(
             post("/api/retention-policies")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_retctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -200,7 +215,7 @@ class RetentionControllerTest {
         mockMvc
             .perform(
                 post("/api/retention-policies")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_retctrl_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -214,7 +229,7 @@ class RetentionControllerTest {
     mockMvc
         .perform(
             put("/api/retention-policies/" + policyId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_retctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -232,7 +247,7 @@ class RetentionControllerTest {
         mockMvc
             .perform(
                 post("/api/retention-policies")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_retctrl_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -244,21 +259,27 @@ class RetentionControllerTest {
 
     // Delete it
     mockMvc
-        .perform(delete("/api/retention-policies/" + policyId).with(ownerJwt()))
+        .perform(
+            delete("/api/retention-policies/" + policyId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_retctrl_owner")))
         .andExpect(status().isNoContent());
   }
 
   @Test
   void deletePolicy_notFound_returns404() throws Exception {
     mockMvc
-        .perform(delete("/api/retention-policies/" + UUID.randomUUID()).with(ownerJwt()))
+        .perform(
+            delete("/api/retention-policies/" + UUID.randomUUID())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_retctrl_owner")))
         .andExpect(status().isNotFound());
   }
 
   @Test
   void postCheck_returnsFlaggedResult() throws Exception {
     mockMvc
-        .perform(post("/api/retention-policies/check").with(ownerJwt()))
+        .perform(
+            post("/api/retention-policies/check")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_retctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.checkedAt").exists())
         .andExpect(jsonPath("$.flagged").exists())
@@ -272,13 +293,17 @@ class RetentionControllerTest {
     // to create audit events, then purge them
     var checkResult =
         mockMvc
-            .perform(post("/api/retention-policies/check").with(ownerJwt()))
+            .perform(
+                post("/api/retention-policies/check")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_retctrl_owner")))
             .andExpect(status().isOk())
             .andReturn();
 
     // Run a second check to create another audit event
     mockMvc
-        .perform(post("/api/retention-policies/check").with(ownerJwt()))
+        .perform(
+            post("/api/retention-policies/check")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_retctrl_owner")))
         .andExpect(status().isOk());
 
     // Now purge with a random UUID for AUDIT_EVENT — non-existent IDs won't fail (deleteAllById
@@ -287,7 +312,7 @@ class RetentionControllerTest {
     mockMvc
         .perform(
             post("/api/retention-policies/purge")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_retctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -305,7 +330,7 @@ class RetentionControllerTest {
     mockMvc
         .perform(
             post("/api/retention-policies/purge")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_retctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -319,7 +344,9 @@ class RetentionControllerTest {
 
     // Verify customer is anonymized by fetching it
     mockMvc
-        .perform(get("/api/customers/" + customerId).with(ownerJwt()))
+        .perform(
+            get("/api/customers/" + customerId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_retctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.name").value("Anonymized Customer " + customerId.substring(0, 6)));
   }
@@ -329,7 +356,7 @@ class RetentionControllerTest {
     mockMvc
         .perform(
             post("/api/retention-policies/purge")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_retctrl_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -344,28 +371,36 @@ class RetentionControllerTest {
   @Test
   void customRoleWithCapability_accessesRetentionEndpoint_returns200() throws Exception {
     mockMvc
-        .perform(get("/api/retention-policies").with(customRoleJwt()))
+        .perform(
+            get("/api/retention-policies")
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_ret_315a_custom", "member")))
         .andExpect(status().isOk());
   }
 
   @Test
   void customRoleWithoutCapability_accessesRetentionEndpoint_returns403() throws Exception {
     mockMvc
-        .perform(get("/api/retention-policies").with(noCapabilityJwt()))
+        .perform(
+            get("/api/retention-policies")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_ret_315a_nocap")))
         .andExpect(status().isForbidden());
   }
 
   @Test
   void customRoleWithCapability_canCheckRetention() throws Exception {
     mockMvc
-        .perform(post("/api/retention-policies/check").with(customRoleJwt()))
+        .perform(
+            post("/api/retention-policies/check")
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_ret_315a_custom", "member")))
         .andExpect(status().isOk());
   }
 
   @Test
   void customRoleWithoutCapability_cannotCheckRetention() throws Exception {
     mockMvc
-        .perform(post("/api/retention-policies/check").with(noCapabilityJwt()))
+        .perform(
+            post("/api/retention-policies/check")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_ret_315a_nocap")))
         .andExpect(status().isForbidden());
   }
 
@@ -374,7 +409,7 @@ class RetentionControllerTest {
     mockMvc
         .perform(
             post("/api/retention-policies/purge")
-                .with(customRoleJwt())
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_ret_315a_custom", "member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -389,7 +424,7 @@ class RetentionControllerTest {
     mockMvc
         .perform(
             post("/api/retention-policies/purge")
-                .with(noCapabilityJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_ret_315a_nocap"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -404,7 +439,9 @@ class RetentionControllerTest {
   @Test
   void getSettingsList_returnsActivePoliciesWithLastEvaluatedAt() throws Exception {
     mockMvc
-        .perform(get("/api/settings/retention-policies").with(ownerJwt()))
+        .perform(
+            get("/api/settings/retention-policies")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_retctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$[0].recordType").exists())
@@ -418,7 +455,9 @@ class RetentionControllerTest {
     // Get an existing policy ID from the settings list
     var listResult =
         mockMvc
-            .perform(get("/api/settings/retention-policies").with(ownerJwt()))
+            .perform(
+                get("/api/settings/retention-policies")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_retctrl_owner")))
             .andExpect(status().isOk())
             .andReturn();
     String policyId = JsonPath.read(listResult.getResponse().getContentAsString(), "$[0].id");
@@ -427,7 +466,7 @@ class RetentionControllerTest {
     mockMvc
         .perform(
             put("/api/settings/retention-policies/" + policyId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_retctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -445,7 +484,7 @@ class RetentionControllerTest {
         mockMvc
             .perform(
                 post("/api/retention-policies")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_retctrl_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -459,7 +498,7 @@ class RetentionControllerTest {
     mockMvc
         .perform(
             put("/api/settings/retention-policies/" + policyId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_retctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -471,7 +510,9 @@ class RetentionControllerTest {
   @Test
   void postEvaluate_returnsPreviewWithoutExecuting() throws Exception {
     mockMvc
-        .perform(post("/api/settings/retention-policies/evaluate").with(ownerJwt()))
+        .perform(
+            post("/api/settings/retention-policies/evaluate")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_retctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.totalPoliciesEvaluated").isNumber())
         .andExpect(jsonPath("$.entitiesEligibleForPurge").isNumber())
@@ -481,7 +522,9 @@ class RetentionControllerTest {
   @Test
   void postExecute_executesRetentionPurge() throws Exception {
     mockMvc
-        .perform(post("/api/settings/retention-policies/execute").with(ownerJwt()))
+        .perform(
+            post("/api/settings/retention-policies/execute")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_retctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.totalPurged").isNumber())
         .andExpect(jsonPath("$.totalFailed").isNumber())
@@ -493,7 +536,9 @@ class RetentionControllerTest {
   @Test
   void getSettingsList_member_returns403() throws Exception {
     mockMvc
-        .perform(get("/api/settings/retention-policies").with(memberJwt()))
+        .perform(
+            get("/api/settings/retention-policies")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_retctrl_member")))
         .andExpect(status().isForbidden());
   }
 
@@ -502,7 +547,7 @@ class RetentionControllerTest {
     mockMvc
         .perform(
             put("/api/settings/retention-policies/" + UUID.randomUUID())
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_retctrl_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -514,60 +559,18 @@ class RetentionControllerTest {
   @Test
   void postEvaluate_member_returns403() throws Exception {
     mockMvc
-        .perform(post("/api/settings/retention-policies/evaluate").with(memberJwt()))
+        .perform(
+            post("/api/settings/retention-policies/evaluate")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_retctrl_member")))
         .andExpect(status().isForbidden());
   }
 
   @Test
   void postExecute_member_returns403() throws Exception {
     mockMvc
-        .perform(post("/api/settings/retention-policies/execute").with(memberJwt()))
+        .perform(
+            post("/api/settings/retention-policies/execute")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_retctrl_member")))
         .andExpect(status().isForbidden());
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_retctrl_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_retctrl_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor customRoleJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_ret_315a_custom")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor noCapabilityJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_ret_315a_nocap").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"clerkOrgId":"%s","clerkUserId":"%s","email":"%s","name":"%s","avatarUrl":null,"orgRole":"%s"}
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

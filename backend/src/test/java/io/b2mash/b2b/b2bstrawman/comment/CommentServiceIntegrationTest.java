@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.comment;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -11,7 +10,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -20,7 +21,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -31,8 +31,6 @@ import org.springframework.test.web.servlet.MvcResult;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CommentServiceIntegrationTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_comment_svc_test";
   private static final String ORG_B_ID = "org_comment_svc_test_b";
 
@@ -57,20 +55,26 @@ class CommentServiceIntegrationTest {
     provisioningService.provisionTenant(ORG_B_ID, "Comment Svc Test Org B", null);
 
     // Sync members for tenant A
-    memberIdOwner = syncMember(ORG_ID, "user_cs_owner", "cs_owner@test.com", "CS Owner", "owner");
-    memberIdAdmin = syncMember(ORG_ID, "user_cs_admin", "cs_admin@test.com", "CS Admin", "admin");
+    memberIdOwner =
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_cs_owner", "cs_owner@test.com", "CS Owner", "owner");
+    memberIdAdmin =
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_cs_admin", "cs_admin@test.com", "CS Admin", "admin");
     memberIdMember =
-        syncMember(ORG_ID, "user_cs_member", "cs_member@test.com", "CS Member", "member");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_cs_member", "cs_member@test.com", "CS Member", "member");
 
     // Sync member for tenant B
-    syncMember(ORG_B_ID, "user_cs_tenant_b", "cs_tenantb@test.com", "Tenant B User", "owner");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_B_ID, "user_cs_tenant_b", "cs_tenantb@test.com", "Tenant B User", "owner");
 
     // Create a project in tenant A (owner is auto-assigned as lead)
     var projectResult =
         mockMvc
             .perform(
                 post("/api/projects")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cs_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -78,13 +82,13 @@ class CommentServiceIntegrationTest {
                         """))
             .andExpect(status().isCreated())
             .andReturn();
-    projectId = extractIdFromLocation(projectResult);
+    projectId = TestEntityHelper.extractIdFromLocation(projectResult);
 
     // Add admin and member to the project
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/members")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cs_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"memberId\": \"%s\"}".formatted(memberIdAdmin)))
         .andExpect(status().isCreated());
@@ -92,7 +96,7 @@ class CommentServiceIntegrationTest {
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/members")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cs_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"memberId\": \"%s\"}".formatted(memberIdMember)))
         .andExpect(status().isCreated());
@@ -102,7 +106,7 @@ class CommentServiceIntegrationTest {
         mockMvc
             .perform(
                 post("/api/projects/" + projectId + "/tasks")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cs_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -110,14 +114,14 @@ class CommentServiceIntegrationTest {
                         """))
             .andExpect(status().isCreated())
             .andReturn();
-    taskId = extractIdFromLocation(taskResult);
+    taskId = TestEntityHelper.extractIdFromLocation(taskResult);
 
     // Create a document in the project via upload-init
     var docInitResult =
         mockMvc
             .perform(
                 post("/api/projects/" + projectId + "/documents/upload-init")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cs_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -132,7 +136,7 @@ class CommentServiceIntegrationTest {
         mockMvc
             .perform(
                 post("/api/projects")
-                    .with(tenantBOwnerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_B_ID, "user_cs_tenant_b"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -140,13 +144,13 @@ class CommentServiceIntegrationTest {
                         """))
             .andExpect(status().isCreated())
             .andReturn();
-    projectBId = extractIdFromLocation(projectBResult);
+    projectBId = TestEntityHelper.extractIdFromLocation(projectBResult);
 
     var taskBResult =
         mockMvc
             .perform(
                 post("/api/projects/" + projectBId + "/tasks")
-                    .with(tenantBOwnerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_B_ID, "user_cs_tenant_b"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -154,7 +158,7 @@ class CommentServiceIntegrationTest {
                         """))
             .andExpect(status().isCreated())
             .andReturn();
-    taskBId = extractIdFromLocation(taskBResult);
+    taskBId = TestEntityHelper.extractIdFromLocation(taskBResult);
   }
 
   // --- Task 59.9: CommentService integration tests ---
@@ -164,7 +168,7 @@ class CommentServiceIntegrationTest {
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/comments")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_cs_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -194,7 +198,7 @@ class CommentServiceIntegrationTest {
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/comments")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cs_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -218,7 +222,7 @@ class CommentServiceIntegrationTest {
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/comments")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cs_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -239,7 +243,7 @@ class CommentServiceIntegrationTest {
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/comments")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_cs_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -261,7 +265,7 @@ class CommentServiceIntegrationTest {
         mockMvc
             .perform(
                 post("/api/projects/" + projectId + "/comments")
-                    .with(memberJwt())
+                    .with(TestJwtFactory.memberJwt(ORG_ID, "user_cs_member"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -280,7 +284,7 @@ class CommentServiceIntegrationTest {
     mockMvc
         .perform(
             put("/api/projects/" + projectId + "/comments/" + commentId)
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_cs_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -297,7 +301,7 @@ class CommentServiceIntegrationTest {
         mockMvc
             .perform(
                 post("/api/projects/" + projectId + "/comments")
-                    .with(memberJwt())
+                    .with(TestJwtFactory.memberJwt(ORG_ID, "user_cs_member"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -316,7 +320,7 @@ class CommentServiceIntegrationTest {
     mockMvc
         .perform(
             put("/api/projects/" + projectId + "/comments/" + commentId)
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_cs_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -332,7 +336,7 @@ class CommentServiceIntegrationTest {
         mockMvc
             .perform(
                 post("/api/projects/" + projectId + "/comments")
-                    .with(memberJwt())
+                    .with(TestJwtFactory.memberJwt(ORG_ID, "user_cs_member"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -349,7 +353,9 @@ class CommentServiceIntegrationTest {
 
     // Delete own comment
     mockMvc
-        .perform(delete("/api/projects/" + projectId + "/comments/" + commentId).with(memberJwt()))
+        .perform(
+            delete("/api/projects/" + projectId + "/comments/" + commentId)
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_cs_member")))
         .andExpect(status().isNoContent());
   }
 
@@ -360,7 +366,7 @@ class CommentServiceIntegrationTest {
         mockMvc
             .perform(
                 post("/api/projects/" + projectId + "/comments")
-                    .with(memberJwt())
+                    .with(TestJwtFactory.memberJwt(ORG_ID, "user_cs_member"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -377,7 +383,9 @@ class CommentServiceIntegrationTest {
 
     // Delete as admin (should succeed)
     mockMvc
-        .perform(delete("/api/projects/" + projectId + "/comments/" + commentId).with(adminJwt()))
+        .perform(
+            delete("/api/projects/" + projectId + "/comments/" + commentId)
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_cs_admin")))
         .andExpect(status().isNoContent());
   }
 
@@ -389,7 +397,7 @@ class CommentServiceIntegrationTest {
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/comments")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cs_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -406,7 +414,7 @@ class CommentServiceIntegrationTest {
     mockMvc
         .perform(
             get("/api/projects/" + projectId + "/comments")
-                .with(tenantBOwnerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_B_ID, "user_cs_tenant_b"))
                 .param("entityType", "TASK")
                 .param("entityId", taskId))
         .andExpect(status().isNotFound());
@@ -418,7 +426,7 @@ class CommentServiceIntegrationTest {
     mockMvc
         .perform(
             post("/api/projects/" + projectBId + "/comments")
-                .with(tenantBOwnerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_B_ID, "user_cs_tenant_b"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -435,7 +443,7 @@ class CommentServiceIntegrationTest {
     mockMvc
         .perform(
             get("/api/projects/" + projectBId + "/comments")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cs_owner"))
                 .param("entityType", "TASK")
                 .param("entityId", taskBId))
         .andExpect(status().isNotFound());
@@ -448,7 +456,7 @@ class CommentServiceIntegrationTest {
         mockMvc
             .perform(
                 post("/api/projects/" + projectId + "/comments")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cs_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -468,7 +476,7 @@ class CommentServiceIntegrationTest {
     mockMvc
         .perform(
             get("/api/projects/" + projectId + "/comments")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cs_owner"))
                 .param("entityType", "TASK")
                 .param("entityId", taskId))
         .andExpect(status().isOk())
@@ -483,7 +491,7 @@ class CommentServiceIntegrationTest {
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/comments")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cs_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -507,7 +515,7 @@ class CommentServiceIntegrationTest {
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/comments")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cs_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -528,7 +536,7 @@ class CommentServiceIntegrationTest {
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/comments")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cs_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -547,7 +555,7 @@ class CommentServiceIntegrationTest {
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/comments")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cs_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -564,59 +572,7 @@ class CommentServiceIntegrationTest {
 
   // --- Helpers ---
 
-  private String extractIdFromLocation(MvcResult result) {
-    String location = result.getResponse().getHeader("Location");
-    return location.substring(location.lastIndexOf('/') + 1);
-  }
-
   private String extractJsonField(MvcResult result, String field) throws Exception {
     return JsonPath.read(result.getResponse().getContentAsString(), "$." + field).toString();
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_cs_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor adminJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_cs_admin").claim("o", Map.of("id", ORG_ID, "rol", "admin")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_cs_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor tenantBOwnerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_cs_tenant_b").claim("o", Map.of("id", ORG_B_ID, "rol", "owner")));
   }
 }

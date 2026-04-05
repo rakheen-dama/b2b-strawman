@@ -1,13 +1,10 @@
 package io.b2mash.b2b.b2bstrawman.calendar;
 
 import static org.hamcrest.Matchers.hasSize;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
@@ -16,8 +13,9 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.TaskService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.time.LocalDate;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -26,8 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -37,8 +33,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CalendarControllerTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_calendar_test";
 
   @Autowired private MockMvc mockMvc;
@@ -61,13 +55,16 @@ class CalendarControllerTest {
 
     adminMemberId =
         UUID.fromString(
-            syncMember(ORG_ID, "user_cal_admin", "cal_admin@test.com", "Admin User", "admin"));
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, "user_cal_admin", "cal_admin@test.com", "Admin User", "admin"));
     member1Id =
         UUID.fromString(
-            syncMember(ORG_ID, "user_cal_member1", "cal_m1@test.com", "Member One", "member"));
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, "user_cal_member1", "cal_m1@test.com", "Member One", "member"));
     member2Id =
         UUID.fromString(
-            syncMember(ORG_ID, "user_cal_member2", "cal_m2@test.com", "Member Two", "member"));
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, "user_cal_member2", "cal_m2@test.com", "Member Two", "member"));
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
@@ -208,7 +205,7 @@ class CalendarControllerTest {
             get("/api/calendar")
                 .param("from", LocalDate.now().minusDays(1).toString())
                 .param("to", LocalDate.now().plusDays(30).toString())
-                .with(adminJwt()))
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_cal_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.items").isArray())
         // Should see: Task Alpha (5d), Project Alpha (10d), Task Beta (15d), Project Beta (20d)
@@ -225,7 +222,7 @@ class CalendarControllerTest {
             get("/api/calendar")
                 .param("from", LocalDate.now().minusDays(1).toString())
                 .param("to", LocalDate.now().plusDays(30).toString())
-                .with(member1Jwt()))
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_cal_member1")))
         .andExpect(status().isOk())
         // Should see: Task Alpha (5d), Project Alpha (10d) — NOT project2 items
         .andExpect(jsonPath("$.items", hasSize(2)))
@@ -243,7 +240,7 @@ class CalendarControllerTest {
                 .param("from", LocalDate.now().toString())
                 .param("to", LocalDate.now().plusDays(30).toString())
                 .param("overdue", "true")
-                .with(adminJwt()))
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_cal_admin")))
         .andExpect(status().isOk())
         // Should include the overdue task in addition to in-range items
         .andExpect(jsonPath("$.overdueCount").value(1))
@@ -258,7 +255,7 @@ class CalendarControllerTest {
                 .param("from", LocalDate.now().minusDays(1).toString())
                 .param("to", LocalDate.now().plusDays(30).toString())
                 .param("type", "PROJECT")
-                .with(adminJwt()))
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_cal_admin")))
         .andExpect(status().isOk())
         // Should see only Project Alpha and Project Beta
         .andExpect(jsonPath("$.items", hasSize(2)))
@@ -274,7 +271,7 @@ class CalendarControllerTest {
                 .param("from", LocalDate.now().minusDays(1).toString())
                 .param("to", LocalDate.now().plusDays(30).toString())
                 .param("projectId", project1Id.toString())
-                .with(adminJwt()))
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_cal_admin")))
         .andExpect(status().isOk())
         // Should see Task Alpha and Project Alpha only
         .andExpect(jsonPath("$.items", hasSize(2)));
@@ -288,7 +285,7 @@ class CalendarControllerTest {
             get("/api/calendar")
                 .param("from", LocalDate.now().plusDays(10).toString())
                 .param("to", LocalDate.now().toString())
-                .with(adminJwt()))
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_cal_admin")))
         .andExpect(status().isBadRequest());
   }
 
@@ -299,7 +296,7 @@ class CalendarControllerTest {
             get("/api/calendar")
                 .param("from", LocalDate.now().toString())
                 .param("to", LocalDate.now().plusDays(400).toString())
-                .with(adminJwt()))
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_cal_admin")))
         .andExpect(status().isBadRequest());
   }
 
@@ -311,7 +308,7 @@ class CalendarControllerTest {
                 .param("from", LocalDate.now().toString())
                 .param("to", LocalDate.now().plusDays(30).toString())
                 .param("type", "INVALID")
-                .with(adminJwt()))
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_cal_admin")))
         .andExpect(status().isBadRequest());
   }
 
@@ -325,49 +322,9 @@ class CalendarControllerTest {
                 .param("to", LocalDate.now().plusDays(30).toString())
                 .param("overdue", "true")
                 .param("projectId", project2Id.toString())
-                .with(adminJwt()))
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_cal_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.overdueCount").value(0))
         .andExpect(jsonPath("$.items[?(@.name == 'Overdue Task')]").isEmpty());
-  }
-
-  // --- JWT Helpers ---
-
-  private JwtRequestPostProcessor adminJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_cal_admin").claim("o", Map.of("id", ORG_ID, "rol", "admin")));
-  }
-
-  private JwtRequestPostProcessor member1Jwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_cal_member1").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  // --- Member Sync Helper ---
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

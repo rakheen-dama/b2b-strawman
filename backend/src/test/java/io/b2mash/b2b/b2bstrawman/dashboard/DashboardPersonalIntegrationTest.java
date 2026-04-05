@@ -3,13 +3,10 @@ package io.b2mash.b2b.b2bstrawman.dashboard;
 import static org.hamcrest.Matchers.closeTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
@@ -18,9 +15,10 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.TaskService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryService;
 import java.time.LocalDate;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -29,8 +27,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -44,8 +40,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class DashboardPersonalIntegrationTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_personal_dash_test";
 
   @Autowired private MockMvc mockMvc;
@@ -81,14 +75,31 @@ class DashboardPersonalIntegrationTest {
 
     adminMemberId =
         UUID.fromString(
-            syncMember(ORG_ID, "user_pdash_admin", "pdash_admin@test.com", "Admin User", "admin"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_pdash_admin",
+                "pdash_admin@test.com",
+                "Admin User",
+                "admin"));
     member1Id =
         UUID.fromString(
-            syncMember(ORG_ID, "user_pdash_member1", "pdash_m1@test.com", "Member One", "member"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_pdash_member1",
+                "pdash_m1@test.com",
+                "Member One",
+                "member"));
     nonMemberId =
         UUID.fromString(
-            syncMember(
-                ORG_ID, "user_pdash_nonmember", "pdash_nm@test.com", "Non Member", "member"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_pdash_nonmember",
+                "pdash_nm@test.com",
+                "Non Member",
+                "member"));
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
@@ -262,7 +273,7 @@ class DashboardPersonalIntegrationTest {
             get("/api/dashboard/personal")
                 .param("from", thirtyDaysAgo.toString())
                 .param("to", today.toString())
-                .with(member1Jwt()))
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_pdash_member1")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.utilization.totalHours").value(closeTo(4.5, 0.01)))
         .andExpect(jsonPath("$.utilization.billableHours").value(closeTo(3.5, 0.01)))
@@ -277,7 +288,7 @@ class DashboardPersonalIntegrationTest {
             get("/api/dashboard/personal")
                 .param("from", thirtyDaysAgo.toString())
                 .param("to", today.toString())
-                .with(member1Jwt()))
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_pdash_member1")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.projectBreakdown").isArray())
         .andExpect(jsonPath("$.projectBreakdown", hasSize(2)))
@@ -296,7 +307,7 @@ class DashboardPersonalIntegrationTest {
             get("/api/dashboard/personal")
                 .param("from", thirtyDaysAgo.toString())
                 .param("to", today.toString())
-                .with(member1Jwt()))
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_pdash_member1")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.overdueTaskCount").value(1));
   }
@@ -309,7 +320,7 @@ class DashboardPersonalIntegrationTest {
             get("/api/dashboard/personal")
                 .param("from", thirtyDaysAgo.toString())
                 .param("to", today.toString())
-                .with(member1Jwt()))
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_pdash_member1")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.upcomingDeadlines").isArray())
         .andExpect(jsonPath("$.upcomingDeadlines", hasSize(2)))
@@ -327,7 +338,7 @@ class DashboardPersonalIntegrationTest {
             get("/api/dashboard/personal")
                 .param("from", thirtyDaysAgo.toString())
                 .param("to", today.toString())
-                .with(member1Jwt()))
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_pdash_member1")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.trend").isArray())
         .andExpect(jsonPath("$.trend", hasSize(greaterThan(0))))
@@ -346,7 +357,7 @@ class DashboardPersonalIntegrationTest {
             get("/api/projects/" + projectAId + "/member-hours")
                 .param("from", thirtyDaysAgo.toString())
                 .param("to", today.toString())
-                .with(adminJwt()))
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_pdash_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$", hasSize(2)))
@@ -367,56 +378,12 @@ class DashboardPersonalIntegrationTest {
             get("/api/projects/" + projectAId + "/member-hours")
                 .param("from", thirtyDaysAgo.toString())
                 .param("to", today.toString())
-                .with(nonMemberJwt()))
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_pdash_nonmember")))
         .andExpect(status().isNotFound());
   }
 
   // --- JWT Helpers ---
 
-  private JwtRequestPostProcessor adminJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_pdash_admin").claim("o", Map.of("id", ORG_ID, "rol", "admin")));
-  }
-
-  private JwtRequestPostProcessor member1Jwt() {
-    return jwt()
-        .jwt(
-            j -> j.subject("user_pdash_member1").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor nonMemberJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_pdash_nonmember")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
   // --- Member Sync Helper ---
 
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
 }

@@ -1,15 +1,15 @@
 package io.b2mash.b2b.b2bstrawman.customer;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -18,7 +18,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -28,8 +27,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CustomerTagIntegrationTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_cust_tag_test";
 
   @Autowired private MockMvc mockMvc;
@@ -42,14 +39,27 @@ class CustomerTagIntegrationTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Customer Tag Test Org", null);
-    syncMember(ORG_ID, "user_ct_owner", "ct_owner@test.com", "CT Owner", "owner");
+    TestMemberHelper.syncMemberQuietly(
+        mockMvc, ORG_ID, "user_ct_owner", "ct_owner@test.com", "CT Owner", "owner");
 
     // Create tags
-    tagId1 = createTag("Cust Premium", "#EF4444");
-    tagId2 = createTag("Cust Enterprise", "#3B82F6");
+    tagId1 =
+        TestEntityHelper.createTag(
+            mockMvc, TestJwtFactory.ownerJwt(ORG_ID, "user_ct_owner"), "Cust Premium", "#EF4444");
+    tagId2 =
+        TestEntityHelper.createTag(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, "user_ct_owner"),
+            "Cust Enterprise",
+            "#3B82F6");
 
     // Create customer
-    customerId = createCustomer("Tag Test Customer", "tag_cust@test.com");
+    customerId =
+        TestEntityHelper.createCustomer(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, "user_ct_owner"),
+            "Tag Test Customer",
+            "tag_cust@test.com");
   }
 
   @Test
@@ -57,7 +67,7 @@ class CustomerTagIntegrationTest {
     mockMvc
         .perform(
             post("/api/customers/" + customerId + "/tags")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ct_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -74,7 +84,7 @@ class CustomerTagIntegrationTest {
     mockMvc
         .perform(
             post("/api/customers/" + customerId + "/tags")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ct_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -85,7 +95,9 @@ class CustomerTagIntegrationTest {
 
     // Get tags
     mockMvc
-        .perform(get("/api/customers/" + customerId + "/tags").with(ownerJwt()))
+        .perform(
+            get("/api/customers/" + customerId + "/tags")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ct_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[0].name").value("Cust Premium"));
   }
@@ -93,13 +105,18 @@ class CustomerTagIntegrationTest {
   @Test
   void shouldFilterCustomersByTags() throws Exception {
     // Create a second customer
-    String customerId2 = createCustomer("Untagged Customer", "untagged_cust@test.com");
+    String customerId2 =
+        TestEntityHelper.createCustomer(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, "user_ct_owner"),
+            "Untagged Customer",
+            "untagged_cust@test.com");
 
     // Tag only the first customer with both tags
     mockMvc
         .perform(
             post("/api/customers/" + customerId + "/tags")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ct_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -110,7 +127,10 @@ class CustomerTagIntegrationTest {
 
     // Filter by single tag slug
     mockMvc
-        .perform(get("/api/customers").with(ownerJwt()).param("tags", "cust_premium"))
+        .perform(
+            get("/api/customers")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ct_owner"))
+                .param("tags", "cust_premium"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[?(@.name == 'Tag Test Customer')]").exists())
         .andExpect(jsonPath("$[?(@.name == 'Untagged Customer')]").doesNotExist());
@@ -118,72 +138,13 @@ class CustomerTagIntegrationTest {
     // Filter by both tag slugs (AND logic)
     mockMvc
         .perform(
-            get("/api/customers").with(ownerJwt()).param("tags", "cust_premium,cust_enterprise"))
+            get("/api/customers")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ct_owner"))
+                .param("tags", "cust_premium,cust_enterprise"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[?(@.name == 'Tag Test Customer')]").exists());
   }
 
   // --- Helpers ---
 
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_ct_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private String createTag(String name, String color) throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/api/tags")
-                    .with(ownerJwt())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"name": "%s", "color": "%s"}
-                        """
-                            .formatted(name, color)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.id");
-  }
-
-  private String createCustomer(String name, String email) throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/api/customers")
-                    .with(ownerJwt())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"name": "%s", "email": "%s"}
-                        """
-                            .formatted(name, email)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.id");
-  }
-
-  private void syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    mockMvc
-        .perform(
-            post("/internal/members/sync")
-                .header("X-API-KEY", API_KEY)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {
-                      "clerkOrgId": "%s",
-                      "clerkUserId": "%s",
-                      "email": "%s",
-                      "name": "%s",
-                      "avatarUrl": null,
-                      "orgRole": "%s"
-                    }
-                    """
-                        .formatted(orgId, clerkUserId, email, name, orgRole)))
-        .andExpect(status().isCreated());
-  }
 }

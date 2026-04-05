@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.tariff;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -12,8 +11,9 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -23,7 +23,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -34,8 +33,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class TariffControllerTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_tariff_ctrl_test";
 
   @Autowired private MockMvc mockMvc;
@@ -53,9 +50,15 @@ class TariffControllerTest {
         provisioningService
             .provisionTenant(ORG_ID, "Tariff Controller Test Org", null)
             .schemaName();
-    syncMember(
-        ORG_ID, "user_tariff_ctrl_owner", "tariff_ctrl@test.com", "Tariff Ctrl Owner", "owner");
-    syncMember(
+    TestMemberHelper.syncMember(
+        mockMvc,
+        ORG_ID,
+        "user_tariff_ctrl_owner",
+        "tariff_ctrl@test.com",
+        "Tariff Ctrl Owner",
+        "owner");
+    TestMemberHelper.syncMember(
+        mockMvc,
         ORG_ID,
         "user_tariff_ctrl_member",
         "tariff_ctrl_member@test.com",
@@ -79,7 +82,7 @@ class TariffControllerTest {
     mockMvc
         .perform(
             post("/api/tariff-schedules")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tariff_ctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -137,7 +140,9 @@ class TariffControllerTest {
                     }));
 
     mockMvc
-        .perform(post("/api/tariff-schedules/" + scheduleId[0] + "/clone").with(ownerJwt()))
+        .perform(
+            post("/api/tariff-schedules/" + scheduleId[0] + "/clone")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tariff_ctrl_owner")))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.isSystem").value(false))
         .andExpect(jsonPath("$.name").value("Clone Test System (Copy)"))
@@ -172,7 +177,7 @@ class TariffControllerTest {
     mockMvc
         .perform(
             put("/api/tariff-schedules/" + scheduleId[0])
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tariff_ctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -195,7 +200,7 @@ class TariffControllerTest {
         mockMvc
             .perform(
                 post("/api/tariff-schedules")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tariff_ctrl_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -216,7 +221,7 @@ class TariffControllerTest {
     mockMvc
         .perform(
             post("/api/tariff-schedules/" + scheduleId + "/items")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tariff_ctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -243,7 +248,7 @@ class TariffControllerTest {
         mockMvc
             .perform(
                 post("/api/tariff-schedules")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tariff_ctrl_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -265,7 +270,7 @@ class TariffControllerTest {
     mockMvc
         .perform(
             post("/api/tariff-schedules/" + scheduleId + "/items")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tariff_ctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -283,7 +288,7 @@ class TariffControllerTest {
     mockMvc
         .perform(
             post("/api/tariff-schedules/" + scheduleId + "/items")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tariff_ctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -302,7 +307,7 @@ class TariffControllerTest {
     mockMvc
         .perform(
             get("/api/tariff-items")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tariff_ctrl_owner"))
                 .param("scheduleId", scheduleId)
                 .param("search", "instructions"))
         .andExpect(status().isOk())
@@ -315,7 +320,7 @@ class TariffControllerTest {
     mockMvc
         .perform(
             post("/api/tariff-schedules")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_tariff_ctrl_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -327,43 +332,5 @@ class TariffControllerTest {
                     }
                     """))
         .andExpect(status().isForbidden());
-  }
-
-  // --- Helpers ---
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"clerkOrgId":"%s","clerkUserId":"%s","email":"%s","name":"%s","avatarUrl":null,"orgRole":"%s"}
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return com.jayway.jsonpath.JsonPath.read(
-        result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_tariff_ctrl_owner")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_tariff_ctrl_member")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 }

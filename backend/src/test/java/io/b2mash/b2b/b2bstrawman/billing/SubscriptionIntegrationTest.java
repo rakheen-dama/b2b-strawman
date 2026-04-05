@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.billing;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -10,7 +9,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -19,7 +19,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -43,7 +42,8 @@ class SubscriptionIntegrationTest {
     provisioningService.provisionTenant(ORG_A, "Billing Test Org A", null);
 
     // Sync a member so member count is > 0
-    syncMember(ORG_A, "user_billing_owner", "billing_owner@test.com", "Owner", "owner");
+    TestMemberHelper.syncMemberQuietly(
+        mockMvc, ORG_A, "user_billing_owner", "billing_owner@test.com", "Owner", "owner");
   }
 
   // --- 1. Subscription created on provisioning ---
@@ -68,7 +68,9 @@ class SubscriptionIntegrationTest {
   @Test
   void shouldReturnTrialingStatusAndLimits() throws Exception {
     mockMvc
-        .perform(get("/api/billing/subscription").with(memberJwt()))
+        .perform(
+            get("/api/billing/subscription")
+                .with(TestJwtFactory.jwtAs(ORG_A, "user_billing_owner", "member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("TRIALING"))
         .andExpect(jsonPath("$.limits.maxMembers").value(10))
@@ -133,35 +135,5 @@ class SubscriptionIntegrationTest {
                     """
                         .formatted(ORG_A)))
         .andExpect(status().isUnauthorized());
-  }
-
-  // --- Helpers ---
-
-  private void syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    mockMvc
-        .perform(
-            post("/internal/members/sync")
-                .header("X-API-KEY", API_KEY)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {
-                      "clerkOrgId": "%s",
-                      "clerkUserId": "%s",
-                      "email": "%s",
-                      "name": "%s",
-                      "avatarUrl": null,
-                      "orgRole": "%s"
-                    }
-                    """
-                        .formatted(orgId, clerkUserId, email, name, orgRole)))
-        .andExpect(status().isCreated());
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_billing_owner").claim("o", Map.of("id", ORG_A, "rol", "member")));
   }
 }

@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.invoice;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -20,11 +19,12 @@ import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -34,7 +34,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -81,7 +80,13 @@ class UnbilledTimeIntegrationTest {
 
     memberIdOwner =
         UUID.fromString(
-            syncMember("user_unbilled_owner", "unbilled_owner@test.com", "UB Owner", "owner"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_unbilled_owner",
+                "unbilled_owner@test.com",
+                "UB Owner",
+                "owner"));
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
@@ -259,7 +264,9 @@ class UnbilledTimeIntegrationTest {
   @Test
   void shouldReturnUnbilledTimeGroupedByProject() throws Exception {
     mockMvc
-        .perform(get("/api/customers/" + customerId + "/unbilled-time").with(ownerJwt()))
+        .perform(
+            get("/api/customers/" + customerId + "/unbilled-time")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_unbilled_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.customerId").value(customerId.toString()))
         .andExpect(jsonPath("$.customerName").value("UB Corp"))
@@ -274,7 +281,9 @@ class UnbilledTimeIntegrationTest {
   void shouldExcludeBilledEntries() throws Exception {
     var result =
         mockMvc
-            .perform(get("/api/customers/" + customerId + "/unbilled-time").with(ownerJwt()))
+            .perform(
+                get("/api/customers/" + customerId + "/unbilled-time")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_unbilled_owner")))
             .andExpect(status().isOk())
             .andReturn();
     String body = result.getResponse().getContentAsString();
@@ -286,7 +295,9 @@ class UnbilledTimeIntegrationTest {
   void shouldExcludeNonBillableEntries() throws Exception {
     var result =
         mockMvc
-            .perform(get("/api/customers/" + customerId + "/unbilled-time").with(ownerJwt()))
+            .perform(
+                get("/api/customers/" + customerId + "/unbilled-time")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_unbilled_owner")))
             .andExpect(status().isOk())
             .andReturn();
     String body = result.getResponse().getContentAsString();
@@ -301,7 +312,7 @@ class UnbilledTimeIntegrationTest {
         .perform(
             get("/api/customers/" + customerId + "/unbilled-time")
                 .param("from", "2025-01-16")
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_unbilled_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.projects.length()").value(1));
   }
@@ -313,7 +324,7 @@ class UnbilledTimeIntegrationTest {
         .perform(
             get("/api/customers/" + customerId + "/unbilled-time")
                 .param("to", "2025-01-17")
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_unbilled_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.projects.length()").value(1))
         .andExpect(jsonPath("$.projects[0].projectName").value("Project Alpha"));
@@ -323,7 +334,9 @@ class UnbilledTimeIntegrationTest {
   void shouldExcludeEntriesFromUnlinkedProjects() throws Exception {
     var result =
         mockMvc
-            .perform(get("/api/customers/" + customerId + "/unbilled-time").with(ownerJwt()))
+            .perform(
+                get("/api/customers/" + customerId + "/unbilled-time")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_unbilled_owner")))
             .andExpect(status().isOk())
             .andReturn();
     String body = result.getResponse().getContentAsString();
@@ -333,14 +346,18 @@ class UnbilledTimeIntegrationTest {
   @Test
   void shouldReturn404ForNonExistentCustomer() throws Exception {
     mockMvc
-        .perform(get("/api/customers/" + UUID.randomUUID() + "/unbilled-time").with(ownerJwt()))
+        .perform(
+            get("/api/customers/" + UUID.randomUUID() + "/unbilled-time")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_unbilled_owner")))
         .andExpect(status().isNotFound());
   }
 
   @Test
   void shouldDenyMemberAccessToUnbilledTime() throws Exception {
     mockMvc
-        .perform(get("/api/customers/" + customerId + "/unbilled-time").with(memberJwt()))
+        .perform(
+            get("/api/customers/" + customerId + "/unbilled-time")
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_unbilled_member", "member")))
         .andExpect(status().isForbidden());
   }
 
@@ -350,7 +367,7 @@ class UnbilledTimeIntegrationTest {
     mockMvc
         .perform(
             post("/api/invoices")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_unbilled_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -368,7 +385,9 @@ class UnbilledTimeIntegrationTest {
   void shouldCreateDraftFromUnbilledTimeAndApprove() throws Exception {
     // Step 1: Fetch unbilled time
     mockMvc
-        .perform(get("/api/customers/" + customerId + "/unbilled-time").with(ownerJwt()))
+        .perform(
+            get("/api/customers/" + customerId + "/unbilled-time")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_unbilled_owner")))
         .andExpect(status().isOk());
 
     // Step 2: Create draft from separate E2E entries (not the ones used by read-only tests)
@@ -376,7 +395,7 @@ class UnbilledTimeIntegrationTest {
         mockMvc
             .perform(
                 post("/api/invoices")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_unbilled_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -396,7 +415,9 @@ class UnbilledTimeIntegrationTest {
 
     // Step 3: Approve
     mockMvc
-        .perform(post("/api/invoices/" + invoiceId + "/approve").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + invoiceId + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_unbilled_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("APPROVED"))
         .andExpect(jsonPath("$.invoiceNumber").isNotEmpty());
@@ -404,54 +425,13 @@ class UnbilledTimeIntegrationTest {
     // Step 4: Verify entries are now billed (should not appear in unbilled query)
     var unbilledResult =
         mockMvc
-            .perform(get("/api/customers/" + customerId + "/unbilled-time").with(ownerJwt()))
+            .perform(
+                get("/api/customers/" + customerId + "/unbilled-time")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_unbilled_owner")))
             .andExpect(status().isOk())
             .andReturn();
     String unbilledBody = unbilledResult.getResponse().getContentAsString();
     assertFalse(unbilledBody.contains(e2eEntryId1.toString()));
     assertFalse(unbilledBody.contains(e2eEntryId2.toString()));
-  }
-
-  // --- JWT Helpers ---
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(
-            j -> j.subject("user_unbilled_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_unbilled_member")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  // --- Helpers ---
-
-  private String syncMember(String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(ORG_ID, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

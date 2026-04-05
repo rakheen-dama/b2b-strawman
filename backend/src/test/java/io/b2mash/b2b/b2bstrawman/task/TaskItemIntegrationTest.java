@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.task;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -11,7 +10,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -20,10 +21,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -31,8 +30,6 @@ import org.springframework.test.web.servlet.MvcResult;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class TaskItemIntegrationTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_task_item_test";
 
   @Autowired private MockMvc mockMvc;
@@ -47,16 +44,19 @@ class TaskItemIntegrationTest {
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Task Item Test Org", null);
 
-    memberIdOwner = syncMember(ORG_ID, "user_ti_owner", "ti_owner@test.com", "TI Owner", "owner");
+    memberIdOwner =
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_ti_owner", "ti_owner@test.com", "TI Owner", "owner");
     memberIdMember =
-        syncMember(ORG_ID, "user_ti_member", "ti_member@test.com", "TI Member", "member");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_ti_member", "ti_member@test.com", "TI Member", "member");
 
     // Create project
     var projectResult =
         mockMvc
             .perform(
                 post("/api/projects")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ti_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -64,13 +64,13 @@ class TaskItemIntegrationTest {
                         """))
             .andExpect(status().isCreated())
             .andReturn();
-    projectId = extractIdFromLocation(projectResult);
+    projectId = TestEntityHelper.extractIdFromLocation(projectResult);
 
     // Add member to project
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/members")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ti_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -84,7 +84,7 @@ class TaskItemIntegrationTest {
         mockMvc
             .perform(
                 post("/api/projects/" + projectId + "/tasks")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ti_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -92,7 +92,7 @@ class TaskItemIntegrationTest {
                         """))
             .andExpect(status().isCreated())
             .andReturn();
-    taskId = extractIdFromLocation(taskResult);
+    taskId = TestEntityHelper.extractIdFromLocation(taskResult);
   }
 
   @Test
@@ -100,7 +100,7 @@ class TaskItemIntegrationTest {
     mockMvc
         .perform(
             post("/api/tasks/" + taskId + "/items")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ti_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -127,7 +127,9 @@ class TaskItemIntegrationTest {
     addItem(freshTaskId, "Second", 1);
 
     mockMvc
-        .perform(get("/api/tasks/" + freshTaskId + "/items").with(ownerJwt()))
+        .perform(
+            get("/api/tasks/" + freshTaskId + "/items")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ti_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$.length()").value(3))
@@ -146,13 +148,17 @@ class TaskItemIntegrationTest {
 
     // Toggle to completed=true
     mockMvc
-        .perform(put("/api/tasks/" + freshTaskId + "/items/" + itemId + "/toggle").with(ownerJwt()))
+        .perform(
+            put("/api/tasks/" + freshTaskId + "/items/" + itemId + "/toggle")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ti_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.completed").value(true));
 
     // Toggle back to completed=false
     mockMvc
-        .perform(put("/api/tasks/" + freshTaskId + "/items/" + itemId + "/toggle").with(ownerJwt()))
+        .perform(
+            put("/api/tasks/" + freshTaskId + "/items/" + itemId + "/toggle")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ti_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.completed").value(false));
   }
@@ -165,7 +171,7 @@ class TaskItemIntegrationTest {
     mockMvc
         .perform(
             put("/api/tasks/" + freshTaskId + "/items/" + itemId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ti_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -182,12 +188,16 @@ class TaskItemIntegrationTest {
     var itemId = addItem(freshTaskId, "To Delete", 0);
 
     mockMvc
-        .perform(delete("/api/tasks/" + freshTaskId + "/items/" + itemId).with(ownerJwt()))
+        .perform(
+            delete("/api/tasks/" + freshTaskId + "/items/" + itemId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ti_owner")))
         .andExpect(status().isNoContent());
 
     // Verify item is gone
     mockMvc
-        .perform(get("/api/tasks/" + freshTaskId + "/items").with(ownerJwt()))
+        .perform(
+            get("/api/tasks/" + freshTaskId + "/items")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ti_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(0));
   }
@@ -203,7 +213,7 @@ class TaskItemIntegrationTest {
     mockMvc
         .perform(
             put("/api/tasks/" + freshTaskId + "/items/reorder")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ti_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -227,7 +237,8 @@ class TaskItemIntegrationTest {
     // Member (not admin/owner) can toggle
     mockMvc
         .perform(
-            put("/api/tasks/" + freshTaskId + "/items/" + itemId + "/toggle").with(memberJwt()))
+            put("/api/tasks/" + freshTaskId + "/items/" + itemId + "/toggle")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_ti_member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.completed").value(true));
   }
@@ -239,7 +250,7 @@ class TaskItemIntegrationTest {
     mockMvc
         .perform(
             post("/api/tasks/" + freshTaskId + "/items")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_ti_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -256,7 +267,9 @@ class TaskItemIntegrationTest {
 
     // Member gets 403 on delete (requires PROJECT_MANAGEMENT capability)
     mockMvc
-        .perform(delete("/api/tasks/" + freshTaskId + "/items/" + itemId).with(memberJwt()))
+        .perform(
+            delete("/api/tasks/" + freshTaskId + "/items/" + itemId)
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_ti_member")))
         .andExpect(status().isForbidden());
   }
 
@@ -269,7 +282,7 @@ class TaskItemIntegrationTest {
     mockMvc
         .perform(
             put("/api/tasks/" + freshTaskId + "/items/" + itemId)
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_ti_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -288,7 +301,7 @@ class TaskItemIntegrationTest {
     mockMvc
         .perform(
             put("/api/tasks/" + freshTaskId + "/items/reorder")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_ti_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -306,18 +319,24 @@ class TaskItemIntegrationTest {
 
     // Verify items exist
     mockMvc
-        .perform(get("/api/tasks/" + freshTaskId + "/items").with(ownerJwt()))
+        .perform(
+            get("/api/tasks/" + freshTaskId + "/items")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ti_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(2));
 
     // Delete the parent task
     mockMvc
-        .perform(delete("/api/tasks/" + freshTaskId).with(ownerJwt()))
+        .perform(
+            delete("/api/tasks/" + freshTaskId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ti_owner")))
         .andExpect(status().isNoContent());
 
     // Verify task is gone (items cascade-deleted at DB level)
     mockMvc
-        .perform(get("/api/tasks/" + freshTaskId + "/items").with(ownerJwt()))
+        .perform(
+            get("/api/tasks/" + freshTaskId + "/items")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ti_owner")))
         .andExpect(status().isNotFound());
   }
 
@@ -328,7 +347,7 @@ class TaskItemIntegrationTest {
         mockMvc
             .perform(
                 post("/api/projects/" + projectId + "/tasks")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ti_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -337,7 +356,7 @@ class TaskItemIntegrationTest {
                             .formatted(title)))
             .andExpect(status().isCreated())
             .andReturn();
-    return extractIdFromLocation(result);
+    return TestEntityHelper.extractIdFromLocation(result);
   }
 
   private String addItem(String taskId, String title, int sortOrder) throws Exception {
@@ -345,7 +364,7 @@ class TaskItemIntegrationTest {
         mockMvc
             .perform(
                 post("/api/tasks/" + taskId + "/items")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ti_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -355,47 +374,5 @@ class TaskItemIntegrationTest {
             .andExpect(status().isCreated())
             .andReturn();
     return JsonPath.read(result.getResponse().getContentAsString(), "$.id");
-  }
-
-  private String extractIdFromLocation(MvcResult result) {
-    String location = result.getResponse().getHeader("Location");
-    return location.substring(location.lastIndexOf('/') + 1);
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_ti_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_ti_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 }

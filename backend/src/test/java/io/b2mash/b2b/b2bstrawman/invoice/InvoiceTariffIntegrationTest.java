@@ -3,10 +3,7 @@ package io.b2mash.b2b.b2bstrawman.invoice;
 import static io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.createActiveCustomer;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ModuleNotEnabledException;
@@ -16,6 +13,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.tariff.TariffItem;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.tariff.TariffItemRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.tariff.TariffSchedule;
@@ -31,7 +29,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -75,8 +72,13 @@ class InvoiceTariffIntegrationTest {
         provisioningService.provisionTenant(ORG_ID, "Inv Tariff Test Org", null).schemaName();
     memberId =
         UUID.fromString(
-            syncMember(
-                ORG_ID, "user_inv_tariff", "inv_tariff@test.com", "Inv Tariff Owner", "owner"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_inv_tariff",
+                "inv_tariff@test.com",
+                "Inv Tariff Owner",
+                "owner"));
 
     // Enable lssa_tariff module
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -131,7 +133,8 @@ class InvoiceTariffIntegrationTest {
             .schemaName();
     disabledMemberId =
         UUID.fromString(
-            syncMember(
+            TestMemberHelper.syncMember(
+                mockMvc,
                 DISABLED_ORG_ID,
                 "user_inv_tariff_dis",
                 "inv_tariff_dis@test.com",
@@ -362,24 +365,5 @@ class InvoiceTariffIntegrationTest {
         .where(RequestScopes.MEMBER_ID, memberId)
         .where(RequestScopes.ORG_ROLE, "owner")
         .run(action);
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"clerkOrgId":"%s","clerkUserId":"%s","email":"%s","name":"%s","avatarUrl":null,"orgRole":"%s"}
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

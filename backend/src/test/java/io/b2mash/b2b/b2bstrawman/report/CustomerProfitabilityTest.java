@@ -1,12 +1,9 @@
 package io.b2mash.b2b.b2bstrawman.report;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.billingrate.BillingRateService;
 import io.b2mash.b2b.b2bstrawman.costrate.CostRateService;
@@ -21,10 +18,11 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.TaskService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
@@ -36,8 +34,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -79,7 +75,8 @@ class CustomerProfitabilityTest {
 
     memberIdOwner =
         UUID.fromString(
-            syncMember(
+            TestMemberHelper.syncMember(
+                mockMvc,
                 ORG_ID,
                 "user_custprofit_owner",
                 "custprofit_owner@test.com",
@@ -87,7 +84,8 @@ class CustomerProfitabilityTest {
                 "owner"));
     memberIdMember =
         UUID.fromString(
-            syncMember(
+            TestMemberHelper.syncMember(
+                mockMvc,
                 ORG_ID,
                 "user_custprofit_member",
                 "custprofit_member@test.com",
@@ -225,7 +223,9 @@ class CustomerProfitabilityTest {
   @Order(1)
   void aggregatesAcrossMultipleProjects() throws Exception {
     mockMvc
-        .perform(get("/api/customers/{customerId}/profitability", customerId).with(ownerJwt()))
+        .perform(
+            get("/api/customers/{customerId}/profitability", customerId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_custprofit_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.customerId").value(customerId.toString()))
         .andExpect(jsonPath("$.customerName").value("Test Customer"))
@@ -246,7 +246,7 @@ class CustomerProfitabilityTest {
             get("/api/customers/{customerId}/profitability", customerId)
                 .param("from", "2025-01-01")
                 .param("to", "2025-01-31")
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_custprofit_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.currencies[0].totalBillableHours").value(3.0))
         .andExpect(jsonPath("$.currencies[0].totalNonBillableHours").value(0.0))
@@ -258,7 +258,8 @@ class CustomerProfitabilityTest {
   void customerWithNoLinkedProjectsReturnsEmptyCurrencies() throws Exception {
     mockMvc
         .perform(
-            get("/api/customers/{customerId}/profitability", customerIdNoProjects).with(ownerJwt()))
+            get("/api/customers/{customerId}/profitability", customerIdNoProjects)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_custprofit_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.customerId").value(customerIdNoProjects.toString()))
         .andExpect(jsonPath("$.currencies").isArray())
@@ -270,7 +271,9 @@ class CustomerProfitabilityTest {
   void nonAdminRejectedWith403() throws Exception {
     // Regular member should be rejected — customer profitability is admin/owner only
     mockMvc
-        .perform(get("/api/customers/{customerId}/profitability", customerId).with(memberJwt()))
+        .perform(
+            get("/api/customers/{customerId}/profitability", customerId)
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_custprofit_member", "member")))
         .andExpect(status().isForbidden());
   }
 
@@ -279,7 +282,9 @@ class CustomerProfitabilityTest {
   void marginCalculation() throws Exception {
     // billableValue: 300, costValue: 175, margin: 125, marginPercent: 41.67
     mockMvc
-        .perform(get("/api/customers/{customerId}/profitability", customerId).with(ownerJwt()))
+        .perform(
+            get("/api/customers/{customerId}/profitability", customerId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_custprofit_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.currencies[0].margin").isNumber())
         .andExpect(jsonPath("$.currencies[0].marginPercent").isNumber());
@@ -290,51 +295,9 @@ class CustomerProfitabilityTest {
   void nonExistentCustomerReturns404() throws Exception {
     UUID fakeId = UUID.randomUUID();
     mockMvc
-        .perform(get("/api/customers/{customerId}/profitability", fakeId).with(ownerJwt()))
+        .perform(
+            get("/api/customers/{customerId}/profitability", fakeId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_custprofit_owner")))
         .andExpect(status().isNotFound());
-  }
-
-  // --- Helpers ---
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_custprofit_owner")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_custprofit_member")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                {
-                  "clerkOrgId": "%s",
-                  "clerkUserId": "%s",
-                  "email": "%s",
-                  "name": "%s",
-                  "avatarUrl": null,
-                  "orgRole": "%s"
-                }
-                """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

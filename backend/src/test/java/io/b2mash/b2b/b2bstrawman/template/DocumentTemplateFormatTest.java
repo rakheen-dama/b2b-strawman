@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.template;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -11,6 +10,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
@@ -24,7 +25,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
@@ -36,8 +36,6 @@ import tools.jackson.databind.ObjectMapper;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class DocumentTemplateFormatTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_dt_format_test";
 
   @Autowired private MockMvc mockMvc;
@@ -52,8 +50,13 @@ class DocumentTemplateFormatTest {
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "DT Format Test Org", null);
 
-    syncMember(
-        ORG_ID, "user_dt_format_owner", "dt_format_owner@test.com", "DT Format Owner", "owner");
+    TestMemberHelper.syncMember(
+        mockMvc,
+        ORG_ID,
+        "user_dt_format_owner",
+        "dt_format_owner@test.com",
+        "DT Format Owner",
+        "owner");
   }
 
   @Test
@@ -71,7 +74,7 @@ class DocumentTemplateFormatTest {
         mockMvc
             .perform(
                 post("/api/templates")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dt_format_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isCreated())
@@ -100,7 +103,7 @@ class DocumentTemplateFormatTest {
         mockMvc
             .perform(
                 post("/api/templates")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dt_format_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isCreated())
@@ -115,14 +118,18 @@ class DocumentTemplateFormatTest {
   void listTemplates_filterByFormat_returnsFiltered() throws Exception {
     // All templates created so far are TIPTAP (plus any seeded ones)
     mockMvc
-        .perform(get("/api/templates?format=TIPTAP").with(ownerJwt()))
+        .perform(
+            get("/api/templates?format=TIPTAP")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dt_format_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$[0].format").value("TIPTAP"));
 
     // DOCX filter should return empty or only DOCX templates
     mockMvc
-        .perform(get("/api/templates?format=DOCX").with(ownerJwt()))
+        .perform(
+            get("/api/templates?format=DOCX")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dt_format_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray());
   }
@@ -133,7 +140,8 @@ class DocumentTemplateFormatTest {
     // Without format filter, should return all templates
     var result =
         mockMvc
-            .perform(get("/api/templates").with(ownerJwt()))
+            .perform(
+                get("/api/templates").with(TestJwtFactory.ownerJwt(ORG_ID, "user_dt_format_owner")))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$").isArray())
             .andExpect(jsonPath("$[0].format").exists())
@@ -152,7 +160,9 @@ class DocumentTemplateFormatTest {
   @Order(5)
   void detailTemplate_tiptapFormat_hasNullDiscoveredFields() throws Exception {
     mockMvc
-        .perform(get("/api/templates/" + tiptapTemplateId).with(ownerJwt()))
+        .perform(
+            get("/api/templates/" + tiptapTemplateId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dt_format_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.format").value("TIPTAP"))
         .andExpect(jsonPath("$.discoveredFields").doesNotExist());
@@ -165,13 +175,17 @@ class DocumentTemplateFormatTest {
     // Direct validation-throws testing requires setting docxS3Key on a TIPTAP entity,
     // which can't be done via the API (docxS3Key is not in CreateTemplateRequest).
     mockMvc
-        .perform(get("/api/templates/" + tiptapTemplateId).with(ownerJwt()))
+        .perform(
+            get("/api/templates/" + tiptapTemplateId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dt_format_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.format").value("TIPTAP"));
 
     // The list response should show null for docx fields on TIPTAP templates
     mockMvc
-        .perform(get("/api/templates?format=TIPTAP").with(ownerJwt()))
+        .perform(
+            get("/api/templates?format=TIPTAP")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dt_format_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[0].format").value("TIPTAP"))
         .andExpect(jsonPath("$[0].docxFileName").doesNotExist())
@@ -187,7 +201,9 @@ class DocumentTemplateFormatTest {
     // The create endpoint only creates TIPTAP templates, so this validates
     // that the format field flows through correctly.
     mockMvc
-        .perform(get("/api/templates/" + docxTemplateId).with(ownerJwt()))
+        .perform(
+            get("/api/templates/" + docxTemplateId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dt_format_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(docxTemplateId));
   }
@@ -208,7 +224,7 @@ class DocumentTemplateFormatTest {
         mockMvc
             .perform(
                 post("/api/templates")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dt_format_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isCreated())
@@ -218,46 +234,16 @@ class DocumentTemplateFormatTest {
 
     // Delete (deactivate) the template
     mockMvc
-        .perform(delete("/api/templates/" + deleteId).with(ownerJwt()))
+        .perform(
+            delete("/api/templates/" + deleteId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dt_format_owner")))
         .andExpect(status().isNoContent());
 
     // Verify it no longer appears in list
     mockMvc
-        .perform(get("/api/templates").with(ownerJwt()))
+        .perform(
+            get("/api/templates").with(TestJwtFactory.ownerJwt(ORG_ID, "user_dt_format_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[?(@.id=='" + deleteId + "')]").isEmpty());
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_dt_format_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

@@ -3,9 +3,7 @@ package io.b2mash.b2b.b2bstrawman.dashboard;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -18,10 +16,11 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.TaskService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryService;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -30,8 +29,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -46,8 +43,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class DashboardCompanyIntegrationTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_company_dash_test";
 
   @Autowired private MockMvc mockMvc;
@@ -82,13 +77,31 @@ class DashboardCompanyIntegrationTest {
 
     adminMemberId =
         UUID.fromString(
-            syncMember(ORG_ID, "user_cdash_admin", "cdash_admin@test.com", "Admin User", "admin"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_cdash_admin",
+                "cdash_admin@test.com",
+                "Admin User",
+                "admin"));
     member1Id =
         UUID.fromString(
-            syncMember(ORG_ID, "user_cdash_member1", "cdash_m1@test.com", "Member One", "member"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_cdash_member1",
+                "cdash_m1@test.com",
+                "Member One",
+                "member"));
     member2Id =
         UUID.fromString(
-            syncMember(ORG_ID, "user_cdash_member2", "cdash_m2@test.com", "Member Two", "member"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_cdash_member2",
+                "cdash_m2@test.com",
+                "Member Two",
+                "member"));
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
@@ -254,7 +267,7 @@ class DashboardCompanyIntegrationTest {
             get("/api/dashboard/kpis")
                 .param("from", thirtyDaysAgo.toString())
                 .param("to", today.toString())
-                .with(adminJwt()))
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_cdash_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.activeProjectCount").value(greaterThanOrEqualTo(3)));
   }
@@ -267,7 +280,7 @@ class DashboardCompanyIntegrationTest {
             get("/api/dashboard/kpis")
                 .param("from", thirtyDaysAgo.toString())
                 .param("to", today.toString())
-                .with(adminJwt()))
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_cdash_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.totalHoursLogged").value(greaterThan(0.0)));
   }
@@ -279,7 +292,7 @@ class DashboardCompanyIntegrationTest {
             get("/api/dashboard/kpis")
                 .param("from", thirtyDaysAgo.toString())
                 .param("to", today.toString())
-                .with(member1Jwt()))
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_cdash_member1")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.billablePercent").isEmpty());
   }
@@ -291,7 +304,7 @@ class DashboardCompanyIntegrationTest {
             get("/api/dashboard/kpis")
                 .param("from", thirtyDaysAgo.toString())
                 .param("to", today.toString())
-                .with(adminJwt()))
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_cdash_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.billablePercent").isNumber());
   }
@@ -303,7 +316,7 @@ class DashboardCompanyIntegrationTest {
             get("/api/dashboard/kpis")
                 .param("from", thirtyDaysAgo.toString())
                 .param("to", today.toString())
-                .with(adminJwt()))
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_cdash_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.trend").isArray());
   }
@@ -315,7 +328,7 @@ class DashboardCompanyIntegrationTest {
             get("/api/dashboard/kpis")
                 .param("from", thirtyDaysAgo.toString())
                 .param("to", today.toString())
-                .with(adminJwt()))
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_cdash_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.previousPeriod").isNotEmpty())
         .andExpect(jsonPath("$.previousPeriod.activeProjectCount").isNumber());
@@ -326,7 +339,9 @@ class DashboardCompanyIntegrationTest {
   @Test
   void projectHealthListSortedBySeverity() throws Exception {
     mockMvc
-        .perform(get("/api/dashboard/project-health").with(adminJwt()))
+        .perform(
+            get("/api/dashboard/project-health")
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_cdash_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$", hasSize(greaterThanOrEqualTo(3))))
@@ -339,7 +354,9 @@ class DashboardCompanyIntegrationTest {
     // member1 is only on projectA, so should see fewer projects than admin
     var adminResult =
         mockMvc
-            .perform(get("/api/dashboard/project-health").with(adminJwt()))
+            .perform(
+                get("/api/dashboard/project-health")
+                    .with(TestJwtFactory.adminJwt(ORG_ID, "user_cdash_admin")))
             .andExpect(status().isOk())
             .andReturn();
     int adminCount =
@@ -347,7 +364,9 @@ class DashboardCompanyIntegrationTest {
 
     var memberResult =
         mockMvc
-            .perform(get("/api/dashboard/project-health").with(member1Jwt()))
+            .perform(
+                get("/api/dashboard/project-health")
+                    .with(TestJwtFactory.memberJwt(ORG_ID, "user_cdash_member1")))
             .andExpect(status().isOk())
             .andReturn();
     int memberCount =
@@ -367,7 +386,7 @@ class DashboardCompanyIntegrationTest {
             get("/api/dashboard/team-workload")
                 .param("from", thirtyDaysAgo.toString())
                 .param("to", today.toString())
-                .with(adminJwt()))
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_cdash_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$", hasSize(greaterThanOrEqualTo(3))))
@@ -385,7 +404,7 @@ class DashboardCompanyIntegrationTest {
             get("/api/dashboard/team-workload")
                 .param("from", thirtyDaysAgo.toString())
                 .param("to", today.toString())
-                .with(member1Jwt()))
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_cdash_member1")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$", hasSize(1)))
@@ -398,7 +417,10 @@ class DashboardCompanyIntegrationTest {
   @Test
   void crossProjectActivityReturnsRecentEvents() throws Exception {
     mockMvc
-        .perform(get("/api/dashboard/activity").param("limit", "20").with(adminJwt()))
+        .perform(
+            get("/api/dashboard/activity")
+                .param("limit", "20")
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_cdash_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$", hasSize(greaterThan(0))))
@@ -413,7 +435,10 @@ class DashboardCompanyIntegrationTest {
     // member1 is only on projectA, so should see fewer activity events
     var adminResult =
         mockMvc
-            .perform(get("/api/dashboard/activity").param("limit", "50").with(adminJwt()))
+            .perform(
+                get("/api/dashboard/activity")
+                    .param("limit", "50")
+                    .with(TestJwtFactory.adminJwt(ORG_ID, "user_cdash_admin")))
             .andExpect(status().isOk())
             .andReturn();
     int adminCount =
@@ -421,7 +446,10 @@ class DashboardCompanyIntegrationTest {
 
     var memberResult =
         mockMvc
-            .perform(get("/api/dashboard/activity").param("limit", "50").with(member1Jwt()))
+            .perform(
+                get("/api/dashboard/activity")
+                    .param("limit", "50")
+                    .with(TestJwtFactory.memberJwt(ORG_ID, "user_cdash_member1")))
             .andExpect(status().isOk())
             .andReturn();
     int memberCount =
@@ -435,48 +463,6 @@ class DashboardCompanyIntegrationTest {
 
   // --- JWT Helpers ---
 
-  private JwtRequestPostProcessor adminJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_cdash_admin").claim("o", Map.of("id", ORG_ID, "rol", "admin")));
-  }
-
-  private JwtRequestPostProcessor member1Jwt() {
-    return jwt()
-        .jwt(
-            j -> j.subject("user_cdash_member1").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor member2Jwt() {
-    return jwt()
-        .jwt(
-            j -> j.subject("user_cdash_member2").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
   // --- Member Sync Helper ---
 
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
 }

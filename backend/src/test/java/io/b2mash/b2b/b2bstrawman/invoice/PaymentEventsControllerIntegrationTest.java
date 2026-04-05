@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.invoice;
 
 import static org.hamcrest.Matchers.hasSize;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -18,7 +17,8 @@ import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -28,7 +28,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -62,12 +61,22 @@ class PaymentEventsControllerIntegrationTest {
 
     memberIdOwner =
         UUID.fromString(
-            syncMember(
-                "user_pay_events_owner", "pay_events_owner@test.com", "PayEvents Owner", "owner"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_pay_events_owner",
+                "pay_events_owner@test.com",
+                "PayEvents Owner",
+                "owner"));
 
     // Sync a member user for 403 tests
-    syncMember(
-        "user_pay_events_member", "pay_events_member@test.com", "PayEvents Member", "member");
+    TestMemberHelper.syncMember(
+        mockMvc,
+        ORG_ID,
+        "user_pay_events_member",
+        "pay_events_member@test.com",
+        "PayEvents Member",
+        "member");
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
@@ -99,51 +108,6 @@ class PaymentEventsControllerIntegrationTest {
                     }));
   }
 
-  // --- JWT Helpers ---
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_pay_events_owner")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_pay_events_member")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  // --- Member sync helper ---
-
-  private String syncMember(String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(ORG_ID, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
   // --- Invoice creation helper ---
 
   private String createDraftInvoice() throws Exception {
@@ -151,7 +115,7 @@ class PaymentEventsControllerIntegrationTest {
         mockMvc
             .perform(
                 post("/api/invoices")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pay_events_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -170,7 +134,7 @@ class PaymentEventsControllerIntegrationTest {
     mockMvc
         .perform(
             post("/api/invoices/" + invoiceId + "/lines")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pay_events_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -188,13 +152,17 @@ class PaymentEventsControllerIntegrationTest {
 
   private void approveInvoice(String invoiceId) throws Exception {
     mockMvc
-        .perform(post("/api/invoices/" + invoiceId + "/approve").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + invoiceId + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pay_events_owner")))
         .andExpect(status().isOk());
   }
 
   private void sendInvoice(String invoiceId) throws Exception {
     mockMvc
-        .perform(post("/api/invoices/" + invoiceId + "/send").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + invoiceId + "/send")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pay_events_owner")))
         .andExpect(status().isOk());
   }
 
@@ -202,7 +170,7 @@ class PaymentEventsControllerIntegrationTest {
     mockMvc
         .perform(
             post("/api/invoices/" + invoiceId + "/payment")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pay_events_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -218,7 +186,9 @@ class PaymentEventsControllerIntegrationTest {
     String invoiceId = createDraftInvoice();
 
     mockMvc
-        .perform(get("/api/invoices/" + invoiceId + "/payment-events").with(ownerJwt()))
+        .perform(
+            get("/api/invoices/" + invoiceId + "/payment-events")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pay_events_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$", hasSize(0)));
   }
@@ -232,7 +202,9 @@ class PaymentEventsControllerIntegrationTest {
     recordPayment(invoiceId);
 
     mockMvc
-        .perform(get("/api/invoices/" + invoiceId + "/payment-events").with(ownerJwt()))
+        .perform(
+            get("/api/invoices/" + invoiceId + "/payment-events")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pay_events_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$", hasSize(1)))
         .andExpect(jsonPath("$[0].providerSlug").value("manual"))
@@ -248,14 +220,18 @@ class PaymentEventsControllerIntegrationTest {
     String invoiceId = createDraftInvoice();
 
     mockMvc
-        .perform(get("/api/invoices/" + invoiceId + "/payment-events").with(memberJwt()))
+        .perform(
+            get("/api/invoices/" + invoiceId + "/payment-events")
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_pay_events_member", "member")))
         .andExpect(status().isForbidden());
   }
 
   @Test
   void getPaymentEvents_returns_404_for_unknown_invoice() throws Exception {
     mockMvc
-        .perform(get("/api/invoices/" + UUID.randomUUID() + "/payment-events").with(ownerJwt()))
+        .perform(
+            get("/api/invoices/" + UUID.randomUUID() + "/payment-events")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pay_events_owner")))
         .andExpect(status().isNotFound());
   }
 
@@ -269,7 +245,9 @@ class PaymentEventsControllerIntegrationTest {
 
     // Verify via the payment events endpoint
     mockMvc
-        .perform(get("/api/invoices/" + invoiceId + "/payment-events").with(ownerJwt()))
+        .perform(
+            get("/api/invoices/" + invoiceId + "/payment-events")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pay_events_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$", hasSize(1)))
         .andExpect(jsonPath("$[0].providerSlug").value("manual"))
@@ -293,7 +271,7 @@ class PaymentEventsControllerIntegrationTest {
     mockMvc
         .perform(
             post("/api/invoices/" + invoiceId + "/payment")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pay_events_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -302,7 +280,9 @@ class PaymentEventsControllerIntegrationTest {
         .andExpect(status().isOk());
 
     mockMvc
-        .perform(get("/api/invoices/" + invoiceId + "/payment-events").with(ownerJwt()))
+        .perform(
+            get("/api/invoices/" + invoiceId + "/payment-events")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pay_events_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[0].paymentReference").value("REF-CUSTOM-123"));
   }

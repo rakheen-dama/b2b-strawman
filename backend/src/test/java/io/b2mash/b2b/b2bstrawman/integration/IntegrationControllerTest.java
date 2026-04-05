@@ -3,7 +3,6 @@ package io.b2mash.b2b.b2bstrawman.integration;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -12,13 +11,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
@@ -32,7 +31,6 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -65,11 +63,14 @@ class IntegrationControllerTest {
     provisioningService.provisionTenant(ORG_ID, "Integration Controller Test Org", null);
 
     memberIdOwner =
-        syncMember(ORG_ID, "user_intctrl_owner", "intctrl_owner@test.com", "Owner", "owner");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_intctrl_owner", "intctrl_owner@test.com", "Owner", "owner");
     memberIdAdmin =
-        syncMember(ORG_ID, "user_intctrl_admin", "intctrl_admin@test.com", "Admin", "admin");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_intctrl_admin", "intctrl_admin@test.com", "Admin", "admin");
     memberIdMember =
-        syncMember(ORG_ID, "user_intctrl_member", "intctrl_member@test.com", "Member", "member");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_intctrl_member", "intctrl_member@test.com", "Member", "member");
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
@@ -79,7 +80,8 @@ class IntegrationControllerTest {
   @Order(1)
   void listIntegrations_returnsAllFiveDomains() throws Exception {
     mockMvc
-        .perform(get("/api/integrations").with(ownerJwt()))
+        .perform(
+            get("/api/integrations").with(TestJwtFactory.ownerJwt(ORG_ID, "user_intctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$", hasSize(5)))
         .andExpect(jsonPath("$[0].domain").value("ACCOUNTING"))
@@ -95,7 +97,9 @@ class IntegrationControllerTest {
   @Order(2)
   void listProviders_returnsNoopForAllDomains() throws Exception {
     mockMvc
-        .perform(get("/api/integrations/providers").with(ownerJwt()))
+        .perform(
+            get("/api/integrations/providers")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_intctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.ACCOUNTING").isArray())
         .andExpect(jsonPath("$.AI").isArray())
@@ -106,14 +110,18 @@ class IntegrationControllerTest {
   @Test
   @Order(3)
   void memberCannotAccessIntegrationsApi() throws Exception {
-    mockMvc.perform(get("/api/integrations").with(memberJwt())).andExpect(status().isForbidden());
+    mockMvc
+        .perform(
+            get("/api/integrations").with(TestJwtFactory.memberJwt(ORG_ID, "user_intctrl_member")))
+        .andExpect(status().isForbidden());
   }
 
   @Test
   @Order(4)
   void adminCanAccessIntegrationsApi() throws Exception {
     mockMvc
-        .perform(get("/api/integrations").with(adminJwt()))
+        .perform(
+            get("/api/integrations").with(TestJwtFactory.adminJwt(ORG_ID, "user_intctrl_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$", hasSize(5)));
   }
@@ -124,7 +132,7 @@ class IntegrationControllerTest {
     mockMvc
         .perform(
             put("/api/integrations/ACCOUNTING")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_intctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -142,7 +150,7 @@ class IntegrationControllerTest {
     mockMvc
         .perform(
             post("/api/integrations/ACCOUNTING/set-key")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_intctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -157,7 +165,9 @@ class IntegrationControllerTest {
   void apiKeyNeverReturnedInListResponse() throws Exception {
     var result =
         mockMvc
-            .perform(get("/api/integrations").with(ownerJwt()))
+            .perform(
+                get("/api/integrations")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_intctrl_owner")))
             .andExpect(status().isOk())
             .andReturn();
 
@@ -174,7 +184,7 @@ class IntegrationControllerTest {
     mockMvc
         .perform(
             post("/api/integrations/ACCOUNTING/set-key")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_intctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -187,7 +197,9 @@ class IntegrationControllerTest {
   @Order(30)
   void postTestConnectionReturnsSuccess() throws Exception {
     mockMvc
-        .perform(post("/api/integrations/ACCOUNTING/test").with(ownerJwt()))
+        .perform(
+            post("/api/integrations/ACCOUNTING/test")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_intctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success").value(true))
         .andExpect(jsonPath("$.providerName").value("noop"));
@@ -199,7 +211,7 @@ class IntegrationControllerTest {
     mockMvc
         .perform(
             patch("/api/integrations/ACCOUNTING/toggle")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_intctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -215,12 +227,15 @@ class IntegrationControllerTest {
   void deleteKeyRemovesKeySuffix() throws Exception {
     // Delete the key
     mockMvc
-        .perform(delete("/api/integrations/ACCOUNTING/key").with(ownerJwt()))
+        .perform(
+            delete("/api/integrations/ACCOUNTING/key")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_intctrl_owner")))
         .andExpect(status().isNoContent());
 
     // Verify keySuffix is now null
     mockMvc
-        .perform(get("/api/integrations").with(ownerJwt()))
+        .perform(
+            get("/api/integrations").with(TestJwtFactory.ownerJwt(ORG_ID, "user_intctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[0].domain").value("ACCOUNTING"))
         .andExpect(jsonPath("$[0].keySuffix").value(nullValue()));
@@ -232,7 +247,7 @@ class IntegrationControllerTest {
     mockMvc
         .perform(
             patch("/api/integrations/ACCOUNTING/toggle")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_intctrl_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -378,49 +393,5 @@ class IntegrationControllerTest {
         .where(RequestScopes.MEMBER_ID, UUID.fromString(memberIdOwner))
         .where(RequestScopes.ORG_ROLE, "owner")
         .run(action);
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", INTERNAL_API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_intctrl_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor adminJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_intctrl_admin").claim("o", Map.of("id", ORG_ID, "rol", "admin")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_intctrl_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 }

@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.informationrequest;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -18,6 +17,8 @@ import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.provisioning.SchemaNameGenerator;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestChecklistHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -40,8 +41,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class InformationRequestControllerTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_inforeq_ctrl_test";
 
   @Autowired private MockMvc mockMvc;
@@ -67,13 +66,31 @@ class InformationRequestControllerTest {
   void provisionTenantAndSeedData() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "InfoReq Controller Test Org", null);
     memberIdOwner =
-        syncMember("user_inforeq_owner", "inforeq_owner@test.com", "InfoReq Owner", "owner");
+        TestMemberHelper.syncMember(
+            mockMvc,
+            ORG_ID,
+            "user_inforeq_owner",
+            "inforeq_owner@test.com",
+            "InfoReq Owner",
+            "owner");
     memberIdOwnerUuid = UUID.fromString(memberIdOwner);
     memberIdAdmin =
-        syncMember("user_inforeq_admin", "inforeq_admin@test.com", "InfoReq Admin", "admin");
+        TestMemberHelper.syncMember(
+            mockMvc,
+            ORG_ID,
+            "user_inforeq_admin",
+            "inforeq_admin@test.com",
+            "InfoReq Admin",
+            "admin");
     memberIdMember =
-        syncMember("user_inforeq_member", "inforeq_member@test.com", "InfoReq Member", "member");
-    customerId = createCustomer(ownerJwt());
+        TestMemberHelper.syncMember(
+            mockMvc,
+            ORG_ID,
+            "user_inforeq_member",
+            "inforeq_member@test.com",
+            "InfoReq Member",
+            "member");
+    customerId = createCustomer(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner"));
     portalContactId = createPortalContact(customerId, "contact@test.com", "Test Contact");
     templateId = createRequestTemplate();
 
@@ -82,14 +99,18 @@ class InformationRequestControllerTest {
 
     customRoleMemberId =
         UUID.fromString(
-            syncMember(
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
                 "user_inforeq_315a_custom",
                 "inforeq_custom@test.com",
                 "InfoReq Custom User",
                 "member"));
     noCapMemberId =
         UUID.fromString(
-            syncMember(
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
                 "user_inforeq_315a_nocap",
                 "inforeq_nocap@test.com",
                 "InfoReq NoCap User",
@@ -130,7 +151,7 @@ class InformationRequestControllerTest {
     mockMvc
         .perform(
             post("/api/information-requests")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -159,7 +180,7 @@ class InformationRequestControllerTest {
     mockMvc
         .perform(
             post("/api/information-requests")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -187,7 +208,9 @@ class InformationRequestControllerTest {
   void shouldSendRequest() throws Exception {
     String requestId = createInfoRequest();
     mockMvc
-        .perform(post("/api/information-requests/{id}/send", requestId).with(ownerJwt()))
+        .perform(
+            post("/api/information-requests/{id}/send", requestId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("SENT"))
         .andExpect(jsonPath("$.sentAt").exists());
@@ -197,7 +220,9 @@ class InformationRequestControllerTest {
   void shouldCancelDraftRequest() throws Exception {
     String requestId = createInfoRequest();
     mockMvc
-        .perform(post("/api/information-requests/{id}/cancel", requestId).with(ownerJwt()))
+        .perform(
+            post("/api/information-requests/{id}/cancel", requestId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("CANCELLED"));
   }
@@ -206,10 +231,14 @@ class InformationRequestControllerTest {
   void shouldCancelSentRequest() throws Exception {
     String requestId = createInfoRequest();
     // Send first
-    mockMvc.perform(post("/api/information-requests/{id}/send", requestId).with(ownerJwt()));
+    mockMvc.perform(
+        post("/api/information-requests/{id}/send", requestId)
+            .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner")));
     // Then cancel
     mockMvc
-        .perform(post("/api/information-requests/{id}/cancel", requestId).with(ownerJwt()))
+        .perform(
+            post("/api/information-requests/{id}/cancel", requestId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("CANCELLED"));
   }
@@ -218,7 +247,9 @@ class InformationRequestControllerTest {
   void shouldNotCancelCompletedRequest() throws Exception {
     String requestId = createInfoRequestAndComplete();
     mockMvc
-        .perform(post("/api/information-requests/{id}/cancel", requestId).with(ownerJwt()))
+        .perform(
+            post("/api/information-requests/{id}/cancel", requestId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner")))
         .andExpect(status().isBadRequest());
   }
 
@@ -229,7 +260,7 @@ class InformationRequestControllerTest {
         mockMvc
             .perform(
                 post("/api/information-requests")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -242,7 +273,9 @@ class InformationRequestControllerTest {
         JsonPath.read(result.getResponse().getContentAsString(), "$.id").toString();
 
     mockMvc
-        .perform(post("/api/information-requests/{id}/send", emptyRequestId).with(ownerJwt()))
+        .perform(
+            post("/api/information-requests/{id}/send", emptyRequestId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner")))
         .andExpect(status().isBadRequest());
   }
 
@@ -251,7 +284,9 @@ class InformationRequestControllerTest {
   @Test
   void shouldAcceptSubmittedItem() throws Exception {
     String requestId = createInfoRequest();
-    mockMvc.perform(post("/api/information-requests/{id}/send", requestId).with(ownerJwt()));
+    mockMvc.perform(
+        post("/api/information-requests/{id}/send", requestId)
+            .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner")));
 
     // Get items
     var items = getItemIds(requestId);
@@ -263,7 +298,7 @@ class InformationRequestControllerTest {
     mockMvc
         .perform(
             post("/api/information-requests/{id}/items/{itemId}/accept", requestId, itemId)
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.items[?(@.id=='%s')].status".formatted(itemId)).value("ACCEPTED"));
   }
@@ -271,7 +306,9 @@ class InformationRequestControllerTest {
   @Test
   void shouldRejectSubmittedItem() throws Exception {
     String requestId = createInfoRequest();
-    mockMvc.perform(post("/api/information-requests/{id}/send", requestId).with(ownerJwt()));
+    mockMvc.perform(
+        post("/api/information-requests/{id}/send", requestId)
+            .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner")));
 
     var items = getItemIds(requestId);
     String itemId = items.get(0);
@@ -280,7 +317,7 @@ class InformationRequestControllerTest {
     mockMvc
         .perform(
             post("/api/information-requests/{id}/items/{itemId}/reject", requestId, itemId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -296,7 +333,9 @@ class InformationRequestControllerTest {
   @Test
   void shouldNotAcceptNonSubmittedItem() throws Exception {
     String requestId = createInfoRequest();
-    mockMvc.perform(post("/api/information-requests/{id}/send", requestId).with(ownerJwt()));
+    mockMvc.perform(
+        post("/api/information-requests/{id}/send", requestId)
+            .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner")));
 
     var items = getItemIds(requestId);
     String itemId = items.get(0); // Still PENDING
@@ -304,14 +343,16 @@ class InformationRequestControllerTest {
     mockMvc
         .perform(
             post("/api/information-requests/{id}/items/{itemId}/accept", requestId, itemId)
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner")))
         .andExpect(status().isBadRequest());
   }
 
   @Test
   void shouldRejectRequireReason() throws Exception {
     String requestId = createInfoRequest();
-    mockMvc.perform(post("/api/information-requests/{id}/send", requestId).with(ownerJwt()));
+    mockMvc.perform(
+        post("/api/information-requests/{id}/send", requestId)
+            .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner")));
 
     var items = getItemIds(requestId);
     String itemId = items.get(0);
@@ -320,7 +361,7 @@ class InformationRequestControllerTest {
     mockMvc
         .perform(
             post("/api/information-requests/{id}/items/{itemId}/reject", requestId, itemId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -332,14 +373,18 @@ class InformationRequestControllerTest {
   @Test
   void shouldAutoCompleteWhenAllRequiredAccepted() throws Exception {
     String requestId = createInfoRequest();
-    mockMvc.perform(post("/api/information-requests/{id}/send", requestId).with(ownerJwt()));
+    mockMvc.perform(
+        post("/api/information-requests/{id}/send", requestId)
+            .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner")));
 
     var items = getItemIds(requestId);
     // Template has 2 required items (index 0, 1) and 1 optional (index 2)
     // Get required item IDs from the response
     var getResult =
         mockMvc
-            .perform(get("/api/information-requests/{id}", requestId).with(ownerJwt()))
+            .perform(
+                get("/api/information-requests/{id}", requestId)
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner")))
             .andReturn();
     String responseBody = getResult.getResponse().getContentAsString();
     List<Map<String, Object>> itemsList = JsonPath.read(responseBody, "$.items");
@@ -351,13 +396,15 @@ class InformationRequestControllerTest {
         simulateItemSubmission(requestId, itemId);
         mockMvc.perform(
             post("/api/information-requests/{id}/items/{itemId}/accept", requestId, itemId)
-                .with(ownerJwt()));
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner")));
       }
     }
 
     // Verify auto-completed
     mockMvc
-        .perform(get("/api/information-requests/{id}", requestId).with(ownerJwt()))
+        .perform(
+            get("/api/information-requests/{id}", requestId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("COMPLETED"));
   }
@@ -370,7 +417,7 @@ class InformationRequestControllerTest {
         mockMvc
             .perform(
                 post("/api/information-requests")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -386,7 +433,7 @@ class InformationRequestControllerTest {
         mockMvc
             .perform(
                 post("/api/information-requests")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -414,7 +461,7 @@ class InformationRequestControllerTest {
     mockMvc
         .perform(
             put("/api/information-requests/{id}", requestId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -430,7 +477,7 @@ class InformationRequestControllerTest {
     mockMvc
         .perform(
             post("/api/information-requests/{id}/items", requestId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -446,7 +493,9 @@ class InformationRequestControllerTest {
   void shouldGetRequestWithItems() throws Exception {
     String requestId = createInfoRequest();
     mockMvc
-        .perform(get("/api/information-requests/{id}", requestId).with(ownerJwt()))
+        .perform(
+            get("/api/information-requests/{id}", requestId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(requestId))
         .andExpect(jsonPath("$.items").isArray())
@@ -459,10 +508,15 @@ class InformationRequestControllerTest {
   void shouldListWithStatusFilter() throws Exception {
     // Create and send a request
     String sentRequestId = createInfoRequest();
-    mockMvc.perform(post("/api/information-requests/{id}/send", sentRequestId).with(ownerJwt()));
+    mockMvc.perform(
+        post("/api/information-requests/{id}/send", sentRequestId)
+            .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner")));
 
     mockMvc
-        .perform(get("/api/information-requests").with(ownerJwt()).param("status", "SENT"))
+        .perform(
+            get("/api/information-requests")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner"))
+                .param("status", "SENT"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$[?(@.status=='SENT')]").isNotEmpty());
@@ -471,7 +525,10 @@ class InformationRequestControllerTest {
   @Test
   void shouldListWithCustomerFilter() throws Exception {
     mockMvc
-        .perform(get("/api/information-requests").with(ownerJwt()).param("customerId", customerId))
+        .perform(
+            get("/api/information-requests")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner"))
+                .param("customerId", customerId))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray());
   }
@@ -479,12 +536,12 @@ class InformationRequestControllerTest {
   @Test
   void shouldListWithProjectFilter() throws Exception {
     // Create a project first
-    String projectId = createProject(ownerJwt());
+    String projectId = createProject(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner"));
 
     // Create request with project
     mockMvc.perform(
         post("/api/information-requests")
-            .with(ownerJwt())
+            .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner"))
             .contentType(MediaType.APPLICATION_JSON)
             .content(
                 """
@@ -493,7 +550,10 @@ class InformationRequestControllerTest {
                     .formatted(templateId, customerId, projectId, portalContactId)));
 
     mockMvc
-        .perform(get("/api/information-requests").with(ownerJwt()).param("projectId", projectId))
+        .perform(
+            get("/api/information-requests")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner"))
+                .param("projectId", projectId))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$[0].projectId").value(projectId));
@@ -505,17 +565,18 @@ class InformationRequestControllerTest {
   void shouldListByCustomer() throws Exception {
     mockMvc
         .perform(
-            get("/api/customers/{customerId}/information-requests", customerId).with(ownerJwt()))
+            get("/api/customers/{customerId}/information-requests", customerId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray());
   }
 
   @Test
   void shouldListByProject() throws Exception {
-    String projectId = createProject(ownerJwt());
+    String projectId = createProject(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner"));
     mockMvc.perform(
         post("/api/information-requests")
-            .with(ownerJwt())
+            .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner"))
             .contentType(MediaType.APPLICATION_JSON)
             .content(
                 """
@@ -524,7 +585,9 @@ class InformationRequestControllerTest {
                     .formatted(templateId, customerId, projectId, portalContactId)));
 
     mockMvc
-        .perform(get("/api/projects/{projectId}/information-requests", projectId).with(ownerJwt()))
+        .perform(
+            get("/api/projects/{projectId}/information-requests", projectId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$[0].projectId").value(projectId));
@@ -535,7 +598,9 @@ class InformationRequestControllerTest {
   @Test
   void shouldGetDashboardSummary() throws Exception {
     mockMvc
-        .perform(get("/api/information-requests/summary").with(ownerJwt()))
+        .perform(
+            get("/api/information-requests/summary")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.total").isNumber())
         .andExpect(jsonPath("$.byStatus").isMap())
@@ -552,7 +617,7 @@ class InformationRequestControllerTest {
     mockMvc
         .perform(
             post("/api/information-requests")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -567,7 +632,7 @@ class InformationRequestControllerTest {
     mockMvc
         .perform(
             post("/api/information-requests")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -580,13 +645,13 @@ class InformationRequestControllerTest {
   @Test
   void shouldRejectPortalContactFromDifferentCustomer() throws Exception {
     // Create another customer and contact
-    String otherCustomerId = createCustomer2(ownerJwt());
+    String otherCustomerId = createCustomer2(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner"));
     String otherContactId = createPortalContact(otherCustomerId, "other@test.com", "Other Contact");
 
     mockMvc
         .perform(
             post("/api/information-requests")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -600,7 +665,11 @@ class InformationRequestControllerTest {
 
   @Test
   void shouldAllowMemberToList() throws Exception {
-    mockMvc.perform(get("/api/information-requests").with(memberJwt())).andExpect(status().isOk());
+    mockMvc
+        .perform(
+            get("/api/information-requests")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_inforeq_member")))
+        .andExpect(status().isOk());
   }
 
   @Test
@@ -608,7 +677,7 @@ class InformationRequestControllerTest {
     mockMvc
         .perform(
             post("/api/information-requests")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_inforeq_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -623,7 +692,7 @@ class InformationRequestControllerTest {
     mockMvc
         .perform(
             post("/api/information-requests")
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_inforeq_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -638,11 +707,14 @@ class InformationRequestControllerTest {
   @Test
   void shouldResendNotification() throws Exception {
     String requestId = createInfoRequest();
-    mockMvc.perform(post("/api/information-requests/{id}/send", requestId).with(ownerJwt()));
+    mockMvc.perform(
+        post("/api/information-requests/{id}/send", requestId)
+            .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner")));
 
     mockMvc
         .perform(
-            post("/api/information-requests/{id}/resend-notification", requestId).with(ownerJwt()))
+            post("/api/information-requests/{id}/resend-notification", requestId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("SENT"));
   }
@@ -654,7 +726,7 @@ class InformationRequestControllerTest {
         mockMvc
             .perform(
                 post("/api/information-requests")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -669,12 +741,16 @@ class InformationRequestControllerTest {
   private String createInfoRequestAndComplete() throws Exception {
     String requestId = createInfoRequest();
     // Send
-    mockMvc.perform(post("/api/information-requests/{id}/send", requestId).with(ownerJwt()));
+    mockMvc.perform(
+        post("/api/information-requests/{id}/send", requestId)
+            .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner")));
 
     // Get items and accept all required
     var getResult =
         mockMvc
-            .perform(get("/api/information-requests/{id}", requestId).with(ownerJwt()))
+            .perform(
+                get("/api/information-requests/{id}", requestId)
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner")))
             .andReturn();
     String responseBody = getResult.getResponse().getContentAsString();
     List<Map<String, Object>> itemsList = JsonPath.read(responseBody, "$.items");
@@ -685,7 +761,7 @@ class InformationRequestControllerTest {
         simulateItemSubmission(requestId, itemId);
         mockMvc.perform(
             post("/api/information-requests/{id}/items/{itemId}/accept", requestId, itemId)
-                .with(ownerJwt()));
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner")));
       }
     }
     return requestId;
@@ -694,7 +770,9 @@ class InformationRequestControllerTest {
   private List<String> getItemIds(String requestId) throws Exception {
     var result =
         mockMvc
-            .perform(get("/api/information-requests/{id}", requestId).with(ownerJwt()))
+            .perform(
+                get("/api/information-requests/{id}", requestId)
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner")))
             .andReturn();
     String body = result.getResponse().getContentAsString();
     List<String> ids = JsonPath.read(body, "$.items[*].id");
@@ -761,7 +839,7 @@ class InformationRequestControllerTest {
         mockMvc
             .perform(
                 post("/api/request-templates")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -829,35 +907,14 @@ class InformationRequestControllerTest {
     // Complete all checklist items (auto-transitions ONBOARDING -> ACTIVE)
     TestChecklistHelper.completeChecklistItems(mockMvc, activeCustomerId, jwt);
     return activeCustomerId;
-  }
-
-  private String syncMember(String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        { "clerkOrgId": "%s", "clerkUserId": "%s", "email": "%s",
-                          "name": "%s", "avatarUrl": null, "orgRole": "%s" }
-                        """
-                            .formatted(ORG_ID, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  // --- Capability Tests (added in Epic 315A) ---
+  } // --- Capability Tests (added in Epic 315A) ---
 
   @Test
   void customRoleWithCapability_accessesInfoReqEndpoint_returns201() throws Exception {
     mockMvc
         .perform(
             post("/api/information-requests")
-                .with(customRoleJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_inforeq_315a_custom"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -872,7 +929,7 @@ class InformationRequestControllerTest {
     mockMvc
         .perform(
             post("/api/information-requests")
-                .with(noCapabilityJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_inforeq_315a_nocap"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -880,38 +937,5 @@ class InformationRequestControllerTest {
                     """
                         .formatted(templateId, customerId, portalContactId)))
         .andExpect(status().isForbidden());
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_inforeq_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor adminJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_inforeq_admin").claim("o", Map.of("id", ORG_ID, "rol", "admin")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_inforeq_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor customRoleJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_inforeq_315a_custom")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor noCapabilityJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_inforeq_315a_nocap")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 }

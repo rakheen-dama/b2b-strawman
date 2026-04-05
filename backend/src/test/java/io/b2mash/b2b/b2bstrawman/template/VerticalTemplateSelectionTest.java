@@ -1,14 +1,12 @@
 package io.b2mash.b2b.b2bstrawman.template;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -17,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -28,8 +25,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class VerticalTemplateSelectionTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID_ZA = "org_vert_tmpl_za";
   private static final String ORG_ID_DEFAULT = "org_vert_tmpl_default";
 
@@ -50,8 +45,13 @@ class VerticalTemplateSelectionTest {
     provisioningService.provisionTenant(ORG_ID_ZA, "Vertical ZA Org", "accounting-za");
     memberIdZa =
         UUID.fromString(
-            syncMember(
-                ORG_ID_ZA, "user_vert_za_owner", "vert_za@test.com", "Vert ZA Owner", "owner"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID_ZA,
+                "user_vert_za_owner",
+                "vert_za@test.com",
+                "Vert ZA Owner",
+                "owner"));
     tenantSchemaZa =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID_ZA).orElseThrow().getSchemaName();
 
@@ -59,7 +59,8 @@ class VerticalTemplateSelectionTest {
     provisioningService.provisionTenant(ORG_ID_DEFAULT, "Vertical Default Org", null);
     memberIdDefault =
         UUID.fromString(
-            syncMember(
+            TestMemberHelper.syncMember(
+                mockMvc,
                 ORG_ID_DEFAULT,
                 "user_vert_default_owner",
                 "vert_default@test.com",
@@ -107,31 +108,5 @@ class VerticalTemplateSelectionTest {
                       }
                       // Either empty or a generic "invoice" template — both are valid fallbacks
                     }));
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

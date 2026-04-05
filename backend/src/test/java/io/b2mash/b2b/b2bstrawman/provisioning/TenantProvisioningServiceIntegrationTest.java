@@ -1,15 +1,14 @@
 package io.b2mash.b2b.b2bstrawman.provisioning;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.sql.SQLException;
-import java.util.Map;
 import java.util.Set;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.BeforeAll;
@@ -20,8 +19,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -36,8 +33,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class TenantProvisioningServiceIntegrationTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_tpsi_legal_za";
   private static final Set<String> ALLOWED_COLUMNS =
       Set.of("enabled_modules", "terminology_namespace", "default_currency", "vertical_profile");
@@ -57,7 +52,8 @@ class TenantProvisioningServiceIntegrationTest {
     assertThat(result.success()).isTrue();
     tenantSchema = result.schemaName();
 
-    syncMember(ORG_ID, "user_tpsi_owner", "tpsi_owner@test.com", "TPSI Owner", "owner");
+    TestMemberHelper.syncMemberQuietly(
+        mockMvc, ORG_ID, "user_tpsi_owner", "tpsi_owner@test.com", "TPSI Owner", "owner");
   }
 
   @Test
@@ -82,7 +78,7 @@ class TenantProvisioningServiceIntegrationTest {
   @Test
   void provisionWithLegalZa_courtCalendarListReturns200() throws Exception {
     mockMvc
-        .perform(get("/api/court-dates").with(ownerJwt()))
+        .perform(get("/api/court-dates").with(TestJwtFactory.ownerJwt(ORG_ID, "user_tpsi_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray());
   }
@@ -103,33 +99,5 @@ class TenantProvisioningServiceIntegrationTest {
       }
       return null;
     }
-  }
-
-  private void syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    mockMvc
-        .perform(
-            post("/internal/members/sync")
-                .header("X-API-KEY", API_KEY)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {
-                      "clerkOrgId": "%s",
-                      "clerkUserId": "%s",
-                      "email": "%s",
-                      "name": "%s",
-                      "avatarUrl": null,
-                      "orgRole": "%s"
-                    }
-                    """
-                        .formatted(orgId, clerkUserId, email, name, orgRole)))
-        .andExpect(status().isCreated());
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_tpsi_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
   }
 }

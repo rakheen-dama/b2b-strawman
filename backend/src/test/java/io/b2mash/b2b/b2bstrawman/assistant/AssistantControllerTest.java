@@ -5,13 +5,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.asyncDispatch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.assistant.provider.ChatRequest;
 import io.b2mash.b2b.b2bstrawman.assistant.provider.LlmChatProvider;
@@ -26,8 +24,9 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -41,7 +40,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -52,8 +50,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AssistantControllerTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_assistant_ctrl_test";
 
   @MockitoBean private LlmChatProviderRegistry llmChatProviderRegistry;
@@ -75,7 +71,8 @@ class AssistantControllerTest {
   void setUp() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Controller Test Org", null);
     var memberIdStr =
-        syncMember(ORG_ID, "user_actrl_owner", "actrl_owner@test.com", "ACTrl Owner", "owner");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_actrl_owner", "actrl_owner@test.com", "ACTrl Owner", "owner");
     memberIdOwner = UUID.fromString(memberIdStr);
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
@@ -118,7 +115,7 @@ class AssistantControllerTest {
         mockMvc
             .perform(
                 post("/api/assistant/chat")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_actrl_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -144,7 +141,7 @@ class AssistantControllerTest {
         mockMvc
             .perform(
                 post("/api/assistant/chat")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_actrl_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -181,7 +178,7 @@ class AssistantControllerTest {
     mockMvc
         .perform(
             post("/api/assistant/chat/confirm")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_actrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -199,7 +196,7 @@ class AssistantControllerTest {
     mockMvc
         .perform(
             post("/api/assistant/chat/confirm")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_actrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -216,7 +213,9 @@ class AssistantControllerTest {
   @Test
   void getAiModelsReturnsListOfModels() throws Exception {
     mockMvc
-        .perform(get("/api/settings/integrations/ai/models").with(ownerJwt()))
+        .perform(
+            get("/api/settings/integrations/ai/models")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_actrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.models").isArray())
         .andExpect(jsonPath("$.models[0].id").exists())
@@ -228,7 +227,9 @@ class AssistantControllerTest {
   @Test
   void testConnectionAiDomainReturnsSuccess() throws Exception {
     mockMvc
-        .perform(post("/api/integrations/AI/test").with(ownerJwt()))
+        .perform(
+            post("/api/integrations/AI/test")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_actrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.success").value(true))
         .andExpect(jsonPath("$.providerName").value("anthropic"));
@@ -248,29 +249,5 @@ class AssistantControllerTest {
             })
         .when(mockProvider)
         .chat(any(ChatRequest.class), any());
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_actrl_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"clerkOrgId":"%s","clerkUserId":"%s","email":"%s","name":"%s","avatarUrl":null,"orgRole":"%s"}
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

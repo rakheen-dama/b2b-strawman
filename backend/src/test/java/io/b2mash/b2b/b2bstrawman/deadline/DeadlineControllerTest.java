@@ -1,9 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.deadline;
 
 import static io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.createActiveCustomer;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -15,6 +13,8 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -26,7 +26,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -37,8 +36,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class DeadlineControllerTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ENABLED_ORG_ID = "org_deadline_ctrl_enabled";
   private static final String DISABLED_ORG_ID = "org_deadline_ctrl_disabled";
 
@@ -63,15 +60,27 @@ class DeadlineControllerTest {
             .schemaName();
     memberId =
         UUID.fromString(
-            syncMember(
+            TestMemberHelper.syncMember(
+                mockMvc,
                 ENABLED_ORG_ID,
                 "user_dctrl_owner",
                 "dctrl_owner@test.com",
                 "DCtrl Owner",
                 "owner"));
-    syncMember(ENABLED_ORG_ID, "user_dctrl_admin", "dctrl_admin@test.com", "DCtrl Admin", "admin");
-    syncMember(
-        ENABLED_ORG_ID, "user_dctrl_member", "dctrl_member@test.com", "DCtrl Member", "member");
+    TestMemberHelper.syncMember(
+        mockMvc,
+        ENABLED_ORG_ID,
+        "user_dctrl_admin",
+        "dctrl_admin@test.com",
+        "DCtrl Admin",
+        "admin");
+    TestMemberHelper.syncMember(
+        mockMvc,
+        ENABLED_ORG_ID,
+        "user_dctrl_member",
+        "dctrl_member@test.com",
+        "DCtrl Member",
+        "member");
 
     // Enable the regulatory_deadlines module
     ScopedValue.where(RequestScopes.TENANT_ID, enabledTenantSchema)
@@ -103,8 +112,13 @@ class DeadlineControllerTest {
 
     // Provision tenant with no modules enabled (default empty list)
     provisioningService.provisionTenant(DISABLED_ORG_ID, "Deadline Ctrl Disabled Org", null);
-    syncMember(
-        DISABLED_ORG_ID, "user_dctrl_dis_owner", "dctrl_dis@test.com", "DCtrl Dis Owner", "owner");
+    TestMemberHelper.syncMember(
+        mockMvc,
+        DISABLED_ORG_ID,
+        "user_dctrl_dis_owner",
+        "dctrl_dis@test.com",
+        "DCtrl Dis Owner",
+        "owner");
   }
 
   @Test
@@ -114,7 +128,7 @@ class DeadlineControllerTest {
             get("/api/deadlines")
                 .param("from", "2026-01-01")
                 .param("to", "2026-12-31")
-                .with(enabledOwnerJwt()))
+                .with(TestJwtFactory.ownerJwt(ENABLED_ORG_ID, "user_dctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$[0].customerId").exists())
@@ -130,7 +144,7 @@ class DeadlineControllerTest {
             get("/api/deadlines/summary")
                 .param("from", "2026-01-01")
                 .param("to", "2026-12-31")
-                .with(enabledOwnerJwt()))
+                .with(TestJwtFactory.ownerJwt(ENABLED_ORG_ID, "user_dctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$[0].month").exists())
@@ -145,7 +159,7 @@ class DeadlineControllerTest {
             get("/api/customers/{id}/deadlines", customerId)
                 .param("from", "2026-01-01")
                 .param("to", "2026-12-31")
-                .with(enabledOwnerJwt()))
+                .with(TestJwtFactory.ownerJwt(ENABLED_ORG_ID, "user_dctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$[0].customerId").value(customerId.toString()));
@@ -156,7 +170,7 @@ class DeadlineControllerTest {
     mockMvc
         .perform(
             put("/api/deadlines/filing-status")
-                .with(enabledAdminJwt())
+                .with(TestJwtFactory.adminJwt(ENABLED_ORG_ID, "user_dctrl_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -186,7 +200,7 @@ class DeadlineControllerTest {
     mockMvc
         .perform(
             put("/api/deadlines/filing-status")
-                .with(enabledAdminJwt())
+                .with(TestJwtFactory.adminJwt(ENABLED_ORG_ID, "user_dctrl_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -212,7 +226,7 @@ class DeadlineControllerTest {
             get("/api/filing-statuses")
                 .param("customerId", customerId.toString())
                 .param("deadlineTypeSlug", "sars_annual_return")
-                .with(enabledOwnerJwt()))
+                .with(TestJwtFactory.ownerJwt(ENABLED_ORG_ID, "user_dctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$[0].customerId").value(customerId.toString()))
@@ -226,7 +240,7 @@ class DeadlineControllerTest {
     mockMvc
         .perform(
             put("/api/deadlines/filing-status")
-                .with(enabledMemberJwt())
+                .with(TestJwtFactory.memberJwt(ENABLED_ORG_ID, "user_dctrl_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -254,68 +268,15 @@ class DeadlineControllerTest {
             get("/api/deadlines")
                 .param("from", "2026-01-01")
                 .param("to", "2026-12-31")
-                .with(disabledOwnerJwt()))
+                .with(TestJwtFactory.ownerJwt(DISABLED_ORG_ID, "user_dctrl_dis_owner")))
         .andExpect(status().isForbidden());
   }
 
   @Test
   void getDeadlines_returns400_whenMissingRequiredParams() throws Exception {
     mockMvc
-        .perform(get("/api/deadlines").with(enabledOwnerJwt()))
+        .perform(
+            get("/api/deadlines").with(TestJwtFactory.ownerJwt(ENABLED_ORG_ID, "user_dctrl_owner")))
         .andExpect(status().isBadRequest());
-  }
-
-  // --- Helper methods ---
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"clerkOrgId":"%s","clerkUserId":"%s","email":"%s","name":"%s","avatarUrl":null,"orgRole":"%s"}
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return com.jayway.jsonpath.JsonPath.read(
-        result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor enabledOwnerJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_dctrl_owner")
-                    .claim("o", Map.of("id", ENABLED_ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor enabledAdminJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_dctrl_admin")
-                    .claim("o", Map.of("id", ENABLED_ORG_ID, "rol", "admin")));
-  }
-
-  private JwtRequestPostProcessor enabledMemberJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_dctrl_member")
-                    .claim("o", Map.of("id", ENABLED_ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor disabledOwnerJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_dctrl_dis_owner")
-                    .claim("o", Map.of("id", DISABLED_ORG_ID, "rol", "owner")));
   }
 }

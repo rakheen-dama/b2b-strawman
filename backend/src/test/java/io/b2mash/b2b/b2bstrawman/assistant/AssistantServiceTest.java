@@ -5,10 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.assistant.provider.ChatRequest;
 import io.b2mash.b2b.b2bstrawman.assistant.provider.LlmChatProvider;
@@ -22,6 +19,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +38,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -52,8 +49,6 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AssistantServiceTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_assistant_service_test";
   private static final String ORG_ID_NO_AI = "org_assistant_no_ai_test";
   private static final String ORG_ID_NO_KEY = "org_assistant_no_key_test";
@@ -84,7 +79,8 @@ class AssistantServiceTest {
     // === Fully configured PRO tenant with AI ===
     provisioningService.provisionTenant(ORG_ID, "AI Service Test Org", null);
     var memberIdStr =
-        syncMember(ORG_ID, "user_ast_owner", "ast_owner@test.com", "AST Owner", "owner");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_ast_owner", "ast_owner@test.com", "AST Owner", "owner");
     memberIdOwner = UUID.fromString(memberIdStr);
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
@@ -107,7 +103,8 @@ class AssistantServiceTest {
     // === PRO tenant with AI NOT enabled ===
     provisioningService.provisionTenant(ORG_ID_NO_AI, "No AI Org", null);
     var memberIdNoAiStr =
-        syncMember(ORG_ID_NO_AI, "user_ast_noai", "ast_noai@test.com", "AST NoAI", "owner");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID_NO_AI, "user_ast_noai", "ast_noai@test.com", "AST NoAI", "owner");
     memberIdNoAi = UUID.fromString(memberIdNoAiStr);
     tenantSchemaNoAi =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID_NO_AI).orElseThrow().getSchemaName();
@@ -115,7 +112,8 @@ class AssistantServiceTest {
     // === PRO tenant with AI enabled but NO API key ===
     provisioningService.provisionTenant(ORG_ID_NO_KEY, "No Key Org", null);
     var memberIdNoKeyStr =
-        syncMember(ORG_ID_NO_KEY, "user_ast_nokey", "ast_nokey@test.com", "AST NoKey", "owner");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID_NO_KEY, "user_ast_nokey", "ast_nokey@test.com", "AST NoKey", "owner");
     memberIdNoKey = UUID.fromString(memberIdNoKeyStr);
     tenantSchemaNoKey =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID_NO_KEY).orElseThrow().getSchemaName();
@@ -323,28 +321,5 @@ class AssistantServiceTest {
             });
 
     return capturedEvents;
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s", "clerkUserId": "%s",
-                          "email": "%s", "name": "%s",
-                          "avatarUrl": null, "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

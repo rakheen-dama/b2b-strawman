@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.conflictcheck;
 
 import static io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.createActiveCustomer;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -15,8 +14,9 @@ import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -26,7 +26,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -37,8 +36,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ConflictCheckControllerTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_conflict_ctrl_test";
 
   @Autowired private MockMvc mockMvc;
@@ -64,13 +61,15 @@ class ConflictCheckControllerTest {
             .schemaName();
     memberId =
         UUID.fromString(
-            syncMember(
+            TestMemberHelper.syncMember(
+                mockMvc,
                 ORG_ID,
                 "user_conflict_ctrl_owner",
                 "conflict_ctrl@test.com",
                 "Conflict Ctrl Owner",
                 "owner"));
-    syncMember(
+    TestMemberHelper.syncMember(
+        mockMvc,
         ORG_ID,
         "user_conflict_ctrl_member",
         "conflict_ctrl_member@test.com",
@@ -132,7 +131,7 @@ class ConflictCheckControllerTest {
     mockMvc
         .perform(
             post("/api/conflict-checks")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_conflict_ctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -156,7 +155,7 @@ class ConflictCheckControllerTest {
     mockMvc
         .perform(
             post("/api/conflict-checks")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_conflict_ctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -169,7 +168,9 @@ class ConflictCheckControllerTest {
 
     // Then list
     mockMvc
-        .perform(get("/api/conflict-checks").with(ownerJwt()))
+        .perform(
+            get("/api/conflict-checks")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_conflict_ctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray())
         .andExpect(jsonPath("$.content").isNotEmpty());
@@ -182,7 +183,7 @@ class ConflictCheckControllerTest {
         mockMvc
             .perform(
                 post("/api/conflict-checks")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_conflict_ctrl_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -202,7 +203,7 @@ class ConflictCheckControllerTest {
     mockMvc
         .perform(
             post("/api/conflict-checks/" + checkId + "/resolve")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_conflict_ctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -223,7 +224,7 @@ class ConflictCheckControllerTest {
     mockMvc
         .perform(
             post("/api/conflict-checks")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_conflict_ctrl_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -233,43 +234,5 @@ class ConflictCheckControllerTest {
                     }
                     """))
         .andExpect(status().isForbidden());
-  }
-
-  // --- Helpers ---
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"clerkOrgId":"%s","clerkUserId":"%s","email":"%s","name":"%s","avatarUrl":null,"orgRole":"%s"}
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return com.jayway.jsonpath.JsonPath.read(
-        result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_conflict_ctrl_owner")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_conflict_ctrl_member")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 }

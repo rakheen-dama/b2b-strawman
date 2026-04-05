@@ -1,10 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.assistant.tool.write;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.assistant.tool.AssistantToolRegistry;
 import io.b2mash.b2b.b2bstrawman.assistant.tool.TenantToolContext;
@@ -19,6 +16,7 @@ import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.task.TaskService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.time.LocalDate;
 import java.util.Map;
@@ -31,7 +29,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -41,8 +38,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class WriteToolsTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_write_tools_test";
 
   @Autowired private MockMvc mockMvc;
@@ -73,7 +68,9 @@ class WriteToolsTest {
   void provisionTenant() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Write Tools Test Org", null);
 
-    var memberIdStr = syncMember(ORG_ID, "user_wt_owner", "wt_owner@test.com", "WT Owner", "owner");
+    var memberIdStr =
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_wt_owner", "wt_owner@test.com", "WT Owner", "owner");
     memberIdOwner = UUID.fromString(memberIdStr);
 
     tenantSchema =
@@ -355,28 +352,5 @@ class WriteToolsTest {
             RequestScopes.CAPABILITIES,
             Set.of("PROJECT_MANAGEMENT", "CUSTOMER_MANAGEMENT", "INVOICING"))
         .run(action);
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s", "clerkUserId": "%s",
-                          "email": "%s", "name": "%s",
-                          "avatarUrl": null, "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

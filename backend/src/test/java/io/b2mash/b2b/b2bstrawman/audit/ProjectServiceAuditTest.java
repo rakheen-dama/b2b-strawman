@@ -1,16 +1,17 @@
 package io.b2mash.b2b.b2bstrawman.audit;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -22,10 +23,8 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
 /**
  * Integration tests verifying audit events produced by {@code ProjectService} operations. Each test
@@ -37,8 +36,6 @@ import org.springframework.test.web.servlet.MvcResult;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ProjectServiceAuditTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_proj_audit_test";
 
   @Autowired private MockMvc mockMvc;
@@ -53,8 +50,10 @@ class ProjectServiceAuditTest {
     schemaName =
         provisioningService.provisionTenant(ORG_ID, "Project Audit Test Org", null).schemaName();
 
-    syncMember(ORG_ID, "user_pa_owner", "pa_owner@test.com", "PA Owner", "owner");
-    syncMember(ORG_ID, "user_pa_admin", "pa_admin@test.com", "PA Admin", "admin");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_pa_owner", "pa_owner@test.com", "PA Owner", "owner");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_pa_admin", "pa_admin@test.com", "PA Admin", "admin");
   }
 
   @Test
@@ -63,7 +62,7 @@ class ProjectServiceAuditTest {
         mockMvc
             .perform(
                 post("/api/projects")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pa_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -72,7 +71,7 @@ class ProjectServiceAuditTest {
             .andExpect(status().isCreated())
             .andReturn();
 
-    var projectId = UUID.fromString(extractIdFromLocation(result));
+    var projectId = UUID.fromString(TestEntityHelper.extractIdFromLocation(result));
 
     ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
         .run(
@@ -101,7 +100,7 @@ class ProjectServiceAuditTest {
         mockMvc
             .perform(
                 post("/api/projects")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pa_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -110,13 +109,13 @@ class ProjectServiceAuditTest {
             .andExpect(status().isCreated())
             .andReturn();
 
-    var projectId = UUID.fromString(extractIdFromLocation(createResult));
+    var projectId = UUID.fromString(TestEntityHelper.extractIdFromLocation(createResult));
 
     // Update the project
     mockMvc
         .perform(
             put("/api/projects/" + projectId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pa_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -156,7 +155,7 @@ class ProjectServiceAuditTest {
         mockMvc
             .perform(
                 post("/api/projects")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pa_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -165,13 +164,13 @@ class ProjectServiceAuditTest {
             .andExpect(status().isCreated())
             .andReturn();
 
-    var projectId = UUID.fromString(extractIdFromLocation(createResult));
+    var projectId = UUID.fromString(TestEntityHelper.extractIdFromLocation(createResult));
 
     // Update with same values
     mockMvc
         .perform(
             put("/api/projects/" + projectId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pa_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -203,7 +202,7 @@ class ProjectServiceAuditTest {
         mockMvc
             .perform(
                 post("/api/projects")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pa_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -212,10 +211,12 @@ class ProjectServiceAuditTest {
             .andExpect(status().isCreated())
             .andReturn();
 
-    var projectId = UUID.fromString(extractIdFromLocation(createResult));
+    var projectId = UUID.fromString(TestEntityHelper.extractIdFromLocation(createResult));
 
     mockMvc
-        .perform(delete("/api/projects/" + projectId).with(ownerJwt()))
+        .perform(
+            delete("/api/projects/" + projectId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pa_owner")))
         .andExpect(status().isNoContent());
 
     ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
@@ -241,7 +242,7 @@ class ProjectServiceAuditTest {
         mockMvc
             .perform(
                 post("/api/projects")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pa_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -250,13 +251,13 @@ class ProjectServiceAuditTest {
             .andExpect(status().isCreated())
             .andReturn();
 
-    var projectId = UUID.fromString(extractIdFromLocation(createResult));
+    var projectId = UUID.fromString(TestEntityHelper.extractIdFromLocation(createResult));
 
     // Only change description, keep name the same
     mockMvc
         .perform(
             put("/api/projects/" + projectId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pa_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -289,7 +290,7 @@ class ProjectServiceAuditTest {
     mockMvc
         .perform(
             post("/api/projects")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pa_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -322,7 +323,7 @@ class ProjectServiceAuditTest {
     mockMvc
         .perform(
             put("/api/projects/" + fakeId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pa_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -340,44 +341,5 @@ class ProjectServiceAuditTest {
 
               assertThat(page.getTotalElements()).isZero();
             });
-  }
-
-  // --- Helpers ---
-
-  private String extractIdFromLocation(MvcResult result) {
-    String location = result.getResponse().getHeader("Location");
-    return location.substring(location.lastIndexOf('/') + 1);
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_pa_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
   }
 }

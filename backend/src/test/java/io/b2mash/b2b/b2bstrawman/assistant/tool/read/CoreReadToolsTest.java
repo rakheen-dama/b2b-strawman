@@ -1,10 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.assistant.tool.read;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.assistant.tool.AssistantToolRegistry;
 import io.b2mash.b2b.b2bstrawman.assistant.tool.TenantToolContext;
@@ -15,6 +12,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.TaskService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryService;
 import java.time.LocalDate;
 import java.util.List;
@@ -28,7 +26,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -38,8 +35,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CoreReadToolsTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_core_read_tools_test";
 
   @Autowired private MockMvc mockMvc;
@@ -70,7 +65,8 @@ class CoreReadToolsTest {
     provisioningService.provisionTenant(ORG_ID, "Core Read Tools Test Org", null);
 
     var memberIdStr =
-        syncMember(ORG_ID, "user_crt_owner", "crt_owner@test.com", "CRT Owner", "owner");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_crt_owner", "crt_owner@test.com", "CRT Owner", "owner");
     memberIdOwner = UUID.fromString(memberIdStr);
 
     tenantSchema =
@@ -234,28 +230,5 @@ class CoreReadToolsTest {
         .where(RequestScopes.ORG_ROLE, "owner")
         .where(RequestScopes.CAPABILITIES, Set.of())
         .run(action);
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s", "clerkUserId": "%s",
-                          "email": "%s", "name": "%s",
-                          "avatarUrl": null, "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

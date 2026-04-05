@@ -1,16 +1,16 @@
 package io.b2mash.b2b.b2bstrawman.customer;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestChecklistHelper;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -19,10 +19,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
 /**
  * Integration tests for project-side customer linking endpoints (POST/DELETE on
@@ -34,8 +32,6 @@ import org.springframework.test.web.servlet.MvcResult;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ProjectCustomerControllerIntegrationTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_projcust_ctrl_test";
 
   @Autowired private MockMvc mockMvc;
@@ -48,17 +44,22 @@ class ProjectCustomerControllerIntegrationTest {
   void setUp() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "ProjCust Ctrl Test Org", null);
 
-    syncMember("user_pcc_owner", "pcc_owner@test.com", "Owner", "owner");
-    syncMember("user_pcc_admin", "pcc_admin@test.com", "Admin", "admin");
-    leadMemberId = syncMember("user_pcc_lead", "pcc_lead@test.com", "Lead", "member");
-    syncMember("user_pcc_member", "pcc_member@test.com", "Member", "member");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_pcc_owner", "pcc_owner@test.com", "Owner", "owner");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_pcc_admin", "pcc_admin@test.com", "Admin", "admin");
+    leadMemberId =
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_pcc_lead", "pcc_lead@test.com", "Lead", "member");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_pcc_member", "pcc_member@test.com", "Member", "member");
 
     // Create a project
     var projectResult =
         mockMvc
             .perform(
                 post("/api/projects")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -66,13 +67,13 @@ class ProjectCustomerControllerIntegrationTest {
                         """))
             .andExpect(status().isCreated())
             .andReturn();
-    projectId = extractIdFromLocation(projectResult);
+    projectId = TestEntityHelper.extractIdFromLocation(projectResult);
 
     // Add lead member to project
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/members")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"memberId\": \"" + leadMemberId + "\"}"))
         .andExpect(status().isCreated());
@@ -82,7 +83,7 @@ class ProjectCustomerControllerIntegrationTest {
         .perform(
             org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put(
                     "/api/projects/" + projectId + "/members/" + leadMemberId + "/role")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"role\": \"lead\"}"))
         .andExpect(status().isNoContent());
@@ -93,7 +94,9 @@ class ProjectCustomerControllerIntegrationTest {
     var customerId = createCustomer("ProjLink Corp", "projlink@test.com");
 
     mockMvc
-        .perform(post("/api/projects/" + projectId + "/customers/" + customerId).with(ownerJwt()))
+        .perform(
+            post("/api/projects/" + projectId + "/customers/" + customerId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcc_owner")))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.customerId").value(customerId))
         .andExpect(jsonPath("$.projectId").value(projectId))
@@ -106,11 +109,15 @@ class ProjectCustomerControllerIntegrationTest {
     var customerId = createCustomer("DupProjLink Corp", "dupprojlink@test.com");
 
     mockMvc
-        .perform(post("/api/projects/" + projectId + "/customers/" + customerId).with(ownerJwt()))
+        .perform(
+            post("/api/projects/" + projectId + "/customers/" + customerId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcc_owner")))
         .andExpect(status().isCreated());
 
     mockMvc
-        .perform(post("/api/projects/" + projectId + "/customers/" + customerId).with(ownerJwt()))
+        .perform(
+            post("/api/projects/" + projectId + "/customers/" + customerId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcc_owner")))
         .andExpect(status().isConflict());
   }
 
@@ -119,11 +126,15 @@ class ProjectCustomerControllerIntegrationTest {
     var customerId = createCustomer("UnlinkProj Corp", "unlinkproj@test.com");
 
     mockMvc
-        .perform(post("/api/projects/" + projectId + "/customers/" + customerId).with(ownerJwt()))
+        .perform(
+            post("/api/projects/" + projectId + "/customers/" + customerId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcc_owner")))
         .andExpect(status().isCreated());
 
     mockMvc
-        .perform(delete("/api/projects/" + projectId + "/customers/" + customerId).with(ownerJwt()))
+        .perform(
+            delete("/api/projects/" + projectId + "/customers/" + customerId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcc_owner")))
         .andExpect(status().isNoContent());
   }
 
@@ -132,7 +143,9 @@ class ProjectCustomerControllerIntegrationTest {
     var customerId = createCustomer("NeverLinkedProj Corp", "neverlinkedproj@test.com");
 
     mockMvc
-        .perform(delete("/api/projects/" + projectId + "/customers/" + customerId).with(ownerJwt()))
+        .perform(
+            delete("/api/projects/" + projectId + "/customers/" + customerId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcc_owner")))
         .andExpect(status().isNotFound());
   }
 
@@ -145,7 +158,7 @@ class ProjectCustomerControllerIntegrationTest {
         mockMvc
             .perform(
                 post("/api/projects")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -153,10 +166,12 @@ class ProjectCustomerControllerIntegrationTest {
                         """))
             .andExpect(status().isCreated())
             .andReturn();
-    var project2Id = extractIdFromLocation(project2Result);
+    var project2Id = TestEntityHelper.extractIdFromLocation(project2Result);
 
     mockMvc
-        .perform(post("/api/projects/" + project2Id + "/customers/" + customerId).with(memberJwt()))
+        .perform(
+            post("/api/projects/" + project2Id + "/customers/" + customerId)
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_pcc_member")))
         .andExpect(status().isNotFound());
   }
 
@@ -165,7 +180,9 @@ class ProjectCustomerControllerIntegrationTest {
     var customerId = createCustomer("LeadProjLink Corp", "leadprojlink@test.com");
 
     mockMvc
-        .perform(post("/api/projects/" + projectId + "/customers/" + customerId).with(leadJwt()))
+        .perform(
+            post("/api/projects/" + projectId + "/customers/" + customerId)
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_pcc_lead")))
         .andExpect(status().isCreated());
   }
 
@@ -174,7 +191,9 @@ class ProjectCustomerControllerIntegrationTest {
     var customerId = createCustomer("AdminProjLink Corp", "adminprojlink@test.com");
 
     mockMvc
-        .perform(post("/api/projects/" + projectId + "/customers/" + customerId).with(adminJwt()))
+        .perform(
+            post("/api/projects/" + projectId + "/customers/" + customerId)
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_pcc_admin")))
         .andExpect(status().isCreated());
   }
 
@@ -185,7 +204,7 @@ class ProjectCustomerControllerIntegrationTest {
         mockMvc
             .perform(
                 post("/api/customers")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -194,7 +213,7 @@ class ProjectCustomerControllerIntegrationTest {
                             .formatted(name, email)))
             .andExpect(status().isCreated())
             .andReturn();
-    var customerId = extractIdFromLocation(result);
+    var customerId = TestEntityHelper.extractIdFromLocation(result);
     transitionCustomerToActive(customerId);
     return customerId;
   }
@@ -203,61 +222,12 @@ class ProjectCustomerControllerIntegrationTest {
     mockMvc
         .perform(
             post("/api/customers/" + customerId + "/transition")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"targetStatus\": \"ONBOARDING\"}"))
         .andExpect(status().isOk());
     // Completing all checklist items auto-transitions ONBOARDING -> ACTIVE
-    TestChecklistHelper.completeChecklistItems(mockMvc, customerId, ownerJwt());
-  }
-
-  private String extractIdFromLocation(MvcResult result) {
-    String location = result.getResponse().getHeader("Location");
-    return location.substring(location.lastIndexOf('/') + 1);
-  }
-
-  private String syncMember(String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(ORG_ID, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_pcc_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor adminJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_pcc_admin").claim("o", Map.of("id", ORG_ID, "rol", "admin")));
-  }
-
-  private JwtRequestPostProcessor leadJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_pcc_lead").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_pcc_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
+    TestChecklistHelper.completeChecklistItems(
+        mockMvc, customerId, TestJwtFactory.ownerJwt(ORG_ID, "user_pcc_owner"));
   }
 }

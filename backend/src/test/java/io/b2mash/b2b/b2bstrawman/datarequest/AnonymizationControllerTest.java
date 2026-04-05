@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.datarequest;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -11,9 +10,10 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.integration.storage.PresignedUrl;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,7 +24,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -35,8 +34,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AnonymizationControllerTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_anon_ctrl_test";
 
   @Autowired private MockMvc mockMvc;
@@ -53,8 +50,10 @@ class AnonymizationControllerTest {
     setupMocks();
 
     provisioningService.provisionTenant(ORG_ID, "Anon Controller Test Org", null);
-    syncMember(ORG_ID, "user_anon_owner", "anon_owner@test.com", "Anon Owner", "owner");
-    syncMember(ORG_ID, "user_anon_admin", "anon_admin@test.com", "Anon Admin", "admin");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_anon_owner", "anon_owner@test.com", "Anon Owner", "owner");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_anon_admin", "anon_admin@test.com", "Anon Admin", "admin");
 
     // Create customer for happy path, validation, and preview tests
     customerName = "Anon Test Customer";
@@ -62,7 +61,7 @@ class AnonymizationControllerTest {
         mockMvc
             .perform(
                 post("/api/customers")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_anon_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -77,7 +76,7 @@ class AnonymizationControllerTest {
         mockMvc
             .perform(
                 post("/api/customers")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_anon_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -92,7 +91,7 @@ class AnonymizationControllerTest {
     mockMvc
         .perform(
             post("/api/customers/" + alreadyAnonymizedCustomerId + "/anonymize")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_anon_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -118,7 +117,7 @@ class AnonymizationControllerTest {
         mockMvc
             .perform(
                 post("/api/customers")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_anon_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -131,7 +130,7 @@ class AnonymizationControllerTest {
     mockMvc
         .perform(
             post("/api/customers/" + freshCustomerId + "/anonymize")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_anon_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -150,7 +149,7 @@ class AnonymizationControllerTest {
     mockMvc
         .perform(
             post("/api/customers/" + customerId + "/anonymize")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_anon_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -165,7 +164,7 @@ class AnonymizationControllerTest {
     mockMvc
         .perform(
             post("/api/customers/" + customerId + "/anonymize")
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_anon_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -177,7 +176,9 @@ class AnonymizationControllerTest {
   @Test
   void getPreview_returns200WithCorrectCounts() throws Exception {
     mockMvc
-        .perform(get("/api/customers/" + customerId + "/anonymize/preview").with(ownerJwt()))
+        .perform(
+            get("/api/customers/" + customerId + "/anonymize/preview")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_anon_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.customerId").value(customerId))
         .andExpect(jsonPath("$.customerName").value(customerName))
@@ -193,7 +194,7 @@ class AnonymizationControllerTest {
     mockMvc
         .perform(
             post("/api/customers/" + alreadyAnonymizedCustomerId + "/anonymize")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_anon_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -207,38 +208,11 @@ class AnonymizationControllerTest {
     // ADMIN has MANAGE_COMPLIANCE — preview is non-destructive, accessible to ADMIN+
     // Contrasts with POST /anonymize which requires MANAGE_COMPLIANCE_DESTRUCTIVE (OWNER-only)
     mockMvc
-        .perform(get("/api/customers/" + customerId + "/anonymize/preview").with(adminJwt()))
+        .perform(
+            get("/api/customers/" + customerId + "/anonymize/preview")
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_anon_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.customerId").value(customerId))
         .andExpect(jsonPath("$.customerName").exists());
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_anon_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor adminJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_anon_admin").claim("o", Map.of("id", ORG_ID, "rol", "admin")));
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"clerkOrgId":"%s","clerkUserId":"%s","email":"%s","name":"%s","avatarUrl":null,"orgRole":"%s"}
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

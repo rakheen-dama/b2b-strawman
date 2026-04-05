@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.billingrate;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -12,7 +11,9 @@ import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestChecklistHelper;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -24,10 +25,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -62,18 +61,21 @@ class BillingRateControllerTest {
     provisioningService.provisionTenant(ORG_ID, "Billing Ctrl Test Org", null);
 
     memberIdOwner =
-        syncMember(ORG_ID, "user_brc_owner", "brc_owner@test.com", "BRC Owner", "owner");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_brc_owner", "brc_owner@test.com", "BRC Owner", "owner");
     memberIdAdmin =
-        syncMember(ORG_ID, "user_brc_admin", "brc_admin@test.com", "BRC Admin", "admin");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_brc_admin", "brc_admin@test.com", "BRC Admin", "admin");
     memberIdMember =
-        syncMember(ORG_ID, "user_brc_member", "brc_member@test.com", "BRC Member", "member");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_brc_member", "brc_member@test.com", "BRC Member", "member");
 
     // Create a project
     var projectResult =
         mockMvc
             .perform(
                 post("/api/projects")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_brc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -81,14 +83,14 @@ class BillingRateControllerTest {
                         """))
             .andExpect(status().isCreated())
             .andReturn();
-    projectId = extractIdFromLocation(projectResult);
+    projectId = TestEntityHelper.extractIdFromLocation(projectResult);
 
     // Create a customer
     var customerResult =
         mockMvc
             .perform(
                 post("/api/customers")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_brc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -104,13 +106,16 @@ class BillingRateControllerTest {
 
     // Link customer to project (for resolve cascade testing)
     mockMvc
-        .perform(post("/api/projects/" + projectId + "/customers/" + customerId).with(ownerJwt()))
+        .perform(
+            post("/api/projects/" + projectId + "/customers/" + customerId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_brc_owner")))
         .andExpect(status().isCreated());
 
     // Provision tenant B for isolation tests
     provisioningService.provisionTenant(ORG_ID_B, "Billing Ctrl Test Org B", null);
     memberIdOwnerB =
-        syncMember(ORG_ID_B, "user_brc_owner_b", "brc_owner_b@test.com", "BRC Owner B", "owner");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID_B, "user_brc_owner_b", "brc_owner_b@test.com", "BRC Owner B", "owner");
   }
 
   // --- CRUD Tests ---
@@ -122,7 +127,7 @@ class BillingRateControllerTest {
         mockMvc
             .perform(
                 post("/api/billing-rates")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_brc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -153,7 +158,7 @@ class BillingRateControllerTest {
   @Order(2)
   void getListsAllBillingRates() throws Exception {
     mockMvc
-        .perform(get("/api/billing-rates").with(ownerJwt()))
+        .perform(get("/api/billing-rates").with(TestJwtFactory.ownerJwt(ORG_ID, "user_brc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray())
         .andExpect(jsonPath("$.content.length()").value(1))
@@ -167,7 +172,7 @@ class BillingRateControllerTest {
     mockMvc
         .perform(
             post("/api/billing-rates")
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_brc_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -183,7 +188,10 @@ class BillingRateControllerTest {
 
     // Filter by the owner member — should only return 1
     mockMvc
-        .perform(get("/api/billing-rates").param("memberId", memberIdOwner).with(ownerJwt()))
+        .perform(
+            get("/api/billing-rates")
+                .param("memberId", memberIdOwner)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_brc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content.length()").value(1))
         .andExpect(jsonPath("$.content[0].memberId").value(memberIdOwner));
@@ -195,7 +203,7 @@ class BillingRateControllerTest {
     mockMvc
         .perform(
             put("/api/billing-rates/" + createdRateId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_brc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -220,7 +228,7 @@ class BillingRateControllerTest {
         mockMvc
             .perform(
                 post("/api/billing-rates")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_brc_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -238,7 +246,9 @@ class BillingRateControllerTest {
     var rateId = JsonPath.read(result.getResponse().getContentAsString(), "$.id").toString();
 
     mockMvc
-        .perform(delete("/api/billing-rates/" + rateId).with(ownerJwt()))
+        .perform(
+            delete("/api/billing-rates/" + rateId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_brc_owner")))
         .andExpect(status().isNoContent());
   }
 
@@ -253,7 +263,7 @@ class BillingRateControllerTest {
                 .param("memberId", memberIdOwner)
                 .param("projectId", projectId)
                 .param("date", "2025-06-15")
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_brc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.hourlyRate").value(175.00))
         .andExpect(jsonPath("$.currency").value("GBP"))
@@ -270,7 +280,7 @@ class BillingRateControllerTest {
                 .param("memberId", memberIdMember)
                 .param("projectId", projectId)
                 .param("date", "2025-06-15")
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_brc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.hourlyRate").isEmpty())
         .andExpect(jsonPath("$.currency").isEmpty())
@@ -285,7 +295,7 @@ class BillingRateControllerTest {
     mockMvc
         .perform(
             post("/api/billing-rates")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_brc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -307,7 +317,7 @@ class BillingRateControllerTest {
                 .param("memberId", memberIdOwner)
                 .param("projectId", projectId)
                 .param("date", "2025-06-15")
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_brc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.hourlyRate").value(200.00))
         .andExpect(jsonPath("$.source").value("PROJECT_OVERRIDE"));
@@ -322,7 +332,7 @@ class BillingRateControllerTest {
     mockMvc
         .perform(
             post("/api/billing-rates")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_brc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -341,7 +351,7 @@ class BillingRateControllerTest {
     mockMvc
         .perform(
             post("/api/billing-rates")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_brc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -365,7 +375,7 @@ class BillingRateControllerTest {
     mockMvc
         .perform(
             post("/api/billing-rates")
-                .with(memberJwt())
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_brc_member", "member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -387,7 +397,7 @@ class BillingRateControllerTest {
     mockMvc
         .perform(
             post("/api/billing-rates")
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_brc_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -409,7 +419,8 @@ class BillingRateControllerTest {
   void billingRateInTenantAIsInvisibleInTenantB() throws Exception {
     // List rates in tenant B — should be empty (no rates created there)
     mockMvc
-        .perform(get("/api/billing-rates").with(ownerJwtTenantB()))
+        .perform(
+            get("/api/billing-rates").with(TestJwtFactory.ownerJwt(ORG_ID_B, "user_brc_owner_b")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content.length()").value(0));
   }
@@ -424,7 +435,7 @@ class BillingRateControllerTest {
                 .param("memberId", memberIdOwner)
                 .param("projectId", projectId)
                 .param("date", "2025-06-15")
-                .with(ownerJwtTenantB()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID_B, "user_brc_owner_b")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.hourlyRate").isEmpty());
   }
@@ -435,7 +446,7 @@ class BillingRateControllerTest {
     mockMvc
         .perform(
             post("/api/billing-rates")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_brc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -454,67 +465,16 @@ class BillingRateControllerTest {
 
   // --- Helpers ---
 
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private String extractIdFromLocation(MvcResult result) {
-    String location = result.getResponse().getHeader("Location");
-    return location.substring(location.lastIndexOf('/') + 1);
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_brc_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor adminJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_brc_admin").claim("o", Map.of("id", ORG_ID, "rol", "admin")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_brc_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor ownerJwtTenantB() {
-    return jwt()
-        .jwt(j -> j.subject("user_brc_owner_b").claim("o", Map.of("id", ORG_ID_B, "rol", "owner")));
-  }
-
   private void transitionCustomerToActive(String customerId) throws Exception {
     mockMvc
         .perform(
             post("/api/customers/" + customerId + "/transition")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_brc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"targetStatus\": \"ONBOARDING\"}"))
         .andExpect(status().isOk());
     // Completing all checklist items auto-transitions ONBOARDING -> ACTIVE
-    TestChecklistHelper.completeChecklistItems(mockMvc, customerId, ownerJwt());
+    TestChecklistHelper.completeChecklistItems(
+        mockMvc, customerId, TestJwtFactory.ownerJwt(ORG_ID, "user_brc_owner"));
   }
 }

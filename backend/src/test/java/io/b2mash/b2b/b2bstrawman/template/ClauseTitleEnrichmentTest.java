@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.template;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -12,6 +11,8 @@ import io.b2mash.b2b.b2bstrawman.clause.ClauseRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,8 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -39,8 +38,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ClauseTitleEnrichmentTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_clause_enrich_test";
 
   @Autowired private MockMvc mockMvc;
@@ -60,7 +57,8 @@ class ClauseTitleEnrichmentTest {
     provisioningService.provisionTenant(ORG_ID, "Clause Enrich Test Org", null);
 
     memberIdOwner =
-        syncMember(
+        TestMemberHelper.syncMember(
+            mockMvc,
             ORG_ID,
             "user_clause_enrich_owner",
             "clause_enrich_owner@test.com",
@@ -131,7 +129,9 @@ class ClauseTitleEnrichmentTest {
   void shouldEnrichClauseTitleWithCurrentLibraryTitle() throws Exception {
     var result =
         mockMvc
-            .perform(get("/api/templates/" + templateId).with(ownerJwt()))
+            .perform(
+                get("/api/templates/" + templateId)
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_clause_enrich_owner")))
             .andExpect(status().isOk())
             .andReturn();
 
@@ -147,7 +147,9 @@ class ClauseTitleEnrichmentTest {
   void shouldNotMutateStoredContent() throws Exception {
     // Fetch via API (triggers enrichment)
     mockMvc
-        .perform(get("/api/templates/" + templateId).with(ownerJwt()))
+        .perform(
+            get("/api/templates/" + templateId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_clause_enrich_owner")))
         .andExpect(status().isOk());
 
     // Verify the stored content still has the old snapshotted title
@@ -198,7 +200,9 @@ class ClauseTitleEnrichmentTest {
 
     var result =
         mockMvc
-            .perform(get("/api/templates/" + plainTemplateId).with(ownerJwt()))
+            .perform(
+                get("/api/templates/" + plainTemplateId)
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_clause_enrich_owner")))
             .andExpect(status().isOk())
             .andReturn();
 
@@ -242,7 +246,9 @@ class ClauseTitleEnrichmentTest {
 
     var result =
         mockMvc
-            .perform(get("/api/templates/" + templateWithDeletedClause).with(ownerJwt()))
+            .perform(
+                get("/api/templates/" + templateWithDeletedClause)
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_clause_enrich_owner")))
             .andExpect(status().isOk())
             .andReturn();
 
@@ -251,18 +257,6 @@ class ClauseTitleEnrichmentTest {
     String title = JsonPath.read(json, "$.content.content[0].attrs.title");
     assertThat(title).isEqualTo("Deleted Clause Title");
   }
-
-  // --- JWT Helpers ---
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_clause_enrich_owner")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  // --- Helpers ---
 
   private void runInTenant(Runnable action) {
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -278,32 +272,5 @@ class ClauseTitleEnrichmentTest {
         .where(RequestScopes.MEMBER_ID, UUID.fromString(memberIdOwner))
         .where(RequestScopes.ORG_ROLE, "owner")
         .call(action);
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post(
-                        "/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

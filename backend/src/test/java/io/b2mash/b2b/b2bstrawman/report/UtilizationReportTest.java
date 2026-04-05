@@ -1,12 +1,9 @@
 package io.b2mash.b2b.b2bstrawman.report;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.billingrate.BillingRateService;
 import io.b2mash.b2b.b2bstrawman.costrate.CostRateService;
@@ -16,10 +13,11 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.TaskService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
@@ -31,8 +29,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -68,11 +64,17 @@ class UtilizationReportTest {
 
     memberIdOwner =
         UUID.fromString(
-            syncMember(ORG_ID, "user_util_owner", "util_owner@test.com", "Util Owner", "owner"));
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, "user_util_owner", "util_owner@test.com", "Util Owner", "owner"));
     memberIdMember =
         UUID.fromString(
-            syncMember(
-                ORG_ID, "user_util_member", "util_member@test.com", "Util Member", "member"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_util_member",
+                "util_member@test.com",
+                "Util Member",
+                "member"));
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
@@ -193,7 +195,7 @@ class UtilizationReportTest {
             get("/api/reports/utilization")
                 .param("from", "2025-01-01")
                 .param("to", "2025-12-31")
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_util_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.from").value("2025-01-01"))
         .andExpect(jsonPath("$.to").value("2025-12-31"))
@@ -210,7 +212,7 @@ class UtilizationReportTest {
                 .param("from", "2025-01-01")
                 .param("to", "2025-12-31")
                 .param("memberId", memberIdOwner.toString())
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_util_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.members.length()").value(1))
         .andExpect(jsonPath("$.members[0].memberId").value(memberIdOwner.toString()))
@@ -234,7 +236,7 @@ class UtilizationReportTest {
             get("/api/reports/utilization")
                 .param("from", "2025-01-01")
                 .param("to", "2025-12-31")
-                .with(memberJwt()))
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_util_member", "member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.members.length()").value(1))
         .andExpect(jsonPath("$.members[0].memberId").value(memberIdMember.toString()))
@@ -252,7 +254,7 @@ class UtilizationReportTest {
                 .param("from", "2025-01-01")
                 .param("to", "2025-12-31")
                 .param("memberId", memberIdOwner.toString())
-                .with(memberJwt()))
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_util_member", "member")))
         .andExpect(status().isForbidden());
   }
 
@@ -266,7 +268,7 @@ class UtilizationReportTest {
                 .param("from", "2025-01-01")
                 .param("to", "2025-01-31")
                 .param("memberId", memberIdOwner.toString())
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_util_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.members.length()").value(1))
         .andExpect(jsonPath("$.members[0].totalHours").value(3.0))
@@ -283,47 +285,9 @@ class UtilizationReportTest {
             get("/api/reports/utilization")
                 .param("from", "2020-01-01")
                 .param("to", "2020-12-31")
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_util_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.members").isArray())
         .andExpect(jsonPath("$.members.length()").value(0));
-  }
-
-  // --- Helpers ---
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_util_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_util_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                {
-                  "clerkOrgId": "%s",
-                  "clerkUserId": "%s",
-                  "email": "%s",
-                  "name": "%s",
-                  "avatarUrl": null,
-                  "orgRole": "%s"
-                }
-                """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

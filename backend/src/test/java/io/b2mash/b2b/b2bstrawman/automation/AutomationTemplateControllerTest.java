@@ -4,7 +4,6 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -19,6 +18,8 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -30,8 +31,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -41,8 +40,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AutomationTemplateControllerTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_auto_tmpl";
 
   @Autowired private MockMvc mockMvc;
@@ -62,18 +59,32 @@ class AutomationTemplateControllerTest {
   @BeforeAll
   void provisionTenantAndSeedData() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Automation Template Test Org", null);
-    memberIdOwner = syncMember("user_tmpl_owner", "tmpl_owner@test.com", "Tmpl Owner", "owner");
-    syncMember("user_tmpl_member", "tmpl_member@test.com", "Tmpl Member", "member");
+    memberIdOwner =
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_tmpl_owner", "tmpl_owner@test.com", "Tmpl Owner", "owner");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_tmpl_member", "tmpl_member@test.com", "Tmpl Member", "member");
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
 
     customRoleMemberId =
         UUID.fromString(
-            syncMember(
-                "user_tmpl_315b_custom", "tmpl_custom@test.com", "Tmpl Custom User", "member"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_tmpl_315b_custom",
+                "tmpl_custom@test.com",
+                "Tmpl Custom User",
+                "member"));
     noCapMemberId =
         UUID.fromString(
-            syncMember("user_tmpl_315b_nocap", "tmpl_nocap@test.com", "Tmpl NoCap User", "member"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_tmpl_315b_nocap",
+                "tmpl_nocap@test.com",
+                "Tmpl NoCap User",
+                "member"));
 
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)
@@ -106,7 +117,9 @@ class AutomationTemplateControllerTest {
   @Test
   void listTemplates_returns10() throws Exception {
     mockMvc
-        .perform(get("/api/automation-templates").with(ownerJwt()))
+        .perform(
+            get("/api/automation-templates")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tmpl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$", hasSize(13)))
         .andExpect(jsonPath("$[0].slug").exists())
@@ -121,7 +134,8 @@ class AutomationTemplateControllerTest {
     var result =
         mockMvc
             .perform(
-                post("/api/automation-templates/task-completion-chain/activate").with(ownerJwt()))
+                post("/api/automation-templates/task-completion-chain/activate")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tmpl_owner")))
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.name", is("Task Completion Chain")))
             .andExpect(jsonPath("$.actions", hasSize(1)))
@@ -136,7 +150,8 @@ class AutomationTemplateControllerTest {
   void activateTemplate_hasSourceTemplateAndSlug() throws Exception {
     mockMvc
         .perform(
-            post("/api/automation-templates/budget-alert-escalation/activate").with(ownerJwt()))
+            post("/api/automation-templates/budget-alert-escalation/activate")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tmpl_owner")))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.source", is("TEMPLATE")))
         .andExpect(jsonPath("$.templateSlug", is("budget-alert-escalation")));
@@ -145,7 +160,9 @@ class AutomationTemplateControllerTest {
   @Test
   void activateTemplate_ruleIsEnabled() throws Exception {
     mockMvc
-        .perform(post("/api/automation-templates/new-project-welcome/activate").with(ownerJwt()))
+        .perform(
+            post("/api/automation-templates/new-project-welcome/activate")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tmpl_owner")))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.enabled", is(true)));
   }
@@ -155,19 +172,21 @@ class AutomationTemplateControllerTest {
     mockMvc
         .perform(
             post("/api/automation-templates/document-review-notification/activate")
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tmpl_owner")))
         .andExpect(status().isCreated());
 
     mockMvc
         .perform(
             post("/api/automation-templates/document-review-notification/activate")
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tmpl_owner")))
         .andExpect(status().isCreated());
 
     // Both should exist — verify via listing rules
     var result =
         mockMvc
-            .perform(get("/api/automation-rules").with(ownerJwt()))
+            .perform(
+                get("/api/automation-rules")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tmpl_owner")))
             .andExpect(status().isOk())
             .andReturn();
 
@@ -181,7 +200,9 @@ class AutomationTemplateControllerTest {
   @Test
   void listTemplates_memberGets403() throws Exception {
     mockMvc
-        .perform(get("/api/automation-templates").with(memberJwt()))
+        .perform(
+            get("/api/automation-templates")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_tmpl_member")))
         .andExpect(status().isForbidden());
   }
 
@@ -237,59 +258,18 @@ class AutomationTemplateControllerTest {
   @Test
   void customRoleWithCapability_accessesTemplateEndpoint_returns200() throws Exception {
     mockMvc
-        .perform(get("/api/automation-templates").with(customRoleJwt()))
+        .perform(
+            get("/api/automation-templates")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_tmpl_315b_custom")))
         .andExpect(status().isOk());
   }
 
   @Test
   void customRoleWithoutCapability_accessesTemplateEndpoint_returns403() throws Exception {
     mockMvc
-        .perform(get("/api/automation-templates").with(noCapabilityJwt()))
+        .perform(
+            get("/api/automation-templates")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_tmpl_315b_nocap")))
         .andExpect(status().isForbidden());
-  }
-
-  private String syncMember(String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        { "clerkOrgId": "%s", "clerkUserId": "%s", "email": "%s",
-                          "name": "%s", "avatarUrl": null, "orgRole": "%s" }
-                        """
-                            .formatted(ORG_ID, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_tmpl_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_tmpl_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor customRoleJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_tmpl_315b_custom")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor noCapabilityJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_tmpl_315b_nocap")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 }

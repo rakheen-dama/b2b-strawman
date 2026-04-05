@@ -9,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.billing.payfast.PlatformPayFastService;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -413,7 +414,8 @@ class SubscriptionItnIntegrationTest {
     assertThat(sub.getPayfastToken()).isEqualTo("sub-token-cancel-pf");
 
     // Sync a member so cancel endpoint works (needs tenant context for member count)
-    syncMember(freshOrg, "user_cancel_owner", "cancel@test.com", "CancelOwner", "owner");
+    TestMemberHelper.syncMemberQuietly(
+        mockMvc, freshOrg, "user_cancel_owner", "cancel@test.com", "CancelOwner", "owner");
 
     // Cancel via API
     mockMvc
@@ -455,25 +457,6 @@ class SubscriptionItnIntegrationTest {
     } catch (NoSuchAlgorithmException e) {
       throw new IllegalStateException(e);
     }
-  }
-
-  private void syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    mockMvc
-        .perform(
-            post("/internal/members/sync")
-                .header("X-API-KEY", API_KEY)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-            {
-              "clerkOrgId": "%s", "clerkUserId": "%s", "email": "%s",
-              "name": "%s", "avatarUrl": null, "orgRole": "%s"
-            }
-            """
-                        .formatted(orgId, clerkUserId, email, name, orgRole)))
-        .andExpect(status().isCreated());
   }
 
   private static org.springframework.security.test.web.servlet.request

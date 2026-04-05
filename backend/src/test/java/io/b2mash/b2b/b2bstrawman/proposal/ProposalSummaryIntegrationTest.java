@@ -15,6 +15,9 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.SchemaNameGenerator;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
@@ -32,7 +35,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -59,10 +61,13 @@ class ProposalSummaryIntegrationTest {
   void provisionTenantAndSeedData() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Proposal Summary Test Org", null);
 
-    memberIdOwner = syncMember("user_sum_owner", "sum_owner@test.com", "Summary Owner", "owner");
-    syncMember("user_sum_member", "sum_member@test.com", "Summary Member", "member");
+    memberIdOwner =
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_sum_owner", "sum_owner@test.com", "Summary Owner", "owner");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_sum_member", "sum_member@test.com", "Summary Member", "member");
 
-    customerId = createCustomer(ownerJwt());
+    customerId = createCustomer(TestJwtFactory.ownerJwt(ORG_ID, "user_sum_owner"));
 
     schema = SchemaNameGenerator.generateSchemaName(ORG_ID);
 
@@ -112,7 +117,8 @@ class ProposalSummaryIntegrationTest {
     setExpired(expiredId);
 
     mockMvc
-        .perform(get("/api/proposals/summary").with(ownerJwt()))
+        .perform(
+            get("/api/proposals/summary").with(TestJwtFactory.ownerJwt(ORG_ID, "user_sum_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.total").value(baseTotal + 5))
         .andExpect(jsonPath("$.byStatus.DRAFT").value(baseDraft + 1))
@@ -139,7 +145,8 @@ class ProposalSummaryIntegrationTest {
     setAcceptedWithTimestamps(p2, sentAt2, acceptedAt2);
 
     mockMvc
-        .perform(get("/api/proposals/summary").with(ownerJwt()))
+        .perform(
+            get("/api/proposals/summary").with(TestJwtFactory.ownerJwt(ORG_ID, "user_sum_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.avgDaysToAcceptance").value(org.hamcrest.Matchers.greaterThan(0.0)));
   }
@@ -158,7 +165,9 @@ class ProposalSummaryIntegrationTest {
 
     var result =
         mockMvc
-            .perform(get("/api/proposals/summary").with(ownerJwt()))
+            .perform(
+                get("/api/proposals/summary")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_sum_owner")))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.pendingOverdue").isArray())
             .andReturn();
@@ -188,7 +197,8 @@ class ProposalSummaryIntegrationTest {
   @Test
   void getProposalSummary_memberWithoutInvoicingCapability_returns403() throws Exception {
     mockMvc
-        .perform(get("/api/proposals/summary").with(memberJwt()))
+        .perform(
+            get("/api/proposals/summary").with(TestJwtFactory.memberJwt(ORG_ID, "user_sum_member")))
         .andExpect(status().isForbidden());
   }
 
@@ -247,39 +257,6 @@ class ProposalSummaryIntegrationTest {
         .andExpect(jsonPath("$.pendingOverdue").isEmpty());
   }
 
-  // --- Helper methods ---
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_sum_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_sum_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private String syncMember(String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s", "clerkUserId": "%s", "email": "%s",
-                          "name": "%s", "avatarUrl": null, "orgRole": "%s"
-                        }
-                        """
-                            .formatted(ORG_ID, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
   private String createCustomer(JwtRequestPostProcessor jwt) throws Exception {
     var result =
         mockMvc
@@ -301,7 +278,7 @@ class ProposalSummaryIntegrationTest {
         mockMvc
             .perform(
                 post("/api/proposals")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_sum_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -310,13 +287,7 @@ class ProposalSummaryIntegrationTest {
                             .formatted(title, customerId)))
             .andExpect(status().isCreated())
             .andReturn();
-    return extractIdFromLocation(result);
-  }
-
-  private String extractIdFromLocation(MvcResult result) {
-    String location = result.getResponse().getHeader("Location");
-    assert location != null : "Expected Location header to be present";
-    return location.substring(location.lastIndexOf('/') + 1);
+    return TestEntityHelper.extractIdFromLocation(result);
   }
 
   private void setSent(String proposalId) {
@@ -368,7 +339,9 @@ class ProposalSummaryIntegrationTest {
   private SummaryBaseline getSummaryBaseline() throws Exception {
     var result =
         mockMvc
-            .perform(get("/api/proposals/summary").with(ownerJwt()))
+            .perform(
+                get("/api/proposals/summary")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_sum_owner")))
             .andExpect(status().isOk())
             .andReturn();
     String body = result.getResponse().getContentAsString();

@@ -1,13 +1,10 @@
 package io.b2mash.b2b.b2bstrawman.setupstatus;
 
 import static io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.createActiveCustomer;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
@@ -21,6 +18,8 @@ import io.b2mash.b2b.b2bstrawman.template.DocumentTemplate;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateRepository;
 import io.b2mash.b2b.b2bstrawman.template.TemplateCategory;
 import io.b2mash.b2b.b2bstrawman.template.TemplateEntityType;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import jakarta.persistence.EntityManager;
 import java.util.List;
 import java.util.Map;
@@ -35,8 +34,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -50,8 +47,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 class DocumentGenerationReadinessControllerTest {
 
   private static final Map<String, Object> CONTENT = Map.of("type", "doc", "content", List.of());
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_doc_readiness_test";
 
   @Autowired private MockMvc mockMvc;
@@ -75,7 +70,8 @@ class DocumentGenerationReadinessControllerTest {
 
     memberIdOwner =
         UUID.fromString(
-            syncMember(
+            TestMemberHelper.syncMember(
+                mockMvc,
                 ORG_ID,
                 "user_doc_readiness_owner",
                 "doc_readiness_owner@test.com",
@@ -134,7 +130,7 @@ class DocumentGenerationReadinessControllerTest {
             get("/api/templates/readiness")
                 .param("entityType", "PROJECT")
                 .param("entityId", projectWithCustomerId.toString())
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_doc_readiness_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$[0].templateId").exists())
@@ -152,7 +148,7 @@ class DocumentGenerationReadinessControllerTest {
             get("/api/templates/readiness")
                 .param("entityType", "PROJECT")
                 .param("entityId", projectWithCustomerId.toString())
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_doc_readiness_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[0].ready").value(true))
         .andExpect(jsonPath("$[0].missingFields").isEmpty());
@@ -168,7 +164,7 @@ class DocumentGenerationReadinessControllerTest {
             get("/api/templates/readiness")
                 .param("entityType", "PROJECT")
                 .param("entityId", projectNoCustomerId.toString())
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_doc_readiness_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[0].ready").value(true))
         .andExpect(jsonPath("$[0].missingFields").isEmpty());
@@ -193,41 +189,7 @@ class DocumentGenerationReadinessControllerTest {
             get("/api/templates/readiness")
                 .param("entityType", "INVALID_TYPE")
                 .param("entityId", projectWithCustomerId.toString())
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_doc_readiness_owner")))
         .andExpect(status().isBadRequest());
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_doc_readiness_owner")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

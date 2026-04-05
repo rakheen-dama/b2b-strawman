@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.retainer;
 
 import static org.hamcrest.Matchers.nullValue;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -11,7 +10,9 @@ import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestChecklistHelper;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -23,7 +24,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -34,8 +34,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class RetainerSummaryControllerTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_retainer_summary_test";
 
   @Autowired private MockMvc mockMvc;
@@ -50,20 +48,46 @@ class RetainerSummaryControllerTest {
   void provisionAndSeed() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Retainer Summary Test Org", null);
 
-    syncMember(ORG_ID, "user_rst_owner", "rst_owner@test.com", "RST Owner", "owner");
-    syncMember(ORG_ID, "user_rst_member", "rst_member@test.com", "RST Member", "member");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_rst_owner", "rst_owner@test.com", "RST Owner", "owner");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_rst_member", "rst_member@test.com", "RST Member", "member");
 
-    // Create customers
-    customerHourBank = createCustomer("HourBank Corp", "hourbank@test.com");
-    customerFixedFee = createCustomer("FixedFee Corp", "fixedfee@test.com");
-    customerNoRetainer = createCustomer("NoRetainer Corp", "noretainer@test.com");
-    customerTerminated = createCustomer("Terminated Corp", "terminated@test.com");
+    // Create customers and transition to ACTIVE (required for retainer creation)
+    customerHourBank =
+        TestEntityHelper.createCustomer(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, "user_rst_owner"),
+            "HourBank Corp",
+            "hourbank@test.com");
+    transitionCustomerToActive(customerHourBank);
+    customerFixedFee =
+        TestEntityHelper.createCustomer(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, "user_rst_owner"),
+            "FixedFee Corp",
+            "fixedfee@test.com");
+    transitionCustomerToActive(customerFixedFee);
+    customerNoRetainer =
+        TestEntityHelper.createCustomer(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, "user_rst_owner"),
+            "NoRetainer Corp",
+            "noretainer@test.com");
+    transitionCustomerToActive(customerNoRetainer);
+    customerTerminated =
+        TestEntityHelper.createCustomer(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, "user_rst_owner"),
+            "Terminated Corp",
+            "terminated@test.com");
+    transitionCustomerToActive(customerTerminated);
 
     // Create HOUR_BANK retainer for customerHourBank
     mockMvc
         .perform(
             post("/api/retainers")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rst_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -85,7 +109,7 @@ class RetainerSummaryControllerTest {
     mockMvc
         .perform(
             post("/api/retainers")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rst_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -107,7 +131,7 @@ class RetainerSummaryControllerTest {
         mockMvc
             .perform(
                 post("/api/retainers")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rst_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -130,7 +154,9 @@ class RetainerSummaryControllerTest {
         JsonPath.read(terminateResult.getResponse().getContentAsString(), "$.id");
 
     mockMvc
-        .perform(post("/api/retainers/" + terminatedRetainerId + "/terminate").with(ownerJwt()))
+        .perform(
+            post("/api/retainers/" + terminatedRetainerId + "/terminate")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rst_owner")))
         .andExpect(status().isOk());
   }
 
@@ -138,7 +164,9 @@ class RetainerSummaryControllerTest {
   @Order(1)
   void getSummary_activeHourBankRetainer_returns200WithAllFields() throws Exception {
     mockMvc
-        .perform(get("/api/customers/" + customerHourBank + "/retainer-summary").with(ownerJwt()))
+        .perform(
+            get("/api/customers/" + customerHourBank + "/retainer-summary")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rst_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.hasActiveRetainer").value(true))
         .andExpect(jsonPath("$.agreementId").exists())
@@ -155,7 +183,9 @@ class RetainerSummaryControllerTest {
   @Order(2)
   void getSummary_activeFixedFeeRetainer_returns200WithTypeSpecificFields() throws Exception {
     mockMvc
-        .perform(get("/api/customers/" + customerFixedFee + "/retainer-summary").with(ownerJwt()))
+        .perform(
+            get("/api/customers/" + customerFixedFee + "/retainer-summary")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rst_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.hasActiveRetainer").value(true))
         .andExpect(jsonPath("$.agreementId").exists())
@@ -172,7 +202,9 @@ class RetainerSummaryControllerTest {
   @Order(3)
   void getSummary_customerWithNoRetainer_returns200WithHasActiveRetainerFalse() throws Exception {
     mockMvc
-        .perform(get("/api/customers/" + customerNoRetainer + "/retainer-summary").with(ownerJwt()))
+        .perform(
+            get("/api/customers/" + customerNoRetainer + "/retainer-summary")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rst_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.hasActiveRetainer").value(false));
   }
@@ -182,7 +214,9 @@ class RetainerSummaryControllerTest {
   void getSummary_customerWithTerminatedRetainerOnly_returns200WithHasActiveRetainerFalse()
       throws Exception {
     mockMvc
-        .perform(get("/api/customers/" + customerTerminated + "/retainer-summary").with(ownerJwt()))
+        .perform(
+            get("/api/customers/" + customerTerminated + "/retainer-summary")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rst_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.hasActiveRetainer").value(false));
   }
@@ -191,7 +225,9 @@ class RetainerSummaryControllerTest {
   @Order(5)
   void getSummary_asMember_returns200() throws Exception {
     mockMvc
-        .perform(get("/api/customers/" + customerHourBank + "/retainer-summary").with(memberJwt()))
+        .perform(
+            get("/api/customers/" + customerHourBank + "/retainer-summary")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_rst_member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.hasActiveRetainer").value(true));
   }
@@ -210,76 +246,20 @@ class RetainerSummaryControllerTest {
     mockMvc
         .perform(
             get("/api/customers/00000000-0000-0000-0000-000000000099/retainer-summary")
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rst_owner")))
         .andExpect(status().isNotFound());
-  }
-
-  // --- Helpers ---
-
-  private String createCustomer(String name, String email) throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/api/customers")
-                    .with(ownerJwt())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"name": "%s", "email": "%s"}
-                        """
-                            .formatted(name, email)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    String id = JsonPath.read(result.getResponse().getContentAsString(), "$.id").toString();
-    transitionCustomerToActive(id);
-    return id;
   }
 
   private void transitionCustomerToActive(String custId) throws Exception {
     mockMvc
         .perform(
             post("/api/customers/" + custId + "/transition")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rst_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"targetStatus\": \"ONBOARDING\"}"))
         .andExpect(status().isOk());
     // Completing all checklist items auto-transitions ONBOARDING -> ACTIVE
-    TestChecklistHelper.completeChecklistItems(mockMvc, custId, ownerJwt());
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_rst_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_rst_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
+    TestChecklistHelper.completeChecklistItems(
+        mockMvc, custId, TestJwtFactory.ownerJwt(ORG_ID, "user_rst_owner"));
   }
 }

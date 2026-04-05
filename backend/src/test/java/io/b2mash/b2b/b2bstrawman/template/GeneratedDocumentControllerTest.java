@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.template;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -15,6 +14,8 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -26,7 +27,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -39,8 +39,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 class GeneratedDocumentControllerTest {
 
   private static final Map<String, Object> CONTENT = Map.of("type", "doc", "content", List.of());
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_gen_doc_ctrl_test";
 
   @Autowired private MockMvc mockMvc;
@@ -61,7 +59,8 @@ class GeneratedDocumentControllerTest {
     provisioningService.provisionTenant(ORG_ID, "GenDoc Controller Test Org", null);
 
     memberIdOwner =
-        syncMember(
+        TestMemberHelper.syncMember(
+            mockMvc,
             ORG_ID,
             "user_gendocctrl_owner",
             "gendocctrl_owner@test.com",
@@ -69,7 +68,8 @@ class GeneratedDocumentControllerTest {
             "owner");
 
     memberIdMember =
-        syncMember(
+        TestMemberHelper.syncMember(
+            mockMvc,
             ORG_ID,
             "user_gendocctrl_member",
             "gendocctrl_member@test.com",
@@ -106,7 +106,7 @@ class GeneratedDocumentControllerTest {
     mockMvc
         .perform(
             post("/api/templates/" + testTemplateId + "/generate")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_gendocctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -121,7 +121,7 @@ class GeneratedDocumentControllerTest {
     mockMvc
         .perform(
             get("/api/generated-documents")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_gendocctrl_owner"))
                 .param("entityType", "PROJECT")
                 .param("entityId", testProjectId.toString()))
         .andExpect(status().isOk())
@@ -139,7 +139,7 @@ class GeneratedDocumentControllerTest {
         mockMvc
             .perform(
                 get("/api/generated-documents")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_gendocctrl_owner"))
                     .param("entityType", "PROJECT")
                     .param("entityId", testProjectId.toString()))
             .andExpect(status().isOk())
@@ -149,7 +149,9 @@ class GeneratedDocumentControllerTest {
 
     // Download returns 302 redirect to presigned URL
     mockMvc
-        .perform(get("/api/generated-documents/" + generatedDocId + "/download").with(ownerJwt()))
+        .perform(
+            get("/api/generated-documents/" + generatedDocId + "/download")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_gendocctrl_owner")))
         .andExpect(status().is(302));
   }
 
@@ -160,7 +162,7 @@ class GeneratedDocumentControllerTest {
         mockMvc
             .perform(
                 post("/api/templates/" + testTemplateId + "/generate")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_gendocctrl_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -175,7 +177,7 @@ class GeneratedDocumentControllerTest {
         mockMvc
             .perform(
                 get("/api/generated-documents")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_gendocctrl_owner"))
                     .param("entityType", "PROJECT")
                     .param("entityId", testProjectId.toString()))
             .andExpect(status().isOk())
@@ -186,7 +188,9 @@ class GeneratedDocumentControllerTest {
     String latestDocId = ids.getFirst();
 
     mockMvc
-        .perform(delete("/api/generated-documents/" + latestDocId).with(ownerJwt()))
+        .perform(
+            delete("/api/generated-documents/" + latestDocId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_gendocctrl_owner")))
         .andExpect(status().isNoContent());
   }
 
@@ -196,7 +200,7 @@ class GeneratedDocumentControllerTest {
     mockMvc
         .perform(
             post("/api/templates/" + testTemplateId + "/generate")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_gendocctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -209,7 +213,7 @@ class GeneratedDocumentControllerTest {
         mockMvc
             .perform(
                 get("/api/generated-documents")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_gendocctrl_owner"))
                     .param("entityType", "PROJECT")
                     .param("entityId", testProjectId.toString()))
             .andExpect(status().isOk())
@@ -220,7 +224,9 @@ class GeneratedDocumentControllerTest {
     String latestDocId = ids.getFirst();
 
     mockMvc
-        .perform(delete("/api/generated-documents/" + latestDocId).with(memberJwt()))
+        .perform(
+            delete("/api/generated-documents/" + latestDocId)
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_gendocctrl_member")))
         .andExpect(status().isForbidden());
   }
 
@@ -230,7 +236,7 @@ class GeneratedDocumentControllerTest {
         mockMvc
             .perform(
                 get("/api/generated-documents")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_gendocctrl_owner"))
                     .param("entityType", "PROJECT")
                     .param("entityId", testProjectId.toString()))
             .andExpect(status().isOk())
@@ -252,7 +258,7 @@ class GeneratedDocumentControllerTest {
         mockMvc
             .perform(
                 get("/api/generated-documents")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_gendocctrl_owner"))
                     .param("entityType", "PROJECT")
                     .param("entityId", testProjectId.toString()))
             .andExpect(status().isOk())
@@ -262,7 +268,8 @@ class GeneratedDocumentControllerTest {
 
     mockMvc
         .perform(
-            get("/api/generated-documents/" + generatedDocId + "/download-docx").with(ownerJwt()))
+            get("/api/generated-documents/" + generatedDocId + "/download-docx")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_gendocctrl_owner")))
         .andExpect(status().isNotFound());
   }
 
@@ -272,7 +279,7 @@ class GeneratedDocumentControllerTest {
         mockMvc
             .perform(
                 get("/api/generated-documents")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_gendocctrl_owner"))
                     .param("entityType", "PROJECT")
                     .param("entityId", testProjectId.toString()))
             .andExpect(status().isOk())
@@ -285,57 +292,11 @@ class GeneratedDocumentControllerTest {
     assertThat(responseBody).doesNotContain("docxS3Key");
   }
 
-  // --- JWT Helpers ---
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_gendocctrl_owner")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_gendocctrl_member")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  // --- Helpers ---
-
   private void runInTenant(Runnable action) {
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)
         .where(RequestScopes.MEMBER_ID, UUID.fromString(memberIdOwner))
         .where(RequestScopes.ORG_ROLE, "owner")
         .run(action);
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

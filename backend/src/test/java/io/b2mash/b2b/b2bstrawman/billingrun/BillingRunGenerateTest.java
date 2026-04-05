@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.billingrun;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -21,12 +20,13 @@ import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
@@ -39,7 +39,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -84,8 +83,12 @@ class BillingRunGenerateTest {
     provisioningService.provisionTenant(ORG_ID, "Generate Test Org", null);
 
     memberIdOwner =
-        UUID.fromString(syncMember("user_gen_owner", "gen_owner@test.com", "Gen Owner", "owner"));
-    memberIdMember = syncMember("user_gen_member", "gen_member@test.com", "Gen Member", "member");
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, "user_gen_owner", "gen_owner@test.com", "Gen Owner", "owner"));
+    memberIdMember =
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_gen_member", "gen_member@test.com", "Gen Member", "member");
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
@@ -209,7 +212,9 @@ class BillingRunGenerateTest {
     String runId = createBillingRunWithPreview("Gen Run 1", true);
 
     mockMvc
-        .perform(post("/api/billing-runs/" + runId + "/generate").with(ownerJwt()))
+        .perform(
+            post("/api/billing-runs/" + runId + "/generate")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_gen_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("COMPLETED"))
         .andExpect(jsonPath("$.totalInvoices").isNumber())
@@ -224,12 +229,16 @@ class BillingRunGenerateTest {
     String runId = createBillingRunWithPreview("Gen Run 2", false);
 
     mockMvc
-        .perform(post("/api/billing-runs/" + runId + "/generate").with(ownerJwt()))
+        .perform(
+            post("/api/billing-runs/" + runId + "/generate")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_gen_owner")))
         .andExpect(status().isOk());
 
     // Verify items have status GENERATED and invoiceId set
     mockMvc
-        .perform(get("/api/billing-runs/" + runId + "/items").with(ownerJwt()))
+        .perform(
+            get("/api/billing-runs/" + runId + "/items")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_gen_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[0].status").value("GENERATED"))
         .andExpect(jsonPath("$[0].invoiceId").isNotEmpty());
@@ -242,7 +251,9 @@ class BillingRunGenerateTest {
     String runId = createBillingRunWithPreview("Gen Run 3", false);
 
     mockMvc
-        .perform(post("/api/billing-runs/" + runId + "/generate").with(ownerJwt()))
+        .perform(
+            post("/api/billing-runs/" + runId + "/generate")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_gen_owner")))
         .andExpect(status().isOk());
 
     // Verify invoices are linked to billing run
@@ -275,12 +286,16 @@ class BillingRunGenerateTest {
 
     // Generate once to transition to COMPLETED
     mockMvc
-        .perform(post("/api/billing-runs/" + runId + "/generate").with(ownerJwt()))
+        .perform(
+            post("/api/billing-runs/" + runId + "/generate")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_gen_owner")))
         .andExpect(status().isOk());
 
     // Try to generate again — should fail because status is COMPLETED
     mockMvc
-        .perform(post("/api/billing-runs/" + runId + "/generate").with(ownerJwt()))
+        .perform(
+            post("/api/billing-runs/" + runId + "/generate")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_gen_owner")))
         .andExpect(status().isBadRequest());
   }
 
@@ -307,7 +322,9 @@ class BillingRunGenerateTest {
 
     // Try to generate second run — should get 409
     mockMvc
-        .perform(post("/api/billing-runs/" + runId2 + "/generate").with(ownerJwt()))
+        .perform(
+            post("/api/billing-runs/" + runId2 + "/generate")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_gen_owner")))
         .andExpect(status().isConflict());
 
     // Clean up: complete the IN_PROGRESS run so it doesn't block subsequent tests
@@ -335,7 +352,9 @@ class BillingRunGenerateTest {
     // Get items and exclude the first one
     var itemsResult =
         mockMvc
-            .perform(get("/api/billing-runs/" + runId + "/items").with(ownerJwt()))
+            .perform(
+                get("/api/billing-runs/" + runId + "/items")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_gen_owner")))
             .andExpect(status().isOk())
             .andReturn();
 
@@ -344,19 +363,23 @@ class BillingRunGenerateTest {
     mockMvc
         .perform(
             put("/api/billing-runs/" + runId + "/items/" + firstItemId + "/exclude")
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_gen_owner")))
         .andExpect(status().isOk());
 
     // Generate — excluded item should be skipped
     mockMvc
-        .perform(post("/api/billing-runs/" + runId + "/generate").with(ownerJwt()))
+        .perform(
+            post("/api/billing-runs/" + runId + "/generate")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_gen_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("COMPLETED"));
 
     // Check that excluded item still has no invoiceId
     var finalItems =
         mockMvc
-            .perform(get("/api/billing-runs/" + runId + "/items").with(ownerJwt()))
+            .perform(
+                get("/api/billing-runs/" + runId + "/items")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_gen_owner")))
             .andExpect(status().isOk())
             .andReturn();
 
@@ -373,7 +396,9 @@ class BillingRunGenerateTest {
 
     var result =
         mockMvc
-            .perform(post("/api/billing-runs/" + runId + "/generate").with(ownerJwt()))
+            .perform(
+                post("/api/billing-runs/" + runId + "/generate")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_gen_owner")))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("COMPLETED"))
             .andExpect(jsonPath("$.totalFailed").value(0))
@@ -392,7 +417,9 @@ class BillingRunGenerateTest {
     String runId = createBillingRunWithPreview("Gen Run 8", false);
 
     mockMvc
-        .perform(post("/api/billing-runs/" + runId + "/generate").with(memberJwt()))
+        .perform(
+            post("/api/billing-runs/" + runId + "/generate")
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_gen_member", "member")))
         .andExpect(status().isForbidden());
   }
 
@@ -406,14 +433,16 @@ class BillingRunGenerateTest {
     mockMvc
         .perform(
             post("/api/billing-runs/" + runId + "/preview")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_gen_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{}"))
         .andExpect(status().isOk());
 
     // Generate with no items
     mockMvc
-        .perform(post("/api/billing-runs/" + runId + "/generate").with(ownerJwt()))
+        .perform(
+            post("/api/billing-runs/" + runId + "/generate")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_gen_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("COMPLETED"))
         .andExpect(jsonPath("$.totalInvoices").value(0))
@@ -428,7 +457,9 @@ class BillingRunGenerateTest {
 
     var result =
         mockMvc
-            .perform(post("/api/billing-runs/" + runId + "/generate").with(ownerJwt()))
+            .perform(
+                post("/api/billing-runs/" + runId + "/generate")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_gen_owner")))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("COMPLETED"))
             .andReturn();
@@ -436,7 +467,9 @@ class BillingRunGenerateTest {
     // Verify all items are GENERATED
     var itemsResult =
         mockMvc
-            .perform(get("/api/billing-runs/" + runId + "/items").with(ownerJwt()))
+            .perform(
+                get("/api/billing-runs/" + runId + "/items")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_gen_owner")))
             .andExpect(status().isOk())
             .andReturn();
 
@@ -455,7 +488,7 @@ class BillingRunGenerateTest {
     mockMvc
         .perform(
             post("/api/billing-runs/" + runId + "/preview")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_gen_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{}"))
         .andExpect(status().isOk());
@@ -470,7 +503,7 @@ class BillingRunGenerateTest {
         mockMvc
             .perform(
                 post("/api/billing-runs")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_gen_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -487,34 +520,5 @@ class BillingRunGenerateTest {
             .andExpect(status().isCreated())
             .andReturn();
     return JsonPath.read(result.getResponse().getContentAsString(), "$.id");
-  }
-
-  private String syncMember(String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        { "clerkOrgId": "%s", "clerkUserId": "%s", "email": "%s", "name": "%s",
-                          "avatarUrl": null, "orgRole": "%s" }
-                        """
-                            .formatted(ORG_ID, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_gen_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_gen_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 }

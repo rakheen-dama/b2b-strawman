@@ -4,16 +4,16 @@ import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -25,7 +25,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
 /**
  * Integration tests for the My Work endpoints. Verifies cross-project task aggregation, member time
@@ -37,8 +36,6 @@ import org.springframework.test.web.servlet.MvcResult;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class MyWorkIntegrationTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_mywork_test";
   private static final String ORG_B_ID = "org_mywork_test_b";
 
@@ -66,57 +63,112 @@ class MyWorkIntegrationTest {
     provisioningService.provisionTenant(ORG_B_ID, "MyWork Test Org B", null);
 
     // Sync members for tenant A
-    memberIdOwner = syncMember(ORG_ID, "user_mw_owner", "mw_owner@test.com", "MW Owner", "owner");
+    memberIdOwner =
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_mw_owner", "mw_owner@test.com", "MW Owner", "owner");
     memberIdMember =
-        syncMember(ORG_ID, "user_mw_member", "mw_member@test.com", "MW Member", "member");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_mw_member", "mw_member@test.com", "MW Member", "member");
     // Additional member not added to projects (for isolation tests)
-    syncMember(ORG_ID, "user_mw_outsider", "mw_outsider@test.com", "MW Outsider", "member");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_mw_outsider", "mw_outsider@test.com", "MW Outsider", "member");
 
     // Sync member for tenant B
     memberIdMemberB =
-        syncMember(ORG_B_ID, "user_mw_tenant_b", "mw_tenantb@test.com", "Tenant B User", "owner");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_B_ID, "user_mw_tenant_b", "mw_tenantb@test.com", "Tenant B User", "owner");
 
     // Create Project A — owner is auto-lead
-    projectAId = createProject(ownerJwt(), "MW Project A", "Project A for my work tests");
+    projectAId =
+        createProject(
+            TestJwtFactory.ownerJwt(ORG_ID, "user_mw_owner"),
+            "MW Project A",
+            "Project A for my work tests");
     // Add member to Project A
-    addMemberToProject(ownerJwt(), projectAId, memberIdMember);
+    addMemberToProject(
+        TestJwtFactory.ownerJwt(ORG_ID, "user_mw_owner"), projectAId, memberIdMember);
 
     // Create Project B — owner is auto-lead
-    projectBId = createProject(ownerJwt(), "MW Project B", "Project B for my work tests");
+    projectBId =
+        createProject(
+            TestJwtFactory.ownerJwt(ORG_ID, "user_mw_owner"),
+            "MW Project B",
+            "Project B for my work tests");
     // Add member to Project B
-    addMemberToProject(ownerJwt(), projectBId, memberIdMember);
+    addMemberToProject(
+        TestJwtFactory.ownerJwt(ORG_ID, "user_mw_owner"), projectBId, memberIdMember);
 
     // Create Project C — member is NOT a project member (only owner is lead)
-    projectCId = createProject(ownerJwt(), "MW Project C", "Project C - member excluded");
+    projectCId =
+        createProject(
+            TestJwtFactory.ownerJwt(ORG_ID, "user_mw_owner"),
+            "MW Project C",
+            "Project C - member excluded");
 
     // Create tasks in Project A
-    assignedTaskAId = createTask(ownerJwt(), projectAId, "Assigned Task A", "HIGH", null);
+    assignedTaskAId =
+        createTask(
+            TestJwtFactory.ownerJwt(ORG_ID, "user_mw_owner"),
+            projectAId,
+            "Assigned Task A",
+            "HIGH",
+            null);
     // Claim task for member
     mockMvc
-        .perform(post("/api/tasks/" + assignedTaskAId + "/claim").with(memberJwt()))
+        .perform(
+            post("/api/tasks/" + assignedTaskAId + "/claim")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_mw_member")))
         .andExpect(status().isOk());
 
-    unassignedTaskAId = createTask(ownerJwt(), projectAId, "Unassigned Task A", "MEDIUM", null);
+    unassignedTaskAId =
+        createTask(
+            TestJwtFactory.ownerJwt(ORG_ID, "user_mw_owner"),
+            projectAId,
+            "Unassigned Task A",
+            "MEDIUM",
+            null);
 
     // Create tasks in Project B
-    assignedTaskBId = createTask(ownerJwt(), projectBId, "Assigned Task B", "LOW", "2026-03-01");
+    assignedTaskBId =
+        createTask(
+            TestJwtFactory.ownerJwt(ORG_ID, "user_mw_owner"),
+            projectBId,
+            "Assigned Task B",
+            "LOW",
+            "2026-03-01");
     mockMvc
-        .perform(post("/api/tasks/" + assignedTaskBId + "/claim").with(memberJwt()))
+        .perform(
+            post("/api/tasks/" + assignedTaskBId + "/claim")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_mw_member")))
         .andExpect(status().isOk());
 
-    unassignedTaskBId = createTask(ownerJwt(), projectBId, "Unassigned Task B", "HIGH", null);
+    unassignedTaskBId =
+        createTask(
+            TestJwtFactory.ownerJwt(ORG_ID, "user_mw_owner"),
+            projectBId,
+            "Unassigned Task B",
+            "HIGH",
+            null);
 
     // Create a DONE task (should not appear in assigned results)
-    closedTaskId = createTask(ownerJwt(), projectAId, "Closed Task", "LOW", null);
+    closedTaskId =
+        createTask(
+            TestJwtFactory.ownerJwt(ORG_ID, "user_mw_owner"),
+            projectAId,
+            "Closed Task",
+            "LOW",
+            null);
     mockMvc
-        .perform(post("/api/tasks/" + closedTaskId + "/claim").with(memberJwt()))
+        .perform(
+            post("/api/tasks/" + closedTaskId + "/claim")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_mw_member")))
         .andExpect(status().isOk());
     // Update task status to DONE
     mockMvc
         .perform(
             org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put(
                     "/api/tasks/" + closedTaskId)
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_mw_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -125,20 +177,64 @@ class MyWorkIntegrationTest {
         .andExpect(status().isOk());
 
     // Create task in Project C (member is NOT a project member)
-    otherOrgTaskId = createTask(ownerJwt(), projectCId, "Task In Non-Member Project", "HIGH", null);
+    otherOrgTaskId =
+        createTask(
+            TestJwtFactory.ownerJwt(ORG_ID, "user_mw_owner"),
+            projectCId,
+            "Task In Non-Member Project",
+            "HIGH",
+            null);
 
     // Create time entries for member in different projects
-    createTimeEntry(memberJwt(), assignedTaskAId, "2026-02-10", 60, true, "Work on task A");
-    createTimeEntry(memberJwt(), assignedTaskAId, "2026-02-11", 30, false, "More work on task A");
-    createTimeEntry(memberJwt(), assignedTaskBId, "2026-02-10", 120, true, "Work on task B");
-    createTimeEntry(memberJwt(), assignedTaskBId, "2026-02-12", 45, true, "Continue task B");
+    createTimeEntry(
+        TestJwtFactory.memberJwt(ORG_ID, "user_mw_member"),
+        assignedTaskAId,
+        "2026-02-10",
+        60,
+        true,
+        "Work on task A");
+    createTimeEntry(
+        TestJwtFactory.memberJwt(ORG_ID, "user_mw_member"),
+        assignedTaskAId,
+        "2026-02-11",
+        30,
+        false,
+        "More work on task A");
+    createTimeEntry(
+        TestJwtFactory.memberJwt(ORG_ID, "user_mw_member"),
+        assignedTaskBId,
+        "2026-02-10",
+        120,
+        true,
+        "Work on task B");
+    createTimeEntry(
+        TestJwtFactory.memberJwt(ORG_ID, "user_mw_member"),
+        assignedTaskBId,
+        "2026-02-12",
+        45,
+        true,
+        "Continue task B");
 
     // Create time entry in tenant B
     var tenantBProjectId =
-        createProject(tenantBOwnerJwt(), "Tenant B Project", "Should be isolated");
+        createProject(
+            TestJwtFactory.ownerJwt(ORG_B_ID, "user_mw_tenant_b"),
+            "Tenant B Project",
+            "Should be isolated");
     var tenantBTaskId =
-        createTask(tenantBOwnerJwt(), tenantBProjectId, "Tenant B Task", "HIGH", null);
-    createTimeEntry(tenantBOwnerJwt(), tenantBTaskId, "2026-02-10", 180, true, "Tenant B work");
+        createTask(
+            TestJwtFactory.ownerJwt(ORG_B_ID, "user_mw_tenant_b"),
+            tenantBProjectId,
+            "Tenant B Task",
+            "HIGH",
+            null);
+    createTimeEntry(
+        TestJwtFactory.ownerJwt(ORG_B_ID, "user_mw_tenant_b"),
+        tenantBTaskId,
+        "2026-02-10",
+        180,
+        true,
+        "Tenant B work");
   }
 
   // --- My Assigned Tasks ---
@@ -146,7 +242,10 @@ class MyWorkIntegrationTest {
   @Test
   void shouldReturnAssignedTasksForMember() throws Exception {
     mockMvc
-        .perform(get("/api/my-work/tasks").with(memberJwt()).param("filter", "assigned"))
+        .perform(
+            get("/api/my-work/tasks")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_mw_member"))
+                .param("filter", "assigned"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.assigned").isArray())
         .andExpect(jsonPath("$.assigned", hasSize(2)))
@@ -159,7 +258,10 @@ class MyWorkIntegrationTest {
   @Test
   void shouldReturnUnassignedTasksInMemberProjects() throws Exception {
     mockMvc
-        .perform(get("/api/my-work/tasks").with(memberJwt()).param("filter", "unassigned"))
+        .perform(
+            get("/api/my-work/tasks")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_mw_member"))
+                .param("filter", "unassigned"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.assigned", hasSize(0)))
         .andExpect(jsonPath("$.unassigned").isArray())
@@ -170,7 +272,10 @@ class MyWorkIntegrationTest {
   @Test
   void shouldReturnBothAssignedAndUnassignedWithFilterAll() throws Exception {
     mockMvc
-        .perform(get("/api/my-work/tasks").with(memberJwt()).param("filter", "all"))
+        .perform(
+            get("/api/my-work/tasks")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_mw_member"))
+                .param("filter", "all"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.assigned", hasSize(2)))
         .andExpect(jsonPath("$.unassigned", hasSize(greaterThanOrEqualTo(2))));
@@ -179,7 +284,7 @@ class MyWorkIntegrationTest {
   @Test
   void shouldReturnBothWhenNoFilterSpecified() throws Exception {
     mockMvc
-        .perform(get("/api/my-work/tasks").with(memberJwt()))
+        .perform(get("/api/my-work/tasks").with(TestJwtFactory.memberJwt(ORG_ID, "user_mw_member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.assigned", hasSize(2)))
         .andExpect(jsonPath("$.unassigned", hasSize(greaterThanOrEqualTo(2))));
@@ -188,7 +293,10 @@ class MyWorkIntegrationTest {
   @Test
   void shouldFilterByProjectId() throws Exception {
     mockMvc
-        .perform(get("/api/my-work/tasks").with(memberJwt()).param("projectId", projectAId))
+        .perform(
+            get("/api/my-work/tasks")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_mw_member"))
+                .param("projectId", projectAId))
         .andExpect(status().isOk())
         .andExpect(
             jsonPath("$.assigned[*].projectId", everyItem(org.hamcrest.Matchers.is(projectAId))))
@@ -200,7 +308,7 @@ class MyWorkIntegrationTest {
   void shouldExcludeTasksInNonMemberProjects() throws Exception {
     // Member is not in Project C — its tasks should not appear
     mockMvc
-        .perform(get("/api/my-work/tasks").with(memberJwt()))
+        .perform(get("/api/my-work/tasks").with(TestJwtFactory.memberJwt(ORG_ID, "user_mw_member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.unassigned[*].title", everyItem(not("Task In Non-Member Project"))));
   }
@@ -208,7 +316,10 @@ class MyWorkIntegrationTest {
   @Test
   void shouldNotIncludeClosedTasksInAssigned() throws Exception {
     mockMvc
-        .perform(get("/api/my-work/tasks").with(memberJwt()).param("filter", "assigned"))
+        .perform(
+            get("/api/my-work/tasks")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_mw_member"))
+                .param("filter", "assigned"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.assigned[*].title", everyItem(not("Closed Task"))));
   }
@@ -216,7 +327,10 @@ class MyWorkIntegrationTest {
   @Test
   void shouldIncludeTotalTimeMinutesOnTasks() throws Exception {
     mockMvc
-        .perform(get("/api/my-work/tasks").with(memberJwt()).param("filter", "assigned"))
+        .perform(
+            get("/api/my-work/tasks")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_mw_member"))
+                .param("filter", "assigned"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.assigned[0].totalTimeMinutes").isNumber());
   }
@@ -228,7 +342,7 @@ class MyWorkIntegrationTest {
     mockMvc
         .perform(
             get("/api/my-work/time-entries")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_mw_member"))
                 .param("from", "2026-02-10")
                 .param("to", "2026-02-12"))
         .andExpect(status().isOk())
@@ -243,7 +357,7 @@ class MyWorkIntegrationTest {
     mockMvc
         .perform(
             get("/api/my-work/time-entries")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_mw_member"))
                 .param("from", "2026-02-10")
                 .param("to", "2026-02-10"))
         .andExpect(status().isOk())
@@ -258,7 +372,7 @@ class MyWorkIntegrationTest {
     mockMvc
         .perform(
             get("/api/my-work/time-summary")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_mw_member"))
                 .param("from", "2026-02-10")
                 .param("to", "2026-02-12"))
         .andExpect(status().isOk())
@@ -275,7 +389,7 @@ class MyWorkIntegrationTest {
     mockMvc
         .perform(
             get("/api/my-work/time-summary")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_mw_member"))
                 .param("from", "2026-02-10")
                 .param("to", "2026-02-12"))
         .andExpect(status().isOk())
@@ -289,7 +403,8 @@ class MyWorkIntegrationTest {
   void shouldReturnEmptyStateWhenNoTasks() throws Exception {
     // Outsider member has no assigned tasks and is in no projects
     mockMvc
-        .perform(get("/api/my-work/tasks").with(outsiderJwt()))
+        .perform(
+            get("/api/my-work/tasks").with(TestJwtFactory.memberJwt(ORG_ID, "user_mw_outsider")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.assigned", hasSize(0)))
         .andExpect(jsonPath("$.unassigned", hasSize(0)));
@@ -300,7 +415,7 @@ class MyWorkIntegrationTest {
     mockMvc
         .perform(
             get("/api/my-work/time-entries")
-                .with(outsiderJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_mw_outsider"))
                 .param("from", "2026-02-10")
                 .param("to", "2026-02-12"))
         .andExpect(status().isOk())
@@ -325,7 +440,7 @@ class MyWorkIntegrationTest {
                             .formatted(name, description)))
             .andExpect(status().isCreated())
             .andReturn();
-    return extractIdFromLocation(result);
+    return TestEntityHelper.extractIdFromLocation(result);
   }
 
   private void addMemberToProject(JwtRequestPostProcessor jwt, String projectId, String memberId)
@@ -360,7 +475,7 @@ class MyWorkIntegrationTest {
                             .formatted(title, priority, dueDateField)))
             .andExpect(status().isCreated())
             .andReturn();
-    return extractIdFromLocation(result);
+    return TestEntityHelper.extractIdFromLocation(result);
   }
 
   private void createTimeEntry(
@@ -387,57 +502,5 @@ class MyWorkIntegrationTest {
                     """
                         .formatted(date, durationMinutes, billable, description)))
         .andExpect(status().isCreated());
-  }
-
-  private String extractIdFromLocation(MvcResult result) {
-    String location = result.getResponse().getHeader("Location");
-    return location.substring(location.lastIndexOf('/') + 1);
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_mw_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_mw_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor outsiderJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_mw_outsider").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor tenantBOwnerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_mw_tenant_b").claim("o", Map.of("id", ORG_B_ID, "rol", "owner")));
   }
 }

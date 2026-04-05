@@ -1,14 +1,12 @@
 package io.b2mash.b2b.b2bstrawman.projecttemplate;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
@@ -23,6 +21,8 @@ import io.b2mash.b2b.b2bstrawman.schedule.RecurringSchedule;
 import io.b2mash.b2b.b2bstrawman.schedule.RecurringScheduleRepository;
 import io.b2mash.b2b.b2bstrawman.schedule.RecurringScheduleService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.time.LocalDate;
 import java.util.Map;
 import java.util.UUID;
@@ -34,7 +34,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -45,8 +44,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ProjectTemplatePrerequisiteTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_tmpl_prereq_243b";
 
   @Autowired private MockMvc mockMvc;
@@ -68,10 +65,18 @@ class ProjectTemplatePrerequisiteTest {
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Template Prereq 243B Test Org", null);
     ownerMemberId =
-        UUID.fromString(syncMember("user_tpq243_owner", "tpq243_owner@test.com", "Owner", "owner"));
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, "user_tpq243_owner", "tpq243_owner@test.com", "Owner", "owner"));
     memberMemberId =
         UUID.fromString(
-            syncMember("user_tpq243_member", "tpq243_member@test.com", "Member", "member"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_tpq243_member",
+                "tpq243_member@test.com",
+                "Member",
+                "member"));
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
   }
@@ -87,7 +92,7 @@ class ProjectTemplatePrerequisiteTest {
     mockMvc
         .perform(
             put("/api/project-templates/" + templateId + "/required-customer-fields")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tpq243_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -123,7 +128,7 @@ class ProjectTemplatePrerequisiteTest {
     mockMvc
         .perform(
             put("/api/project-templates/" + templateId + "/required-customer-fields")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_tpq243_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -143,7 +148,7 @@ class ProjectTemplatePrerequisiteTest {
     mockMvc
         .perform(
             put("/api/project-templates/" + templateId + "/required-customer-fields")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tpq243_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -175,7 +180,7 @@ class ProjectTemplatePrerequisiteTest {
     mockMvc
         .perform(
             get("/api/project-templates/" + templateId + "/prerequisite-check")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_tpq243_member"))
                 .param("customerId", custId[0].toString()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.passed").value(true))
@@ -192,7 +197,7 @@ class ProjectTemplatePrerequisiteTest {
     mockMvc
         .perform(
             put("/api/project-templates/" + templateId + "/required-customer-fields")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tpq243_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -223,7 +228,7 @@ class ProjectTemplatePrerequisiteTest {
     mockMvc
         .perform(
             get("/api/project-templates/" + templateId + "/prerequisite-check")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_tpq243_member"))
                 .param("customerId", custId[0].toString()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.passed").value(false))
@@ -244,7 +249,7 @@ class ProjectTemplatePrerequisiteTest {
     mockMvc
         .perform(
             put("/api/project-templates/" + templateId + "/required-customer-fields")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tpq243_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -276,7 +281,7 @@ class ProjectTemplatePrerequisiteTest {
     mockMvc
         .perform(
             post("/api/project-templates/" + templateId + "/instantiate")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tpq243_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -300,7 +305,7 @@ class ProjectTemplatePrerequisiteTest {
     mockMvc
         .perform(
             put("/api/project-templates/" + templateId + "/required-customer-fields")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tpq243_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -331,7 +336,7 @@ class ProjectTemplatePrerequisiteTest {
     mockMvc
         .perform(
             post("/api/project-templates/" + templateId + "/instantiate")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tpq243_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -358,7 +363,7 @@ class ProjectTemplatePrerequisiteTest {
     mockMvc
         .perform(
             put("/api/project-templates/" + templateId + "/required-customer-fields")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tpq243_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -495,41 +500,5 @@ class ProjectTemplatePrerequisiteTest {
                       result[1] = fd.getId();
                     }));
     return result;
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_tpq243_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(
-            j -> j.subject("user_tpq243_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private String syncMember(String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(ORG_ID, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

@@ -2,7 +2,6 @@ package io.b2mash.b2b.b2bstrawman.checklist;
 
 import static io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.createActiveCustomer;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -21,8 +20,8 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import java.util.Collections;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -37,7 +36,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -153,7 +151,7 @@ class ChecklistInstanceAdvancedTest {
     mockMvc
         .perform(
             put("/api/checklist-items/" + blockedItemId + "/complete")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_adv_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"notes\": null, \"documentId\": null}"))
         .andExpect(status().isConflict());
@@ -178,7 +176,7 @@ class ChecklistInstanceAdvancedTest {
     mockMvc
         .perform(
             put("/api/checklist-items/" + prerequisiteId + "/complete")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_adv_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"notes\": null, \"documentId\": null}"))
         .andExpect(status().isOk());
@@ -226,7 +224,7 @@ class ChecklistInstanceAdvancedTest {
     mockMvc
         .perform(
             put("/api/checklist-items/" + itemId + "/complete")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_adv_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"notes\": null, \"documentId\": null}"))
         .andExpect(status().isBadRequest());
@@ -283,7 +281,7 @@ class ChecklistInstanceAdvancedTest {
     mockMvc
         .perform(
             put("/api/checklist-items/" + itemId + "/complete")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_adv_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"notes\": \"Verified\", \"documentId\": \"%s\"}".formatted(docId)))
         .andExpect(status().isOk())
@@ -417,7 +415,9 @@ class ChecklistInstanceAdvancedTest {
             });
 
     mockMvc
-        .perform(put("/api/checklist-items/" + itemId + "/reopen").with(ownerJwt()))
+        .perform(
+            put("/api/checklist-items/" + itemId + "/reopen")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_adv_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("PENDING"));
 
@@ -483,7 +483,9 @@ class ChecklistInstanceAdvancedTest {
             });
 
     mockMvc
-        .perform(get("/api/customers/" + ids[0] + "/checklists").with(ownerJwt()))
+        .perform(
+            get("/api/customers/" + ids[0] + "/checklists")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_adv_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(1))
         .andExpect(jsonPath("$[0].id").value(ids[1].toString()))
@@ -501,7 +503,9 @@ class ChecklistInstanceAdvancedTest {
             });
 
     mockMvc
-        .perform(get("/api/checklist-instances/" + instanceId).with(ownerJwt()))
+        .perform(
+            get("/api/checklist-instances/" + instanceId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_adv_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(instanceId.toString()))
         .andExpect(jsonPath("$.status").value("IN_PROGRESS"))
@@ -521,7 +525,7 @@ class ChecklistInstanceAdvancedTest {
     mockMvc
         .perform(
             post("/api/customers/" + ids[1] + "/checklists")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_adv_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"templateId\": \"%s\"}".formatted(ids[0])))
         .andExpect(status().isCreated())
@@ -548,7 +552,7 @@ class ChecklistInstanceAdvancedTest {
     mockMvc
         .perform(
             put("/api/checklist-items/" + itemId + "/complete")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_adv_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"notes\": \"All good\", \"documentId\": null}"))
         .andExpect(status().isOk())
@@ -573,7 +577,7 @@ class ChecklistInstanceAdvancedTest {
     mockMvc
         .perform(
             put("/api/checklist-items/" + itemId + "/skip")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_adv_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"reason\": \"Not applicable\"}"))
         .andExpect(status().isOk())
@@ -598,7 +602,7 @@ class ChecklistInstanceAdvancedTest {
     mockMvc
         .perform(
             put("/api/checklist-items/" + itemId + "/complete")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_adv_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"notes\": null, \"documentId\": null}"))
         .andExpect(status().isForbidden());
@@ -680,7 +684,7 @@ class ChecklistInstanceAdvancedTest {
     mockMvc
         .perform(
             post("/api/customers/" + ids[1] + "/checklists")
-                .with(customRoleJwt())
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_adv_315a_custom", "member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"templateId\": \"%s\"}".formatted(ids[0])))
         .andExpect(status().isCreated());
@@ -699,35 +703,10 @@ class ChecklistInstanceAdvancedTest {
     mockMvc
         .perform(
             post("/api/customers/" + ids[1] + "/checklists")
-                .with(noCapabilityJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_adv_315a_nocap"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"templateId\": \"%s\"}".formatted(ids[0])))
         .andExpect(status().isForbidden());
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_adv_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_adv_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor customRoleJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_adv_315a_custom")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor noCapabilityJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_adv_315a_nocap").claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 
   private <T> T runInTenant(Callable<T> callable) {

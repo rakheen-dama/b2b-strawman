@@ -1,13 +1,11 @@
 package io.b2mash.b2b.b2bstrawman.onboarding;
 
 import static org.hamcrest.Matchers.hasSize;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.billingrate.BillingRate;
 import io.b2mash.b2b.b2bstrawman.billingrate.BillingRateRepository;
@@ -21,11 +19,12 @@ import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
@@ -37,8 +36,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -49,8 +46,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class OnboardingControllerTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String EMPTY_ORG_ID = "org_onboarding_empty";
   private static final String POPULATED_ORG_ID = "org_onboarding_populated";
   private static final String ADMIN_ORG_ID = "org_onboarding_admin";
@@ -78,14 +73,26 @@ class OnboardingControllerTest {
             .provisionTenant(EMPTY_ORG_ID, "Empty Onboarding Org", null)
             .schemaName();
     emptyOwnerMemberId =
-        syncMember(
-            EMPTY_ORG_ID, "user_onb_empty_owner", "onb_empty@test.com", "Empty Owner", "owner");
+        TestMemberHelper.syncMember(
+            mockMvc,
+            EMPTY_ORG_ID,
+            "user_onb_empty_owner",
+            "onb_empty@test.com",
+            "Empty Owner",
+            "owner");
 
     // Admin test tenant — owner + admin to test admin dismiss capability
     provisioningService.provisionTenant(ADMIN_ORG_ID, "Admin Test Org", null);
-    syncMember(ADMIN_ORG_ID, "user_onb_adm_owner", "onb_adm_owner@test.com", "Adm Owner", "owner");
+    TestMemberHelper.syncMember(
+        mockMvc,
+        ADMIN_ORG_ID,
+        "user_onb_adm_owner",
+        "onb_adm_owner@test.com",
+        "Adm Owner",
+        "owner");
     adminMemberId =
-        syncMember(ADMIN_ORG_ID, "user_onb_admin", "onb_admin@test.com", "Admin User", "admin");
+        TestMemberHelper.syncMember(
+            mockMvc, ADMIN_ORG_ID, "user_onb_admin", "onb_admin@test.com", "Admin User", "admin");
 
     // Populated tenant — has all entity types
     populatedTenantSchema =
@@ -93,11 +100,21 @@ class OnboardingControllerTest {
             .provisionTenant(POPULATED_ORG_ID, "Populated Onboarding Org", null)
             .schemaName();
     populatedOwnerMemberId =
-        syncMember(
-            POPULATED_ORG_ID, "user_onb_pop_owner", "onb_pop@test.com", "Pop Owner", "owner");
+        TestMemberHelper.syncMember(
+            mockMvc,
+            POPULATED_ORG_ID,
+            "user_onb_pop_owner",
+            "onb_pop@test.com",
+            "Pop Owner",
+            "owner");
     // Second member for INVITE_MEMBER step
-    syncMember(
-        POPULATED_ORG_ID, "user_onb_pop_member", "onb_pop_member@test.com", "Pop Member", "member");
+    TestMemberHelper.syncMemberQuietly(
+        mockMvc,
+        POPULATED_ORG_ID,
+        "user_onb_pop_member",
+        "onb_pop_member@test.com",
+        "Pop Member",
+        "member");
 
     // Seed entities in populated tenant
     UUID memberId = UUID.fromString(populatedOwnerMemberId);
@@ -152,7 +169,9 @@ class OnboardingControllerTest {
   @Order(1)
   void getProgress_noEntities_allStepsIncomplete() throws Exception {
     mockMvc
-        .perform(get("/api/onboarding/progress").with(emptyOwnerJwt()))
+        .perform(
+            get("/api/onboarding/progress")
+                .with(TestJwtFactory.ownerJwt(EMPTY_ORG_ID, "user_onb_empty_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.steps", hasSize(6)))
         .andExpect(jsonPath("$.completedCount").value(0))
@@ -176,7 +195,9 @@ class OnboardingControllerTest {
   @Order(2)
   void getProgress_withAllEntities_allStepsComplete() throws Exception {
     mockMvc
-        .perform(get("/api/onboarding/progress").with(populatedOwnerJwt()))
+        .perform(
+            get("/api/onboarding/progress")
+                .with(TestJwtFactory.ownerJwt(POPULATED_ORG_ID, "user_onb_pop_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.steps", hasSize(6)))
         .andExpect(jsonPath("$.completedCount").value(6))
@@ -200,7 +221,9 @@ class OnboardingControllerTest {
   @Order(3)
   void dismiss_ownerRole_returns204() throws Exception {
     mockMvc
-        .perform(post("/api/onboarding/dismiss").with(populatedOwnerJwt()))
+        .perform(
+            post("/api/onboarding/dismiss")
+                .with(TestJwtFactory.ownerJwt(POPULATED_ORG_ID, "user_onb_pop_owner")))
         .andExpect(status().isNoContent());
   }
 
@@ -208,7 +231,9 @@ class OnboardingControllerTest {
   @Order(4)
   void dismiss_idempotent_returns204() throws Exception {
     mockMvc
-        .perform(post("/api/onboarding/dismiss").with(populatedOwnerJwt()))
+        .perform(
+            post("/api/onboarding/dismiss")
+                .with(TestJwtFactory.ownerJwt(POPULATED_ORG_ID, "user_onb_pop_owner")))
         .andExpect(status().isNoContent());
   }
 
@@ -216,7 +241,9 @@ class OnboardingControllerTest {
   @Order(5)
   void getProgress_dismissed_returnsDismissedTrue() throws Exception {
     mockMvc
-        .perform(get("/api/onboarding/progress").with(populatedOwnerJwt()))
+        .perform(
+            get("/api/onboarding/progress")
+                .with(TestJwtFactory.ownerJwt(POPULATED_ORG_ID, "user_onb_pop_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.dismissed").value(true))
         .andExpect(jsonPath("$.completedCount").value(6));
@@ -227,7 +254,9 @@ class OnboardingControllerTest {
   void dismiss_adminRole_returns204() throws Exception {
     // Admin in a properly synced org has TEAM_OVERSIGHT capability and can dismiss
     mockMvc
-        .perform(post("/api/onboarding/dismiss").with(adminJwt()))
+        .perform(
+            post("/api/onboarding/dismiss")
+                .with(TestJwtFactory.adminJwt(ADMIN_ORG_ID, "user_onb_admin")))
         .andExpect(status().isNoContent());
   }
 
@@ -236,10 +265,14 @@ class OnboardingControllerTest {
   void getProgress_afterDismiss_emptyTenant_returnsDismissedTrue() throws Exception {
     // Dismiss empty tenant via owner, then verify dismissed state is reflected
     mockMvc
-        .perform(post("/api/onboarding/dismiss").with(emptyOwnerJwt()))
+        .perform(
+            post("/api/onboarding/dismiss")
+                .with(TestJwtFactory.ownerJwt(EMPTY_ORG_ID, "user_onb_empty_owner")))
         .andExpect(status().isNoContent());
     mockMvc
-        .perform(get("/api/onboarding/progress").with(emptyOwnerJwt()))
+        .perform(
+            get("/api/onboarding/progress")
+                .with(TestJwtFactory.ownerJwt(EMPTY_ORG_ID, "user_onb_empty_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.dismissed").value(true));
   }
@@ -248,7 +281,9 @@ class OnboardingControllerTest {
   @Order(8)
   void dismiss_memberRole_returns403() throws Exception {
     mockMvc
-        .perform(post("/api/onboarding/dismiss").with(emptyMemberJwt()))
+        .perform(
+            post("/api/onboarding/dismiss")
+                .with(TestJwtFactory.memberJwt(EMPTY_ORG_ID, "user_onb_empty_member")))
         .andExpect(status().isForbidden());
   }
 
@@ -256,7 +291,9 @@ class OnboardingControllerTest {
   @Order(9)
   void getProgress_memberRole_allowed() throws Exception {
     mockMvc
-        .perform(get("/api/onboarding/progress").with(emptyMemberJwt()))
+        .perform(
+            get("/api/onboarding/progress")
+                .with(TestJwtFactory.memberJwt(EMPTY_ORG_ID, "user_onb_empty_member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.steps", hasSize(6)));
   }
@@ -266,7 +303,9 @@ class OnboardingControllerTest {
   void getProgress_withProject_createProjectComplete() throws Exception {
     // This uses the populated tenant which already has a project
     mockMvc
-        .perform(get("/api/onboarding/progress").with(populatedOwnerJwt()))
+        .perform(
+            get("/api/onboarding/progress")
+                .with(TestJwtFactory.ownerJwt(POPULATED_ORG_ID, "user_onb_pop_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.steps[0].code").value("CREATE_PROJECT"))
         .andExpect(jsonPath("$.steps[0].completed").value(true));
@@ -274,61 +313,4 @@ class OnboardingControllerTest {
 
   // --- Helpers ---
 
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor emptyOwnerJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_onb_empty_owner")
-                    .claim("o", Map.of("id", EMPTY_ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor populatedOwnerJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_onb_pop_owner")
-                    .claim("o", Map.of("id", POPULATED_ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor emptyMemberJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_onb_empty_member")
-                    .claim("o", Map.of("id", EMPTY_ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor adminJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_onb_admin").claim("o", Map.of("id", ADMIN_ORG_ID, "rol", "admin")));
-  }
 }

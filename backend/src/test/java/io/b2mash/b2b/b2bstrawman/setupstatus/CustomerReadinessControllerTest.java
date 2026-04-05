@@ -1,13 +1,10 @@
 package io.b2mash.b2b.b2bstrawman.setupstatus;
 
 import static io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.createActiveCustomer;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
@@ -20,8 +17,9 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import jakarta.persistence.EntityManager;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
@@ -33,8 +31,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -46,8 +42,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class CustomerReadinessControllerTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_readiness_test";
   private static final String ORG_ID_B = "org_readiness_test_b";
 
@@ -77,7 +71,8 @@ class CustomerReadinessControllerTest {
 
     memberIdOwner =
         UUID.fromString(
-            syncMember(
+            TestMemberHelper.syncMember(
+                mockMvc,
                 ORG_ID,
                 "user_readiness_owner",
                 "readiness_owner@test.com",
@@ -154,7 +149,8 @@ class CustomerReadinessControllerTest {
 
     memberIdOwnerB =
         UUID.fromString(
-            syncMember(
+            TestMemberHelper.syncMember(
+                mockMvc,
                 ORG_ID_B,
                 "user_readiness_owner_b",
                 "readiness_owner_b@test.com",
@@ -188,7 +184,9 @@ class CustomerReadinessControllerTest {
   @Order(1)
   void getReadiness_returns200_withExpectedShape() throws Exception {
     mockMvc
-        .perform(get("/api/customers/" + activeCustomerId + "/readiness").with(ownerJwt()))
+        .perform(
+            get("/api/customers/" + activeCustomerId + "/readiness")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_readiness_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.customerId").value(activeCustomerId.toString()))
         .andExpect(jsonPath("$.lifecycleStatus").value("ACTIVE"))
@@ -202,7 +200,9 @@ class CustomerReadinessControllerTest {
   @Order(2)
   void getReadiness_prospectCustomer_noProjects_needsAttention() throws Exception {
     mockMvc
-        .perform(get("/api/customers/" + prospectCustomerId + "/readiness").with(ownerJwt()))
+        .perform(
+            get("/api/customers/" + prospectCustomerId + "/readiness")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_readiness_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.lifecycleStatus").value("PROSPECT"))
         .andExpect(jsonPath("$.overallReadiness").value("Needs Attention"))
@@ -214,7 +214,8 @@ class CustomerReadinessControllerTest {
   void getReadiness_activeCustomer_withLinkedProject_hasLinkedProjectsTrue() throws Exception {
     mockMvc
         .perform(
-            get("/api/customers/" + activeCustomerWithProjectId + "/readiness").with(ownerJwt()))
+            get("/api/customers/" + activeCustomerWithProjectId + "/readiness")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_readiness_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.hasLinkedProjects").value(true));
   }
@@ -232,48 +233,9 @@ class CustomerReadinessControllerTest {
   void getReadiness_crossTenant_returns404() throws Exception {
     // Tenant B's JWT trying to access Tenant A's customer
     mockMvc
-        .perform(get("/api/customers/" + prospectCustomerId + "/readiness").with(ownerJwtB()))
+        .perform(
+            get("/api/customers/" + prospectCustomerId + "/readiness")
+                .with(TestJwtFactory.ownerJwt(ORG_ID_B, "user_readiness_owner_b")))
         .andExpect(status().isNotFound());
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_readiness_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor ownerJwtB() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_readiness_owner_b")
-                    .claim("o", Map.of("id", ORG_ID_B, "rol", "owner")));
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

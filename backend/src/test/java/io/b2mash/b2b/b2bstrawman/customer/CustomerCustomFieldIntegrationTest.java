@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.customer;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -10,7 +9,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -19,7 +19,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -29,8 +28,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CustomerCustomFieldIntegrationTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_customer_cf_test";
 
   @Autowired private MockMvc mockMvc;
@@ -41,7 +38,8 @@ class CustomerCustomFieldIntegrationTest {
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Customer CF Test Org", null);
-    syncMember(ORG_ID, "user_ccf_owner", "ccf_owner@test.com", "Owner", "owner");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_ccf_owner", "ccf_owner@test.com", "Owner", "owner");
 
     // Create field definitions for CUSTOMER entity type
     createFieldDefinition("Industry", "industry", "TEXT", "CUSTOMER");
@@ -55,7 +53,7 @@ class CustomerCustomFieldIntegrationTest {
     mockMvc
         .perform(
             post("/api/customers")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ccf_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -83,7 +81,7 @@ class CustomerCustomFieldIntegrationTest {
         mockMvc
             .perform(
                 post("/api/customers")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ccf_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -99,7 +97,7 @@ class CustomerCustomFieldIntegrationTest {
     mockMvc
         .perform(
             put("/api/customers/" + customerId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ccf_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -124,7 +122,7 @@ class CustomerCustomFieldIntegrationTest {
     mockMvc
         .perform(
             post("/api/customers")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ccf_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -147,7 +145,7 @@ class CustomerCustomFieldIntegrationTest {
     mockMvc
         .perform(
             post("/api/customers")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ccf_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -165,7 +163,9 @@ class CustomerCustomFieldIntegrationTest {
     // Filter by custom field
     mockMvc
         .perform(
-            get("/api/customers").with(ownerJwt()).param("customField[industry]", "Healthcare"))
+            get("/api/customers")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ccf_owner"))
+                .param("customField[industry]", "Healthcare"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[?(@.customFields.industry == 'Healthcare')]").exists());
   }
@@ -177,7 +177,7 @@ class CustomerCustomFieldIntegrationTest {
         mockMvc
             .perform(
                 post("/api/field-groups")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ccf_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -198,7 +198,7 @@ class CustomerCustomFieldIntegrationTest {
         mockMvc
             .perform(
                 post("/api/customers")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ccf_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -214,7 +214,7 @@ class CustomerCustomFieldIntegrationTest {
     mockMvc
         .perform(
             put("/api/customers/" + customerId + "/field-groups")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ccf_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -230,43 +230,12 @@ class CustomerCustomFieldIntegrationTest {
     return "ccf_customer_" + (++emailCounter) + "@test.com";
   }
 
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_ccf_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
   private void createFieldDefinition(String name, String slug, String fieldType, String entityType)
       throws Exception {
     mockMvc
         .perform(
             post("/api/field-definitions")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ccf_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """

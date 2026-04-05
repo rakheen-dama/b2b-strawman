@@ -2,15 +2,12 @@ package io.b2mash.b2b.b2bstrawman.budget;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.billingrate.BillingRateService;
 import io.b2mash.b2b.b2bstrawman.budget.BudgetStatus.BudgetStatusEnum;
@@ -21,10 +18,11 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.TaskService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
@@ -37,7 +35,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -80,12 +77,22 @@ class ProjectBudgetIntegrationTest {
 
     memberIdOwner =
         UUID.fromString(
-            syncMember(
-                ORG_ID, "user_budget_owner", "budget_owner@test.com", "Budget Owner", "owner"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_budget_owner",
+                "budget_owner@test.com",
+                "Budget Owner",
+                "owner"));
     memberIdMember =
         UUID.fromString(
-            syncMember(
-                ORG_ID, "user_budget_member", "budget_member@test.com", "Budget Member", "member"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_budget_member",
+                "budget_member@test.com",
+                "Budget Member",
+                "member"));
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
@@ -163,7 +170,8 @@ class ProjectBudgetIntegrationTest {
 
     memberIdOwnerB =
         UUID.fromString(
-            syncMember(
+            TestMemberHelper.syncMember(
+                mockMvc,
                 ORG_ID_B,
                 "user_budget_owner_b",
                 "budget_owner_b@test.com",
@@ -437,7 +445,7 @@ class ProjectBudgetIntegrationTest {
     mockMvc
         .perform(
             put("/api/projects/" + projectId + "/budget")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_budget_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -450,7 +458,9 @@ class ProjectBudgetIntegrationTest {
 
     // Tenant B queries tenant A's project budget via HTTP — should get 404
     mockMvc
-        .perform(get("/api/projects/" + projectId + "/budget").with(ownerJwtTenantB()))
+        .perform(
+            get("/api/projects/" + projectId + "/budget")
+                .with(TestJwtFactory.ownerJwt(ORG_ID_B, "user_budget_owner_b")))
         .andExpect(status().isNotFound());
   }
 
@@ -459,7 +469,9 @@ class ProjectBudgetIntegrationTest {
   void tenantB_cannotQueryTenantA_budgetStatus() throws Exception {
     // Tenant B queries tenant A's project budget status endpoint — should get 404
     mockMvc
-        .perform(get("/api/projects/" + projectId + "/budget/status").with(ownerJwtTenantB()))
+        .perform(
+            get("/api/projects/" + projectId + "/budget/status")
+                .with(TestJwtFactory.ownerJwt(ORG_ID_B, "user_budget_owner_b")))
         .andExpect(status().isNotFound());
   }
 
@@ -471,7 +483,7 @@ class ProjectBudgetIntegrationTest {
     mockMvc
         .perform(
             put("/api/projects/" + projectId + "/budget")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_budget_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -497,7 +509,9 @@ class ProjectBudgetIntegrationTest {
   @Order(14)
   void httpGet_budget_returns200WithStatus() throws Exception {
     mockMvc
-        .perform(get("/api/projects/" + projectId + "/budget").with(ownerJwt()))
+        .perform(
+            get("/api/projects/" + projectId + "/budget")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_budget_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.projectId").value(projectId.toString()))
         .andExpect(jsonPath("$.budgetHours").value(200.00))
@@ -509,12 +523,16 @@ class ProjectBudgetIntegrationTest {
   @Order(15)
   void httpDelete_budget_returns204() throws Exception {
     mockMvc
-        .perform(delete("/api/projects/" + projectId + "/budget").with(ownerJwt()))
+        .perform(
+            delete("/api/projects/" + projectId + "/budget")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_budget_owner")))
         .andExpect(status().isNoContent());
 
     // Verify it was deleted — GET should now return 404
     mockMvc
-        .perform(get("/api/projects/" + projectId + "/budget").with(ownerJwt()))
+        .perform(
+            get("/api/projects/" + projectId + "/budget")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_budget_owner")))
         .andExpect(status().isNotFound());
   }
 
@@ -532,7 +550,7 @@ class ProjectBudgetIntegrationTest {
     mockMvc
         .perform(
             put("/api/projects/" + projectId + "/budget")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_budget_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -551,7 +569,7 @@ class ProjectBudgetIntegrationTest {
     mockMvc
         .perform(
             put("/api/projects/" + projectId + "/budget")
-                .with(memberJwt())
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_budget_member", "member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -570,7 +588,7 @@ class ProjectBudgetIntegrationTest {
     mockMvc
         .perform(
             put("/api/projects/" + projectId + "/budget")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_budget_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -583,7 +601,9 @@ class ProjectBudgetIntegrationTest {
 
     // Member without FINANCIAL_VISIBILITY cannot delete
     mockMvc
-        .perform(delete("/api/projects/" + projectId + "/budget").with(memberJwt()))
+        .perform(
+            delete("/api/projects/" + projectId + "/budget")
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_budget_member", "member")))
         .andExpect(status().isForbidden());
   }
 
@@ -611,50 +631,5 @@ class ProjectBudgetIntegrationTest {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_budget_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(
-            j -> j.subject("user_budget_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor ownerJwtTenantB() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_budget_owner_b")
-                    .claim("o", Map.of("id", ORG_ID_B, "rol", "owner")));
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                {
-                  "clerkOrgId": "%s",
-                  "clerkUserId": "%s",
-                  "email": "%s",
-                  "name": "%s",
-                  "avatarUrl": null,
-                  "orgRole": "%s"
-                }
-                """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

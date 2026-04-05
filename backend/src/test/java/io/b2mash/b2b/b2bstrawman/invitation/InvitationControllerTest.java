@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.invitation;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -12,7 +11,8 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -22,7 +22,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -32,8 +31,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class InvitationControllerTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_invitation_ctrl_test";
 
   @Autowired private MockMvc mockMvc;
@@ -52,9 +49,15 @@ class InvitationControllerTest {
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Invitation Ctrl Test Org", null);
 
-    ownerMemberId = syncMember("user_inv_owner", "inv_owner@test.com", "Inv Owner", "owner");
-    adminMemberId = syncMember("user_inv_admin", "inv_admin@test.com", "Inv Admin", "admin");
-    memberMemberId = syncMember("user_inv_member", "inv_member@test.com", "Inv Member", "member");
+    ownerMemberId =
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_inv_owner", "inv_owner@test.com", "Inv Owner", "owner");
+    adminMemberId =
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_inv_admin", "inv_admin@test.com", "Inv Admin", "admin");
+    memberMemberId =
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_inv_member", "inv_member@test.com", "Inv Member", "member");
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
@@ -71,7 +74,7 @@ class InvitationControllerTest {
     mockMvc
         .perform(
             post("/api/invitations")
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_inv_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -94,7 +97,7 @@ class InvitationControllerTest {
     mockMvc
         .perform(
             post("/api/invitations")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_inv_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -115,7 +118,7 @@ class InvitationControllerTest {
     mockMvc
         .perform(
             post("/api/invitations")
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_inv_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -128,7 +131,7 @@ class InvitationControllerTest {
     mockMvc
         .perform(
             post("/api/invitations")
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_inv_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -144,7 +147,7 @@ class InvitationControllerTest {
     mockMvc
         .perform(
             post("/api/invitations")
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_inv_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -162,7 +165,7 @@ class InvitationControllerTest {
     mockMvc
         .perform(
             post("/api/invitations")
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_inv_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -173,7 +176,7 @@ class InvitationControllerTest {
 
     // List invitations
     mockMvc
-        .perform(get("/api/invitations").with(adminJwt()))
+        .perform(get("/api/invitations").with(TestJwtFactory.adminJwt(ORG_ID, "user_inv_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.invitations").isArray());
   }
@@ -181,7 +184,10 @@ class InvitationControllerTest {
   @Test
   void listInvitations_withStatusFilter_returnsList() throws Exception {
     mockMvc
-        .perform(get("/api/invitations").with(adminJwt()).param("status", "PENDING"))
+        .perform(
+            get("/api/invitations")
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_inv_admin"))
+                .param("status", "PENDING"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.invitations").isArray());
   }
@@ -189,7 +195,10 @@ class InvitationControllerTest {
   @Test
   void listInvitations_invalidStatusFilter_returns400() throws Exception {
     mockMvc
-        .perform(get("/api/invitations").with(adminJwt()).param("status", "INVALID_STATUS"))
+        .perform(
+            get("/api/invitations")
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_inv_admin"))
+                .param("status", "INVALID_STATUS"))
         .andExpect(status().isBadRequest());
   }
 
@@ -201,7 +210,7 @@ class InvitationControllerTest {
         mockMvc
             .perform(
                 post("/api/invitations")
-                    .with(adminJwt())
+                    .with(TestJwtFactory.adminJwt(ORG_ID, "user_inv_admin"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -214,7 +223,9 @@ class InvitationControllerTest {
     String invitationId = JsonPath.read(result.getResponse().getContentAsString(), "$.id");
 
     mockMvc
-        .perform(delete("/api/invitations/" + invitationId).with(adminJwt()))
+        .perform(
+            delete("/api/invitations/" + invitationId)
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_inv_admin")))
         .andExpect(status().isNoContent());
   }
 
@@ -226,7 +237,7 @@ class InvitationControllerTest {
         mockMvc
             .perform(
                 post("/api/invitations")
-                    .with(adminJwt())
+                    .with(TestJwtFactory.adminJwt(ORG_ID, "user_inv_admin"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -240,56 +251,25 @@ class InvitationControllerTest {
 
     // First revoke succeeds
     mockMvc
-        .perform(delete("/api/invitations/" + invitationId).with(adminJwt()))
+        .perform(
+            delete("/api/invitations/" + invitationId)
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_inv_admin")))
         .andExpect(status().isNoContent());
 
     // Second revoke fails (already revoked)
     mockMvc
-        .perform(delete("/api/invitations/" + invitationId).with(adminJwt()))
+        .perform(
+            delete("/api/invitations/" + invitationId)
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_inv_admin")))
         .andExpect(status().isBadRequest());
   }
 
   @Test
   void revokeInvitation_notFound_returns404() throws Exception {
     mockMvc
-        .perform(delete("/api/invitations/" + UUID.randomUUID()).with(adminJwt()))
+        .perform(
+            delete("/api/invitations/" + UUID.randomUUID())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_inv_admin")))
         .andExpect(status().isNotFound());
-  }
-
-  // --- Helper: sync member via internal API ---
-  private String syncMember(String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(ORG_ID, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  // --- JWT helpers ---
-  private JwtRequestPostProcessor adminJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_inv_admin").claim("o", Map.of("id", ORG_ID, "rol", "admin")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_inv_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 }

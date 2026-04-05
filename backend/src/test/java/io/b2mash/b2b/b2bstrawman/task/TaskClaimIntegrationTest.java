@@ -1,17 +1,17 @@
 package io.b2mash.b2b.b2bstrawman.task;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -23,10 +23,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -34,8 +32,6 @@ import org.springframework.test.web.servlet.MvcResult;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class TaskClaimIntegrationTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_claim_test";
 
   @Autowired private MockMvc mockMvc;
@@ -51,19 +47,31 @@ class TaskClaimIntegrationTest {
     provisioningService.provisionTenant(ORG_ID, "Claim Test Org", null);
 
     memberIdOwner =
-        syncMember(ORG_ID, "user_claim_owner", "claim_owner@test.com", "Claim Owner", "owner");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_claim_owner", "claim_owner@test.com", "Claim Owner", "owner");
     memberIdMember =
-        syncMember(ORG_ID, "user_claim_member", "claim_member@test.com", "Claim Member", "member");
+        TestMemberHelper.syncMember(
+            mockMvc,
+            ORG_ID,
+            "user_claim_member",
+            "claim_member@test.com",
+            "Claim Member",
+            "member");
     memberIdMember2 =
-        syncMember(
-            ORG_ID, "user_claim_member2", "claim_member2@test.com", "Claim Member2", "member");
+        TestMemberHelper.syncMember(
+            mockMvc,
+            ORG_ID,
+            "user_claim_member2",
+            "claim_member2@test.com",
+            "Claim Member2",
+            "member");
 
     // Create a project (owner is auto-assigned as lead)
     var projectResult =
         mockMvc
             .perform(
                 post("/api/projects")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_claim_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -71,13 +79,13 @@ class TaskClaimIntegrationTest {
                         """))
             .andExpect(status().isCreated())
             .andReturn();
-    projectId = extractIdFromLocation(projectResult);
+    projectId = TestEntityHelper.extractIdFromLocation(projectResult);
 
     // Add both members to the project
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/members")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_claim_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -89,7 +97,7 @@ class TaskClaimIntegrationTest {
     mockMvc
         .perform(
             post("/api/projects/" + projectId + "/members")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_claim_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -106,7 +114,9 @@ class TaskClaimIntegrationTest {
     var taskId = createTask("Claim Me Task");
 
     mockMvc
-        .perform(post("/api/tasks/" + taskId + "/claim").with(memberJwt()))
+        .perform(
+            post("/api/tasks/" + taskId + "/claim")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_claim_member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("IN_PROGRESS"))
         .andExpect(jsonPath("$.assigneeId").value(memberIdMember));
@@ -118,12 +128,16 @@ class TaskClaimIntegrationTest {
 
     // First claim succeeds
     mockMvc
-        .perform(post("/api/tasks/" + taskId + "/claim").with(memberJwt()))
+        .perform(
+            post("/api/tasks/" + taskId + "/claim")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_claim_member")))
         .andExpect(status().isOk());
 
     // Second claim by another member fails (task is IN_PROGRESS, not OPEN)
     mockMvc
-        .perform(post("/api/tasks/" + taskId + "/claim").with(member2Jwt()))
+        .perform(
+            post("/api/tasks/" + taskId + "/claim")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_claim_member2")))
         .andExpect(status().isBadRequest());
   }
 
@@ -135,7 +149,7 @@ class TaskClaimIntegrationTest {
     mockMvc
         .perform(
             put("/api/tasks/" + taskId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_claim_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -151,7 +165,7 @@ class TaskClaimIntegrationTest {
     mockMvc
         .perform(
             put("/api/tasks/" + taskId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_claim_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -165,7 +179,9 @@ class TaskClaimIntegrationTest {
 
     // Trying to claim a DONE task should fail
     mockMvc
-        .perform(post("/api/tasks/" + taskId + "/claim").with(memberJwt()))
+        .perform(
+            post("/api/tasks/" + taskId + "/claim")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_claim_member")))
         .andExpect(status().isBadRequest());
   }
 
@@ -173,7 +189,9 @@ class TaskClaimIntegrationTest {
   void shouldReturn404WhenClaimingTaskNotInProject() throws Exception {
     // Use a non-existent task ID
     mockMvc
-        .perform(post("/api/tasks/00000000-0000-0000-0000-000000000000/claim").with(memberJwt()))
+        .perform(
+            post("/api/tasks/00000000-0000-0000-0000-000000000000/claim")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_claim_member")))
         .andExpect(status().isNotFound());
   }
 
@@ -185,12 +203,16 @@ class TaskClaimIntegrationTest {
 
     // Claim the task
     mockMvc
-        .perform(post("/api/tasks/" + taskId + "/claim").with(memberJwt()))
+        .perform(
+            post("/api/tasks/" + taskId + "/claim")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_claim_member")))
         .andExpect(status().isOk());
 
     // Release by the assignee
     mockMvc
-        .perform(post("/api/tasks/" + taskId + "/release").with(memberJwt()))
+        .perform(
+            post("/api/tasks/" + taskId + "/release")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_claim_member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("OPEN"))
         .andExpect(jsonPath("$.assigneeId").isEmpty());
@@ -202,12 +224,16 @@ class TaskClaimIntegrationTest {
 
     // Claim the task by member
     mockMvc
-        .perform(post("/api/tasks/" + taskId + "/claim").with(memberJwt()))
+        .perform(
+            post("/api/tasks/" + taskId + "/claim")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_claim_member")))
         .andExpect(status().isOk());
 
     // Try to release by member2 (non-assignee, non-lead) — should fail
     mockMvc
-        .perform(post("/api/tasks/" + taskId + "/release").with(member2Jwt()))
+        .perform(
+            post("/api/tasks/" + taskId + "/release")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_claim_member2")))
         .andExpect(status().isForbidden());
   }
 
@@ -217,12 +243,16 @@ class TaskClaimIntegrationTest {
 
     // Claim the task by member
     mockMvc
-        .perform(post("/api/tasks/" + taskId + "/claim").with(memberJwt()))
+        .perform(
+            post("/api/tasks/" + taskId + "/claim")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_claim_member")))
         .andExpect(status().isOk());
 
     // Release by the owner (who is project lead) — should succeed
     mockMvc
-        .perform(post("/api/tasks/" + taskId + "/release").with(ownerJwt()))
+        .perform(
+            post("/api/tasks/" + taskId + "/release")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_claim_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("OPEN"))
         .andExpect(jsonPath("$.assigneeId").isEmpty());
@@ -234,17 +264,23 @@ class TaskClaimIntegrationTest {
 
     // First claim succeeds (version goes from 0 to 1)
     mockMvc
-        .perform(post("/api/tasks/" + taskId + "/claim").with(memberJwt()))
+        .perform(
+            post("/api/tasks/" + taskId + "/claim")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_claim_member")))
         .andExpect(status().isOk());
 
     // Release so we can test again
     mockMvc
-        .perform(post("/api/tasks/" + taskId + "/release").with(memberJwt()))
+        .perform(
+            post("/api/tasks/" + taskId + "/release")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_claim_member")))
         .andExpect(status().isOk());
 
     // Claim again — verifies version tracking works across claim/release cycle
     mockMvc
-        .perform(post("/api/tasks/" + taskId + "/claim").with(member2Jwt()))
+        .perform(
+            post("/api/tasks/" + taskId + "/claim")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_claim_member2")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("IN_PROGRESS"))
         .andExpect(jsonPath("$.assigneeId").value(memberIdMember2));
@@ -256,7 +292,9 @@ class TaskClaimIntegrationTest {
 
     // Task is OPEN with no assignee — release should fail with state guard
     mockMvc
-        .perform(post("/api/tasks/" + taskId + "/release").with(ownerJwt()))
+        .perform(
+            post("/api/tasks/" + taskId + "/release")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_claim_owner")))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.detail").value("Task is not currently claimed"));
   }
@@ -273,7 +311,9 @@ class TaskClaimIntegrationTest {
             () -> {
               barrier.await();
               return mockMvc
-                  .perform(post("/api/tasks/" + taskId + "/claim").with(memberJwt()))
+                  .perform(
+                      post("/api/tasks/" + taskId + "/claim")
+                          .with(TestJwtFactory.memberJwt(ORG_ID, "user_claim_member")))
                   .andReturn()
                   .getResponse()
                   .getStatus();
@@ -284,7 +324,9 @@ class TaskClaimIntegrationTest {
             () -> {
               barrier.await();
               return mockMvc
-                  .perform(post("/api/tasks/" + taskId + "/claim").with(member2Jwt()))
+                  .perform(
+                      post("/api/tasks/" + taskId + "/claim")
+                          .with(TestJwtFactory.memberJwt(ORG_ID, "user_claim_member2")))
                   .andReturn()
                   .getResponse()
                   .getStatus();
@@ -307,7 +349,7 @@ class TaskClaimIntegrationTest {
         mockMvc
             .perform(
                 post("/api/projects/" + projectId + "/tasks")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_claim_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -316,54 +358,6 @@ class TaskClaimIntegrationTest {
                             .formatted(title)))
             .andExpect(status().isCreated())
             .andReturn();
-    return extractIdFromLocation(result);
-  }
-
-  private String extractIdFromLocation(MvcResult result) {
-    String location = result.getResponse().getHeader("Location");
-    return location.substring(location.lastIndexOf('/') + 1);
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_claim_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_claim_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor member2Jwt() {
-    return jwt()
-        .jwt(
-            j -> j.subject("user_claim_member2").claim("o", Map.of("id", ORG_ID, "rol", "member")));
+    return TestEntityHelper.extractIdFromLocation(result);
   }
 }

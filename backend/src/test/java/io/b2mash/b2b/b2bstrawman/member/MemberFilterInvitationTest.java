@@ -3,7 +3,6 @@ package io.b2mash.b2b.b2bstrawman.member;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
@@ -16,6 +15,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRole;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
@@ -27,7 +27,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -43,7 +42,6 @@ import org.springframework.test.web.servlet.MockMvc;
 class MemberFilterInvitationTest {
 
   private static final String ORG_ID = "org_inv_flow_test";
-  private static final String API_KEY = "test-api-key";
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
@@ -64,7 +62,8 @@ class MemberFilterInvitationTest {
             .orElseThrow();
 
     // Create an owner member to use as invitedBy
-    syncMember("user_inv_flow_owner", "inv_flow_owner@test.com", "Inv Owner", "owner");
+    TestMemberHelper.syncMemberQuietly(
+        mockMvc, ORG_ID, "user_inv_flow_owner", "inv_flow_owner@test.com", "Inv Owner", "owner");
   }
 
   @Test
@@ -215,27 +214,5 @@ class MemberFilterInvitationTest {
               assertThat(member).isPresent();
               assertThat(member.get().getOrgRole()).isEqualTo("member");
             });
-  }
-
-  private void syncMember(String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    mockMvc
-        .perform(
-            post("/internal/members/sync")
-                .header("X-API-KEY", API_KEY)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {
-                      "clerkOrgId": "%s",
-                      "clerkUserId": "%s",
-                      "email": "%s",
-                      "name": "%s",
-                      "avatarUrl": null,
-                      "orgRole": "%s"
-                    }
-                    """
-                        .formatted(ORG_ID, clerkUserId, email, name, orgRole)))
-        .andExpect(status().isCreated());
   }
 }

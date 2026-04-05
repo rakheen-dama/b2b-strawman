@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.fielddefinition;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -15,8 +14,9 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -26,7 +26,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -37,8 +36,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class FieldGroupAutoApplyIntegrationTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_fg_auto_apply_test";
 
   @Autowired private MockMvc mockMvc;
@@ -57,7 +54,13 @@ class FieldGroupAutoApplyIntegrationTest {
 
     memberIdOwner =
         UUID.fromString(
-            syncMember(ORG_ID, "user_fg_aa_owner", "fg_aa_owner@test.com", "FG AA Owner", "owner"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_fg_aa_owner",
+                "fg_aa_owner@test.com",
+                "FG AA Owner",
+                "owner"));
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
@@ -70,7 +73,7 @@ class FieldGroupAutoApplyIntegrationTest {
         mockMvc
             .perform(
                 post("/api/field-groups")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_fg_aa_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -92,7 +95,7 @@ class FieldGroupAutoApplyIntegrationTest {
     mockMvc
         .perform(
             patch("/api/field-groups/" + groupId + "/auto-apply")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_fg_aa_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -105,7 +108,7 @@ class FieldGroupAutoApplyIntegrationTest {
     mockMvc
         .perform(
             patch("/api/field-groups/" + groupId + "/auto-apply")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_fg_aa_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -122,7 +125,7 @@ class FieldGroupAutoApplyIntegrationTest {
         mockMvc
             .perform(
                 post("/api/field-groups")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_fg_aa_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -156,7 +159,7 @@ class FieldGroupAutoApplyIntegrationTest {
     mockMvc
         .perform(
             patch("/api/field-groups/" + groupId + "/auto-apply")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_fg_aa_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -180,7 +183,7 @@ class FieldGroupAutoApplyIntegrationTest {
         mockMvc
             .perform(
                 post("/api/field-groups")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_fg_aa_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -214,7 +217,7 @@ class FieldGroupAutoApplyIntegrationTest {
     mockMvc
         .perform(
             patch("/api/field-groups/" + groupId + "/auto-apply")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_fg_aa_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -239,7 +242,7 @@ class FieldGroupAutoApplyIntegrationTest {
         mockMvc
             .perform(
                 post("/api/field-groups")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_fg_aa_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -273,7 +276,7 @@ class FieldGroupAutoApplyIntegrationTest {
     mockMvc
         .perform(
             patch("/api/field-groups/" + groupId + "/auto-apply")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_fg_aa_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -285,7 +288,7 @@ class FieldGroupAutoApplyIntegrationTest {
     mockMvc
         .perform(
             patch("/api/field-groups/" + groupId + "/auto-apply")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_fg_aa_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -308,7 +311,7 @@ class FieldGroupAutoApplyIntegrationTest {
         mockMvc
             .perform(
                 post("/api/field-groups")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_fg_aa_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -329,7 +332,7 @@ class FieldGroupAutoApplyIntegrationTest {
     mockMvc
         .perform(
             patch("/api/field-groups/" + groupId + "/auto-apply")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_fg_aa_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -337,20 +340,6 @@ class FieldGroupAutoApplyIntegrationTest {
                     """))
         .andExpect(status().isForbidden());
   }
-
-  // --- JWT Helpers ---
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_fg_aa_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_fg_aa_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  // --- Helpers ---
 
   private void runInTenant(Runnable action) {
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -366,31 +355,5 @@ class FieldGroupAutoApplyIntegrationTest {
         .where(RequestScopes.MEMBER_ID, memberIdOwner)
         .where(RequestScopes.ORG_ROLE, "owner")
         .call(() -> transactionTemplate.execute(tx -> action.get()));
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

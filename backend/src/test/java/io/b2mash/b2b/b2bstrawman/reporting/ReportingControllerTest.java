@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.reporting;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -9,7 +8,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
@@ -19,10 +17,11 @@ import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.time.LocalDate;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -32,7 +31,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -65,7 +63,8 @@ class ReportingControllerTest {
     provisioningService.provisionTenant(ORG_ID, "Reporting Controller Test Org", null);
     ownerMemberId =
         UUID.fromString(
-            syncMember(ORG_ID, "user_rc_owner", "rc_owner@test.com", "RC Owner", "owner"));
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, "user_rc_owner", "rc_owner@test.com", "RC Owner", "owner"));
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
@@ -117,7 +116,9 @@ class ReportingControllerTest {
   @Test
   void listReportDefinitionsReturnsThreeCategories() throws Exception {
     mockMvc
-        .perform(get("/api/report-definitions").with(memberJwt()))
+        .perform(
+            get("/api/report-definitions")
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_rc_member", "member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.categories").isArray())
         .andExpect(jsonPath("$.categories.length()").value(3));
@@ -126,7 +127,9 @@ class ReportingControllerTest {
   @Test
   void listReportDefinitionsHasCorrectCategoryLabels() throws Exception {
     mockMvc
-        .perform(get("/api/report-definitions").with(memberJwt()))
+        .perform(
+            get("/api/report-definitions")
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_rc_member", "member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.categories[?(@.category == 'FINANCIAL')].label").value("Financial"))
         .andExpect(
@@ -138,7 +141,9 @@ class ReportingControllerTest {
   @Test
   void getReportDefinitionBySlugReturnsDetail() throws Exception {
     mockMvc
-        .perform(get("/api/report-definitions/timesheet").with(memberJwt()))
+        .perform(
+            get("/api/report-definitions/timesheet")
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_rc_member", "member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.slug").value("timesheet"))
         .andExpect(jsonPath("$.name").value("Timesheet Report"))
@@ -152,7 +157,9 @@ class ReportingControllerTest {
   @Test
   void getReportDefinitionUnknownSlugReturns404() throws Exception {
     mockMvc
-        .perform(get("/api/report-definitions/nonexistent").with(memberJwt()))
+        .perform(
+            get("/api/report-definitions/nonexistent")
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_rc_member", "member")))
         .andExpect(status().isNotFound());
   }
 
@@ -168,7 +175,7 @@ class ReportingControllerTest {
     mockMvc
         .perform(
             post("/api/report-definitions/timesheet/execute")
-                .with(memberJwt())
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_rc_member", "member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -196,7 +203,7 @@ class ReportingControllerTest {
     mockMvc
         .perform(
             post("/api/report-definitions/nonexistent-report/execute")
-                .with(memberJwt())
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_rc_member", "member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -237,7 +244,7 @@ class ReportingControllerTest {
     mockMvc
         .perform(
             post("/api/report-definitions/timesheet/execute")
-                .with(memberJwt())
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_rc_member", "member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -266,7 +273,7 @@ class ReportingControllerTest {
     mockMvc
         .perform(
             get("/api/report-definitions/timesheet/preview")
-                .with(memberJwt())
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_rc_member", "member"))
                 .param("dateFrom", "2025-06-01")
                 .param("dateTo", "2025-06-30")
                 .param("groupBy", "member"))
@@ -279,7 +286,7 @@ class ReportingControllerTest {
     mockMvc
         .perform(
             get("/api/report-definitions/nonexistent-report/preview")
-                .with(memberJwt())
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_rc_member", "member"))
                 .param("dateFrom", "2025-06-01")
                 .param("dateTo", "2025-06-30"))
         .andExpect(status().isNotFound());
@@ -292,7 +299,7 @@ class ReportingControllerTest {
     mockMvc
         .perform(
             get("/api/report-definitions/timesheet/export/pdf")
-                .with(memberJwt())
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_rc_member", "member"))
                 .param("dateFrom", "2025-06-01")
                 .param("dateTo", "2025-06-30")
                 .param("groupBy", "member"))
@@ -310,7 +317,7 @@ class ReportingControllerTest {
     mockMvc
         .perform(
             get("/api/report-definitions/timesheet/export/pdf")
-                .with(memberJwt())
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_rc_member", "member"))
                 .param("dateFrom", "2025-06-01")
                 .param("dateTo", "2025-06-30")
                 .param("groupBy", "member"))
@@ -346,7 +353,7 @@ class ReportingControllerTest {
     mockMvc
         .perform(
             get("/api/report-definitions/timesheet/export/csv")
-                .with(memberJwt())
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_rc_member", "member"))
                 .param("dateFrom", "2025-06-01")
                 .param("dateTo", "2025-06-30")
                 .param("groupBy", "member"))
@@ -383,7 +390,7 @@ class ReportingControllerTest {
     mockMvc
         .perform(
             get("/api/report-definitions/timesheet/export/csv")
-                .with(memberJwt())
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_rc_member", "member"))
                 .param("dateFrom", "2025-06-01")
                 .param("dateTo", "2025-06-30")
                 .param("groupBy", "member"))
@@ -425,42 +432,9 @@ class ReportingControllerTest {
     mockMvc
         .perform(
             get("/api/report-definitions/nonexistent/export/csv")
-                .with(memberJwt())
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_rc_member", "member"))
                 .param("dateFrom", "2025-06-01")
                 .param("dateTo", "2025-06-30"))
         .andExpect(status().isNotFound());
-  }
-
-  // --- Helpers ---
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_rc_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

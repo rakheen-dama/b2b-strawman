@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.invoice;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -18,11 +17,12 @@ import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -32,7 +32,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -70,13 +69,23 @@ class InvoiceGenerationValidationIntegrationTest {
 
     memberIdOwner =
         UUID.fromString(
-            syncMember(
-                "user_inv_genval_owner", "inv_genval_owner@test.com", "GenVal Owner", "owner"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_inv_genval_owner",
+                "inv_genval_owner@test.com",
+                "GenVal Owner",
+                "owner"));
 
     memberIdMember =
         UUID.fromString(
-            syncMember(
-                "user_inv_genval_member", "inv_genval_member@test.com", "GenVal Member", "member"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_inv_genval_member",
+                "inv_genval_member@test.com",
+                "GenVal Member",
+                "member"));
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
@@ -125,7 +134,7 @@ class InvoiceGenerationValidationIntegrationTest {
     mockMvc
         .perform(
             post("/api/invoices/validate-generation")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_genval_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -147,7 +156,7 @@ class InvoiceGenerationValidationIntegrationTest {
     mockMvc
         .perform(
             post("/api/invoices/validate-generation")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_genval_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -169,7 +178,7 @@ class InvoiceGenerationValidationIntegrationTest {
     mockMvc
         .perform(
             post("/api/invoices/validate-generation")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_genval_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -191,7 +200,7 @@ class InvoiceGenerationValidationIntegrationTest {
     mockMvc
         .perform(
             post("/api/invoices/" + invoiceId + "/send")
-                .with(memberJwt())
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_inv_genval_member", "member"))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isForbidden());
   }
@@ -204,7 +213,7 @@ class InvoiceGenerationValidationIntegrationTest {
     mockMvc
         .perform(
             post("/api/invoices/" + invoiceId + "/send")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_genval_owner"))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("SENT"));
@@ -218,7 +227,7 @@ class InvoiceGenerationValidationIntegrationTest {
     mockMvc
         .perform(
             post("/api/invoices/" + invoiceId + "/send")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_genval_owner"))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("SENT"));
@@ -285,7 +294,7 @@ class InvoiceGenerationValidationIntegrationTest {
         mockMvc
             .perform(
                 post("/api/invoices")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_genval_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -300,45 +309,10 @@ class InvoiceGenerationValidationIntegrationTest {
     mockMvc
         .perform(
             post("/api/invoices/" + invoiceId + "/approve")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_genval_owner"))
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk());
 
     return invoiceId;
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_inv_genval_owner")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_inv_genval_member")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private String syncMember(String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        { "clerkOrgId": "%s", "clerkUserId": "%s", "email": "%s",
-                          "name": "%s", "avatarUrl": null, "orgRole": "%s" }
-                        """
-                            .formatted(ORG_ID, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.datarequest;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -14,7 +13,8 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -25,7 +25,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -35,8 +34,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class DataRequestControllerTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_dsr_ctrl_test";
 
   @Autowired private MockMvc mockMvc;
@@ -57,15 +54,18 @@ class DataRequestControllerTest {
     provisioningService.provisionTenant(ORG_ID, "DSR Controller Test Org", null);
     memberIdOwner =
         UUID.fromString(
-            syncMember(ORG_ID, "user_dsr_owner", "dsr_owner@test.com", "DSR Owner", "owner"));
-    syncMember(ORG_ID, "user_dsr_member", "dsr_member@test.com", "DSR Member", "member");
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, "user_dsr_owner", "dsr_owner@test.com", "DSR Owner", "owner"));
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_dsr_member", "dsr_member@test.com", "DSR Member", "member");
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
 
     customRoleMemberId =
         UUID.fromString(
-            syncMember(
+            TestMemberHelper.syncMember(
+                mockMvc,
                 ORG_ID,
                 "user_dsr_315a_custom",
                 "dsr_custom@test.com",
@@ -73,8 +73,13 @@ class DataRequestControllerTest {
                 "member"));
     noCapMemberId =
         UUID.fromString(
-            syncMember(
-                ORG_ID, "user_dsr_315a_nocap", "dsr_nocap@test.com", "DSR NoCap User", "member"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_dsr_315a_nocap",
+                "dsr_nocap@test.com",
+                "DSR NoCap User",
+                "member"));
 
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)
@@ -106,7 +111,7 @@ class DataRequestControllerTest {
         mockMvc
             .perform(
                 post("/api/customers")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dsr_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -122,7 +127,7 @@ class DataRequestControllerTest {
     mockMvc
         .perform(
             post("/api/data-requests")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dsr_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -141,7 +146,7 @@ class DataRequestControllerTest {
     mockMvc
         .perform(
             post("/api/data-requests")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_dsr_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -157,7 +162,7 @@ class DataRequestControllerTest {
     mockMvc
         .perform(
             post("/api/data-requests")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dsr_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -168,7 +173,7 @@ class DataRequestControllerTest {
 
     // List all
     mockMvc
-        .perform(get("/api/data-requests").with(ownerJwt()))
+        .perform(get("/api/data-requests").with(TestJwtFactory.ownerJwt(ORG_ID, "user_dsr_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$[0].id").exists());
@@ -178,27 +183,36 @@ class DataRequestControllerTest {
 
   @Test
   void customRoleWithCapability_accessesDsrEndpoint_returns200() throws Exception {
-    mockMvc.perform(get("/api/data-requests").with(customRoleJwt())).andExpect(status().isOk());
+    mockMvc
+        .perform(
+            get("/api/data-requests")
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_dsr_315a_custom", "member")))
+        .andExpect(status().isOk());
   }
 
   @Test
   void customRoleWithoutCapability_accessesDsrEndpoint_returns403() throws Exception {
     mockMvc
-        .perform(get("/api/data-requests").with(noCapabilityJwt()))
+        .perform(
+            get("/api/data-requests").with(TestJwtFactory.memberJwt(ORG_ID, "user_dsr_315a_nocap")))
         .andExpect(status().isForbidden());
   }
 
   @Test
   void customRoleWithCapability_canCheckDeadlines() throws Exception {
     mockMvc
-        .perform(post("/api/data-requests/check-deadlines").with(customRoleJwt()))
+        .perform(
+            post("/api/data-requests/check-deadlines")
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_dsr_315a_custom", "member")))
         .andExpect(status().isOk());
   }
 
   @Test
   void customRoleWithoutCapability_cannotCheckDeadlines() throws Exception {
     mockMvc
-        .perform(post("/api/data-requests/check-deadlines").with(noCapabilityJwt()))
+        .perform(
+            post("/api/data-requests/check-deadlines")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_dsr_315a_nocap")))
         .andExpect(status().isForbidden());
   }
 
@@ -208,7 +222,7 @@ class DataRequestControllerTest {
     mockMvc
         .perform(
             post("/api/data-requests")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_dsr_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -219,53 +233,9 @@ class DataRequestControllerTest {
 
     // List and verify deadlineStatus is present and ON_TRACK for a fresh request
     mockMvc
-        .perform(get("/api/data-requests").with(ownerJwt()))
+        .perform(get("/api/data-requests").with(TestJwtFactory.ownerJwt(ORG_ID, "user_dsr_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[0].deadlineStatus").exists())
         .andExpect(jsonPath("$[0].deadlineStatus").value("ON_TRACK"));
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_dsr_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_dsr_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor customRoleJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_dsr_315a_custom")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor noCapabilityJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_dsr_315a_nocap").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"clerkOrgId":"%s","clerkUserId":"%s","email":"%s","name":"%s","avatarUrl":null,"orgRole":"%s"}
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

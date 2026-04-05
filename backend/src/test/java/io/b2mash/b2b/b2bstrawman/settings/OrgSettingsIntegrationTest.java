@@ -7,11 +7,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
@@ -25,7 +26,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -37,8 +37,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class OrgSettingsIntegrationTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_settings_test";
 
   @Autowired private MockMvc mockMvc;
@@ -56,18 +54,26 @@ class OrgSettingsIntegrationTest {
     provisioningService.provisionTenant(ORG_ID, "OrgSettings Test Org", null);
 
     memberIdOwner =
-        syncMember(ORG_ID, "user_settings_owner", "settings_owner@test.com", "Owner", "owner");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_settings_owner", "settings_owner@test.com", "Owner", "owner");
     memberIdAdmin =
-        syncMember(ORG_ID, "user_settings_admin", "settings_admin@test.com", "Admin", "admin");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_settings_admin", "settings_admin@test.com", "Admin", "admin");
     memberIdMember =
-        syncMember(ORG_ID, "user_settings_member", "settings_member@test.com", "Member", "member");
+        TestMemberHelper.syncMember(
+            mockMvc,
+            ORG_ID,
+            "user_settings_member",
+            "settings_member@test.com",
+            "Member",
+            "member");
   }
 
   @Test
   @Order(1)
   void getSettings_returnsDefaultWhenNoSettingsExist() throws Exception {
     mockMvc
-        .perform(get("/api/settings").with(ownerJwt()))
+        .perform(get("/api/settings").with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.defaultCurrency").value("USD"));
   }
@@ -78,7 +84,7 @@ class OrgSettingsIntegrationTest {
     mockMvc
         .perform(
             put("/api/settings")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -95,7 +101,7 @@ class OrgSettingsIntegrationTest {
     mockMvc
         .perform(
             put("/api/settings")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -104,7 +110,7 @@ class OrgSettingsIntegrationTest {
         .andExpect(status().isOk());
 
     mockMvc
-        .perform(get("/api/settings").with(ownerJwt()))
+        .perform(get("/api/settings").with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.defaultCurrency").value("GBP"));
   }
@@ -116,7 +122,7 @@ class OrgSettingsIntegrationTest {
     mockMvc
         .perform(
             put("/api/settings")
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_settings_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -129,7 +135,7 @@ class OrgSettingsIntegrationTest {
     mockMvc
         .perform(
             put("/api/settings")
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_settings_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -144,7 +150,7 @@ class OrgSettingsIntegrationTest {
     mockMvc
         .perform(
             put("/api/settings")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_settings_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -155,7 +161,10 @@ class OrgSettingsIntegrationTest {
 
   @Test
   void getSettings_memberGetsForbidden() throws Exception {
-    mockMvc.perform(get("/api/settings").with(memberJwt())).andExpect(status().isForbidden());
+    mockMvc
+        .perform(
+            get("/api/settings").with(TestJwtFactory.memberJwt(ORG_ID, "user_settings_member")))
+        .andExpect(status().isForbidden());
   }
 
   @Test
@@ -163,7 +172,7 @@ class OrgSettingsIntegrationTest {
     mockMvc
         .perform(
             put("/api/settings")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -177,7 +186,7 @@ class OrgSettingsIntegrationTest {
     mockMvc
         .perform(
             put("/api/settings")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -190,7 +199,7 @@ class OrgSettingsIntegrationTest {
   @Order(5)
   void getSettings_returnsCompliancePackStatus() throws Exception {
     mockMvc
-        .perform(get("/api/settings").with(ownerJwt()))
+        .perform(get("/api/settings").with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.compliancePackStatus").isArray())
         .andExpect(jsonPath("$.compliancePackStatus").isNotEmpty())
@@ -205,7 +214,7 @@ class OrgSettingsIntegrationTest {
     mockMvc
         .perform(
             patch("/api/settings/compliance")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -222,7 +231,7 @@ class OrgSettingsIntegrationTest {
     mockMvc
         .perform(
             patch("/api/settings/compliance")
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_settings_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -238,7 +247,7 @@ class OrgSettingsIntegrationTest {
     mockMvc
         .perform(
             patch("/api/settings/compliance")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_settings_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -252,7 +261,7 @@ class OrgSettingsIntegrationTest {
     mockMvc
         .perform(
             patch("/api/settings/compliance")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -266,7 +275,7 @@ class OrgSettingsIntegrationTest {
     mockMvc
         .perform(
             patch("/api/settings/compliance")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -280,7 +289,7 @@ class OrgSettingsIntegrationTest {
     mockMvc
         .perform(
             put("/api/settings")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -293,7 +302,7 @@ class OrgSettingsIntegrationTest {
   @Order(8)
   void getSettings_includesIntegrationFlagsDefaultFalse() throws Exception {
     mockMvc
-        .perform(get("/api/settings").with(ownerJwt()))
+        .perform(get("/api/settings").with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.accountingEnabled").value(false))
         .andExpect(jsonPath("$.aiEnabled").value(false))
@@ -307,7 +316,7 @@ class OrgSettingsIntegrationTest {
     mockMvc
         .perform(
             put("/api/settings")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -325,7 +334,7 @@ class OrgSettingsIntegrationTest {
 
     // Verify via GET
     mockMvc
-        .perform(get("/api/settings").with(ownerJwt()))
+        .perform(get("/api/settings").with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.accountingEnabled").value(true))
         .andExpect(jsonPath("$.aiEnabled").value(true))
@@ -338,7 +347,7 @@ class OrgSettingsIntegrationTest {
     mockMvc
         .perform(
             patch("/api/settings/tax")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -360,7 +369,7 @@ class OrgSettingsIntegrationTest {
   @Order(11)
   void getSettings_returnsTaxFields() throws Exception {
     mockMvc
-        .perform(get("/api/settings").with(ownerJwt()))
+        .perform(get("/api/settings").with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.taxRegistrationNumber").value("VAT-123456789"))
         .andExpect(jsonPath("$.taxRegistrationLabel").value("VAT Number"))
@@ -375,7 +384,7 @@ class OrgSettingsIntegrationTest {
     mockMvc
         .perform(
             patch("/api/settings/tax")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -393,7 +402,7 @@ class OrgSettingsIntegrationTest {
     mockMvc
         .perform(
             patch("/api/settings/tax")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -411,7 +420,7 @@ class OrgSettingsIntegrationTest {
     mockMvc
         .perform(
             patch("/api/settings/tax")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -432,7 +441,7 @@ class OrgSettingsIntegrationTest {
     mockMvc
         .perform(
             patch("/api/settings/acceptance")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -446,7 +455,7 @@ class OrgSettingsIntegrationTest {
   @Order(14)
   void getSettings_returnsAcceptanceExpiryDays() throws Exception {
     mockMvc
-        .perform(get("/api/settings").with(ownerJwt()))
+        .perform(get("/api/settings").with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.acceptanceExpiryDays").value(60));
   }
@@ -456,7 +465,7 @@ class OrgSettingsIntegrationTest {
     mockMvc
         .perform(
             patch("/api/settings/acceptance")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -470,7 +479,7 @@ class OrgSettingsIntegrationTest {
     mockMvc
         .perform(
             patch("/api/settings/acceptance")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -484,7 +493,7 @@ class OrgSettingsIntegrationTest {
     mockMvc
         .perform(
             patch("/api/settings/acceptance")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_settings_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -499,7 +508,7 @@ class OrgSettingsIntegrationTest {
     mockMvc
         .perform(
             patch("/api/settings/time-reminders")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -521,7 +530,7 @@ class OrgSettingsIntegrationTest {
   @Order(16)
   void getSettings_returnsTimeReminderFields() throws Exception {
     mockMvc
-        .perform(get("/api/settings").with(ownerJwt()))
+        .perform(get("/api/settings").with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.timeReminderEnabled").value(true))
         .andExpect(jsonPath("$.timeReminderDays").value("MON,WED,FRI"))
@@ -534,7 +543,7 @@ class OrgSettingsIntegrationTest {
     mockMvc
         .perform(
             patch("/api/settings/time-reminders")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -548,7 +557,7 @@ class OrgSettingsIntegrationTest {
     mockMvc
         .perform(
             patch("/api/settings/time-reminders")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -562,7 +571,7 @@ class OrgSettingsIntegrationTest {
     mockMvc
         .perform(
             patch("/api/settings/time-reminders")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_settings_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -575,7 +584,7 @@ class OrgSettingsIntegrationTest {
   @Order(20)
   void getSettings_includesVerticalProfileFields_defaultsToNullAndEmptyList() throws Exception {
     mockMvc
-        .perform(get("/api/settings").with(ownerJwt()))
+        .perform(get("/api/settings").with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.enabledModules").isArray())
         .andExpect(jsonPath("$.enabledModules").isEmpty());
@@ -587,7 +596,8 @@ class OrgSettingsIntegrationTest {
     String verticalOrgId = "org_settings_vertical_test";
     provisioningService.provisionTenant(verticalOrgId, "Vertical Test Org", null);
 
-    syncMember(verticalOrgId, "user_vert_owner", "vert_owner@test.com", "Vert Owner", "owner");
+    TestMemberHelper.syncMember(
+        mockMvc, verticalOrgId, "user_vert_owner", "vert_owner@test.com", "Vert Owner", "owner");
 
     var vertJwt =
         jwt()
@@ -610,7 +620,8 @@ class OrgSettingsIntegrationTest {
     String vertOrgId = "org_settings_vert_populated";
     provisioningService.provisionTenant(vertOrgId, "Vertical Populated Org", null);
 
-    syncMember(vertOrgId, "user_vert_pop", "vert_pop@test.com", "Vert Pop Owner", "owner");
+    TestMemberHelper.syncMember(
+        mockMvc, vertOrgId, "user_vert_pop", "vert_pop@test.com", "Vert Pop Owner", "owner");
 
     // Resolve tenant schema and directly update OrgSettings via repository
     String tenantSchema =
@@ -650,7 +661,7 @@ class OrgSettingsIntegrationTest {
     mockMvc
         .perform(
             patch("/api/settings/data-protection")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -670,7 +681,7 @@ class OrgSettingsIntegrationTest {
   @Order(24)
   void getSettings_includesDataProtectionFields() throws Exception {
     mockMvc
-        .perform(get("/api/settings").with(ownerJwt()))
+        .perform(get("/api/settings").with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.dataProtectionJurisdiction").value("ZA"))
         .andExpect(jsonPath("$.retentionPolicyEnabled").value(true))
@@ -683,7 +694,7 @@ class OrgSettingsIntegrationTest {
     mockMvc
         .perform(
             patch("/api/settings/data-protection")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_settings_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -700,7 +711,7 @@ class OrgSettingsIntegrationTest {
     mockMvc
         .perform(
             patch("/api/settings/data-protection")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -713,7 +724,7 @@ class OrgSettingsIntegrationTest {
     mockMvc
         .perform(
             patch("/api/settings/data-protection")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -728,7 +739,7 @@ class OrgSettingsIntegrationTest {
     mockMvc
         .perform(
             patch("/api/settings/data-protection")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -739,51 +750,4 @@ class OrgSettingsIntegrationTest {
 
   // --- Helpers ---
 
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post(
-                        "/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(
-            j -> j.subject("user_settings_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor adminJwt() {
-    return jwt()
-        .jwt(
-            j -> j.subject("user_settings_admin").claim("o", Map.of("id", ORG_ID, "rol", "admin")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_settings_member")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
 }

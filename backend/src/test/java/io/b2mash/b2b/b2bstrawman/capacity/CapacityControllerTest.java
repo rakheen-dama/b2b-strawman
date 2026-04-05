@@ -1,12 +1,9 @@
 package io.b2mash.b2b.b2bstrawman.capacity;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.capacity.dto.AllocationDtos.CreateAllocationRequest;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
@@ -17,9 +14,10 @@ import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.*;
@@ -27,8 +25,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -39,8 +35,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class CapacityControllerTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_cap_ctrl_test";
 
   @Autowired private MockMvc mockMvc;
@@ -66,14 +60,21 @@ class CapacityControllerTest {
   void provisionAndSeed() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Cap Ctrl Test Org", null);
     memberIdOwnerStr =
-        syncMember(ORG_ID, "user_cap_ctrl_owner", "cap_ctrl_owner@test.com", "Cap Owner", "owner");
+        TestMemberHelper.syncMember(
+            mockMvc,
+            ORG_ID,
+            "user_cap_ctrl_owner",
+            "cap_ctrl_owner@test.com",
+            "Cap Owner",
+            "owner");
     memberIdOwner = UUID.fromString(memberIdOwnerStr);
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
 
     customRoleMemberId =
         UUID.fromString(
-            syncMember(
+            TestMemberHelper.syncMember(
+                mockMvc,
                 ORG_ID,
                 "user_cap_315b_custom",
                 "cap_custom@test.com",
@@ -81,8 +82,13 @@ class CapacityControllerTest {
                 "member"));
     noCapMemberId =
         UUID.fromString(
-            syncMember(
-                ORG_ID, "user_cap_315b_nocap", "cap_nocap@test.com", "Cap NoCap User", "member"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_cap_315b_nocap",
+                "cap_nocap@test.com",
+                "Cap NoCap User",
+                "member"));
 
     runInTenant(
         () -> {
@@ -116,27 +122,13 @@ class CapacityControllerTest {
         });
   }
 
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(
-            j -> j.subject("user_cap_ctrl_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_cap_ctrl_member")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
   @Test
   @Order(1)
   void teamCapacityGrid_returnsGridStructure() throws Exception {
     mockMvc
         .perform(
             get("/api/capacity/team")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cap_ctrl_owner"))
                 .param("weekStart", WEEK_START.toString())
                 .param("weekEnd", WEEK_END.toString()))
         .andExpect(status().isOk())
@@ -153,7 +145,7 @@ class CapacityControllerTest {
     mockMvc
         .perform(
             get("/api/capacity/team")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cap_ctrl_owner"))
                 .param("weekStart", WEEK_START.toString())
                 .param("weekEnd", WEEK_START.toString()))
         .andExpect(status().isOk())
@@ -170,7 +162,7 @@ class CapacityControllerTest {
     mockMvc
         .perform(
             get("/api/capacity/projects/{projectId}", projectId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cap_ctrl_owner"))
                 .param("weekStart", WEEK_START.toString())
                 .param("weekEnd", WEEK_END.toString()))
         .andExpect(status().isOk())
@@ -187,7 +179,7 @@ class CapacityControllerTest {
     mockMvc
         .perform(
             get("/api/utilization/team")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cap_ctrl_owner"))
                 .param("weekStart", WEEK_START.toString())
                 .param("weekEnd", WEEK_START.toString()))
         .andExpect(status().isOk())
@@ -202,7 +194,7 @@ class CapacityControllerTest {
     mockMvc
         .perform(
             get("/api/capacity/members/{memberId}", memberIdOwner)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cap_ctrl_owner"))
                 .param("weekStart", WEEK_START.toString())
                 .param("weekEnd", WEEK_START.toString()))
         .andExpect(status().isOk())
@@ -218,7 +210,9 @@ class CapacityControllerTest {
   @Order(10)
   void customRoleWithCapability_accessesMemberCapacity_returns200() throws Exception {
     mockMvc
-        .perform(get("/api/members/{memberId}/capacity", memberIdOwner).with(customRoleJwt()))
+        .perform(
+            get("/api/members/{memberId}/capacity", memberIdOwner)
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_cap_315b_custom")))
         .andExpect(status().isOk());
   }
 
@@ -226,26 +220,11 @@ class CapacityControllerTest {
   @Order(11)
   void customRoleWithoutCapability_accessesMemberCapacity_returns403() throws Exception {
     mockMvc
-        .perform(get("/api/members/{memberId}/capacity", memberIdOwner).with(noCapabilityJwt()))
+        .perform(
+            get("/api/members/{memberId}/capacity", memberIdOwner)
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_cap_315b_nocap")))
         .andExpect(status().isForbidden());
-  }
-
-  private JwtRequestPostProcessor customRoleJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_cap_315b_custom")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor noCapabilityJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_cap_315b_nocap").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  // --- Helpers ---
+  } // --- Helpers ---
 
   private <T> T runInTenant(java.util.concurrent.Callable<T> callable) {
     try {
@@ -259,31 +238,5 @@ class CapacityControllerTest {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                    {
-                      "clerkOrgId": "%s",
-                      "clerkUserId": "%s",
-                      "email": "%s",
-                      "name": "%s",
-                      "avatarUrl": null,
-                      "orgRole": "%s"
-                    }
-                    """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

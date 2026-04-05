@@ -2,7 +2,6 @@ package io.b2mash.b2b.b2bstrawman.schedule;
 
 import static io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.createActiveCustomer;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -21,8 +20,9 @@ import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.ProjectTemplate;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.ProjectTemplateRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.time.LocalDate;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -36,7 +36,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -48,8 +47,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class RecurringScheduleControllerTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_schedule_ctrl_test";
 
   @Autowired private MockMvc mockMvc;
@@ -79,11 +76,17 @@ class RecurringScheduleControllerTest {
     provisioningService.provisionTenant(ORG_ID, "Schedule Controller Test Org", null);
     ownerMemberId =
         UUID.fromString(
-            syncMember(
-                ORG_ID, "user_sched_ctrl_owner", "sched_ctrl_owner@test.com", "Owner", "owner"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_sched_ctrl_owner",
+                "sched_ctrl_owner@test.com",
+                "Owner",
+                "owner"));
     memberMemberId =
         UUID.fromString(
-            syncMember(
+            TestMemberHelper.syncMember(
+                mockMvc,
                 ORG_ID,
                 "user_sched_ctrl_member",
                 "sched_ctrl_member@test.com",
@@ -152,7 +155,8 @@ class RecurringScheduleControllerTest {
     // Sync custom-role members for capability tests
     customRoleMemberId =
         UUID.fromString(
-            syncMember(
+            TestMemberHelper.syncMember(
+                mockMvc,
                 ORG_ID,
                 "user_sched_314b_custom",
                 "sched_custom@test.com",
@@ -160,8 +164,13 @@ class RecurringScheduleControllerTest {
                 "member"));
     noCapMemberId =
         UUID.fromString(
-            syncMember(
-                ORG_ID, "user_sched_314b_nocap", "sched_nocap@test.com", "NoCap User", "member"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_sched_314b_nocap",
+                "sched_nocap@test.com",
+                "NoCap User",
+                "member"));
 
     // Assign OrgRoles within tenant scope
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -196,7 +205,8 @@ class RecurringScheduleControllerTest {
   @Order(1)
   void shouldListSchedules() throws Exception {
     mockMvc
-        .perform(get("/api/schedules").with(ownerJwt()))
+        .perform(
+            get("/api/schedules").with(TestJwtFactory.ownerJwt(ORG_ID, "user_sched_ctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(greaterThanOrEqualTo(1)));
   }
@@ -208,7 +218,7 @@ class RecurringScheduleControllerTest {
         mockMvc
             .perform(
                 post("/api/schedules")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_sched_ctrl_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -236,7 +246,9 @@ class RecurringScheduleControllerTest {
   @Order(3)
   void shouldGetScheduleById() throws Exception {
     mockMvc
-        .perform(get("/api/schedules/" + createdScheduleId).with(ownerJwt()))
+        .perform(
+            get("/api/schedules/" + createdScheduleId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_sched_ctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(createdScheduleId))
         .andExpect(jsonPath("$.templateName").value("Monthly Bookkeeping"))
@@ -249,7 +261,7 @@ class RecurringScheduleControllerTest {
     mockMvc
         .perform(
             post("/api/schedules")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_sched_ctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -271,7 +283,7 @@ class RecurringScheduleControllerTest {
     mockMvc
         .perform(
             put("/api/schedules/" + createdScheduleId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_sched_ctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -290,7 +302,9 @@ class RecurringScheduleControllerTest {
   @Order(6)
   void shouldPauseSchedule() throws Exception {
     mockMvc
-        .perform(post("/api/schedules/" + createdScheduleId + "/pause").with(ownerJwt()))
+        .perform(
+            post("/api/schedules/" + createdScheduleId + "/pause")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_sched_ctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("PAUSED"));
   }
@@ -299,12 +313,16 @@ class RecurringScheduleControllerTest {
   @Order(7)
   void shouldDeletePausedSchedule() throws Exception {
     mockMvc
-        .perform(delete("/api/schedules/" + createdScheduleId).with(ownerJwt()))
+        .perform(
+            delete("/api/schedules/" + createdScheduleId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_sched_ctrl_owner")))
         .andExpect(status().isNoContent());
 
     // Verify it's gone
     mockMvc
-        .perform(get("/api/schedules/" + createdScheduleId).with(ownerJwt()))
+        .perform(
+            get("/api/schedules/" + createdScheduleId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_sched_ctrl_owner")))
         .andExpect(status().isNotFound());
   }
 
@@ -312,7 +330,9 @@ class RecurringScheduleControllerTest {
   @Order(8)
   void shouldReturn409WhenDeletingActiveSchedule() throws Exception {
     mockMvc
-        .perform(delete("/api/schedules/" + activeScheduleId).with(ownerJwt()))
+        .perform(
+            delete("/api/schedules/" + activeScheduleId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_sched_ctrl_owner")))
         .andExpect(status().isConflict());
   }
 
@@ -320,7 +340,9 @@ class RecurringScheduleControllerTest {
   @Order(9)
   void shouldGetExecutionsEmpty() throws Exception {
     mockMvc
-        .perform(get("/api/schedules/" + activeScheduleId + "/executions").with(ownerJwt()))
+        .perform(
+            get("/api/schedules/" + activeScheduleId + "/executions")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_sched_ctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(0));
   }
@@ -334,7 +356,7 @@ class RecurringScheduleControllerTest {
         mockMvc
             .perform(
                 post("/api/schedules")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_sched_ctrl_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -354,13 +376,17 @@ class RecurringScheduleControllerTest {
 
     // Pause it
     mockMvc
-        .perform(post("/api/schedules/" + newScheduleId + "/pause").with(ownerJwt()))
+        .perform(
+            post("/api/schedules/" + newScheduleId + "/pause")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_sched_ctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("PAUSED"));
 
     // Resume it
     mockMvc
-        .perform(post("/api/schedules/" + newScheduleId + "/resume").with(ownerJwt()))
+        .perform(
+            post("/api/schedules/" + newScheduleId + "/resume")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_sched_ctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("ACTIVE"));
   }
@@ -371,7 +397,7 @@ class RecurringScheduleControllerTest {
     mockMvc
         .perform(
             post("/api/schedules")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_sched_ctrl_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -393,7 +419,7 @@ class RecurringScheduleControllerTest {
     mockMvc
         .perform(
             put("/api/schedules/" + activeScheduleId)
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_sched_ctrl_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -406,21 +432,29 @@ class RecurringScheduleControllerTest {
   @Order(13)
   void memberCannotPauseSchedule() throws Exception {
     mockMvc
-        .perform(post("/api/schedules/" + activeScheduleId + "/pause").with(memberJwt()))
+        .perform(
+            post("/api/schedules/" + activeScheduleId + "/pause")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_sched_ctrl_member")))
         .andExpect(status().isForbidden());
   }
 
   @Test
   @Order(14)
   void memberCanListSchedules() throws Exception {
-    mockMvc.perform(get("/api/schedules").with(memberJwt())).andExpect(status().isOk());
+    mockMvc
+        .perform(
+            get("/api/schedules").with(TestJwtFactory.memberJwt(ORG_ID, "user_sched_ctrl_member")))
+        .andExpect(status().isOk());
   }
 
   @Test
   @Order(15)
   void shouldListSchedulesFilteredByStatus() throws Exception {
     mockMvc
-        .perform(get("/api/schedules").param("status", "ACTIVE").with(ownerJwt()))
+        .perform(
+            get("/api/schedules")
+                .param("status", "ACTIVE")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_sched_ctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(greaterThanOrEqualTo(1)));
   }
@@ -433,7 +467,7 @@ class RecurringScheduleControllerTest {
     mockMvc
         .perform(
             post("/api/schedules")
-                .with(customRoleJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_sched_314b_custom"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -455,7 +489,7 @@ class RecurringScheduleControllerTest {
     mockMvc
         .perform(
             post("/api/schedules")
-                .with(noCapabilityJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_sched_314b_nocap"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -480,7 +514,7 @@ class RecurringScheduleControllerTest {
         mockMvc
             .perform(
                 post("/api/schedules")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_sched_ctrl_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -522,7 +556,9 @@ class RecurringScheduleControllerTest {
   @Order(31)
   void shouldGetScheduleWithPostCreateActions() throws Exception {
     mockMvc
-        .perform(get("/api/schedules/" + scheduleWithActionsId).with(ownerJwt()))
+        .perform(
+            get("/api/schedules/" + scheduleWithActionsId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_sched_ctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(scheduleWithActionsId))
         .andExpect(
@@ -541,7 +577,7 @@ class RecurringScheduleControllerTest {
     mockMvc
         .perform(
             put("/api/schedules/" + scheduleWithActionsId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_sched_ctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -569,7 +605,7 @@ class RecurringScheduleControllerTest {
     mockMvc
         .perform(
             post("/api/schedules")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_sched_ctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -585,58 +621,5 @@ class RecurringScheduleControllerTest {
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.id").isNotEmpty())
         .andExpect(jsonPath("$.postCreateActions").doesNotExist());
-  }
-
-  // --- Helper methods ---
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_sched_ctrl_owner")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_sched_ctrl_member")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"clerkOrgId":"%s","clerkUserId":"%s","email":"%s","name":"%s","avatarUrl":null,"orgRole":"%s"}
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor customRoleJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_sched_314b_custom")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor noCapabilityJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_sched_314b_nocap")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 }

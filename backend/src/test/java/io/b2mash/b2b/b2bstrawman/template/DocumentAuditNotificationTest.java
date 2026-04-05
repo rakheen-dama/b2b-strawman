@@ -1,11 +1,9 @@
 package io.b2mash.b2b.b2bstrawman.template;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
@@ -13,6 +11,8 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -24,7 +24,6 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -41,8 +40,6 @@ class DocumentAuditNotificationTest {
           .heading(1, "Audit Notification Test")
           .paragraph("Template content for audit and notification tests.")
           .build();
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_audit_notif_test";
 
   @Autowired private MockMvc mockMvc;
@@ -63,7 +60,8 @@ class DocumentAuditNotificationTest {
     provisioningService.provisionTenant(ORG_ID, "Audit Notif Test Org", null);
 
     memberIdOwner =
-        syncMember(ORG_ID, "user_audit_owner", "audit_owner@test.com", "Audit Owner", "owner");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_audit_owner", "audit_owner@test.com", "Audit Owner", "owner");
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
@@ -95,7 +93,7 @@ class DocumentAuditNotificationTest {
     mockMvc
         .perform(
             post("/api/templates")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_audit_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -148,7 +146,9 @@ class DocumentAuditNotificationTest {
                 }));
 
     mockMvc
-        .perform(post("/api/templates/" + platformTemplateId[0] + "/clone").with(ownerJwt()))
+        .perform(
+            post("/api/templates/" + platformTemplateId[0] + "/clone")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_audit_owner")))
         .andExpect(status().isCreated());
 
     runInTenant(
@@ -175,7 +175,7 @@ class DocumentAuditNotificationTest {
     mockMvc
         .perform(
             post("/api/templates/" + testTemplateId + "/generate")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_audit_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -204,46 +204,11 @@ class DocumentAuditNotificationTest {
                 }));
   }
 
-  // --- JWT Helpers ---
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_audit_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  // --- Helpers ---
-
   private void runInTenant(Runnable action) {
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)
         .where(RequestScopes.MEMBER_ID, UUID.fromString(memberIdOwner))
         .where(RequestScopes.ORG_ROLE, "owner")
         .run(action);
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

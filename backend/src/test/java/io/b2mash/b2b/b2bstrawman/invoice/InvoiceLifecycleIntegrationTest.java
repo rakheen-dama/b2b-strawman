@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.invoice;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -20,11 +19,12 @@ import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -34,7 +34,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -71,7 +70,9 @@ class InvoiceLifecycleIntegrationTest {
 
     memberIdOwner =
         UUID.fromString(
-            syncMember(
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
                 "user_inv_lifecycle_owner",
                 "inv_lifecycle_owner@test.com",
                 "Lifecycle Owner",
@@ -164,7 +165,7 @@ class InvoiceLifecycleIntegrationTest {
         mockMvc
             .perform(
                 post("/api/invoices")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -186,7 +187,7 @@ class InvoiceLifecycleIntegrationTest {
         mockMvc
             .perform(
                 post("/api/invoices")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -205,7 +206,7 @@ class InvoiceLifecycleIntegrationTest {
     mockMvc
         .perform(
             post("/api/invoices/" + invoiceId + "/lines")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -230,7 +231,9 @@ class InvoiceLifecycleIntegrationTest {
     String invoiceId = createDraftWithTimeEntries(teId);
 
     mockMvc
-        .perform(post("/api/invoices/" + invoiceId + "/approve").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + invoiceId + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("APPROVED"))
         .andExpect(jsonPath("$.invoiceNumber").isNotEmpty())
@@ -246,7 +249,7 @@ class InvoiceLifecycleIntegrationTest {
         mockMvc
             .perform(
                 post("/api/invoices")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -262,7 +265,9 @@ class InvoiceLifecycleIntegrationTest {
     String invoiceId = JsonPath.read(createResult.getResponse().getContentAsString(), "$.id");
 
     mockMvc
-        .perform(post("/api/invoices/" + invoiceId + "/approve").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + invoiceId + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner")))
         .andExpect(status().isBadRequest());
   }
 
@@ -273,12 +278,16 @@ class InvoiceLifecycleIntegrationTest {
 
     // Approve it first
     mockMvc
-        .perform(post("/api/invoices/" + invoiceId + "/approve").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + invoiceId + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner")))
         .andExpect(status().isOk());
 
     // Try to approve again (now APPROVED, not DRAFT)
     mockMvc
-        .perform(post("/api/invoices/" + invoiceId + "/approve").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + invoiceId + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner")))
         .andExpect(status().isConflict());
   }
 
@@ -289,12 +298,16 @@ class InvoiceLifecycleIntegrationTest {
 
     // Approve
     mockMvc
-        .perform(post("/api/invoices/" + invoiceId + "/approve").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + invoiceId + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner")))
         .andExpect(status().isOk());
 
     // Send
     mockMvc
-        .perform(post("/api/invoices/" + invoiceId + "/send").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + invoiceId + "/send")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("SENT"));
   }
@@ -306,7 +319,9 @@ class InvoiceLifecycleIntegrationTest {
 
     // Try to send a DRAFT (not APPROVED)
     mockMvc
-        .perform(post("/api/invoices/" + invoiceId + "/send").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + invoiceId + "/send")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner")))
         .andExpect(status().isConflict());
   }
 
@@ -317,17 +332,21 @@ class InvoiceLifecycleIntegrationTest {
 
     // Approve -> Send
     mockMvc
-        .perform(post("/api/invoices/" + invoiceId + "/approve").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + invoiceId + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner")))
         .andExpect(status().isOk());
     mockMvc
-        .perform(post("/api/invoices/" + invoiceId + "/send").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + invoiceId + "/send")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner")))
         .andExpect(status().isOk());
 
     // Record payment
     mockMvc
         .perform(
             post("/api/invoices/" + invoiceId + "/payment")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -348,14 +367,16 @@ class InvoiceLifecycleIntegrationTest {
 
     // Approve but don't send
     mockMvc
-        .perform(post("/api/invoices/" + invoiceId + "/approve").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + invoiceId + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner")))
         .andExpect(status().isOk());
 
     // Try to pay an APPROVED invoice (not SENT)
     mockMvc
         .perform(
             post("/api/invoices/" + invoiceId + "/payment")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -374,12 +395,16 @@ class InvoiceLifecycleIntegrationTest {
 
     // Approve
     mockMvc
-        .perform(post("/api/invoices/" + invoiceId + "/approve").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + invoiceId + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner")))
         .andExpect(status().isOk());
 
     // Void
     mockMvc
-        .perform(post("/api/invoices/" + invoiceId + "/void").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + invoiceId + "/void")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("VOID"));
 
@@ -404,15 +429,21 @@ class InvoiceLifecycleIntegrationTest {
 
     // Approve -> Send
     mockMvc
-        .perform(post("/api/invoices/" + invoiceId + "/approve").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + invoiceId + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner")))
         .andExpect(status().isOk());
     mockMvc
-        .perform(post("/api/invoices/" + invoiceId + "/send").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + invoiceId + "/send")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner")))
         .andExpect(status().isOk());
 
     // Void
     mockMvc
-        .perform(post("/api/invoices/" + invoiceId + "/void").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + invoiceId + "/void")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("VOID"));
   }
@@ -424,18 +455,26 @@ class InvoiceLifecycleIntegrationTest {
 
     // Full lifecycle: Approve -> Send -> Pay
     mockMvc
-        .perform(post("/api/invoices/" + invoiceId + "/approve").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + invoiceId + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner")))
         .andExpect(status().isOk());
     mockMvc
-        .perform(post("/api/invoices/" + invoiceId + "/send").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + invoiceId + "/send")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner")))
         .andExpect(status().isOk());
     mockMvc
-        .perform(post("/api/invoices/" + invoiceId + "/payment").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + invoiceId + "/payment")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner")))
         .andExpect(status().isOk());
 
     // Try to void a PAID invoice
     mockMvc
-        .perform(post("/api/invoices/" + invoiceId + "/void").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + invoiceId + "/void")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner")))
         .andExpect(status().isConflict());
   }
 
@@ -446,7 +485,9 @@ class InvoiceLifecycleIntegrationTest {
 
     // Try to void a DRAFT invoice (only APPROVED or SENT can be voided)
     mockMvc
-        .perform(post("/api/invoices/" + invoiceId + "/void").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + invoiceId + "/void")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner")))
         .andExpect(status().isConflict());
   }
 
@@ -459,7 +500,7 @@ class InvoiceLifecycleIntegrationTest {
     mockMvc
         .perform(
             post("/api/invoices/" + invoiceId + "/payment")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -483,7 +524,7 @@ class InvoiceLifecycleIntegrationTest {
     mockMvc
         .perform(
             post("/api/invoices")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -505,14 +546,16 @@ class InvoiceLifecycleIntegrationTest {
 
     // Approve to fully lock the time entry
     mockMvc
-        .perform(post("/api/invoices/" + invoiceId + "/approve").with(ownerJwt()))
+        .perform(
+            post("/api/invoices/" + invoiceId + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner")))
         .andExpect(status().isOk());
 
     // Attempt to update the time entry -- should fail with 409
     mockMvc
         .perform(
             put("/api/time-entries/" + teId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -524,44 +567,9 @@ class InvoiceLifecycleIntegrationTest {
 
     // Attempt to delete the time entry -- should fail with 409
     mockMvc
-        .perform(delete("/api/time-entries/" + teId).with(ownerJwt()))
+        .perform(
+            delete("/api/time-entries/" + teId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner")))
         .andExpect(status().isConflict());
-  }
-
-  // --- JWT Helpers ---
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(
-            j ->
-                j.subject("user_inv_lifecycle_owner")
-                    .claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  // --- Helpers ---
-
-  private String syncMember(String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(ORG_ID, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

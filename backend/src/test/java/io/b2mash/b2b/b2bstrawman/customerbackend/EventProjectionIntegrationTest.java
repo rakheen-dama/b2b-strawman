@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.customerbackend;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -13,7 +12,9 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalReadModelRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestChecklistHelper;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
@@ -26,10 +27,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 
 /**
  * End-to-end integration tests that verify the event pipeline: staff API call -> domain event ->
@@ -43,8 +42,6 @@ import org.springframework.test.web.servlet.MvcResult;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class EventProjectionIntegrationTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_eventproj_test";
 
   @Autowired private MockMvc mockMvc;
@@ -58,13 +55,25 @@ class EventProjectionIntegrationTest {
   @BeforeAll
   void provisionAndSeedData() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Event Projection Test Org", null);
-    syncMember(ORG_ID, "user_ep_owner", "ep_owner@test.com", "EP Owner", "owner");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_ep_owner", "ep_owner@test.com", "EP Owner", "owner");
 
     // Create a project
-    projectId = createProject("Event Projection Project", "For event tests");
+    projectId =
+        TestEntityHelper.createProject(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, "user_ep_owner"),
+            "Event Projection Project",
+            "For event tests");
 
-    // Create a customer
-    customerId = createCustomer("Event Projection Customer", "ep_cust@test.com");
+    // Create a customer and transition to ACTIVE (required for project linking)
+    customerId =
+        TestEntityHelper.createCustomer(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, "user_ep_owner"),
+            "Event Projection Customer",
+            "ep_cust@test.com");
+    transitionCustomerToActive(customerId);
   }
 
   @Test
@@ -72,7 +81,9 @@ class EventProjectionIntegrationTest {
   void linkCustomerToProjectCreatesPortalProject() throws Exception {
     // Link customer to project
     mockMvc
-        .perform(post("/api/customers/" + customerId + "/projects/" + projectId).with(ownerJwt()))
+        .perform(
+            post("/api/customers/" + customerId + "/projects/" + projectId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ep_owner")))
         .andExpect(status().isCreated());
 
     // Verify portal_project row was created by the event handler
@@ -135,7 +146,7 @@ class EventProjectionIntegrationTest {
     mockMvc
         .perform(
             put("/api/projects/" + projectId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ep_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -156,7 +167,9 @@ class EventProjectionIntegrationTest {
   void unlinkCustomerFromProjectRemovesPortalProject() throws Exception {
     // Unlink customer from project
     mockMvc
-        .perform(delete("/api/customers/" + customerId + "/projects/" + projectId).with(ownerJwt()))
+        .perform(
+            delete("/api/customers/" + customerId + "/projects/" + projectId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ep_owner")))
         .andExpect(status().isNoContent());
 
     // Verify portal_project row was removed
@@ -168,14 +181,25 @@ class EventProjectionIntegrationTest {
   @Order(6)
   void fullRoundTripStaffCreatesDataThenPortalReflects() throws Exception {
     // Create fresh project and customer
-    var freshProjectId = createProject("Round Trip Project", "Full test");
-    var freshCustomerId = createCustomer("Round Trip Customer", "roundtrip@test.com");
+    var freshProjectId =
+        TestEntityHelper.createProject(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, "user_ep_owner"),
+            "Round Trip Project",
+            "Full test");
+    var freshCustomerId =
+        TestEntityHelper.createCustomer(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, "user_ep_owner"),
+            "Round Trip Customer",
+            "roundtrip@test.com");
+    transitionCustomerToActive(freshCustomerId);
 
     // Link customer to project
     mockMvc
         .perform(
             post("/api/customers/" + freshCustomerId + "/projects/" + freshProjectId)
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ep_owner")))
         .andExpect(status().isCreated());
 
     // Upload and share a document
@@ -194,54 +218,17 @@ class EventProjectionIntegrationTest {
     assertThat(portalDocs.getFirst().id()).isEqualTo(UUID.fromString(freshDocId));
   }
 
-  // --- Helpers ---
-
-  private String createProject(String name, String description) throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/api/projects")
-                    .with(ownerJwt())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"name": "%s", "description": "%s"}
-                        """
-                            .formatted(name, description)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return extractIdFromLocation(result);
-  }
-
-  private String createCustomer(String name, String email) throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/api/customers")
-                    .with(ownerJwt())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"name": "%s", "email": "%s"}
-                        """
-                            .formatted(name, email)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    var customerId = extractIdFromLocation(result);
-    transitionCustomerToActive(customerId);
-    return customerId;
-  }
-
   private void transitionCustomerToActive(String customerId) throws Exception {
     mockMvc
         .perform(
             post("/api/customers/" + customerId + "/transition")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ep_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"targetStatus\": \"ONBOARDING\"}"))
         .andExpect(status().isOk());
     // Completing all checklist items auto-transitions ONBOARDING -> ACTIVE
-    TestChecklistHelper.completeChecklistItems(mockMvc, customerId, ownerJwt());
+    TestChecklistHelper.completeChecklistItems(
+        mockMvc, customerId, TestJwtFactory.ownerJwt(ORG_ID, "user_ep_owner"));
   }
 
   private String uploadAndConfirmDocument(String projectId) throws Exception {
@@ -249,7 +236,7 @@ class EventProjectionIntegrationTest {
         mockMvc
             .perform(
                 post("/api/projects/" + projectId + "/documents/upload-init")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ep_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -261,7 +248,9 @@ class EventProjectionIntegrationTest {
         JsonPath.read(initResult.getResponse().getContentAsString(), "$.documentId").toString();
 
     mockMvc
-        .perform(post("/api/documents/" + docId + "/confirm").with(ownerJwt()))
+        .perform(
+            post("/api/documents/" + docId + "/confirm")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ep_owner")))
         .andExpect(status().isOk());
 
     return docId;
@@ -271,7 +260,7 @@ class EventProjectionIntegrationTest {
     mockMvc
         .perform(
             patch("/api/documents/" + documentId + "/visibility")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ep_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -279,41 +268,5 @@ class EventProjectionIntegrationTest {
                     """
                         .formatted(visibility)))
         .andExpect(status().isOk());
-  }
-
-  private String extractIdFromLocation(MvcResult result) {
-    String location = result.getResponse().getHeader("Location");
-    return location.substring(location.lastIndexOf('/') + 1);
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_ep_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
   }
 }

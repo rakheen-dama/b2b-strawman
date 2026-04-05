@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.template;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -11,6 +10,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.io.ByteArrayOutputStream;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -32,7 +33,6 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
@@ -44,8 +44,6 @@ import tools.jackson.databind.ObjectMapper;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class DocxGenerationTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_docx_gen_test";
 
   @Autowired private MockMvc mockMvc;
@@ -62,8 +60,13 @@ class DocxGenerationTest {
     provisioningService.provisionTenant(ORG_ID, "DOCX Gen Test Org", null);
 
     memberIdOwner =
-        syncMember(
-            ORG_ID, "user_docx_gen_owner", "docx_gen_owner@test.com", "DOCX Gen Owner", "owner");
+        TestMemberHelper.syncMember(
+            mockMvc,
+            ORG_ID,
+            "user_docx_gen_owner",
+            "docx_gen_owner@test.com",
+            "DOCX Gen Owner",
+            "owner");
 
     // Create a project for context resolution
     var projectBody =
@@ -73,7 +76,7 @@ class DocxGenerationTest {
         mockMvc
             .perform(
                 post("/api/projects")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_docx_gen_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(projectBody))
             .andExpect(status().isCreated())
@@ -96,7 +99,7 @@ class DocxGenerationTest {
                     .param("name", "Test DOCX Template")
                     .param("category", "ENGAGEMENT_LETTER")
                     .param("entityType", "PROJECT")
-                    .with(ownerJwt()))
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_docx_gen_owner")))
             .andExpect(status().isCreated())
             .andReturn();
     docxTemplateId = JsonPath.read(uploadResult.getResponse().getContentAsString(), "$.id");
@@ -113,7 +116,7 @@ class DocxGenerationTest {
         mockMvc
             .perform(
                 post("/api/templates")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_docx_gen_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(tiptapBody)))
             .andExpect(status().isCreated())
@@ -129,7 +132,7 @@ class DocxGenerationTest {
     mockMvc
         .perform(
             post("/api/templates/{id}/generate-docx", docxTemplateId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_docx_gen_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody))
         .andExpect(status().isOk())
@@ -149,7 +152,7 @@ class DocxGenerationTest {
     mockMvc
         .perform(
             post("/api/templates/{id}/generate-docx", tiptapTemplateId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_docx_gen_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody))
         .andExpect(status().isBadRequest());
@@ -163,7 +166,7 @@ class DocxGenerationTest {
     mockMvc
         .perform(
             post("/api/templates/{id}/generate-docx", UUID.randomUUID())
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_docx_gen_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody))
         .andExpect(status().isNotFound());
@@ -177,7 +180,7 @@ class DocxGenerationTest {
     mockMvc
         .perform(
             post("/api/templates/{id}/generate-docx", docxTemplateId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_docx_gen_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody))
         .andExpect(status().isNotFound());
@@ -191,7 +194,7 @@ class DocxGenerationTest {
     mockMvc
         .perform(
             post("/api/templates/{id}/generate-docx", docxTemplateId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_docx_gen_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody))
         .andExpect(status().isOk())
@@ -207,7 +210,7 @@ class DocxGenerationTest {
         mockMvc
             .perform(
                 post("/api/templates/{id}/generate-docx", docxTemplateId)
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_docx_gen_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(requestBody))
             .andExpect(status().isOk())
@@ -221,7 +224,7 @@ class DocxGenerationTest {
             get("/api/generated-documents")
                 .param("entityType", "PROJECT")
                 .param("entityId", projectId)
-                .with(ownerJwt()))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_docx_gen_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[?(@.id == '" + generatedId + "')].fileName").exists());
   }
@@ -236,7 +239,7 @@ class DocxGenerationTest {
         mockMvc
             .perform(
                 post("/api/templates/{id}/generate-docx", docxTemplateId)
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_docx_gen_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(requestBody))
             .andExpect(status().isOk())
@@ -247,7 +250,8 @@ class DocxGenerationTest {
     // Verify audit event exists via the audit API
     mockMvc
         .perform(
-            get("/api/audit-events/generated_document/{entityId}", generatedId).with(ownerJwt()))
+            get("/api/audit-events/generated_document/{entityId}", generatedId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_docx_gen_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content[0].eventType").value("docx_document.generated"));
   }
@@ -261,7 +265,7 @@ class DocxGenerationTest {
         mockMvc
             .perform(
                 post("/api/templates/{id}/generate-docx", docxTemplateId)
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_docx_gen_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(requestBody))
             .andExpect(status().isOk())
@@ -284,7 +288,7 @@ class DocxGenerationTest {
     mockMvc
         .perform(
             post("/api/templates/{id}/generate-docx", docxTemplateId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_docx_gen_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody))
         .andExpect(status().isOk())
@@ -305,7 +309,7 @@ class DocxGenerationTest {
         mockMvc
             .perform(
                 post("/api/templates/{id}/generate-docx", docxTemplateId)
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_docx_gen_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(requestBody))
             .andExpect(status().isOk())
@@ -334,7 +338,7 @@ class DocxGenerationTest {
         mockMvc
             .perform(
                 post("/api/templates/{id}/generate-docx", docxTemplateId)
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_docx_gen_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(requestBody))
             .andExpect(status().isOk())
@@ -367,7 +371,7 @@ class DocxGenerationTest {
     mockMvc
         .perform(
             post("/api/templates/{id}/generate-docx", docxTemplateId)
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_docx_gen_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody))
         .andExpect(status().isOk())
@@ -386,37 +390,5 @@ class DocxGenerationTest {
       doc.write(out);
       return out.toByteArray();
     }
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(
-            j -> j.subject("user_docx_gen_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                    {
-                      "clerkOrgId": "%s",
-                      "clerkUserId": "%s",
-                      "email": "%s",
-                      "name": "%s",
-                      "avatarUrl": null,
-                      "orgRole": "%s"
-                    }
-                    """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

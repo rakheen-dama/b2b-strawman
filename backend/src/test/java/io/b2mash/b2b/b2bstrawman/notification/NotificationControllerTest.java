@@ -1,19 +1,17 @@
 package io.b2mash.b2b.b2bstrawman.notification;
 
 import static org.hamcrest.Matchers.hasSize;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
@@ -25,8 +23,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -37,8 +33,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class NotificationControllerTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_notif_ctrl_test";
 
   @Autowired private MockMvc mockMvc;
@@ -61,9 +55,12 @@ class NotificationControllerTest {
     tenantSchema =
         provisioningService.provisionTenant(ORG_ID, "Notif Controller Test Org", null).schemaName();
 
-    memberIdOwner = syncMember(ORG_ID, "user_nc_owner", "nc_owner@test.com", "NC Owner", "owner");
+    memberIdOwner =
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_nc_owner", "nc_owner@test.com", "NC Owner", "owner");
     memberIdMember =
-        syncMember(ORG_ID, "user_nc_member", "nc_member@test.com", "NC Member", "member");
+        TestMemberHelper.syncMember(
+            mockMvc, ORG_ID, "user_nc_member", "nc_member@test.com", "NC Member", "member");
 
     UUID ownerUuid = UUID.fromString(memberIdOwner);
     UUID memberUuid = UUID.fromString(memberIdMember);
@@ -143,7 +140,7 @@ class NotificationControllerTest {
   @Order(1)
   void listNotificationsReturnsPaginatedList() throws Exception {
     mockMvc
-        .perform(get("/api/notifications").with(ownerJwt()))
+        .perform(get("/api/notifications").with(TestJwtFactory.ownerJwt(ORG_ID, "user_nc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray())
         .andExpect(jsonPath("$.content", hasSize(3)))
@@ -158,7 +155,10 @@ class NotificationControllerTest {
   void listNotificationsWithUnreadOnlyFilter() throws Exception {
     // All 3 owner notifications are unread at this point
     mockMvc
-        .perform(get("/api/notifications").with(ownerJwt()).param("unreadOnly", "true"))
+        .perform(
+            get("/api/notifications")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_nc_owner"))
+                .param("unreadOnly", "true"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content", hasSize(3)));
   }
@@ -168,7 +168,7 @@ class NotificationControllerTest {
   void notificationsReturnedInDescendingCreatedAtOrder() throws Exception {
     // ownerNotif3 was created last, so it should be first
     mockMvc
-        .perform(get("/api/notifications").with(ownerJwt()))
+        .perform(get("/api/notifications").with(TestJwtFactory.ownerJwt(ORG_ID, "user_nc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content[0].id").value(ownerNotif3Id.toString()))
         .andExpect(jsonPath("$.content[1].id").value(ownerNotif2Id.toString()))
@@ -181,7 +181,9 @@ class NotificationControllerTest {
   @Order(4)
   void getUnreadCountReturnsCorrectCount() throws Exception {
     mockMvc
-        .perform(get("/api/notifications/unread-count").with(ownerJwt()))
+        .perform(
+            get("/api/notifications/unread-count")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_nc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.count").value(3));
   }
@@ -193,18 +195,25 @@ class NotificationControllerTest {
   void markAsReadSetsNotificationToRead() throws Exception {
     // Mark notification 1 as read
     mockMvc
-        .perform(put("/api/notifications/" + ownerNotif1Id + "/read").with(ownerJwt()))
+        .perform(
+            put("/api/notifications/" + ownerNotif1Id + "/read")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_nc_owner")))
         .andExpect(status().isNoContent());
 
     // Verify unread count decreased
     mockMvc
-        .perform(get("/api/notifications/unread-count").with(ownerJwt()))
+        .perform(
+            get("/api/notifications/unread-count")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_nc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.count").value(2));
 
     // Verify the notification shows as read in list
     mockMvc
-        .perform(get("/api/notifications").with(ownerJwt()).param("unreadOnly", "true"))
+        .perform(
+            get("/api/notifications")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_nc_owner"))
+                .param("unreadOnly", "true"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content", hasSize(2)));
   }
@@ -214,7 +223,9 @@ class NotificationControllerTest {
   void markAsReadForOtherUserNotificationReturns404() throws Exception {
     // Owner tries to mark member's notification as read
     mockMvc
-        .perform(put("/api/notifications/" + memberNotifId + "/read").with(ownerJwt()))
+        .perform(
+            put("/api/notifications/" + memberNotifId + "/read")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_nc_owner")))
         .andExpect(status().isNotFound());
   }
 
@@ -224,12 +235,16 @@ class NotificationControllerTest {
   @Order(7)
   void markAllAsReadSetsAllNotificationsToRead() throws Exception {
     mockMvc
-        .perform(put("/api/notifications/read-all").with(ownerJwt()))
+        .perform(
+            put("/api/notifications/read-all")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_nc_owner")))
         .andExpect(status().isNoContent());
 
     // Verify unread count is now 0
     mockMvc
-        .perform(get("/api/notifications/unread-count").with(ownerJwt()))
+        .perform(
+            get("/api/notifications/unread-count")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_nc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.count").value(0));
   }
@@ -240,12 +255,14 @@ class NotificationControllerTest {
   @Order(8)
   void dismissNotificationRemovesIt() throws Exception {
     mockMvc
-        .perform(delete("/api/notifications/" + ownerNotif2Id).with(ownerJwt()))
+        .perform(
+            delete("/api/notifications/" + ownerNotif2Id)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_nc_owner")))
         .andExpect(status().isNoContent());
 
     // Verify total count decreased (was 3, now 2)
     mockMvc
-        .perform(get("/api/notifications").with(ownerJwt()))
+        .perform(get("/api/notifications").with(TestJwtFactory.ownerJwt(ORG_ID, "user_nc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.page.totalElements").value(2));
   }
@@ -255,7 +272,9 @@ class NotificationControllerTest {
   void dismissOtherUserNotificationReturns404() throws Exception {
     // Owner tries to dismiss member's notification
     mockMvc
-        .perform(delete("/api/notifications/" + memberNotifId).with(ownerJwt()))
+        .perform(
+            delete("/api/notifications/" + memberNotifId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_nc_owner")))
         .andExpect(status().isNotFound());
   }
 
@@ -266,7 +285,7 @@ class NotificationControllerTest {
   void memberCannotSeeOwnerNotifications() throws Exception {
     // Member should only see their own notification (1)
     mockMvc
-        .perform(get("/api/notifications").with(memberJwt()))
+        .perform(get("/api/notifications").with(TestJwtFactory.memberJwt(ORG_ID, "user_nc_member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content", hasSize(1)))
         .andExpect(jsonPath("$.content[0].id").value(memberNotifId.toString()));
@@ -277,46 +296,9 @@ class NotificationControllerTest {
   void memberCannotMarkOwnerNotificationAsRead() throws Exception {
     // Member tries to mark owner's notification as read
     mockMvc
-        .perform(put("/api/notifications/" + ownerNotif3Id + "/read").with(memberJwt()))
+        .perform(
+            put("/api/notifications/" + ownerNotif3Id + "/read")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_nc_member")))
         .andExpect(status().isNotFound());
-  }
-
-  // --- Helpers ---
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_nc_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_nc_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 }

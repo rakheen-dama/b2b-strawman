@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.document;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -10,7 +9,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -19,7 +19,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -32,7 +31,6 @@ import org.springframework.test.web.servlet.MvcResult;
 class DocumentScopeIntegrationTest {
 
   private static final String ORG_ID = "org_doc_scope_test";
-  private static final String API_KEY = "test-api-key";
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
@@ -44,16 +42,19 @@ class DocumentScopeIntegrationTest {
     provisioningService.provisionTenant(ORG_ID, "Doc Scope Test Org", null);
 
     // Sync members
-    syncMember(ORG_ID, "user_scope_owner", "scope_owner@test.com", "Owner", "owner");
-    syncMember(ORG_ID, "user_scope_admin", "scope_admin@test.com", "Admin", "admin");
-    syncMember(ORG_ID, "user_scope_member", "scope_member@test.com", "Member", "member");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_scope_owner", "scope_owner@test.com", "Owner", "owner");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_scope_admin", "scope_admin@test.com", "Admin", "admin");
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_scope_member", "scope_member@test.com", "Member", "member");
 
     // Create a customer for customer-scoped document tests
     var customerResult =
         mockMvc
             .perform(
                 post("/api/customers")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_scope_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -71,7 +72,7 @@ class DocumentScopeIntegrationTest {
     mockMvc
         .perform(
             post("/api/documents/upload-init")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_scope_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -88,7 +89,7 @@ class DocumentScopeIntegrationTest {
     mockMvc
         .perform(
             post("/api/documents/upload-init")
-                .with(adminJwt())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_scope_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -103,7 +104,7 @@ class DocumentScopeIntegrationTest {
     mockMvc
         .perform(
             post("/api/documents/upload-init")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_scope_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -119,7 +120,7 @@ class DocumentScopeIntegrationTest {
     mockMvc
         .perform(
             post("/api/customers/" + customerId + "/documents/upload-init")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_scope_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -136,7 +137,7 @@ class DocumentScopeIntegrationTest {
     mockMvc
         .perform(
             post("/api/customers/" + customerId + "/documents/upload-init")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_scope_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -150,7 +151,7 @@ class DocumentScopeIntegrationTest {
     mockMvc
         .perform(
             post("/api/customers/00000000-0000-0000-0000-000000000000/documents/upload-init")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_scope_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -167,7 +168,7 @@ class DocumentScopeIntegrationTest {
     mockMvc
         .perform(
             post("/api/documents/upload-init")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_scope_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -177,7 +178,9 @@ class DocumentScopeIntegrationTest {
 
     // List ORG-scoped documents
     mockMvc
-        .perform(get("/api/documents?scope=ORG").with(ownerJwt()))
+        .perform(
+            get("/api/documents?scope=ORG")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_scope_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$[0].scope").value("ORG"));
@@ -186,7 +189,9 @@ class DocumentScopeIntegrationTest {
   @Test
   void memberCanListOrgScopedDocuments() throws Exception {
     mockMvc
-        .perform(get("/api/documents?scope=ORG").with(memberJwt()))
+        .perform(
+            get("/api/documents?scope=ORG")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_scope_member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray());
   }
@@ -199,7 +204,7 @@ class DocumentScopeIntegrationTest {
     mockMvc
         .perform(
             post("/api/customers/" + customerId + "/documents/upload-init")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_scope_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -209,7 +214,9 @@ class DocumentScopeIntegrationTest {
 
     // List CUSTOMER-scoped documents
     mockMvc
-        .perform(get("/api/documents?scope=CUSTOMER&customerId=" + customerId).with(ownerJwt()))
+        .perform(
+            get("/api/documents?scope=CUSTOMER&customerId=" + customerId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_scope_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
         .andExpect(jsonPath("$[0].scope").value("CUSTOMER"))
@@ -219,14 +226,18 @@ class DocumentScopeIntegrationTest {
   @Test
   void customerScopedListingRequiresCustomerId() throws Exception {
     mockMvc
-        .perform(get("/api/documents?scope=CUSTOMER").with(ownerJwt()))
+        .perform(
+            get("/api/documents?scope=CUSTOMER")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_scope_owner")))
         .andExpect(status().isBadRequest());
   }
 
   @Test
   void invalidScopeReturnsBadRequest() throws Exception {
     mockMvc
-        .perform(get("/api/documents?scope=INVALID").with(ownerJwt()))
+        .perform(
+            get("/api/documents?scope=INVALID")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_scope_owner")))
         .andExpect(status().isBadRequest());
   }
 
@@ -239,7 +250,7 @@ class DocumentScopeIntegrationTest {
         mockMvc
             .perform(
                 post("/api/documents/upload-init")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_scope_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -254,7 +265,7 @@ class DocumentScopeIntegrationTest {
     mockMvc
         .perform(
             patch("/api/documents/" + documentId + "/visibility")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_scope_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -272,7 +283,7 @@ class DocumentScopeIntegrationTest {
         mockMvc
             .perform(
                 post("/api/documents/upload-init")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_scope_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -286,7 +297,7 @@ class DocumentScopeIntegrationTest {
     mockMvc
         .perform(
             patch("/api/documents/" + documentId + "/visibility")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_scope_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -298,7 +309,7 @@ class DocumentScopeIntegrationTest {
     mockMvc
         .perform(
             patch("/api/documents/" + documentId + "/visibility")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_scope_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -314,7 +325,7 @@ class DocumentScopeIntegrationTest {
         mockMvc
             .perform(
                 post("/api/documents/upload-init")
-                    .with(adminJwt())
+                    .with(TestJwtFactory.adminJwt(ORG_ID, "user_scope_admin"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -328,7 +339,7 @@ class DocumentScopeIntegrationTest {
     mockMvc
         .perform(
             patch("/api/documents/" + documentId + "/visibility")
-                .with(memberJwt())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_scope_member"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -343,7 +354,7 @@ class DocumentScopeIntegrationTest {
         mockMvc
             .perform(
                 post("/api/documents/upload-init")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_scope_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -357,7 +368,7 @@ class DocumentScopeIntegrationTest {
     mockMvc
         .perform(
             patch("/api/documents/" + documentId + "/visibility")
-                .with(ownerJwt())
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_scope_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -374,7 +385,7 @@ class DocumentScopeIntegrationTest {
         mockMvc
             .perform(
                 post("/api/documents/upload-init")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_scope_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -386,7 +397,9 @@ class DocumentScopeIntegrationTest {
     var documentId = extractJsonField(initResult, "documentId");
 
     mockMvc
-        .perform(post("/api/documents/" + documentId + "/confirm").with(ownerJwt()))
+        .perform(
+            post("/api/documents/" + documentId + "/confirm")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_scope_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("UPLOADED"))
         .andExpect(jsonPath("$.scope").value("ORG"))
@@ -399,7 +412,7 @@ class DocumentScopeIntegrationTest {
         mockMvc
             .perform(
                 post("/api/customers/" + customerId + "/documents/upload-init")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_scope_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -411,7 +424,9 @@ class DocumentScopeIntegrationTest {
     var documentId = extractJsonField(initResult, "documentId");
 
     mockMvc
-        .perform(post("/api/documents/" + documentId + "/confirm").with(ownerJwt()))
+        .perform(
+            post("/api/documents/" + documentId + "/confirm")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_scope_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("UPLOADED"))
         .andExpect(jsonPath("$.scope").value("CUSTOMER"))
@@ -427,7 +442,7 @@ class DocumentScopeIntegrationTest {
         mockMvc
             .perform(
                 post("/api/documents/upload-init")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_scope_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -440,13 +455,17 @@ class DocumentScopeIntegrationTest {
 
     // Confirm the document
     mockMvc
-        .perform(post("/api/documents/" + documentId + "/confirm").with(ownerJwt()))
+        .perform(
+            post("/api/documents/" + documentId + "/confirm")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_scope_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("UPLOADED"));
 
     // Request presigned download URL
     mockMvc
-        .perform(get("/api/documents/" + documentId + "/presign-download").with(ownerJwt()))
+        .perform(
+            get("/api/documents/" + documentId + "/presign-download")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_scope_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.presignedUrl").exists())
         .andExpect(jsonPath("$.expiresInSeconds").value(3600));
@@ -460,7 +479,7 @@ class DocumentScopeIntegrationTest {
         mockMvc
             .perform(
                 post("/api/documents/upload-init")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_scope_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -482,7 +501,7 @@ class DocumentScopeIntegrationTest {
         mockMvc
             .perform(
                 post("/api/customers/" + customerId + "/documents/upload-init")
-                    .with(ownerJwt())
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_scope_owner"))
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
@@ -501,47 +520,5 @@ class DocumentScopeIntegrationTest {
 
   private String extractJsonField(MvcResult result, String field) throws Exception {
     return JsonPath.read(result.getResponse().getContentAsString(), "$." + field);
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "%s",
-                          "clerkUserId": "%s",
-                          "email": "%s",
-                          "name": "%s",
-                          "avatarUrl": null,
-                          "orgRole": "%s"
-                        }
-                        """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
-  }
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_scope_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor adminJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_scope_admin").claim("o", Map.of("id", ORG_ID, "rol", "admin")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_scope_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
   }
 }

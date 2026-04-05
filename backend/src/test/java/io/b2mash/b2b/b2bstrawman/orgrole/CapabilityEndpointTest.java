@@ -1,17 +1,16 @@
 package io.b2mash.b2b.b2bstrawman.orgrole;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import java.util.Map;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.Set;
 import java.util.UUID;
 import org.hamcrest.Matchers;
@@ -22,8 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
-import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -45,8 +42,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CapabilityEndpointTest {
-
-  private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_cap_endpoint_test";
 
   @Autowired private MockMvc mockMvc;
@@ -70,20 +65,29 @@ class CapabilityEndpointTest {
 
     ownerMemberId =
         UUID.fromString(
-            syncMember(ORG_ID, "user_cap_owner", "cap_owner@test.com", "Cap Owner", "owner"));
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, "user_cap_owner", "cap_owner@test.com", "Cap Owner", "owner"));
     adminMemberId =
         UUID.fromString(
-            syncMember(ORG_ID, "user_cap_admin", "cap_admin@test.com", "Cap Admin", "admin"));
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, "user_cap_admin", "cap_admin@test.com", "Cap Admin", "admin"));
     memberMemberId =
         UUID.fromString(
-            syncMember(ORG_ID, "user_cap_member", "cap_member@test.com", "Cap Member", "member"));
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, "user_cap_member", "cap_member@test.com", "Cap Member", "member"));
     customRoleMemberId =
         UUID.fromString(
-            syncMember(ORG_ID, "user_cap_custom", "cap_custom@test.com", "Cap Custom", "member"));
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, "user_cap_custom", "cap_custom@test.com", "Cap Custom", "member"));
     overrideMemberId =
         UUID.fromString(
-            syncMember(
-                ORG_ID, "user_cap_override", "cap_override@test.com", "Cap Override", "member"));
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_cap_override",
+                "cap_override@test.com",
+                "Cap Override",
+                "member"));
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
@@ -143,7 +147,8 @@ class CapabilityEndpointTest {
   @Test
   void getMyCapabilities_admin_returnsAll() throws Exception {
     mockMvc
-        .perform(get("/api/me/capabilities").with(adminJwt()))
+        .perform(
+            get("/api/me/capabilities").with(TestJwtFactory.adminJwt(ORG_ID, "user_cap_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.isAdmin").value(true))
         .andExpect(jsonPath("$.isOwner").value(false))
@@ -156,7 +161,8 @@ class CapabilityEndpointTest {
   @Test
   void getMyCapabilities_member_returnsSeededCapabilities() throws Exception {
     mockMvc
-        .perform(get("/api/me/capabilities").with(memberJwt()))
+        .perform(
+            get("/api/me/capabilities").with(TestJwtFactory.memberJwt(ORG_ID, "user_cap_member")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.isAdmin").value(false))
         .andExpect(jsonPath("$.isOwner").value(false))
@@ -170,7 +176,8 @@ class CapabilityEndpointTest {
   @Test
   void getMyCapabilities_customRole_returnsRoleCaps() throws Exception {
     mockMvc
-        .perform(get("/api/me/capabilities").with(customRoleJwt()))
+        .perform(
+            get("/api/me/capabilities").with(TestJwtFactory.memberJwt(ORG_ID, "user_cap_custom")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.isAdmin").value(false))
         .andExpect(jsonPath("$.isOwner").value(false))
@@ -185,7 +192,8 @@ class CapabilityEndpointTest {
   @Test
   void getMyCapabilities_withOverrides_returnsEffective() throws Exception {
     mockMvc
-        .perform(get("/api/me/capabilities").with(overrideJwt()))
+        .perform(
+            get("/api/me/capabilities").with(TestJwtFactory.memberJwt(ORG_ID, "user_cap_override")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.isAdmin").value(false))
         .andExpect(jsonPath("$.isOwner").value(false))
@@ -199,7 +207,8 @@ class CapabilityEndpointTest {
   @Test
   void getMyCapabilities_returnsRoleName() throws Exception {
     mockMvc
-        .perform(get("/api/me/capabilities").with(customRoleJwt()))
+        .perform(
+            get("/api/me/capabilities").with(TestJwtFactory.memberJwt(ORG_ID, "user_cap_custom")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.role").value("Project Manager"));
   }
@@ -209,7 +218,9 @@ class CapabilityEndpointTest {
   @Test
   void getMemberCapabilities_self_allowed() throws Exception {
     mockMvc
-        .perform(get("/api/members/" + customRoleMemberId + "/capabilities").with(customRoleJwt()))
+        .perform(
+            get("/api/members/" + customRoleMemberId + "/capabilities")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_cap_custom")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.memberId").value(customRoleMemberId.toString()))
         .andExpect(jsonPath("$.roleName").value("Project Manager"))
@@ -228,7 +239,9 @@ class CapabilityEndpointTest {
   @Test
   void getMemberCapabilities_admin_allowed() throws Exception {
     mockMvc
-        .perform(get("/api/members/" + customRoleMemberId + "/capabilities").with(adminJwt()))
+        .perform(
+            get("/api/members/" + customRoleMemberId + "/capabilities")
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_cap_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.memberId").value(customRoleMemberId.toString()))
         .andExpect(jsonPath("$.roleName").value("Project Manager"));
@@ -237,7 +250,9 @@ class CapabilityEndpointTest {
   @Test
   void getMemberCapabilities_otherMember_returns403() throws Exception {
     mockMvc
-        .perform(get("/api/members/" + customRoleMemberId + "/capabilities").with(memberJwt()))
+        .perform(
+            get("/api/members/" + customRoleMemberId + "/capabilities")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_cap_member")))
         .andExpect(status().isForbidden());
   }
 
@@ -249,66 +264,15 @@ class CapabilityEndpointTest {
     // works
     // The /api/members endpoint uses @PreAuthorize("hasAnyRole('ORG_MEMBER', 'ORG_ADMIN',
     // 'ORG_OWNER')")
-    mockMvc.perform(get("/api/members").with(adminJwt())).andExpect(status().isOk());
+    mockMvc
+        .perform(get("/api/members").with(TestJwtFactory.adminJwt(ORG_ID, "user_cap_admin")))
+        .andExpect(status().isOk());
 
     // Also confirm our @PreAuthorize("isAuthenticated()") on the capability endpoints works
     mockMvc
-        .perform(get("/api/me/capabilities").with(ownerJwt()))
+        .perform(
+            get("/api/me/capabilities").with(TestJwtFactory.ownerJwt(ORG_ID, "user_cap_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.isOwner").value(true));
-  }
-
-  // --- Helpers ---
-
-  private JwtRequestPostProcessor ownerJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_cap_owner").claim("o", Map.of("id", ORG_ID, "rol", "owner")));
-  }
-
-  private JwtRequestPostProcessor adminJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_cap_admin").claim("o", Map.of("id", ORG_ID, "rol", "admin")));
-  }
-
-  private JwtRequestPostProcessor memberJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_cap_member").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor customRoleJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_cap_custom").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private JwtRequestPostProcessor overrideJwt() {
-    return jwt()
-        .jwt(j -> j.subject("user_cap_override").claim("o", Map.of("id", ORG_ID, "rol", "member")));
-  }
-
-  private String syncMember(
-      String orgId, String clerkUserId, String email, String name, String orgRole)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post(
-                        "/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                {
-                  "clerkOrgId": "%s",
-                  "clerkUserId": "%s",
-                  "email": "%s",
-                  "name": "%s",
-                  "avatarUrl": null,
-                  "orgRole": "%s"
-                }
-                """
-                            .formatted(orgId, clerkUserId, email, name, orgRole)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.memberId");
   }
 }

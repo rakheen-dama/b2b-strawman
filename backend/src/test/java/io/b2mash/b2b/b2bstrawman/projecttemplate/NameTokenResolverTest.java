@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
+import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import java.time.LocalDate;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -14,7 +15,7 @@ class NameTokenResolverTest {
 
   // Helper: create a Customer with only the name field meaningful.
   private Customer customerWithName(String name) {
-    return new Customer(name, null, null, null, null, UUID.randomUUID());
+    return TestCustomerFactory.createActiveCustomer(name, null, UUID.randomUUID());
   }
 
   @Test

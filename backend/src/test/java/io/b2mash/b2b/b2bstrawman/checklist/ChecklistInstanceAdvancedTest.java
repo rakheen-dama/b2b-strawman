@@ -9,9 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
-import io.b2mash.b2b.b2bstrawman.customer.CustomerType;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.member.MemberSyncService;
@@ -20,6 +18,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import java.util.Collections;
 import java.util.Set;
@@ -327,14 +326,10 @@ class ChecklistInstanceAdvancedTest {
         () -> {
           // Create customer in ONBOARDING lifecycle status
           var customer =
-              new Customer(
+              TestCustomerFactory.createCustomerWithStatus(
                   "Onboarding Customer " + uuid8(),
                   "onboarding" + emailCounter++ + "@test.com",
-                  null,
-                  null,
-                  null,
                   memberId,
-                  CustomerType.INDIVIDUAL,
                   LifecycleStatus.ONBOARDING);
           customer = customerRepository.save(customer);
           final UUID customerId = customer.getId();

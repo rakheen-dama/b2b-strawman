@@ -3,16 +3,15 @@ package io.b2mash.b2b.b2bstrawman.billingrate;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
-import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -90,15 +89,8 @@ class BillingRateResolutionTest {
         .run(
             () -> {
               var customer =
-                  new Customer(
-                      "Rate Test Customer",
-                      "rate-customer@test.com",
-                      null,
-                      null,
-                      null,
-                      memberIdOwner,
-                      null,
-                      LifecycleStatus.ACTIVE);
+                  TestCustomerFactory.createActiveCustomer(
+                      "Rate Test Customer", "rate-customer@test.com", memberIdOwner);
               customer = customerRepository.save(customer);
               customerId = customer.getId();
 

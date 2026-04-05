@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
@@ -92,7 +91,7 @@ class RetainerAgreementServiceTest {
             transactionTemplate.executeWithoutResult(
                 tx -> {
                   var customer =
-                      new Customer(name, email, null, null, null, memberId, null, status);
+                      TestCustomerFactory.createCustomerWithStatus(name, email, memberId, status);
                   customer = customerRepository.save(customer);
                   ref.set(customer.getId());
                 }));

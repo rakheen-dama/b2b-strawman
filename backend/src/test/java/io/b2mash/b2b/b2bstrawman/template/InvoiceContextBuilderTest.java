@@ -6,7 +6,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
-import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
@@ -16,6 +15,7 @@ import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
+import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -74,7 +74,7 @@ class InvoiceContextBuilderTest {
     when(invoiceLineRepository.findByInvoiceIdOrderBySortOrder(invoiceId))
         .thenReturn(List.of(line));
 
-    var customer = new Customer("Acme Corp", "acme@test.com", null, null, null, memberId);
+    var customer = TestCustomerFactory.createActiveCustomer("Acme Corp", "acme@test.com", memberId);
     when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
 
     var project = new Project("Project X", "desc", memberId);
@@ -119,7 +119,7 @@ class InvoiceContextBuilderTest {
     when(invoiceLineRepository.findByInvoiceIdOrderBySortOrder(invoiceId))
         .thenReturn(List.of(line));
 
-    var customer = new Customer("Solo Corp", "solo@test.com", null, null, null, memberId);
+    var customer = TestCustomerFactory.createActiveCustomer("Solo Corp", "solo@test.com", memberId);
     when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
 
     when(contextHelper.buildOrgContext()).thenReturn(Map.of());
@@ -137,7 +137,7 @@ class InvoiceContextBuilderTest {
     when(invoiceRepository.findById(invoiceId)).thenReturn(Optional.of(invoice));
     when(invoiceLineRepository.findByInvoiceIdOrderBySortOrder(invoiceId)).thenReturn(List.of());
 
-    var customer = new Customer("Fields Corp", "f@test.com", null, null, null, memberId);
+    var customer = TestCustomerFactory.createActiveCustomer("Fields Corp", "f@test.com", memberId);
     customer.setCustomFields(Map.of("vat_number", "VAT123"));
     when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
 

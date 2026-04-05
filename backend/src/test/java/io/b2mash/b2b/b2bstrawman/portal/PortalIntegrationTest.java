@@ -8,12 +8,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerService;
-import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
@@ -22,6 +20,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
@@ -146,28 +145,14 @@ class PortalIntegrationTest {
               // PROSPECT -> ONBOARDING -> ACTIVE which auto-instantiates checklists)
               var custA =
                   customerRepository.save(
-                      new Customer(
-                          "Portal Customer A",
-                          "portal-cust-a@test.com",
-                          null,
-                          null,
-                          null,
-                          memberIdA,
-                          null,
-                          LifecycleStatus.ACTIVE));
+                      TestCustomerFactory.createActiveCustomer(
+                          "Portal Customer A", "portal-cust-a@test.com", memberIdA));
               customerIdA = custA.getId();
 
               var custB =
                   customerRepository.save(
-                      new Customer(
-                          "Other Customer B",
-                          "portal-cust-b@test.com",
-                          null,
-                          null,
-                          null,
-                          memberIdA,
-                          null,
-                          LifecycleStatus.ACTIVE));
+                      TestCustomerFactory.createActiveCustomer(
+                          "Other Customer B", "portal-cust-b@test.com", memberIdA));
               customerIdB = custB.getId();
 
               // Create portal contacts for both customers

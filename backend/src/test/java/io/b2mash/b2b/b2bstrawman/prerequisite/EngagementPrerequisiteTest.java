@@ -8,10 +8,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
-import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
-import io.b2mash.b2b.b2bstrawman.customer.CustomerType;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
@@ -30,6 +28,7 @@ import io.b2mash.b2b.b2bstrawman.projecttemplate.TemplateTaskItemRepository;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.TemplateTaskRepository;
 import io.b2mash.b2b.b2bstrawman.setupstatus.DocumentGenerationReadinessService;
 import io.b2mash.b2b.b2bstrawman.tag.TagRepository;
+import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestIds;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
@@ -256,15 +255,8 @@ class EngagementPrerequisiteTest {
 
   private void mockCustomer(Map<String, Object> customFields) {
     var customer =
-        new Customer(
-            "Test Customer",
-            "test@test.com",
-            null,
-            null,
-            null,
-            MEMBER_ID,
-            CustomerType.INDIVIDUAL,
-            LifecycleStatus.PROSPECT);
+        TestCustomerFactory.createCustomerWithStatus(
+            "Test Customer", "test@test.com", MEMBER_ID, LifecycleStatus.PROSPECT);
     customer.setCustomFields(customFields);
     when(customerRepository.findById(CUSTOMER_ID)).thenReturn(Optional.of(customer));
   }

@@ -10,13 +10,13 @@ import static org.mockito.Mockito.when;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
-import io.b2mash.b2b.b2bstrawman.customer.CustomerType;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldType;
+import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 import jakarta.persistence.Tuple;
@@ -177,15 +177,8 @@ class CustomerReadinessServiceTest {
 
   private Customer mockCustomer(LifecycleStatus lifecycleStatus, Map<String, Object> customFields) {
     var customer =
-        new Customer(
-            "Test Customer",
-            "test@test.com",
-            null,
-            null,
-            null,
-            MEMBER_ID,
-            CustomerType.INDIVIDUAL,
-            lifecycleStatus);
+        TestCustomerFactory.createCustomerWithStatus(
+            "Test Customer", "test@test.com", MEMBER_ID, lifecycleStatus);
     customer.setCustomFields(customFields);
     when(customerRepository.findById(CUSTOMER_ID)).thenReturn(Optional.of(customer));
     return customer;

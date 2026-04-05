@@ -5,9 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceRepository;
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistTemplateRepository;
-import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
-import io.b2mash.b2b.b2bstrawman.customer.CustomerType;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
@@ -16,6 +14,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
+import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import org.junit.jupiter.api.BeforeAll;
@@ -104,14 +103,10 @@ class ComplianceProvisioningTest {
             () -> {
               counter++;
               var customer =
-                  new Customer(
+                  TestCustomerFactory.createCustomerWithStatus(
                       "Provisioning Customer " + counter,
                       "prov_" + counter + "@test.com",
-                      null,
-                      null,
-                      null,
                       memberId,
-                      CustomerType.INDIVIDUAL,
                       LifecycleStatus.PROSPECT);
               return customerRepository.save(customer).getId();
             });

@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -100,10 +101,7 @@ class CustomerLifecycleGuardTest {
   }
 
   private Customer createCustomerWithStatus(LifecycleStatus status) {
-    // Use the constructor that accepts explicit lifecycle status
-    var customer =
-        new Customer(
-            "Test Corp", "test@test.com", null, null, null, UUID.randomUUID(), null, status);
-    return customer;
+    return TestCustomerFactory.createCustomerWithStatus(
+        "Test Corp", "test@test.com", UUID.randomUUID(), status);
   }
 }

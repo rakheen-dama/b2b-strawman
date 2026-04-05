@@ -243,6 +243,7 @@ class ChecklistInstantiationServiceTest {
 
   private Customer createCustomer(CustomerType type, LifecycleStatus status) {
     counter++;
+    // Factory only supports INDIVIDUAL type; use raw constructor when COMPANY type is needed
     var customer =
         new Customer(
             "Test Customer " + counter,

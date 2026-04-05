@@ -4,9 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
-import io.b2mash.b2b.b2bstrawman.customer.CustomerType;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -666,15 +664,8 @@ class RecurringScheduleExecutorTest {
                 tx -> {
                   var c =
                       customerRepository.saveAndFlush(
-                          new Customer(
-                              "ExecCust" + n,
-                              "execcust" + n + "@test.com",
-                              null,
-                              null,
-                              null,
-                              memberId,
-                              CustomerType.INDIVIDUAL,
-                              status));
+                          TestCustomerFactory.createCustomerWithStatus(
+                              "ExecCust" + n, "execcust" + n + "@test.com", memberId, status));
                   result[0] = c.getId();
                 }));
     return result[0];

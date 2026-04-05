@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -13,15 +14,8 @@ class CustomerLifecycleEntityTest {
   void transitionLifecycleStatus_setsAllFields() {
     // Start as PROSPECT to test transition to ONBOARDING
     var customer =
-        new Customer(
-            "Test Co",
-            "test@test.com",
-            null,
-            null,
-            null,
-            UUID.randomUUID(),
-            null,
-            LifecycleStatus.PROSPECT);
+        TestCustomerFactory.createCustomerWithStatus(
+            "Test Co", "test@test.com", UUID.randomUUID(), LifecycleStatus.PROSPECT);
     UUID actorId = UUID.randomUUID();
 
     customer.transitionLifecycleStatus(LifecycleStatus.ONBOARDING, actorId);
@@ -34,7 +28,9 @@ class CustomerLifecycleEntityTest {
   @Test
   void transitionLifecycleStatus_rejectsInvalidTransition() {
     // PROSPECT cannot go directly to DORMANT
-    var customer = new Customer("Test Co", "test@test.com", null, null, null, UUID.randomUUID());
+    var customer =
+        TestCustomerFactory.createCustomerWithStatus(
+            "Test Co", "test@test.com", UUID.randomUUID(), LifecycleStatus.PROSPECT);
     UUID actorId = UUID.randomUUID();
 
     assertThatThrownBy(() -> customer.transitionLifecycleStatus(LifecycleStatus.DORMANT, actorId))
@@ -45,15 +41,8 @@ class CustomerLifecycleEntityTest {
   @Test
   void transitionLifecycleStatus_offboardedCanReactivateToActive() {
     var customer =
-        new Customer(
-            "Test Co",
-            "test@test.com",
-            null,
-            null,
-            null,
-            UUID.randomUUID(),
-            null,
-            LifecycleStatus.ACTIVE);
+        TestCustomerFactory.createCustomerWithStatus(
+            "Test Co", "test@test.com", UUID.randomUUID(), LifecycleStatus.ACTIVE);
     UUID actorId = UUID.randomUUID();
     customer.transitionLifecycleStatus(LifecycleStatus.OFFBOARDING, actorId);
     customer.transitionLifecycleStatus(LifecycleStatus.OFFBOARDED, actorId);
@@ -66,15 +55,8 @@ class CustomerLifecycleEntityTest {
   @Test
   void transitionLifecycleStatus_offboardedCannotGoToProspect() {
     var customer =
-        new Customer(
-            "Test Co",
-            "test@test.com",
-            null,
-            null,
-            null,
-            UUID.randomUUID(),
-            null,
-            LifecycleStatus.ACTIVE);
+        TestCustomerFactory.createCustomerWithStatus(
+            "Test Co", "test@test.com", UUID.randomUUID(), LifecycleStatus.ACTIVE);
     UUID actorId = UUID.randomUUID();
     customer.transitionLifecycleStatus(LifecycleStatus.OFFBOARDING, actorId);
     customer.transitionLifecycleStatus(LifecycleStatus.OFFBOARDED, actorId);
@@ -85,7 +67,9 @@ class CustomerLifecycleEntityTest {
 
   @Test
   void transitionLifecycleStatus_prospectCannotTransitionDirectlyToActive() {
-    var customer = new Customer("Test Co", "test@test.com", null, null, null, UUID.randomUUID());
+    var customer =
+        TestCustomerFactory.createCustomerWithStatus(
+            "Test Co", "test@test.com", UUID.randomUUID(), LifecycleStatus.PROSPECT);
     UUID actorId = UUID.randomUUID();
 
     assertThat(customer.getLifecycleStatus()).isEqualTo(LifecycleStatus.PROSPECT);
@@ -97,15 +81,8 @@ class CustomerLifecycleEntityTest {
   @Test
   void transitionLifecycleStatus_setsOffboardedAtWhenOffboarded() {
     var customer =
-        new Customer(
-            "Test Co",
-            "test@test.com",
-            null,
-            null,
-            null,
-            UUID.randomUUID(),
-            null,
-            LifecycleStatus.ACTIVE);
+        TestCustomerFactory.createCustomerWithStatus(
+            "Test Co", "test@test.com", UUID.randomUUID(), LifecycleStatus.ACTIVE);
     UUID actorId = UUID.randomUUID();
     customer.transitionLifecycleStatus(LifecycleStatus.OFFBOARDING, actorId);
 

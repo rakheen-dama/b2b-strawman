@@ -6,7 +6,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventFilter;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
-import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerService;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
@@ -20,6 +19,7 @@ import io.b2mash.b2b.b2bstrawman.member.MemberSyncService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -316,14 +316,10 @@ class CustomerLifecycleServiceTest {
                       transactionTemplate.execute(
                           tx -> {
                             var customer =
-                                new Customer(
+                                TestCustomerFactory.createCustomerWithStatus(
                                     "Prereq Filled Corp " + (++emailCounter),
                                     "prereq_filled_" + emailCounter + "@test.com",
-                                    null,
-                                    null,
-                                    null,
                                     memberId,
-                                    null,
                                     LifecycleStatus.ONBOARDING);
                             customer.setCustomFields(Map.of("prereq_gate_test_field_2", "12345"));
                             return customerRepository.save(customer).getId();
@@ -355,14 +351,10 @@ class CustomerLifecycleServiceTest {
                 transactionTemplate.execute(
                     tx -> {
                       var customer =
-                          new Customer(
+                          TestCustomerFactory.createCustomerWithStatus(
                               "Test Corp " + (++emailCounter),
                               "lifecycle_svc_" + emailCounter + "@test.com",
-                              null,
-                              null,
-                              null,
                               memberId,
-                              null,
                               status);
                       return customerRepository.save(customer).getId();
                     }));

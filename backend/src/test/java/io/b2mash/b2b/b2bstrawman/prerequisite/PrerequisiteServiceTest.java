@@ -4,10 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
-import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
-import io.b2mash.b2b.b2bstrawman.customer.CustomerType;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
@@ -19,6 +17,7 @@ import io.b2mash.b2b.b2bstrawman.projecttemplate.ProjectTemplateService;
 import io.b2mash.b2b.b2bstrawman.setupstatus.DocumentGenerationReadinessService;
 import io.b2mash.b2b.b2bstrawman.setupstatus.TemplateReadiness;
 import io.b2mash.b2b.b2bstrawman.template.TemplateEntityType;
+import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -300,45 +299,24 @@ class PrerequisiteServiceTest {
 
   private void mockCustomer(Map<String, Object> customFields) {
     var customer =
-        new Customer(
-            "Test Customer",
-            "test@test.com",
-            null,
-            null,
-            null,
-            MEMBER_ID,
-            CustomerType.INDIVIDUAL,
-            LifecycleStatus.PROSPECT);
+        TestCustomerFactory.createCustomerWithStatus(
+            "Test Customer", "test@test.com", MEMBER_ID, LifecycleStatus.PROSPECT);
     customer.setCustomFields(customFields);
     when(customerRepository.findById(CUSTOMER_ID)).thenReturn(Optional.of(customer));
   }
 
   private void mockCustomerWithNullFields() {
     var customer =
-        new Customer(
-            "Test Customer",
-            "test@test.com",
-            null,
-            null,
-            null,
-            MEMBER_ID,
-            CustomerType.INDIVIDUAL,
-            LifecycleStatus.PROSPECT);
+        TestCustomerFactory.createCustomerWithStatus(
+            "Test Customer", "test@test.com", MEMBER_ID, LifecycleStatus.PROSPECT);
     customer.setCustomFields(null);
     when(customerRepository.findById(CUSTOMER_ID)).thenReturn(Optional.of(customer));
   }
 
   private void mockCustomerWithEmail(String email) {
     var customer =
-        new Customer(
-            "Test Customer",
-            email,
-            null,
-            null,
-            null,
-            MEMBER_ID,
-            CustomerType.INDIVIDUAL,
-            LifecycleStatus.PROSPECT);
+        TestCustomerFactory.createCustomerWithStatus(
+            "Test Customer", email, MEMBER_ID, LifecycleStatus.PROSPECT);
     customer.setCustomFields(Map.of());
     when(customerRepository.findById(CUSTOMER_ID)).thenReturn(Optional.of(customer));
   }

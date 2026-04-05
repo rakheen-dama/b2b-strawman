@@ -16,6 +16,7 @@ import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
+import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -90,7 +91,8 @@ class CustomerContextBuilderTest {
 
   @Test
   void buildContextWithoutProjects() {
-    var customer = new Customer("Solo Customer", "solo@example.com", null, null, null, memberId);
+    var customer =
+        TestCustomerFactory.createActiveCustomer("Solo Customer", "solo@example.com", memberId);
     when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
     when(customerProjectRepository.findByCustomerId(customerId)).thenReturn(List.of());
     when(invoiceRepository.findByCustomerId(customerId)).thenReturn(List.of());
@@ -108,7 +110,7 @@ class CustomerContextBuilderTest {
   @Test
   void buildContextWithCustomFields() {
     var customer =
-        new Customer("Fields Customer", "fields@example.com", null, null, null, memberId);
+        TestCustomerFactory.createActiveCustomer("Fields Customer", "fields@example.com", memberId);
     customer.setCustomFields(Map.of("industry", "Tech", "tier", "Gold"));
     when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
     when(customerProjectRepository.findByCustomerId(customerId)).thenReturn(List.of());
@@ -129,7 +131,8 @@ class CustomerContextBuilderTest {
 
   @Test
   void buildContextWithTags() {
-    var customer = new Customer("Tagged Customer", "tag@example.com", null, null, null, memberId);
+    var customer =
+        TestCustomerFactory.createActiveCustomer("Tagged Customer", "tag@example.com", memberId);
     when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
     when(customerProjectRepository.findByCustomerId(customerId)).thenReturn(List.of());
     when(invoiceRepository.findByCustomerId(customerId)).thenReturn(List.of());
@@ -149,7 +152,8 @@ class CustomerContextBuilderTest {
 
   @Test
   void buildContextWithLogoUrl() {
-    var customer = new Customer("Logo Customer", "logo@example.com", null, null, null, memberId);
+    var customer =
+        TestCustomerFactory.createActiveCustomer("Logo Customer", "logo@example.com", memberId);
     when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
     when(customerProjectRepository.findByCustomerId(customerId)).thenReturn(List.of());
     when(invoiceRepository.findByCustomerId(customerId)).thenReturn(List.of());
@@ -169,7 +173,8 @@ class CustomerContextBuilderTest {
   @Test
   void buildContextWithInvoices() {
     var customer =
-        new Customer("Invoice Customer", "invoice@example.com", null, null, null, memberId);
+        TestCustomerFactory.createActiveCustomer(
+            "Invoice Customer", "invoice@example.com", memberId);
     when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
     when(customerProjectRepository.findByCustomerId(customerId)).thenReturn(List.of());
 
@@ -218,7 +223,8 @@ class CustomerContextBuilderTest {
 
   @Test
   void buildContextWithNoInvoicesHasEmptyListAndZeroOutstanding() {
-    var customer = new Customer("No Invoice", "no-inv@example.com", null, null, null, memberId);
+    var customer =
+        TestCustomerFactory.createActiveCustomer("No Invoice", "no-inv@example.com", memberId);
     when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
     when(customerProjectRepository.findByCustomerId(customerId)).thenReturn(List.of());
     when(invoiceRepository.findByCustomerId(customerId)).thenReturn(List.of());

@@ -14,9 +14,7 @@ import io.b2mash.b2b.b2bstrawman.checklist.ChecklistTemplate;
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistTemplateItem;
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistTemplateItemRepository;
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistTemplateRepository;
-import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
-import io.b2mash.b2b.b2bstrawman.customer.CustomerType;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.PrerequisiteNotMetException;
@@ -130,14 +128,10 @@ class CustomerLifecyclePrerequisiteTest {
           runInTenant(
               () -> {
                 var customer =
-                    new Customer(
+                    TestCustomerFactory.createCustomerWithStatus(
                         "Missing Fields Corp " + (++counter),
                         "missing_" + counter + "@test.com",
-                        null,
-                        null,
-                        null,
                         memberId,
-                        CustomerType.INDIVIDUAL,
                         LifecycleStatus.ONBOARDING);
                 return customerRepository.save(customer).getId();
               });
@@ -168,14 +162,10 @@ class CustomerLifecyclePrerequisiteTest {
         runInTenant(
             () -> {
               var customer =
-                  new Customer(
+                  TestCustomerFactory.createCustomerWithStatus(
                       "No Prereqs Corp " + (++counter),
                       "no_prereqs_" + counter + "@test.com",
-                      null,
-                      null,
-                      null,
                       memberId,
-                      CustomerType.INDIVIDUAL,
                       LifecycleStatus.ONBOARDING);
               return customerRepository.save(customer).getId();
             });
@@ -194,14 +184,10 @@ class CustomerLifecyclePrerequisiteTest {
         runInTenant(
             () -> {
               var customer =
-                  new Customer(
+                  TestCustomerFactory.createCustomerWithStatus(
                       "Prospect Skip Corp " + (++counter),
                       "prospect_skip_" + counter + "@test.com",
-                      null,
-                      null,
-                      null,
                       memberId,
-                      CustomerType.INDIVIDUAL,
                       LifecycleStatus.PROSPECT);
               return customerRepository.save(customer).getId();
             });
@@ -253,14 +239,10 @@ class CustomerLifecyclePrerequisiteTest {
           runInTenant(
               () -> {
                 var customer =
-                    new Customer(
+                    TestCustomerFactory.createCustomerWithStatus(
                         "Auto Blocked Corp " + (++counter),
                         "auto_blocked_" + counter + "@test.com",
-                        null,
-                        null,
-                        null,
                         memberId,
-                        CustomerType.INDIVIDUAL,
                         LifecycleStatus.ONBOARDING);
                 return customerRepository.save(customer).getId();
               });
@@ -300,14 +282,10 @@ class CustomerLifecyclePrerequisiteTest {
           runInTenant(
               () -> {
                 var customer =
-                    new Customer(
+                    TestCustomerFactory.createCustomerWithStatus(
                         "Notify Check Corp " + (++counter),
                         "auto_notify_" + counter + "@test.com",
-                        null,
-                        null,
-                        null,
                         memberId,
-                        CustomerType.INDIVIDUAL,
                         LifecycleStatus.ONBOARDING);
                 return customerRepository.save(customer).getId();
               });
@@ -348,14 +326,10 @@ class CustomerLifecyclePrerequisiteTest {
           runInTenant(
               () -> {
                 var customer =
-                    new Customer(
+                    TestCustomerFactory.createCustomerWithStatus(
                         "Handler Test Corp " + (++counter),
                         "handler_" + counter + "@test.com",
-                        null,
-                        null,
-                        null,
                         memberId,
-                        CustomerType.INDIVIDUAL,
                         LifecycleStatus.ONBOARDING);
                 return customerRepository.save(customer).getId();
               });

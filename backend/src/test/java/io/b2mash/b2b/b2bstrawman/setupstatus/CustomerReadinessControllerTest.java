@@ -6,7 +6,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
@@ -17,6 +16,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import jakarta.persistence.EntityManager;
@@ -92,43 +92,31 @@ class CustomerReadinessControllerTest {
                     tx -> {
                       // Create a PROSPECT customer (no linked projects)
                       var prospect =
-                          new Customer(
+                          TestCustomerFactory.createCustomerWithStatus(
                               "Prospect Corp",
                               "prospect@readiness.com",
-                              null,
-                              null,
-                              null,
                               memberIdOwner,
-                              CustomerType.COMPANY,
                               LifecycleStatus.PROSPECT);
                       prospect = customerRepository.save(prospect);
                       prospectCustomerId = prospect.getId();
 
                       // Create an ACTIVE customer without linked projects
                       var active =
-                          new Customer(
+                          TestCustomerFactory.createActiveCustomer(
                               "Active Corp",
                               "active@readiness.com",
-                              null,
-                              null,
-                              null,
                               memberIdOwner,
-                              CustomerType.COMPANY,
-                              LifecycleStatus.ACTIVE);
+                              CustomerType.COMPANY);
                       active = customerRepository.save(active);
                       activeCustomerId = active.getId();
 
                       // Create an ACTIVE customer with a linked project
                       var activeWithProject =
-                          new Customer(
+                          TestCustomerFactory.createActiveCustomer(
                               "Active Linked Corp",
                               "activelinked@readiness.com",
-                              null,
-                              null,
-                              null,
                               memberIdOwner,
-                              CustomerType.COMPANY,
-                              LifecycleStatus.ACTIVE);
+                              CustomerType.COMPANY);
                       activeWithProject = customerRepository.save(activeWithProject);
                       activeCustomerWithProjectId = activeWithProject.getId();
 

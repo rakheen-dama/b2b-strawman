@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.parser;
 
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 /**
  * CSV parser for Standard Bank bank statements. Detects files containing "Standard Bank" in the
@@ -15,7 +16,7 @@ public class StandardBankCsvParser extends CsvBankStatementParser {
     if (headerLine == null) {
       return false;
     }
-    return headerLine.toUpperCase().contains("STANDARD BANK");
+    return headerLine.toUpperCase(Locale.ROOT).contains("STANDARD BANK");
   }
 
   @Override

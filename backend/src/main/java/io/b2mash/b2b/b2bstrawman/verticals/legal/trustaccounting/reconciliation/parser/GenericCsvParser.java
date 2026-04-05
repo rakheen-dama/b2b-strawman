@@ -19,8 +19,6 @@ public class GenericCsvParser extends CsvBankStatementParser {
           DateTimeFormatter.ofPattern("MM/dd/yyyy"),
           DateTimeFormatter.ofPattern("dd-MM-yyyy"));
 
-  private DateTimeFormatter detectedFormat = DATE_FORMATS.getFirst();
-
   /**
    * The generic parser always returns true -- it is the fallback when no bank-specific parser
    * matches.
@@ -32,7 +30,7 @@ public class GenericCsvParser extends CsvBankStatementParser {
 
   @Override
   protected DateTimeFormatter dateFormatter() {
-    return detectedFormat;
+    return DATE_FORMATS.getFirst();
   }
 
   @Override
@@ -62,9 +60,7 @@ public class GenericCsvParser extends CsvBankStatementParser {
     }
     for (DateTimeFormatter fmt : DATE_FORMATS) {
       try {
-        LocalDate date = LocalDate.parse(value, fmt);
-        this.detectedFormat = fmt;
-        return date;
+        return LocalDate.parse(value, fmt);
       } catch (DateTimeParseException e) {
         // Try next format
       }

@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.parser;
 
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 /**
  * CSV parser for First National Bank (FNB) bank statements. Detects files containing "FNB" or
@@ -16,7 +17,7 @@ public class FnbCsvParser extends CsvBankStatementParser {
     if (headerLine == null) {
       return false;
     }
-    String upper = headerLine.toUpperCase();
+    String upper = headerLine.toUpperCase(Locale.ROOT);
     return upper.contains("FNB") || upper.contains("FIRST NATIONAL");
   }
 

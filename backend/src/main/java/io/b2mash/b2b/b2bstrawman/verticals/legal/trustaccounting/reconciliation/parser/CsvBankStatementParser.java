@@ -11,6 +11,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Abstract base class for CSV-based bank statement parsers. Provides common CSV reading logic
@@ -18,6 +20,15 @@ import java.util.List;
  * header detection, date formats, and column mappings.
  */
 public abstract class CsvBankStatementParser implements BankStatementParser {
+
+  private static final Logger log = LoggerFactory.getLogger(CsvBankStatementParser.class);
+
+  /** Typed record for statement-level metadata extracted from header lines. */
+  protected record StatementMetadata(
+      LocalDate periodStart,
+      LocalDate periodEnd,
+      BigDecimal openingBalance,
+      BigDecimal closingBalance) {}
 
   /**
    * Returns the date format used by this bank's CSV exports.
@@ -81,10 +92,10 @@ public abstract class CsvBankStatementParser implements BankStatementParser {
    * period/balance fields, which are then derived from the transaction data.
    *
    * @param headerLines the header lines (up to headerLinesToSkip() lines)
-   * @return an array: [periodStart, periodEnd, openingBalance, closingBalance] or null entries
+   * @return metadata record with period and balance fields (null entries allowed)
    */
-  protected Object[] parseMetadata(List<String> headerLines) {
-    return new Object[] {null, null, null, null};
+  protected StatementMetadata parseMetadata(List<String> headerLines) {
+    return new StatementMetadata(null, null, null, null);
   }
 
   @Override
@@ -101,13 +112,14 @@ public abstract class CsvBankStatementParser implements BankStatementParser {
     var dataLines =
         skip < allLines.size() ? allLines.subList(skip, allLines.size()) : List.<String>of();
 
-    Object[] metadata = parseMetadata(headerLines);
-    var periodStart = (LocalDate) metadata[0];
-    var periodEnd = (LocalDate) metadata[1];
-    var openingBalance = (BigDecimal) metadata[2];
-    var closingBalance = (BigDecimal) metadata[3];
+    StatementMetadata metadata = parseMetadata(headerLines);
+    var periodStart = metadata.periodStart();
+    var periodEnd = metadata.periodEnd();
+    var openingBalance = metadata.openingBalance();
+    var closingBalance = metadata.closingBalance();
 
     List<ParsedStatementLine> parsedLines = new ArrayList<>();
+    int malformedCount = 0;
 
     for (String line : dataLines) {
       if (line.isBlank()) {
@@ -118,10 +130,18 @@ public abstract class CsvBankStatementParser implements BankStatementParser {
         var parsedLine = parseLine(columns);
         if (parsedLine != null) {
           parsedLines.add(parsedLine);
+        } else {
+          malformedCount++;
         }
-      } catch (Exception e) {
-        // Skip malformed lines gracefully
+      } catch (NumberFormatException | DateTimeParseException e) {
+        malformedCount++;
+        log.debug("Skipping malformed CSV line: {}", line, e);
       }
+    }
+
+    if (parsedLines.isEmpty() && malformedCount > 0) {
+      throw new BankStatementParseException(
+          "All " + malformedCount + " data lines were malformed; no valid transactions parsed");
     }
 
     // Derive period from data if not extracted from metadata
@@ -231,7 +251,13 @@ public abstract class CsvBankStatementParser implements BankStatementParser {
     for (int i = 0; i < line.length(); i++) {
       char c = line.charAt(i);
       if (c == '"') {
-        inQuotes = !inQuotes;
+        if (inQuotes && i + 1 < line.length() && line.charAt(i + 1) == '"') {
+          // Escaped quote ("") inside a quoted field — append a literal quote
+          current.append('"');
+          i++; // skip the second quote
+        } else {
+          inQuotes = !inQuotes;
+        }
       } else if (c == ',' && !inQuotes) {
         fields.add(current.toString());
         current = new StringBuilder();

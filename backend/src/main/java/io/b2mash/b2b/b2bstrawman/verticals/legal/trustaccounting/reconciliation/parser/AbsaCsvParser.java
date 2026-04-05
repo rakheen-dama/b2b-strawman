@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.parser;
 
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 
 /**
  * CSV parser for ABSA bank statements. Detects files containing "Absa" or "ABSA" in the header.
@@ -15,7 +16,7 @@ public class AbsaCsvParser extends CsvBankStatementParser {
     if (headerLine == null) {
       return false;
     }
-    String upper = headerLine.toUpperCase();
+    String upper = headerLine.toUpperCase(Locale.ROOT);
     return upper.contains("ABSA");
   }
 

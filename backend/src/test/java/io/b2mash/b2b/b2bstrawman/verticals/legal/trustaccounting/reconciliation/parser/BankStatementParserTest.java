@@ -122,6 +122,34 @@ class BankStatementParserTest {
   }
 
   @Test
+  void absaParser_parsesAbsaStatementCorrectly() throws IOException {
+    var result = absaParser.parse(fixtureStream("absa-sample.csv"));
+
+    assertThat(result.periodStart()).isEqualTo(LocalDate.of(2026, 3, 1));
+    assertThat(result.periodEnd()).isEqualTo(LocalDate.of(2026, 3, 31));
+    assertThat(result.lines()).hasSize(9);
+
+    // Verify first data line (opening balance)
+    var firstLine = result.lines().getFirst();
+    assertThat(firstLine.date()).isEqualTo(LocalDate.of(2026, 3, 1));
+    assertThat(firstLine.description()).isEqualTo("Opening Balance");
+    assertThat(firstLine.amount()).isEqualByComparingTo(BigDecimal.ZERO);
+    assertThat(firstLine.runningBalance()).isEqualByComparingTo(new BigDecimal("95000.00"));
+
+    // Verify a credit line
+    var depositLine = result.lines().get(1);
+    assertThat(depositLine.date()).isEqualTo(LocalDate.of(2026, 3, 4));
+    assertThat(depositLine.description()).isEqualTo("Deposit from Willemse Inc");
+    assertThat(depositLine.reference()).isEqualTo("WIL-DEP-001");
+    assertThat(depositLine.amount()).isEqualByComparingTo(new BigDecimal("18000.00"));
+
+    // Verify a debit line
+    var sheriffLine = result.lines().get(2);
+    assertThat(sheriffLine.amount()).isEqualByComparingTo(new BigDecimal("-4200.00"));
+    assertThat(sheriffLine.reference()).isEqualTo("SHF-789");
+  }
+
+  @Test
   void genericParser_worksAsFallback() throws IOException {
     var result = genericParser.parse(fixtureStream("generic-sample.csv"));
 

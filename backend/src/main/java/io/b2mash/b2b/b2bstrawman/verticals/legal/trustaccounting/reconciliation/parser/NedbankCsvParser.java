@@ -18,7 +18,7 @@ public class NedbankCsvParser extends CsvBankStatementParser {
     if (headerLine == null) {
       return false;
     }
-    return headerLine.toUpperCase().contains("NEDBANK");
+    return headerLine.toUpperCase(Locale.ROOT).contains("NEDBANK");
   }
 
   @Override

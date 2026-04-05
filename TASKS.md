@@ -507,7 +507,7 @@
 | 446 | Trust Investments | Backend | 441 | M | 446A, 446B | **Done** (PRs #939, #940) |
 | 447 | Trust Reports (Section 35) + Event/Notification Handlers | Backend | 442, 444, 445, 446 | M | 447A, 447B | **Done** (PRs #941, #942) |
 | 448 | Frontend: Trust Dashboard + Transaction Entry + Approval UX | Frontend | 442 | L | 448A, 448B | **Done** (PRs #944, #945) |
-| 449 | Frontend: Client Ledger + Reconciliation Split-Pane | Frontend | 442, 444 | L | 449A, 449B | In progress (449A done, PR #947) |
+| 449 | Frontend: Client Ledger + Reconciliation Split-Pane | Frontend | 442, 444 | L | 449A, 449B | **Done** (PRs #947, #948) |
 | 450 | Frontend: Interest + Investments + Reports Pages | Frontend | 445, 446, 447 | M | 450A, 450B | |
 | 451 | Frontend: Matter/Customer Trust Tabs + Settings + Sidebar + Coexistence Tests | Frontend | 448, 449, 450 | M | 451A, 451B | |
 | **Phase 61 — Legal Compliance Refinements: Section 86 Investment Distinction & KYC Verification** | | | | | | See [tasks/phase61-legal-compliance-refinements.md](tasks/phase61-legal-compliance-refinements.md) |

@@ -41,7 +41,7 @@ Phase 60 replaces the `trust_accounting` module stub (registered in Phase 49) wi
 | 446 | Trust Investments | Backend | 441 | M | 446A, 446B | **Done** (PRs #939, #940) |
 | 447 | Trust Reports (Section 35) + Event/Notification Handlers | Backend | 442, 444, 445, 446 | M | 447A, 447B | **Done** (PRs #941, #942) |
 | 448 | Frontend: Trust Dashboard + Transaction Entry + Approval UX | Frontend | 442 | L | 448A, 448B | **Done** (PRs #944, #945) |
-| 449 | Frontend: Client Ledger + Reconciliation Split-Pane | Frontend | 442, 444 | L | 449A, 449B | In progress (449A done) |
+| 449 | Frontend: Client Ledger + Reconciliation Split-Pane | Frontend | 442, 444 | L | 449A, 449B | **Done** (PRs #947, #948) |
 | 450 | Frontend: Interest + Investments + Reports Pages | Frontend | 445, 446, 447 | M | 450A, 450B | Not started |
 | 451 | Frontend: Matter/Customer Trust Tabs + Settings + Sidebar + Coexistence Tests | Frontend | 448, 449, 450 | M | 451A, 451B | Not started |
 
@@ -272,7 +272,7 @@ FRONTEND CORE                           FRONTEND ADVANCED
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 9a (parallel) | 449 | 449A | Client ledger list page (`/trust-accounting/client-ledgers`): ledger card table, detail view with transaction history, running balance column, "Print Statement" button. Types, schemas, actions. Frontend tests (~4). Frontend only. | **Done** (PR #947) |
-| 9b (parallel) | 449 | 449B | Reconciliation page (`/trust-accounting/reconciliation`): reconciliation list, new reconciliation flow, `BankStatementUpload` component, `ReconciliationSplitPane` (bank lines left / unmatched transactions right), match/exclude actions, three-way check indicator, "Complete Reconciliation" button. Frontend tests (~5). Frontend only. | Not started |
+| 9b (parallel) | 449 | 449B | Reconciliation page (`/trust-accounting/reconciliation`): reconciliation list, new reconciliation flow, `BankStatementUpload` component, `ReconciliationSplitPane` (bank lines left / unmatched transactions right), match/exclude actions, three-way check indicator, "Complete Reconciliation" button. Frontend tests (~5). Frontend only. | **Done** (PR #948) |
 
 ### Stage 10: Frontend Interest + Investments + Reports (parallel)
 
@@ -1008,7 +1008,7 @@ Stage 11: [451A] -> [451B]                                                <- int
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **449A** | 449.1--449.5 | Client ledger list page + detail view + transaction history + running balance + statement generation. Frontend tests (~4). Frontend only. | **Done** (PR #947) |
-| **449B** | 449.6--449.11 | Reconciliation page + bank statement upload + split-pane matching interface + three-way check + completion flow. Frontend tests (~5). Frontend only. | Not started |
+| **449B** | 449.6--449.11 | Reconciliation page + bank statement upload + split-pane matching interface + three-way check + completion flow. Frontend tests (~5). Frontend only. | **Done** (PR #948) |
 
 ### Tasks
 

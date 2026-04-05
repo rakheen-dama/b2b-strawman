@@ -38,3 +38,20 @@ export type {
   CreatePrescriptionTrackerFormData,
   InterruptPrescriptionFormData,
 } from "./legal";
+
+export {
+  createTrustAccountSchema,
+  recordDepositSchema,
+  recordPaymentSchema,
+  recordTransferSchema,
+  recordFeeTransferSchema,
+  recordRefundSchema,
+} from "./trust";
+export type {
+  CreateTrustAccountFormData,
+  RecordDepositFormData,
+  RecordPaymentFormData,
+  RecordTransferFormData,
+  RecordFeeTransferFormData,
+  RecordRefundFormData,
+} from "./trust";

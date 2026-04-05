@@ -13,6 +13,7 @@ export const CAPABILITIES = {
   CUSTOMER_MANAGEMENT: "CUSTOMER_MANAGEMENT",
   AUTOMATIONS: "AUTOMATIONS",
   RESOURCE_PLANNING: "RESOURCE_PLANNING",
+  VIEW_TRUST: "VIEW_TRUST",
 } as const;
 
 /** Capability metadata — single source of truth for labels, descriptions, and enum values. */
@@ -54,6 +55,12 @@ export const CAPABILITY_META = [
     label: "Resource Planning",
     description:
       "View and manage resource allocation and capacity planning",
+  },
+  {
+    value: CAPABILITIES.VIEW_TRUST,
+    label: "View Trust",
+    description:
+      "View trust account balances, transactions, and client ledgers",
   },
 ] as const;
 

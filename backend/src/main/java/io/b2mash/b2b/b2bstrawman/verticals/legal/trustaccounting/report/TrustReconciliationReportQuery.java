@@ -36,7 +36,6 @@ public class TrustReconciliationReportQuery implements ReportQuery {
 
   @Override
   public ReportResult executeAll(Map<String, Object> parameters) {
-    var trustAccountId = ReportParamUtils.parseUuid(parameters, "trust_account_id");
     var reconciliationId = ReportParamUtils.parseUuid(parameters, "reconciliation_id");
 
     TrustReconciliation recon;
@@ -47,6 +46,7 @@ public class TrustReconciliationReportQuery implements ReportQuery {
               .orElseThrow(
                   () -> new ResourceNotFoundException("TrustReconciliation", reconciliationId));
     } else {
+      var trustAccountId = ReportParamUtils.requireUuid(parameters, "trust_account_id");
       var allRecons =
           reconciliationRepository.findByTrustAccountIdOrderByPeriodEndDesc(trustAccountId);
       if (allRecons.isEmpty()) {

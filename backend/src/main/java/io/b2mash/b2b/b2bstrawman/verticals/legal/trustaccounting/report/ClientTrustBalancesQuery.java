@@ -5,6 +5,7 @@ import io.b2mash.b2b.b2bstrawman.reporting.ReportQuery;
 import io.b2mash.b2b.b2bstrawman.reporting.ReportResult;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -19,11 +20,15 @@ public class ClientTrustBalancesQuery implements ReportQuery {
 
   private final ClientLedgerCardRepository ledgerCardRepository;
   private final CustomerRepository customerRepository;
+  private final TrustTransactionRepository transactionRepository;
 
   public ClientTrustBalancesQuery(
-      ClientLedgerCardRepository ledgerCardRepository, CustomerRepository customerRepository) {
+      ClientLedgerCardRepository ledgerCardRepository,
+      CustomerRepository customerRepository,
+      TrustTransactionRepository transactionRepository) {
     this.ledgerCardRepository = ledgerCardRepository;
     this.customerRepository = customerRepository;
+    this.transactionRepository = transactionRepository;
   }
 
   @Override
@@ -53,7 +58,8 @@ public class ClientTrustBalancesQuery implements ReportQuery {
   }
 
   private List<Map<String, Object>> queryRows(Map<String, Object> parameters) {
-    var trustAccountId = ReportParamUtils.parseUuid(parameters, "trust_account_id");
+    var trustAccountId = ReportParamUtils.requireUuid(parameters, "trust_account_id");
+    var asOfDate = ReportParamUtils.parseDate(parameters, "asOfDate");
 
     // Fetch all ledger cards for this trust account
     var ledgerCards =
@@ -73,7 +79,15 @@ public class ClientTrustBalancesQuery implements ReportQuery {
               row.put(
                   "clientName", customerNames.getOrDefault(card.getCustomerId(), "Unknown Client"));
               row.put("customerId", card.getCustomerId());
-              row.put("balance", card.getBalance());
+
+              // When asOfDate is provided, compute historical balance from transactions
+              BigDecimal balance =
+                  asOfDate != null
+                      ? transactionRepository.calculateClientBalanceAsOfDate(
+                          card.getCustomerId(), trustAccountId, asOfDate)
+                      : card.getBalance();
+              row.put("balance", balance);
+
               row.put("totalDeposits", card.getTotalDeposits());
               row.put("totalPayments", card.getTotalPayments());
               row.put("totalFeeTransfers", card.getTotalFeeTransfers());
@@ -83,6 +97,7 @@ public class ClientTrustBalancesQuery implements ReportQuery {
                   card.getLastTransactionDate() != null
                       ? card.getLastTransactionDate().toString()
                       : null);
+              row.put("asOfDate", asOfDate != null ? asOfDate.toString() : null);
               return (Map<String, Object>) row;
             })
         .toList();

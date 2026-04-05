@@ -22,7 +22,6 @@ public class Section35DataPackQuery implements ReportQuery {
 
   private final TrustReceiptsPaymentsQuery receiptsPaymentsQuery;
   private final ClientTrustBalancesQuery clientBalancesQuery;
-  private final ClientLedgerStatementQuery ledgerStatementQuery;
   private final TrustReconciliationReportQuery reconciliationQuery;
   private final InvestmentRegisterQuery investmentRegisterQuery;
   private final InterestAllocationReportQuery interestAllocationQuery;
@@ -32,7 +31,6 @@ public class Section35DataPackQuery implements ReportQuery {
   public Section35DataPackQuery(
       TrustReceiptsPaymentsQuery receiptsPaymentsQuery,
       ClientTrustBalancesQuery clientBalancesQuery,
-      ClientLedgerStatementQuery ledgerStatementQuery,
       TrustReconciliationReportQuery reconciliationQuery,
       InvestmentRegisterQuery investmentRegisterQuery,
       InterestAllocationReportQuery interestAllocationQuery,
@@ -40,7 +38,6 @@ public class Section35DataPackQuery implements ReportQuery {
       TrustReconciliationRepository reconciliationRepository) {
     this.receiptsPaymentsQuery = receiptsPaymentsQuery;
     this.clientBalancesQuery = clientBalancesQuery;
-    this.ledgerStatementQuery = ledgerStatementQuery;
     this.reconciliationQuery = reconciliationQuery;
     this.investmentRegisterQuery = investmentRegisterQuery;
     this.interestAllocationQuery = interestAllocationQuery;
@@ -60,8 +57,8 @@ public class Section35DataPackQuery implements ReportQuery {
 
   @Override
   public ReportResult executeAll(Map<String, Object> parameters) {
-    var trustAccountId = ReportParamUtils.parseUuid(parameters, "trust_account_id");
-    var financialYearEnd = ReportParamUtils.parseDate(parameters, "financial_year_end");
+    var trustAccountId = ReportParamUtils.requireUuid(parameters, "trust_account_id");
+    var financialYearEnd = ReportParamUtils.requireDate(parameters, "financial_year_end");
     var financialYearStart = financialYearEnd.minusYears(1).plusDays(1);
 
     var allRows = new ArrayList<Map<String, Object>>();
@@ -83,10 +80,8 @@ public class Section35DataPackQuery implements ReportQuery {
     var cbResult = clientBalancesQuery.executeAll(cbParams);
     addSection(allRows, sectionSummaries, "Client Trust Balances", cbResult);
 
-    // Section 3: Trust Reconciliation (latest)
-    var trParams = Map.<String, Object>of("trust_account_id", trustAccountId);
-    var reconResult = reconciliationQuery.executeAll(trParams);
-    addSection(allRows, sectionSummaries, "Trust Reconciliation", reconResult);
+    // Section 3: Trust Reconciliation (latest on or before year-end)
+    assembleReconciliationSection(trustAccountId, financialYearEnd, allRows, sectionSummaries);
 
     // Section 4: Investment Register
     var irParams = Map.<String, Object>of("trust_account_id", trustAccountId);
@@ -97,11 +92,17 @@ public class Section35DataPackQuery implements ReportQuery {
     assembleInterestAllocationSection(
         trustAccountId, financialYearStart, financialYearEnd, allRows, sectionSummaries);
 
-    // Section 6: Client Ledger Statement is skipped in composite (requires per-client params).
-    // Instead, we include summary metadata.
+    // Section 6: Client Ledger Statements are per-client reports that cannot be included
+    // in a composite pack without a customer_id. They are available individually via the
+    // client-ledger-statement report slug with trust_account_id + customer_id parameters.
     var ledgerMeta = new LinkedHashMap<String, Object>();
     ledgerMeta.put("sectionName", "Client Ledger Statements");
-    ledgerMeta.put("note", "Per-client ledger statements available individually");
+    ledgerMeta.put("status", "AVAILABLE_INDIVIDUALLY");
+    ledgerMeta.put(
+        "note",
+        "Per-client ledger statements must be generated individually using the "
+            + "'client-ledger-statement' report with customer_id parameter");
+    ledgerMeta.put("reportSlug", "client-ledger-statement");
     ledgerMeta.put("rowCount", 0);
     sectionSummaries.add(ledgerMeta);
 
@@ -118,6 +119,35 @@ public class Section35DataPackQuery implements ReportQuery {
     }
 
     return new ReportResult(allRows, summary);
+  }
+
+  private void assembleReconciliationSection(
+      java.util.UUID trustAccountId,
+      LocalDate financialYearEnd,
+      List<Map<String, Object>> allRows,
+      List<Map<String, Object>> sectionSummaries) {
+
+    // Find the latest reconciliation on or before the financial year end
+    var allRecons =
+        reconciliationRepository.findByTrustAccountIdOrderByPeriodEndDesc(trustAccountId);
+    var yearEndRecon =
+        allRecons.stream().filter(r -> !r.getPeriodEnd().isAfter(financialYearEnd)).findFirst();
+
+    if (yearEndRecon.isEmpty()) {
+      var meta = new LinkedHashMap<String, Object>();
+      meta.put("sectionName", "Trust Reconciliation");
+      meta.put("note", "No reconciliation found on or before financial year end");
+      meta.put("rowCount", 0);
+      sectionSummaries.add(meta);
+      return;
+    }
+
+    // Use the specific reconciliation ID to avoid fetching the absolute latest
+    var trParams = new HashMap<String, Object>();
+    trParams.put("trust_account_id", trustAccountId);
+    trParams.put("reconciliation_id", yearEndRecon.get().getId());
+    var reconResult = reconciliationQuery.executeAll(trParams);
+    addSection(allRows, sectionSummaries, "Trust Reconciliation", reconResult);
   }
 
   private void assembleInterestAllocationSection(

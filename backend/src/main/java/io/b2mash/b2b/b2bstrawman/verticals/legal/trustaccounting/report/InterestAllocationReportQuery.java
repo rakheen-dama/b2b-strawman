@@ -59,7 +59,7 @@ public class InterestAllocationReportQuery implements ReportQuery {
   }
 
   private List<Map<String, Object>> queryRows(Map<String, Object> parameters) {
-    var interestRunId = ReportParamUtils.parseUuid(parameters, "interest_run_id");
+    var interestRunId = ReportParamUtils.requireUuid(parameters, "interest_run_id");
 
     // Verify the interest run exists
     interestRunRepository

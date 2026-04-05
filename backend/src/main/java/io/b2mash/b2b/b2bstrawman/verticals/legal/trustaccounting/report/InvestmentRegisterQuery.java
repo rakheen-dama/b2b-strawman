@@ -53,7 +53,7 @@ public class InvestmentRegisterQuery implements ReportQuery {
   }
 
   private List<Map<String, Object>> queryRows(Map<String, Object> parameters) {
-    var trustAccountId = ReportParamUtils.parseUuid(parameters, "trust_account_id");
+    var trustAccountId = ReportParamUtils.requireUuid(parameters, "trust_account_id");
     var statusFilter = ReportParamUtils.parseString(parameters, "status");
 
     var investments =
@@ -88,7 +88,9 @@ public class InvestmentRegisterQuery implements ReportQuery {
               row.put(
                   "maturityDate",
                   inv.getMaturityDate() != null ? inv.getMaturityDate().toString() : null);
-              row.put("interestEarned", inv.getInterestEarned());
+              row.put(
+                  "interestEarned",
+                  inv.getInterestEarned() != null ? inv.getInterestEarned() : BigDecimal.ZERO);
               row.put("status", inv.getStatus());
               return (Map<String, Object>) row;
             })

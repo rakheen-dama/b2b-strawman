@@ -56,23 +56,13 @@ public class TrustReceiptsPaymentsQuery implements ReportQuery {
   }
 
   private List<Map<String, Object>> queryRows(Map<String, Object> parameters) {
-    var trustAccountId = ReportParamUtils.parseUuid(parameters, "trust_account_id");
-    var dateFrom = ReportParamUtils.parseDate(parameters, "dateFrom");
-    var dateTo = ReportParamUtils.parseDate(parameters, "dateTo");
+    var trustAccountId = ReportParamUtils.requireUuid(parameters, "trust_account_id");
+    var dateFrom = ReportParamUtils.requireDate(parameters, "dateFrom");
+    var dateTo = ReportParamUtils.requireDate(parameters, "dateTo");
 
-    // Fetch all transactions for the trust account in the date range using the paginated query
+    // Query transactions filtered by date range and status at database level
     var transactions =
-        transactionRepository
-            .findByTrustAccountIdOrderByTransactionDateDesc(trustAccountId, Pageable.unpaged())
-            .getContent()
-            .stream()
-            .filter(
-                t ->
-                    List.of("RECORDED", "APPROVED").contains(t.getStatus())
-                        && !"REVERSAL".equals(t.getTransactionType())
-                        && !t.getTransactionDate().isBefore(dateFrom)
-                        && !t.getTransactionDate().isAfter(dateTo))
-            .toList();
+        transactionRepository.findForReceiptsPayments(trustAccountId, dateFrom, dateTo);
 
     // Batch-load customer names
     var customerIds =

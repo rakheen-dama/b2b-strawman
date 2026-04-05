@@ -27,30 +27,34 @@ public class ClientLedgerStatementQuery implements ReportQuery {
 
   @Override
   public ReportResult execute(Map<String, Object> parameters, Pageable pageable) {
-    var allRows = queryRows(parameters);
-    var summary = computeSummary(allRows, parameters);
+    var queryResult = buildRowsAndBalances(parameters);
+    var summary = computeSummary(queryResult);
 
     int offset = (int) pageable.getOffset();
     int size = pageable.getPageSize();
-    int total = allRows.size();
+    int total = queryResult.rows.size();
     int totalPages = (total + size - 1) / size;
 
-    var pagedRows = allRows.subList(Math.min(offset, total), Math.min(offset + size, total));
+    var pagedRows =
+        queryResult.rows.subList(Math.min(offset, total), Math.min(offset + size, total));
     return new ReportResult(pagedRows, summary, total, totalPages);
   }
 
   @Override
   public ReportResult executeAll(Map<String, Object> parameters) {
-    var allRows = queryRows(parameters);
-    var summary = computeSummary(allRows, parameters);
-    return new ReportResult(allRows, summary);
+    var queryResult = buildRowsAndBalances(parameters);
+    var summary = computeSummary(queryResult);
+    return new ReportResult(queryResult.rows, summary);
   }
 
-  private List<Map<String, Object>> queryRows(Map<String, Object> parameters) {
-    var trustAccountId = ReportParamUtils.parseUuid(parameters, "trust_account_id");
-    var customerId = ReportParamUtils.parseUuid(parameters, "customer_id");
-    var dateFrom = ReportParamUtils.parseDate(parameters, "dateFrom");
-    var dateTo = ReportParamUtils.parseDate(parameters, "dateTo");
+  private record QueryResult(
+      List<Map<String, Object>> rows, BigDecimal openingBalance, BigDecimal closingBalance) {}
+
+  private QueryResult buildRowsAndBalances(Map<String, Object> parameters) {
+    var trustAccountId = ReportParamUtils.requireUuid(parameters, "trust_account_id");
+    var customerId = ReportParamUtils.requireUuid(parameters, "customer_id");
+    var dateFrom = ReportParamUtils.requireDate(parameters, "dateFrom");
+    var dateTo = ReportParamUtils.requireDate(parameters, "dateTo");
 
     // Calculate opening balance (all transactions before dateFrom)
     var openingBalance =
@@ -85,39 +89,29 @@ public class ClientLedgerStatementQuery implements ReportQuery {
       rows.add(row);
     }
 
-    return rows;
+    // Closing balance is the final running balance after all transactions
+    return new QueryResult(rows, openingBalance, runningBalance);
   }
 
   private boolean isCreditType(String type) {
     return List.of("DEPOSIT", "TRANSFER_IN", "INTEREST_CREDIT").contains(type);
   }
 
-  private Map<String, Object> computeSummary(
-      List<Map<String, Object>> rows, Map<String, Object> parameters) {
+  private Map<String, Object> computeSummary(QueryResult queryResult) {
     var summary = new LinkedHashMap<String, Object>();
-    var trustAccountId = ReportParamUtils.parseUuid(parameters, "trust_account_id");
-    var customerId = ReportParamUtils.parseUuid(parameters, "customer_id");
-    var dateFrom = ReportParamUtils.parseDate(parameters, "dateFrom");
-    var dateTo = ReportParamUtils.parseDate(parameters, "dateTo");
-
-    var openingBalance =
-        transactionRepository.calculateClientBalanceAsOfDate(
-            customerId, trustAccountId, dateFrom.minusDays(1));
-    var closingBalance =
-        transactionRepository.calculateClientBalanceAsOfDate(customerId, trustAccountId, dateTo);
 
     BigDecimal totalDebits = BigDecimal.ZERO;
     BigDecimal totalCredits = BigDecimal.ZERO;
-    for (var row : rows) {
+    for (var row : queryResult.rows) {
       totalDebits = totalDebits.add((BigDecimal) row.get("debit"));
       totalCredits = totalCredits.add((BigDecimal) row.get("credit"));
     }
 
-    summary.put("openingBalance", openingBalance);
-    summary.put("closingBalance", closingBalance);
+    summary.put("openingBalance", queryResult.openingBalance);
+    summary.put("closingBalance", queryResult.closingBalance);
     summary.put("totalDebits", totalDebits);
     summary.put("totalCredits", totalCredits);
-    summary.put("transactionCount", rows.size());
+    summary.put("transactionCount", queryResult.rows.size());
     return summary;
   }
 }

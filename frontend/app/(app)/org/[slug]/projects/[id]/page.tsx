@@ -46,6 +46,7 @@ import { ArchivedProjectBanner } from "@/components/projects/archived-project-ba
 import { ProjectStaffingTab } from "@/components/capacity/project-staffing-tab";
 import { ProjectCourtDatesTab } from "@/components/legal/project-court-dates-tab";
 import { ProjectAdversePartiesTab } from "@/components/legal/project-adverse-parties-tab";
+import { TrustBalanceCard } from "@/components/trust/TrustBalanceCard";
 import { TerminologyText } from "@/components/terminology-text";
 import { getProjectStaffing, type ProjectStaffingResponse } from "@/lib/api/capacity";
 import { getCurrentMonday, formatDate as formatDateUtil, addWeeks } from "@/lib/date-utils";
@@ -747,6 +748,16 @@ export default async function ProjectDetailPage({
         }
         adversePartiesPanel={
           <ProjectAdversePartiesTab projectId={id} slug={slug} />
+        }
+        trustPanel={
+          customers.length > 0 ? (
+            <TrustBalanceCard
+              customerId={customers[0].id}
+              projectId={id}
+              slug={slug}
+              showQuickActions={canManage}
+            />
+          ) : undefined
         }
         activityPanel={
           <ActivityFeed projectId={id} orgSlug={slug} />

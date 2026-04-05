@@ -443,6 +443,12 @@ export const SETTINGS_ITEMS: SettingsItem[] = [
     description: "Connect third-party tools and services",
     href: (slug) => `/org/${slug}/settings/integrations`,
   },
+  {
+    title: "Trust Accounting",
+    description: "Manage trust accounts, approval settings, and LPFF rates",
+    href: (slug) => `/org/${slug}/settings/trust-accounting`,
+    adminOnly: true,
+  },
 ];
 
 /**

@@ -93,8 +93,8 @@ describe("NAV_ITEMS (backward compat)", () => {
 });
 
 describe("SETTINGS_ITEMS", () => {
-  it("has exactly 24 entries", () => {
-    expect(SETTINGS_ITEMS).toHaveLength(24);
+  it("has exactly 25 entries", () => {
+    expect(SETTINGS_ITEMS).toHaveLength(25);
   });
 
   it("all entries have title, description, and href function", () => {
@@ -113,6 +113,7 @@ describe("SETTINGS_ITEMS", () => {
       "Batch Billing",
       "Email",
       "Roles & Permissions",
+      "Trust Accounting",
     ]);
   });
 

@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { Tabs as TabsPrimitive } from "radix-ui";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
+import { useOrgProfile } from "@/lib/org-profile";
 
 interface CustomerTabsProps {
   projectsPanel: ReactNode;
@@ -16,9 +17,10 @@ interface CustomerTabsProps {
   requestsPanel?: ReactNode;
   generatedPanel?: ReactNode;
   onboardingPanel?: ReactNode;
+  trustPanel?: ReactNode;
 }
 
-type TabId = "projects" | "documents" | "onboarding" | "rates" | "financials" | "invoices" | "retainer" | "requests" | "generated";
+type TabId = "projects" | "documents" | "onboarding" | "rates" | "financials" | "invoices" | "retainer" | "requests" | "generated" | "trust";
 
 interface TabDef {
   id: TabId;
@@ -35,9 +37,10 @@ const baseTabs: TabDef[] = [
   { id: "rates", label: "Rates" },
   { id: "generated", label: "Generated Docs" },
   { id: "financials", label: "Financials" },
+  { id: "trust", label: "Trust" },
 ];
 
-const validTabIds = new Set<string>(["projects", "documents", "onboarding", "invoices", "retainer", "requests", "rates", "generated", "financials"]);
+const validTabIds = new Set<string>(["projects", "documents", "onboarding", "invoices", "retainer", "requests", "rates", "generated", "financials", "trust"]);
 
 export function CustomerTabs({
   projectsPanel,
@@ -49,14 +52,19 @@ export function CustomerTabs({
   requestsPanel,
   generatedPanel,
   onboardingPanel,
+  trustPanel,
 }: CustomerTabsProps) {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab");
   const urlTab = tabParam && validTabIds.has(tabParam) ? (tabParam as TabId) : null;
   const [userTab, setUserTab] = useState<TabId | null>(null);
+  const { isModuleEnabled } = useOrgProfile();
 
   // URL param takes precedence, then user's manual selection, then default
   const activeTab = urlTab ?? userTab ?? "projects";
+
+  // Module-gated tabs
+  const showTrust = !!trustPanel && isModuleEnabled("trust_accounting");
 
   const tabs = useMemo(() => {
     return baseTabs.filter((t) => {
@@ -67,9 +75,10 @@ export function CustomerTabs({
       if (t.id === "rates" && !ratesPanel) return false;
       if (t.id === "generated" && !generatedPanel) return false;
       if (t.id === "financials" && !financialsPanel) return false;
+      if (t.id === "trust" && !showTrust) return false;
       return true;
     });
-  }, [onboardingPanel, invoicesPanel, retainerPanel, requestsPanel, ratesPanel, financialsPanel, generatedPanel]);
+  }, [onboardingPanel, invoicesPanel, retainerPanel, requestsPanel, ratesPanel, financialsPanel, generatedPanel, showTrust]);
 
   return (
     <TabsPrimitive.Root value={activeTab} onValueChange={(v) => setUserTab(v as TabId)}>
@@ -137,6 +146,11 @@ export function CustomerTabs({
       {financialsPanel && (
         <TabsPrimitive.Content value="financials" className="pt-6 outline-none">
           {financialsPanel}
+        </TabsPrimitive.Content>
+      )}
+      {showTrust && (
+        <TabsPrimitive.Content value="trust" className="pt-6 outline-none">
+          {trustPanel}
         </TabsPrimitive.Content>
       )}
     </TabsPrimitive.Root>

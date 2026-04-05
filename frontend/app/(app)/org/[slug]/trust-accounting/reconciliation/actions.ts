@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { api } from "@/lib/api";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import type {
   BankStatement,
   TrustReconciliation,
@@ -14,6 +15,17 @@ import type {
 interface ActionResult {
   success: boolean;
   error?: string;
+}
+
+// ── Capability guard ──────────────────────────────────────────────
+
+async function requireManageTrust(): Promise<void> {
+  const caps = await fetchMyCapabilities();
+  const canManage =
+    caps.isAdmin || caps.isOwner || caps.capabilities.includes("MANAGE_TRUST");
+  if (!canManage) {
+    throw new Error("Forbidden: MANAGE_TRUST capability required");
+  }
 }
 
 // ── Bank Statement actions ─────────────────────────────────────────
@@ -36,15 +48,20 @@ export async function uploadBankStatement(
   accountId: string,
   formData: FormData,
 ): Promise<BankStatement> {
-  return api.post<BankStatement>(
+  await requireManageTrust();
+  const result = await api.post<BankStatement>(
     `/api/trust-accounts/${accountId}/bank-statements`,
     formData,
   );
+  // Strip internal S3 key before returning to client
+  const { fileKey: _, ...safe } = result;
+  return safe as BankStatement;
 }
 
 // ── Matching actions ───────────────────────────────────────────────
 
 export async function autoMatch(statementId: string): Promise<MatchResult> {
+  await requireManageTrust();
   return api.post<MatchResult>(
     `/api/bank-statements/${statementId}/auto-match`,
   );
@@ -55,6 +72,7 @@ export async function manualMatch(
   transactionId: string,
 ): Promise<ActionResult> {
   try {
+    await requireManageTrust();
     await api.post(`/api/bank-statement-lines/${lineId}/match`, {
       transactionId,
     });
@@ -71,6 +89,7 @@ export async function manualMatch(
 
 export async function unmatch(lineId: string): Promise<ActionResult> {
   try {
+    await requireManageTrust();
     await api.post(`/api/bank-statement-lines/${lineId}/unmatch`);
     revalidatePath("/", "layout");
     return { success: true };
@@ -88,6 +107,7 @@ export async function excludeLine(
   reason: string,
 ): Promise<ActionResult> {
   try {
+    await requireManageTrust();
     await api.post(`/api/bank-statement-lines/${lineId}/exclude`, { reason });
     revalidatePath("/", "layout");
     return { success: true };
@@ -123,6 +143,7 @@ export async function createReconciliation(
   periodEnd: string,
   bankStatementId: string,
 ): Promise<TrustReconciliation> {
+  await requireManageTrust();
   return api.post<TrustReconciliation>(
     `/api/trust-accounts/${accountId}/reconciliations`,
     { periodEnd, bankStatementId },
@@ -141,6 +162,7 @@ export async function completeReconciliation(
   reconciliationId: string,
 ): Promise<ActionResult> {
   try {
+    await requireManageTrust();
     await api.post(
       `/api/trust-reconciliations/${reconciliationId}/complete`,
     );
@@ -159,10 +181,33 @@ export async function completeReconciliation(
 
 // ── Unmatched transactions (for split-pane) ────────────────────────
 
+interface PaginatedTransactions {
+  content: TrustTransaction[];
+  page: {
+    totalElements: number;
+    totalPages: number;
+    size: number;
+    number: number;
+  };
+}
+
+export interface UnmatchedTransactionsResult {
+  transactions: TrustTransaction[];
+  totalElements: number;
+  truncated: boolean;
+}
+
+const UNMATCHED_PAGE_SIZE = 500;
+
 export async function fetchUnmatchedTransactions(
   accountId: string,
-): Promise<TrustTransaction[]> {
-  return api.get<TrustTransaction[]>(
-    `/api/trust-accounts/${accountId}/transactions?status=APPROVED&unmatched=true&size=500`,
+): Promise<UnmatchedTransactionsResult> {
+  const result = await api.get<PaginatedTransactions>(
+    `/api/trust-accounts/${accountId}/transactions?status=APPROVED&unmatched=true&size=${UNMATCHED_PAGE_SIZE}`,
   );
+  return {
+    transactions: result.content,
+    totalElements: result.page.totalElements,
+    truncated: result.page.totalElements > UNMATCHED_PAGE_SIZE,
+  };
 }

@@ -58,14 +58,14 @@ export function BankStatementUpload({
           <input
             ref={fileInputRef}
             type="file"
-            accept=".csv"
+            accept=".csv,.ofx"
             onChange={handleFileChange}
             className="absolute inset-0 cursor-pointer opacity-0"
             data-testid="file-input"
           />
           <Button type="button" variant="outline" className="pointer-events-none">
             <FileText className="mr-1.5 size-4" />
-            {file ? file.name : "Choose CSV file"}
+            {file ? file.name : "Choose CSV or OFX file"}
           </Button>
         </div>
 

@@ -304,7 +304,6 @@ describe("Trust Reconciliation", () => {
     render(
       <ReconciliationSplitPane
         reconciliationId="rec-1"
-        accountId="acc-1"
         bankStatementLines={mockBankLines}
         unmatchedTransactions={mockTransactions}
         reconciliation={mockReconciliation}
@@ -331,7 +330,6 @@ describe("Trust Reconciliation", () => {
     render(
       <ReconciliationSplitPane
         reconciliationId="rec-1"
-        accountId="acc-1"
         bankStatementLines={mockBankLines}
         unmatchedTransactions={mockTransactions}
         reconciliation={mockReconciliation}
@@ -363,7 +361,6 @@ describe("Trust Reconciliation", () => {
     render(
       <ReconciliationSplitPane
         reconciliationId="rec-1"
-        accountId="acc-1"
         bankStatementLines={mockBankLines}
         unmatchedTransactions={mockTransactions}
         reconciliation={unbalancedRec}

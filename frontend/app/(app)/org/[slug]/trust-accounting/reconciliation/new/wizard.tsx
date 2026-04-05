@@ -16,6 +16,7 @@ import {
   calculateReconciliation,
   fetchUnmatchedTransactions,
 } from "@/app/(app)/org/[slug]/trust-accounting/reconciliation/actions";
+import type { UnmatchedTransactionsResult } from "@/app/(app)/org/[slug]/trust-accounting/reconciliation/actions";
 import type {
   TrustAccount,
   BankStatement,
@@ -65,6 +66,8 @@ export function ReconciliationWizard({
     useState<TrustReconciliation | null>(null);
   const [bankLines, setBankLines] = useState<BankStatementLine[]>([]);
   const [unmatchedTxns, setUnmatchedTxns] = useState<TrustTransaction[]>([]);
+  const [unmatchedTruncated, setUnmatchedTruncated] = useState(false);
+  const [unmatchedTotal, setUnmatchedTotal] = useState(0);
   const [isCreating, setIsCreating] = useState(false);
 
   // Step 5 state
@@ -115,8 +118,10 @@ export function ReconciliationWizard({
       setBankLines(updatedStatement.lines ?? []);
 
       // Fetch unmatched transactions
-      const txns = await fetchUnmatchedTransactions(selectedAccountId);
-      setUnmatchedTxns(txns);
+      const unmatchedResult = await fetchUnmatchedTransactions(selectedAccountId);
+      setUnmatchedTxns(unmatchedResult.transactions);
+      setUnmatchedTruncated(unmatchedResult.truncated);
+      setUnmatchedTotal(unmatchedResult.totalElements);
 
       handleNext();
     } catch (err) {
@@ -263,7 +268,7 @@ export function ReconciliationWizard({
               <Button
                 onClick={handleAutoMatch}
                 disabled={isAutoMatching}
-                data-testid="next-btn"
+                data-testid="auto-match-btn"
               >
                 {isAutoMatching ? (
                   <>
@@ -293,7 +298,7 @@ export function ReconciliationWizard({
                   <Button
                     onClick={handleCreateAndReview}
                     disabled={isCreating}
-                    data-testid="next-btn"
+                    data-testid="review-matches-btn"
                   >
                     {isCreating ? (
                       <>
@@ -313,15 +318,21 @@ export function ReconciliationWizard({
 
       {/* Step 4 — Review (Split-Pane) */}
       {step === 3 && reconciliation && (
+        <>
+        {unmatchedTruncated && (
+          <p className="text-sm text-amber-600 dark:text-amber-400" data-testid="truncation-warning">
+            Showing {unmatchedTxns.length} of {unmatchedTotal} unmatched transactions. Some transactions may not appear below.
+          </p>
+        )}
         <ReconciliationSplitPane
           reconciliationId={reconciliation.id}
-          accountId={selectedAccountId}
           bankStatementLines={bankLines}
           unmatchedTransactions={unmatchedTxns}
           reconciliation={reconciliation}
           currency={currency}
           onComplete={handleComplete}
         />
+        </>
       )}
 
       {/* Step 5 — Complete */}

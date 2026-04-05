@@ -24,13 +24,14 @@ export default async function NewReconciliationPage({
     notFound();
   }
 
-  // Capability check
+  // Capability check — this is a write-operation page (create reconciliation,
+  // upload statements, auto-match, complete) so require MANAGE_TRUST
   const capData = await fetchMyCapabilities();
-  const hasViewTrust =
+  const canManageTrust =
     capData.isAdmin ||
     capData.isOwner ||
-    capData.capabilities.includes("VIEW_TRUST");
-  if (!hasViewTrust) {
+    capData.capabilities.includes("MANAGE_TRUST");
+  if (!canManageTrust) {
     notFound();
   }
 

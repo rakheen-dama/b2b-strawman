@@ -177,7 +177,8 @@ export interface BankStatement {
   periodEnd: string;
   openingBalance: number;
   closingBalance: number;
-  fileKey: string;
+  /** Internal S3 object key — backend-controlled, not used in client rendering */
+  fileKey?: string;
   fileName: string;
   format: "CSV" | "OFX";
   lineCount: number;

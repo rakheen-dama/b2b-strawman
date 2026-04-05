@@ -22,7 +22,6 @@ import type {
 
 interface ReconciliationSplitPaneProps {
   reconciliationId: string;
-  accountId: string;
   bankStatementLines: BankStatementLine[];
   unmatchedTransactions: TrustTransaction[];
   reconciliation: TrustReconciliation;
@@ -46,7 +45,6 @@ function getLineStatusClasses(status: BankStatementLine["matchStatus"]) {
 
 export function ReconciliationSplitPane({
   reconciliationId,
-  accountId: _accountId,
   bankStatementLines: initialLines,
   unmatchedTransactions: initialTransactions,
   reconciliation: initialReconciliation,
@@ -181,7 +179,8 @@ export function ReconciliationSplitPane({
 
   function isCandidateMatch(txn: TrustTransaction): boolean {
     if (!selectedLine) return false;
-    return txn.amount === Math.abs(selectedLine.amount);
+    // Use epsilon comparison to avoid IEEE 754 floating-point edge cases
+    return Math.abs(txn.amount - Math.abs(selectedLine.amount)) < 0.005;
   }
 
   return (

@@ -18,8 +18,12 @@ import { formatCurrency, formatLocalDate } from "@/lib/format";
 import type { TrustReconciliation } from "@/lib/types";
 
 function formatPeriod(periodEnd: string): string {
-  const date = new Date(periodEnd + "T00:00:00");
-  return date.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+  const date = new Date(periodEnd + "T00:00:00Z");
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  });
 }
 
 export default async function ReconciliationPage({

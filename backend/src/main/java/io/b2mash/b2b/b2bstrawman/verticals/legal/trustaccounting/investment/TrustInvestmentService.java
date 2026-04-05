@@ -20,6 +20,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -74,6 +75,7 @@ public class TrustInvestmentService {
       UUID id,
       UUID trustAccountId,
       UUID customerId,
+      String customerName,
       String institution,
       String accountNumber,
       BigDecimal principal,
@@ -106,9 +108,10 @@ public class TrustInvestmentService {
           "Invalid account state", "Trust account must be ACTIVE to place an investment");
     }
 
-    customerRepository
-        .findById(request.customerId())
-        .orElseThrow(() -> new ResourceNotFoundException("Customer", request.customerId()));
+    var customer =
+        customerRepository
+            .findById(request.customerId())
+            .orElseThrow(() -> new ResourceNotFoundException("Customer", request.customerId()));
 
     // Check client has sufficient balance
     var ledgerCard =
@@ -165,7 +168,7 @@ public class TrustInvestmentService {
                     "deposit_date", request.depositDate().toString()))
             .build());
 
-    return toResponse(investment);
+    return toResponse(investment, customer.getName());
   }
 
   @Transactional
@@ -207,7 +210,7 @@ public class TrustInvestmentService {
                     "total_interest_earned", investment.getInterestEarned().toString()))
             .build());
 
-    return toResponse(investment);
+    return toResponse(investment, lookupCustomerName(investment.getCustomerId()));
   }
 
   @Transactional
@@ -265,7 +268,7 @@ public class TrustInvestmentService {
                     "deposit_transaction_id", depositResponse.id().toString()))
             .build());
 
-    return toResponse(investment);
+    return toResponse(investment, lookupCustomerName(investment.getCustomerId()));
   }
 
   @Transactional(readOnly = true)
@@ -279,10 +282,20 @@ public class TrustInvestmentService {
     var today = LocalDate.now();
     var endDate = today.plusDays(daysAhead);
 
-    return investmentRepository
-        .findByTrustAccountIdAndStatusAndMaturityDateBetween(accountId, "ACTIVE", today, endDate)
-        .stream()
-        .map(this::toResponse)
+    var investments =
+        investmentRepository.findByTrustAccountIdAndStatusAndMaturityDateBetween(
+            accountId, "ACTIVE", today, endDate);
+
+    var customerIds = investments.stream().map(TrustInvestment::getCustomerId).distinct().toList();
+    Map<UUID, String> customerNames =
+        customerRepository.findAllById(customerIds).stream()
+            .collect(Collectors.toMap(c -> c.getId(), c -> c.getName()));
+
+    return investments.stream()
+        .map(
+            inv ->
+                toResponse(
+                    inv, customerNames.getOrDefault(inv.getCustomerId(), "(deleted customer)")))
         .toList();
   }
 
@@ -294,9 +307,17 @@ public class TrustInvestmentService {
         .findById(accountId)
         .orElseThrow(() -> new ResourceNotFoundException("TrustAccount", accountId));
 
-    return investmentRepository
-        .findByTrustAccountIdOrderByDepositDateDesc(accountId, pageable)
-        .map(this::toResponse);
+    var page = investmentRepository.findByTrustAccountIdOrderByDepositDateDesc(accountId, pageable);
+
+    var customerIds =
+        page.getContent().stream().map(TrustInvestment::getCustomerId).distinct().toList();
+    Map<UUID, String> customerNames =
+        customerRepository.findAllById(customerIds).stream()
+            .collect(Collectors.toMap(c -> c.getId(), c -> c.getName()));
+
+    return page.map(
+        inv ->
+            toResponse(inv, customerNames.getOrDefault(inv.getCustomerId(), "(deleted customer)")));
   }
 
   @Transactional(readOnly = true)
@@ -314,16 +335,17 @@ public class TrustInvestmentService {
         .orElseThrow(
             () -> new ResourceNotFoundException("TrustAccount", investment.getTrustAccountId()));
 
-    return toResponse(investment);
+    return toResponse(investment, lookupCustomerName(investment.getCustomerId()));
   }
 
   // --- Private Helpers ---
 
-  private TrustInvestmentResponse toResponse(TrustInvestment investment) {
+  private TrustInvestmentResponse toResponse(TrustInvestment investment, String customerName) {
     return new TrustInvestmentResponse(
         investment.getId(),
         investment.getTrustAccountId(),
         investment.getCustomerId(),
+        customerName,
         investment.getInstitution(),
         investment.getAccountNumber(),
         investment.getPrincipal(),
@@ -339,5 +361,12 @@ public class TrustInvestmentService {
         investment.getNotes(),
         investment.getCreatedAt(),
         investment.getUpdatedAt());
+  }
+
+  private String lookupCustomerName(UUID customerId) {
+    return customerRepository
+        .findById(customerId)
+        .map(c -> c.getName())
+        .orElse("(deleted customer)");
   }
 }

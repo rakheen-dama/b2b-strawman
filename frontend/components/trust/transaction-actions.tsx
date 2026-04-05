@@ -17,7 +17,6 @@ import { RecordRefundDialog } from "./RecordRefundDialog";
 
 interface TransactionActionsProps {
   accountId: string;
-  slug: string;
 }
 
 export function TransactionActions({

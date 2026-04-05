@@ -23,36 +23,15 @@ import {
   type TransactionPage,
 } from "./actions";
 import { TransactionActions } from "@/components/trust/transaction-actions";
+import { ApprovalBadge } from "@/components/trust/approval-badge";
+import { ReversalButton } from "@/components/trust/reversal-button";
+import { formatCurrency, formatLocalDate } from "@/lib/format";
 import type {
   TrustTransactionStatus,
   TrustTransactionType,
 } from "@/lib/types";
 
 // ── Helpers ───────────────────────────────────────────────────────
-
-function formatCurrency(amount: number, currency = "ZAR"): string {
-  const localeMap: Record<string, string> = {
-    ZAR: "en-ZA",
-    USD: "en-US",
-    GBP: "en-GB",
-    EUR: "de-DE",
-  };
-  return new Intl.NumberFormat(localeMap[currency] ?? "en-US", {
-    style: "currency",
-    currency,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(amount);
-}
-
-function formatDate(dateStr: string): string {
-  const [year, month, day] = dateStr.split("-").map(Number);
-  return new Date(year, month - 1, day).toLocaleDateString("en-ZA", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
 
 function statusBadgeVariant(
   status: TrustTransactionStatus,
@@ -226,10 +205,9 @@ export default async function TransactionsPage({
             Trust account transaction history
           </p>
         </div>
-        {canManageTrust && (
+        {canManageTrust && accountId && (
           <TransactionActions
-            accountId={accountId ?? ""}
-            slug={slug}
+            accountId={accountId}
           />
         )}
       </div>
@@ -372,7 +350,7 @@ export default async function TransactionsPage({
                           data-testid={`transaction-row-${tx.id}`}
                         >
                           <td className="py-3 pr-4 text-slate-700 dark:text-slate-300">
-                            {formatDate(tx.transactionDate)}
+                            {formatLocalDate(tx.transactionDate)}
                           </td>
                           <td className="py-3 pr-4 font-medium text-slate-950 dark:text-slate-50">
                             {tx.reference}
@@ -407,7 +385,7 @@ export default async function TransactionsPage({
                             {tx.status === "AWAITING_APPROVAL" &&
                               canApproveTrust && (
                                 <span data-testid={`approval-actions-${tx.id}`}>
-                                  <ApprovalBadgeWrapper
+                                  <ApprovalBadge
                                     transactionId={tx.id}
                                     status={tx.status}
                                   />
@@ -415,7 +393,7 @@ export default async function TransactionsPage({
                               )}
                             {tx.status === "APPROVED" && canManageTrust && (
                               <span data-testid={`reversal-action-${tx.id}`}>
-                                <ReversalButtonWrapper
+                                <ReversalButton
                                   transactionId={tx.id}
                                 />
                               </span>
@@ -472,27 +450,3 @@ export default async function TransactionsPage({
   );
 }
 
-// ── Inline wrappers for client components ─────────────────────────
-// These import client components used in the table action column.
-// They are separate to keep the page as a Server Component.
-
-import { ApprovalBadge } from "@/components/trust/approval-badge";
-import { ReversalButton } from "@/components/trust/reversal-button";
-
-function ApprovalBadgeWrapper({
-  transactionId,
-  status,
-}: {
-  transactionId: string;
-  status: string;
-}) {
-  return <ApprovalBadge transactionId={transactionId} status={status} />;
-}
-
-function ReversalButtonWrapper({
-  transactionId,
-}: {
-  transactionId: string;
-}) {
-  return <ReversalButton transactionId={transactionId} />;
-}

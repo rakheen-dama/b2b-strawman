@@ -16,4 +16,7 @@ public interface TrustInvestmentRepository extends JpaRepository<TrustInvestment
 
   List<TrustInvestment> findByStatusAndMaturityDateBetween(
       String status, LocalDate maturityStart, LocalDate maturityEnd);
+
+  List<TrustInvestment> findByTrustAccountIdAndStatusAndMaturityDateBetween(
+      UUID trustAccountId, String status, LocalDate maturityStart, LocalDate maturityEnd);
 }

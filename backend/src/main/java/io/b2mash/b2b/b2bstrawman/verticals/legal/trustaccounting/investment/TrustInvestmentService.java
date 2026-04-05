@@ -10,6 +10,10 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRep
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountStatus;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -57,12 +61,12 @@ public class TrustInvestmentService {
   // --- DTO Records ---
 
   public record PlaceInvestmentRequest(
-      UUID customerId,
-      String institution,
-      String accountNumber,
-      BigDecimal principal,
-      BigDecimal interestRate,
-      LocalDate depositDate,
+      @NotNull UUID customerId,
+      @NotBlank String institution,
+      @NotBlank String accountNumber,
+      @Positive BigDecimal principal,
+      @PositiveOrZero BigDecimal interestRate,
+      @NotNull LocalDate depositDate,
       LocalDate maturityDate,
       String notes) {}
 
@@ -173,6 +177,12 @@ public class TrustInvestmentService {
             .findById(investmentId)
             .orElseThrow(() -> new ResourceNotFoundException("TrustInvestment", investmentId));
 
+    // Verify caller has access to the associated trust account
+    var trustAccountId = investment.getTrustAccountId();
+    trustAccountRepository
+        .findById(trustAccountId)
+        .orElseThrow(() -> new ResourceNotFoundException("TrustAccount", trustAccountId));
+
     if (!"ACTIVE".equals(investment.getStatus())) {
       throw new InvalidStateException(
           "Invalid investment state", "Investment must be ACTIVE to record interest earned");
@@ -209,11 +219,18 @@ public class TrustInvestmentService {
             .findById(investmentId)
             .orElseThrow(() -> new ResourceNotFoundException("TrustInvestment", investmentId));
 
+    // Verify caller has access to the associated trust account
+    var investmentTrustAccountId = investment.getTrustAccountId();
+    trustAccountRepository
+        .findById(investmentTrustAccountId)
+        .orElseThrow(() -> new ResourceNotFoundException("TrustAccount", investmentTrustAccountId));
+
     if (!"ACTIVE".equals(investment.getStatus()) && !"MATURED".equals(investment.getStatus())) {
       throw new InvalidStateException(
           "Invalid investment state", "Investment must be ACTIVE or MATURED to withdraw");
     }
 
+    var today = LocalDate.now();
     var withdrawalAmount = investment.getPrincipal().add(investment.getInterestEarned());
 
     // Create DEPOSIT transaction (immediately credits client ledger)
@@ -224,13 +241,13 @@ public class TrustInvestmentService {
             withdrawalAmount,
             "INV-WD-" + investment.getInstitution() + "-" + investment.getAccountNumber(),
             "Trust investment withdrawal from " + investment.getInstitution(),
-            LocalDate.now());
+            today);
 
     var depositResponse =
         transactionService.recordDeposit(investment.getTrustAccountId(), depositRequest);
 
     investment.setStatus("WITHDRAWN");
-    investment.setWithdrawalDate(LocalDate.now());
+    investment.setWithdrawalDate(today);
     investment.setWithdrawalAmount(withdrawalAmount);
     investment.setWithdrawalTransactionId(depositResponse.id());
     investment = investmentRepository.save(investment);
@@ -263,9 +280,8 @@ public class TrustInvestmentService {
     var endDate = today.plusDays(daysAhead);
 
     return investmentRepository
-        .findByStatusAndMaturityDateBetween("ACTIVE", today, endDate)
+        .findByTrustAccountIdAndStatusAndMaturityDateBetween(accountId, "ACTIVE", today, endDate)
         .stream()
-        .filter(inv -> inv.getTrustAccountId().equals(accountId))
         .map(this::toResponse)
         .toList();
   }
@@ -291,6 +307,12 @@ public class TrustInvestmentService {
         investmentRepository
             .findById(investmentId)
             .orElseThrow(() -> new ResourceNotFoundException("TrustInvestment", investmentId));
+
+    // Verify caller has access to the associated trust account
+    trustAccountRepository
+        .findById(investment.getTrustAccountId())
+        .orElseThrow(
+            () -> new ResourceNotFoundException("TrustAccount", investment.getTrustAccountId()));
 
     return toResponse(investment);
   }

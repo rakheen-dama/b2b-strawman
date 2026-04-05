@@ -205,6 +205,9 @@ describe("Trust smoke tests", () => {
   it("deposit -> approval -> client balance update flow via TrustBalanceCard", () => {
     // Simulate a client ledger with a deposit that has been approved,
     // resulting in an updated balance
+    // useSWR mock: only the key argument is used for routing; fetcher and config
+    // args are unused in test mocks. The `as typeof useSWR` cast is intentional
+    // to satisfy the overloaded SWR signature while keeping the mock simple.
     vi.mocked(useSWR).mockImplementation(((key: string | null) => {
       if (key && key.startsWith("trust-accounts-")) {
         return {
@@ -290,6 +293,7 @@ describe("Trust smoke tests", () => {
     // The full dashboard page is a server component so we test the balance card
     // with summary-like data: total balance, active client indicator, and
     // pending status (no funds = "No Funds" badge).
+    // useSWR mock: see comment in first smoke test for rationale on type cast.
     vi.mocked(useSWR).mockImplementation(((key: string | null) => {
       if (key && key.startsWith("trust-accounts-")) {
         return {

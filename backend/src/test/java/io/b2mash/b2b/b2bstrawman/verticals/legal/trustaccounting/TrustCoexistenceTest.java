@@ -215,12 +215,21 @@ class TrustCoexistenceTest {
         }
       }
 
-      // Verify all trust tables are empty in the accounting schema
+      // Verify all trust tables are empty in the accounting schema.
+      // NOTE: Schema and table identifiers cannot be parameterized in SQL prepared
+      // statements — only values can be bound as parameters. String formatting is
+      // acceptable here because both accountingSchema (from TenantProvisioningService)
+      // and tableName (from TRUST_TABLES constant) are controlled test constants.
+      // We use Statement (not PreparedStatement) to make this intent explicit.
       for (String tableName : TRUST_TABLES) {
-        try (PreparedStatement ps =
-            conn.prepareStatement(
-                "SELECT COUNT(*) FROM \"%s\".\"%s\"".formatted(accountingSchema, tableName))) {
-          ResultSet rs = ps.executeQuery();
+        assertThat(accountingSchema)
+            .as("schema name must be safe identifier")
+            .matches("[a-z0-9_]+");
+        assertThat(tableName).as("table name must be safe identifier").matches("[a-z0-9_]+");
+        try (var stmt = conn.createStatement()) {
+          ResultSet rs =
+              stmt.executeQuery(
+                  "SELECT COUNT(*) FROM \"%s\".\"%s\"".formatted(accountingSchema, tableName));
           assertThat(rs.next()).isTrue();
           assertThat(rs.getInt(1))
               .as("Table %s should be empty in accounting schema %s", tableName, accountingSchema)

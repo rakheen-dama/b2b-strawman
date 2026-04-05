@@ -63,7 +63,7 @@ import { CreateRequestDialog } from "@/components/information-requests/create-re
 import { fetchRetainers, fetchPeriods } from "@/lib/api/retainers";
 import type { RetainerResponse, PeriodSummary } from "@/lib/api/retainers";
 import { CustomerRetainerTab } from "@/components/customers/customer-retainer-tab";
-import { TrustBalanceCard } from "@/components/customers/trust-balance-card";
+import { TrustBalanceCard } from "@/components/trust/TrustBalanceCard";
 import { checkPrerequisites } from "@/lib/prerequisites";
 import type { PrerequisiteCheck } from "@/components/prerequisite/types";
 import { formatDate, formatCurrencySafe } from "@/lib/format";
@@ -575,7 +575,7 @@ export default async function CustomerDetailPage({
       </div>
 
       {/* Trust Balance — conditional on trust_accounting module */}
-      <TrustBalanceCard />
+      <TrustBalanceCard customerId={id} slug={slug} />
 
       {/* Setup Guidance Cards — Epic 113A */}
       {customerReadiness && (
@@ -716,6 +716,13 @@ export default async function CustomerDetailPage({
               projectBreakdown={projectBreakdown}
             />
           ) : undefined
+        }
+        trustPanel={
+          <TrustBalanceCard
+            customerId={id}
+            slug={slug}
+            showQuickActions={isAdmin}
+          />
         }
         onboardingPanel={
           showOnboardingTab ? (

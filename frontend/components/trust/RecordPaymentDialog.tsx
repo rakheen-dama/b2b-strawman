@@ -33,6 +33,7 @@ interface RecordPaymentDialogProps {
   accountId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSuccess?: () => void;
 }
 
 function getDefaultValues() {
@@ -52,6 +53,7 @@ export function RecordPaymentDialog({
   accountId,
   open,
   onOpenChange,
+  onSuccess,
 }: RecordPaymentDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -76,6 +78,7 @@ export function RecordPaymentDialog({
     try {
       const result = await recordPayment(accountId, data);
       if (result.success) {
+        onSuccess?.();
         handleOpenChange(false);
       } else {
         setError(result.error ?? "Failed to record payment");

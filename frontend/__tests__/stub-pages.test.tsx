@@ -1,5 +1,73 @@
-import { describe, it, expect, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
+
+// --- Mocks (must be before component imports) ---
+
+vi.mock("swr", () => ({
+  default: vi.fn(),
+  useSWRConfig: () => ({ mutate: vi.fn() }),
+}));
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
+  usePathname: () => "/org/acme/dashboard",
+  useSearchParams: () => new URLSearchParams(),
+}));
+
+vi.mock("next/link", () => ({
+  default: ({
+    children,
+    href,
+    ...props
+  }: {
+    children: React.ReactNode;
+    href: string;
+    [key: string]: unknown;
+  }) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
+}));
+
+vi.mock("@/lib/api", () => ({
+  api: {
+    get: vi.fn().mockResolvedValue({ content: [] }),
+    post: vi.fn(),
+    put: vi.fn(),
+    delete: vi.fn(),
+  },
+}));
+
+vi.mock("sonner", () => ({
+  toast: { success: vi.fn(), error: vi.fn() },
+}));
+
+vi.mock(
+  "@/app/(app)/org/[slug]/trust-accounting/transactions/actions",
+  () => ({
+    fetchTransactions: vi.fn().mockResolvedValue({ content: [] }),
+    recordDeposit: vi.fn(),
+    recordPayment: vi.fn(),
+    recordFeeTransfer: vi.fn(),
+  }),
+);
+
+vi.mock("@/app/(app)/org/[slug]/trust-accounting/actions", () => ({
+  fetchTrustAccounts: vi.fn().mockResolvedValue([]),
+}));
+
+vi.mock(
+  "@/app/(app)/org/[slug]/trust-accounting/client-ledgers/actions",
+  () => ({
+    fetchClientLedger: vi.fn().mockResolvedValue(null),
+    fetchClientHistory: vi.fn().mockResolvedValue({ content: [] }),
+  }),
+);
+
+// --- Imports after mocks ---
+
+import useSWR from "swr";
 import { OrgProfileProvider } from "@/lib/org-profile";
 import { TerminologyProvider } from "@/lib/terminology";
 import { ModuleGate } from "@/components/module-gate";
@@ -13,8 +81,15 @@ import {
 } from "@/components/ui/card";
 import { Scale, Gavel } from "lucide-react";
 
-afterEach(() => {
-  cleanup();
+afterEach(() => cleanup());
+beforeEach(() => {
+  vi.clearAllMocks();
+  vi.mocked(useSWR).mockReturnValue({
+    data: undefined,
+    error: undefined,
+    isLoading: false,
+    mutate: vi.fn(),
+  } as ReturnType<typeof useSWR>);
 });
 
 // -- Helper: renders content inside OrgProfileProvider with given modules --
@@ -86,18 +161,16 @@ describe("Stub pages — court calendar", () => {
 
 describe("Conditional trust balance card", () => {
   it("renders trust balance card when trust_accounting module is enabled", () => {
-    renderWithModules(["trust_accounting"], <TrustBalanceCard />);
+    renderWithModules(["trust_accounting"], <TrustBalanceCard customerId="cust-1" slug="acme" />);
 
     expect(screen.getByText("Trust Balance")).toBeInTheDocument();
-    expect(screen.getByText("Coming Soon")).toBeInTheDocument();
-    expect(screen.getByText(/Trust Accounting module will display/)).toBeInTheDocument();
+    expect(screen.getByTestId("trust-balance-card")).toBeInTheDocument();
   });
 
   it("does NOT render trust balance card when trust_accounting module is disabled", () => {
-    renderWithModules([], <TrustBalanceCard />);
+    renderWithModules([], <TrustBalanceCard customerId="cust-1" slug="acme" />);
 
     expect(screen.queryByText("Trust Balance")).not.toBeInTheDocument();
-    expect(screen.queryByText(/Trust Accounting module will display/)).not.toBeInTheDocument();
   });
 });
 
@@ -139,9 +212,6 @@ describe("Conditional conflict check section", () => {
 
 describe("372B: trust balance card under legal-za profile context", () => {
   it("renders trust balance card correctly within legal-za profile providers", () => {
-    // Wraps TrustBalanceCard in legal-za providers to verify it renders
-    // in the expected runtime context. Note: the card currently hardcodes
-    // its text rather than using useTerminology().
     render(
       <OrgProfileProvider
         verticalProfile="legal-za"
@@ -149,12 +219,12 @@ describe("372B: trust balance card under legal-za profile context", () => {
         terminologyNamespace="en-ZA-legal"
       >
         <TerminologyProvider verticalProfile="legal-za">
-          <TrustBalanceCard />
+          <TrustBalanceCard customerId="cust-1" slug="acme" />
         </TerminologyProvider>
       </OrgProfileProvider>,
     );
 
     expect(screen.getByText("Trust Balance")).toBeInTheDocument();
-    expect(screen.getByText(/client/i)).toBeInTheDocument();
+    expect(screen.getByTestId("trust-balance-card")).toBeInTheDocument();
   });
 });

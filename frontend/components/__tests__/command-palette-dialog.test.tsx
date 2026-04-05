@@ -25,6 +25,7 @@ vi.mock("@/components/recent-items-provider", () => ({
 }));
 
 import { CapabilityProvider } from "@/lib/capabilities";
+import { OrgProfileProvider } from "@/lib/org-profile";
 import { CommandPaletteDialog } from "@/components/command-palette-dialog";
 import { useRecentItems } from "@/components/recent-items-provider";
 
@@ -51,21 +52,29 @@ function renderDialog({
   isAdmin = false,
   isOwner = true,
   role = "Owner",
+  enabledModules = [] as string[],
 }: {
   capabilities?: string[];
   isAdmin?: boolean;
   isOwner?: boolean;
   role?: string;
+  enabledModules?: string[];
 } = {}) {
   return render(
-    <CapabilityProvider
-      capabilities={capabilities}
-      role={role}
-      isAdmin={isAdmin}
-      isOwner={isOwner}
+    <OrgProfileProvider
+      verticalProfile={null}
+      enabledModules={enabledModules}
+      terminologyNamespace={null}
     >
-      <CommandPaletteDialog slug="test-org" open={true} onOpenChange={vi.fn()} />
-    </CapabilityProvider>,
+      <CapabilityProvider
+        capabilities={capabilities}
+        role={role}
+        isAdmin={isAdmin}
+        isOwner={isOwner}
+      >
+        <CommandPaletteDialog slug="test-org" open={true} onOpenChange={vi.fn()} />
+      </CapabilityProvider>
+    </OrgProfileProvider>,
   );
 }
 

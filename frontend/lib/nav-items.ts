@@ -60,6 +60,8 @@ export interface SettingsItem {
   href: (slug: string) => string;
   adminOnly?: boolean;
   comingSoon?: boolean;
+  /** If set, settings item only shows when the org has this module enabled */
+  requiredModule?: string;
 }
 
 /**
@@ -442,6 +444,13 @@ export const SETTINGS_ITEMS: SettingsItem[] = [
     title: "Integrations",
     description: "Connect third-party tools and services",
     href: (slug) => `/org/${slug}/settings/integrations`,
+  },
+  {
+    title: "Trust Accounting",
+    description: "Manage trust accounts, approval settings, and LPFF rates",
+    href: (slug) => `/org/${slug}/settings/trust-accounting`,
+    adminOnly: true,
+    requiredModule: "trust_accounting",
   },
 ];
 

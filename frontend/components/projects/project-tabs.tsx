@@ -25,9 +25,10 @@ interface ProjectTabsProps {
   staffingPanel?: ReactNode;
   courtDatesPanel?: ReactNode;
   adversePartiesPanel?: ReactNode;
+  trustPanel?: ReactNode;
 }
 
-type TabId = "overview" | "documents" | "members" | "customers" | "tasks" | "time" | "expenses" | "budget" | "financials" | "staffing" | "activity" | "rates" | "generated" | "requests" | "customer-comments" | "court-dates" | "adverse-parties";
+type TabId = "overview" | "documents" | "members" | "customers" | "tasks" | "time" | "expenses" | "budget" | "financials" | "staffing" | "activity" | "rates" | "generated" | "requests" | "customer-comments" | "court-dates" | "adverse-parties" | "trust";
 
 interface TabDef {
   id: TabId;
@@ -51,24 +52,25 @@ const baseTabs: TabDef[] = [
   { id: "customer-comments", label: "Customer Comments" },
   { id: "court-dates", label: "Court Dates" },
   { id: "adverse-parties", label: "Adverse Parties" },
+  { id: "trust", label: "Trust" },
   { id: "activity", label: "Activity" },
 ];
 
-const validTabIds = new Set<string>(["overview", "documents", "members", "customers", "tasks", "time", "expenses", "budget", "financials", "staffing", "activity", "rates", "generated", "requests", "customer-comments", "court-dates", "adverse-parties"]);
+const validTabIds = new Set<string>(["overview", "documents", "members", "customers", "tasks", "time", "expenses", "budget", "financials", "staffing", "activity", "rates", "generated", "requests", "customer-comments", "court-dates", "adverse-parties", "trust"]);
 
-export function ProjectTabs({ overviewPanel, documentsPanel, membersPanel, customersPanel, tasksPanel, timePanel, activityPanel, ratesPanel, budgetPanel, financialsPanel, expensesPanel, generatedPanel, requestsPanel, customerCommentsPanel, staffingPanel, courtDatesPanel, adversePartiesPanel }: ProjectTabsProps) {
+export function ProjectTabs({ overviewPanel, documentsPanel, membersPanel, customersPanel, tasksPanel, timePanel, activityPanel, ratesPanel, budgetPanel, financialsPanel, expensesPanel, generatedPanel, requestsPanel, customerCommentsPanel, staffingPanel, courtDatesPanel, adversePartiesPanel, trustPanel }: ProjectTabsProps) {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab");
   const urlTab = tabParam && validTabIds.has(tabParam) ? (tabParam as TabId) : null;
   const [userTab, setUserTab] = useState<TabId | null>(null);
   const { isModuleEnabled } = useOrgProfile();
 
-  // URL param takes precedence, then user's manual selection, then default
-  const activeTab = urlTab ?? userTab ?? "overview";
+  const requestedTab = urlTab ?? userTab;
 
   // Module-gated tabs: only show when both the panel is provided and the module is enabled
   const showCourtDates = !!courtDatesPanel && isModuleEnabled("court_calendar");
   const showAdverseParties = !!adversePartiesPanel && isModuleEnabled("conflict_check");
+  const showTrust = !!trustPanel && isModuleEnabled("trust_accounting");
 
   const tabs = useMemo(() => {
     let filtered = baseTabs;
@@ -81,8 +83,15 @@ export function ProjectTabs({ overviewPanel, documentsPanel, membersPanel, custo
     if (!staffingPanel) filtered = filtered.filter((t) => t.id !== "staffing");
     if (!showCourtDates) filtered = filtered.filter((t) => t.id !== "court-dates");
     if (!showAdverseParties) filtered = filtered.filter((t) => t.id !== "adverse-parties");
+    if (!showTrust) filtered = filtered.filter((t) => t.id !== "trust");
     return filtered;
-  }, [ratesPanel, financialsPanel, expensesPanel, generatedPanel, requestsPanel, customerCommentsPanel, staffingPanel, showCourtDates, showAdverseParties]);
+  }, [ratesPanel, financialsPanel, expensesPanel, generatedPanel, requestsPanel, customerCommentsPanel, staffingPanel, showCourtDates, showAdverseParties, showTrust]);
+
+  // Validate activeTab is in the rendered tabs; fall back to "overview" if not
+  const activeTab: TabId =
+    requestedTab && tabs.some((t) => t.id === requestedTab)
+      ? requestedTab
+      : "overview";
 
   return (
     <TabsPrimitive.Root value={activeTab} onValueChange={(v) => setUserTab(v as TabId)}>
@@ -177,6 +186,11 @@ export function ProjectTabs({ overviewPanel, documentsPanel, membersPanel, custo
       {showAdverseParties && (
         <TabsPrimitive.Content value="adverse-parties" className="pt-6 outline-none">
           {adversePartiesPanel}
+        </TabsPrimitive.Content>
+      )}
+      {showTrust && (
+        <TabsPrimitive.Content value="trust" className="pt-6 outline-none">
+          {trustPanel}
         </TabsPrimitive.Content>
       )}
       <TabsPrimitive.Content value="activity" className="pt-6 outline-none">

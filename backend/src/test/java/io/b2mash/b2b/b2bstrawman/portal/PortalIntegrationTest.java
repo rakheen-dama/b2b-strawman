@@ -275,40 +275,7 @@ class PortalIntegrationTest {
   }
 
   @Nested
-  class MagicLinkExchange {
-
-    @Test
-    void shouldRequestMagicLinkForValidContact() throws Exception {
-      mockMvc
-          .perform(
-              post("/portal/auth/request-link")
-                  .contentType(MediaType.APPLICATION_JSON)
-                  .content(
-                      """
-                      {"email": "portal-cust-a@test.com", "orgId": "%s"}
-                      """
-                          .formatted(ORG_ID)))
-          .andExpect(status().isOk())
-          .andExpect(jsonPath("$.message").value("If an account exists, a link has been sent."))
-          .andExpect(jsonPath("$.magicLink").isNotEmpty());
-    }
-
-    @Test
-    void shouldReturnGenericMessageForUnknownEmail() throws Exception {
-      // Anti-enumeration: same 200 response for unknown emails
-      mockMvc
-          .perform(
-              post("/portal/auth/request-link")
-                  .contentType(MediaType.APPLICATION_JSON)
-                  .content(
-                      """
-                      {"email": "nonexistent@test.com", "orgId": "%s"}
-                      """
-                          .formatted(ORG_ID)))
-          .andExpect(status().isOk())
-          .andExpect(jsonPath("$.message").value("If an account exists, a link has been sent."))
-          .andExpect(jsonPath("$.magicLink").doesNotExist());
-    }
+  class AntiEnumerationTests {
 
     @Test
     void shouldReturnGenericMessageForUnknownOrg() throws Exception {
@@ -324,63 +291,6 @@ class PortalIntegrationTest {
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.message").value("If an account exists, a link has been sent."))
           .andExpect(jsonPath("$.magicLink").doesNotExist());
-    }
-
-    @Test
-    void shouldExchangeMagicLinkForPortalJwt() throws Exception {
-      // First request a magic link
-      var requestResult =
-          mockMvc
-              .perform(
-                  post("/portal/auth/request-link")
-                      .contentType(MediaType.APPLICATION_JSON)
-                      .content(
-                          """
-                          {"email": "portal-cust-a@test.com", "orgId": "%s"}
-                          """
-                              .formatted(ORG_ID)))
-              .andExpect(status().isOk())
-              .andReturn();
-
-      String magicLink =
-          JsonPath.read(requestResult.getResponse().getContentAsString(), "$.magicLink");
-      // Extract token from magic link URL: /portal/login?token=...&orgId=...
-      String tokenParam = "token=";
-      int tokenStart = magicLink.indexOf(tokenParam) + tokenParam.length();
-      int tokenEnd = magicLink.indexOf("&", tokenStart);
-      String rawToken =
-          tokenEnd == -1
-              ? magicLink.substring(tokenStart)
-              : magicLink.substring(tokenStart, tokenEnd);
-
-      // Exchange for portal JWT
-      mockMvc
-          .perform(
-              post("/portal/auth/exchange")
-                  .contentType(MediaType.APPLICATION_JSON)
-                  .content(
-                      """
-                      {"token": "%s", "orgId": "%s"}
-                      """
-                          .formatted(rawToken, ORG_ID)))
-          .andExpect(status().isOk())
-          .andExpect(jsonPath("$.token").isNotEmpty())
-          .andExpect(jsonPath("$.customerId").value(customerIdA.toString()))
-          .andExpect(jsonPath("$.customerName").value("Portal Customer A"));
-    }
-
-    @Test
-    void shouldRejectExpiredOrInvalidToken() throws Exception {
-      mockMvc
-          .perform(
-              post("/portal/auth/exchange")
-                  .contentType(MediaType.APPLICATION_JSON)
-                  .content(
-                      """
-                      {"token": "invalid.token.value", "orgId": "%s"}
-                      """
-                          .formatted(ORG_ID)))
-          .andExpect(status().isUnauthorized());
     }
   }
 

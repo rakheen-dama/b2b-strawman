@@ -289,7 +289,7 @@ public class TrustInvestmentService {
     var customerIds = investments.stream().map(TrustInvestment::getCustomerId).distinct().toList();
     Map<UUID, String> customerNames =
         customerRepository.findAllById(customerIds).stream()
-            .collect(Collectors.toMap(c -> c.getId(), c -> c.getName()));
+            .collect(Collectors.toMap(c -> c.getId(), c -> c.getName(), (a, b) -> a));
 
     return investments.stream()
         .map(
@@ -313,7 +313,7 @@ public class TrustInvestmentService {
         page.getContent().stream().map(TrustInvestment::getCustomerId).distinct().toList();
     Map<UUID, String> customerNames =
         customerRepository.findAllById(customerIds).stream()
-            .collect(Collectors.toMap(c -> c.getId(), c -> c.getName()));
+            .collect(Collectors.toMap(c -> c.getId(), c -> c.getName(), (a, b) -> a));
 
     return page.map(
         inv ->

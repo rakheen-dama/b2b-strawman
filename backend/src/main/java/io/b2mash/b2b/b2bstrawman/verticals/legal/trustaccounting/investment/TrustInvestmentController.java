@@ -4,6 +4,8 @@ import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.PlaceInvestmentRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.TrustInvestmentResponse;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import java.math.BigDecimal;
 import java.util.List;
@@ -12,6 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+@Validated
 @RestController
 public class TrustInvestmentController {
 
@@ -68,11 +72,12 @@ public class TrustInvestmentController {
   @GetMapping("/api/trust-accounts/{accountId}/investments/maturing")
   @RequiresCapability("VIEW_TRUST")
   public ResponseEntity<List<TrustInvestmentResponse>> getMaturingInvestments(
-      @PathVariable UUID accountId, @RequestParam(defaultValue = "30") int daysAhead) {
+      @PathVariable UUID accountId,
+      @RequestParam(defaultValue = "30") @Positive @Max(365) int daysAhead) {
     return ResponseEntity.ok(investmentService.getMaturing(accountId, daysAhead));
   }
 
   // --- Request Records ---
 
-  record RecordInterestRequest(@Positive BigDecimal amount) {}
+  record RecordInterestRequest(@NotNull @Positive BigDecimal amount) {}
 }

@@ -310,4 +310,50 @@ class TrustInvestmentControllerTest {
                         .formatted(customerId)))
         .andExpect(status().isForbidden());
   }
+
+  @Test
+  void getInvestments_memberRole_returns200() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/trust-accounts/" + trustAccountId + "/investments")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_invest_ctrl_member")))
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  void postWithdraw_memberRole_returns403() throws Exception {
+    var ownerJwt = TestJwtFactory.ownerJwt(ORG_ID, "user_invest_ctrl_owner");
+
+    // Place an investment as owner first
+    var investResult =
+        mockMvc
+            .perform(
+                post("/api/trust-accounts/" + trustAccountId + "/investments")
+                    .with(ownerJwt)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "customerId": "%s",
+                          "institution": "Capitec",
+                          "accountNumber": "4445556667",
+                          "principal": 2000.00,
+                          "interestRate": 0.0450,
+                          "depositDate": "2026-02-01"
+                        }
+                        """
+                            .formatted(customerId)))
+            .andExpect(status().isCreated())
+            .andReturn();
+
+    var investmentId =
+        JsonPath.read(investResult.getResponse().getContentAsString(), "$.id").toString();
+
+    // Attempt withdraw as member — should be forbidden
+    mockMvc
+        .perform(
+            post("/api/trust-investments/" + investmentId + "/withdraw")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_invest_ctrl_member")))
+        .andExpect(status().isForbidden());
+  }
 }

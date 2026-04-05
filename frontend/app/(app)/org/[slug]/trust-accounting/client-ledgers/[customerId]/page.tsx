@@ -197,10 +197,20 @@ export default async function ClientDetailPage({
 
   // Compute running balance from transaction history
   // The backend history endpoint returns transactions in descending order.
-  // We reverse to compute running balance from earliest to latest, then display in desc order.
+  // Running balance is only accurate on page 0 where we can start from the
+  // current total balance and work backward. On subsequent pages the starting
+  // point is unknown (the backend doesn't return a startingBalance), so we
+  // show "—" instead of potentially incorrect numbers.
+  const showRunningBalance = currentPage === 0;
   const transactionsWithBalance = (() => {
     if (!historyPage || historyPage.content.length === 0) return [];
-    // We approximate running balance using the client's current balance
+    if (!showRunningBalance) {
+      return historyPage.content.map((tx) => ({
+        ...tx,
+        runningBalance: null as number | null,
+      }));
+    }
+    // Page 0: approximate running balance using the client's current balance
     // and working backward from the latest transaction
     const txs = [...historyPage.content];
     let balance = ledgerCard.balance;
@@ -212,7 +222,7 @@ export default async function ClientDetailPage({
       } else {
         balance += tx.amount;
       }
-      return { ...tx, runningBalance: currentBalance };
+      return { ...tx, runningBalance: currentBalance as number | null };
     });
     return result;
   })();
@@ -482,7 +492,9 @@ export default async function ClientDetailPage({
                             </Badge>
                           </td>
                           <td className="py-3 text-right font-mono tabular-nums text-slate-950 dark:text-slate-50">
-                            {formatCurrency(tx.runningBalance, currency)}
+                            {tx.runningBalance !== null
+                              ? formatCurrency(tx.runningBalance, currency)
+                              : "\u2014"}
                           </td>
                         </tr>
                       ))}

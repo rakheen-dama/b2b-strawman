@@ -70,11 +70,17 @@ export async function fetchClientLedgers(
     );
   }
 
+  // Recalculate pagination metadata after client-side filtering.
+  // NOTE: This is only accurate when all matching data fits on one page.
+  // For true multi-page filtered results, backend filtering would be needed.
+  const filteredTotal = content.length;
+  const pageSize = result.page.size;
+
   return {
     content,
-    totalElements: result.page.totalElements,
-    totalPages: result.page.totalPages,
-    pageSize: result.page.size,
+    totalElements: filteredTotal,
+    totalPages: filteredTotal > 0 ? Math.ceil(filteredTotal / pageSize) : 0,
+    pageSize,
     pageNumber: result.page.number,
   };
 }

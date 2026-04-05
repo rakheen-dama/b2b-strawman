@@ -46,6 +46,8 @@ export {
   recordTransferSchema,
   recordFeeTransferSchema,
   recordRefundSchema,
+  placeInvestmentSchema,
+  recordInvestmentInterestSchema,
 } from "./trust";
 export type {
   CreateTrustAccountFormData,
@@ -54,4 +56,6 @@ export type {
   RecordTransferFormData,
   RecordFeeTransferFormData,
   RecordRefundFormData,
+  PlaceInvestmentFormData,
+  RecordInvestmentInterestFormData,
 } from "./trust";

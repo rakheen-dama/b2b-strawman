@@ -235,6 +235,32 @@ export interface TrustDashboardData {
   alerts: TrustAlert[];
 }
 
+// Trust investment types
+
+export type TrustInvestmentStatus = "ACTIVE" | "MATURED" | "WITHDRAWN";
+
+export interface TrustInvestment {
+  id: string;
+  trustAccountId: string;
+  customerId: string;
+  customerName: string;
+  institution: string;
+  accountNumber: string;
+  principal: number;
+  interestRate: number;
+  depositDate: string;
+  maturityDate: string | null;
+  interestEarned: number;
+  status: TrustInvestmentStatus;
+  withdrawalDate: string | null;
+  withdrawalAmount: number | null;
+  depositTransactionId: string;
+  withdrawalTransactionId: string | null;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // Interest run types
 
 export type InterestRunStatus = "DRAFT" | "APPROVED" | "POSTED";

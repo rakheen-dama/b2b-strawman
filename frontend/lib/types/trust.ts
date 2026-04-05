@@ -130,6 +130,85 @@ export interface LedgerStatementResponse {
 /** Alias for ClientLedgerCard — matches backend ClientLedgerCardResponse */
 export type ClientLedgerResponse = ClientLedgerCard;
 
+// Bank statement types
+
+export type BankStatementFormat = "CSV" | "OFX";
+
+export type BankStatementStatus =
+  | "IMPORTED"
+  | "MATCHING_IN_PROGRESS"
+  | "MATCHED"
+  | "RECONCILED";
+
+export type BankStatementLineMatchStatus =
+  | "UNMATCHED"
+  | "AUTO_MATCHED"
+  | "MANUALLY_MATCHED"
+  | "EXCLUDED";
+
+export interface BankStatementLineResponse {
+  id: string;
+  lineNumber: number;
+  transactionDate: string;
+  description: string;
+  reference: string | null;
+  amount: number;
+  runningBalance: number;
+  matchStatus: BankStatementLineMatchStatus;
+  trustTransactionId: string | null;
+  matchConfidence: number | null;
+  excludedReason: string | null;
+  createdAt: string;
+}
+
+export interface BankStatementResponse {
+  id: string;
+  trustAccountId: string;
+  periodStart: string;
+  periodEnd: string;
+  openingBalance: number;
+  closingBalance: number;
+  fileName: string;
+  format: BankStatementFormat;
+  lineCount: number;
+  matchedCount: number;
+  status: BankStatementStatus;
+  importedBy: string;
+  createdAt: string;
+  updatedAt: string;
+  lines: BankStatementLineResponse[];
+}
+
+// Reconciliation types
+
+export type TrustReconciliationStatus = "DRAFT" | "COMPLETED";
+
+export interface TrustReconciliationResponse {
+  id: string;
+  trustAccountId: string;
+  periodEnd: string;
+  bankStatementId: string;
+  bankBalance: number;
+  cashbookBalance: number;
+  clientLedgerTotal: number;
+  outstandingDeposits: number;
+  outstandingPayments: number;
+  adjustedBankBalance: number;
+  isBalanced: boolean;
+  status: TrustReconciliationStatus;
+  completedBy: string | null;
+  completedAt: string | null;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MatchResultResponse {
+  autoMatched: number;
+  unmatched: number;
+  lines: BankStatementLineResponse[];
+}
+
 // Dashboard types
 
 export type TrustAlertType =

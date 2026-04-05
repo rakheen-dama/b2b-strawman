@@ -40,7 +40,7 @@ Phase 60 replaces the `trust_accounting` module stub (registered in Phase 49) wi
 | 445 | Interest Calculation + Posting | Backend | 440 | L | 445A, 445B | **Done** (PRs #937, #938) |
 | 446 | Trust Investments | Backend | 441 | M | 446A, 446B | **Done** (PRs #939, #940) |
 | 447 | Trust Reports (Section 35) + Event/Notification Handlers | Backend | 442, 444, 445, 446 | M | 447A, 447B | **Done** (PRs #941, #942) |
-| 448 | Frontend: Trust Dashboard + Transaction Entry + Approval UX | Frontend | 442 | L | 448A, 448B | Not started |
+| 448 | Frontend: Trust Dashboard + Transaction Entry + Approval UX | Frontend | 442 | L | 448A, 448B | 448A Done (PR #944) |
 | 449 | Frontend: Client Ledger + Reconciliation Split-Pane | Frontend | 442, 444 | L | 449A, 449B | Not started |
 | 450 | Frontend: Interest + Investments + Reports Pages | Frontend | 445, 446, 447 | M | 450A, 450B | Not started |
 | 451 | Frontend: Matter/Customer Trust Tabs + Settings + Sidebar + Coexistence Tests | Frontend | 448, 449, 450 | M | 451A, 451B | Not started |
@@ -264,7 +264,7 @@ FRONTEND CORE                           FRONTEND ADVANCED
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 8a | 448 | 448A | Trust dashboard page (replaces stub at `/trust-accounting`): summary cards (total balance, active clients, pending approvals, last reconciliation), recent transactions, reconciliation status indicator, alert badges. TypeScript types, Zod schemas, server actions, nav item update. Frontend tests (~5). Frontend only. | Not started |
+| 8a | 448 | 448A | Trust dashboard page (replaces stub at `/trust-accounting`): summary cards (total balance, active clients, pending approvals, last reconciliation), recent transactions, reconciliation status indicator, alert badges. TypeScript types, Zod schemas, server actions, nav item update. Frontend tests (~5). Frontend only. | **Done** (PR #944) |
 | 8b | 448 | 448B | Transactions page (`/trust-accounting/transactions`): transaction table with filters, `RecordDepositDialog`, `RecordPaymentDialog`, `RecordTransferDialog`, `RecordFeeTransferDialog`, `RecordRefundDialog`, `ApprovalBadge` with approve/reject actions, reversal action. Frontend tests (~5). Frontend only. | Not started |
 
 ### Stage 9: Frontend Ledger + Reconciliation (parallel)
@@ -937,7 +937,7 @@ Stage 11: [451A] -> [451B]                                                <- int
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **448A** | 448.1--448.6 | Trust dashboard page (replaces stub): summary cards, recent transactions table, reconciliation status, alert badges. TypeScript types, Zod schemas, server actions, nav item update. Frontend tests (~5). Frontend only. | Not started |
+| **448A** | 448.1--448.6 | Trust dashboard page (replaces stub): summary cards, recent transactions table, reconciliation status, alert badges. TypeScript types, Zod schemas, server actions, nav item update. Frontend tests (~5). Frontend only. | **Done** (PR #944) |
 | **448B** | 448.7--448.12 | Transactions page: transaction table with filters, 5 recording dialogs (deposit, payment, transfer, feeTransfer, refund), `ApprovalBadge` component, approve/reject/reverse actions. Frontend tests (~5). Frontend only. | Not started |
 
 ### Tasks

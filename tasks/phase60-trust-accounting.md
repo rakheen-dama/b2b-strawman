@@ -219,7 +219,7 @@ FRONTEND CORE                           FRONTEND ADVANCED
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 2a (parallel) | 440 | 440A | `TrustTransaction` entity + `ClientLedgerCard` entity + repos + `TrustTransactionService` (recordDeposit, recordTransfer with paired TRANSFER_IN/TRANSFER_OUT, reverseTransaction) + `ClientLedgerService` (getClientLedger, listClientLedgers, getClientTransactionHistory, getClientBalanceAsOfDate, getTotalTrustBalance). Negative balance prevention (SELECT FOR UPDATE + CHECK constraint verification). Integration tests (~12). Backend only. | **Done** (PR #925) |
-| 2b (parallel) | 443 | 443A | `BankStatement` entity + `BankStatementLine` entity + repos + `BankStatementParser` interface + `CsvBankStatementParser` abstract base + `FnbCsvParser` + `StandardBankCsvParser` + `NedbankCsvParser` + `AbsaCsvParser` + `GenericCsvParser`. CSV fixture files in `src/test/resources/fixtures/trust/`. Unit tests (~10). Backend only. | Not started |
+| 2b (parallel) | 443 | 443A | `BankStatement` entity + `BankStatementLine` entity + repos + `BankStatementParser` interface + `CsvBankStatementParser` abstract base + `FnbCsvParser` + `StandardBankCsvParser` + `NedbankCsvParser` + `AbsaCsvParser` + `GenericCsvParser`. CSV fixture files in `src/test/resources/fixtures/trust/`. Unit tests (~10). Backend only. | **Done** (PR #933) |
 
 ### Stage 3: Transaction Controllers + Bank Statement Controller (parallel tracks)
 
@@ -634,7 +634,7 @@ Stage 11: [451A] -> [451B]                                                <- int
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **443A** | 443.1--443.7 | `BankStatement` + `BankStatementLine` entities + repos + `BankStatementParser` interface + 5 CSV parser implementations (FNB, StandardBank, Nedbank, ABSA, Generic) + CSV fixture files. Unit tests (~10). Backend only. | Not started |
+| **443A** | 443.1--443.7 | `BankStatement` + `BankStatementLine` entities + repos + `BankStatementParser` interface + 5 CSV parser implementations (FNB, StandardBank, Nedbank, ABSA, Generic) + CSV fixture files. Unit tests (~10). Backend only. | **Done** (PR #933) |
 | **443B** | 443.8--443.12 | Bank statement import endpoint (multipart upload + S3 storage) + list/detail endpoints in reconciliation controller. Integration tests (~5). Backend only. | Not started |
 
 ### Tasks

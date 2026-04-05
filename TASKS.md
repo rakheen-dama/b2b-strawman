@@ -501,7 +501,7 @@
 | 440 | TrustTransaction + ClientLedgerCard Entity + Deposit/Transfer Service | Backend | 439 | L | 440A, 440B | **Done** (PRs #925, #926) |
 | 441 | Approval Workflow + Payment/FeeTransfer/Refund Recording | Backend | 440 | L | 441A, 441B | **Done** (PRs #928, #929) |
 | 442 | Transaction Controller + Approval Endpoints + Client Ledger Controller | Backend | 441 | M | 442A, 442B | **Done** (PRs #931, #932) |
-| 443 | Bank Statement Import + CSV Parsers | Backend | 439 | M | 443A, 443B | |
+| 443 | Bank Statement Import + CSV Parsers | Backend | 439 | M | 443A, 443B | 443A **Done** (PR #933) |
 | 444 | Auto-Matching + Manual Matching + Reconciliation | Backend | 440, 443 | L | 444A, 444B | |
 | 445 | Interest Calculation + Posting | Backend | 440 | L | 445A, 445B | |
 | 446 | Trust Investments | Backend | 441 | M | 446A, 446B | |

@@ -262,4 +262,8 @@ public class TrustTransaction {
   public void setSecondApprovedAt(Instant secondApprovedAt) {
     this.secondApprovedAt = secondApprovedAt;
   }
+
+  public void setBankStatementLineId(UUID bankStatementLineId) {
+    this.bankStatementLineId = bankStatementLineId;
+  }
 }

@@ -102,6 +102,25 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
       @Param("trustAccountId") UUID trustAccountId,
       @Param("asOfDate") LocalDate asOfDate);
 
+  /**
+   * Finds unmatched candidate transactions for bank reconciliation auto-matching. Candidates are
+   * RECORDED or APPROVED transactions that have not yet been matched to a bank statement line,
+   * within the specified date range.
+   */
+  @Query(
+      """
+      SELECT t FROM TrustTransaction t
+      WHERE t.trustAccountId = :trustAccountId
+        AND t.status IN ('RECORDED', 'APPROVED')
+        AND t.bankStatementLineId IS NULL
+        AND t.transactionDate >= :startDate
+        AND t.transactionDate <= :endDate
+      """)
+  List<TrustTransaction> findUnmatchedCandidates(
+      @Param("trustAccountId") UUID trustAccountId,
+      @Param("startDate") LocalDate startDate,
+      @Param("endDate") LocalDate endDate);
+
   /** Fetches transactions for a customer in date range, ordered by date ASC for statement. */
   @Query(
       """

@@ -1,12 +1,11 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import {
+  ArrowLeft,
   ArrowUpRight,
   ArrowDownLeft,
-  ArrowLeft,
   ChevronLeft,
   ChevronRight,
-  FileText,
 } from "lucide-react";
 import { getOrgSettings } from "@/lib/api/settings";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
@@ -25,11 +24,13 @@ import {
   fetchClientHistory,
   type ClientHistoryPage,
 } from "@/app/(app)/org/[slug]/trust-accounting/client-ledgers/actions";
+import { PrintStatementButton } from "@/components/trust/print-statement-button";
+import { ClientHistoryFilters } from "@/components/trust/client-history-filters";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
 import type {
   TrustTransactionStatus,
   TrustTransactionType,
-  ClientLedgerResponse,
+  ClientLedgerCard,
 } from "@/lib/types";
 
 // ── Helpers ───────────────────────────────────────────────────────
@@ -86,7 +87,7 @@ const TYPE_OPTIONS: TrustTransactionType[] = [
 
 // ── Page ──────────────────────────────────────────────────────────
 
-export default async function ClientLedgerDetailPage({
+export default async function ClientDetailPage({
   params,
   searchParams,
 }: {
@@ -141,28 +142,27 @@ export default async function ClientLedgerDetailPage({
     notFound();
   }
 
-  // Fetch client ledger summary
-  let ledger: ClientLedgerResponse | null = null;
+  // Fetch client ledger card
+  let ledgerCard: ClientLedgerCard | null = null;
   try {
-    ledger = await fetchClientLedger(accountId, customerId);
+    ledgerCard = await fetchClientLedger(accountId, customerId);
   } catch {
     notFound();
   }
 
-  if (!ledger) {
+  if (!ledgerCard) {
     notFound();
   }
 
   // Fetch transaction history
   let historyPage: ClientHistoryPage | null = null;
   let fetchError = false;
-
   try {
     historyPage = await fetchClientHistory(accountId, customerId, {
+      status: search.status,
+      type: search.type,
       dateFrom: search.dateFrom,
       dateTo: search.dateTo,
-      type: search.type,
-      status: search.status,
       page: search.page ? parseInt(search.page, 10) : 0,
       size: 20,
     });
@@ -195,84 +195,120 @@ export default async function ClientLedgerDetailPage({
     return `/org/${slug}/trust-accounting/client-ledgers/${customerId}?${qs}`;
   }
 
-  // Print statement URL
-  const statementUrl = `/org/${slug}/trust-accounting/reports?report=client-statement&customerId=${customerId}&accountId=${accountId}`;
+  // Compute running balance from transaction history
+  // The backend history endpoint returns transactions in descending order.
+  // Running balance is only accurate on page 0 where we can start from the
+  // current total balance and work backward. On subsequent pages the starting
+  // point is unknown (the backend doesn't return a startingBalance), so we
+  // show "—" instead of potentially incorrect numbers.
+  const showRunningBalance = currentPage === 0;
+  const transactionsWithBalance = (() => {
+    if (!historyPage || historyPage.content.length === 0) return [];
+    if (!showRunningBalance) {
+      return historyPage.content.map((tx) => ({
+        ...tx,
+        runningBalance: null as number | null,
+      }));
+    }
+    // Page 0: approximate running balance using the client's current balance
+    // and working backward from the latest transaction
+    const txs = [...historyPage.content];
+    let balance = ledgerCard.balance;
+    const result = txs.map((tx) => {
+      const currentBalance = balance;
+      // Working backward: reverse the effect of this transaction
+      if (isInflowType(tx.transactionType)) {
+        balance -= tx.amount;
+      } else {
+        balance += tx.amount;
+      }
+      return { ...tx, runningBalance: currentBalance as number | null };
+    });
+    return result;
+  })();
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8" data-testid="client-detail-page">
       {/* Back link + Header */}
       <div>
         <Link
           href={`/org/${slug}/trust-accounting/client-ledgers`}
-          className="mb-4 inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
+          className="mb-4 inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+          data-testid="back-link"
         >
           <ArrowLeft className="size-4" />
           Back to Client Ledgers
         </Link>
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-              {ledger.customerName}
-            </h1>
-            <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-              Client trust account ledger
-            </p>
-          </div>
-          <Button asChild variant="outline">
-            <a href={statementUrl} data-testid="print-statement-btn">
-              <FileText className="mr-2 size-4" />
-              Print Statement
-            </a>
-          </Button>
-        </div>
+        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
+          {ledgerCard.customerName}
+        </h1>
+        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+          Client ledger detail and transaction history
+        </p>
       </div>
 
       {/* Summary Cards */}
       <div
-        className="grid grid-cols-2 gap-4 md:grid-cols-4"
+        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
         data-testid="client-summary"
       >
         <Card>
-          <CardContent className="p-4">
-            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+          <CardContent className="pt-6">
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
               Trust Balance
             </p>
-            <p className="mt-1 text-xl font-semibold text-slate-950 dark:text-slate-50">
-              {formatCurrency(ledger.balance, currency)}
+            <p className="mt-1 text-2xl font-bold text-slate-950 dark:text-slate-50">
+              {formatCurrency(ledgerCard.balance, currency)}
             </p>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4">
-            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+          <CardContent className="pt-6">
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
               Total Deposits
             </p>
-            <p className="mt-1 text-xl font-semibold text-green-600 dark:text-green-400">
-              {formatCurrency(ledger.totalDeposits, currency)}
+            <p className="mt-1 text-2xl font-bold text-green-600 dark:text-green-400">
+              {formatCurrency(ledgerCard.totalDeposits, currency)}
             </p>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4">
-            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+          <CardContent className="pt-6">
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
               Total Payments
             </p>
-            <p className="mt-1 text-xl font-semibold text-slate-950 dark:text-slate-50">
-              {formatCurrency(ledger.totalPayments, currency)}
+            <p className="mt-1 text-2xl font-bold text-slate-950 dark:text-slate-50">
+              {formatCurrency(ledgerCard.totalPayments, currency)}
             </p>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4">
-            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-              Fee Transfers
+          <CardContent className="pt-6">
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
+              Total Fee Transfers
             </p>
-            <p className="mt-1 text-xl font-semibold text-slate-950 dark:text-slate-50">
-              {formatCurrency(ledger.totalFeeTransfers, currency)}
+            <p className="mt-1 text-2xl font-bold text-slate-950 dark:text-slate-50">
+              {formatCurrency(ledgerCard.totalFeeTransfers, currency)}
             </p>
           </CardContent>
         </Card>
       </div>
+
+      {/* Print Statement */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Generate Statement</CardTitle>
+          <CardDescription>
+            Select a date range and generate a PDF statement for this client
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <PrintStatementButton
+            accountId={accountId}
+            customerId={customerId}
+          />
+        </CardContent>
+      </Card>
 
       {/* Status Filter Pills */}
       <div
@@ -310,7 +346,10 @@ export default async function ClientLedgerDetailPage({
       </div>
 
       {/* Type Filter Pills */}
-      <div className="flex flex-wrap items-center gap-3" data-testid="type-filters">
+      <div
+        className="flex flex-wrap items-center gap-3"
+        data-testid="type-filters"
+      >
         <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
           Type:
         </span>
@@ -339,17 +378,25 @@ export default async function ClientLedgerDetailPage({
         ))}
       </div>
 
-      {/* Transaction History Table */}
+      {/* Date Range Filters */}
+      <ClientHistoryFilters
+        slug={slug}
+        customerId={customerId}
+        search={search}
+      />
+
+      {/* Error State */}
       {fetchError && (
         <Card>
-          <CardContent className="py-8 text-center">
-            <p className="text-sm text-red-600 dark:text-red-400">
-              Failed to load transaction history. Please try again.
+          <CardContent className="py-10 text-center">
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              Unable to load transaction history. Please try again later.
             </p>
           </CardContent>
         </Card>
       )}
 
+      {/* Transaction History Table */}
       {historyPage && (
         <Card>
           <CardHeader>
@@ -371,7 +418,7 @@ export default async function ClientLedgerDetailPage({
                 <div className="overflow-x-auto">
                   <table
                     className="w-full text-sm"
-                    data-testid="client-transactions-table"
+                    data-testid="history-table"
                   >
                     <thead>
                       <tr className="border-b border-slate-200 dark:border-slate-700">
@@ -387,13 +434,16 @@ export default async function ClientLedgerDetailPage({
                         <th className="pb-3 pr-4 text-right font-medium text-slate-500 dark:text-slate-400">
                           Amount
                         </th>
-                        <th className="pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
+                        <th className="pb-3 pr-4 text-left font-medium text-slate-500 dark:text-slate-400">
                           Status
+                        </th>
+                        <th className="pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
+                          Running Balance
                         </th>
                       </tr>
                     </thead>
                     <tbody>
-                      {historyPage.content.map((tx) => (
+                      {transactionsWithBalance.map((tx) => (
                         <tr
                           key={tx.id}
                           className="border-b border-slate-100 last:border-0 dark:border-slate-800"
@@ -407,18 +457,24 @@ export default async function ClientLedgerDetailPage({
                           </td>
                           <td className="py-3 pr-4">
                             <Badge variant="neutral">
-                              {transactionTypeLabel(tx.transactionType)}
+                              {transactionTypeLabel(
+                                tx.transactionType as TrustTransactionType,
+                              )}
                             </Badge>
                           </td>
                           <td className="py-3 pr-4 text-right">
                             <span
                               className={`inline-flex items-center gap-1 font-mono tabular-nums ${
-                                isInflowType(tx.transactionType)
+                                isInflowType(
+                                  tx.transactionType as TrustTransactionType,
+                                )
                                   ? "text-green-600 dark:text-green-400"
                                   : "text-slate-950 dark:text-slate-50"
                               }`}
                             >
-                              {isInflowType(tx.transactionType) ? (
+                              {isInflowType(
+                                tx.transactionType as TrustTransactionType,
+                              ) ? (
                                 <ArrowDownLeft className="size-3" />
                               ) : (
                                 <ArrowUpRight className="size-3" />
@@ -426,10 +482,19 @@ export default async function ClientLedgerDetailPage({
                               {formatCurrency(tx.amount, currency)}
                             </span>
                           </td>
-                          <td className="py-3">
-                            <Badge variant={statusBadgeVariant(tx.status)}>
+                          <td className="py-3 pr-4">
+                            <Badge
+                              variant={statusBadgeVariant(
+                                tx.status as TrustTransactionStatus,
+                              )}
+                            >
                               {tx.status.replace(/_/g, " ")}
                             </Badge>
+                          </td>
+                          <td className="py-3 text-right font-mono tabular-nums text-slate-950 dark:text-slate-50">
+                            {tx.runningBalance !== null
+                              ? formatCurrency(tx.runningBalance, currency)
+                              : "\u2014"}
                           </td>
                         </tr>
                       ))}

@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, Search, Users } from "lucide-react";
+import { ChevronLeft, ChevronRight, Users } from "lucide-react";
 import { getOrgSettings } from "@/lib/api/settings";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import {
@@ -59,6 +59,7 @@ export default async function ClientLedgersPage({
 
   // Fetch primary trust account
   let accountId: string | null = null;
+  let accountFetchError = false;
   try {
     const accounts = await fetchTrustAccounts();
     const primary = accounts.find((a) => a.isPrimary) ?? accounts[0];
@@ -66,7 +67,7 @@ export default async function ClientLedgersPage({
       accountId = primary.id;
     }
   } catch {
-    // ignore
+    accountFetchError = true;
   }
 
   // Fetch client ledgers
@@ -76,10 +77,10 @@ export default async function ClientLedgersPage({
   if (accountId) {
     try {
       ledgerPage = await fetchClientLedgers(accountId, {
-        nonZeroOnly: search.nonZeroOnly === "true",
-        search: search.search,
         page: search.page ? parseInt(search.page, 10) : 0,
         size: 20,
+        nonZeroOnly: search.nonZeroOnly === "true",
+        search: search.search,
       });
     } catch {
       fetchError = true;
@@ -89,7 +90,6 @@ export default async function ClientLedgersPage({
   const currentPage = ledgerPage?.pageNumber ?? 0;
   const totalPages = ledgerPage?.totalPages ?? 0;
   const currency = settings.defaultCurrency ?? "ZAR";
-  const nonZeroOnly = search.nonZeroOnly === "true";
 
   // Build filter URL helper
   function filterUrl(overrides: Record<string, string | undefined>): string {
@@ -113,15 +113,17 @@ export default async function ClientLedgersPage({
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8" data-testid="client-ledgers-page">
       {/* Header */}
-      <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          Client Ledgers
-        </h1>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Trust account balances by client
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
+            Client Ledgers
+          </h1>
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+            Trust account balances by client
+          </p>
+        </div>
       </div>
 
       {/* Filters */}
@@ -129,13 +131,13 @@ export default async function ClientLedgersPage({
         className="flex flex-wrap items-center gap-4"
         data-testid="ledger-filters"
       >
-        {/* Non-zero balance toggle */}
         <Link
           href={filterUrl({
-            nonZeroOnly: nonZeroOnly ? undefined : "true",
+            nonZeroOnly:
+              search.nonZeroOnly === "true" ? undefined : "true",
           })}
           className={`rounded-full px-3 py-1 text-sm transition-colors ${
-            nonZeroOnly
+            search.nonZeroOnly === "true"
               ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
               : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
           }`}
@@ -144,65 +146,71 @@ export default async function ClientLedgersPage({
           Non-zero balances only
         </Link>
 
-        {/* Search */}
-        <form action={`/org/${slug}/trust-accounting/client-ledgers`} method="get">
-          {nonZeroOnly && (
+        <form
+          action={`/org/${slug}/trust-accounting/client-ledgers`}
+          method="GET"
+          className="flex items-center gap-2"
+        >
+          {search.nonZeroOnly === "true" && (
             <input type="hidden" name="nonZeroOnly" value="true" />
           )}
-          <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              name="search"
-              placeholder="Search clients..."
-              defaultValue={search.search ?? ""}
-              className="h-9 rounded-md border border-slate-200 bg-white pl-9 pr-3 text-sm text-slate-950 placeholder:text-slate-400 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-50 dark:placeholder:text-slate-500 dark:focus:border-teal-400 dark:focus:ring-teal-400"
-              data-testid="client-search"
-            />
-          </div>
+          <input
+            type="text"
+            name="search"
+            placeholder="Search clients..."
+            defaultValue={search.search ?? ""}
+            className="h-8 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500"
+            data-testid="client-search"
+          />
+          <Button type="submit" variant="outline" size="sm">
+            Search
+          </Button>
         </form>
       </div>
 
-      {/* Error states */}
-      {!accountId && !fetchError && (
+      {/* No Account State */}
+      {!accountId && !accountFetchError && (
         <Card>
-          <CardContent className="py-8 text-center">
+          <CardContent className="py-10 text-center">
+            <Users className="mx-auto mb-3 size-10 text-slate-300 dark:text-slate-600" />
             <p className="text-sm text-slate-500 dark:text-slate-400">
-              No trust account found. Create a trust account to view client
-              ledgers.
+              No trust account configured. Set up a trust account to view
+              client ledgers.
             </p>
           </CardContent>
         </Card>
       )}
 
-      {fetchError && (
+      {/* Error State */}
+      {(fetchError || accountFetchError) && (
         <Card>
-          <CardContent className="py-8 text-center">
-            <p className="text-sm text-red-600 dark:text-red-400">
-              Failed to load client ledgers. Please try again.
+          <CardContent className="py-10 text-center">
+            <p
+              className="text-sm text-slate-500 dark:text-slate-400"
+              data-testid="error-state"
+            >
+              Unable to load client ledgers. Please try again later.
             </p>
           </CardContent>
         </Card>
       )}
 
-      {/* Ledger Table */}
+      {/* Client Ledger Table */}
       {ledgerPage && (
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Users className="size-5" />
-              Client Balances
-            </CardTitle>
+            <CardTitle>Client Balances</CardTitle>
             <CardDescription>
-              {ledgerPage.totalElements} client
-              {ledgerPage.totalElements !== 1 ? "s" : ""} found
+              {ledgerPage.content.length} client
+              {ledgerPage.content.length !== 1 ? "s" : ""} found
             </CardDescription>
           </CardHeader>
           <CardContent>
             {ledgerPage.content.length === 0 ? (
-              <div className="py-8 text-center">
+              <div className="py-8 text-center" data-testid="empty-state">
+                <Users className="mx-auto mb-3 size-10 text-slate-300 dark:text-slate-600" />
                 <p className="text-sm text-slate-500 dark:text-slate-400">
-                  No clients match the current filters
+                  No client ledgers match the current filters
                 </p>
               </div>
             ) : (
@@ -227,7 +235,7 @@ export default async function ClientLedgersPage({
                           Total Payments
                         </th>
                         <th className="pb-3 pr-4 text-right font-medium text-slate-500 dark:text-slate-400">
-                          Fee Transfers
+                          Total Fee Transfers
                         </th>
                         <th className="pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
                           Last Transaction
@@ -237,14 +245,14 @@ export default async function ClientLedgersPage({
                     <tbody>
                       {ledgerPage.content.map((ledger) => (
                         <tr
-                          key={ledger.id}
+                          key={ledger.customerId}
                           className="border-b border-slate-100 last:border-0 dark:border-slate-800"
                           data-testid={`ledger-row-${ledger.customerId}`}
                         >
                           <td className="py-3 pr-4">
                             <Link
                               href={`/org/${slug}/trust-accounting/client-ledgers/${ledger.customerId}`}
-                              className="font-medium text-teal-600 hover:text-teal-700 hover:underline dark:text-teal-400 dark:hover:text-teal-300"
+                              className="font-medium text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300"
                             >
                               {ledger.customerName}
                             </Link>
@@ -259,12 +267,15 @@ export default async function ClientLedgersPage({
                             {formatCurrency(ledger.totalPayments, currency)}
                           </td>
                           <td className="py-3 pr-4 text-right font-mono tabular-nums text-slate-700 dark:text-slate-300">
-                            {formatCurrency(ledger.totalFeeTransfers, currency)}
+                            {formatCurrency(
+                              ledger.totalFeeTransfers,
+                              currency,
+                            )}
                           </td>
                           <td className="py-3 text-slate-700 dark:text-slate-300">
                             {ledger.lastTransactionDate
                               ? formatLocalDate(ledger.lastTransactionDate)
-                              : "---"}
+                              : "No transactions"}
                           </td>
                         </tr>
                       ))}

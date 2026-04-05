@@ -1,28 +1,20 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { describe, it, expect, vi, afterEach } from "vitest";
+import { cleanup, render, screen, fireEvent } from "@testing-library/react";
 
-// ── Mock server-only ─────────────────────────────────────────────
+// Must mock server-only before importing components that use it
 vi.mock("server-only", () => ({}));
 
-// ── Mock client ledger actions ───────────────────────────────────
-const mockFetchClientLedgers = vi.fn();
-const mockFetchClientLedger = vi.fn();
-const mockFetchClientHistory = vi.fn();
-const mockFetchClientStatement = vi.fn();
+// ── Mock org settings & capabilities ─────────────────────────────
+const mockGetOrgSettings = vi.fn();
+vi.mock("@/lib/api/settings", () => ({
+  getOrgSettings: (...args: unknown[]) => mockGetOrgSettings(...args),
+}));
 
-vi.mock(
-  "@/app/(app)/org/[slug]/trust-accounting/client-ledgers/actions",
-  () => ({
-    fetchClientLedgers: (...args: unknown[]) =>
-      mockFetchClientLedgers(...args),
-    fetchClientLedger: (...args: unknown[]) =>
-      mockFetchClientLedger(...args),
-    fetchClientHistory: (...args: unknown[]) =>
-      mockFetchClientHistory(...args),
-    fetchClientStatement: (...args: unknown[]) =>
-      mockFetchClientStatement(...args),
-  }),
-);
+const mockFetchMyCapabilities = vi.fn();
+vi.mock("@/lib/api/capabilities", () => ({
+  fetchMyCapabilities: (...args: unknown[]) =>
+    mockFetchMyCapabilities(...args),
+}));
 
 // ── Mock parent trust actions ────────────────────────────────────
 vi.mock("@/app/(app)/org/[slug]/trust-accounting/actions", () => ({
@@ -47,22 +39,26 @@ vi.mock("@/app/(app)/org/[slug]/trust-accounting/actions", () => ({
   ]),
 }));
 
-// ── Mock org settings & capabilities ─────────────────────────────
-vi.mock("@/lib/api/settings", () => ({
-  getOrgSettings: vi.fn().mockResolvedValue({
-    enabledModules: ["trust_accounting"],
-    defaultCurrency: "ZAR",
-  }),
-}));
+// ── Mock client ledger actions ───────────────────────────────────
+const mockFetchClientLedgers = vi.fn();
+const mockFetchClientLedger = vi.fn();
+const mockFetchClientHistory = vi.fn();
+const mockGenerateStatementPdf = vi.fn();
 
-vi.mock("@/lib/api/capabilities", () => ({
-  fetchMyCapabilities: vi.fn().mockResolvedValue({
-    capabilities: ["VIEW_TRUST", "MANAGE_TRUST"],
-    role: "OWNER",
-    isAdmin: false,
-    isOwner: true,
+vi.mock(
+  "@/app/(app)/org/[slug]/trust-accounting/client-ledgers/actions",
+  () => ({
+    fetchClientLedgers: (...args: unknown[]) =>
+      mockFetchClientLedgers(...args),
+    fetchClientLedger: (...args: unknown[]) =>
+      mockFetchClientLedger(...args),
+    fetchClientHistory: (...args: unknown[]) =>
+      mockFetchClientHistory(...args),
+    fetchClientStatement: vi.fn(),
+    generateStatementPdf: (...args: unknown[]) =>
+      mockGenerateStatementPdf(...args),
   }),
-}));
+);
 
 // ── Mock next/navigation ─────────────────────────────────────────
 vi.mock("next/navigation", () => ({
@@ -98,20 +94,33 @@ vi.mock("next/link", () => ({
 
 // ── Imports after mocks ──────────────────────────────────────────
 import ClientLedgersPage from "@/app/(app)/org/[slug]/trust-accounting/client-ledgers/page";
-import ClientLedgerDetailPage from "@/app/(app)/org/[slug]/trust-accounting/client-ledgers/[customerId]/page";
+import ClientDetailPage from "@/app/(app)/org/[slug]/trust-accounting/client-ledgers/[customerId]/page";
 
 // ── Helpers ──────────────────────────────────────────────────────
 
-function makeLedger(overrides: Record<string, unknown> = {}) {
+function setupDefaultMocks() {
+  mockGetOrgSettings.mockResolvedValue({
+    enabledModules: ["trust_accounting"],
+    defaultCurrency: "ZAR",
+  });
+  mockFetchMyCapabilities.mockResolvedValue({
+    capabilities: ["VIEW_TRUST", "MANAGE_TRUST"],
+    role: "OWNER",
+    isAdmin: false,
+    isOwner: true,
+  });
+}
+
+function makeLedgerCard(overrides: Record<string, unknown> = {}) {
   return {
     id: "ledger-1",
     trustAccountId: "acc-1",
     customerId: "cust-1",
-    customerName: "Smith & Associates",
-    balance: 125000,
-    totalDeposits: 200000,
-    totalPayments: 50000,
-    totalFeeTransfers: 25000,
+    customerName: "Acme Corp",
+    balance: 50000,
+    totalDeposits: 100000,
+    totalPayments: 40000,
+    totalFeeTransfers: 10000,
     totalInterestCredited: 0,
     lastTransactionDate: "2026-04-01",
     createdAt: "2025-01-01T00:00:00Z",
@@ -131,7 +140,7 @@ function makeTx(overrides: Record<string, unknown> = {}) {
     counterpartyCustomerId: null,
     invoiceId: null,
     reference: "DEP-001",
-    description: "Client deposit",
+    description: "Initial deposit",
     transactionDate: "2026-04-01",
     status: "APPROVED",
     approvedBy: "member-1",
@@ -150,26 +159,18 @@ function makeTx(overrides: Record<string, unknown> = {}) {
   };
 }
 
-async function renderLedgersPage() {
+async function renderListPage(searchParams = {}) {
   const result = await ClientLedgersPage({
     params: Promise.resolve({ slug: "acme" }),
-    searchParams: Promise.resolve({}),
+    searchParams: Promise.resolve(searchParams),
   });
   render(result);
 }
 
-async function renderLedgersPageWithFilter() {
-  const result = await ClientLedgersPage({
-    params: Promise.resolve({ slug: "acme" }),
-    searchParams: Promise.resolve({ nonZeroOnly: "true" }),
-  });
-  render(result);
-}
-
-async function renderDetailPage() {
-  const result = await ClientLedgerDetailPage({
+async function renderDetailPage(searchParams = {}) {
+  const result = await ClientDetailPage({
     params: Promise.resolve({ slug: "acme", customerId: "cust-1" }),
-    searchParams: Promise.resolve({}),
+    searchParams: Promise.resolve(searchParams),
   });
   render(result);
 }
@@ -177,29 +178,29 @@ async function renderDetailPage() {
 // ── Tests ────────────────────────────────────────────────────────
 
 describe("Client Ledgers", () => {
-  beforeEach(() => {
+  afterEach(() => {
+    cleanup();
     vi.clearAllMocks();
   });
 
-  afterEach(() => {
-    cleanup();
-  });
-
   // Test 1: Ledger list renders client cards
-  it("renders client ledger list with balance data", async () => {
+  it("renders client ledger list with client cards", async () => {
+    setupDefaultMocks();
     mockFetchClientLedgers.mockResolvedValue({
       content: [
-        makeLedger({
-          id: "ledger-1",
+        makeLedgerCard({
           customerId: "cust-1",
-          customerName: "Smith & Associates",
-          balance: 125000,
+          customerName: "Acme Corp",
+          balance: 50000,
         }),
-        makeLedger({
+        makeLedgerCard({
           id: "ledger-2",
           customerId: "cust-2",
-          customerName: "Jones Properties",
-          balance: 75000,
+          customerName: "Beta Inc",
+          balance: 25000,
+          totalDeposits: 50000,
+          totalPayments: 20000,
+          totalFeeTransfers: 5000,
         }),
       ],
       totalElements: 2,
@@ -208,19 +209,24 @@ describe("Client Ledgers", () => {
       pageNumber: 0,
     });
 
-    await renderLedgersPage();
+    await renderListPage();
 
     expect(screen.getByTestId("client-ledgers-table")).toBeInTheDocument();
-    expect(screen.getByText("Smith & Associates")).toBeInTheDocument();
-    expect(screen.getByText("Jones Properties")).toBeInTheDocument();
+    expect(screen.getByText("Acme Corp")).toBeInTheDocument();
+    expect(screen.getByText("Beta Inc")).toBeInTheDocument();
     expect(screen.getByText("2 clients found")).toBeInTheDocument();
   });
 
-  // Test 2: Non-zero balance filter works
-  it("passes nonZeroOnly filter to fetch action", async () => {
+  // Test 2: Non-zero balance filter
+  it("passes nonZeroOnly filter to fetchClientLedgers", async () => {
+    setupDefaultMocks();
     mockFetchClientLedgers.mockResolvedValue({
       content: [
-        makeLedger({ balance: 125000 }),
+        makeLedgerCard({
+          customerId: "cust-1",
+          customerName: "Acme Corp",
+          balance: 50000,
+        }),
       ],
       totalElements: 1,
       totalPages: 1,
@@ -228,24 +234,27 @@ describe("Client Ledgers", () => {
       pageNumber: 0,
     });
 
-    await renderLedgersPageWithFilter();
+    await renderListPage({ nonZeroOnly: "true" });
 
-    expect(mockFetchClientLedgers).toHaveBeenCalledWith(
-      "acc-1",
-      expect.objectContaining({ nonZeroOnly: true }),
-    );
+    expect(mockFetchClientLedgers).toHaveBeenCalledWith("acc-1", {
+      page: 0,
+      size: 20,
+      nonZeroOnly: true,
+      search: undefined,
+    });
+    expect(screen.getByTestId("client-ledgers-table")).toBeInTheDocument();
   });
 
   // Test 3: Detail page shows transaction history
-  it("renders client detail page with transaction history", async () => {
+  it("renders detail page with transaction history", async () => {
+    setupDefaultMocks();
     mockFetchClientLedger.mockResolvedValue(
-      makeLedger({
+      makeLedgerCard({
         customerId: "cust-1",
-        customerName: "Smith & Associates",
-        balance: 125000,
+        customerName: "Acme Corp",
+        balance: 50000,
       }),
     );
-
     mockFetchClientHistory.mockResolvedValue({
       content: [
         makeTx({
@@ -253,12 +262,14 @@ describe("Client Ledgers", () => {
           reference: "DEP-001",
           transactionType: "DEPOSIT",
           amount: 50000,
+          status: "APPROVED",
         }),
         makeTx({
           id: "tx-2",
           reference: "PAY-001",
           transactionType: "PAYMENT",
-          amount: 3500,
+          amount: 10000,
+          status: "APPROVED",
         }),
       ],
       totalElements: 2,
@@ -269,24 +280,27 @@ describe("Client Ledgers", () => {
 
     await renderDetailPage();
 
-    expect(screen.getByText("Smith & Associates")).toBeInTheDocument();
-    expect(
-      screen.getByTestId("client-transactions-table"),
-    ).toBeInTheDocument();
+    expect(screen.getByTestId("client-detail-page")).toBeInTheDocument();
+    expect(screen.getByText("Acme Corp")).toBeInTheDocument();
+    expect(screen.getByTestId("history-table")).toBeInTheDocument();
     expect(screen.getByText("DEP-001")).toBeInTheDocument();
     expect(screen.getByText("PAY-001")).toBeInTheDocument();
-    expect(screen.getByText("2 transactions found")).toBeInTheDocument();
+    // Running Balance column header
+    expect(screen.getByText("Running Balance")).toBeInTheDocument();
+    // Print statement section
+    expect(screen.getByTestId("print-statement")).toBeInTheDocument();
   });
 
-  // Test 4: Print statement button renders
-  it("renders print statement button on detail page", async () => {
+  // Test 4: Print statement triggers report generation
+  it("print statement button triggers PDF generation", async () => {
+    setupDefaultMocks();
     mockFetchClientLedger.mockResolvedValue(
-      makeLedger({
+      makeLedgerCard({
         customerId: "cust-1",
-        customerName: "Smith & Associates",
+        customerName: "Acme Corp",
+        balance: 50000,
       }),
     );
-
     mockFetchClientHistory.mockResolvedValue({
       content: [],
       totalElements: 0,
@@ -294,14 +308,28 @@ describe("Client Ledgers", () => {
       pageSize: 20,
       pageNumber: 0,
     });
+    // Return a minimal base64 PDF
+    mockGenerateStatementPdf.mockResolvedValue("JVBER");
 
     await renderDetailPage();
 
+    const dateFrom = screen.getByTestId("statement-date-from");
+    const dateTo = screen.getByTestId("statement-date-to");
     const printBtn = screen.getByTestId("print-statement-btn");
-    expect(printBtn).toBeInTheDocument();
-    expect(printBtn).toHaveAttribute(
-      "href",
-      expect.stringContaining("customerId=cust-1"),
+
+    // Set dates
+    fireEvent.change(dateFrom, { target: { value: "2026-01-01" } });
+    fireEvent.change(dateTo, { target: { value: "2026-03-31" } });
+
+    // Click print
+    fireEvent.click(printBtn);
+
+    // Verify generateStatementPdf was called with correct params
+    expect(mockGenerateStatementPdf).toHaveBeenCalledWith(
+      "acc-1",
+      "cust-1",
+      "2026-01-01",
+      "2026-03-31",
     );
   });
 });

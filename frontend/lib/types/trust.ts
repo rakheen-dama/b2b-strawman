@@ -108,43 +108,27 @@ export interface TotalBalance {
   balance: number;
 }
 
-// Client ledger response types (for detail pages)
-
-export interface ClientLedgerResponse {
-  id: string;
-  trustAccountId: string;
-  customerId: string;
-  customerName: string;
-  balance: number;
-  totalDeposits: number;
-  totalPayments: number;
-  totalFeeTransfers: number;
-  totalInterestCredited: number;
-  lastTransactionDate: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
+// Client ledger statement types
 
 export interface LedgerStatementEntry {
-  id: string;
-  transactionDate: string;
+  transactionId: string;
+  transactionType: string;
+  amount: number;
   reference: string;
   description: string | null;
-  transactionType: TrustTransactionType;
-  amount: number;
+  transactionDate: string;
+  status: string;
   runningBalance: number;
-  status: TrustTransactionStatus;
 }
 
 export interface LedgerStatementResponse {
-  customerId: string;
-  customerName: string;
-  periodStart: string;
-  periodEnd: string;
   openingBalance: number;
   closingBalance: number;
-  entries: LedgerStatementEntry[];
+  transactions: LedgerStatementEntry[];
 }
+
+/** Alias for ClientLedgerCard — matches backend ClientLedgerCardResponse */
+export type ClientLedgerResponse = ClientLedgerCard;
 
 // Bank statement types
 

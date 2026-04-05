@@ -49,8 +49,16 @@ public class SchemaMultiTenantConnectionProvider implements MultiTenantConnectio
   @Override
   public void releaseConnection(String tenantIdentifier, Connection connection)
       throws SQLException {
-    resetSearchPath(connection);
-    releaseAnyConnection(connection);
+    try {
+      resetSearchPath(connection);
+    } catch (SQLException e) {
+      log.warn(
+          "Failed to reset search_path on connection release for tenant {}: {}",
+          tenantIdentifier,
+          e.getMessage());
+    } finally {
+      releaseAnyConnection(connection);
+    }
   }
 
   @Override
@@ -63,7 +71,14 @@ public class SchemaMultiTenantConnectionProvider implements MultiTenantConnectio
   @Override
   public void releaseReadOnlyConnection(String tenantIdentifier, Connection connection)
       throws SQLException {
-    connection.setReadOnly(false);
+    try {
+      connection.setReadOnly(false);
+    } catch (SQLException e) {
+      log.warn(
+          "Failed to clear read-only flag on connection release for tenant {}: {}",
+          tenantIdentifier,
+          e.getMessage());
+    }
     releaseConnection(tenantIdentifier, connection);
   }
 

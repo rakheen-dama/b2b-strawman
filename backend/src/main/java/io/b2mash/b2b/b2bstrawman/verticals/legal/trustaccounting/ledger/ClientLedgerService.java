@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger;
 
+import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
@@ -25,14 +26,17 @@ public class ClientLedgerService {
 
   private final ClientLedgerCardRepository ledgerCardRepository;
   private final TrustTransactionRepository transactionRepository;
+  private final CustomerRepository customerRepository;
   private final VerticalModuleGuard moduleGuard;
 
   public ClientLedgerService(
       ClientLedgerCardRepository ledgerCardRepository,
       TrustTransactionRepository transactionRepository,
+      CustomerRepository customerRepository,
       VerticalModuleGuard moduleGuard) {
     this.ledgerCardRepository = ledgerCardRepository;
     this.transactionRepository = transactionRepository;
+    this.customerRepository = customerRepository;
     this.moduleGuard = moduleGuard;
   }
 
@@ -48,6 +52,7 @@ public class ClientLedgerService {
       UUID id,
       UUID trustAccountId,
       UUID customerId,
+      String customerName,
       BigDecimal balance,
       BigDecimal totalDeposits,
       BigDecimal totalPayments,
@@ -56,6 +61,13 @@ public class ClientLedgerService {
       LocalDate lastTransactionDate,
       Instant createdAt,
       Instant updatedAt) {}
+
+  public record LedgerStatementResponse(
+      BigDecimal openingBalance,
+      BigDecimal closingBalance,
+      List<LedgerStatementLine> transactions) {}
+
+  public record TotalBalanceResponse(BigDecimal balance) {}
 
   public record LedgerStatementLine(
       UUID transactionId,
@@ -112,13 +124,14 @@ public class ClientLedgerService {
   }
 
   @Transactional(readOnly = true)
-  public BigDecimal getTotalTrustBalance(UUID trustAccountId) {
+  public TotalBalanceResponse getTotalTrustBalance(UUID trustAccountId) {
     moduleGuard.requireModule(MODULE_ID);
-    return ledgerCardRepository.calculateTotalTrustBalance(trustAccountId);
+    return new TotalBalanceResponse(
+        ledgerCardRepository.calculateTotalTrustBalance(trustAccountId));
   }
 
   @Transactional(readOnly = true)
-  public List<LedgerStatementLine> getClientLedgerStatement(
+  public LedgerStatementResponse getClientLedgerStatement(
       UUID customerId, UUID trustAccountId, LocalDate startDate, LocalDate endDate) {
     moduleGuard.requireModule(MODULE_ID);
 
@@ -151,7 +164,9 @@ public class ClientLedgerService {
               runningBalance));
     }
 
-    return lines;
+    BigDecimal closingBalance = lines.isEmpty() ? openingBalance : lines.getLast().runningBalance();
+
+    return new LedgerStatementResponse(openingBalance, closingBalance, lines);
   }
 
   /**
@@ -174,10 +189,14 @@ public class ClientLedgerService {
   // --- Private Helpers ---
 
   private ClientLedgerCardResponse toResponse(ClientLedgerCard entity) {
+    String customerName =
+        customerRepository.findById(entity.getCustomerId()).map(c -> c.getName()).orElse(null);
+
     return new ClientLedgerCardResponse(
         entity.getId(),
         entity.getTrustAccountId(),
         entity.getCustomerId(),
+        customerName,
         entity.getBalance(),
         entity.getTotalDeposits(),
         entity.getTotalPayments(),

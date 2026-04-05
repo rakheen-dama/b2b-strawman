@@ -5,9 +5,9 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.lpff.LpffRate;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.lpff.LpffRateRepository;
-import jakarta.persistence.EntityManager;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
@@ -26,22 +26,22 @@ public class TrustAccountService {
   private static final String MODULE_ID = "trust_accounting";
 
   private final TrustAccountRepository trustAccountRepository;
+  private final ClientLedgerCardRepository ledgerCardRepository;
   private final LpffRateRepository lpffRateRepository;
   private final VerticalModuleGuard moduleGuard;
   private final AuditService auditService;
-  private final EntityManager entityManager;
 
   public TrustAccountService(
       TrustAccountRepository trustAccountRepository,
+      ClientLedgerCardRepository ledgerCardRepository,
       LpffRateRepository lpffRateRepository,
       VerticalModuleGuard moduleGuard,
-      AuditService auditService,
-      EntityManager entityManager) {
+      AuditService auditService) {
     this.trustAccountRepository = trustAccountRepository;
+    this.ledgerCardRepository = ledgerCardRepository;
     this.lpffRateRepository = lpffRateRepository;
     this.moduleGuard = moduleGuard;
     this.auditService = auditService;
-    this.entityManager = entityManager;
   }
 
   // --- DTO Records ---
@@ -230,19 +230,13 @@ public class TrustAccountService {
     }
 
     // Closing guard: check client ledger balances sum to zero
-    // The client_ledger_cards table exists from V85 but the entity is created in Epic 440.
-    // This native query is forward-compatible.
-    var result =
-        entityManager
-            .createNativeQuery(
-                "SELECT COALESCE(SUM(balance), 0) FROM client_ledger_cards WHERE trust_account_id = :accountId")
-            .setParameter("accountId", id)
-            .getSingleResult();
-    BigDecimal totalBalance = (BigDecimal) result;
-    if (totalBalance.compareTo(BigDecimal.ZERO) != 0) {
+    BigDecimal totalBalance = ledgerCardRepository.calculateTotalTrustBalance(id);
+    if (totalBalance.compareTo(BigDecimal.ZERO) > 0) {
       throw new InvalidStateException(
           "Cannot close trust account",
-          "Account has non-zero client balances totalling " + totalBalance);
+          "R"
+              + totalBalance.toPlainString()
+              + " in client trust balances must be disbursed first.");
     }
 
     account.setStatus(TrustAccountStatus.CLOSED);

@@ -1350,7 +1350,9 @@ class TrustTransactionServiceTest {
                           LocalDate.of(2026, 3, 28)));
 
                   // Get total trust balance from ledger cards
-                  var totalBalance = clientLedgerService.getTotalTrustBalance(trustAccountId);
+                  var totalBalanceResponse =
+                      clientLedgerService.getTotalTrustBalance(trustAccountId);
+                  var totalBalance = totalBalanceResponse.balance();
 
                   // Get individual ledger card balances and sum them
                   var ledger1 =

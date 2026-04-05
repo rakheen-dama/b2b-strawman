@@ -147,6 +147,25 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
       """)
   BigDecimal calculateOutstandingPayments(@Param("trustAccountId") UUID trustAccountId);
 
+  /**
+   * Fetches all approved/recorded non-reversal transactions for a trust account within a date
+   * range, ordered by date ASC. Used by the Receipts & Payments report.
+   */
+  @Query(
+      """
+      SELECT t FROM TrustTransaction t
+      WHERE t.trustAccountId = :trustAccountId
+        AND t.transactionDate >= :startDate
+        AND t.transactionDate <= :endDate
+        AND t.status IN ('RECORDED', 'APPROVED')
+        AND t.transactionType <> 'REVERSAL'
+      ORDER BY t.transactionDate ASC, t.createdAt ASC
+      """)
+  List<TrustTransaction> findForReceiptsPayments(
+      @Param("trustAccountId") UUID trustAccountId,
+      @Param("startDate") LocalDate startDate,
+      @Param("endDate") LocalDate endDate);
+
   /** Fetches transactions for a customer in date range, ordered by date ASC for statement. */
   @Query(
       """

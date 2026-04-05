@@ -121,6 +121,32 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
       @Param("startDate") LocalDate startDate,
       @Param("endDate") LocalDate endDate);
 
+  /**
+   * Sums outstanding deposits: approved credit-type transactions not matched to bank statements.
+   */
+  @Query(
+      """
+      SELECT COALESCE(SUM(t.amount), 0)
+      FROM TrustTransaction t
+      WHERE t.trustAccountId = :trustAccountId
+        AND t.status IN ('RECORDED', 'APPROVED')
+        AND t.bankStatementLineId IS NULL
+        AND t.transactionType IN ('DEPOSIT', 'INTEREST_CREDIT')
+      """)
+  BigDecimal calculateOutstandingDeposits(@Param("trustAccountId") UUID trustAccountId);
+
+  /** Sums outstanding payments: approved debit-type transactions not matched to bank statements. */
+  @Query(
+      """
+      SELECT COALESCE(SUM(t.amount), 0)
+      FROM TrustTransaction t
+      WHERE t.trustAccountId = :trustAccountId
+        AND t.status IN ('RECORDED', 'APPROVED')
+        AND t.bankStatementLineId IS NULL
+        AND t.transactionType IN ('PAYMENT', 'FEE_TRANSFER', 'REFUND', 'INTEREST_LPFF')
+      """)
+  BigDecimal calculateOutstandingPayments(@Param("trustAccountId") UUID trustAccountId);
+
   /** Fetches transactions for a customer in date range, ordered by date ASC for statement. */
   @Query(
       """

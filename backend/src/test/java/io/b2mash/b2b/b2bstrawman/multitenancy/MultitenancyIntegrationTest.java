@@ -2,18 +2,20 @@ package io.b2mash.b2b.b2bstrawman.multitenancy;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.TestPostgresConfiguration;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
-@Import(TestcontainersConfiguration.class)
+@AutoConfigureMockMvc
+@Import(TestPostgresConfiguration.class)
 @ActiveProfiles("test")
 class MultitenancyIntegrationTest {
 

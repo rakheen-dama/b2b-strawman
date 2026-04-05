@@ -22,12 +22,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class InterestService {
+
+  private static final Logger log = LoggerFactory.getLogger(InterestService.class);
 
   private static final String MODULE_ID = "trust_accounting";
 
@@ -204,6 +208,7 @@ public class InterestService {
     for (var ledgerCard : ledgerCards) {
       var customerId = ledgerCard.getCustomerId();
       var clientGrossInterest = BigDecimal.ZERO;
+      var clientLpffShareSum = BigDecimal.ZERO;
       var clientTotalBalanceDays = BigDecimal.ZERO;
 
       for (var segment : segments) {
@@ -238,6 +243,11 @@ public class InterestService {
             currentBalance = currentBalance.add(txn.getAmount());
           } else if (DEBIT_TYPES.contains(txn.getTransactionType())) {
             currentBalance = currentBalance.subtract(txn.getAmount());
+          } else {
+            log.warn(
+                "Unrecognized transaction type '{}' for transaction {} — ignored in interest balance calculation",
+                txn.getTransactionType(),
+                txn.getId());
           }
 
           currentDate = txnDate;
@@ -258,21 +268,23 @@ public class InterestService {
                 .multiply(BigDecimal.valueOf(segDays))
                 .divide(BigDecimal.valueOf(365), 10, RoundingMode.HALF_UP);
         clientGrossInterest = clientGrossInterest.add(segGross);
+
+        // Compute LPFF share per-segment using the segment's own lpffSharePercent
+        var segLpffShare =
+            segGross
+                .setScale(2, RoundingMode.HALF_UP)
+                .multiply(segment.lpffSharePercent())
+                .setScale(2, RoundingMode.HALF_UP);
+        clientLpffShareSum = clientLpffShareSum.add(segLpffShare);
       }
 
-      // Round and split
+      // Round gross interest
       var grossInterest = clientGrossInterest.setScale(2, RoundingMode.HALF_UP);
 
       if (BigDecimal.ZERO.compareTo(grossInterest) < 0) {
-        // Use the base rate's lpffSharePercent for splitting
-        // If there's a mid-period change, use the last effective rate's share percent
-        var effectiveLpffSharePercent =
-            midPeriodRates.isEmpty()
-                ? baseRate.getLpffSharePercent()
-                : midPeriodRates.getLast().getLpffSharePercent();
-
-        var lpffShare =
-            grossInterest.multiply(effectiveLpffSharePercent).setScale(2, RoundingMode.HALF_UP);
+        // LPFF share is sum of per-segment shares (each rounded individually);
+        // client share is the remainder to preserve rounding integrity
+        var lpffShare = clientLpffShareSum;
         var clientShareAmount = grossInterest.subtract(lpffShare);
 
         var avgDailyBalance =

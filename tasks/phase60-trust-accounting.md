@@ -42,7 +42,7 @@ Phase 60 replaces the `trust_accounting` module stub (registered in Phase 49) wi
 | 447 | Trust Reports (Section 35) + Event/Notification Handlers | Backend | 442, 444, 445, 446 | M | 447A, 447B | **Done** (PRs #941, #942) |
 | 448 | Frontend: Trust Dashboard + Transaction Entry + Approval UX | Frontend | 442 | L | 448A, 448B | **Done** (PRs #944, #945) |
 | 449 | Frontend: Client Ledger + Reconciliation Split-Pane | Frontend | 442, 444 | L | 449A, 449B | **Done** (PRs #947, #948) |
-| 450 | Frontend: Interest + Investments + Reports Pages | Frontend | 445, 446, 447 | M | 450A, 450B | In progress (450A done PR #951) |
+| 450 | Frontend: Interest + Investments + Reports Pages | Frontend | 445, 446, 447 | M | 450A, 450B | **Done** (PRs #951, #952) |
 | 451 | Frontend: Matter/Customer Trust Tabs + Settings + Sidebar + Coexistence Tests | Frontend | 448, 449, 450 | M | 451A, 451B | Not started |
 
 ---
@@ -279,7 +279,7 @@ FRONTEND CORE                           FRONTEND ADVANCED
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 10a (parallel) | 450 | 450A | Interest page (`/trust-accounting/interest`): interest runs list, `InterestRunWizard` (create → calculate → approve → post), allocation table, LPFF rate management sub-section. Types, schemas, actions. Frontend tests (~4). Frontend only. | **Done** (PR #951) |
-| 10b (parallel) | 450 | 450B | Investment register page (`/trust-accounting/investments`): investment table, `InvestmentDialog` (place), record interest dialog, withdraw action, maturity alerts. Trust reports page (`/trust-accounting/reports`): report list with generation dialogs, format selection. Frontend tests (~4). Frontend only. | Not started |
+| 10b (parallel) | 450 | 450B | Investment register page (`/trust-accounting/investments`): investment table, `InvestmentDialog` (place), record interest dialog, withdraw action, maturity alerts. Trust reports page (`/trust-accounting/reports`): report list with generation dialogs, format selection. Frontend tests (~4). Frontend only. | **Done** (PR #952) |
 
 ### Stage 11: Frontend Integration + Coexistence
 
@@ -1068,7 +1068,7 @@ Stage 11: [451A] -> [451B]                                                <- int
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **450A** | 450.1--450.5 | Interest page: runs list, `InterestRunWizard` (create → calculate → approve → post), allocation table, LPFF rate management. Frontend tests (~4). Frontend only. | **Done** (PR #951) |
-| **450B** | 450.6--450.10 | Investment register page + place/record/withdraw dialogs + maturity alerts. Trust reports page + generation dialogs. Frontend tests (~4). Frontend only. | Not started |
+| **450B** | 450.6--450.10 | Investment register page + place/record/withdraw dialogs + maturity alerts. Trust reports page + generation dialogs. Frontend tests (~4). Frontend only. | **Done** (PR #952) |
 
 ### Tasks
 

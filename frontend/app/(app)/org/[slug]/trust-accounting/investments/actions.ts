@@ -9,9 +9,11 @@ import type { PlaceInvestmentFormData } from "@/lib/schemas/trust";
 export async function fetchInvestments(
   accountId: string,
 ): Promise<TrustInvestment[]> {
-  return api.get<TrustInvestment[]>(
-    `/api/trust-accounts/${accountId}/investments`,
-  );
+  const response = await api.get<{
+    content: TrustInvestment[];
+    page: { totalElements: number; totalPages: number; size: number; number: number };
+  }>(`/api/trust-accounts/${accountId}/investments?size=100&sort=depositDate,desc`);
+  return response.content;
 }
 
 export async function placeInvestment(

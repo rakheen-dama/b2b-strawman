@@ -29,16 +29,13 @@ vi.mock(
   }),
 );
 
-// -- Mock report actions --------------------------------------------------
-vi.mock(
-  "@/app/(app)/org/[slug]/reports/[reportSlug]/actions",
-  () => ({
-    executeReportAction: vi.fn(),
-    exportReportCsvAction: vi.fn(),
-    exportReportPdfAction: vi.fn(),
-    fetchEntityOptionsAction: vi.fn(),
-  }),
-);
+// -- Mock report definitions API ------------------------------------------
+const mockGetReportDefinitions = vi.fn();
+
+vi.mock("@/lib/api/reports", () => ({
+  getReportDefinitions: (...args: unknown[]) =>
+    mockGetReportDefinitions(...args),
+}));
 
 // -- Mock parent trust actions --------------------------------------------
 vi.mock("@/app/(app)/org/[slug]/trust-accounting/actions", () => ({
@@ -124,6 +121,7 @@ function makeInvestment(overrides: Record<string, unknown> = {}) {
     id: "inv-1",
     trustAccountId: "acc-1",
     customerId: "cust-1111-2222-3333-444444444444",
+    customerName: "Acme Corp",
     institution: "FNB Money Market",
     accountNumber: "INV-001",
     principal: 500000,
@@ -172,11 +170,13 @@ describe("Trust Investments & Reports", () => {
     mockFetchInvestments.mockResolvedValue([
       makeInvestment({
         id: "inv-1",
+        customerName: "Smith & Associates",
         institution: "FNB Money Market",
         status: "ACTIVE",
       }),
       makeInvestment({
         id: "inv-2",
+        customerName: "Jones Trust",
         institution: "Nedbank Call Account",
         principal: 250000,
         interestRate: 0.065,
@@ -189,6 +189,8 @@ describe("Trust Investments & Reports", () => {
     expect(screen.getByTestId("investments-table")).toBeInTheDocument();
     expect(screen.getByText("FNB Money Market")).toBeInTheDocument();
     expect(screen.getByText("Nedbank Call Account")).toBeInTheDocument();
+    expect(screen.getByText("Smith & Associates")).toBeInTheDocument();
+    expect(screen.getByText("Jones Trust")).toBeInTheDocument();
     expect(screen.getByText("2 investments found")).toBeInTheDocument();
   });
 
@@ -261,12 +263,14 @@ describe("Trust Investments & Reports", () => {
     mockFetchInvestments.mockResolvedValue([
       makeInvestment({
         id: "inv-maturing",
+        customerName: "Maturing Client",
         institution: "Maturing Soon Bank",
         maturityDate: soonStr,
         status: "ACTIVE",
       }),
       makeInvestment({
         id: "inv-safe",
+        customerName: "Safe Client",
         institution: "Far Away Bank",
         maturityDate: laterStr,
         status: "ACTIVE",
@@ -284,20 +288,66 @@ describe("Trust Investments & Reports", () => {
     expect(alertRow.className).toContain("bg-amber-50");
   });
 
-  it("reports page lists all 7 report types", async () => {
+  it("reports page lists all 7 trust report types", async () => {
+    mockGetReportDefinitions.mockResolvedValue({
+      categories: [
+        {
+          category: "TRUST",
+          label: "Trust Reports",
+          reports: [
+            {
+              slug: "trust-receipts-payments",
+              name: "Trust Receipts & Payments",
+              description: "Chronological journal of all trust receipts and payments for a date range",
+            },
+            {
+              slug: "client-trust-balances",
+              name: "Client Trust Balances",
+              description: "Point-in-time balances per client for a trust account",
+            },
+            {
+              slug: "client-ledger-statement",
+              name: "Client Ledger Statement",
+              description: "Per-client transaction history with running balance",
+            },
+            {
+              slug: "trust-reconciliation",
+              name: "Trust Reconciliation",
+              description: "Three-way reconciliation: bank vs cashbook vs client ledger",
+            },
+            {
+              slug: "investment-register",
+              name: "Investment Register",
+              description: "List of all trust investments with status, principal, and interest earned",
+            },
+            {
+              slug: "interest-allocation",
+              name: "Interest Allocation",
+              description: "Per-client interest allocation breakdown for a specific interest run",
+            },
+            {
+              slug: "section-35-data-pack",
+              name: "Section 35 Data Pack",
+              description: "Composite report combining all trust sub-reports for Section 35 compliance",
+            },
+          ],
+        },
+      ],
+    });
+
     await renderReportsPage();
 
     expect(screen.getByTestId("trust-reports-page")).toBeInTheDocument();
 
     // Verify all 7 report cards
     const expectedSlugs = [
-      "TRUST_RECEIPTS_PAYMENTS",
-      "CLIENT_TRUST_BALANCES",
-      "CLIENT_LEDGER_STATEMENT",
-      "INVESTMENT_REGISTER",
-      "INTEREST_ALLOCATION",
-      "TRUST_RECONCILIATION",
-      "SECTION_35_DATA_PACK",
+      "trust-receipts-payments",
+      "client-trust-balances",
+      "client-ledger-statement",
+      "trust-reconciliation",
+      "investment-register",
+      "interest-allocation",
+      "section-35-data-pack",
     ];
 
     for (const slug of expectedSlugs) {
@@ -305,14 +355,19 @@ describe("Trust Investments & Reports", () => {
     }
 
     // Verify report names are visible
-    expect(
-      screen.getByText("Receipts & Payments Journal"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Trust Receipts & Payments")).toBeInTheDocument();
     expect(screen.getByText("Client Trust Balances")).toBeInTheDocument();
     expect(screen.getByText("Client Ledger Statement")).toBeInTheDocument();
     expect(screen.getByText("Investment Register")).toBeInTheDocument();
     expect(screen.getByText("Interest Allocation")).toBeInTheDocument();
     expect(screen.getByText("Trust Reconciliation")).toBeInTheDocument();
     expect(screen.getByText("Section 35 Data Pack")).toBeInTheDocument();
+
+    // Verify links point to existing report runner
+    const links = screen.getAllByRole("link");
+    const reportLinks = links.filter((l) =>
+      l.getAttribute("href")?.startsWith("/org/acme/reports/"),
+    );
+    expect(reportLinks).toHaveLength(7);
   });
 });

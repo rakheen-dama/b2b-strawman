@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { fetchTrustAccounts } from "@/app/(app)/org/[slug]/trust-accounting/actions";
 import { fetchInvestments } from "@/app/(app)/org/[slug]/trust-accounting/investments/actions";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
+import { cn } from "@/lib/utils";
 import type { TrustInvestment, TrustInvestmentStatus } from "@/lib/types/trust";
 import { InvestmentPageClient } from "./InvestmentPageClient";
 
@@ -28,13 +29,13 @@ const STATUS_BADGE_VARIANT: Record<
 
 // -- Maturity helper ------------------------------------------------------
 
-function isMaturing(maturityDate: string | null): boolean {
+function isMaturing(maturityDate: string | null, daysAhead: number = 30): boolean {
   if (!maturityDate) return false;
   const today = new Date();
-  const maturity = new Date(maturityDate);
-  const diffDays =
-    (maturity.getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
-  return diffDays >= 0 && diffDays <= 30;
+  const maturity = new Date(maturityDate + "T00:00:00");
+  const diffMs = maturity.getTime() - today.getTime();
+  const diffDays = diffMs / (1000 * 60 * 60 * 24);
+  return diffDays >= 0 && diffDays <= daysAhead;
 }
 
 // -- Page -----------------------------------------------------------------
@@ -200,11 +201,10 @@ export default async function InvestmentsPage({
                       return (
                         <tr
                           key={inv.id}
-                          className={`border-b border-slate-100 last:border-0 dark:border-slate-800 ${
-                            maturing
-                              ? "bg-amber-50 dark:bg-amber-950/20"
-                              : ""
-                          }`}
+                          className={cn(
+                            "border-b border-slate-100 last:border-0 dark:border-slate-800",
+                            maturing && "bg-amber-50 dark:bg-amber-950/30",
+                          )}
                           data-testid={
                             maturing
                               ? "maturity-alert"
@@ -212,7 +212,7 @@ export default async function InvestmentsPage({
                           }
                         >
                           <td className="py-3 pr-4 text-slate-950 dark:text-slate-50">
-                            {inv.customerId.slice(0, 8)}...
+                            {inv.customerName}
                           </td>
                           <td className="py-3 pr-4 text-slate-950 dark:text-slate-50">
                             {inv.institution}

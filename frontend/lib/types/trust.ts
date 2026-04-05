@@ -243,6 +243,7 @@ export interface TrustInvestment {
   id: string;
   trustAccountId: string;
   customerId: string;
+  customerName: string;
   institution: string;
   accountNumber: string;
   principal: number;

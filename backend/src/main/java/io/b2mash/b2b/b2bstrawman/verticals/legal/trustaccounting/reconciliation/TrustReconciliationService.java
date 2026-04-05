@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -16,6 +17,8 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.parser.NedbankCsvParser;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.parser.ParsedStatement;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.reconciliation.parser.StandardBankCsvParser;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -26,6 +29,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,10 +40,17 @@ import org.springframework.web.multipart.MultipartFile;
 public class TrustReconciliationService {
 
   private static final String MODULE_ID = "trust_accounting";
+  private static final BigDecimal AUTO_MATCH_THRESHOLD = new BigDecimal("0.80");
+
+  private static final Set<String> CREDIT_TYPES =
+      Set.of("DEPOSIT", "TRANSFER_IN", "INTEREST_CREDIT");
+  private static final Set<String> DEBIT_TYPES =
+      Set.of("PAYMENT", "TRANSFER_OUT", "FEE_TRANSFER", "REFUND", "INTEREST_LPFF");
 
   private final BankStatementRepository bankStatementRepository;
   private final BankStatementLineRepository bankStatementLineRepository;
   private final TrustAccountRepository trustAccountRepository;
+  private final TrustTransactionRepository trustTransactionRepository;
   private final StorageService storageService;
   private final VerticalModuleGuard moduleGuard;
   private final AuditService auditService;
@@ -49,12 +60,14 @@ public class TrustReconciliationService {
       BankStatementRepository bankStatementRepository,
       BankStatementLineRepository bankStatementLineRepository,
       TrustAccountRepository trustAccountRepository,
+      TrustTransactionRepository trustTransactionRepository,
       StorageService storageService,
       VerticalModuleGuard moduleGuard,
       AuditService auditService) {
     this.bankStatementRepository = bankStatementRepository;
     this.bankStatementLineRepository = bankStatementLineRepository;
     this.trustAccountRepository = trustAccountRepository;
+    this.trustTransactionRepository = trustTransactionRepository;
     this.storageService = storageService;
     this.moduleGuard = moduleGuard;
     this.auditService = auditService;
@@ -231,6 +244,330 @@ public class TrustReconciliationService {
         bankStatementLineRepository.findByBankStatementIdOrderByLineNumber(statement.getId());
 
     return toResponse(statement, lines);
+  }
+
+  // --- Matching DTOs ---
+
+  public record MatchResult(int totalLines, int autoMatched, int alreadyMatched, int unmatched) {}
+
+  // --- Auto-Match ---
+
+  @Transactional
+  public MatchResult autoMatchStatement(UUID statementId) {
+    moduleGuard.requireModule(MODULE_ID);
+
+    var statement =
+        bankStatementRepository
+            .findById(statementId)
+            .orElseThrow(() -> new ResourceNotFoundException("BankStatement", statementId));
+
+    // Build candidate pool: APPROVED/RECORDED transactions, unmatched, within date range
+    LocalDate startDate = statement.getPeriodStart().minusDays(7);
+    LocalDate endDate = statement.getPeriodEnd().plusDays(7);
+    List<TrustTransaction> candidatePool =
+        trustTransactionRepository.findUnmatchedCandidates(
+            statement.getTrustAccountId(), startDate, endDate);
+
+    // Get all UNMATCHED lines for this statement
+    List<BankStatementLine> unmatchedLines =
+        bankStatementLineRepository.findByBankStatementIdAndMatchStatus(statementId, "UNMATCHED");
+
+    int autoMatched = 0;
+    int alreadyMatched = statement.getMatchedCount();
+
+    for (BankStatementLine line : unmatchedLines) {
+      // Filter candidates by sign compatibility
+      List<TrustTransaction> signFilteredCandidates =
+          candidatePool.stream().filter(c -> isSignCompatible(line, c)).toList();
+
+      if (signFilteredCandidates.isEmpty()) {
+        continue;
+      }
+
+      // Try matching strategies in priority order
+      if (tryExactReferenceMatch(line, signFilteredCandidates, statement)) {
+        autoMatched++;
+        // Remove matched transaction from candidate pool
+        candidatePool.removeIf(c -> c.getId().equals(line.getTrustTransactionId()));
+        continue;
+      }
+
+      if (tryAmountExactDateMatch(line, signFilteredCandidates, statement)) {
+        autoMatched++;
+        candidatePool.removeIf(c -> c.getId().equals(line.getTrustTransactionId()));
+        continue;
+      }
+
+      if (tryAmountCloseDateMatch(line, signFilteredCandidates)) {
+        // Confidence 0.60 -- below threshold, remains UNMATCHED
+        continue;
+      }
+
+      tryAmountOnlyMatch(line, signFilteredCandidates);
+    }
+
+    // Persist updated matchedCount
+    statement.setMatchedCount(alreadyMatched + autoMatched);
+    bankStatementRepository.save(statement);
+
+    int totalLines = statement.getLineCount();
+    int totalUnmatched = totalLines - statement.getMatchedCount();
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("bank_statement.auto_matched")
+            .entityType("bank_statement")
+            .entityId(statementId)
+            .details(
+                Map.of(
+                    "auto_matched", autoMatched,
+                    "unmatched", totalUnmatched))
+            .build());
+
+    return new MatchResult(totalLines, autoMatched, alreadyMatched, totalUnmatched);
+  }
+
+  // --- Manual Match ---
+
+  @Transactional
+  public void manualMatch(UUID lineId, UUID transactionId) {
+    moduleGuard.requireModule(MODULE_ID);
+
+    var line =
+        bankStatementLineRepository
+            .findById(lineId)
+            .orElseThrow(() -> new ResourceNotFoundException("BankStatementLine", lineId));
+
+    if (!"UNMATCHED".equals(line.getMatchStatus())) {
+      throw new InvalidStateException(
+          "Invalid match state", "Bank statement line is already " + line.getMatchStatus());
+    }
+
+    var transaction =
+        trustTransactionRepository
+            .findById(transactionId)
+            .orElseThrow(() -> new ResourceNotFoundException("TrustTransaction", transactionId));
+
+    if (transaction.getBankStatementLineId() != null) {
+      throw new InvalidStateException(
+          "Invalid match state", "Transaction is already matched to a bank statement line");
+    }
+
+    if (!"APPROVED".equals(transaction.getStatus())
+        && !"RECORDED".equals(transaction.getStatus())) {
+      throw new InvalidStateException(
+          "Invalid match state", "Transaction must be APPROVED or RECORDED to match");
+    }
+
+    // Link both sides
+    line.setMatchStatus("MANUALLY_MATCHED");
+    line.setTrustTransactionId(transactionId);
+    line.setMatchConfidence(BigDecimal.ONE);
+    bankStatementLineRepository.save(line);
+
+    transaction.setBankStatementLineId(lineId);
+    trustTransactionRepository.save(transaction);
+
+    // Update matched count
+    var statement =
+        bankStatementRepository
+            .findById(line.getBankStatementId())
+            .orElseThrow(
+                () -> new ResourceNotFoundException("BankStatement", line.getBankStatementId()));
+    statement.setMatchedCount(statement.getMatchedCount() + 1);
+    bankStatementRepository.save(statement);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("bank_statement_line.manually_matched")
+            .entityType("bank_statement_line")
+            .entityId(lineId)
+            .details(Map.of("trust_transaction_id", transactionId.toString()))
+            .build());
+  }
+
+  // --- Unmatch ---
+
+  @Transactional
+  public void unmatch(UUID lineId) {
+    moduleGuard.requireModule(MODULE_ID);
+
+    var line =
+        bankStatementLineRepository
+            .findById(lineId)
+            .orElseThrow(() -> new ResourceNotFoundException("BankStatementLine", lineId));
+
+    if (!"AUTO_MATCHED".equals(line.getMatchStatus())
+        && !"MANUALLY_MATCHED".equals(line.getMatchStatus())) {
+      throw new InvalidStateException(
+          "Invalid match state", "Bank statement line must be matched to unmatch");
+    }
+
+    UUID transactionId = line.getTrustTransactionId();
+
+    // Clear the line side
+    line.setMatchStatus("UNMATCHED");
+    line.setTrustTransactionId(null);
+    line.setMatchConfidence(null);
+    bankStatementLineRepository.save(line);
+
+    // Clear the transaction side
+    if (transactionId != null) {
+      trustTransactionRepository
+          .findById(transactionId)
+          .ifPresent(
+              txn -> {
+                txn.setBankStatementLineId(null);
+                trustTransactionRepository.save(txn);
+              });
+    }
+
+    // Decrement matched count
+    var statement =
+        bankStatementRepository
+            .findById(line.getBankStatementId())
+            .orElseThrow(
+                () -> new ResourceNotFoundException("BankStatement", line.getBankStatementId()));
+    statement.setMatchedCount(Math.max(0, statement.getMatchedCount() - 1));
+    bankStatementRepository.save(statement);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("bank_statement_line.unmatched")
+            .entityType("bank_statement_line")
+            .entityId(lineId)
+            .build());
+  }
+
+  // --- Exclude ---
+
+  @Transactional
+  public void excludeLine(UUID lineId, String reason) {
+    moduleGuard.requireModule(MODULE_ID);
+
+    var line =
+        bankStatementLineRepository
+            .findById(lineId)
+            .orElseThrow(() -> new ResourceNotFoundException("BankStatementLine", lineId));
+
+    if (!"UNMATCHED".equals(line.getMatchStatus())) {
+      throw new InvalidStateException(
+          "Invalid match state", "Only UNMATCHED lines can be excluded");
+    }
+
+    line.setMatchStatus("EXCLUDED");
+    line.setExcludedReason(reason);
+    bankStatementLineRepository.save(line);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("bank_statement_line.excluded")
+            .entityType("bank_statement_line")
+            .entityId(lineId)
+            .details(Map.of("reason", reason))
+            .build());
+  }
+
+  // --- Auto-Match Strategy Helpers ---
+
+  private boolean isSignCompatible(BankStatementLine line, TrustTransaction candidate) {
+    boolean lineIsCredit = line.getAmount().compareTo(BigDecimal.ZERO) > 0;
+    if (lineIsCredit) {
+      return CREDIT_TYPES.contains(candidate.getTransactionType());
+    } else {
+      return DEBIT_TYPES.contains(candidate.getTransactionType());
+    }
+  }
+
+  private boolean tryExactReferenceMatch(
+      BankStatementLine line, List<TrustTransaction> candidates, BankStatement statement) {
+    if (line.getReference() == null || line.getReference().isBlank()) {
+      return false;
+    }
+
+    List<TrustTransaction> refMatches =
+        candidates.stream()
+            .filter(
+                c ->
+                    c.getReference() != null
+                        && c.getReference().equalsIgnoreCase(line.getReference()))
+            .toList();
+
+    if (refMatches.size() == 1) {
+      applyAutoMatch(line, refMatches.getFirst(), new BigDecimal("1.00"), statement);
+      return true;
+    }
+    return false;
+  }
+
+  private boolean tryAmountExactDateMatch(
+      BankStatementLine line, List<TrustTransaction> candidates, BankStatement statement) {
+    BigDecimal lineAmount = line.getAmount().abs();
+
+    List<TrustTransaction> matches =
+        candidates.stream()
+            .filter(
+                c ->
+                    c.getAmount().compareTo(lineAmount) == 0
+                        && c.getTransactionDate().equals(line.getTransactionDate()))
+            .toList();
+
+    if (matches.size() == 1) {
+      applyAutoMatch(line, matches.getFirst(), new BigDecimal("0.80"), statement);
+      return true;
+    }
+    return false;
+  }
+
+  private boolean tryAmountCloseDateMatch(
+      BankStatementLine line, List<TrustTransaction> candidates) {
+    BigDecimal lineAmount = line.getAmount().abs();
+    LocalDate lineDate = line.getTransactionDate();
+
+    List<TrustTransaction> matches =
+        candidates.stream()
+            .filter(
+                c -> {
+                  if (c.getAmount().compareTo(lineAmount) != 0) return false;
+                  long daysDiff =
+                      Math.abs(lineDate.toEpochDay() - c.getTransactionDate().toEpochDay());
+                  return daysDiff <= 3;
+                })
+            .toList();
+
+    if (matches.size() == 1) {
+      // Below auto-match threshold -- set confidence but remain UNMATCHED
+      line.setMatchConfidence(new BigDecimal("0.60"));
+      bankStatementLineRepository.save(line);
+      return true;
+    }
+    return false;
+  }
+
+  private void tryAmountOnlyMatch(BankStatementLine line, List<TrustTransaction> candidates) {
+    BigDecimal lineAmount = line.getAmount().abs();
+
+    List<TrustTransaction> matches =
+        candidates.stream().filter(c -> c.getAmount().compareTo(lineAmount) == 0).toList();
+
+    if (!matches.isEmpty()) {
+      line.setMatchConfidence(new BigDecimal("0.40"));
+      bankStatementLineRepository.save(line);
+    }
+  }
+
+  private void applyAutoMatch(
+      BankStatementLine line,
+      TrustTransaction transaction,
+      BigDecimal confidence,
+      BankStatement statement) {
+    line.setMatchStatus("AUTO_MATCHED");
+    line.setTrustTransactionId(transaction.getId());
+    line.setMatchConfidence(confidence);
+    bankStatementLineRepository.save(line);
+
+    transaction.setBankStatementLineId(line.getId());
+    trustTransactionRepository.save(transaction);
   }
 
   // --- Private Helpers ---

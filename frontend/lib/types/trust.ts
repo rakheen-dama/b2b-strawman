@@ -108,6 +108,28 @@ export interface TotalBalance {
   balance: number;
 }
 
+// Client ledger statement types
+
+export interface LedgerStatementEntry {
+  transactionId: string;
+  transactionType: string;
+  amount: number;
+  reference: string;
+  description: string | null;
+  transactionDate: string;
+  status: string;
+  runningBalance: number;
+}
+
+export interface LedgerStatementResponse {
+  openingBalance: number;
+  closingBalance: number;
+  transactions: LedgerStatementEntry[];
+}
+
+/** Alias for ClientLedgerCard — matches backend ClientLedgerCardResponse */
+export type ClientLedgerResponse = ClientLedgerCard;
+
 // Dashboard types
 
 export type TrustAlertType =

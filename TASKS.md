@@ -503,7 +503,7 @@
 | 442 | Transaction Controller + Approval Endpoints + Client Ledger Controller | Backend | 441 | M | 442A, 442B | **Done** (PRs #931, #932) |
 | 443 | Bank Statement Import + CSV Parsers | Backend | 439 | M | 443A, 443B | **Done** (PRs #933, #934) |
 | 444 | Auto-Matching + Manual Matching + Reconciliation | Backend | 440, 443 | L | 444A, 444B | **Done** (PRs #935, #936) |
-| 445 | Interest Calculation + Posting | Backend | 440 | L | 445A, 445B | |
+| 445 | Interest Calculation + Posting | Backend | 440 | L | 445A, 445B | 445A **Done** (PR #937) |
 | 446 | Trust Investments | Backend | 441 | M | 446A, 446B | |
 | 447 | Trust Reports (Section 35) + Event/Notification Handlers | Backend | 442, 444, 445, 446 | M | 447A, 447B | |
 | 448 | Frontend: Trust Dashboard + Transaction Entry + Approval UX | Frontend | 442 | L | 448A, 448B | |

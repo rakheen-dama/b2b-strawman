@@ -71,10 +71,30 @@ export async function fetchReconciliation(
 
 // ── Bank statement actions ────────────────────────────────────────
 
+const MAX_STATEMENT_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
+
 export async function uploadBankStatement(
   accountId: string,
   file: File,
 ): Promise<{ success: boolean; data?: BankStatementResponse; error?: string }> {
+  // Server-side validation — the UI `accept` attribute is not a security boundary
+  if (
+    file.type &&
+    file.type !== "text/csv" &&
+    file.type !== "application/vnd.ms-excel"
+  ) {
+    return { success: false, error: "Only CSV files are accepted" };
+  }
+  if (!file.name.toLowerCase().endsWith(".csv")) {
+    return { success: false, error: "File must have a .csv extension" };
+  }
+  if (file.size > MAX_STATEMENT_SIZE_BYTES) {
+    return {
+      success: false,
+      error: `File exceeds the 10 MB limit (${(file.size / 1024 / 1024).toFixed(1)} MB)`,
+    };
+  }
+
   try {
     const authOptions = await getAuthFetchOptions("POST");
 

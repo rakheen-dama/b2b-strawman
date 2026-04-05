@@ -69,6 +69,7 @@ export default async function ReconciliationListPage({
 
   // Fetch primary trust account
   let accountId: string | null = null;
+  let accountFetchError = false;
   try {
     const accounts = await fetchTrustAccounts();
     const primary = accounts.find((a) => a.isPrimary) ?? accounts[0];
@@ -76,7 +77,7 @@ export default async function ReconciliationListPage({
       accountId = primary.id;
     }
   } catch {
-    // ignore
+    accountFetchError = true;
   }
 
   // Fetch reconciliations
@@ -85,8 +86,12 @@ export default async function ReconciliationListPage({
 
   if (accountId) {
     try {
+      const requestedPage =
+        search.page && /^\d+$/.test(search.page)
+          ? Number(search.page)
+          : 0;
       reconciliationPage = await fetchReconciliations(accountId, {
-        page: search.page ? parseInt(search.page, 10) : 0,
+        page: requestedPage,
         size: 20,
       });
     } catch {
@@ -100,7 +105,6 @@ export default async function ReconciliationListPage({
 
   function pageUrl(page: number): string {
     const newParams = new URLSearchParams();
-    if (search.page) newParams.set("page", search.page);
     newParams.set("page", String(page));
     const qs = newParams.toString();
     return `/org/${slug}/trust-accounting/reconciliation?${qs}`;
@@ -132,7 +136,17 @@ export default async function ReconciliationListPage({
       </div>
 
       {/* Error states */}
-      {!accountId && !fetchError && (
+      {accountFetchError && (
+        <Card>
+          <CardContent className="py-8 text-center">
+            <p className="text-sm text-red-600 dark:text-red-400">
+              Failed to load trust accounts. Please try again.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {!accountId && !accountFetchError && (
         <Card>
           <CardContent className="py-8 text-center">
             <p className="text-sm text-slate-500 dark:text-slate-400">

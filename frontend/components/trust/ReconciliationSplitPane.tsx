@@ -12,6 +12,7 @@ import {
   unmatch,
   excludeLine,
   completeReconciliation,
+  calculateReconciliation,
 } from "@/app/(app)/org/[slug]/trust-accounting/reconciliation/actions";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
 import type {
@@ -99,6 +100,13 @@ export function ReconciliationSplitPane({
       );
       setSelectedLineId(null);
       setSelectedTransactionId(null);
+      // Re-fetch reconciliation to update isBalanced and balance figures
+      try {
+        const updated = await calculateReconciliation(reconciliationId);
+        setReconciliation(updated);
+      } catch {
+        // Non-critical — balance display may be stale until page refresh
+      }
       router.refresh();
     } else {
       setError(result.error ?? "Failed to match");
@@ -118,6 +126,13 @@ export function ReconciliationSplitPane({
             : l,
         ),
       );
+      // Re-fetch reconciliation to update isBalanced and balance figures
+      try {
+        const updated = await calculateReconciliation(reconciliationId);
+        setReconciliation(updated);
+      } catch {
+        // Non-critical — balance display may be stale until page refresh
+      }
       // If we had the transaction data, add it back. For simplicity, refresh.
       if (matchedLine?.trustTransactionId) {
         router.refresh();
@@ -146,6 +161,13 @@ export function ReconciliationSplitPane({
       );
       setExcludeLineId(null);
       setExcludeReason("");
+      // Re-fetch reconciliation to update isBalanced and balance figures
+      try {
+        const updated = await calculateReconciliation(reconciliationId);
+        setReconciliation(updated);
+      } catch {
+        // Non-critical — balance display may be stale until page refresh
+      }
       router.refresh();
     } else {
       setError(result.error ?? "Failed to exclude line");

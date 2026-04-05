@@ -54,16 +54,21 @@ export function BankStatementUpload({
   return (
     <div className="space-y-4" data-testid="bank-statement-upload">
       <div className="flex items-center gap-3">
-        <div className="relative">
+        <div>
           <input
             ref={fileInputRef}
             type="file"
             accept=".csv,.ofx"
             onChange={handleFileChange}
-            className="absolute inset-0 cursor-pointer opacity-0"
+            className="sr-only"
+            aria-label="Choose CSV or OFX bank statement file"
             data-testid="file-input"
           />
-          <Button type="button" variant="outline" className="pointer-events-none">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => fileInputRef.current?.click()}
+          >
             <FileText className="mr-1.5 size-4" />
             {file ? file.name : "Choose CSV or OFX file"}
           </Button>

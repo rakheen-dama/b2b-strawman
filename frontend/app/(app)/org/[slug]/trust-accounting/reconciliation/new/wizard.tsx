@@ -101,23 +101,34 @@ export function ReconciliationWizard({
     setIsCreating(true);
     setError(null);
 
-    try {
-      // Create reconciliation
-      const rec = await createReconciliation(
-        selectedAccountId,
-        periodEnd,
-        statement.id,
-      );
+    // Step 1: Create reconciliation in its own try block to avoid
+    // duplicate creation on retry if subsequent reads fail
+    let rec = reconciliation;
+    if (!rec) {
+      try {
+        rec = await createReconciliation(
+          selectedAccountId,
+          periodEnd,
+          statement.id,
+        );
+        setReconciliation(rec);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Failed to create reconciliation",
+        );
+        setIsCreating(false);
+        return;
+      }
+    }
 
-      // Calculate balances
+    // Step 2: Fetch related data — safe to retry without side effects
+    try {
       const calculated = await calculateReconciliation(rec.id);
       setReconciliation(calculated);
 
-      // Fetch updated bank statement with lines
       const updatedStatement = await fetchBankStatement(statement.id);
       setBankLines(updatedStatement.lines ?? []);
 
-      // Fetch unmatched transactions
       const unmatchedResult = await fetchUnmatchedTransactions(selectedAccountId);
       setUnmatchedTxns(unmatchedResult.transactions);
       setUnmatchedTruncated(unmatchedResult.truncated);
@@ -126,7 +137,7 @@ export function ReconciliationWizard({
       handleNext();
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Failed to create reconciliation",
+        err instanceof Error ? err.message : "Failed to load reconciliation data. Please retry.",
       );
     } finally {
       setIsCreating(false);
@@ -135,7 +146,7 @@ export function ReconciliationWizard({
 
   function handleComplete() {
     setIsComplete(true);
-    router.push(`/org/${slug}/trust-accounting/reconciliation`);
+    setStep(4);
   }
 
   return (

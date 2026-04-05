@@ -95,12 +95,12 @@ export default async function ReconciliationPage({
             Monthly trust account reconciliations
           </p>
         </div>
-        <Link href={`/org/${slug}/trust-accounting/reconciliation/new`}>
-          <Button data-testid="new-reconciliation-btn">
+        <Button asChild data-testid="new-reconciliation-btn">
+          <Link href={`/org/${slug}/trust-accounting/reconciliation/new`}>
             <Plus className="mr-1.5 size-4" />
             New Reconciliation
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       </div>
 
       {/* Error State */}

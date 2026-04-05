@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { api } from "@/lib/api";
+import { api, ApiError, API_BASE, getAuthFetchOptions } from "@/lib/api";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import type {
   BankStatement,
@@ -49,10 +49,34 @@ export async function uploadBankStatement(
   formData: FormData,
 ): Promise<BankStatement> {
   await requireManageTrust();
-  const result = await api.post<BankStatement>(
-    `/api/trust-accounts/${accountId}/bank-statements`,
-    formData,
+
+  const authOptions = await getAuthFetchOptions("POST");
+
+  const response = await fetch(
+    `${API_BASE}/api/trust-accounts/${accountId}/bank-statements`,
+    {
+      method: "POST",
+      headers: {
+        // Do NOT set Content-Type — browser sets multipart boundary automatically
+        ...authOptions.headers,
+      },
+      body: formData,
+      credentials: authOptions.credentials,
+    },
   );
+
+  if (!response.ok) {
+    let message = response.statusText;
+    try {
+      const detail = await response.json();
+      message = detail?.detail || detail?.title || message;
+    } catch {
+      // ignore
+    }
+    throw new ApiError(response.status, message);
+  }
+
+  const result = (await response.json()) as BankStatement;
   // Strip internal S3 key before returning to client
   const { fileKey: _, ...safe } = result;
   return safe as BankStatement;

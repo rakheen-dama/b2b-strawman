@@ -17,6 +17,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTran
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
 import jakarta.persistence.EntityManager;
+import jakarta.validation.constraints.NotBlank;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -132,9 +133,9 @@ public class TrustTransactionService {
       UUID recordedBy,
       Instant createdAt) {}
 
-  public record RejectRequest(String reason) {}
+  public record RejectRequest(@NotBlank String reason) {}
 
-  public record ReverseRequest(String reason) {}
+  public record ReverseRequest(@NotBlank String reason) {}
 
   public record CashbookBalanceResponse(BigDecimal balance) {}
 
@@ -154,13 +155,17 @@ public class TrustTransactionService {
   }
 
   @Transactional(readOnly = true)
-  public TrustTransactionResponse getTransactionById(UUID transactionId) {
+  public TrustTransactionResponse getTransactionById(UUID accountId, UUID transactionId) {
     moduleGuard.requireModule(MODULE_ID);
 
     var transaction =
         transactionRepository
             .findById(transactionId)
             .orElseThrow(() -> new ResourceNotFoundException("TrustTransaction", transactionId));
+
+    if (!transaction.getTrustAccountId().equals(accountId)) {
+      throw new ResourceNotFoundException("TrustTransaction", transactionId);
+    }
 
     return toResponse(transaction);
   }
@@ -1165,14 +1170,15 @@ public class TrustTransactionService {
   // --- 440.10: Cashbook Balance ---
 
   @Transactional(readOnly = true)
-  public BigDecimal getCashbookBalance(UUID trustAccountId) {
+  public CashbookBalanceResponse getCashbookBalance(UUID trustAccountId) {
     moduleGuard.requireModule(MODULE_ID);
 
     trustAccountRepository
         .findById(trustAccountId)
         .orElseThrow(() -> new ResourceNotFoundException("TrustAccount", trustAccountId));
 
-    return transactionRepository.calculateCashbookBalance(trustAccountId);
+    return new CashbookBalanceResponse(
+        transactionRepository.calculateCashbookBalance(trustAccountId));
   }
 
   // --- Private Helpers ---

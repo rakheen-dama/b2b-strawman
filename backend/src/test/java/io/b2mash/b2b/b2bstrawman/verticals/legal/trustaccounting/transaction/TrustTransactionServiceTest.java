@@ -1139,7 +1139,8 @@ class TrustTransactionServiceTest {
             transactionTemplate.executeWithoutResult(
                 tx -> {
                   // Capture baseline before this test's transactions
-                  var balanceBefore = transactionService.getCashbookBalance(trustAccountId);
+                  var balanceBefore =
+                      transactionService.getCashbookBalance(trustAccountId).balance();
 
                   var customer1 =
                       customerRepository.save(
@@ -1187,7 +1188,8 @@ class TrustTransactionServiceTest {
 
                   // Cashbook balance delta should be 10000 + 5000 = 15000
                   // Transfers are cashbook-neutral (no cashbook effect)
-                  var balanceAfter = transactionService.getCashbookBalance(trustAccountId);
+                  var balanceAfter =
+                      transactionService.getCashbookBalance(trustAccountId).balance();
                   var delta = balanceAfter.subtract(balanceBefore);
 
                   assertThat(delta).isEqualByComparingTo(new BigDecimal("15000.00"));
@@ -1201,7 +1203,8 @@ class TrustTransactionServiceTest {
             transactionTemplate.executeWithoutResult(
                 tx -> {
                   // Capture baseline
-                  var balanceBefore = transactionService.getCashbookBalance(trustAccountId);
+                  var balanceBefore =
+                      transactionService.getCashbookBalance(trustAccountId).balance();
 
                   var customer =
                       customerRepository.save(
@@ -1239,7 +1242,8 @@ class TrustTransactionServiceTest {
 
                   // Cashbook delta should only include the first deposit (8000),
                   // not the rejected one (3000)
-                  var balanceAfter = transactionService.getCashbookBalance(trustAccountId);
+                  var balanceAfter =
+                      transactionService.getCashbookBalance(trustAccountId).balance();
                   var delta = balanceAfter.subtract(balanceBefore);
 
                   assertThat(delta)

@@ -46,7 +46,7 @@ public class TrustTransactionController {
   @RequiresCapability("VIEW_TRUST")
   public ResponseEntity<TrustTransactionResponse> getTransaction(
       @PathVariable UUID accountId, @PathVariable UUID id) {
-    return ResponseEntity.ok(trustTransactionService.getTransactionById(id));
+    return ResponseEntity.ok(trustTransactionService.getTransactionById(accountId, id));
   }
 
   @PostMapping("/api/trust-accounts/{accountId}/transactions/deposit")
@@ -127,7 +127,6 @@ public class TrustTransactionController {
   @GetMapping("/api/trust-accounts/{accountId}/cashbook-balance")
   @RequiresCapability("VIEW_TRUST")
   public ResponseEntity<CashbookBalanceResponse> getCashbookBalance(@PathVariable UUID accountId) {
-    return ResponseEntity.ok(
-        new CashbookBalanceResponse(trustTransactionService.getCashbookBalance(accountId)));
+    return ResponseEntity.ok(trustTransactionService.getCashbookBalance(accountId));
   }
 }

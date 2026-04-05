@@ -43,7 +43,7 @@ Phase 60 replaces the `trust_accounting` module stub (registered in Phase 49) wi
 | 448 | Frontend: Trust Dashboard + Transaction Entry + Approval UX | Frontend | 442 | L | 448A, 448B | **Done** (PRs #944, #945) |
 | 449 | Frontend: Client Ledger + Reconciliation Split-Pane | Frontend | 442, 444 | L | 449A, 449B | **Done** (PRs #947, #948) |
 | 450 | Frontend: Interest + Investments + Reports Pages | Frontend | 445, 446, 447 | M | 450A, 450B | **Done** (PRs #951, #952) |
-| 451 | Frontend: Matter/Customer Trust Tabs + Settings + Sidebar + Coexistence Tests | Frontend | 448, 449, 450 | M | 451A, 451B | 451A Done (PR #954) |
+| 451 | Frontend: Matter/Customer Trust Tabs + Settings + Sidebar + Coexistence Tests | Frontend | 448, 449, 450 | M | 451A, 451B | **Done** (PRs #954, #956) |
 
 ---
 
@@ -286,7 +286,7 @@ FRONTEND CORE                           FRONTEND ADVANCED
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 11a | 451 | 451A | Project detail "Trust" tab (module-gated): client trust balance, matter-filtered transaction history, quick actions. Customer detail "Trust" tab (module-gated): total trust balance, ledger summary, active investments. Sidebar nav update (trust-accounting sub-items). Trust settings page (`/settings/trust-accounting`). Frontend tests (~5). Frontend only. | **Done** (PR #954) |
-| 11b | 451 | 451B | Multi-vertical coexistence tests: trust + accounting tenant isolation (5 backend integration tests), module guard verification, no cross-contamination. Trust-specific E2E smoke tests (3 frontend tests). Tests only. | Not started |
+| 11b | 451 | 451B | Multi-vertical coexistence tests: trust + accounting tenant isolation (5 backend integration tests), module guard verification, no cross-contamination. Trust-specific E2E smoke tests (3 frontend tests). Tests only. | **Done** (PR #956) |
 
 ### Timeline
 
@@ -1130,7 +1130,7 @@ Stage 11: [451A] -> [451B]                                                <- int
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **451A** | 451.1--451.6 | Project detail "Trust" tab (module-gated), customer detail "Trust" tab (module-gated), sidebar nav sub-items, trust settings page. Frontend tests (~5). Frontend only. | **Done** (PR #954) |
-| **451B** | 451.7--451.10 | Multi-vertical coexistence tests (trust + accounting tenant isolation, module guard verification). Trust-specific smoke tests. Tests only. | Not started |
+| **451B** | 451.7--451.10 | Multi-vertical coexistence tests (trust + accounting tenant isolation, module guard verification). Trust-specific smoke tests. Tests only. | **Done** (PR #956) |
 
 ### Tasks
 

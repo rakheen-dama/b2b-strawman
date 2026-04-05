@@ -509,7 +509,7 @@
 | 448 | Frontend: Trust Dashboard + Transaction Entry + Approval UX | Frontend | 442 | L | 448A, 448B | **Done** (PRs #944, #945) |
 | 449 | Frontend: Client Ledger + Reconciliation Split-Pane | Frontend | 442, 444 | L | 449A, 449B | **Done** (PRs #947, #948) |
 | 450 | Frontend: Interest + Investments + Reports Pages | Frontend | 445, 446, 447 | M | 450A, 450B | **Done** (PRs #951, #952) |
-| 451 | Frontend: Matter/Customer Trust Tabs + Settings + Sidebar + Coexistence Tests | Frontend | 448, 449, 450 | M | 451A, 451B | 451A Done (PR #954) |
+| 451 | Frontend: Matter/Customer Trust Tabs + Settings + Sidebar + Coexistence Tests | Frontend | 448, 449, 450 | M | 451A, 451B | **Done** (PRs #954, #956) |
 | **Phase 61 — Legal Compliance Refinements: Section 86 Investment Distinction & KYC Verification** | | | | | | See [tasks/phase61-legal-compliance-refinements.md](tasks/phase61-legal-compliance-refinements.md) |
 | 452 | Foundation: V86 Migration + InvestmentBasis Enum + TrustAccountingConstants | Backend | -- | S | 452A | |
 | 453 | Interest Calculation Basis Distinction + Audit Trail | Backend | 452 | M | 453A, 453B | |

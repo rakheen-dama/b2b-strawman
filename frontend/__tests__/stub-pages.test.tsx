@@ -3,7 +3,10 @@ import { cleanup, render, screen } from "@testing-library/react";
 
 // --- Mocks (must be before component imports) ---
 
-vi.mock("swr", () => ({ default: vi.fn() }));
+vi.mock("swr", () => ({
+  default: vi.fn(),
+  useSWRConfig: () => ({ mutate: vi.fn() }),
+}));
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),

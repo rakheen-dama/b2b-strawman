@@ -60,8 +60,7 @@ export function CustomerTabs({
   const [userTab, setUserTab] = useState<TabId | null>(null);
   const { isModuleEnabled } = useOrgProfile();
 
-  // URL param takes precedence, then user's manual selection, then default
-  const activeTab = urlTab ?? userTab ?? "projects";
+  const requestedTab = urlTab ?? userTab;
 
   // Module-gated tabs
   const showTrust = !!trustPanel && isModuleEnabled("trust_accounting");
@@ -79,6 +78,12 @@ export function CustomerTabs({
       return true;
     });
   }, [onboardingPanel, invoicesPanel, retainerPanel, requestsPanel, ratesPanel, financialsPanel, generatedPanel, showTrust]);
+
+  // Validate activeTab is in the rendered tabs; fall back to "projects" if not
+  const activeTab: TabId =
+    requestedTab && tabs.some((t) => t.id === requestedTab)
+      ? requestedTab
+      : "projects";
 
   return (
     <TabsPrimitive.Root value={activeTab} onValueChange={(v) => setUserTab(v as TabId)}>

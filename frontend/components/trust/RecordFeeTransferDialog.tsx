@@ -32,12 +32,14 @@ interface RecordFeeTransferDialogProps {
   accountId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSuccess?: () => void;
 }
 
 export function RecordFeeTransferDialog({
   accountId,
   open,
   onOpenChange,
+  onSuccess,
 }: RecordFeeTransferDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -67,6 +69,7 @@ export function RecordFeeTransferDialog({
     try {
       const result = await recordFeeTransfer(accountId, data);
       if (result.success) {
+        onSuccess?.();
         handleOpenChange(false);
       } else {
         setError(result.error ?? "Failed to record fee transfer");

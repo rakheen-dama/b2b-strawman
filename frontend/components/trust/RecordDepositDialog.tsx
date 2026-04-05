@@ -34,6 +34,7 @@ interface RecordDepositDialogProps {
   slug: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSuccess?: () => void;
 }
 
 function getDefaultValues() {
@@ -54,6 +55,7 @@ export function RecordDepositDialog({
   slug,
   open,
   onOpenChange,
+  onSuccess,
 }: RecordDepositDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -78,6 +80,7 @@ export function RecordDepositDialog({
     try {
       const result = await recordDeposit(accountId, data);
       if (result.success) {
+        onSuccess?.();
         handleOpenChange(false);
       } else {
         setError(result.error ?? "Failed to record deposit");

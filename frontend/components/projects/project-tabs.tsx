@@ -65,8 +65,7 @@ export function ProjectTabs({ overviewPanel, documentsPanel, membersPanel, custo
   const [userTab, setUserTab] = useState<TabId | null>(null);
   const { isModuleEnabled } = useOrgProfile();
 
-  // URL param takes precedence, then user's manual selection, then default
-  const activeTab = urlTab ?? userTab ?? "overview";
+  const requestedTab = urlTab ?? userTab;
 
   // Module-gated tabs: only show when both the panel is provided and the module is enabled
   const showCourtDates = !!courtDatesPanel && isModuleEnabled("court_calendar");
@@ -87,6 +86,12 @@ export function ProjectTabs({ overviewPanel, documentsPanel, membersPanel, custo
     if (!showTrust) filtered = filtered.filter((t) => t.id !== "trust");
     return filtered;
   }, [ratesPanel, financialsPanel, expensesPanel, generatedPanel, requestsPanel, customerCommentsPanel, staffingPanel, showCourtDates, showAdverseParties, showTrust]);
+
+  // Validate activeTab is in the rendered tabs; fall back to "overview" if not
+  const activeTab: TabId =
+    requestedTab && tabs.some((t) => t.id === requestedTab)
+      ? requestedTab
+      : "overview";
 
   return (
     <TabsPrimitive.Root value={activeTab} onValueChange={(v) => setUserTab(v as TabId)}>

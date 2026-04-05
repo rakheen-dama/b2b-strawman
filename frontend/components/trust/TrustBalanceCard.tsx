@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import useSWR from "swr";
+import { useCallback, useState } from "react";
+import useSWR, { useSWRConfig } from "swr";
 import { ModuleGate } from "@/components/module-gate";
 import {
   Card,
@@ -54,10 +54,12 @@ export function TrustBalanceCard({
   const [depositOpen, setDepositOpen] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [feeTransferOpen, setFeeTransferOpen] = useState(false);
+  const { mutate: globalMutate } = useSWRConfig();
 
   // Fetch trust accounts to find primary if not provided
+  const accountsCacheKey = !trustAccountId ? `trust-accounts-${slug}` : null;
   const { data: accounts, isLoading: accountsLoading } = useSWR<TrustAccount[]>(
-    !trustAccountId ? "trust-accounts" : null,
+    accountsCacheKey,
     () => fetchTrustAccounts(),
   );
 
@@ -65,12 +67,19 @@ export function TrustBalanceCard({
     trustAccountId ?? accounts?.find((a) => a.isPrimary && a.status === "ACTIVE")?.id ?? accounts?.[0]?.id;
 
   // Fetch client ledger for this customer
+  const ledgerCacheKey = resolvedAccountId ? `trust-ledger-${slug}-${resolvedAccountId}-${customerId}` : null;
   const { data: ledger, isLoading: ledgerLoading, error: ledgerError } = useSWR<ClientLedgerCardType>(
-    resolvedAccountId ? `trust-ledger-${resolvedAccountId}-${customerId}` : null,
+    ledgerCacheKey,
     () => fetchClientLedger(resolvedAccountId!, customerId),
   );
 
   const isLoading = accountsLoading || ledgerLoading;
+
+  // Revalidate SWR caches after a successful transaction mutation
+  const handleMutationSuccess = useCallback(() => {
+    if (ledgerCacheKey) globalMutate(ledgerCacheKey);
+    if (accountsCacheKey) globalMutate(accountsCacheKey);
+  }, [globalMutate, ledgerCacheKey, accountsCacheKey]);
 
   return (
     <ModuleGate module="trust_accounting">
@@ -84,6 +93,9 @@ export function TrustBalanceCard({
             )}
             {ledger && ledger.balance === 0 && (
               <Badge variant="neutral">No Funds</Badge>
+            )}
+            {ledger && ledger.balance < 0 && (
+              <Badge variant="destructive">Overdrawn</Badge>
             )}
           </div>
         </CardHeader>
@@ -143,7 +155,7 @@ export function TrustBalanceCard({
 
               {ledger.lastTransactionDate && (
                 <p className="text-xs text-slate-400 dark:text-slate-500">
-                  Last transaction: {new Date(ledger.lastTransactionDate).toLocaleDateString()}
+                  Last transaction: {new Date(ledger.lastTransactionDate).toLocaleDateString("en-ZA")}
                 </p>
               )}
 
@@ -179,16 +191,19 @@ export function TrustBalanceCard({
                     slug={slug}
                     open={depositOpen}
                     onOpenChange={setDepositOpen}
+                    onSuccess={handleMutationSuccess}
                   />
                   <RecordPaymentDialog
                     accountId={resolvedAccountId}
                     open={paymentOpen}
                     onOpenChange={setPaymentOpen}
+                    onSuccess={handleMutationSuccess}
                   />
                   <RecordFeeTransferDialog
                     accountId={resolvedAccountId}
                     open={feeTransferOpen}
                     onOpenChange={setFeeTransferOpen}
+                    onSuccess={handleMutationSuccess}
                   />
                 </div>
               )}

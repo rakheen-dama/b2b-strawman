@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/command";
 import { NAV_GROUPS, UTILITY_ITEMS, SETTINGS_ITEMS } from "@/lib/nav-items";
 import { useCapabilities } from "@/lib/capabilities";
+import { useOrgProfile } from "@/lib/org-profile";
 import { useRecentItems } from "@/components/recent-items-provider";
 
 interface CommandPaletteDialogProps {
@@ -23,6 +24,7 @@ interface CommandPaletteDialogProps {
 export function CommandPaletteDialog({ slug, open, onOpenChange }: CommandPaletteDialogProps) {
   const router = useRouter();
   const { hasCapability, isAdmin } = useCapabilities();
+  const { isModuleEnabled } = useOrgProfile();
   const { items: recentItems } = useRecentItems();
 
   const pages = [
@@ -31,7 +33,10 @@ export function CommandPaletteDialog({ slug, open, onOpenChange }: CommandPalett
   ].filter((item) => !item.requiredCapability || hasCapability(item.requiredCapability));
 
   const settings = SETTINGS_ITEMS.filter(
-    (item) => !item.comingSoon && (!item.adminOnly || isAdmin),
+    (item) =>
+      !item.comingSoon &&
+      (!item.adminOnly || isAdmin) &&
+      (!item.requiredModule || isModuleEnabled(item.requiredModule)),
   );
 
   const navigate = (href: string) => {

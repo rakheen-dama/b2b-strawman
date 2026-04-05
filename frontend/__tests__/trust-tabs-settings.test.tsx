@@ -4,7 +4,10 @@ import { cleanup, render, screen } from "@testing-library/react";
 
 // --- Mocks (before component imports) ---
 
-vi.mock("swr", () => ({ default: vi.fn() }));
+vi.mock("swr", () => ({
+  default: vi.fn(),
+  useSWRConfig: () => ({ mutate: vi.fn() }),
+}));
 
 vi.mock("next/link", () => ({
   default: ({
@@ -22,10 +25,12 @@ vi.mock("next/link", () => ({
   ),
 }));
 
+const mockSearchParams = vi.fn(() => new URLSearchParams());
+
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
   usePathname: () => "/org/acme/projects/proj-1",
-  useSearchParams: () => new URLSearchParams(),
+  useSearchParams: () => mockSearchParams(),
 }));
 
 vi.mock("@/lib/api", () => ({
@@ -167,6 +172,31 @@ describe("Project detail Trust tab", () => {
 
     expect(screen.queryByRole("tab", { name: "Trust" })).not.toBeInTheDocument();
   });
+
+  it("falls back to overview tab when ?tab=trust but trust module is disabled", () => {
+    mockSearchParams.mockReturnValueOnce(new URLSearchParams("tab=trust"));
+
+    render(
+      withNoModules(
+        <ProjectTabs
+          overviewPanel={<div data-testid="overview-content">Overview</div>}
+          documentsPanel={placeholder}
+          membersPanel={placeholder}
+          customersPanel={placeholder}
+          tasksPanel={placeholder}
+          timePanel={placeholder}
+          activityPanel={placeholder}
+          trustPanel={<div data-testid="trust-content">Trust</div>}
+        />,
+      ),
+    );
+
+    // Trust tab should not be rendered
+    expect(screen.queryByRole("tab", { name: "Trust" })).not.toBeInTheDocument();
+    // Overview tab should be active (fallback)
+    expect(screen.getByRole("tab", { name: "Overview" })).toHaveAttribute("data-state", "active");
+    expect(screen.getByTestId("overview-content")).toBeInTheDocument();
+  });
 });
 
 describe("Customer detail Trust tab", () => {
@@ -199,16 +229,190 @@ describe("Customer detail Trust tab", () => {
 });
 
 describe("Trust settings page", () => {
-  it("has a settings entry in SETTINGS_ITEMS", () => {
+  it("has a settings entry in SETTINGS_ITEMS with module gating", () => {
     const trustSetting = SETTINGS_ITEMS.find(
       (s) => s.title === "Trust Accounting",
     );
     expect(trustSetting).toBeDefined();
     expect(trustSetting!.adminOnly).toBe(true);
+    expect(trustSetting!.requiredModule).toBe("trust_accounting");
     expect(trustSetting!.href("acme")).toBe(
       "/org/acme/settings/trust-accounting",
     );
     expect(trustSetting!.description).toContain("trust accounts");
+  });
+});
+
+describe("TrustBalanceCard", () => {
+  it("renders loading state", () => {
+    vi.mocked(useSWR).mockReturnValue({
+      data: undefined,
+      error: undefined,
+      isLoading: true,
+      mutate: vi.fn(),
+    } as ReturnType<typeof useSWR>);
+
+    render(
+      withTrustEnabled(
+        <TrustBalanceCard customerId="cust-1" slug="acme" />,
+      ),
+    );
+
+    expect(screen.getByText("Loading trust balance...")).toBeInTheDocument();
+  });
+
+  it("renders error state", () => {
+    vi.mocked(useSWR).mockImplementation((key) => {
+      if (key && typeof key === "string" && key.startsWith("trust-ledger-")) {
+        return {
+          data: undefined,
+          error: new Error("Network error"),
+          isLoading: false,
+          mutate: vi.fn(),
+        } as ReturnType<typeof useSWR>;
+      }
+      return {
+        data: [{ id: "acc-1", isPrimary: true, status: "ACTIVE", accountName: "Trust" }],
+        error: undefined,
+        isLoading: false,
+        mutate: vi.fn(),
+      } as ReturnType<typeof useSWR>;
+    });
+
+    render(
+      withTrustEnabled(
+        <TrustBalanceCard customerId="cust-1" slug="acme" />,
+      ),
+    );
+
+    expect(screen.getByText("Unable to load trust balance")).toBeInTheDocument();
+  });
+
+  it("renders no-account empty state when no trust accounts exist", () => {
+    vi.mocked(useSWR).mockReturnValue({
+      data: undefined,
+      error: undefined,
+      isLoading: false,
+      mutate: vi.fn(),
+    } as ReturnType<typeof useSWR>);
+
+    render(
+      withTrustEnabled(
+        <TrustBalanceCard customerId="cust-1" slug="acme" />,
+      ),
+    );
+
+    expect(
+      screen.getByText(/No trust account configured/),
+    ).toBeInTheDocument();
+  });
+
+  it("renders balance data with Funds Held badge", () => {
+    vi.mocked(useSWR).mockImplementation((key) => {
+      if (key && typeof key === "string" && key.startsWith("trust-ledger-")) {
+        return {
+          data: {
+            balance: 50000,
+            totalDeposits: 80000,
+            totalPayments: 25000,
+            totalFeeTransfers: 5000,
+            lastTransactionDate: "2026-03-15",
+          },
+          error: undefined,
+          isLoading: false,
+          mutate: vi.fn(),
+        } as ReturnType<typeof useSWR>;
+      }
+      return {
+        data: [{ id: "acc-1", isPrimary: true, status: "ACTIVE" }],
+        error: undefined,
+        isLoading: false,
+        mutate: vi.fn(),
+      } as ReturnType<typeof useSWR>;
+    });
+
+    render(
+      withTrustEnabled(
+        <TrustBalanceCard customerId="cust-1" slug="acme" trustAccountId="acc-1" />,
+      ),
+    );
+
+    expect(screen.getByText("Funds Held")).toBeInTheDocument();
+    // Balance is rendered by formatCurrency (ZAR) — "R 50,000.00" or "R\u00a050,000.00"
+    expect(screen.getByText(/R[\s\u00a0]?50[,.]000/)).toBeInTheDocument();
+  });
+
+  it("renders Overdrawn badge for negative balance", () => {
+    vi.mocked(useSWR).mockImplementation((key) => {
+      if (key && typeof key === "string" && key.startsWith("trust-ledger-")) {
+        return {
+          data: {
+            balance: -1000,
+            totalDeposits: 5000,
+            totalPayments: 6000,
+            totalFeeTransfers: 0,
+            lastTransactionDate: "2026-03-15",
+          },
+          error: undefined,
+          isLoading: false,
+          mutate: vi.fn(),
+        } as ReturnType<typeof useSWR>;
+      }
+      return {
+        data: [{ id: "acc-1", isPrimary: true, status: "ACTIVE" }],
+        error: undefined,
+        isLoading: false,
+        mutate: vi.fn(),
+      } as ReturnType<typeof useSWR>;
+    });
+
+    render(
+      withTrustEnabled(
+        <TrustBalanceCard customerId="cust-1" slug="acme" trustAccountId="acc-1" />,
+      ),
+    );
+
+    expect(screen.getByText("Overdrawn")).toBeInTheDocument();
+  });
+
+  it("renders quick action buttons when showQuickActions is true", () => {
+    vi.mocked(useSWR).mockImplementation((key) => {
+      if (key && typeof key === "string" && key.startsWith("trust-ledger-")) {
+        return {
+          data: {
+            balance: 10000,
+            totalDeposits: 10000,
+            totalPayments: 0,
+            totalFeeTransfers: 0,
+            lastTransactionDate: null,
+          },
+          error: undefined,
+          isLoading: false,
+          mutate: vi.fn(),
+        } as ReturnType<typeof useSWR>;
+      }
+      return {
+        data: [{ id: "acc-1", isPrimary: true, status: "ACTIVE" }],
+        error: undefined,
+        isLoading: false,
+        mutate: vi.fn(),
+      } as ReturnType<typeof useSWR>;
+    });
+
+    render(
+      withTrustEnabled(
+        <TrustBalanceCard
+          customerId="cust-1"
+          slug="acme"
+          trustAccountId="acc-1"
+          showQuickActions={true}
+        />,
+      ),
+    );
+
+    expect(screen.getByRole("button", { name: /Record Deposit/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Record Payment/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Fee Transfer/ })).toBeInTheDocument();
   });
 });
 

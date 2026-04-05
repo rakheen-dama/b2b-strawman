@@ -207,7 +207,7 @@ export default async function TrustAccountingSettingsPage({
                           ? "Dual approval required"
                           : "Single approval"}
                         {account.paymentApprovalThreshold != null &&
-                          ` above R${account.paymentApprovalThreshold.toLocaleString()}`}
+                          ` above ${new Intl.NumberFormat("en-ZA", { style: "currency", currency: "ZAR", minimumFractionDigits: 0 }).format(account.paymentApprovalThreshold)}`}
                       </p>
                     </div>
                     <Badge
@@ -273,7 +273,7 @@ export default async function TrustAccountingSettingsPage({
                       className="border-b border-slate-200 last:border-0 dark:border-slate-800"
                     >
                       <td className="px-4 py-2 text-slate-900 dark:text-slate-100">
-                        {new Date(rate.effectiveFrom).toLocaleDateString()}
+                        {new Date(rate.effectiveFrom).toLocaleDateString("en-ZA")}
                       </td>
                       <td className="px-4 py-2 text-slate-900 dark:text-slate-100">
                         {(rate.ratePercent * 100).toFixed(2)}%

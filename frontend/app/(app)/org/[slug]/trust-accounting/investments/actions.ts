@@ -1,11 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { unstable_rethrow } from "next/navigation";
 import { api } from "@/lib/api";
 import type { TrustInvestment } from "@/lib/types";
-import type {
-  PlaceInvestmentFormData,
-  RecordInvestmentInterestFormData,
+import {
+  placeInvestmentSchema,
+  recordInvestmentInterestSchema,
+  type PlaceInvestmentFormData,
+  type RecordInvestmentInterestFormData,
 } from "@/lib/schemas/trust";
 
 // ── Response types ─────────────────────────────────────────────────
@@ -51,20 +54,25 @@ export async function placeInvestment(
   accountId: string,
   data: PlaceInvestmentFormData,
 ): Promise<ActionResult> {
+  const parsed = placeInvestmentSchema.safeParse(data);
+  if (!parsed.success)
+    return { success: false, error: "Invalid investment payload" };
+
   try {
     await api.post(`/api/trust-accounts/${accountId}/investments`, {
-      customerId: data.customerId,
-      institution: data.institution,
-      accountNumber: data.accountNumber,
-      principal: data.principal,
-      interestRate: data.interestRate,
-      depositDate: data.depositDate,
-      maturityDate: data.maturityDate || null,
-      notes: data.notes || null,
+      customerId: parsed.data.customerId,
+      institution: parsed.data.institution,
+      accountNumber: parsed.data.accountNumber,
+      principal: parsed.data.principal,
+      interestRate: parsed.data.interestRate,
+      depositDate: parsed.data.depositDate,
+      maturityDate: parsed.data.maturityDate || null,
+      notes: parsed.data.notes || null,
     });
-    revalidatePath("/", "layout");
+    revalidatePath("/org/[slug]/trust-accounting/investments", "page");
     return { success: true };
   } catch (error) {
+    unstable_rethrow(error);
     return {
       success: false,
       error:
@@ -79,13 +87,18 @@ export async function recordInterest(
   investmentId: string,
   data: RecordInvestmentInterestFormData,
 ): Promise<ActionResult> {
+  const parsed = recordInvestmentInterestSchema.safeParse(data);
+  if (!parsed.success)
+    return { success: false, error: "Invalid interest payload" };
+
   try {
     await api.put(`/api/trust-investments/${investmentId}/interest`, {
-      amount: data.amount,
+      amount: parsed.data.amount,
     });
-    revalidatePath("/", "layout");
+    revalidatePath("/org/[slug]/trust-accounting/investments", "page");
     return { success: true };
   } catch (error) {
+    unstable_rethrow(error);
     return {
       success: false,
       error:
@@ -101,9 +114,10 @@ export async function withdrawInvestment(
 ): Promise<ActionResult> {
   try {
     await api.post(`/api/trust-investments/${investmentId}/withdraw`);
-    revalidatePath("/", "layout");
+    revalidatePath("/org/[slug]/trust-accounting/investments", "page");
     return { success: true };
   } catch (error) {
+    unstable_rethrow(error);
     return {
       success: false,
       error:

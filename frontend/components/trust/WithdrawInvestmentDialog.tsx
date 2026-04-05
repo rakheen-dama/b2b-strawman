@@ -12,26 +12,22 @@ import {
 } from "@/components/ui/dialog";
 import { Loader2 } from "lucide-react";
 import { withdrawInvestment } from "@/app/(app)/org/[slug]/trust-accounting/investments/actions";
+import { formatCurrency } from "@/lib/format";
 
 interface WithdrawInvestmentDialogProps {
   investmentId: string;
   principal: number;
   interestEarned: number;
+  currency: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-}
-
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("en-ZA", {
-    style: "currency",
-    currency: "ZAR",
-  }).format(amount);
 }
 
 export function WithdrawInvestmentDialog({
   investmentId,
   principal,
   interestEarned,
+  currency,
   open,
   onOpenChange,
 }: WithdrawInvestmentDialogProps) {
@@ -81,7 +77,7 @@ export function WithdrawInvestmentDialog({
               Principal
             </span>
             <span className="font-mono tabular-nums text-slate-950 dark:text-slate-50">
-              {formatCurrency(principal)}
+              {formatCurrency(principal, currency)}
             </span>
           </div>
           <div className="flex items-center justify-between text-sm">
@@ -89,14 +85,14 @@ export function WithdrawInvestmentDialog({
               Interest Earned
             </span>
             <span className="font-mono tabular-nums text-slate-700 dark:text-slate-300">
-              {formatCurrency(interestEarned)}
+              {formatCurrency(interestEarned, currency)}
             </span>
           </div>
           <div className="border-t border-slate-200 pt-2 dark:border-slate-700">
             <div className="flex items-center justify-between text-sm font-semibold">
               <span className="text-slate-950 dark:text-slate-50">Total</span>
               <span className="font-mono tabular-nums text-slate-950 dark:text-slate-50">
-                {formatCurrency(total)}
+                {formatCurrency(total, currency)}
               </span>
             </div>
           </div>

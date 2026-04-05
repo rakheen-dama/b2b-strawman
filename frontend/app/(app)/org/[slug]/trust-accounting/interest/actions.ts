@@ -1,15 +1,18 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { unstable_rethrow } from "next/navigation";
 import { api } from "@/lib/api";
 import type {
   InterestRun,
   InterestRunDetail,
   LpffRate,
 } from "@/lib/types";
-import type {
-  CreateInterestRunFormData,
-  AddLpffRateFormData,
+import {
+  createInterestRunSchema,
+  addLpffRateSchema,
+  type CreateInterestRunFormData,
+  type AddLpffRateFormData,
 } from "@/lib/schemas/trust";
 
 // ── Response types ─────────────────────────────────────────────────
@@ -41,17 +44,22 @@ export async function createInterestRun(
   accountId: string,
   data: CreateInterestRunFormData,
 ): Promise<InterestRunActionResult> {
+  const parsed = createInterestRunSchema.safeParse(data);
+  if (!parsed.success)
+    return { success: false, error: "Invalid interest run payload" };
+
   try {
     const run = await api.post<InterestRun>(
       `/api/trust-accounts/${accountId}/interest-runs`,
       {
-        periodStart: data.periodStart,
-        periodEnd: data.periodEnd,
+        periodStart: parsed.data.periodStart,
+        periodEnd: parsed.data.periodEnd,
       },
     );
-    revalidatePath("/", "layout");
+    revalidatePath("/org/[slug]/trust-accounting/interest", "page");
     return { success: true, data: run };
   } catch (error) {
+    unstable_rethrow(error);
     return {
       success: false,
       error:
@@ -71,6 +79,7 @@ export async function fetchInterestRunDetail(
     );
     return { success: true, data: detail };
   } catch (error) {
+    unstable_rethrow(error);
     return {
       success: false,
       error:
@@ -88,9 +97,10 @@ export async function calculateInterest(
     const run = await api.post<InterestRun>(
       `/api/interest-runs/${runId}/calculate`,
     );
-    revalidatePath("/", "layout");
+    revalidatePath("/org/[slug]/trust-accounting/interest", "page");
     return { success: true, data: run };
   } catch (error) {
+    unstable_rethrow(error);
     return {
       success: false,
       error:
@@ -108,9 +118,10 @@ export async function approveInterestRun(
     const run = await api.post<InterestRun>(
       `/api/interest-runs/${runId}/approve`,
     );
-    revalidatePath("/", "layout");
+    revalidatePath("/org/[slug]/trust-accounting/interest", "page");
     return { success: true, data: run };
   } catch (error) {
+    unstable_rethrow(error);
     return {
       success: false,
       error:
@@ -128,9 +139,10 @@ export async function postInterestRun(
     const run = await api.post<InterestRun>(
       `/api/interest-runs/${runId}/post`,
     );
-    revalidatePath("/", "layout");
+    revalidatePath("/org/[slug]/trust-accounting/interest", "page");
     return { success: true, data: run };
   } catch (error) {
+    unstable_rethrow(error);
     return {
       success: false,
       error:
@@ -155,16 +167,21 @@ export async function addLpffRate(
   accountId: string,
   data: AddLpffRateFormData,
 ): Promise<ActionResult> {
+  const parsed = addLpffRateSchema.safeParse(data);
+  if (!parsed.success)
+    return { success: false, error: "Invalid LPFF rate payload" };
+
   try {
     await api.post(`/api/trust-accounts/${accountId}/lpff-rates`, {
-      effectiveFrom: data.effectiveFrom,
-      ratePercent: data.ratePercent,
-      lpffSharePercent: data.lpffSharePercent,
-      notes: data.notes || null,
+      effectiveFrom: parsed.data.effectiveFrom,
+      ratePercent: parsed.data.ratePercent,
+      lpffSharePercent: parsed.data.lpffSharePercent,
+      notes: parsed.data.notes || null,
     });
-    revalidatePath("/", "layout");
+    revalidatePath("/org/[slug]/trust-accounting/interest", "page");
     return { success: true };
   } catch (error) {
+    unstable_rethrow(error);
     return {
       success: false,
       error:

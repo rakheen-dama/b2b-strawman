@@ -33,25 +33,21 @@ import {
   createInterestRunSchema,
   type CreateInterestRunFormData,
 } from "@/lib/schemas/trust";
+import { formatCurrency } from "@/lib/format";
 import type { InterestRun, InterestAllocation } from "@/lib/types";
 
 interface InterestRunWizardProps {
   accountId: string;
+  currency: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
 type WizardStep = "create" | "calculate" | "approve" | "post" | "done";
 
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("en-ZA", {
-    style: "currency",
-    currency: "ZAR",
-  }).format(amount);
-}
-
 export function InterestRunWizard({
   accountId,
+  currency,
   open,
   onOpenChange,
 }: InterestRunWizardProps) {
@@ -106,12 +102,16 @@ export function InterestRunWizard({
       const result = await calculateInterest(currentRun.id);
       if (result.success && result.data) {
         setCurrentRun(result.data);
-        // Fetch allocations
+        // Fetch allocations — block advancement if detail fetch fails
         const detailResult = await fetchInterestRunDetail(currentRun.id);
         if (detailResult.success && detailResult.data) {
           setAllocations(detailResult.data.allocations);
+          setStep("approve");
+        } else {
+          setError(
+            detailResult.error ?? "Failed to load interest allocations",
+          );
         }
-        setStep("approve");
       } else {
         setError(result.error ?? "Failed to calculate interest");
       }
@@ -309,7 +309,7 @@ export function InterestRunWizard({
                   Total Interest
                 </span>
                 <span className="font-mono font-semibold tabular-nums text-slate-950 dark:text-slate-50">
-                  {formatCurrency(currentRun.totalInterest)}
+                  {formatCurrency(currentRun.totalInterest, currency)}
                 </span>
               </div>
               <div className="mt-1 flex items-center justify-between text-sm">
@@ -317,7 +317,7 @@ export function InterestRunWizard({
                   LPFF Share
                 </span>
                 <span className="font-mono tabular-nums text-slate-700 dark:text-slate-300">
-                  {formatCurrency(currentRun.totalLpffShare)}
+                  {formatCurrency(currentRun.totalLpffShare, currency)}
                 </span>
               </div>
               <div className="mt-1 flex items-center justify-between text-sm">
@@ -325,7 +325,7 @@ export function InterestRunWizard({
                   Client Share
                 </span>
                 <span className="font-mono tabular-nums text-slate-700 dark:text-slate-300">
-                  {formatCurrency(currentRun.totalClientShare)}
+                  {formatCurrency(currentRun.totalClientShare, currency)}
                 </span>
               </div>
             </div>
@@ -365,16 +365,16 @@ export function InterestRunWizard({
                           {alloc.customerId.slice(0, 8)}...
                         </td>
                         <td className="py-2 pr-3 text-right font-mono tabular-nums text-slate-700 dark:text-slate-300">
-                          {formatCurrency(alloc.averageDailyBalance)}
+                          {formatCurrency(alloc.averageDailyBalance, currency)}
                         </td>
                         <td className="py-2 pr-3 text-right font-mono tabular-nums text-slate-950 dark:text-slate-50">
-                          {formatCurrency(alloc.grossInterest)}
+                          {formatCurrency(alloc.grossInterest, currency)}
                         </td>
                         <td className="py-2 pr-3 text-right font-mono tabular-nums text-slate-700 dark:text-slate-300">
-                          {formatCurrency(alloc.lpffShare)}
+                          {formatCurrency(alloc.lpffShare, currency)}
                         </td>
                         <td className="py-2 text-right font-mono tabular-nums text-slate-700 dark:text-slate-300">
-                          {formatCurrency(alloc.clientShare)}
+                          {formatCurrency(alloc.clientShare, currency)}
                         </td>
                       </tr>
                     ))}

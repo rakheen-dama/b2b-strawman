@@ -91,14 +91,19 @@ export type ReversalReasonFormData = z.infer<typeof reversalReasonSchema>;
 
 // ── Interest schemas ──────────────────────────────────────────────
 
-export const createInterestRunSchema = z.object({
-  periodStart: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD"),
-  periodEnd: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD"),
-});
+export const createInterestRunSchema = z
+  .object({
+    periodStart: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD"),
+    periodEnd: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD"),
+  })
+  .refine((d) => d.periodEnd >= d.periodStart, {
+    message: "Period end must be on or after period start",
+    path: ["periodEnd"],
+  });
 
 export type CreateInterestRunFormData = z.infer<
   typeof createInterestRunSchema

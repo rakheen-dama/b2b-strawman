@@ -58,6 +58,7 @@ vi.mock("next/navigation", () => ({
     mockNotFound();
     throw new Error("NEXT_NOT_FOUND");
   },
+  unstable_rethrow: vi.fn(),
 }));
 
 // Mock next/cache
@@ -218,6 +219,18 @@ describe("InvestmentsPage", () => {
 
     await expect(renderInvestmentsPage()).rejects.toThrow("NEXT_NOT_FOUND");
     expect(mockNotFound).toHaveBeenCalled();
+  });
+
+  it("hides Place Investment button when user has only VIEW_TRUST capability", async () => {
+    setupInvestmentMocks();
+    mockFetchMyCapabilities.mockResolvedValue({
+      isAdmin: false,
+      isOwner: false,
+      capabilities: ["VIEW_TRUST"],
+    });
+    await renderInvestmentsPage();
+
+    expect(screen.queryByText("Place Investment")).not.toBeInTheDocument();
   });
 });
 

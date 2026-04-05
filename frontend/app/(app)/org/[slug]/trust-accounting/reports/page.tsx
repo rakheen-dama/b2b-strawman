@@ -37,7 +37,12 @@ export default async function TrustReportsPage({
   }
 
   // Capability check
-  const capData = await fetchMyCapabilities();
+  let capData;
+  try {
+    capData = await fetchMyCapabilities();
+  } catch {
+    notFound();
+  }
   const hasViewTrust =
     capData.isAdmin ||
     capData.isOwner ||

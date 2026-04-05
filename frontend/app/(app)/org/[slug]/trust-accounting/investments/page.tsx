@@ -13,17 +13,10 @@ import { Badge } from "@/components/ui/badge";
 import { fetchTrustAccounts } from "@/app/(app)/org/[slug]/trust-accounting/actions";
 import { fetchInvestments, fetchMaturing } from "./actions";
 import { InvestmentActions } from "@/components/trust/InvestmentActions";
-import { formatLocalDate } from "@/lib/format";
+import { formatCurrency, formatLocalDate } from "@/lib/format";
 import type { TrustInvestmentStatus } from "@/lib/types";
 
 // ── Helpers ────────────────────────────────────────────────────────
-
-function formatCurrency(amount: number, currency = "ZAR"): string {
-  return new Intl.NumberFormat("en-ZA", {
-    style: "currency",
-    currency,
-  }).format(amount);
-}
 
 function statusBadgeVariant(
   status: TrustInvestmentStatus,
@@ -50,7 +43,7 @@ export default async function InvestmentsPage({
 }: {
   params: Promise<{ slug: string }>;
 }) {
-  const { slug } = await params;
+  await params;
 
   // Module gating
   let settings;
@@ -136,7 +129,7 @@ export default async function InvestmentsPage({
           </p>
         </div>
         {canManageTrust && (
-          <InvestmentActions accountId={accountId} slug={slug} />
+          <InvestmentActions accountId={accountId} />
         )}
       </div>
 
@@ -258,6 +251,7 @@ export default async function InvestmentsPage({
                             status={inv.status}
                             principal={inv.principal}
                             interestEarned={inv.interestEarned}
+                            currency={currency}
                           />
                         </td>
                       )}
@@ -281,11 +275,13 @@ function InvestmentRowActions({
   status,
   principal,
   interestEarned,
+  currency,
 }: {
   investmentId: string;
   status: TrustInvestmentStatus;
   principal: number;
   interestEarned: number;
+  currency: string;
 }) {
   // Only render action buttons for ACTIVE investments
   if (status !== "ACTIVE") {
@@ -297,6 +293,7 @@ function InvestmentRowActions({
       investmentId={investmentId}
       principal={principal}
       interestEarned={interestEarned}
+      currency={currency}
       variant="row"
     />
   );

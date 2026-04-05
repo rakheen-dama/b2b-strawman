@@ -15,7 +15,6 @@ import { WithdrawInvestmentDialog } from "./WithdrawInvestmentDialog";
 
 interface HeaderActionsProps {
   accountId: string;
-  slug: string;
   variant?: "header";
 }
 
@@ -23,6 +22,7 @@ interface RowActionsProps {
   investmentId: string;
   principal: number;
   interestEarned: number;
+  currency: string;
   variant: "row";
 }
 
@@ -63,6 +63,7 @@ export function InvestmentActions(props: InvestmentActionsProps) {
           investmentId={props.investmentId}
           principal={props.principal}
           interestEarned={props.interestEarned}
+          currency={props.currency}
           open={withdrawOpen}
           onOpenChange={setWithdrawOpen}
         />

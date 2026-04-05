@@ -8,9 +8,10 @@ import { LpffRateDialog } from "./LpffRateDialog";
 
 interface InterestActionsProps {
   accountId: string;
+  currency: string;
 }
 
-export function InterestActions({ accountId }: InterestActionsProps) {
+export function InterestActions({ accountId, currency }: InterestActionsProps) {
   const [wizardOpen, setWizardOpen] = useState(false);
   const [rateOpen, setRateOpen] = useState(false);
 
@@ -34,6 +35,7 @@ export function InterestActions({ accountId }: InterestActionsProps) {
       />
       <InterestRunWizard
         accountId={accountId}
+        currency={currency}
         open={wizardOpen}
         onOpenChange={setWizardOpen}
       />

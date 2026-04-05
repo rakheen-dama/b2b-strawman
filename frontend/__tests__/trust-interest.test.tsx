@@ -61,6 +61,7 @@ vi.mock("next/navigation", () => ({
     mockNotFound();
     throw new Error("NEXT_NOT_FOUND");
   },
+  unstable_rethrow: vi.fn(),
 }));
 
 // Mock next/cache
@@ -204,5 +205,18 @@ describe("InterestPage", () => {
 
     expect(screen.getByText("New Interest Run")).toBeInTheDocument();
     expect(screen.getByText("Add Rate")).toBeInTheDocument();
+  });
+
+  it("hides action buttons when user has only VIEW_TRUST capability", async () => {
+    setupDefaultMocks();
+    mockFetchMyCapabilities.mockResolvedValue({
+      isAdmin: false,
+      isOwner: false,
+      capabilities: ["VIEW_TRUST"],
+    });
+    await renderPage();
+
+    expect(screen.queryByText("New Interest Run")).not.toBeInTheDocument();
+    expect(screen.queryByText("Add Rate")).not.toBeInTheDocument();
   });
 });

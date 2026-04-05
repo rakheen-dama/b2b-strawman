@@ -13,17 +13,10 @@ import { Badge } from "@/components/ui/badge";
 import { fetchTrustAccounts } from "@/app/(app)/org/[slug]/trust-accounting/actions";
 import { fetchInterestRuns, fetchLpffRates } from "./actions";
 import { InterestActions } from "@/components/trust/InterestActions";
-import { formatLocalDate } from "@/lib/format";
+import { formatCurrency, formatLocalDate } from "@/lib/format";
 import type { InterestRunStatus } from "@/lib/types";
 
 // ── Helpers ────────────────────────────────────────────────────────
-
-function formatCurrency(amount: number, currency = "ZAR"): string {
-  return new Intl.NumberFormat("en-ZA", {
-    style: "currency",
-    currency,
-  }).format(amount);
-}
 
 function statusBadgeVariant(
   status: InterestRunStatus,
@@ -135,7 +128,7 @@ export default async function InterestPage({
           </p>
         </div>
         {canManageTrust && (
-          <InterestActions accountId={accountId} />
+          <InterestActions accountId={accountId} currency={currency} />
         )}
       </div>
 

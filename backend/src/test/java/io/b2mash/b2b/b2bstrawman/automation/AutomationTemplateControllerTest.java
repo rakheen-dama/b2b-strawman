@@ -121,7 +121,7 @@ class AutomationTemplateControllerTest {
             get("/api/automation-templates")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tmpl_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$", hasSize(13)))
+        .andExpect(jsonPath("$", hasSize(16)))
         .andExpect(jsonPath("$[0].slug").exists())
         .andExpect(jsonPath("$[0].name").exists())
         .andExpect(jsonPath("$[0].category").exists())

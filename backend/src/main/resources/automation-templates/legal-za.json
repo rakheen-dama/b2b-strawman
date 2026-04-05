@@ -1,6 +1,6 @@
 {
   "packId": "automation-legal-za",
-  "version": 1,
+  "version": 2,
   "verticalProfile": "legal-za",
   "templates": [
     {
@@ -43,6 +43,84 @@
           },
           "delayDuration": 7,
           "delayUnit": "DAYS",
+          "sortOrder": 0
+        }
+      ]
+    },
+    {
+      "slug": "investment-maturity-reminder",
+      "name": "Investment Maturity Reminder",
+      "description": "Sends a notification 30 days before a trust investment reaches its maturity date",
+      "category": "trust",
+      "triggerType": "FIELD_DATE_APPROACHING",
+      "triggerConfig": {
+        "entityType": "TRUST_INVESTMENT",
+        "dateField": "maturityDate",
+        "daysBefore": 30
+      },
+      "conditions": [],
+      "actions": [
+        {
+          "actionType": "SEND_NOTIFICATION",
+          "actionConfig": {
+            "recipientType": "ORG_ADMINS",
+            "title": "Trust investment maturing in 30 days",
+            "message": "A trust investment is approaching maturity. Review the investment and plan for reinvestment or withdrawal."
+          },
+          "delayDuration": null,
+          "delayUnit": null,
+          "sortOrder": 0
+        }
+      ]
+    },
+    {
+      "slug": "reconciliation-overdue-reminder",
+      "name": "Reconciliation Overdue Reminder",
+      "description": "Sends a notification when a trust account reconciliation has not been completed within 35 days of the period end",
+      "category": "trust",
+      "triggerType": "FIELD_DATE_APPROACHING",
+      "triggerConfig": {
+        "entityType": "TRUST_RECONCILIATION",
+        "dateField": "periodEnd",
+        "daysBefore": -35
+      },
+      "conditions": [],
+      "actions": [
+        {
+          "actionType": "SEND_NOTIFICATION",
+          "actionConfig": {
+            "recipientType": "ORG_ADMINS",
+            "title": "Trust reconciliation overdue",
+            "message": "A trust account reconciliation is overdue. Section 35 of the Legal Practice Act requires timely reconciliation of trust accounts."
+          },
+          "delayDuration": null,
+          "delayUnit": null,
+          "sortOrder": 0
+        }
+      ]
+    },
+    {
+      "slug": "pending-approval-aging",
+      "name": "Pending Approval Aging",
+      "description": "Sends a reminder when a trust transaction has been awaiting approval for more than 48 hours",
+      "category": "trust",
+      "triggerType": "FIELD_DATE_APPROACHING",
+      "triggerConfig": {
+        "entityType": "TRUST_TRANSACTION",
+        "dateField": "createdAt",
+        "daysBefore": -2
+      },
+      "conditions": [],
+      "actions": [
+        {
+          "actionType": "SEND_NOTIFICATION",
+          "actionConfig": {
+            "recipientType": "ORG_ADMINS",
+            "title": "Trust payment approval pending over 48 hours",
+            "message": "A trust transaction has been awaiting approval for more than 48 hours. Please review and action pending approvals."
+          },
+          "delayDuration": null,
+          "delayUnit": null,
           "sortOrder": 0
         }
       ]

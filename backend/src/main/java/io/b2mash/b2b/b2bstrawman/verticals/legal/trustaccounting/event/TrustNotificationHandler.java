@@ -14,9 +14,20 @@ import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 /**
- * Listens for trust transaction approval events and creates notifications for relevant recipients.
+ * Listens for trust accounting domain events and creates notifications for relevant recipients.
  * Runs AFTER_COMMIT in a new transaction to ensure notifications are only created for committed
  * changes and notification failures do not affect the domain transaction.
+ *
+ * <p>Handles 6 notification flows:
+ *
+ * <ul>
+ *   <li>Transaction awaiting approval -> notify admins/owners
+ *   <li>Transaction approved -> notify recorder
+ *   <li>Transaction rejected -> notify recorder
+ *   <li>Reconciliation completed -> notify admins/owners
+ *   <li>Investment maturing -> notify admins/owners
+ *   <li>Interest posted -> notify admins/owners
+ * </ul>
  */
 @Component
 public class TrustNotificationHandler {
@@ -59,11 +70,62 @@ public class TrustNotificationHandler {
         });
   }
 
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void onReconciliationCompleted(TrustDomainEvent.ReconciliationCompleted event) {
+    handleInTenantScope(
+        event.tenantId(),
+        event.orgId(),
+        () -> {
+          try {
+            handleReconciliationCompleted(event);
+          } catch (Exception e) {
+            log.warn(
+                "Failed to create notifications for reconciliation.completed reconciliation={}",
+                event.reconciliationId(),
+                e);
+          }
+        });
+  }
+
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void onInvestmentMaturing(TrustDomainEvent.InvestmentMaturing event) {
+    handleInTenantScope(
+        event.tenantId(),
+        event.orgId(),
+        () -> {
+          try {
+            handleInvestmentMaturing(event);
+          } catch (Exception e) {
+            log.warn(
+                "Failed to create notifications for investment.maturing investment={}",
+                event.investmentId(),
+                e);
+          }
+        });
+  }
+
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void onInterestPosted(TrustDomainEvent.InterestPosted event) {
+    handleInTenantScope(
+        event.tenantId(),
+        event.orgId(),
+        () -> {
+          try {
+            handleInterestPosted(event);
+          } catch (Exception e) {
+            log.warn(
+                "Failed to create notifications for interest.posted interestRun={}",
+                event.interestRunId(),
+                e);
+          }
+        });
+  }
+
   private void handleAwaitingApproval(TrustTransactionApprovalEvent event) {
     // Notify members with APPROVE_TRUST_PAYMENT capability (owners)
     var notifications =
         notificationService.notifyAdminsAndOwners(
-            "trust_transaction.awaiting_approval",
+            "TRUST_PAYMENT_AWAITING_APPROVAL",
             "Trust " + formatTransactionType(event.transactionType()) + " requires approval",
             "A "
                 + formatTransactionType(event.transactionType())
@@ -81,7 +143,7 @@ public class TrustNotificationHandler {
     var notification =
         notificationService.createNotification(
             event.recordedBy(),
-            "trust_transaction.approved",
+            "TRUST_PAYMENT_APPROVED",
             "Trust " + formatTransactionType(event.transactionType()) + " approved",
             "Your "
                 + formatTransactionType(event.transactionType())
@@ -100,7 +162,7 @@ public class TrustNotificationHandler {
     var notification =
         notificationService.createNotification(
             event.recordedBy(),
-            "trust_transaction.rejected",
+            "TRUST_PAYMENT_REJECTED",
             "Trust " + formatTransactionType(event.transactionType()) + " rejected",
             "Your "
                 + formatTransactionType(event.transactionType())
@@ -112,6 +174,58 @@ public class TrustNotificationHandler {
             null);
 
     dispatchAll(List.of(notification));
+  }
+
+  private void handleReconciliationCompleted(TrustDomainEvent.ReconciliationCompleted event) {
+    var notifications =
+        notificationService.notifyAdminsAndOwners(
+            "TRUST_RECONCILIATION_OVERDUE",
+            "Trust account reconciliation completed",
+            "Reconciliation for period ending "
+                + event.periodEnd()
+                + " has been completed successfully.",
+            "trust_reconciliation",
+            event.reconciliationId());
+
+    dispatchAll(notifications);
+  }
+
+  private void handleInvestmentMaturing(TrustDomainEvent.InvestmentMaturing event) {
+    var notifications =
+        notificationService.notifyAdminsAndOwners(
+            "TRUST_INVESTMENT_MATURING",
+            "Trust investment maturing in " + event.daysUntilMaturity() + " days",
+            "Investment of R"
+                + event.principal()
+                + " at "
+                + event.institution()
+                + " matures on "
+                + event.maturityDate()
+                + ".",
+            "trust_investment",
+            event.investmentId());
+
+    dispatchAll(notifications);
+  }
+
+  private void handleInterestPosted(TrustDomainEvent.InterestPosted event) {
+    var notifications =
+        notificationService.notifyAdminsAndOwners(
+            "TRUST_APPROVAL_AGING",
+            "Interest run posted",
+            "Interest run for "
+                + event.periodStart()
+                + " to "
+                + event.periodEnd()
+                + " posted. Total interest: R"
+                + event.totalInterest()
+                + ", client share: R"
+                + event.totalClientShare()
+                + ".",
+            "trust_interest_run",
+            event.interestRunId());
+
+    dispatchAll(notifications);
   }
 
   private String formatTransactionType(String transactionType) {

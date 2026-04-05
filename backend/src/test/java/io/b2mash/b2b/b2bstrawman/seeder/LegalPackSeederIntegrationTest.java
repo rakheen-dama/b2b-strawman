@@ -92,7 +92,7 @@ class LegalPackSeederIntegrationTest {
                   var templates = documentTemplateRepository.findByActiveTrueOrderBySortOrder();
                   var legalTemplates =
                       templates.stream().filter(t -> "legal-za".equals(t.getPackId())).toList();
-                  assertThat(legalTemplates).hasSize(7);
+                  assertThat(legalTemplates).hasSize(10);
                 }));
   }
 

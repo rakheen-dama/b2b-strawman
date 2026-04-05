@@ -5,12 +5,14 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountStatus;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.lpff.LpffRate;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.lpff.LpffRateRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -81,10 +83,14 @@ public class InterestService {
       BigDecimal totalLpffShare,
       BigDecimal totalClientShare,
       String status,
+      UUID createdBy,
       UUID approvedBy,
       Instant postedAt,
       Instant createdAt,
       Instant updatedAt) {}
+
+  public record InterestRunDetailResponse(
+      InterestRunResponse run, List<InterestAllocationResponse> allocations) {}
 
   public record InterestAllocationResponse(
       UUID id,
@@ -136,6 +142,7 @@ public class InterestService {
                         "No LPFF rate configured", "No LPFF rate is effective on " + periodStart));
 
     var run = new InterestRun(accountId, periodStart, periodEnd, rate.getId());
+    run.setCreatedBy(RequestScopes.requireMemberId());
     run = interestRunRepository.save(run);
 
     auditService.log(
@@ -346,6 +353,194 @@ public class InterestService {
         .toList();
   }
 
+  @Transactional(readOnly = true)
+  public List<InterestRunResponse> listInterestRuns(UUID accountId) {
+    moduleGuard.requireModule(MODULE_ID);
+
+    trustAccountRepository
+        .findById(accountId)
+        .orElseThrow(() -> new ResourceNotFoundException("TrustAccount", accountId));
+
+    return interestRunRepository.findByTrustAccountIdOrderByPeriodEndDesc(accountId).stream()
+        .map(this::toRunResponse)
+        .toList();
+  }
+
+  @Transactional(readOnly = true)
+  public InterestRunDetailResponse getInterestRunDetail(UUID runId) {
+    moduleGuard.requireModule(MODULE_ID);
+
+    var run =
+        interestRunRepository
+            .findById(runId)
+            .orElseThrow(() -> new ResourceNotFoundException("InterestRun", runId));
+
+    var allocations =
+        interestAllocationRepository.findByInterestRunId(runId).stream()
+            .map(this::toAllocationResponse)
+            .toList();
+
+    return new InterestRunDetailResponse(toRunResponse(run), allocations);
+  }
+
+  @Transactional
+  public InterestRunResponse approveInterestRun(UUID runId) {
+    moduleGuard.requireModule(MODULE_ID);
+
+    var approverId = RequestScopes.requireMemberId();
+
+    var run =
+        interestRunRepository
+            .findById(runId)
+            .orElseThrow(() -> new ResourceNotFoundException("InterestRun", runId));
+
+    if (!"DRAFT".equals(run.getStatus())) {
+      throw new InvalidStateException(
+          "Invalid interest run state", "Interest run must be in DRAFT status to be approved");
+    }
+
+    // Prevent approval of uncalculated runs (no allocations = nothing to post)
+    var allocations = interestAllocationRepository.findByInterestRunId(runId);
+    if (allocations.isEmpty()) {
+      throw new InvalidStateException(
+          "Interest run not calculated",
+          "Cannot approve an interest run with no calculated allocations");
+    }
+
+    // Self-approval prevention: approver cannot be the creator
+    if (run.getCreatedBy() != null && approverId.equals(run.getCreatedBy())) {
+      throw new InvalidStateException(
+          "Self-approval not allowed",
+          "The interest run creator cannot approve their own interest run");
+    }
+
+    run.setStatus("APPROVED");
+    run.setApprovedBy(approverId);
+    run = interestRunRepository.save(run);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("interest_run.approved")
+            .entityType("interest_run")
+            .entityId(run.getId())
+            .details(
+                Map.of(
+                    "approved_by", approverId.toString(),
+                    "total_interest", run.getTotalInterest().toString()))
+            .build());
+
+    return toRunResponse(run);
+  }
+
+  @Transactional
+  public InterestRunResponse postInterestRun(UUID runId) {
+    moduleGuard.requireModule(MODULE_ID);
+
+    var memberId = RequestScopes.requireMemberId();
+
+    var run =
+        interestRunRepository
+            .findById(runId)
+            .orElseThrow(() -> new ResourceNotFoundException("InterestRun", runId));
+
+    if (!"APPROVED".equals(run.getStatus())) {
+      throw new InvalidStateException(
+          "Invalid interest run state", "Interest run must be in APPROVED status to be posted");
+    }
+
+    // Re-validate trust account is still ACTIVE (may have been frozen/closed since approval)
+    var trustAccountIdForCheck = run.getTrustAccountId();
+    var account =
+        trustAccountRepository
+            .findById(trustAccountIdForCheck)
+            .orElseThrow(
+                () -> new ResourceNotFoundException("TrustAccount", trustAccountIdForCheck));
+    if (account.getStatus() != TrustAccountStatus.ACTIVE) {
+      throw new InvalidStateException(
+          "Invalid account state", "Trust account must be ACTIVE to post an interest run");
+    }
+
+    var allocations = interestAllocationRepository.findByInterestRunId(runId);
+    var accountId = run.getTrustAccountId();
+    var transactionDate = run.getPeriodEnd();
+
+    // Create INTEREST_CREDIT transactions for each client allocation with client_share > 0
+    for (var allocation : allocations) {
+      if (allocation.getClientShare().compareTo(BigDecimal.ZERO) > 0) {
+        var creditTxn =
+            new TrustTransaction(
+                accountId,
+                "INTEREST_CREDIT",
+                allocation.getClientShare(),
+                allocation.getCustomerId(),
+                null,
+                null,
+                "INT-CREDIT-" + runId + "-" + allocation.getCustomerId(),
+                "Interest credit for period " + run.getPeriodStart() + " to " + run.getPeriodEnd(),
+                transactionDate,
+                "RECORDED",
+                memberId);
+        var savedTxn = trustTransactionRepository.save(creditTxn);
+        allocation.setTrustTransactionId(savedTxn.getId());
+
+        // Update client ledger card
+        var ledgerCard =
+            clientLedgerCardRepository
+                .findByAccountAndCustomerForUpdate(accountId, allocation.getCustomerId())
+                .orElseThrow(
+                    () ->
+                        new InvalidStateException(
+                            "Ledger card not found",
+                            "No client ledger card found for customer "
+                                + allocation.getCustomerId()));
+        ledgerCard.addInterestCredit(allocation.getClientShare(), transactionDate);
+        clientLedgerCardRepository.save(ledgerCard);
+      }
+    }
+
+    interestAllocationRepository.saveAll(allocations);
+
+    // Create single INTEREST_LPFF transaction if total LPFF share > 0
+    if (run.getTotalLpffShare().compareTo(BigDecimal.ZERO) > 0) {
+      var lpffTxn =
+          new TrustTransaction(
+              accountId,
+              "INTEREST_LPFF",
+              run.getTotalLpffShare(),
+              null, // No customer for LPFF — firm-level outflow
+              null,
+              null,
+              "INT-LPFF-" + runId,
+              "LPFF interest share for period "
+                  + run.getPeriodStart()
+                  + " to "
+                  + run.getPeriodEnd(),
+              transactionDate,
+              "RECORDED",
+              memberId);
+      trustTransactionRepository.save(lpffTxn);
+    }
+
+    run.setStatus("POSTED");
+    run.setPostedAt(Instant.now());
+    run = interestRunRepository.save(run);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("interest_run.posted")
+            .entityType("interest_run")
+            .entityId(run.getId())
+            .details(
+                Map.of(
+                    "posted_by", memberId.toString(),
+                    "total_interest", run.getTotalInterest().toString(),
+                    "total_lpff_share", run.getTotalLpffShare().toString(),
+                    "total_client_share", run.getTotalClientShare().toString()))
+            .build());
+
+    return toRunResponse(run);
+  }
+
   // --- Private Helpers ---
 
   private record RateSegment(
@@ -405,6 +600,7 @@ public class InterestService {
         run.getTotalLpffShare(),
         run.getTotalClientShare(),
         run.getStatus(),
+        run.getCreatedBy(),
         run.getApprovedBy(),
         run.getPostedAt(),
         run.getCreatedAt(),

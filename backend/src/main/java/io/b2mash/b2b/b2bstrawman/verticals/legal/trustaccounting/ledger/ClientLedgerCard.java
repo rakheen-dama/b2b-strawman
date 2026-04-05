@@ -115,6 +115,16 @@ public class ClientLedgerCard {
     updateLastTransactionDate(transactionDate);
   }
 
+  public void addInterestCredit(BigDecimal amount, LocalDate transactionDate) {
+    Objects.requireNonNull(amount, "amount must not be null");
+    if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+      throw new IllegalArgumentException("amount must be positive");
+    }
+    this.balance = this.balance.add(amount);
+    this.totalInterestCredited = this.totalInterestCredited.add(amount);
+    updateLastTransactionDate(transactionDate);
+  }
+
   public void creditBalance(BigDecimal amount, LocalDate transactionDate) {
     Objects.requireNonNull(amount, "amount must not be null");
     if (amount.compareTo(BigDecimal.ZERO) <= 0) {

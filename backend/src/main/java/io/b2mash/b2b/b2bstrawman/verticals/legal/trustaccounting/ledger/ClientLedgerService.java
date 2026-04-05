@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger;
 
+import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
@@ -11,8 +12,10 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -25,14 +28,17 @@ public class ClientLedgerService {
 
   private final ClientLedgerCardRepository ledgerCardRepository;
   private final TrustTransactionRepository transactionRepository;
+  private final CustomerRepository customerRepository;
   private final VerticalModuleGuard moduleGuard;
 
   public ClientLedgerService(
       ClientLedgerCardRepository ledgerCardRepository,
       TrustTransactionRepository transactionRepository,
+      CustomerRepository customerRepository,
       VerticalModuleGuard moduleGuard) {
     this.ledgerCardRepository = ledgerCardRepository;
     this.transactionRepository = transactionRepository;
+    this.customerRepository = customerRepository;
     this.moduleGuard = moduleGuard;
   }
 
@@ -48,6 +54,7 @@ public class ClientLedgerService {
       UUID id,
       UUID trustAccountId,
       UUID customerId,
+      String customerName,
       BigDecimal balance,
       BigDecimal totalDeposits,
       BigDecimal totalPayments,
@@ -56,6 +63,13 @@ public class ClientLedgerService {
       LocalDate lastTransactionDate,
       Instant createdAt,
       Instant updatedAt) {}
+
+  public record LedgerStatementResponse(
+      BigDecimal openingBalance,
+      BigDecimal closingBalance,
+      List<LedgerStatementLine> transactions) {}
+
+  public record TotalBalanceResponse(BigDecimal balance) {}
 
   public record LedgerStatementLine(
       UUID transactionId,
@@ -85,9 +99,17 @@ public class ClientLedgerService {
   public Page<ClientLedgerCardResponse> listClientLedgers(UUID trustAccountId, Pageable pageable) {
     moduleGuard.requireModule(MODULE_ID);
 
-    return ledgerCardRepository
-        .findByTrustAccountId(trustAccountId, pageable)
-        .map(this::toResponse);
+    Page<ClientLedgerCard> page =
+        ledgerCardRepository.findByTrustAccountId(trustAccountId, pageable);
+
+    // Batch-load customer names to avoid N+1
+    Set<UUID> customerIds =
+        page.getContent().stream().map(ClientLedgerCard::getCustomerId).collect(Collectors.toSet());
+    Map<UUID, String> customerNames =
+        customerRepository.findByIdIn(customerIds).stream()
+            .collect(Collectors.toMap(c -> c.getId(), c -> c.getName()));
+
+    return page.map(entity -> toResponse(entity, customerNames));
   }
 
   @Transactional(readOnly = true)
@@ -112,15 +134,21 @@ public class ClientLedgerService {
   }
 
   @Transactional(readOnly = true)
-  public BigDecimal getTotalTrustBalance(UUID trustAccountId) {
+  public TotalBalanceResponse getTotalTrustBalance(UUID trustAccountId) {
     moduleGuard.requireModule(MODULE_ID);
-    return ledgerCardRepository.calculateTotalTrustBalance(trustAccountId);
+    return new TotalBalanceResponse(
+        ledgerCardRepository.calculateTotalTrustBalance(trustAccountId));
   }
 
   @Transactional(readOnly = true)
-  public List<LedgerStatementLine> getClientLedgerStatement(
+  public LedgerStatementResponse getClientLedgerStatement(
       UUID customerId, UUID trustAccountId, LocalDate startDate, LocalDate endDate) {
     moduleGuard.requireModule(MODULE_ID);
+
+    if (endDate.isBefore(startDate)) {
+      throw new InvalidStateException(
+          "Invalid ledger statement range", "endDate must be on or after startDate");
+    }
 
     // Get the opening balance as of the day before the start date
     BigDecimal openingBalance =
@@ -151,7 +179,9 @@ public class ClientLedgerService {
               runningBalance));
     }
 
-    return lines;
+    BigDecimal closingBalance = lines.isEmpty() ? openingBalance : lines.getLast().runningBalance();
+
+    return new LedgerStatementResponse(openingBalance, closingBalance, lines);
   }
 
   /**
@@ -174,10 +204,28 @@ public class ClientLedgerService {
   // --- Private Helpers ---
 
   private ClientLedgerCardResponse toResponse(ClientLedgerCard entity) {
+    String customerName =
+        customerRepository
+            .findById(entity.getCustomerId())
+            .map(c -> c.getName())
+            .orElse("(deleted customer)");
+
+    return toResponse(entity, customerName);
+  }
+
+  /** Batch-aware overload that uses a pre-loaded customer name map. */
+  private ClientLedgerCardResponse toResponse(
+      ClientLedgerCard entity, Map<UUID, String> customerNames) {
+    String customerName = customerNames.getOrDefault(entity.getCustomerId(), "(deleted customer)");
+    return toResponse(entity, customerName);
+  }
+
+  private ClientLedgerCardResponse toResponse(ClientLedgerCard entity, String customerName) {
     return new ClientLedgerCardResponse(
         entity.getId(),
         entity.getTrustAccountId(),
         entity.getCustomerId(),
+        customerName,
         entity.getBalance(),
         entity.getTotalDeposits(),
         entity.getTotalPayments(),

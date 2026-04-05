@@ -1,0 +1,415 @@
+package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest;
+
+import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
+import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountStatus;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.lpff.LpffRate;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.lpff.LpffRateRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+public class InterestService {
+
+  private static final String MODULE_ID = "trust_accounting";
+
+  private static final Set<String> CREDIT_TYPES =
+      Set.of("DEPOSIT", "TRANSFER_IN", "INTEREST_CREDIT");
+
+  private static final Set<String> DEBIT_TYPES =
+      Set.of("PAYMENT", "TRANSFER_OUT", "FEE_TRANSFER", "REFUND", "INTEREST_LPFF");
+
+  private final InterestRunRepository interestRunRepository;
+  private final InterestAllocationRepository interestAllocationRepository;
+  private final TrustAccountRepository trustAccountRepository;
+  private final LpffRateRepository lpffRateRepository;
+  private final TrustTransactionRepository trustTransactionRepository;
+  private final ClientLedgerCardRepository clientLedgerCardRepository;
+  private final VerticalModuleGuard moduleGuard;
+  private final AuditService auditService;
+
+  public InterestService(
+      InterestRunRepository interestRunRepository,
+      InterestAllocationRepository interestAllocationRepository,
+      TrustAccountRepository trustAccountRepository,
+      LpffRateRepository lpffRateRepository,
+      TrustTransactionRepository trustTransactionRepository,
+      ClientLedgerCardRepository clientLedgerCardRepository,
+      VerticalModuleGuard moduleGuard,
+      AuditService auditService) {
+    this.interestRunRepository = interestRunRepository;
+    this.interestAllocationRepository = interestAllocationRepository;
+    this.trustAccountRepository = trustAccountRepository;
+    this.lpffRateRepository = lpffRateRepository;
+    this.trustTransactionRepository = trustTransactionRepository;
+    this.clientLedgerCardRepository = clientLedgerCardRepository;
+    this.moduleGuard = moduleGuard;
+    this.auditService = auditService;
+  }
+
+  // --- DTO Records ---
+
+  public record InterestRunResponse(
+      UUID id,
+      UUID trustAccountId,
+      LocalDate periodStart,
+      LocalDate periodEnd,
+      UUID lpffRateId,
+      BigDecimal totalInterest,
+      BigDecimal totalLpffShare,
+      BigDecimal totalClientShare,
+      String status,
+      UUID approvedBy,
+      Instant postedAt,
+      Instant createdAt,
+      Instant updatedAt) {}
+
+  public record InterestAllocationResponse(
+      UUID id,
+      UUID interestRunId,
+      UUID customerId,
+      BigDecimal averageDailyBalance,
+      int daysInPeriod,
+      BigDecimal grossInterest,
+      BigDecimal lpffShare,
+      BigDecimal clientShare,
+      UUID trustTransactionId,
+      Instant createdAt) {}
+
+  // --- Service Methods ---
+
+  @Transactional
+  public InterestRunResponse createInterestRun(
+      UUID accountId, LocalDate periodStart, LocalDate periodEnd) {
+    moduleGuard.requireModule(MODULE_ID);
+
+    var account =
+        trustAccountRepository
+            .findById(accountId)
+            .orElseThrow(() -> new ResourceNotFoundException("TrustAccount", accountId));
+
+    if (account.getStatus() != TrustAccountStatus.ACTIVE) {
+      throw new InvalidStateException(
+          "Invalid account state", "Trust account must be ACTIVE to create an interest run");
+    }
+
+    if (periodEnd.isBefore(periodStart)) {
+      throw new InvalidStateException(
+          "Invalid period", "period_end must be on or after period_start");
+    }
+
+    if (interestRunRepository.existsOverlappingRun(accountId, periodStart, periodEnd)) {
+      throw new ResourceConflictException(
+          "Overlapping interest run",
+          "An interest run already exists that overlaps the requested period");
+    }
+
+    var rate =
+        lpffRateRepository
+            .findFirstByTrustAccountIdAndEffectiveFromLessThanEqualOrderByEffectiveFromDesc(
+                accountId, periodStart)
+            .orElseThrow(
+                () ->
+                    new InvalidStateException(
+                        "No LPFF rate configured", "No LPFF rate is effective on " + periodStart));
+
+    var run = new InterestRun(accountId, periodStart, periodEnd, rate.getId());
+    run = interestRunRepository.save(run);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("interest_run.created")
+            .entityType("interest_run")
+            .entityId(run.getId())
+            .details(
+                Map.of(
+                    "trust_account_id", accountId.toString(),
+                    "period_start", periodStart.toString(),
+                    "period_end", periodEnd.toString(),
+                    "lpff_rate_id", rate.getId().toString()))
+            .build());
+
+    return toRunResponse(run);
+  }
+
+  @Transactional
+  public InterestRunResponse calculateInterest(UUID runId) {
+    moduleGuard.requireModule(MODULE_ID);
+
+    var run =
+        interestRunRepository
+            .findById(runId)
+            .orElseThrow(() -> new ResourceNotFoundException("InterestRun", runId));
+
+    if (!"DRAFT".equals(run.getStatus())) {
+      throw new InvalidStateException(
+          "Invalid interest run state", "Cannot calculate interest for a non-DRAFT run");
+    }
+
+    var accountId = run.getTrustAccountId();
+    var periodStart = run.getPeriodStart();
+    var periodEnd = run.getPeriodEnd();
+    long daysInPeriod = ChronoUnit.DAYS.between(periodStart, periodEnd) + 1;
+
+    // Get effective rate at period start
+    var baseRate =
+        lpffRateRepository
+            .findFirstByTrustAccountIdAndEffectiveFromLessThanEqualOrderByEffectiveFromDesc(
+                accountId, periodStart)
+            .orElseThrow(
+                () ->
+                    new InvalidStateException(
+                        "No LPFF rate configured", "No LPFF rate is effective on " + periodStart));
+
+    // Check for mid-period rate changes
+    var midPeriodRates =
+        lpffRateRepository.findRateChangesInPeriod(accountId, periodStart, periodEnd);
+
+    // Build rate segments
+    var segments = buildRateSegments(periodStart, periodEnd, baseRate, midPeriodRates);
+
+    // Get all clients with ledger cards
+    var ledgerCards =
+        clientLedgerCardRepository.findByTrustAccountId(accountId, Pageable.unpaged()).getContent();
+
+    // Remove any existing allocations from a previous calculation of this draft run
+    var existingAllocations = interestAllocationRepository.findByInterestRunId(runId);
+    if (!existingAllocations.isEmpty()) {
+      interestAllocationRepository.deleteAll(existingAllocations);
+    }
+
+    var totalInterest = BigDecimal.ZERO;
+    var totalLpffShare = BigDecimal.ZERO;
+    var totalClientShare = BigDecimal.ZERO;
+    var allocations = new ArrayList<InterestAllocation>();
+
+    for (var ledgerCard : ledgerCards) {
+      var customerId = ledgerCard.getCustomerId();
+      var clientGrossInterest = BigDecimal.ZERO;
+      var clientTotalBalanceDays = BigDecimal.ZERO;
+
+      for (var segment : segments) {
+        var segStart = segment.startDate();
+        var segEnd = segment.endDate();
+        long segDays = ChronoUnit.DAYS.between(segStart, segEnd) + 1;
+
+        // Get opening balance at day before segment start
+        var openingBalance =
+            trustTransactionRepository.calculateClientBalanceAsOfDate(
+                customerId, accountId, segStart.minusDays(1));
+        if (openingBalance == null) {
+          openingBalance = BigDecimal.ZERO;
+        }
+
+        // Get transactions in segment
+        var transactions =
+            trustTransactionRepository.findForStatement(customerId, accountId, segStart, segEnd);
+
+        // Transaction-weighted balance-days calculation
+        var balanceDays = BigDecimal.ZERO;
+        var currentBalance = openingBalance;
+        var currentDate = segStart;
+
+        for (var txn : transactions) {
+          var txnDate = txn.getTransactionDate();
+          long daysBetween = ChronoUnit.DAYS.between(currentDate, txnDate);
+          balanceDays = balanceDays.add(currentBalance.multiply(BigDecimal.valueOf(daysBetween)));
+
+          // Apply transaction effect
+          if (CREDIT_TYPES.contains(txn.getTransactionType())) {
+            currentBalance = currentBalance.add(txn.getAmount());
+          } else if (DEBIT_TYPES.contains(txn.getTransactionType())) {
+            currentBalance = currentBalance.subtract(txn.getAmount());
+          }
+
+          currentDate = txnDate;
+        }
+
+        // Remaining days after last transaction
+        long remainingDays = ChronoUnit.DAYS.between(currentDate, segEnd) + 1;
+        balanceDays = balanceDays.add(currentBalance.multiply(BigDecimal.valueOf(remainingDays)));
+
+        clientTotalBalanceDays = clientTotalBalanceDays.add(balanceDays);
+
+        // Calculate interest for this segment
+        var avgDailyBalance =
+            balanceDays.divide(BigDecimal.valueOf(segDays), 2, RoundingMode.HALF_UP);
+        var segGross =
+            avgDailyBalance
+                .multiply(segment.ratePercent())
+                .multiply(BigDecimal.valueOf(segDays))
+                .divide(BigDecimal.valueOf(365), 10, RoundingMode.HALF_UP);
+        clientGrossInterest = clientGrossInterest.add(segGross);
+      }
+
+      // Round and split
+      var grossInterest = clientGrossInterest.setScale(2, RoundingMode.HALF_UP);
+
+      if (BigDecimal.ZERO.compareTo(grossInterest) < 0) {
+        // Use the base rate's lpffSharePercent for splitting
+        // If there's a mid-period change, use the last effective rate's share percent
+        var effectiveLpffSharePercent =
+            midPeriodRates.isEmpty()
+                ? baseRate.getLpffSharePercent()
+                : midPeriodRates.getLast().getLpffSharePercent();
+
+        var lpffShare =
+            grossInterest.multiply(effectiveLpffSharePercent).setScale(2, RoundingMode.HALF_UP);
+        var clientShareAmount = grossInterest.subtract(lpffShare);
+
+        var avgDailyBalance =
+            clientTotalBalanceDays.divide(
+                BigDecimal.valueOf(daysInPeriod), 2, RoundingMode.HALF_UP);
+
+        var allocation =
+            new InterestAllocation(
+                runId,
+                customerId,
+                avgDailyBalance,
+                (int) daysInPeriod,
+                grossInterest,
+                lpffShare,
+                clientShareAmount);
+        allocations.add(allocation);
+
+        totalInterest = totalInterest.add(grossInterest);
+        totalLpffShare = totalLpffShare.add(lpffShare);
+        totalClientShare = totalClientShare.add(clientShareAmount);
+      }
+    }
+
+    // Save allocations
+    interestAllocationRepository.saveAll(allocations);
+
+    // Update run totals
+    run.setTotalInterest(totalInterest);
+    run.setTotalLpffShare(totalLpffShare);
+    run.setTotalClientShare(totalClientShare);
+    run = interestRunRepository.save(run);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("interest_run.calculated")
+            .entityType("interest_run")
+            .entityId(run.getId())
+            .details(
+                Map.of(
+                    "total_interest", totalInterest.toString(),
+                    "total_lpff_share", totalLpffShare.toString(),
+                    "total_client_share", totalClientShare.toString(),
+                    "allocation_count", allocations.size()))
+            .build());
+
+    return toRunResponse(run);
+  }
+
+  @Transactional(readOnly = true)
+  public List<InterestAllocationResponse> getAllocations(UUID runId) {
+    moduleGuard.requireModule(MODULE_ID);
+
+    interestRunRepository
+        .findById(runId)
+        .orElseThrow(() -> new ResourceNotFoundException("InterestRun", runId));
+
+    return interestAllocationRepository.findByInterestRunId(runId).stream()
+        .map(this::toAllocationResponse)
+        .toList();
+  }
+
+  // --- Private Helpers ---
+
+  private record RateSegment(
+      LocalDate startDate,
+      LocalDate endDate,
+      BigDecimal ratePercent,
+      BigDecimal lpffSharePercent) {}
+
+  private List<RateSegment> buildRateSegments(
+      LocalDate periodStart,
+      LocalDate periodEnd,
+      LpffRate baseRate,
+      List<LpffRate> midPeriodRates) {
+    var segments = new ArrayList<RateSegment>();
+
+    if (midPeriodRates.isEmpty()) {
+      segments.add(
+          new RateSegment(
+              periodStart, periodEnd, baseRate.getRatePercent(), baseRate.getLpffSharePercent()));
+    } else {
+      // First segment: from period_start to day before first mid-period rate change
+      var firstChange = midPeriodRates.getFirst();
+      segments.add(
+          new RateSegment(
+              periodStart,
+              firstChange.getEffectiveFrom().minusDays(1),
+              baseRate.getRatePercent(),
+              baseRate.getLpffSharePercent()));
+
+      // Middle segments (if more than one mid-period rate change)
+      for (int i = 0; i < midPeriodRates.size(); i++) {
+        var rate = midPeriodRates.get(i);
+        var segEnd =
+            (i + 1 < midPeriodRates.size())
+                ? midPeriodRates.get(i + 1).getEffectiveFrom().minusDays(1)
+                : periodEnd;
+        segments.add(
+            new RateSegment(
+                rate.getEffectiveFrom(),
+                segEnd,
+                rate.getRatePercent(),
+                rate.getLpffSharePercent()));
+      }
+    }
+
+    return segments;
+  }
+
+  private InterestRunResponse toRunResponse(InterestRun run) {
+    return new InterestRunResponse(
+        run.getId(),
+        run.getTrustAccountId(),
+        run.getPeriodStart(),
+        run.getPeriodEnd(),
+        run.getLpffRateId(),
+        run.getTotalInterest(),
+        run.getTotalLpffShare(),
+        run.getTotalClientShare(),
+        run.getStatus(),
+        run.getApprovedBy(),
+        run.getPostedAt(),
+        run.getCreatedAt(),
+        run.getUpdatedAt());
+  }
+
+  private InterestAllocationResponse toAllocationResponse(InterestAllocation alloc) {
+    return new InterestAllocationResponse(
+        alloc.getId(),
+        alloc.getInterestRunId(),
+        alloc.getCustomerId(),
+        alloc.getAverageDailyBalance(),
+        alloc.getDaysInPeriod(),
+        alloc.getGrossInterest(),
+        alloc.getLpffShare(),
+        alloc.getClientShare(),
+        alloc.getTrustTransactionId(),
+        alloc.getCreatedAt());
+  }
+}

@@ -194,11 +194,19 @@ for i in "${!SLICES_TO_RUN[@]}"; do
   log "Starting slice ${slice} (${step})"
   log "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-  # Run claude with fresh context
+  # Sync main before each slice so the worktree branches from latest main.
+  # This prevents merge conflicts when prior slices modified the same files.
+  log "Syncing main before starting slice..."
+  git fetch origin main >> "$LOG_FILE" 2>&1
+  git checkout main >> "$LOG_FILE" 2>&1
+  git pull --ff-only >> "$LOG_FILE" 2>&1
+
+  # Run claude with fresh context (timeout: 200 min = 12000 sec)
   SLICE_START=$(date +%s)
+  SLICE_TIMEOUT=12000
 
   # Unset CLAUDECODE to avoid nested session detection
-  if CLAUDECODE="" claude -p "/epic_v2 ${slice} auto-merge" \
+  if timeout "${SLICE_TIMEOUT}" env CLAUDECODE="" claude -p "/epic_v2 ${slice} auto-merge" \
     --dangerously-skip-permissions \
     --model opus \
     >> "$LOG_FILE" 2>&1; then
@@ -222,7 +230,11 @@ for i in "${!SLICES_TO_RUN[@]}"; do
   if [[ "$SLICE_DONE" == true ]]; then
     log "Slice ${slice} completed successfully (${SLICE_MINUTES}m)"
   else
-    log "ERROR: Slice ${slice} did NOT complete (exit code: ${CLAUDE_EXIT}, duration: ${SLICE_MINUTES}m)"
+    if [[ "$CLAUDE_EXIT" -eq 124 ]]; then
+      log "ERROR: Slice ${slice} TIMED OUT after ${SLICE_MINUTES}m (limit: $((SLICE_TIMEOUT / 60))m)"
+    else
+      log "ERROR: Slice ${slice} did NOT complete (exit code: ${CLAUDE_EXIT}, duration: ${SLICE_MINUTES}m)"
+    fi
     log "The slice was not marked Done in ${TASK_FILE}."
     log ""
     log "To investigate:"

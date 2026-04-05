@@ -65,6 +65,7 @@ export async function fetchDashboardData(
   const [cashbook, ledgers, pendingApprovals, recentTransactions] =
     await Promise.all([
       fetchCashbookBalance(accountId),
+      // TODO: Replace with dedicated count endpoint when backend supports it
       api.get<PaginatedResponse<ClientLedgerCard>>(
         `/api/trust-accounts/${accountId}/client-ledgers?size=200`,
       ),

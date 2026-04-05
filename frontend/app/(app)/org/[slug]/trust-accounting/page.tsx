@@ -30,10 +30,10 @@ import type {
 
 // ── Helpers ────────────────────────────────────────────────────────
 
-function formatCurrency(amount: number): string {
+function formatCurrency(amount: number, currency = "ZAR"): string {
   return new Intl.NumberFormat("en-ZA", {
     style: "currency",
-    currency: "ZAR",
+    currency,
   }).format(amount);
 }
 
@@ -195,7 +195,7 @@ export default async function TrustAccountingPage({
               </CardHeader>
               <CardContent>
                 <div className="font-mono text-2xl font-semibold tabular-nums text-slate-950 dark:text-slate-50">
-                  {formatCurrency(dashboardData.totalBalance)}
+                  {formatCurrency(dashboardData.totalBalance, settings.defaultCurrency)}
                 </div>
                 <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                   {accountName} cashbook balance
@@ -374,7 +374,7 @@ export default async function TrustAccountingPage({
                               ) : (
                                 <ArrowUpRight className="size-3" />
                               )}
-                              {formatCurrency(tx.amount)}
+                              {formatCurrency(tx.amount, settings.defaultCurrency)}
                             </span>
                           </td>
                           <td className="py-3">

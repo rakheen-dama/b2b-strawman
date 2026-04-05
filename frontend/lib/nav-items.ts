@@ -244,7 +244,7 @@ export const NAV_GROUPS: NavGroup[] = [
         requiredModule: "trust_accounting",
       },
       {
-        label: "Reports",
+        label: "Trust Reports",
         href: (slug) => `/org/${slug}/trust-accounting/reports`,
         icon: FileBarChart,
         exact: true,

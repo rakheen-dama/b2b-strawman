@@ -8,7 +8,8 @@ export const createTrustAccountSchema = z.object({
   accountType: z.enum(["GENERAL", "INVESTMENT"], {
     message: "Account type is required",
   }),
-  openedDate: z.string().min(1, "Opened date is required"),
+  openedDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD"),
+  isPrimary: z.boolean().optional(),
   requireDualApproval: z.boolean(),
   paymentApprovalThreshold: z
     .number()
@@ -27,7 +28,7 @@ export const recordDepositSchema = z.object({
   amount: z.number().positive("Amount must be greater than zero"),
   reference: z.string().min(1, "Reference is required").max(200),
   description: z.string().max(2000).optional().or(z.literal("")),
-  transactionDate: z.string().min(1, "Transaction date is required"),
+  transactionDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD"),
 });
 
 export type RecordDepositFormData = z.infer<typeof recordDepositSchema>;
@@ -38,7 +39,7 @@ export const recordPaymentSchema = z.object({
   amount: z.number().positive("Amount must be greater than zero"),
   reference: z.string().min(1, "Reference is required").max(200),
   description: z.string().max(2000).optional().or(z.literal("")),
-  transactionDate: z.string().min(1, "Transaction date is required"),
+  transactionDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD"),
 });
 
 export type RecordPaymentFormData = z.infer<typeof recordPaymentSchema>;
@@ -50,7 +51,7 @@ export const recordTransferSchema = z.object({
   amount: z.number().positive("Amount must be greater than zero"),
   reference: z.string().min(1, "Reference is required").max(200),
   description: z.string().max(2000).optional().or(z.literal("")),
-  transactionDate: z.string().min(1, "Transaction date is required"),
+  transactionDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD"),
 });
 
 export type RecordTransferFormData = z.infer<typeof recordTransferSchema>;
@@ -71,7 +72,7 @@ export const recordRefundSchema = z.object({
   amount: z.number().positive("Amount must be greater than zero"),
   reference: z.string().min(1, "Reference is required").max(200),
   description: z.string().max(2000).optional().or(z.literal("")),
-  transactionDate: z.string().min(1, "Transaction date is required"),
+  transactionDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD"),
 });
 
 export type RecordRefundFormData = z.infer<typeof recordRefundSchema>;

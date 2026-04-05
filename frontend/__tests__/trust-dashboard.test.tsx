@@ -235,6 +235,6 @@ describe("TrustAccountingPage", () => {
     expect(labels).toContain("Reconciliation");
     expect(labels).toContain("Interest");
     expect(labels).toContain("Investments");
-    expect(labels).toContain("Reports");
+    expect(labels).toContain("Trust Reports");
   });
 });

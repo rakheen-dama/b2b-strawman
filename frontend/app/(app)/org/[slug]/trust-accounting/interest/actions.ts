@@ -109,9 +109,16 @@ export async function addLpffRate(
   data: AddLpffRateFormData,
 ): Promise<{ success: boolean; rate?: LpffRate; error?: string }> {
   try {
+    // Backend stores rates as decimal fractions (e.g. 0.085 for 8.5%),
+    // but the form collects user-facing percentages — normalize before sending.
+    const payload = {
+      ...data,
+      ratePercent: data.ratePercent / 100,
+      lpffSharePercent: data.lpffSharePercent / 100,
+    };
     const rate = await api.post<LpffRate>(
       `/api/trust-accounts/${accountId}/lpff-rates`,
-      data,
+      payload,
     );
     return { success: true, rate };
   } catch (err) {

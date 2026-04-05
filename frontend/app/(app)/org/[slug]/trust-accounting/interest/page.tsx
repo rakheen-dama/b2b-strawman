@@ -278,10 +278,10 @@ export default async function InterestPage({
                           {formatLocalDate(rate.effectiveFrom)}
                         </td>
                         <td className="py-3 pr-4 text-right font-mono tabular-nums text-slate-950 dark:text-slate-50">
-                          {rate.ratePercent}%
+                          {(Number(rate.ratePercent) * 100).toFixed(2)}%
                         </td>
                         <td className="py-3 text-right font-mono tabular-nums text-slate-950 dark:text-slate-50">
-                          {rate.lpffSharePercent}%
+                          {(Number(rate.lpffSharePercent) * 100).toFixed(2)}%
                         </td>
                       </tr>
                     ))}

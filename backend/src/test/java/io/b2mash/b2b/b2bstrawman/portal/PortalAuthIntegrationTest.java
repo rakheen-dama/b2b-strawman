@@ -38,7 +38,6 @@ class PortalAuthIntegrationTest {
   private static final String API_KEY = "test-api-key";
 
   @Autowired private MockMvc mockMvc;
-  @Autowired private MagicLinkService magicLinkService;
   @Autowired private PortalJwtService portalJwtService;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private CustomerService customerService;
@@ -47,11 +46,6 @@ class PortalAuthIntegrationTest {
 
   private UUID customerId;
   private String tenantSchema;
-  // Separate contacts per test to avoid rate-limit interference
-  private UUID contactIdGenVerify;
-  private UUID contactIdInvalid;
-  private UUID contactIdReuse;
-  private UUID contactIdTamper;
 
   @BeforeAll
   void setup() throws Exception {
@@ -95,109 +89,14 @@ class PortalAuthIntegrationTest {
                       "Portal Customer", "portal-customer@test.com", null, null, null, memberId);
               customerId = customer.getId();
 
-              contactIdGenVerify =
-                  portalContactService
-                      .createContact(
-                          ORG_ID,
-                          customerId,
-                          "portal-genverify@test.com",
-                          "Gen Verify Contact",
-                          PortalContact.ContactRole.PRIMARY)
-                      .getId();
-
-              contactIdInvalid =
-                  portalContactService
-                      .createContact(
-                          ORG_ID,
-                          customerId,
-                          "portal-invalid@test.com",
-                          "Invalid Contact",
-                          PortalContact.ContactRole.GENERAL)
-                      .getId();
-
-              contactIdReuse =
-                  portalContactService
-                      .createContact(
-                          ORG_ID,
-                          customerId,
-                          "portal-reuse@test.com",
-                          "Reuse Contact",
-                          PortalContact.ContactRole.GENERAL)
-                      .getId();
-
-              contactIdTamper =
-                  portalContactService
-                      .createContact(
-                          ORG_ID,
-                          customerId,
-                          "portal-tamper@test.com",
-                          "Tamper Contact",
-                          PortalContact.ContactRole.GENERAL)
-                      .getId();
+              // Portal contact needed by MagicLinkUrlRegressionTests
+              portalContactService.createContact(
+                  ORG_ID,
+                  customerId,
+                  "portal-genverify@test.com",
+                  "Gen Verify Contact",
+                  PortalContact.ContactRole.PRIMARY);
             });
-  }
-
-  @Nested
-  class MagicLinkTests {
-
-    @Test
-    void shouldGenerateAndVerifyMagicLinkToken() {
-      String rawToken =
-          ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-              .call(() -> magicLinkService.generateToken(contactIdGenVerify, "127.0.0.1"));
-
-      UUID resultContactId =
-          ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-              .call(() -> magicLinkService.verifyAndConsumeToken(rawToken));
-
-      assertThat(resultContactId).isEqualTo(contactIdGenVerify);
-    }
-
-    @Test
-    void shouldRejectInvalidMagicLinkToken() {
-      ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-          .run(
-              () ->
-                  assertThatThrownBy(() -> magicLinkService.verifyAndConsumeToken("invalid-token"))
-                      .isInstanceOf(PortalAuthException.class));
-    }
-
-    @Test
-    void shouldRejectReusedMagicLinkToken() {
-      String rawToken =
-          ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-              .call(() -> magicLinkService.generateToken(contactIdReuse, "127.0.0.1"));
-
-      // First use succeeds
-      UUID resultContactId =
-          ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-              .call(() -> magicLinkService.verifyAndConsumeToken(rawToken));
-      assertThat(resultContactId).isEqualTo(contactIdReuse);
-
-      // Second use fails (single-use enforcement)
-      ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-          .run(
-              () ->
-                  assertThatThrownBy(() -> magicLinkService.verifyAndConsumeToken(rawToken))
-                      .isInstanceOf(PortalAuthException.class)
-                      .hasMessageContaining("already"));
-    }
-
-    @Test
-    void shouldRejectTamperedToken() {
-      String rawToken =
-          ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-              .call(() -> magicLinkService.generateToken(contactIdTamper, "127.0.0.1"));
-
-      // Tamper with the token
-      String tampered = rawToken.substring(0, rawToken.length() - 5) + "XXXXX";
-
-      ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-          .run(
-              () ->
-                  assertThatThrownBy(() -> magicLinkService.verifyAndConsumeToken(tampered))
-                      .isInstanceOf(PortalAuthException.class));
-    }
   }
 
   @Nested

@@ -340,6 +340,40 @@ class CustomerProjectIntegrationTest {
         .andExpect(status().isCreated());
   }
 
+  // --- Project-side endpoints (/api/projects/{pid}/customers/{cid}) ---
+
+  @Test
+  void shouldLinkAndUnlinkViaProjectEndpoint() throws Exception {
+    var customerId = createCustomer("ProjSide Link Corp", "projside@test.com");
+
+    // Link via project-side endpoint
+    mockMvc
+        .perform(
+            post("/api/projects/" + projectId + "/customers/" + customerId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cp_owner")))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.customerId").value(customerId))
+        .andExpect(jsonPath("$.projectId").value(projectId));
+
+    // Unlink via project-side endpoint
+    mockMvc
+        .perform(
+            delete("/api/projects/" + projectId + "/customers/" + customerId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cp_owner")))
+        .andExpect(status().isNoContent());
+  }
+
+  @Test
+  void adminCanLinkViaProjectEndpoint() throws Exception {
+    var customerId = createCustomer("AdminProjLink Corp", "adminprojlink@test.com");
+
+    mockMvc
+        .perform(
+            post("/api/projects/" + projectId + "/customers/" + customerId)
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_cp_admin")))
+        .andExpect(status().isCreated());
+  }
+
   // --- Error cases ---
 
   @Test

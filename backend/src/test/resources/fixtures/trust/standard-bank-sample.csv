@@ -1,0 +1,11 @@
+Standard Bank Trust Account - Acc 012345678
+Date,Description,Reference,Amount,Balance
+2026-03-01,Opening Balance,,0.00,200000.00
+2026-03-04,Deposit - Van der Merwe Matter,VDM-2026-001,35000.00,235000.00
+2026-03-07,Sheriff fees payment,SHF-2026-088,-6200.00,228800.00
+2026-03-11,Transfer from Advocate Moosa,ADV-MO-100,15000.00,243800.00
+2026-03-14,Municipal rates payment,MUN-RATES-22,-4800.00,239000.00
+2026-03-19,Client deposit - Botha Trust,BT-DEP-003,52000.00,291000.00
+2026-03-23,Disbursement - expert witness,DIS-EXP-007,-8500.00,282500.00
+2026-03-28,Interest credit,INT-2026-03,218.45,282718.45
+2026-03-31,Monthly service fee,SVC-MAR-26,-125.00,282593.45

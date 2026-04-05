@@ -1,0 +1,8 @@
+Date,Description,Amount,Balance
+01/03/2026,Opening Balance,0.00,120000.00
+06/03/2026,Client deposit - Matter A,15000.00,135000.00
+11/03/2026,Payment to third party,-7500.00,127500.00
+16/03/2026,Transfer received,28000.00,155500.00
+21/03/2026,Disbursement payment,-3200.00,152300.00
+26/03/2026,Interest,98.50,152398.50
+31/03/2026,Service fee,-75.00,152323.50

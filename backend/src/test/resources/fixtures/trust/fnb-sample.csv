@@ -1,0 +1,12 @@
+FNB Trust Account Statement - Account 62012345678
+Date,Description,Amount,Balance,Reference
+01/03/2026,Opening Balance,0.00,150000.00,
+03/03/2026,Deposit from Smith & Associates,25000.00,175000.00,REF-SM-001
+05/03/2026,Transfer to Sheriff - Case 2026/1234,-8500.00,166500.00,SHERIFF-1234
+10/03/2026,EFT from Johnson Estate,45000.00,211500.00,REF-JE-002
+15/03/2026,Payment to SARS - Transfer Duty,-12500.00,199000.00,SARS-TD-5678
+18/03/2026,Deposit from Naidoo Trust,30000.00,229000.00,REF-NT-003
+22/03/2026,Conveyancing disbursement,-5200.00,223800.00,DISB-CV-001
+25/03/2026,Interest earned,156.75,223956.75,INT-MAR-2026
+28/03/2026,Bank charges,-85.50,223871.25,CHG-MAR-2026
+31/03/2026,EFT from Pillay & Co,18000.00,241871.25,REF-PC-004

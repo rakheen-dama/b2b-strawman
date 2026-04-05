@@ -1,0 +1,11 @@
+Nedbank Professional Trust Account
+Date,Description,Reference,Amount,Balance
+01 Mar 2026,Opening Balance,,0.00,180000.00
+05 Mar 2026,Deposit - Govender Matter,GOV-TR-001,22000.00,202000.00
+08 Mar 2026,Payment to Deeds Office,DO-REG-556,-3500.00,198500.00
+12 Mar 2026,EFT from Maharaj & Sons,MS-DEP-044,40000.00,238500.00
+16 Mar 2026,Transfer duty payment,TD-SARS-112,-15000.00,223500.00
+20 Mar 2026,Deposit - Chetty estate,CE-EST-008,28000.00,251500.00
+24 Mar 2026,"Disbursement, courier fees",DIS-COU-019,-450.00,251050.00
+27 Mar 2026,Interest earned,INT-NDB-0326,195.30,251245.30
+31 Mar 2026,Account maintenance fee,FEE-NDB-0326,-99.00,251146.30

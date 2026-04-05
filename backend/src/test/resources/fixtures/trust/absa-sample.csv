@@ -1,0 +1,11 @@
+ABSA Trust Account Statement
+Date,Description,Reference,Amount,Balance
+01/03/2026,Opening Balance,,0.00,95000.00
+04/03/2026,Deposit from Willemse Inc,WIL-DEP-001,18000.00,113000.00
+09/03/2026,Sheriff payment - Case 2026/789,SHF-789,-4200.00,108800.00
+13/03/2026,EFT from Abrahams Trust,ABR-TR-011,32000.00,140800.00
+17/03/2026,Municipal clearance certificate,MCC-JHB-045,-1800.00,139000.00
+21/03/2026,Deposit - Du Plessis matter,DUP-MAT-006,27500.00,166500.00
+26/03/2026,Advocate consultation fee,ADV-CON-033,-6500.00,160000.00
+29/03/2026,Interest credit,INT-ABS-0326,132.80,160132.80
+31/03/2026,Monthly account fee,FEE-ABS-0326,-110.00,160022.80

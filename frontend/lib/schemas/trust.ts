@@ -88,3 +88,61 @@ export const reversalReasonSchema = z.object({
 });
 
 export type ReversalReasonFormData = z.infer<typeof reversalReasonSchema>;
+
+// ── Interest schemas ──────────────────────────────────────────────
+
+export const createInterestRunSchema = z.object({
+  periodStart: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD"),
+  periodEnd: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD"),
+});
+
+export type CreateInterestRunFormData = z.infer<
+  typeof createInterestRunSchema
+>;
+
+export const addLpffRateSchema = z.object({
+  effectiveFrom: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD"),
+  ratePercent: z.number().positive("Rate must be greater than zero"),
+  lpffSharePercent: z
+    .number()
+    .min(0, "LPFF share must be 0 or greater")
+    .max(1, "LPFF share must be 1 or less"),
+  notes: z.string().max(2000).optional().or(z.literal("")),
+});
+
+export type AddLpffRateFormData = z.infer<typeof addLpffRateSchema>;
+
+// ── Investment schemas ────────────────────────────────────────────
+
+export const placeInvestmentSchema = z.object({
+  customerId: z.string().uuid("Must be a valid client UUID"),
+  institution: z.string().min(1, "Institution is required").max(200),
+  accountNumber: z.string().min(1, "Account number is required").max(30),
+  principal: z.number().positive("Principal must be greater than zero"),
+  interestRate: z.number().min(0, "Interest rate must be 0 or greater"),
+  depositDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD"),
+  maturityDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD")
+    .optional()
+    .or(z.literal("")),
+  notes: z.string().max(2000).optional().or(z.literal("")),
+});
+
+export type PlaceInvestmentFormData = z.infer<typeof placeInvestmentSchema>;
+
+export const recordInvestmentInterestSchema = z.object({
+  amount: z.number().positive("Amount must be greater than zero"),
+});
+
+export type RecordInvestmentInterestFormData = z.infer<
+  typeof recordInvestmentInterestSchema
+>;

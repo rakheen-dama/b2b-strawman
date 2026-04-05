@@ -209,6 +209,71 @@ export interface MatchResultResponse {
   lines: BankStatementLineResponse[];
 }
 
+// Interest run types
+
+export type InterestRunStatus = "DRAFT" | "APPROVED" | "POSTED";
+
+export interface InterestRun {
+  id: string;
+  trustAccountId: string;
+  periodStart: string;
+  periodEnd: string;
+  lpffRateId: string;
+  totalInterest: number;
+  totalLpffShare: number;
+  totalClientShare: number;
+  status: InterestRunStatus;
+  createdBy: string | null;
+  approvedBy: string | null;
+  postedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface InterestAllocation {
+  id: string;
+  interestRunId: string;
+  customerId: string;
+  averageDailyBalance: number;
+  daysInPeriod: number;
+  grossInterest: number;
+  lpffShare: number;
+  clientShare: number;
+  trustTransactionId: string | null;
+  createdAt: string;
+}
+
+export interface InterestRunDetail {
+  run: InterestRun;
+  allocations: InterestAllocation[];
+}
+
+// Investment types
+
+export type TrustInvestmentStatus = "ACTIVE" | "MATURED" | "WITHDRAWN";
+
+export interface TrustInvestment {
+  id: string;
+  trustAccountId: string;
+  customerId: string;
+  customerName: string;
+  institution: string;
+  accountNumber: string;
+  principal: number;
+  interestRate: number;
+  depositDate: string;
+  maturityDate: string | null;
+  interestEarned: number;
+  status: TrustInvestmentStatus;
+  withdrawalDate: string | null;
+  withdrawalAmount: number | null;
+  depositTransactionId: string | null;
+  withdrawalTransactionId: string | null;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // Dashboard types
 
 export type TrustAlertType =

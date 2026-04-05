@@ -46,6 +46,10 @@ export {
   recordTransferSchema,
   recordFeeTransferSchema,
   recordRefundSchema,
+  createInterestRunSchema,
+  addLpffRateSchema,
+  placeInvestmentSchema,
+  recordInvestmentInterestSchema,
 } from "./trust";
 export type {
   CreateTrustAccountFormData,
@@ -54,4 +58,8 @@ export type {
   RecordTransferFormData,
   RecordFeeTransferFormData,
   RecordRefundFormData,
+  CreateInterestRunFormData,
+  AddLpffRateFormData,
+  PlaceInvestmentFormData,
+  RecordInvestmentInterestFormData,
 } from "./trust";

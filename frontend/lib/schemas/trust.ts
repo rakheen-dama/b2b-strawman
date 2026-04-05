@@ -23,7 +23,7 @@ export type CreateTrustAccountFormData = z.infer<
 >;
 
 export const recordDepositSchema = z.object({
-  customerId: z.string().uuid("Please select a client"),
+  customerId: z.string().uuid("Must be a valid client UUID"),
   projectId: z.string().uuid().optional().or(z.literal("")),
   amount: z.number().positive("Amount must be greater than zero"),
   reference: z.string().min(1, "Reference is required").max(200),
@@ -34,7 +34,7 @@ export const recordDepositSchema = z.object({
 export type RecordDepositFormData = z.infer<typeof recordDepositSchema>;
 
 export const recordPaymentSchema = z.object({
-  customerId: z.string().uuid("Please select a client"),
+  customerId: z.string().uuid("Must be a valid client UUID"),
   projectId: z.string().uuid().optional().or(z.literal("")),
   amount: z.number().positive("Amount must be greater than zero"),
   reference: z.string().min(1, "Reference is required").max(200),
@@ -45,8 +45,8 @@ export const recordPaymentSchema = z.object({
 export type RecordPaymentFormData = z.infer<typeof recordPaymentSchema>;
 
 export const recordTransferSchema = z.object({
-  sourceCustomerId: z.string().uuid("Please select source client"),
-  targetCustomerId: z.string().uuid("Please select target client"),
+  sourceCustomerId: z.string().uuid("Must be a valid source client UUID"),
+  targetCustomerId: z.string().uuid("Must be a valid target client UUID"),
   projectId: z.string().uuid().optional().or(z.literal("")),
   amount: z.number().positive("Amount must be greater than zero"),
   reference: z.string().min(1, "Reference is required").max(200),
@@ -57,8 +57,8 @@ export const recordTransferSchema = z.object({
 export type RecordTransferFormData = z.infer<typeof recordTransferSchema>;
 
 export const recordFeeTransferSchema = z.object({
-  customerId: z.string().uuid("Please select a client"),
-  invoiceId: z.string().uuid("Please select an invoice"),
+  customerId: z.string().uuid("Must be a valid client UUID"),
+  invoiceId: z.string().uuid("Must be a valid invoice UUID"),
   amount: z.number().positive("Amount must be greater than zero"),
   reference: z.string().min(1, "Reference is required").max(200),
 });
@@ -68,7 +68,7 @@ export type RecordFeeTransferFormData = z.infer<
 >;
 
 export const recordRefundSchema = z.object({
-  customerId: z.string().uuid("Please select a client"),
+  customerId: z.string().uuid("Must be a valid client UUID"),
   amount: z.number().positive("Amount must be greater than zero"),
   reference: z.string().min(1, "Reference is required").max(200),
   description: z.string().max(2000).optional().or(z.literal("")),
@@ -76,3 +76,15 @@ export const recordRefundSchema = z.object({
 });
 
 export type RecordRefundFormData = z.infer<typeof recordRefundSchema>;
+
+export const rejectionReasonSchema = z.object({
+  reason: z.string().min(1, "Reason is required").max(500),
+});
+
+export type RejectionReasonFormData = z.infer<typeof rejectionReasonSchema>;
+
+export const reversalReasonSchema = z.object({
+  reason: z.string().min(1, "Reason is required").max(500),
+});
+
+export type ReversalReasonFormData = z.infer<typeof reversalReasonSchema>;

@@ -76,3 +76,15 @@ export const recordRefundSchema = z.object({
 });
 
 export type RecordRefundFormData = z.infer<typeof recordRefundSchema>;
+
+export const rejectionReasonSchema = z.object({
+  reason: z.string().min(1, "Reason is required").max(500),
+});
+
+export type RejectionReasonFormData = z.infer<typeof rejectionReasonSchema>;
+
+export const reversalReasonSchema = z.object({
+  reason: z.string().min(1, "Reason is required").max(500),
+});
+
+export type ReversalReasonFormData = z.infer<typeof reversalReasonSchema>;

@@ -21,7 +21,7 @@
       "content": [
         { "type": "text", "marks": [{ "type": "bold" }], "text": "Receipt Date:" },
         { "type": "text", "text": " " },
-        { "type": "variable", "attrs": { "key": "date.today" } }
+        { "type": "variable", "attrs": { "key": "generatedAt" } }
       ]
     },
     {

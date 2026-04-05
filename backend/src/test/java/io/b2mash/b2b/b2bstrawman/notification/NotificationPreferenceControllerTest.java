@@ -65,7 +65,7 @@ class NotificationPreferenceControllerTest {
             get("/api/notifications/preferences")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_npc_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.preferences", hasSize(54)))
+        .andExpect(jsonPath("$.preferences", hasSize(56)))
         .andExpect(jsonPath("$.preferences[0].notificationType").value("TASK_ASSIGNED"))
         .andExpect(jsonPath("$.preferences[0].inAppEnabled").value(true))
         .andExpect(jsonPath("$.preferences[0].emailEnabled").value(false))
@@ -96,7 +96,7 @@ class NotificationPreferenceControllerTest {
                     }
                     """))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.preferences", hasSize(54)))
+        .andExpect(jsonPath("$.preferences", hasSize(56)))
         .andExpect(jsonPath("$.preferences[0].notificationType").value("TASK_ASSIGNED"))
         .andExpect(jsonPath("$.preferences[0].inAppEnabled").value(false))
         .andExpect(jsonPath("$.preferences[0].emailEnabled").value(false));
@@ -267,7 +267,7 @@ class NotificationPreferenceControllerTest {
             get("/api/notifications/preferences")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_npc_member")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.preferences", hasSize(54)))
+        .andExpect(jsonPath("$.preferences", hasSize(56)))
         .andExpect(jsonPath("$.preferences[0].notificationType").value("TASK_ASSIGNED"))
         .andExpect(jsonPath("$.preferences[0].inAppEnabled").value(true))
         .andExpect(jsonPath("$.preferences[0].emailEnabled").value(false))

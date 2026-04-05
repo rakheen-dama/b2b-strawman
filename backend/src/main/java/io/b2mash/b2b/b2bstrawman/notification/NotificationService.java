@@ -183,7 +183,9 @@ public class NotificationService {
           "TRUST_PAYMENT_REJECTED",
           "TRUST_RECONCILIATION_OVERDUE",
           "TRUST_INVESTMENT_MATURING",
-          "TRUST_APPROVAL_AGING");
+          "TRUST_APPROVAL_AGING",
+          "TRUST_RECONCILIATION_COMPLETED",
+          "TRUST_INTEREST_POSTED");
 
   // --- Preference methods ---
 

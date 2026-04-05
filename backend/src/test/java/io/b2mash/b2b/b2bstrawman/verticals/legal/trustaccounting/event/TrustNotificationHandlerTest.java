@@ -11,6 +11,7 @@ import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -207,6 +208,121 @@ class TrustNotificationHandlerTest {
                   assertThat(templateNames).contains("Client Trust Statement");
                   assertThat(templateNames).contains("Trust Receipt");
                   assertThat(templateNames).contains("Section 35 Cover Letter");
+                }));
+  }
+
+  @Test
+  void reconciliationCompletedEvent_notifiesAdminsAndOwners() {
+    runInTenantWithCapabilities(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var event =
+                      TrustDomainEvent.ReconciliationCompleted.of(
+                          UUID.randomUUID(),
+                          UUID.randomUUID(),
+                          LocalDate.of(2026, 3, 31),
+                          memberId,
+                          tenantSchema,
+                          ORG_ID);
+                  eventPublisher.publishEvent(event);
+                }));
+
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var notifications = notificationRepository.findAll();
+                  var reconciliationNotifications =
+                      notifications.stream()
+                          .filter(n -> "TRUST_RECONCILIATION_COMPLETED".equals(n.getType()))
+                          .toList();
+                  assertThat(reconciliationNotifications).isNotEmpty();
+                  assertThat(reconciliationNotifications)
+                      .allSatisfy(
+                          n -> {
+                            assertThat(n.getTitle()).contains("reconciliation completed");
+                            assertThat(n.getBody()).contains("2026-03-31");
+                          });
+                }));
+  }
+
+  @Test
+  void investmentMaturingEvent_notifiesAdminsAndOwners() {
+    runInTenantWithCapabilities(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var event =
+                      TrustDomainEvent.InvestmentMaturing.of(
+                          UUID.randomUUID(),
+                          UUID.randomUUID(),
+                          UUID.randomUUID(),
+                          "First National Bank",
+                          new BigDecimal("100000.00"),
+                          LocalDate.of(2026, 5, 15),
+                          30,
+                          tenantSchema,
+                          ORG_ID);
+                  eventPublisher.publishEvent(event);
+                }));
+
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var notifications = notificationRepository.findAll();
+                  var investmentNotifications =
+                      notifications.stream()
+                          .filter(n -> "TRUST_INVESTMENT_MATURING".equals(n.getType()))
+                          .toList();
+                  assertThat(investmentNotifications).isNotEmpty();
+                  assertThat(investmentNotifications)
+                      .allSatisfy(
+                          n -> {
+                            assertThat(n.getTitle()).contains("maturing in 30 days");
+                            assertThat(n.getBody()).contains("First National Bank");
+                          });
+                }));
+  }
+
+  @Test
+  void interestPostedEvent_notifiesAdminsAndOwners() {
+    runInTenantWithCapabilities(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var event =
+                      TrustDomainEvent.InterestPosted.of(
+                          UUID.randomUUID(),
+                          UUID.randomUUID(),
+                          LocalDate.of(2026, 1, 1),
+                          LocalDate.of(2026, 3, 31),
+                          new BigDecimal("5000.00"),
+                          new BigDecimal("4250.00"),
+                          memberId,
+                          tenantSchema,
+                          ORG_ID);
+                  eventPublisher.publishEvent(event);
+                }));
+
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var notifications = notificationRepository.findAll();
+                  var interestNotifications =
+                      notifications.stream()
+                          .filter(n -> "TRUST_INTEREST_POSTED".equals(n.getType()))
+                          .toList();
+                  assertThat(interestNotifications).isNotEmpty();
+                  assertThat(interestNotifications)
+                      .allSatisfy(
+                          n -> {
+                            assertThat(n.getTitle()).contains("Interest run posted");
+                            assertThat(n.getBody()).contains("R5000.00");
+                            assertThat(n.getBody()).contains("R4250.00");
+                          });
                 }));
   }
 

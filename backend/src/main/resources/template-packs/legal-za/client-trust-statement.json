@@ -29,7 +29,7 @@
       "content": [
         { "type": "text", "marks": [{ "type": "bold" }], "text": "Statement Date:" },
         { "type": "text", "text": " " },
-        { "type": "variable", "attrs": { "key": "date.today" } }
+        { "type": "variable", "attrs": { "key": "generatedAt" } }
       ]
     },
     {

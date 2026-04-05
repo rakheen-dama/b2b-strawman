@@ -179,7 +179,7 @@ public class TrustNotificationHandler {
   private void handleReconciliationCompleted(TrustDomainEvent.ReconciliationCompleted event) {
     var notifications =
         notificationService.notifyAdminsAndOwners(
-            "TRUST_RECONCILIATION_OVERDUE",
+            "TRUST_RECONCILIATION_COMPLETED",
             "Trust account reconciliation completed",
             "Reconciliation for period ending "
                 + event.periodEnd()
@@ -211,7 +211,7 @@ public class TrustNotificationHandler {
   private void handleInterestPosted(TrustDomainEvent.InterestPosted event) {
     var notifications =
         notificationService.notifyAdminsAndOwners(
-            "TRUST_APPROVAL_AGING",
+            "TRUST_INTEREST_POSTED",
             "Interest run posted",
             "Interest run for "
                 + event.periodStart()

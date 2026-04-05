@@ -84,7 +84,9 @@
         "dateField": "periodEnd",
         "daysBefore": -35
       },
-      "conditions": [],
+      "conditions": [
+        { "field": "status", "operator": "NOT_EQUALS", "value": "COMPLETED" }
+      ],
       "actions": [
         {
           "actionType": "SEND_NOTIFICATION",
@@ -110,7 +112,9 @@
         "dateField": "createdAt",
         "daysBefore": -2
       },
-      "conditions": [],
+      "conditions": [
+        { "field": "status", "operator": "EQUALS", "value": "AWAITING_APPROVAL" }
+      ],
       "actions": [
         {
           "actionType": "SEND_NOTIFICATION",

@@ -315,6 +315,9 @@ export function InterestRunWizard({
                       <th className="pb-3 pr-4 text-right font-medium text-slate-500 dark:text-slate-400">
                         Gross Interest
                       </th>
+                      <th className="pb-3 pr-4 text-left font-medium text-slate-500 dark:text-slate-400">
+                        LPFF Rate
+                      </th>
                       <th className="pb-3 pr-4 text-right font-medium text-slate-500 dark:text-slate-400">
                         LPFF Share
                       </th>
@@ -338,6 +341,17 @@ export function InterestRunWizard({
                         <td className="py-3 pr-4 text-right font-mono tabular-nums">
                           {formatCurrency(a.grossInterest, currency)}
                         </td>
+                        <td className="py-3 pr-4">
+                          {a.statutoryRateApplied ? (
+                            <span className="font-medium text-teal-600 dark:text-teal-400">
+                              5% (statutory)
+                            </span>
+                          ) : (
+                            <span className="text-slate-600 dark:text-slate-400">
+                              Arrangement
+                            </span>
+                          )}
+                        </td>
                         <td className="py-3 pr-4 text-right font-mono tabular-nums">
                           {formatCurrency(a.lpffShare, currency)}
                         </td>
@@ -348,6 +362,11 @@ export function InterestRunWizard({
                     ))}
                   </tbody>
                 </table>
+                {allocations.some((a) => a.statutoryRateApplied) && (
+                  <p className="mt-3 text-xs text-slate-500 dark:text-slate-400" data-testid="statutory-footnote">
+                    Section 86(5): client-instructed investments carry a statutory 5% LPFF share.
+                  </p>
+                )}
               </div>
             )}
 

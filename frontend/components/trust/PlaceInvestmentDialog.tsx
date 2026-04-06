@@ -24,11 +24,20 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { Section866Advisory } from "@/components/trust/Section866Advisory";
 import {
   placeInvestmentSchema,
   type PlaceInvestmentFormData,
 } from "@/lib/schemas/trust";
 import { placeInvestment } from "@/app/(app)/org/[slug]/trust-accounting/investments/actions";
+
+const INVESTMENT_BASIS_HELP: Record<string, string> = {
+  FIRM_DISCRETION: "Interest follows your firm\u2019s LPFF arrangement rate.",
+  CLIENT_INSTRUCTION:
+    "Interest paid to client, with 5% to the LPFF (Section 86(5)).",
+};
 
 interface PlaceInvestmentDialogProps {
   accountId: string;
@@ -49,6 +58,7 @@ function getDefaultValues(): PlaceInvestmentFormData {
     depositDate: local.toISOString().slice(0, 10),
     maturityDate: "",
     notes: "",
+    investmentBasis: "FIRM_DISCRETION",
   };
 }
 
@@ -255,6 +265,51 @@ export function PlaceInvestmentDialog({
                 </FormItem>
               )}
             />
+
+            <FormField
+              control={form.control}
+              name="investmentBasis"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Investment initiated by</FormLabel>
+                  <FormControl>
+                    <RadioGroup
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      data-testid="investment-basis-radio"
+                    >
+                      <div className="flex items-center gap-2">
+                        <RadioGroupItem
+                          value="FIRM_DISCRETION"
+                          id="basis-firm"
+                        />
+                        <Label htmlFor="basis-firm" className="font-normal">
+                          Firm (surplus trust funds)
+                        </Label>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <RadioGroupItem
+                          value="CLIENT_INSTRUCTION"
+                          id="basis-client"
+                        />
+                        <Label htmlFor="basis-client" className="font-normal">
+                          Client instruction
+                        </Label>
+                      </div>
+                    </RadioGroup>
+                  </FormControl>
+                  <p
+                    className="text-xs text-slate-500 dark:text-slate-400"
+                    data-testid="investment-basis-help"
+                  >
+                    {INVESTMENT_BASIS_HELP[field.value]}
+                  </p>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <Section866Advisory />
 
             {error && <p className="text-sm text-destructive">{error}</p>}
 

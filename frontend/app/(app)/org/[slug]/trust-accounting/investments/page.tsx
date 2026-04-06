@@ -13,8 +13,9 @@ import { fetchTrustAccounts } from "@/app/(app)/org/[slug]/trust-accounting/acti
 import { fetchInvestments } from "@/app/(app)/org/[slug]/trust-accounting/investments/actions";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import type { TrustInvestment, TrustInvestmentStatus } from "@/lib/types/trust";
+import type { TrustInvestment, TrustInvestmentStatus, InvestmentBasis } from "@/lib/types/trust";
 import { InvestmentPageClient } from "./InvestmentPageClient";
+import { InvestmentBasisFilter } from "./InvestmentBasisFilter";
 
 // -- Badge variant mapping ------------------------------------------------
 
@@ -25,6 +26,16 @@ const STATUS_BADGE_VARIANT: Record<
   ACTIVE: "success",
   MATURED: "warning",
   WITHDRAWN: "neutral",
+};
+
+const BASIS_BADGE_VARIANT: Record<InvestmentBasis, "neutral" | "lead"> = {
+  FIRM_DISCRETION: "neutral",
+  CLIENT_INSTRUCTION: "lead",
+};
+
+const BASIS_LABEL: Record<InvestmentBasis, string> = {
+  FIRM_DISCRETION: "Firm",
+  CLIENT_INSTRUCTION: "Client Instruction",
 };
 
 // -- Maturity helper ------------------------------------------------------
@@ -42,10 +53,18 @@ function isMaturing(maturityDate: string | null, daysAhead: number = 30): boolea
 
 export default async function InvestmentsPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ investmentBasis?: string }>;
 }) {
   const { slug: _slug } = await params;
+  const { investmentBasis: rawBasis } = await searchParams;
+
+  const VALID_BASES: InvestmentBasis[] = ["FIRM_DISCRETION", "CLIENT_INSTRUCTION"];
+  const basisFilter = rawBasis && VALID_BASES.includes(rawBasis as InvestmentBasis)
+    ? (rawBasis as InvestmentBasis)
+    : undefined;
 
   // Module gating
   let settings;
@@ -94,7 +113,7 @@ export default async function InvestmentsPage({
 
   if (accountId) {
     try {
-      investments = await fetchInvestments(accountId);
+      investments = await fetchInvestments(accountId, basisFilter);
     } catch {
       fetchError = true;
     }
@@ -146,6 +165,7 @@ export default async function InvestmentsPage({
                   {investments.length !== 1 ? "s" : ""} found
                 </CardDescription>
               </div>
+              <InvestmentBasisFilter currentValue={basisFilter} />
             </div>
           </CardHeader>
           <CardContent>
@@ -167,6 +187,9 @@ export default async function InvestmentsPage({
                         Client
                       </th>
                       <th className="pb-3 pr-4 text-left font-medium text-slate-500 dark:text-slate-400">
+                        Basis
+                      </th>
+                      <th className="pb-3 pr-4 text-left font-medium text-slate-500 dark:text-slate-400">
                         Institution
                       </th>
                       <th className="pb-3 pr-4 text-right font-medium text-slate-500 dark:text-slate-400">
@@ -174,6 +197,9 @@ export default async function InvestmentsPage({
                       </th>
                       <th className="pb-3 pr-4 text-right font-medium text-slate-500 dark:text-slate-400">
                         Interest Rate
+                      </th>
+                      <th className="pb-3 pr-4 text-left font-medium text-slate-500 dark:text-slate-400">
+                        LPFF Rate
                       </th>
                       <th className="pb-3 pr-4 text-left font-medium text-slate-500 dark:text-slate-400">
                         Deposit Date
@@ -214,6 +240,11 @@ export default async function InvestmentsPage({
                           <td className="py-3 pr-4 text-slate-950 dark:text-slate-50">
                             {inv.customerName}
                           </td>
+                          <td className="py-3 pr-4">
+                            <Badge variant={BASIS_BADGE_VARIANT[inv.investmentBasis]}>
+                              {BASIS_LABEL[inv.investmentBasis]}
+                            </Badge>
+                          </td>
                           <td className="py-3 pr-4 text-slate-950 dark:text-slate-50">
                             {inv.institution}
                           </td>
@@ -222,6 +253,17 @@ export default async function InvestmentsPage({
                           </td>
                           <td className="py-3 pr-4 text-right font-mono tabular-nums text-slate-950 dark:text-slate-50">
                             {(Number(inv.interestRate) * 100).toFixed(2)}%
+                          </td>
+                          <td className="py-3 pr-4 text-slate-950 dark:text-slate-50">
+                            {inv.investmentBasis === "CLIENT_INSTRUCTION" ? (
+                              <span className="font-medium text-teal-600 dark:text-teal-400">
+                                5% (statutory)
+                              </span>
+                            ) : (
+                              <span className="text-slate-600 dark:text-slate-400">
+                                Arrangement
+                              </span>
+                            )}
                           </td>
                           <td className="py-3 pr-4 text-slate-950 dark:text-slate-50">
                             {formatLocalDate(inv.depositDate)}

@@ -8,11 +8,16 @@ import type { PlaceInvestmentFormData } from "@/lib/schemas/trust";
 
 export async function fetchInvestments(
   accountId: string,
+  investmentBasis?: string,
 ): Promise<TrustInvestment[]> {
+  let url = `/api/trust-accounts/${accountId}/investments?size=100&sort=depositDate,desc`;
+  if (investmentBasis) {
+    url += `&investmentBasis=${encodeURIComponent(investmentBasis)}`;
+  }
   const response = await api.get<{
     content: TrustInvestment[];
     page: { totalElements: number; totalPages: number; size: number; number: number };
-  }>(`/api/trust-accounts/${accountId}/investments?size=100&sort=depositDate,desc`);
+  }>(url);
   return response.content;
 }
 

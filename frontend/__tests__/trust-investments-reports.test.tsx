@@ -90,6 +90,8 @@ vi.mock("next/navigation", () => ({
     forward: vi.fn(),
     prefetch: vi.fn(),
   }),
+  usePathname: () => "/org/acme/trust-accounting/investments",
+  useSearchParams: () => new URLSearchParams(),
 }));
 
 // -- Mock next/link -------------------------------------------------------
@@ -135,6 +137,7 @@ function makeInvestment(overrides: Record<string, unknown> = {}) {
     depositTransactionId: "txn-1",
     withdrawalTransactionId: null,
     notes: null,
+    investmentBasis: "FIRM_DISCRETION",
     createdAt: "2026-01-15T09:00:00Z",
     updatedAt: "2026-03-31T09:00:00Z",
     ...overrides,
@@ -144,6 +147,7 @@ function makeInvestment(overrides: Record<string, unknown> = {}) {
 async function renderInvestmentsPage() {
   const result = await InvestmentsPage({
     params: Promise.resolve({ slug: "acme" }),
+    searchParams: Promise.resolve({}),
   });
   render(result);
 }

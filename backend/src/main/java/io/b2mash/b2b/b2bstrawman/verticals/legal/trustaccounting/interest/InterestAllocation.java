@@ -43,6 +43,12 @@ public class InterestAllocation {
   @Column(name = "trust_transaction_id")
   private UUID trustTransactionId;
 
+  @Column(name = "lpff_rate_id")
+  private UUID lpffRateId;
+
+  @Column(name = "statutory_rate_applied", nullable = false)
+  private boolean statutoryRateApplied;
+
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
@@ -55,7 +61,9 @@ public class InterestAllocation {
       int daysInPeriod,
       BigDecimal grossInterest,
       BigDecimal lpffShare,
-      BigDecimal clientShare) {
+      BigDecimal clientShare,
+      UUID lpffRateId,
+      boolean statutoryRateApplied) {
     this.interestRunId = interestRunId;
     this.customerId = customerId;
     this.averageDailyBalance = averageDailyBalance;
@@ -63,6 +71,8 @@ public class InterestAllocation {
     this.grossInterest = grossInterest;
     this.lpffShare = lpffShare;
     this.clientShare = clientShare;
+    this.lpffRateId = lpffRateId;
+    this.statutoryRateApplied = statutoryRateApplied;
   }
 
   @PrePersist
@@ -108,6 +118,14 @@ public class InterestAllocation {
 
   public void setTrustTransactionId(UUID trustTransactionId) {
     this.trustTransactionId = trustTransactionId;
+  }
+
+  public UUID getLpffRateId() {
+    return lpffRateId;
+  }
+
+  public boolean isStatutoryRateApplied() {
+    return statutoryRateApplied;
   }
 
   public Instant getCreatedAt() {

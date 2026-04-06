@@ -1,7 +1,10 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment;
 
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -66,6 +69,10 @@ public class TrustInvestment {
   @Column(name = "notes", columnDefinition = "TEXT")
   private String notes;
 
+  @Enumerated(EnumType.STRING)
+  @Column(name = "investment_basis", nullable = false)
+  private InvestmentBasis investmentBasis;
+
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
@@ -84,7 +91,8 @@ public class TrustInvestment {
       LocalDate depositDate,
       LocalDate maturityDate,
       UUID depositTransactionId,
-      String notes) {
+      String notes,
+      InvestmentBasis investmentBasis) {
     this.trustAccountId = trustAccountId;
     this.customerId = customerId;
     this.institution = institution;
@@ -97,6 +105,7 @@ public class TrustInvestment {
     this.status = "ACTIVE";
     this.depositTransactionId = depositTransactionId;
     this.notes = notes;
+    this.investmentBasis = investmentBasis;
   }
 
   @PrePersist
@@ -175,6 +184,10 @@ public class TrustInvestment {
 
   public String getNotes() {
     return notes;
+  }
+
+  public InvestmentBasis getInvestmentBasis() {
+    return investmentBasis;
   }
 
   public Instant getCreatedAt() {

@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountStatus;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
@@ -69,7 +70,8 @@ public class TrustInvestmentService {
       @PositiveOrZero BigDecimal interestRate,
       @NotNull LocalDate depositDate,
       LocalDate maturityDate,
-      String notes) {}
+      String notes,
+      @NotNull InvestmentBasis investmentBasis) {}
 
   public record TrustInvestmentResponse(
       UUID id,
@@ -89,6 +91,7 @@ public class TrustInvestmentService {
       UUID depositTransactionId,
       UUID withdrawalTransactionId,
       String notes,
+      InvestmentBasis investmentBasis,
       Instant createdAt,
       Instant updatedAt) {}
 
@@ -149,7 +152,8 @@ public class TrustInvestmentService {
             request.depositDate(),
             request.maturityDate(),
             paymentResponse.id(),
-            request.notes());
+            request.notes(),
+            request.investmentBasis());
 
     investment = investmentRepository.save(investment);
 
@@ -165,7 +169,8 @@ public class TrustInvestmentService {
                     "institution", request.institution(),
                     "principal", request.principal().toString(),
                     "interest_rate", request.interestRate().toString(),
-                    "deposit_date", request.depositDate().toString()))
+                    "deposit_date", request.depositDate().toString(),
+                    "investment_basis", request.investmentBasis().name()))
             .build());
 
     return toResponse(investment, customer.getName());
@@ -300,14 +305,19 @@ public class TrustInvestmentService {
   }
 
   @Transactional(readOnly = true)
-  public Page<TrustInvestmentResponse> listInvestments(UUID accountId, Pageable pageable) {
+  public Page<TrustInvestmentResponse> listInvestments(
+      UUID accountId, InvestmentBasis investmentBasis, Pageable pageable) {
     moduleGuard.requireModule(MODULE_ID);
 
     trustAccountRepository
         .findById(accountId)
         .orElseThrow(() -> new ResourceNotFoundException("TrustAccount", accountId));
 
-    var page = investmentRepository.findByTrustAccountIdOrderByDepositDateDesc(accountId, pageable);
+    var page =
+        (investmentBasis != null)
+            ? investmentRepository.findByTrustAccountIdAndInvestmentBasisOrderByDepositDateDesc(
+                accountId, investmentBasis, pageable)
+            : investmentRepository.findByTrustAccountIdOrderByDepositDateDesc(accountId, pageable);
 
     var customerIds =
         page.getContent().stream().map(TrustInvestment::getCustomerId).distinct().toList();
@@ -359,6 +369,7 @@ public class TrustInvestmentService {
         investment.getDepositTransactionId(),
         investment.getWithdrawalTransactionId(),
         investment.getNotes(),
+        investment.getInvestmentBasis(),
         investment.getCreatedAt(),
         investment.getUpdatedAt());
   }

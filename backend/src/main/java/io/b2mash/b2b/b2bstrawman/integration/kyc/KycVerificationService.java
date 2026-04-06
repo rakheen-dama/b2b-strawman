@@ -144,11 +144,6 @@ public class KycVerificationService {
 
     // 6. Update checklist item verification columns (unless ERROR)
     if (result.status() != KycVerificationStatus.ERROR) {
-      item.setVerificationProvider(result.providerName());
-      item.setVerificationReference(result.providerReference());
-      item.setVerificationStatus(result.status().name());
-      item.setVerifiedAt(result.verifiedAt());
-
       // Record POPIA consent in verification metadata
       var metadata = new LinkedHashMap<String, Object>();
       if (result.metadata() != null) {
@@ -156,7 +151,14 @@ public class KycVerificationService {
       }
       metadata.put("consent_acknowledged_at", Instant.now().toString());
       metadata.put("consent_acknowledged_by", actorMemberId.toString());
-      item.setVerificationMetadata(metadata);
+
+      // Apply all verification fields atomically (bumps updatedAt)
+      item.applyVerificationResult(
+          result.providerName(),
+          result.providerReference(),
+          result.status().name(),
+          result.verifiedAt(),
+          metadata);
 
       // 7. If VERIFIED: auto-complete the checklist item
       if (result.status() == KycVerificationStatus.VERIFIED) {

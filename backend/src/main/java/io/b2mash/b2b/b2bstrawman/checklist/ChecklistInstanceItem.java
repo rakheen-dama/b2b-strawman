@@ -157,6 +157,24 @@ public class ChecklistInstanceItem {
     this.updatedAt = Instant.now();
   }
 
+  /**
+   * Applies the result of a KYC verification to this checklist item, setting all verification
+   * fields atomically and bumping {@code updatedAt}.
+   */
+  public void applyVerificationResult(
+      String provider,
+      String reference,
+      String status,
+      Instant verifiedAt,
+      Map<String, Object> metadata) {
+    this.verificationProvider = provider;
+    this.verificationReference = reference;
+    this.verificationStatus = status;
+    this.verifiedAt = verifiedAt;
+    this.verificationMetadata = metadata;
+    this.updatedAt = Instant.now();
+  }
+
   public void setDependsOnItemId(UUID dependsOnItemId) {
     this.dependsOnItemId = dependsOnItemId;
   }

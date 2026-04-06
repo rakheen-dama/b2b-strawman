@@ -109,6 +109,57 @@ class KycAdapterTest {
     assertThat(result.metadata()).containsEntry("format_valid", "false");
   }
 
+  @Test
+  void checkId_marksFormatInvalidForNonDigitCharacters() {
+    when(secretStore.retrieve(anyString())).thenReturn("test-api-key");
+    var adapter = new CheckIdKycAdapter(secretStore);
+    // 13 characters but contains letters — should fail regex
+    var request = new KycVerificationRequest("900101ABCD087", "Jane Smith", null, "SA_ID");
+
+    var result = adapter.verify(request);
+
+    assertThat(result.status()).isEqualTo(KycVerificationStatus.NEEDS_REVIEW);
+    assertThat(result.metadata()).containsEntry("format_valid", "false");
+  }
+
+  @Test
+  void checkId_marksFormatInvalidForImpossibleDate() {
+    when(secretStore.retrieve(anyString())).thenReturn("test-api-key");
+    var adapter = new CheckIdKycAdapter(secretStore);
+    // 13 digits but YYMMDD = 901301 => month 13 is invalid
+    var request = new KycVerificationRequest("9013015009087", "Jane Smith", null, "SA_ID");
+
+    var result = adapter.verify(request);
+
+    assertThat(result.status()).isEqualTo(KycVerificationStatus.NEEDS_REVIEW);
+    assertThat(result.metadata()).containsEntry("format_valid", "false");
+  }
+
+  @Test
+  void checkId_marksFormatInvalidForInvalidCitizenshipDigit() {
+    when(secretStore.retrieve(anyString())).thenReturn("test-api-key");
+    var adapter = new CheckIdKycAdapter(secretStore);
+    // Valid date (900101) but citizenship digit at position 10 is '5' (not 0 or 1)
+    var request = new KycVerificationRequest("9001015009587", "Jane Smith", null, "SA_ID");
+
+    var result = adapter.verify(request);
+
+    assertThat(result.status()).isEqualTo(KycVerificationStatus.NEEDS_REVIEW);
+    assertThat(result.metadata()).containsEntry("format_valid", "false");
+  }
+
+  @Test
+  void checkId_verifiedAtIsNullForNeedsReview() {
+    when(secretStore.retrieve(anyString())).thenReturn("test-api-key");
+    var adapter = new CheckIdKycAdapter(secretStore);
+    var request = new KycVerificationRequest("9001015009087", "Jane Smith", null, "SA_ID");
+
+    var result = adapter.verify(request);
+
+    assertThat(result.status()).isEqualTo(KycVerificationStatus.NEEDS_REVIEW);
+    assertThat(result.verifiedAt()).isNull();
+  }
+
   // --- NoOpKycAdapter ---
 
   @Test
@@ -125,12 +176,13 @@ class KycAdapterTest {
   }
 
   @Test
-  void noOp_testConnectionSucceeds() {
+  void noOp_testConnectionFailsClosed() {
     var adapter = new NoOpKycAdapter();
 
     var result = adapter.testConnection();
 
-    assertThat(result.success()).isTrue();
+    assertThat(result.success()).isFalse();
     assertThat(result.providerName()).isEqualTo("noop");
+    assertThat(result.errorMessage()).isEqualTo("No KYC provider configured");
   }
 }

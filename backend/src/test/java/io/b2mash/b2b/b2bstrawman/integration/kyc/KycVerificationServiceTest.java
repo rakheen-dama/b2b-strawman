@@ -127,25 +127,29 @@ class KycVerificationServiceTest {
     runInTenant(
         () -> {
           configureKycProvider("checkid");
-          transactionTemplate.executeWithoutResult(
-              tx -> {
-                var item = createChecklistItem();
-                var request =
-                    new KycVerificationRequest("9001015009087", "Jane Smith", null, "SA_ID");
+          try {
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var item = createChecklistItem();
+                  var request =
+                      new KycVerificationRequest("9001015009087", "Jane Smith", null, "SA_ID");
 
-                var result =
-                    kycVerificationService.verifyIdentity(
-                        customerId, item.getId(), request, true, memberId);
+                  var result =
+                      kycVerificationService.verifyIdentity(
+                          customerId, item.getId(), request, true, memberId);
 
-                assertThat(result.status()).isEqualTo(KycVerificationStatus.NEEDS_REVIEW);
+                  assertThat(result.status()).isEqualTo(KycVerificationStatus.NEEDS_REVIEW);
 
-                var updated = checklistInstanceItemRepository.findById(item.getId()).orElseThrow();
-                assertThat(updated.getStatus()).isEqualTo("PENDING");
-                assertThat(updated.getVerificationProvider()).isEqualTo("checkid");
-                assertThat(updated.getVerificationStatus()).isEqualTo("NEEDS_REVIEW");
-                assertThat(updated.getVerificationReference()).startsWith("CID-");
-              });
-          cleanupKycProvider();
+                  var updated =
+                      checklistInstanceItemRepository.findById(item.getId()).orElseThrow();
+                  assertThat(updated.getStatus()).isEqualTo("PENDING");
+                  assertThat(updated.getVerificationProvider()).isEqualTo("checkid");
+                  assertThat(updated.getVerificationStatus()).isEqualTo("NEEDS_REVIEW");
+                  assertThat(updated.getVerificationReference()).startsWith("CID-");
+                });
+          } finally {
+            cleanupKycProvider();
+          }
         });
   }
 
@@ -180,23 +184,27 @@ class KycVerificationServiceTest {
     runInTenant(
         () -> {
           configureKycProvider("checkid");
-          transactionTemplate.executeWithoutResult(
-              tx -> {
-                var item = createChecklistItem();
-                var request =
-                    new KycVerificationRequest("9001015009087", "Jane Smith", null, "SA_ID");
+          try {
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var item = createChecklistItem();
+                  var request =
+                      new KycVerificationRequest("9001015009087", "Jane Smith", null, "SA_ID");
 
-                kycVerificationService.verifyIdentity(
-                    customerId, item.getId(), request, true, memberId);
+                  kycVerificationService.verifyIdentity(
+                      customerId, item.getId(), request, true, memberId);
 
-                var updated = checklistInstanceItemRepository.findById(item.getId()).orElseThrow();
-                assertThat(updated.getVerificationMetadata()).isNotNull();
-                assertThat(updated.getVerificationMetadata())
-                    .containsKey("consent_acknowledged_at");
-                assertThat(updated.getVerificationMetadata().get("consent_acknowledged_by"))
-                    .isEqualTo(memberId.toString());
-              });
-          cleanupKycProvider();
+                  var updated =
+                      checklistInstanceItemRepository.findById(item.getId()).orElseThrow();
+                  assertThat(updated.getVerificationMetadata()).isNotNull();
+                  assertThat(updated.getVerificationMetadata())
+                      .containsKey("consent_acknowledged_at");
+                  assertThat(updated.getVerificationMetadata().get("consent_acknowledged_by"))
+                      .isEqualTo(memberId.toString());
+                });
+          } finally {
+            cleanupKycProvider();
+          }
         });
   }
 
@@ -305,13 +313,16 @@ class KycVerificationServiceTest {
     runInTenant(
         () -> {
           configureKycProvider("checkid");
-          transactionTemplate.executeWithoutResult(
-              tx -> {
-                var status = kycVerificationService.getKycIntegrationStatus();
-                assertThat(status.configured()).isTrue();
-                assertThat(status.provider()).isEqualTo("checkid");
-              });
-          cleanupKycProvider();
+          try {
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var status = kycVerificationService.getKycIntegrationStatus();
+                  assertThat(status.configured()).isTrue();
+                  assertThat(status.provider()).isEqualTo("checkid");
+                });
+          } finally {
+            cleanupKycProvider();
+          }
         });
   }
 
@@ -334,29 +345,32 @@ class KycVerificationServiceTest {
     runInTenant(
         () -> {
           configureKycProvider("checkid");
-          transactionTemplate.executeWithoutResult(
-              tx -> {
-                var item = createChecklistItem();
-                var request =
-                    new KycVerificationRequest("9001015009087", "John Doe", null, "SA_ID");
+          try {
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var item = createChecklistItem();
+                  var request =
+                      new KycVerificationRequest("9001015009087", "John Doe", null, "SA_ID");
 
-                kycVerificationService.verifyIdentity(
-                    customerId, item.getId(), request, true, memberId);
+                  kycVerificationService.verifyIdentity(
+                      customerId, item.getId(), request, true, memberId);
 
-                var auditEvents =
-                    auditEventRepository.findByFilter(
-                        "checklist_instance_item",
-                        item.getId(),
-                        null,
-                        "kyc_verification.completed",
-                        null,
-                        null,
-                        Pageable.ofSize(10));
-                assertThat(auditEvents.getContent()).isNotEmpty();
-                assertThat(auditEvents.getContent().getFirst().getEventType())
-                    .isEqualTo("kyc_verification.completed");
-              });
-          cleanupKycProvider();
+                  var auditEvents =
+                      auditEventRepository.findByFilter(
+                          "checklist_instance_item",
+                          item.getId(),
+                          null,
+                          "kyc_verification.completed",
+                          null,
+                          null,
+                          Pageable.ofSize(10));
+                  assertThat(auditEvents.getContent()).isNotEmpty();
+                  assertThat(auditEvents.getContent().getFirst().getEventType())
+                      .isEqualTo("kyc_verification.completed");
+                });
+          } finally {
+            cleanupKycProvider();
+          }
         });
   }
 

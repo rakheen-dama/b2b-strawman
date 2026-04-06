@@ -39,6 +39,6 @@ public class NoOpKycAdapter implements KycVerificationPort {
 
   @Override
   public ConnectionTestResult testConnection() {
-    return new ConnectionTestResult(true, "noop", null);
+    return new ConnectionTestResult(false, "noop", "No KYC provider configured");
   }
 }

@@ -83,10 +83,28 @@ public class Section35DataPackQuery implements ReportQuery {
     // Section 3: Trust Reconciliation (latest on or before year-end)
     assembleReconciliationSection(trustAccountId, financialYearEnd, allRows, sectionSummaries);
 
-    // Section 4: Investment Register
-    var irParams = Map.<String, Object>of("trust_account_id", trustAccountId);
-    var irResult = investmentRegisterQuery.executeAll(irParams);
-    addSection(allRows, sectionSummaries, "Investment Register", irResult);
+    // Section 4a: Section 86(3) Investments (Firm Discretion)
+    var irFirmParams = new HashMap<String, Object>();
+    irFirmParams.put("trust_account_id", trustAccountId);
+    irFirmParams.put("investmentBasis", "FIRM_DISCRETION");
+    var irFirmResult = investmentRegisterQuery.executeAll(irFirmParams);
+    if (!irFirmResult.rows().isEmpty()) {
+      addSection(
+          allRows, sectionSummaries, "Section 86(3) Investments (Firm Discretion)", irFirmResult);
+    }
+
+    // Section 4b: Section 86(4) Investments (Client Instruction)
+    var irClientParams = new HashMap<String, Object>();
+    irClientParams.put("trust_account_id", trustAccountId);
+    irClientParams.put("investmentBasis", "CLIENT_INSTRUCTION");
+    var irClientResult = investmentRegisterQuery.executeAll(irClientParams);
+    if (!irClientResult.rows().isEmpty()) {
+      addSection(
+          allRows,
+          sectionSummaries,
+          "Section 86(4) Investments (Client Instruction)",
+          irClientResult);
+    }
 
     // Section 5: Interest Allocation (latest run within year)
     assembleInterestAllocationSection(

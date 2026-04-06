@@ -1,11 +1,16 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report;
 
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.reporting.ReportQuery;
 import io.b2mash.b2b.b2bstrawman.reporting.ReportResult;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountingConstants;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestment;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.lpff.LpffRateRepository;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,11 +24,15 @@ public class InvestmentRegisterQuery implements ReportQuery {
 
   private final TrustInvestmentRepository investmentRepository;
   private final CustomerRepository customerRepository;
+  private final LpffRateRepository lpffRateRepository;
 
   public InvestmentRegisterQuery(
-      TrustInvestmentRepository investmentRepository, CustomerRepository customerRepository) {
+      TrustInvestmentRepository investmentRepository,
+      CustomerRepository customerRepository,
+      LpffRateRepository lpffRateRepository) {
     this.investmentRepository = investmentRepository;
     this.customerRepository = customerRepository;
+    this.lpffRateRepository = lpffRateRepository;
   }
 
   @Override
@@ -55,17 +64,55 @@ public class InvestmentRegisterQuery implements ReportQuery {
   private List<Map<String, Object>> queryRows(Map<String, Object> parameters) {
     var trustAccountId = ReportParamUtils.requireUuid(parameters, "trust_account_id");
     var statusFilter = ReportParamUtils.parseString(parameters, "status");
+    var basisFilter = ReportParamUtils.parseString(parameters, "investmentBasis");
 
-    var investments =
-        investmentRepository
-            .findByTrustAccountIdOrderByDepositDateDesc(trustAccountId, Pageable.unpaged())
-            .getContent();
+    List<TrustInvestment> investments;
+    if (basisFilter != null) {
+      InvestmentBasis basis;
+      try {
+        basis = InvestmentBasis.valueOf(basisFilter);
+      } catch (IllegalArgumentException e) {
+        throw new InvalidStateException(
+            "Invalid Investment Basis",
+            "Unsupported investmentBasis value: '"
+                + basisFilter
+                + "'. Valid values are: FIRM_DISCRETION, CLIENT_INSTRUCTION");
+      }
+      investments =
+          investmentRepository
+              .findByTrustAccountIdAndInvestmentBasisOrderByDepositDateDesc(
+                  trustAccountId, basis, Pageable.unpaged())
+              .getContent();
+    } else {
+      investments =
+          investmentRepository
+              .findByTrustAccountIdOrderByDepositDateDesc(trustAccountId, Pageable.unpaged())
+              .getContent();
+    }
 
     // Filter by status if provided
     if (statusFilter != null) {
       investments =
           investments.stream().filter(inv -> statusFilter.equals(inv.getStatus())).toList();
     }
+
+    // Look up the latest general LPFF rate for the trust account
+    var latestRates =
+        lpffRateRepository.findByTrustAccountIdOrderByEffectiveFromDesc(trustAccountId);
+    String generalRateDisplay =
+        latestRates.isEmpty()
+            ? "N/A"
+            : latestRates
+                    .getFirst()
+                    .getLpffSharePercent()
+                    .multiply(new BigDecimal("100"))
+                    .setScale(0, RoundingMode.HALF_UP)
+                + "%";
+    String statutoryRateDisplay =
+        TrustAccountingConstants.STATUTORY_LPFF_SHARE_PERCENT
+                .multiply(new BigDecimal("100"))
+                .setScale(0, RoundingMode.HALF_UP)
+            + "% (statutory)";
 
     // Batch-load customer names
     var customerIds =
@@ -92,6 +139,12 @@ public class InvestmentRegisterQuery implements ReportQuery {
                   "interestEarned",
                   inv.getInterestEarned() != null ? inv.getInterestEarned() : BigDecimal.ZERO);
               row.put("status", inv.getStatus());
+              row.put("investmentBasis", inv.getInvestmentBasis().name());
+              row.put(
+                  "applicableLpffRate",
+                  inv.getInvestmentBasis() == InvestmentBasis.FIRM_DISCRETION
+                      ? generalRateDisplay
+                      : statutoryRateDisplay);
               return (Map<String, Object>) row;
             })
         .toList();

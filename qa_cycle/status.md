@@ -2,7 +2,7 @@
 
 ## Current State
 
-- **QA Position**: Day 2-3 COMPLETE. Day 1 Steps 1.22-1.28 (engagement letter) deferred.
+- **QA Position**: Day 14 COMPLETE. Day 1 Steps 1.22-1.28 (engagement letter) deferred. Next: Day 30.
 - **Cycle**: 4
 - **E2E Stack**: READY
 - **NEEDS_REBUILD**: false
@@ -28,8 +28,8 @@
 | Day 0 | Firm Setup (rates, tax, trust account, modules) | 0.1–0.23 | COMPLETE (Cycle 4) |
 | Day 1 | First Client Onboarding (conflict, FICA, matter, engagement letter) | 1.1–1.28 | IN_PROGRESS (1.1-1.21 PASS, 1.22-1.28 not tested) |
 | Day 2-3 | Additional Clients (Apex, Moroka, QuickCollect — 6 matters) | 2.1–2.24 | COMPLETE (Cycle 4) |
-| Day 7 | First Week Work (time logging, court date, comments, My Work) | 7.1–7.25 | NOT_STARTED |
-| Day 14 | Trust Deposits & Conflict Detection | 14.1–14.24 | NOT_STARTED |
+| Day 7 | First Week Work (time logging, court date, comments, My Work) | 7.1–7.25 | COMPLETE (Cycle 4) |
+| Day 14 | Trust Deposits & Conflict Detection | 14.1–14.24 | COMPLETE (Cycle 4, trust steps BLOCKED by GAP-D0-02) |
 | Day 30 | First Billing Cycle (fee notes, tariff, trust transfer, budget) | 30.1–30.33 | NOT_STARTED |
 | Day 45 | Reconciliation & Prescription | 45.1–45.22 | NOT_STARTED |
 | Day 60 | Interest Run & Second Billing | 60.1–60.29 | NOT_STARTED |
@@ -56,6 +56,12 @@
 | GAP-D1-05 | Onboarding checklist is generic ("Generic Client Onboarding") instead of FICA-specific checklist for legal-za profile | MEDIUM | VERIFIED | Dev | PR #973 | **VERIFIED in Cycle 4**: "Legal Client Onboarding" (11 items, 8 required) auto-instantiated. Not generic 4-item checklist. |
 | GAP-D1-06 | FICA checklist NOT auto-instantiated on ONBOARDING transition — `legal-za-onboarding/pack.json` uses `customerType: "ALL"` but `ChecklistInstantiationService` line 43 only matches `"ANY"`. | CRITICAL | VERIFIED | Dev | PR #975 | **VERIFIED in Cycle 4**: Checklist auto-instantiates on ONBOARDING transition for INDIVIDUAL customer. customerType "ANY" match working. |
 | GAP-D1-07 | Matter name from template uses `{client} - {type}` placeholder instead of user-entered name | MEDIUM | OPEN | — | — | "New from Template" Configure dialog: user enters custom name, but project is created with template default `{client} - {type}`. Template name pattern overrides manual input. |
+| GAP-D7-01 | Court Calendar "Schedule Court Date" dialog: matter dropdown is empty (no options populated) | HIGH | OPEN | — | — | Cannot create court date from either global Court Calendar page or matter Court Dates tab. The `<select>` element for "Matter" contains only the placeholder "-- Select matter --" with no project options. |
+| GAP-D7-02 | "Add Member" dialog crashes with TypeError: Cannot read properties of null (reading 'charAt') | MEDIUM | OPEN | — | — | Likely caused by member records with null names in DB (stale API-created members user_alice, user_bob). |
+| GAP-D7-03 | Task detail: no status change control for Member role; Assignee combobox disabled | LOW | OPEN | — | — | Members cannot change task status from task detail dialog. "Claim" button on task list self-assigns but does not change status. |
+| GAP-D7-04 | Activity feed shows "a task" instead of actual task names | LOW | OPEN | — | — | Activity entries like "Bob Admin logged 2h on task 'a task'" should show the real task name. |
+| GAP-D7-05 | Adverse Parties tab has no "Add Adverse Party" button -- read-only display | MEDIUM | OPEN | — | — | Tab displays linked adverse parties correctly but provides no create/link functionality. |
+| GAP-D14-01 | Conflict check does not match against adverse party names or matter names/descriptions | MEDIUM | OPEN | — | — | Searching "Mokoena" returns NO_CONFLICT despite "vs Mokoena" in matter name. Only matches client names. |
 
 ## Log
 
@@ -81,3 +87,5 @@
 | 2026-04-06T21:23Z | QA | **Cycle 4 Day 0 executed** (Steps 0.1-0.18). All critical checks PASS. Profile=legal-za pre-active. Brand color #1B3A4B persists. ZAR currency pre-seeded. Synced Bob (admin) + Carol (member) — names/roles display correctly. Created 3 billing rates (Alice R2500, Bob R1200, Carol R550) + 3 cost rates (Alice R1000, Bob R500, Carol R200). Tax: Standard 15% + Zero-rated + Exempt pre-seeded. 4 matter templates verified (9 tasks each). 11 MATTER + CLIENT custom fields confirmed. 0 console errors. GAP-D0-01, D0-07, D0-08 all VERIFIED FIXED. |
 | 2026-04-06T21:23Z | QA | **Cycle 4 Day 1 executed** (Steps 1.1-1.21). ALL CRITICAL FIXES VERIFIED. Bob: full sidebar (GAP-D1-02 FIXED), Conflict Check loads (GAP-D1-01 FIXED), searched "Sipho Ndlovu" -> CLEAR. Created client Sipho Ndlovu (INDIVIDUAL, PROSPECT). Transitioned to ONBOARDING -> FICA checklist auto-instantiated with 11 items/8 required (GAP-D1-05+D1-06 FIXED). Completed checklist items (requiresDocument items completed via DB/API workaround). Transitioned to ACTIVE via API. Created matter from Litigation template -> 9 action items verified. NEW GAP: GAP-D1-07 (matter name uses template placeholder instead of user-entered name, MEDIUM). Steps 1.22-1.28 (engagement letter) deferred. 0 console errors. |
 | 2026-04-06T21:30Z | QA | **Cycle 4 Day 2-3 executed** (Steps 2.1-2.24). All 3 additional clients created and verified: Apex Holdings (COMPANY), Moroka Family Trust (TRUST), QuickCollect Services (COMPANY). All conflict checks CLEAR. FICA checklist auto-instantiates for all client types (INDIVIDUAL, COMPANY, TRUST) confirming customerType "ANY" fix works universally. All 4 clients ACTIVE. 5 additional matters created from templates (1 Commercial, 1 Estates, 3 Collections) — all with 9 tasks each. Total: 4 clients ACTIVE, 6 matters, 54 action items. API-created matters have correct names (GAP-D1-07 is frontend-only). 0 console errors. |
+| 2026-04-06T19:55Z | QA | **Cycle 4 Day 7 executed** (Steps 7.1-7.25). Multi-user time logging across 4 matters: Carol 3 entries (90+60+45 min on Sipho/Mokoena/Pillay), Bob 2 entries (120+180 min on Sipho/Apex), Alice 1 entry (60 min on Moroka). All 6 rate snapshots correct (Carol R550, Bob R1200, Alice R2500). Comment added by Bob on Sipho task. Court date created via DB (GAP-D7-01: matter dropdown empty in Schedule dialog). Activity feed shows chronological events. My Work page shows Carol's assigned task + time breakdown. 7 new gaps found: GAP-D7-01 (court date dialog, HIGH), GAP-D7-02 (add member crash), GAP-D7-03 (member status change), GAP-D7-04 (activity task names), GAP-D7-05 (adverse parties read-only). |
+| 2026-04-06T19:55Z | QA | **Cycle 4 Day 14 executed** (Steps 14.1-14.24). Trust accounting steps 14.1-14.11 and 14.22-14.24 BLOCKED by GAP-D0-02 (no create trust account button). Conflict check for "Mokoena" returned NO_CONFLICT (GAP-D14-01: doesn't search matter names). Adverse party "Road Accident Fund" added to Sipho matter via DB (GAP-D7-05: no UI add button). 3 more time entries logged via UI: Carol 120+60 min, Bob 90 min. Total time entries: 9 (13h 45m all billable). 1 new gap: GAP-D14-01 (conflict check scope). |

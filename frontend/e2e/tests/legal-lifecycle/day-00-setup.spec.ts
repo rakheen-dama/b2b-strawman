@@ -11,7 +11,7 @@
  * Run:
  *   pnpm test:e2e:legal-lifecycle
  */
-import { test } from '@playwright/test'
+import { test, expect } from '@playwright/test'
 import { loginAs } from '../../fixtures/auth'
 import { captureScreenshot } from '../../helpers/screenshot'
 
@@ -22,7 +22,7 @@ test.describe.serial('Day 0 — Setup Baselines', () => {
   test('Dashboard baseline screenshot', async ({ page }) => {
     await loginAs(page, 'alice')
     await page.goto(`${BASE}/dashboard`)
-    await page.waitForLoadState('networkidle')
+    await expect(page.locator('main')).toBeVisible()
 
     await captureScreenshot(page, 'day-00-dashboard-initial')
   })

@@ -1,12 +1,18 @@
 import { defineConfig, devices } from '@playwright/test'
 
 const authMode = process.env.E2E_AUTH_MODE || 'mock'
+if (authMode !== 'mock') {
+  throw new Error(
+    `Legal lifecycle suite only supports mock auth (E2E_AUTH_MODE="${authMode}" is unsupported)`,
+  )
+}
 
 export default defineConfig({
   testDir: './tests/legal-lifecycle',
-  snapshotPathTemplate: '{testDir}/../screenshots/legal-lifecycle/{arg}{ext}',
+  snapshotPathTemplate:
+    '{testDir}/../../screenshots/legal-lifecycle/{arg}{ext}',
   globalTimeout: 600_000,
-  timeout: authMode === 'keycloak' ? 60_000 : 30_000,
+  timeout: 30_000,
   retries: process.env.CI ? 1 : 0,
   workers: 1,
   expect: {

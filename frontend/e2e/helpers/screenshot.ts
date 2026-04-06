@@ -22,6 +22,17 @@ export interface ScreenshotOptions {
 }
 
 /**
+ * Validate that the screenshot name does not escape the target directory.
+ */
+function assertSafeName(name: string, baseDir: string): string {
+  const resolved = path.resolve(baseDir, `${name}.png`)
+  if (!resolved.startsWith(path.resolve(baseDir))) {
+    throw new Error(`Screenshot name "${name}" would write outside curated directory`)
+  }
+  return resolved
+}
+
+/**
  * Capture a screenshot in one of two modes:
  *
  * **Regression mode** (default): Uses Playwright's `toHaveScreenshot()` to compare
@@ -39,7 +50,7 @@ export async function captureScreenshot(
 
   if (curated) {
     mkdirSync(CURATED_DIR, { recursive: true })
-    const filePath = path.join(CURATED_DIR, `${name}.png`)
+    const filePath = assertSafeName(name, CURATED_DIR)
 
     if (locator) {
       const buffer = await locator.screenshot()
@@ -49,9 +60,13 @@ export async function captureScreenshot(
       writeFileSync(filePath, buffer)
     }
   } else {
-    const target = locator ?? page
-    await expect(target).toHaveScreenshot(`${name}.png`, {
-      fullPage: fullPage ? true : undefined,
-    })
+    // fullPage is only valid for page-level assertions, not locator assertions
+    if (locator) {
+      await expect(locator).toHaveScreenshot(`${name}.png`)
+    } else {
+      await expect(page).toHaveScreenshot(`${name}.png`, {
+        fullPage: fullPage ? true : undefined,
+      })
+    }
   }
 }

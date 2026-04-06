@@ -57,6 +57,7 @@ import {
   fetchCompletenessScore,
 } from "@/lib/api/setup-status";
 import { getCustomerChecklists, getChecklistTemplates } from "@/lib/checklist-api";
+import type { KycIntegrationStatus } from "@/lib/types";
 import { getCustomerRequests, type InformationRequestResponse } from "@/lib/api/information-requests";
 import { RequestList } from "@/components/information-requests/request-list";
 import { CreateRequestDialog } from "@/components/information-requests/create-request-dialog";
@@ -220,6 +221,14 @@ export default async function CustomerDetailPage({
     } catch {
       // Non-fatal: hide add button if template fetch fails
     }
+  }
+
+  // Fetch KYC integration status
+  let kycStatus: KycIntegrationStatus = { configured: false, provider: null };
+  try {
+    kycStatus = await api.get<KycIntegrationStatus>("/api/integrations/kyc/status");
+  } catch {
+    // Non-fatal: KYC verification buttons won't show
   }
 
   // Fetch retainer data for the Retainer tab
@@ -734,6 +743,8 @@ export default async function CustomerDetailPage({
               templateNames={checklistTemplateNames}
               templates={isAdmin ? checklistTemplates : undefined}
               customerDocuments={customerDocuments}
+              kycConfigured={kycStatus.configured}
+              customerName={customer.name}
             />
           ) : undefined
         }

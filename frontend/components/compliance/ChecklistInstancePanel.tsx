@@ -49,6 +49,8 @@ interface ChecklistInstancePanelProps {
   templateNames: Record<string, string>;
   templates?: ChecklistTemplateResponse[];
   customerDocuments?: Document[];
+  kycConfigured?: boolean;
+  customerName?: string;
 }
 
 function computeProgress(instance: ChecklistInstanceResponse) {
@@ -72,6 +74,8 @@ export function ChecklistInstancePanel({
   templateNames,
   templates,
   customerDocuments,
+  kycConfigured,
+  customerName,
 }: ChecklistInstancePanelProps) {
   const router = useRouter();
   const [expandedIds, setExpandedIds] = useState<Set<string>>(() => {
@@ -276,6 +280,9 @@ export function ChecklistInstancePanel({
                       onReopen={handleReopen}
                       isAdmin={isAdmin}
                       customerDocuments={customerDocuments}
+                      kycConfigured={kycConfigured}
+                      customerName={customerName}
+                      customerId={customerId}
                     />
                   ))}
               </div>

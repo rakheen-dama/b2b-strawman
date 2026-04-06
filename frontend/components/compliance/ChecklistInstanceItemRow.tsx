@@ -1,13 +1,15 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { Check, Circle, Ban, Lock, XCircle, FileText } from "lucide-react";
+import { Check, Circle, Ban, Lock, XCircle, FileText, ShieldCheck } from "lucide-react";
 import { formatDate } from "@/lib/format";
+import { KycVerificationDialog } from "@/components/compliance/KycVerificationDialog";
 import type { ChecklistInstanceItemResponse, ChecklistItemStatus, Document } from "@/lib/types";
 
 type BadgeVariant = "success" | "warning" | "destructive" | "neutral";
@@ -36,6 +38,9 @@ interface ChecklistInstanceItemRowProps {
   onReopen: (itemId: string) => Promise<void>;
   isAdmin: boolean;
   customerDocuments?: Document[];
+  kycConfigured?: boolean;
+  customerName?: string;
+  customerId?: string;
 }
 
 export function ChecklistInstanceItemRow({
@@ -46,7 +51,11 @@ export function ChecklistInstanceItemRow({
   onReopen,
   isAdmin,
   customerDocuments,
+  kycConfigured,
+  customerName,
+  customerId,
 }: ChecklistInstanceItemRowProps) {
+  const router = useRouter();
   const [isPending, setIsPending] = useState(false);
   const [showCompleteForm, setShowCompleteForm] = useState(false);
   const [showSkipForm, setShowSkipForm] = useState(false);
@@ -54,6 +63,7 @@ export function ChecklistInstanceItemRow({
   const [documentId, setDocumentId] = useState("");
   const [skipReason, setSkipReason] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [kycDialogOpen, setKycDialogOpen] = useState(false);
 
   const clearError = useCallback(() => setError(null), []);
 
@@ -137,6 +147,28 @@ export function ChecklistInstanceItemRow({
               <span className="text-xs text-slate-500 dark:text-slate-400">Required</span>
             )}
           </div>
+
+          {/* Verification result badge */}
+          {item.verificationStatus && (
+            <div className="mt-1 flex items-center gap-2">
+              {item.verificationStatus === "VERIFIED" && (
+                <Badge variant="success">
+                  Verified via {item.verificationProvider}
+                </Badge>
+              )}
+              {item.verificationStatus === "NOT_VERIFIED" && (
+                <Badge variant="destructive">Not Verified</Badge>
+              )}
+              {item.verificationStatus === "NEEDS_REVIEW" && (
+                <Badge variant="warning">Needs Review</Badge>
+              )}
+              {item.verifiedAt && item.verificationStatus === "VERIFIED" && (
+                <span className="text-xs text-slate-500 dark:text-slate-400">
+                  {formatDate(item.verifiedAt)}
+                </span>
+              )}
+            </div>
+          )}
 
           {item.description && (
             <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
@@ -266,6 +298,17 @@ export function ChecklistInstanceItemRow({
           <div className="flex shrink-0 gap-1">
             {isPendingStatus && isAdmin && !showCompleteForm && !showSkipForm && (
               <>
+                {kycConfigured && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setKycDialogOpen(true)}
+                    disabled={isPending}
+                  >
+                    <ShieldCheck className="mr-1.5 size-4" />
+                    Verify Now
+                  </Button>
+                )}
                 <Button
                   size="sm"
                   variant="outline"
@@ -299,6 +342,22 @@ export function ChecklistInstanceItemRow({
           </div>
         )}
       </div>
+
+      {/* KYC Verification Dialog */}
+      {kycConfigured && (
+        <KycVerificationDialog
+          open={kycDialogOpen}
+          onOpenChange={(nextOpen) => {
+            setKycDialogOpen(nextOpen);
+            if (!nextOpen) {
+              router.refresh();
+            }
+          }}
+          customerId={customerId ?? ""}
+          checklistInstanceItemId={item.id}
+          customerName={customerName ?? ""}
+        />
+      )}
     </div>
   );
 }

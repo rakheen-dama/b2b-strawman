@@ -6,6 +6,7 @@ import { listIntegrations, listProviders } from "@/lib/api/integrations";
 import { IntegrationCard } from "@/components/integrations/IntegrationCard";
 import { EmailIntegrationCard } from "@/components/integrations/EmailIntegrationCard";
 import { PaymentIntegrationCard } from "@/components/integrations/PaymentIntegrationCard";
+import { KycIntegrationCard } from "@/components/integrations/KycIntegrationCard";
 import type { IntegrationDomain, OrgIntegration } from "@/lib/types";
 import type { BillingResponse } from "@/lib/internal-api";
 
@@ -38,6 +39,11 @@ const DOMAIN_CONFIG: {
     domain: "PAYMENT",
     label: "Payment Gateway",
     description: "Accept online payments from customers",
+  },
+  {
+    domain: "KYC_VERIFICATION",
+    label: "KYC Verification",
+    description: "Automated identity verification for FICA compliance",
   },
 ];
 
@@ -108,6 +114,16 @@ export default async function IntegrationsSettingsPage({
                 key={config.domain}
                 integration={integration}
                 providers={domainProviders}
+                slug={slug}
+              />
+            );
+          }
+
+          if (config.domain === "KYC_VERIFICATION") {
+            return (
+              <KycIntegrationCard
+                key={config.domain}
+                integration={integration}
                 slug={slug}
               />
             );

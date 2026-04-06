@@ -122,7 +122,7 @@ test.describe.serial('Day 1 — Sipho Ndlovu Onboarding', () => {
       // Step 2 — custom fields may be present
       // Use evaluate click to handle scroll issues
       const createBtn = page.getByRole('button', { name: /Create (Customer|Client)/i })
-      await createBtn.evaluate((el: HTMLElement) => el.click())
+      await createBtn.click()
     } else {
       // Single-step form
       const createBtn = page.getByRole('button', { name: /Create|Save/i }).first()
@@ -254,7 +254,7 @@ test.describe.serial('Day 1 — Sipho Ndlovu Onboarding', () => {
 
     // Create
     const createBtn = page.getByRole('button', { name: /Create/i }).first()
-    await createBtn.evaluate((el: HTMLElement) => el.click())
+    await createBtn.click()
     await page.waitForTimeout(3000)
 
     // Dismiss dialog if open
@@ -363,7 +363,7 @@ test.describe.serial('Day 2 — Apex Holdings & Moroka Trust Onboarding', () => 
       await nextBtn.click()
       await page.waitForTimeout(1000)
       const createBtn = page.getByRole('button', { name: /Create (Customer|Client)/i })
-      await createBtn.evaluate((el: HTMLElement) => el.click())
+      await createBtn.click()
     } else {
       const createBtn = page.getByRole('button', { name: /Create|Save/i }).first()
       await createBtn.click()
@@ -428,7 +428,7 @@ test.describe.serial('Day 2 — Apex Holdings & Moroka Trust Onboarding', () => 
       await nextBtn.click()
       await page.waitForTimeout(1000)
       const createBtn = page.getByRole('button', { name: /Create (Customer|Client)/i })
-      await createBtn.evaluate((el: HTMLElement) => el.click())
+      await createBtn.click()
     } else {
       const createBtn = page.getByRole('button', { name: /Create|Save/i }).first()
       await createBtn.click()
@@ -480,7 +480,7 @@ test.describe.serial('Day 2 — Apex Holdings & Moroka Trust Onboarding', () => 
     }
 
     const createBtn = page.getByRole('button', { name: /Create/i }).first()
-    await createBtn.evaluate((el: HTMLElement) => el.click())
+    await createBtn.click()
     await page.waitForTimeout(3000)
 
     const dialogOpen = await page.getByRole('dialog').isVisible().catch(() => false)
@@ -548,7 +548,7 @@ test.describe.serial('Day 3 — QuickCollect Services Onboarding', () => {
       await nextBtn.click()
       await page.waitForTimeout(1000)
       const createBtn = page.getByRole('button', { name: /Create (Customer|Client)/i })
-      await createBtn.evaluate((el: HTMLElement) => el.click())
+      await createBtn.click()
     } else {
       const createBtn = page.getByRole('button', { name: /Create|Save/i }).first()
       await createBtn.click()
@@ -565,7 +565,7 @@ test.describe.serial('Day 3 — QuickCollect Services Onboarding', () => {
     await expect(page.getByText(QC_NAME).first()).toBeVisible({ timeout: 10_000 })
   })
 
-  test('Alice: Create Collections matters for QuickCollect (3 debt recovery)', async ({ page }) => {
+  test('Alice: Create initial Collections matter for QuickCollect', async ({ page }) => {
     await loginAs(page, 'alice')
     await page.goto(`${BASE}/projects`)
     await expect(page.getByRole('heading', { name: /Projects|Matters/i, level: 1 })).toBeVisible({ timeout: 10_000 })
@@ -588,7 +588,7 @@ test.describe.serial('Day 3 — QuickCollect Services Onboarding', () => {
     }
 
     const createBtn = page.getByRole('button', { name: /Create/i }).first()
-    await createBtn.evaluate((el: HTMLElement) => el.click())
+    await createBtn.click()
     await page.waitForTimeout(3000)
 
     const dialogOpen = await page.getByRole('dialog').isVisible().catch(() => false)

@@ -60,9 +60,10 @@ test.describe.serial('Day 45 — Reconciliation & Prescription', () => {
       }
     }
 
-    // Upload bank CSV (Standard Bank format)
-    // Note: In E2E, we can't actually provide a bank CSV file.
-    // The reconciliation form should at least be visible (soft — feature may not be implemented).
+    // GAP: Bank CSV upload feature is not yet implemented. The test verifies that the
+    // reconciliation page loads and the manual matching UI is accessible. Actual CSV import
+    // and 3-way reconciliation (bank = cashbook = client ledger) will be tested once the
+    // upload endpoint and parsing logic are built.
     expect.soft(await page.locator('input[type="file"]').first().isVisible({ timeout: 5000 }).catch(() => false)).toBeTruthy()
 
     // Check for reconciliation form elements

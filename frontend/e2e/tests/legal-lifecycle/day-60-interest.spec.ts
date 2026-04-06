@@ -237,6 +237,19 @@ test.describe.serial('Day 60 — Interest Run & Investments', () => {
         }
       }
 
+      // Select client (QuickCollect)
+      const clientField = page.getByRole('combobox', { name: /client|customer/i }).first()
+      const hasClient = await clientField.isVisible({ timeout: 3000 }).catch(() => false)
+      if (hasClient) {
+        await clientField.click()
+        await page.waitForTimeout(500)
+        const qcOption = page.getByRole('option', { name: /QuickCollect/i }).first()
+        const hasQC = await qcOption.isVisible({ timeout: 3000 }).catch(() => false)
+        if (hasQC) {
+          await qcOption.click()
+        }
+      }
+
       const saveBtn = page.getByRole('button', { name: /save|create|place/i }).first()
       const hasSave = await saveBtn.isVisible({ timeout: 3000 }).catch(() => false)
       if (hasSave) {

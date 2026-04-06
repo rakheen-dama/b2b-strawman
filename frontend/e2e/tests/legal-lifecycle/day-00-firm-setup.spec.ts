@@ -144,7 +144,7 @@ test.describe.serial('Day 0 — Firm Setup', () => {
     await expect(page.locator('main')).toBeVisible()
   })
 
-  test('Alice: Settings — create billing rates for Alice R2500, Bob R1200, Carol R550', async ({ page }) => {
+  test('Alice: Settings — verify billing rate creation flow', async ({ page }) => {
     await loginAs(page, 'alice')
     await page.goto(`${BASE}/settings/rates`)
     await expect(page.locator('main')).toBeVisible()

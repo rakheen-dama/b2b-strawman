@@ -32,6 +32,10 @@ test.describe.serial('Day 90 — Quarter Review', () => {
     await expect(page.getByRole('heading', { name: /Customers|Clients/i, level: 1 })).toBeVisible({ timeout: 10_000 })
     await expect(page.locator('main')).toBeVisible()
     await expect(page.locator('body')).not.toContainText('Something went wrong')
+
+    // Soft-assert minimum client count (depends on data from prior days)
+    const clientRows = page.locator('table tbody tr, [data-testid*="client"], [data-testid*="customer"]')
+    expect.soft(await clientRows.count()).toBeGreaterThanOrEqual(1)
   })
 
   test('Alice: Matters list shows multiple matters', async ({ page }) => {
@@ -40,6 +44,10 @@ test.describe.serial('Day 90 — Quarter Review', () => {
     await expect(page.getByRole('heading', { name: /Projects|Matters/i, level: 1 })).toBeVisible({ timeout: 10_000 })
     await expect(page.locator('main')).toBeVisible()
     await expect(page.locator('body')).not.toContainText('Something went wrong')
+
+    // Soft-assert minimum matter count (depends on data from prior days)
+    const matterRows = page.locator('table tbody tr, [data-testid*="project"], [data-testid*="matter"]')
+    expect.soft(await matterRows.count()).toBeGreaterThanOrEqual(1)
   })
 
   test('Alice: Fee notes list shows multiple fee notes', async ({ page }) => {
@@ -47,6 +55,10 @@ test.describe.serial('Day 90 — Quarter Review', () => {
     await page.goto(`${BASE}/invoices`)
     await expect(page.locator('main')).toBeVisible({ timeout: 10_000 })
     await expect(page.locator('body')).not.toContainText('Something went wrong')
+
+    // Soft-assert minimum fee note count (depends on data from prior days)
+    const invoiceRows = page.locator('table tbody tr, [data-testid*="invoice"], [data-testid*="fee-note"]')
+    expect.soft(await invoiceRows.count()).toBeGreaterThanOrEqual(1)
 
     // Screenshot: portfolio review
     await captureScreenshot(page, 'day-90-portfolio-review-loaded')

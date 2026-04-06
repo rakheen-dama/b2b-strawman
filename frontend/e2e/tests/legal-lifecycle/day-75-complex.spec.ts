@@ -62,7 +62,7 @@ test.describe.serial('Day 75 — Complex Engagement & Adverse Parties', () => {
     }
 
     const createBtn = page.getByRole('button', { name: /Create/i }).first()
-    await createBtn.evaluate((el: HTMLElement) => el.click())
+    await createBtn.click()
     await page.waitForTimeout(3000)
 
     const dialogOpen = await page.getByRole('dialog').isVisible().catch(() => false)
@@ -322,7 +322,7 @@ test.describe.serial('Day 75 — Complex Engagement & Adverse Parties', () => {
       }
 
       const createBtn = page.getByRole('button', { name: /Create/i }).first()
-      await createBtn.evaluate((el: HTMLElement) => el.click())
+      await createBtn.click()
       await page.waitForTimeout(3000)
 
       const dialogOpen = await page.getByRole('dialog').isVisible().catch(() => false)

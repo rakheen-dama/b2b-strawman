@@ -25,10 +25,10 @@ docker compose -f compose/docker-compose.e2e.yml logs -f seed
 
 # 3. Run legal lifecycle tests
 cd frontend
-PLAYWRIGHT_BASE_URL=http://localhost:3001 NODE_OPTIONS="" /opt/homebrew/bin/pnpm test:e2e:legal-lifecycle
+PLAYWRIGHT_BASE_URL=http://localhost:3001 NODE_OPTIONS="" pnpm test:e2e:legal-lifecycle
 
 # 4. First run with baseline generation
-PLAYWRIGHT_BASE_URL=http://localhost:3001 NODE_OPTIONS="" /opt/homebrew/bin/pnpm test:e2e:legal-lifecycle -- --update-snapshots
+PLAYWRIGHT_BASE_URL=http://localhost:3001 NODE_OPTIONS="" pnpm test:e2e:legal-lifecycle -- --update-snapshots
 ```
 
 ### Key Empirical Findings
@@ -331,6 +331,9 @@ PLAYWRIGHT_BASE_URL=http://localhost:3001 NODE_OPTIONS="" /opt/homebrew/bin/pnpm
 ---
 
 ## Checkpoint Summary by Day
+
+> **Note:** The Pass/Fail/Partial columns show **expected** outcomes based on architecture
+> analysis, not measured results. Actual execution is pending.
 
 | Day | Checkpoints | Pass | Fail | Partial | Notes |
 |-----|-------------|------|------|---------|-------|

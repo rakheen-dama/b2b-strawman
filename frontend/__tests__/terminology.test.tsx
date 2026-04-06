@@ -105,8 +105,13 @@ describe("terminology", () => {
     expect(t("retainer")).toBe("mandate");
     expect(t("retainers")).toBe("mandates");
     expect(t("Budget")).toBe("Fee Estimate");
+    expect(t("Budgets")).toBe("Fee Estimates");
+    expect(t("budget")).toBe("fee estimate");
+    expect(t("budgets")).toBe("fee estimates");
     expect(t("Time Entry")).toBe("Time Recording");
     expect(t("Time Entries")).toBe("Time Recordings");
+    expect(t("time entry")).toBe("time recording");
+    expect(t("time entries")).toBe("time recordings");
     expect(t("Rate Card")).toBe("Tariff Schedule");
     expect(t("Rate Cards")).toBe("Tariff Schedules");
   });

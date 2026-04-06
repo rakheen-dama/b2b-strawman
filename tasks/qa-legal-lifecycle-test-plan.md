@@ -48,7 +48,7 @@ Actor: **Alice** (Owner)
 - [ ] 3 billing rates + 3 cost rates visible on rates page
 - [ ] VAT 15% visible on tax page
 - [ ] Legal custom fields exist for CLIENT and MATTER entity types
-- [ ] 4 matter templates present (Litigation, Deceased Estate, Collections, Commercial)
+- [ ] 4 matter templates present (Litigation, Deceased Estate Administration, Collections, Commercial)
 - [ ] Trust account created (GENERAL, Standard Bank)
 - [ ] All 4 legal modules enabled
 - [ ] **Terminology**: sidebar, headings, breadcrumbs all show legal terms (Matter, Client, Fee Note, etc.)
@@ -130,10 +130,10 @@ Actor: **Alice** (Senior Partner)
 - [ ] **2.10** Create client: **Moroka Family Trust**, email = trustees@morokatrust.co.za
 - [ ] **2.11** Fill: client_type = TRUST, registration_number = IT/2015/000123, notes = "Trustees: James Moroka, Sarah Moroka. Deceased: Peter Moroka (d. 2026-02-15)"
 - [ ] **2.12** Transition to ACTIVE (complete FICA: trust deed, trustee IDs, letters of authority)
-- [ ] **2.13** Create matter from **Deceased Estate** template: "Deceased Estate — Peter Moroka"
+- [ ] **2.13** Create matter from **Deceased Estate Administration** template: "Deceased Estate — Peter Moroka"
 - [ ] **2.14** Set: matter_type = ESTATES
-- [ ] **2.15** Verify 9 action items from Deceased Estate template
-- [ ] **2.16** 📸 **Screenshot**: Deceased Estate matter with template action items
+- [ ] **2.15** Verify 9 action items from Deceased Estate Administration template
+- [ ] **2.16** 📸 **Screenshot**: Deceased Estate Administration matter with template action items
 
 ### QuickCollect Services (company, collections) — Actor: Bob
 
@@ -603,10 +603,10 @@ Rate each area PASS / PARTIAL / FAIL. All must be PASS or PARTIAL (with document
 | **Data Integrity** | 4 clients (all ACTIVE), 9 matters, 7+ fee notes, trust balances reconcile, investment register accurate. | [ ] |
 | **Screenshot Baselines** | All 25 regression baselines captured, 16 curated hero shots saved to documentation directory. | [ ] |
 
-**Fork-readiness verdict**: [ READY / NOT READY — list blocking issues below ]
+**Fork-readiness verdict**: [ READY / NOT READY — must be NOT READY if any row is FAIL, or PARTIAL without documented workaround ]
 
 Blocking issues (if any):
-1. _none_
+1. _TBD during execution (leave blank only if all required criteria pass)_
 
 ---
 
@@ -616,31 +616,31 @@ Blocking issues (if any):
 
 | Step | File Name | Description |
 |---|---|---|
-| 0.23 | `day-00-dashboard-legal-nav.png` | Dashboard with legal sidebar navigation |
+| 0.23 | `day-00-dashboard-legal-nav-active.png` | Dashboard with legal sidebar navigation |
 | 1.3 | `day-01-conflict-check-clear.png` | Conflict check clear result |
-| 1.22 | `day-01-litigation-template-items.png` | Matter with pre-populated action items |
-| 2.8 | `day-02-client-legal-fields.png` | Client detail with legal custom fields |
-| 2.16 | `day-02-estates-template.png` | Deceased Estate matter template |
-| 7.22 | `day-07-court-calendar-entry.png` | Court calendar with first entry |
-| 7.25 | `day-07-my-work-legal.png` | My Work page with action items |
-| 14.8 | `day-14-trust-deposit-ledger.png` | Trust deposit + client ledger balance |
-| 14.15 | `day-14-conflict-match.png` | Conflict check adverse party match |
-| 14.24 | `day-14-trust-dashboard.png` | Trust dashboard overview |
-| 30.12 | `day-30-fee-note-tariff.png` | Fee note with tariff + disbursement |
-| 30.21 | `day-30-trust-fee-transfer.png` | Trust fee transfer transaction |
-| 30.30 | `day-30-fee-note-list.png` | Fee note list mixed statuses |
-| 45.8 | `day-45-reconciliation.png` | Bank reconciliation 3-way balance |
-| 45.13 | `day-45-prescription-tracker.png` | Prescription days remaining |
-| 60.10 | `day-60-interest-lpff.png` | Interest run with LPFF split |
-| 60.17 | `day-60-investment-s86.png` | Investment with §86 selection |
-| 60.29 | `day-60-profitability.png` | Profitability report |
-| 75.10 | `day-75-conflict-adverse.png` | Conflict check adverse party stress test |
-| 90.7 | `day-90-portfolio-review.png` | Client + matter + fee note lists |
-| 90.11 | `day-90-section-35.png` | Section 35 report |
-| 90.15 | `day-90-investment-register.png` | Investment register with §86 basis |
-| 90.20 | `day-90-profitability-dashboard.png` | Profitability per-matter |
-| 90.24 | `day-90-dashboard-overview.png` | Dashboard KPIs (hero shot) |
-| 90.40 | `day-90-rbac-comparison.png` | Role-based access comparison |
+| 1.22 | `day-01-litigation-template-items-loaded.png` | Matter with pre-populated action items |
+| 2.8 | `day-02-client-legal-fields-populated.png` | Client detail with legal custom fields |
+| 2.16 | `day-02-estates-template-applied.png` | Deceased Estate Administration matter template |
+| 7.22 | `day-07-court-calendar-entry-scheduled.png` | Court calendar with first entry |
+| 7.25 | `day-07-my-work-legal-active.png` | My Work page with action items |
+| 14.8 | `day-14-trust-deposit-ledger-posted.png` | Trust deposit + client ledger balance |
+| 14.15 | `day-14-conflict-match-found.png` | Conflict check adverse party match |
+| 14.24 | `day-14-trust-dashboard-loaded.png` | Trust dashboard overview |
+| 30.12 | `day-30-fee-note-tariff-completed.png` | Fee note with tariff + disbursement |
+| 30.21 | `day-30-trust-fee-transfer-approved.png` | Trust fee transfer transaction |
+| 30.30 | `day-30-fee-note-list-mixed.png` | Fee note list mixed statuses |
+| 45.8 | `day-45-reconciliation-balanced.png` | Bank reconciliation 3-way balance |
+| 45.13 | `day-45-prescription-tracker-active.png` | Prescription days remaining |
+| 60.10 | `day-60-interest-lpff-calculated.png` | Interest run with LPFF split |
+| 60.17 | `day-60-investment-s86-placed.png` | Investment with §86 selection |
+| 60.29 | `day-60-profitability-loaded.png` | Profitability report |
+| 75.10 | `day-75-conflict-adverse-detected.png` | Conflict check adverse party stress test |
+| 90.7 | `day-90-portfolio-review-loaded.png` | Client + matter + fee note lists |
+| 90.11 | `day-90-section-35-generated.png` | Section 35 report |
+| 90.15 | `day-90-investment-register-loaded.png` | Investment register with §86 basis |
+| 90.20 | `day-90-profitability-dashboard-loaded.png` | Profitability per-matter |
+| 90.24 | `day-90-dashboard-overview-active.png` | Dashboard KPIs (hero shot) |
+| 90.40 | `day-90-rbac-comparison-loaded.png` | Role-based access comparison |
 
 ### Curated Hero Shots (for blog/deck — `documentation/screenshots/legal-vertical/`)
 

@@ -5,7 +5,7 @@
   "version": "1.1.0",
   "verticalProfile": "accounting-za",
   "jurisdiction": "ZA",
-  "customerType": "ALL",
+  "customerType": "ANY",
   "checklistTemplate": {
     "name": "FICA KYC — SA Accounting",
     "slug": "fica-kyc-za-accounting",

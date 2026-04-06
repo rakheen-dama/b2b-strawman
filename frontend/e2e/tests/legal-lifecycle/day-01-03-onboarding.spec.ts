@@ -19,7 +19,10 @@ import { captureScreenshot } from '../../helpers/screenshot'
 const ORG = 'e2e-test-org'
 const BASE = `/org/${ORG}`
 
-// Unique suffix to avoid collisions across reruns
+// Unique suffix to avoid collisions across reruns.
+// NOTE: RUN_ID is per-file, so entities created here cannot be found by RUN_ID
+// in other spec files. Each spec is self-contained; true cross-file data linkage
+// would require shared Playwright storage state (not implemented in this suite).
 const RUN_ID = Date.now().toString(36).slice(-4)
 
 // ═══════════════════════════════════════════════════════════════════
@@ -40,8 +43,7 @@ test.describe.serial('Day 1 — Sipho Ndlovu Onboarding', () => {
     }
 
     // Search for "Sipho Ndlovu"
-    const searchInput = page.getByRole('textbox', { name: /search|name|query/i }).first()
-      ?? page.locator('input[type="search"], input[type="text"]').first()
+    const searchInput = page.getByRole('textbox', { name: /search|name|query/i }).or(page.locator('input[type="search"], input[type="text"]')).first()
     const hasSearch = await searchInput.isVisible({ timeout: 5000 }).catch(() => false)
 
     if (hasSearch) {
@@ -225,8 +227,7 @@ test.describe.serial('Day 1 — Sipho Ndlovu Onboarding', () => {
     }
 
     // Select client
-    const clientField = page.locator('[data-testid*="customer"], [data-testid*="client"]').first()
-      ?? page.getByRole('combobox', { name: /customer|client/i }).first()
+    const clientField = page.locator('[data-testid*="customer"], [data-testid*="client"]').or(page.getByRole('combobox', { name: /customer|client/i })).first()
     const hasClient = await clientField.isVisible({ timeout: 3000 }).catch(() => false)
     if (hasClient) {
       await clientField.click()
@@ -239,8 +240,7 @@ test.describe.serial('Day 1 — Sipho Ndlovu Onboarding', () => {
     }
 
     // Select template (Litigation)
-    const templateField = page.getByRole('combobox', { name: /template/i }).first()
-      ?? page.locator('[data-testid*="template"]').first()
+    const templateField = page.getByRole('combobox', { name: /template/i }).or(page.locator('[data-testid*="template"]')).first()
     const hasTemplate = await templateField.isVisible({ timeout: 3000 }).catch(() => false)
     if (hasTemplate) {
       await templateField.click()

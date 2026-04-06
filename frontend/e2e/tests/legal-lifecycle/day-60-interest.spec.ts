@@ -69,8 +69,8 @@ test.describe.serial('Day 60 — Interest Run & Investments', () => {
       }
 
       // Verify INTEREST_CREDIT and INTEREST_LPFF transactions posted
-      void await page.getByText(/interest.*credit|credit/i).isVisible({ timeout: 5000 }).catch(() => false)
-      void await page.getByText(/lpff|legal.*practitioners/i).isVisible({ timeout: 5000 }).catch(() => false)
+      expect.soft(await page.getByText(/interest.*credit|credit/i).isVisible({ timeout: 5000 }).catch(() => false)).toBeTruthy()
+      expect.soft(await page.getByText(/lpff|legal.*practitioners/i).isVisible({ timeout: 5000 }).catch(() => false)).toBeTruthy()
 
       // Screenshot: interest run with LPFF split
       await captureScreenshot(page, 'day-60-interest-lpff-calculated')
@@ -112,8 +112,7 @@ test.describe.serial('Day 60 — Interest Run & Investments', () => {
       await page.waitForTimeout(1000)
 
       // Fill investment details
-      const amountField = page.getByRole('textbox', { name: /amount/i }).first()
-        ?? page.getByRole('spinbutton', { name: /amount/i }).first()
+      const amountField = page.getByRole('textbox', { name: /amount/i }).or(page.getByRole('spinbutton', { name: /amount/i })).first()
       const hasAmount = await amountField.isVisible({ timeout: 3000 }).catch(() => false)
       if (hasAmount) {
         await amountField.fill('200000')
@@ -140,16 +139,14 @@ test.describe.serial('Day 60 — Interest Run & Investments', () => {
       }
 
       // Interest rate
-      const rateField = page.getByRole('textbox', { name: /rate|interest/i }).first()
-        ?? page.getByRole('spinbutton', { name: /rate|interest/i }).first()
+      const rateField = page.getByRole('textbox', { name: /rate|interest/i }).or(page.getByRole('spinbutton', { name: /rate|interest/i })).first()
       const hasRate = await rateField.isVisible({ timeout: 3000 }).catch(() => false)
       if (hasRate) {
         await rateField.fill('8.5')
       }
 
       // Term (90 days)
-      const termField = page.getByRole('textbox', { name: /term|days|period/i }).first()
-        ?? page.getByRole('spinbutton', { name: /term|days|period/i }).first()
+      const termField = page.getByRole('textbox', { name: /term|days|period/i }).or(page.getByRole('spinbutton', { name: /term|days|period/i })).first()
       const hasTerm = await termField.isVisible({ timeout: 3000 }).catch(() => false)
       if (hasTerm) {
         await termField.fill('90')
@@ -215,8 +212,7 @@ test.describe.serial('Day 60 — Interest Run & Investments', () => {
       await page.waitForTimeout(1000)
 
       // Fill investment details for QuickCollect
-      const amountField = page.getByRole('textbox', { name: /amount/i }).first()
-        ?? page.getByRole('spinbutton', { name: /amount/i }).first()
+      const amountField = page.getByRole('textbox', { name: /amount/i }).or(page.getByRole('spinbutton', { name: /amount/i })).first()
       const hasAmount = await amountField.isVisible({ timeout: 3000 }).catch(() => false)
       if (hasAmount) {
         await amountField.fill('30000')

@@ -75,7 +75,7 @@ test.describe.serial('Day 90 — Quarter Review', () => {
 
       // Verify report content areas: trust summary, ledger balances,
       // reconciliation, interest allocations, investment register
-      void await page.locator('main').textContent().catch(() => '')
+      await expect(page.locator('main')).toBeVisible()
 
       // Screenshot: Section 35 report
       await captureScreenshot(page, 'day-90-section-35-generated')
@@ -150,10 +150,10 @@ test.describe.serial('Day 90 — Quarter Review', () => {
 
     await expect(page.locator('body')).not.toContainText('Something went wrong')
 
-    // Check for key profitability elements
-    void await page.getByText(/revenue|income|billing/i).isVisible({ timeout: 5000 }).catch(() => false)
-    void await page.getByText(/cost|expense/i).isVisible({ timeout: 5000 }).catch(() => false)
-    void await page.getByText(/margin|profit/i).isVisible({ timeout: 5000 }).catch(() => false)
+    // Check for key profitability elements (soft assertions — elements may not all be present)
+    expect.soft(await page.getByText(/revenue|income|billing/i).isVisible({ timeout: 5000 }).catch(() => false)).toBeTruthy()
+    expect.soft(await page.getByText(/cost|expense/i).isVisible({ timeout: 5000 }).catch(() => false)).toBeTruthy()
+    expect.soft(await page.getByText(/margin|profit/i).isVisible({ timeout: 5000 }).catch(() => false)).toBeTruthy()
 
     // Screenshot: profitability dashboard
     await captureScreenshot(page, 'day-90-profitability-dashboard-loaded')
@@ -192,8 +192,7 @@ test.describe.serial('Day 90 — Quarter Review', () => {
         await page.waitForTimeout(1000)
 
         // Select a template
-        const templateOption = page.getByRole('option', { name: /letter|document/i }).first()
-          ?? page.locator('[data-testid*="template"]').first()
+        const templateOption = page.getByRole('option', { name: /letter|document/i }).or(page.locator('[data-testid*="template"]')).first()
         const hasTemplate = await templateOption.isVisible({ timeout: 3000 }).catch(() => false)
         if (hasTemplate) {
           await templateOption.click()
@@ -237,10 +236,9 @@ test.describe.serial('Day 90 — Quarter Review', () => {
 
     await expect(page.locator('body')).not.toContainText('Something went wrong')
 
-    // Check for various court date statuses
+    // Check for various court date statuses (soft — not all statuses may be present)
     const pageText = await page.locator('main').textContent().catch(() => '')
-    void pageText?.match(/scheduled/i)
-    void pageText?.match(/postponed/i)
+    expect.soft(pageText).toMatch(/scheduled|postponed|heard|court/i)
     // HEARD may not exist yet if no dates were marked as heard
   })
 })
@@ -257,10 +255,13 @@ test.describe.serial('Day 90 — Role-Based Access', () => {
     // Carol (Member) should be blocked or see restricted view
     const mainVisible = await page.locator('main').isVisible({ timeout: 10_000 }).catch(() => false)
     if (mainVisible) {
-      // Check if access denied message is shown
+      // Check if access denied message is shown or rate modification is blocked
       const pageText = await page.locator('body').textContent().catch(() => '')
-      void pageText?.match(/access.?denied|unauthorized|forbidden|not.?allowed|permission/i)
-      // Even if not explicitly blocked, the test verifies the page loaded
+      const isBlocked = /access.?denied|unauthorized|forbidden|not.?allowed|permission/i.test(pageText ?? '')
+      const addRateBtn = page.getByRole('button', { name: /new.*rate|add.*rate|edit/i }).first()
+      const canModifyRates = await addRateBtn.isVisible({ timeout: 3000 }).catch(() => false)
+      // Carol should either see an access-denied message OR not have edit controls
+      expect.soft(isBlocked || !canModifyRates).toBeTruthy()
     }
   })
 
@@ -271,7 +272,11 @@ test.describe.serial('Day 90 — Role-Based Access', () => {
     const mainVisible2 = await page.locator('main').isVisible({ timeout: 10_000 }).catch(() => false)
     if (mainVisible2) {
       const pageText = await page.locator('body').textContent().catch(() => '')
-      void pageText?.match(/access.?denied|unauthorized|forbidden|not.?allowed|permission/i)
+      const isBlocked = /access.?denied|unauthorized|forbidden|not.?allowed|permission/i.test(pageText ?? '')
+      const configBtn = page.getByRole('button', { name: /save|create|edit|configure/i }).first()
+      const canConfigure = await configBtn.isVisible({ timeout: 3000 }).catch(() => false)
+      // Carol should either see an access-denied message OR not have config controls
+      expect.soft(isBlocked || !canConfigure).toBeTruthy()
     }
   })
 
@@ -281,9 +286,9 @@ test.describe.serial('Day 90 — Role-Based Access', () => {
 
     const mainVisible3 = await page.locator('main').isVisible({ timeout: 10_000 }).catch(() => false)
     if (mainVisible3) {
-      // Carol should NOT see approve buttons
-      void await page.getByRole('button', { name: /approve/i }).first().isVisible({ timeout: 3000 }).catch(() => false)
-      // If Carol can see approve, that's a gap in RBAC
+      // Carol (Member) should NOT see approve buttons
+      const canApprove = await page.getByRole('button', { name: /approve/i }).first().isVisible({ timeout: 3000 }).catch(() => false)
+      expect(canApprove).toBe(false)
     }
   })
 
@@ -315,10 +320,10 @@ test.describe.serial('Day 90 — Role-Based Access', () => {
     await expect(page.locator('main')).toBeVisible({ timeout: 10_000 })
 
     await page.goto(`${BASE}/trust-accounting`)
-    void await page.locator('main').isVisible({ timeout: 10_000 }).catch(() => false)
+    await expect(page.locator('main')).toBeVisible({ timeout: 10_000 })
 
     await page.goto(`${BASE}/settings/trust-accounting`)
-    void await page.locator('main').isVisible({ timeout: 10_000 }).catch(() => false)
+    await expect(page.locator('main')).toBeVisible({ timeout: 10_000 })
 
     // Screenshot: role comparison
     await page.goto(`${BASE}/dashboard`)

@@ -173,8 +173,7 @@ test.describe.serial('Day 0 — Firm Setup', () => {
         await nameField.fill('Alice')
       }
 
-      const amountField = page.getByRole('textbox', { name: /amount|rate/i }).first()
-        ?? page.getByRole('spinbutton', { name: /amount|rate/i }).first()
+      const amountField = page.getByRole('textbox', { name: /amount|rate/i }).or(page.getByRole('spinbutton', { name: /amount|rate/i })).first()
       const hasAmount = await amountField.isVisible({ timeout: 3000 }).catch(() => false)
       if (hasAmount) {
         await amountField.fill('2500')
@@ -231,8 +230,7 @@ test.describe.serial('Day 0 — Firm Setup', () => {
         await nameField.fill('VAT')
       }
 
-      const rateField = page.getByRole('textbox', { name: /rate|percentage/i }).first()
-        ?? page.getByRole('spinbutton', { name: /rate|percentage/i }).first()
+      const rateField = page.getByRole('textbox', { name: /rate|percentage/i }).or(page.getByRole('spinbutton', { name: /rate|percentage/i })).first()
       const hasRate = await rateField.isVisible({ timeout: 3000 }).catch(() => false)
       if (hasRate) {
         await rateField.fill('15')

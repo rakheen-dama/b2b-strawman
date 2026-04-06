@@ -66,8 +66,7 @@ test.describe.serial('Day 7 — First Week of Work', () => {
       await page.waitForTimeout(1000)
 
       // Fill time entry
-      const durationField = page.getByRole('textbox', { name: /duration|hours|minutes/i }).first()
-        ?? page.getByRole('spinbutton', { name: /duration|hours|minutes/i }).first()
+      const durationField = page.getByRole('textbox', { name: /duration|hours|minutes/i }).or(page.getByRole('spinbutton', { name: /duration|hours|minutes/i })).first()
       const hasDuration = await durationField.isVisible({ timeout: 3000 }).catch(() => false)
       if (hasDuration) {
         await durationField.fill('90')
@@ -150,8 +149,7 @@ test.describe.serial('Day 7 — First Week of Work', () => {
       }
 
       // Add a comment
-      const commentInput = page.getByRole('textbox', { name: /comment|message/i }).first()
-        ?? page.locator('textarea, [contenteditable="true"]').first()
+      const commentInput = page.getByRole('textbox', { name: /comment|message/i }).or(page.locator('textarea, [contenteditable="true"]')).first()
       const hasInput = await commentInput.isVisible({ timeout: 3000 }).catch(() => false)
       if (hasInput) {
         await commentInput.fill('Reviewed claim documents — need additional medical records from Dr. Nkosi')
@@ -284,8 +282,7 @@ test.describe.serial('Day 14 — Trust Deposits & Conflict Detection', () => {
       await page.waitForTimeout(1000)
 
       // Fill deposit details
-      const amountField = page.getByRole('textbox', { name: /amount/i }).first()
-        ?? page.getByRole('spinbutton', { name: /amount/i }).first()
+      const amountField = page.getByRole('textbox', { name: /amount/i }).or(page.getByRole('spinbutton', { name: /amount/i })).first()
       const hasAmount = await amountField.isVisible({ timeout: 3000 }).catch(() => false)
       if (hasAmount) {
         await amountField.fill('250000')
@@ -387,8 +384,7 @@ test.describe.serial('Day 14 — Trust Deposits & Conflict Detection', () => {
       await depositBtn.click()
       await page.waitForTimeout(1000)
 
-      const amountField = page.getByRole('textbox', { name: /amount/i }).first()
-        ?? page.getByRole('spinbutton', { name: /amount/i }).first()
+      const amountField = page.getByRole('textbox', { name: /amount/i }).or(page.getByRole('spinbutton', { name: /amount/i })).first()
       const hasAmount = await amountField.isVisible({ timeout: 3000 }).catch(() => false)
       if (hasAmount) {
         await amountField.fill('45000')

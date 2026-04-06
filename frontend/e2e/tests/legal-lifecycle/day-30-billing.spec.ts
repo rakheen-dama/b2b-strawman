@@ -111,8 +111,7 @@ test.describe.serial('Day 30 — First Billing Cycle', () => {
         await descField2.fill('Disbursement — Sheriff service fee')
       }
 
-      const amountField = page.getByRole('textbox', { name: /amount/i }).first()
-        ?? page.getByRole('spinbutton', { name: /amount/i }).first()
+      const amountField = page.getByRole('textbox', { name: /amount/i }).or(page.getByRole('spinbutton', { name: /amount/i })).first()
       const hasAmount = await amountField.isVisible({ timeout: 3000 }).catch(() => false)
       if (hasAmount) {
         await amountField.fill('350')
@@ -126,11 +125,11 @@ test.describe.serial('Day 30 — First Billing Cycle', () => {
       }
     }
 
-    // Verify LSSA tariff amounts auto-populated (if visible)
-    void await page.getByText(/tariff|lssa/i).isVisible({ timeout: 3000 }).catch(() => false)
+    // Verify LSSA tariff amounts auto-populated (soft assertion — feature may not be implemented)
+    expect.soft(await page.getByText(/tariff|lssa/i).isVisible({ timeout: 3000 }).catch(() => false)).toBeTruthy()
 
-    // Verify VAT 15% calculation
-    void await page.getByText(/15%|vat/i).isVisible({ timeout: 3000 }).catch(() => false)
+    // Verify VAT 15% calculation (soft assertion — feature may not be implemented)
+    expect.soft(await page.getByText(/15%|vat/i).isVisible({ timeout: 3000 }).catch(() => false)).toBeTruthy()
 
     // Screenshot: fee note with tariff lines
     await captureScreenshot(page, 'day-30-fee-note-tariff-completed')
@@ -187,8 +186,7 @@ test.describe.serial('Day 30 — First Billing Cycle', () => {
         await descField.fill('Fixed fee — Shareholder agreement review and drafting')
       }
 
-      const amountField = page.getByRole('textbox', { name: /amount/i }).first()
-        ?? page.getByRole('spinbutton', { name: /amount/i }).first()
+      const amountField = page.getByRole('textbox', { name: /amount/i }).or(page.getByRole('spinbutton', { name: /amount/i })).first()
       const hasAmount = await amountField.isVisible({ timeout: 3000 }).catch(() => false)
       if (hasAmount) {
         await amountField.fill('35000')
@@ -202,8 +200,8 @@ test.describe.serial('Day 30 — First Billing Cycle', () => {
       }
     }
 
-    // R35,000 + 15% VAT = R40,250
-    void await page.getByText(/40[\s,.]?250/i).isVisible({ timeout: 3000 }).catch(() => false)
+    // R35,000 + 15% VAT = R40,250 (soft assertion — VAT calculation may not be visible)
+    expect.soft(await page.getByText(/40[\s,.]?250/i).isVisible({ timeout: 3000 }).catch(() => false)).toBeTruthy()
   })
 
   // ── 30.16-30.21: Moroka trust FEE_TRANSFER R8,500 ────────────────
@@ -225,8 +223,7 @@ test.describe.serial('Day 30 — First Billing Cycle', () => {
       await transferBtn.click()
       await page.waitForTimeout(1000)
 
-      const amountField = page.getByRole('textbox', { name: /amount/i }).first()
-        ?? page.getByRole('spinbutton', { name: /amount/i }).first()
+      const amountField = page.getByRole('textbox', { name: /amount/i }).or(page.getByRole('spinbutton', { name: /amount/i })).first()
       const hasAmount = await amountField.isVisible({ timeout: 3000 }).catch(() => false)
       if (hasAmount) {
         await amountField.fill('8500')
@@ -250,7 +247,7 @@ test.describe.serial('Day 30 — First Billing Cycle', () => {
     await page.goto(`${BASE}/trust-accounting/client-ledgers`)
     const mainVisible2 = await page.locator('main').isVisible({ timeout: 10_000 }).catch(() => false)
     if (mainVisible2) {
-      void await page.getByText(/241[\s,.]?500/i).isVisible({ timeout: 5000 }).catch(() => false)
+      expect.soft(await page.getByText(/241[\s,.]?500/i).isVisible({ timeout: 5000 }).catch(() => false)).toBeTruthy()
       // Screenshot
       await captureScreenshot(page, 'day-30-trust-fee-transfer-approved')
       await captureScreenshot(page, 'trust-fee-transfer', { curated: true })
@@ -336,8 +333,8 @@ test.describe.serial('Day 30 — First Billing Cycle', () => {
         }
       }
 
-      // Verify status shows SENT
-      void await page.getByText(/sent/i).isVisible({ timeout: 5000 }).catch(() => false)
+      // Verify status shows SENT (soft assertion — lifecycle transition may not be implemented)
+      expect.soft(await page.getByText(/sent/i).isVisible({ timeout: 5000 }).catch(() => false)).toBeTruthy()
     }
 
     // Navigate back to fee note list for screenshot
@@ -370,8 +367,7 @@ test.describe.serial('Day 30 — First Billing Cycle', () => {
       }
 
       // Set fee estimate
-      const estimateField = page.getByRole('textbox', { name: /budget|estimate|amount/i }).first()
-        ?? page.getByRole('spinbutton', { name: /budget|estimate|amount/i }).first()
+      const estimateField = page.getByRole('textbox', { name: /budget|estimate|amount/i }).or(page.getByRole('spinbutton', { name: /budget|estimate|amount/i })).first()
       const hasEstimate = await estimateField.isVisible({ timeout: 3000 }).catch(() => false)
       if (hasEstimate) {
         await estimateField.fill('150000')

@@ -19,6 +19,9 @@ import { captureScreenshot } from '../../helpers/screenshot'
 
 const ORG = 'e2e-test-org'
 const BASE = `/org/${ORG}`
+// NOTE: RUN_ID is per-file, so entities created here cannot be found by RUN_ID
+// in other spec files. Each spec is self-contained; true cross-file data linkage
+// would require shared Playwright storage state (not implemented in this suite).
 const RUN_ID = Date.now().toString(36).slice(-4)
 
 test.describe.serial('Day 75 — Complex Engagement & Adverse Parties', () => {
@@ -136,7 +139,7 @@ test.describe.serial('Day 75 — Complex Engagement & Adverse Parties', () => {
     await page.waitForTimeout(2000)
 
     // Expect match — Ndlovu is an existing client
-    void await page.getByText(/match|found|existing.*client|conflict/i).isVisible({ timeout: 5000 }).catch(() => false)
+    expect.soft(await page.getByText(/match|found|existing.*client|conflict/i).isVisible({ timeout: 5000 }).catch(() => false)).toBeTruthy()
   })
 
   test('Bob: Conflict stress test — search "Road Accident Fund" (adverse party)', async ({ page }) => {
@@ -164,7 +167,7 @@ test.describe.serial('Day 75 — Complex Engagement & Adverse Parties', () => {
     await page.waitForTimeout(2000)
 
     // Expect adverse party match
-    void await page.getByText(/adverse|match|found|conflict/i).isVisible({ timeout: 5000 }).catch(() => false)
+    expect.soft(await page.getByText(/adverse|match|found|conflict/i).isVisible({ timeout: 5000 }).catch(() => false)).toBeTruthy()
   })
 
   test('Bob: Conflict stress test — search "Mokoena" (adverse party)', async ({ page }) => {
@@ -251,8 +254,7 @@ test.describe.serial('Day 75 — Complex Engagement & Adverse Parties', () => {
           await descField.fill('Preparation of Liquidation & Distribution account')
         }
 
-        const durationField = page.getByRole('textbox', { name: /duration|hours|minutes/i }).first()
-          ?? page.getByRole('spinbutton', { name: /duration|hours|minutes/i }).first()
+        const durationField = page.getByRole('textbox', { name: /duration|hours|minutes/i }).or(page.getByRole('spinbutton', { name: /duration|hours|minutes/i })).first()
         const hasDuration = await durationField.isVisible({ timeout: 3000 }).catch(() => false)
         if (hasDuration) {
           await durationField.fill('360')

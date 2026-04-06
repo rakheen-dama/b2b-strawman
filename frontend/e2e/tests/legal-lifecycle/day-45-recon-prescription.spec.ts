@@ -62,11 +62,11 @@ test.describe.serial('Day 45 — Reconciliation & Prescription', () => {
 
     // Upload bank CSV (Standard Bank format)
     // Note: In E2E, we can't actually provide a bank CSV file.
-    // The reconciliation form should at least be visible.
-    void await page.locator('input[type="file"]').first().isVisible({ timeout: 5000 }).catch(() => false)
+    // The reconciliation form should at least be visible (soft — feature may not be implemented).
+    expect.soft(await page.locator('input[type="file"]').first().isVisible({ timeout: 5000 }).catch(() => false)).toBeTruthy()
 
     // Check for reconciliation form elements
-    void await page.locator('form, [data-testid*="reconciliation"]').first().isVisible({ timeout: 5000 }).catch(() => false)
+    expect.soft(await page.locator('form, [data-testid*="reconciliation"]').first().isVisible({ timeout: 5000 }).catch(() => false)).toBeTruthy()
 
     // If auto-matching is available, run it
     const matchBtn = page.getByRole('button', { name: /match|auto.*match|reconcile/i }).first()
@@ -77,7 +77,7 @@ test.describe.serial('Day 45 — Reconciliation & Prescription', () => {
     }
 
     // Check for 3-way reconciliation result (bank = cashbook = client ledger)
-    void await page.getByText(/balanced|matched|reconciled/i).isVisible({ timeout: 5000 }).catch(() => false)
+    expect.soft(await page.getByText(/balanced|matched|reconciled/i).isVisible({ timeout: 5000 }).catch(() => false)).toBeTruthy()
 
     // Screenshot: bank reconciliation
     await captureScreenshot(page, 'day-45-reconciliation-balanced')
@@ -204,8 +204,7 @@ test.describe.serial('Day 45 — Reconciliation & Prescription', () => {
         await page.waitForTimeout(1000)
 
         // Fill payment amount
-        const amountField = page.getByRole('textbox', { name: /amount/i }).first()
-          ?? page.getByRole('spinbutton', { name: /amount/i }).first()
+        const amountField = page.getByRole('textbox', { name: /amount/i }).or(page.getByRole('spinbutton', { name: /amount/i })).first()
         const hasAmount = await amountField.isVisible({ timeout: 3000 }).catch(() => false)
         if (hasAmount) {
           await amountField.fill('40250')
@@ -219,8 +218,8 @@ test.describe.serial('Day 45 — Reconciliation & Prescription', () => {
         }
       }
 
-      // Verify PAID status
-      void await page.getByText(/paid/i).isVisible({ timeout: 5000 }).catch(() => false)
+      // Verify PAID status (soft assertion — payment recording may not be implemented)
+      expect.soft(await page.getByText(/paid/i).isVisible({ timeout: 5000 }).catch(() => false)).toBeTruthy()
     }
   })
 

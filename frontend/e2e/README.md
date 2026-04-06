@@ -75,6 +75,67 @@ To also remove volumes (reset seed data):
 docker compose -f docker-compose.e2e.yml down -v
 ```
 
+## Legal Lifecycle Screenshots
+
+The legal lifecycle test suite captures screenshots for two purposes:
+
+### Regression Baselines
+
+Visual regression tests use Playwright's `toHaveScreenshot()` to compare against committed
+baseline images. If the UI changes unexpectedly, the test fails with a diff.
+
+- **Directory:** `frontend/e2e/screenshots/legal-lifecycle/`
+- **Naming convention:** `day-{DD}-{feature}-{state}.png` (e.g., `day-00-dashboard-initial.png`)
+- **Committed to git:** Yes — baselines must be checked in so CI can compare against them
+
+To update baselines after intentional UI changes:
+
+```bash
+pnpm test:e2e:legal-lifecycle -- --update-snapshots
+```
+
+### Curated Documentation Screenshots
+
+High-quality screenshots saved for walkthroughs, blog posts, and documentation.
+These are captured using `page.screenshot()` and saved to a separate directory.
+
+- **Directory:** `documentation/screenshots/legal-vertical/`
+- **Naming convention:** Descriptive names (e.g., `firm-dashboard-overview.png`)
+- **Committed to git:** Yes
+
+### Running the Tests
+
+```bash
+# Run all legal lifecycle tests
+pnpm test:e2e:legal-lifecycle
+
+# Run against the Dockerized E2E stack
+PLAYWRIGHT_BASE_URL=http://localhost:3001 pnpm test:e2e:legal-lifecycle
+
+# List tests without executing (no E2E stack needed)
+npx playwright test --config e2e/playwright.legal-lifecycle.config.ts --list
+```
+
+### Screenshot Helper
+
+The `captureScreenshot()` helper in `e2e/helpers/screenshot.ts` supports both modes:
+
+```typescript
+import { captureScreenshot } from '../../helpers/screenshot'
+
+// Regression baseline (default) — compared against committed snapshot
+await captureScreenshot(page, 'day-05-matter-list')
+
+// Curated documentation shot — saved to documentation/screenshots/
+await captureScreenshot(page, 'matter-list-overview', { curated: true })
+
+// Full-page capture
+await captureScreenshot(page, 'day-05-full-dashboard', { fullPage: true })
+
+// Capture a specific element
+await captureScreenshot(page, 'day-05-sidebar', { locator: page.locator('nav') })
+```
+
 ## Notes
 
 - E2E tests (`pnpm test:e2e`) are separate from unit tests (`pnpm test`).

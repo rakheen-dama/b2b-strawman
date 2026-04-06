@@ -36,7 +36,7 @@ Actor: **Alice** (Owner)
 - [ ] **0.15** Create tax rate: Name = **VAT**, Rate = **15%**, Active = yes
 - [ ] **0.16** Navigate to **Settings > Team** (`/settings/team`) → verify Alice (Owner), Bob (Admin), Carol (Member) are listed
 - [ ] **0.17** Navigate to **Settings > Custom Fields** (`/settings/custom-fields`) → verify legal field packs loaded (matter_type, case_number, court_name, opposing_party, etc.)
-- [ ] **0.18** Navigate to **Settings > Templates** (`/settings/templates`) → verify 4 matter templates listed (Litigation, Estates, Collections, Commercial)
+- [ ] **0.18** Navigate to **Settings > Templates** (`/settings/templates`) → verify 4 matter templates listed: "Litigation (Personal Injury / General)", "Deceased Estate Administration", "Collections (Debt Recovery)", "Commercial (Corporate & Contract)"
 - [ ] **0.19** Navigate to **Settings > Trust Accounts** (or equivalent trust config page)
 - [ ] **0.20** Create trust account: Name = **"Mathebula & Partners Trust Account"**, Type = **GENERAL**, Bank = **Standard Bank**
 - [ ] **0.21** Set LPFF rate: **6.5%** (test rate)
@@ -48,7 +48,7 @@ Actor: **Alice** (Owner)
 - [ ] 3 billing rates + 3 cost rates visible on rates page
 - [ ] VAT 15% visible on tax page
 - [ ] Legal custom fields exist for CLIENT and MATTER entity types
-- [ ] 4 matter templates present (Litigation, Estates, Collections, Commercial)
+- [ ] 4 matter templates present (Litigation, Deceased Estate, Collections, Commercial)
 - [ ] Trust account created (GENERAL, Standard Bank)
 - [ ] All 4 legal modules enabled
 - [ ] **Terminology**: sidebar, headings, breadcrumbs all show legal terms (Matter, Client, Fee Note, etc.)
@@ -130,10 +130,10 @@ Actor: **Alice** (Senior Partner)
 - [ ] **2.10** Create client: **Moroka Family Trust**, email = trustees@morokatrust.co.za
 - [ ] **2.11** Fill: client_type = TRUST, registration_number = IT/2015/000123, notes = "Trustees: James Moroka, Sarah Moroka. Deceased: Peter Moroka (d. 2026-02-15)"
 - [ ] **2.12** Transition to ACTIVE (complete FICA: trust deed, trustee IDs, letters of authority)
-- [ ] **2.13** Create matter from **Estates template**: "Deceased Estate — Peter Moroka"
+- [ ] **2.13** Create matter from **Deceased Estate** template: "Deceased Estate — Peter Moroka"
 - [ ] **2.14** Set: matter_type = ESTATES
-- [ ] **2.15** Verify 9 action items from estates template
-- [ ] **2.16** 📸 **Screenshot**: Estates matter with template action items
+- [ ] **2.15** Verify 9 action items from Deceased Estate template
+- [ ] **2.16** 📸 **Screenshot**: Deceased Estate matter with template action items
 
 ### QuickCollect Services (company, collections) — Actor: Bob
 
@@ -152,6 +152,7 @@ Actor: **Alice** (Senior Partner)
 - [ ] Conflict checks run for all 4 clients (all clear)
 - [ ] All templates applied correctly with 9 action items each
 - [ ] FICA completed for all clients
+- [ ] **Terminology**: Client list, matter list, and action item labels all use legal terms
 
 ---
 
@@ -202,6 +203,7 @@ Actor: **Alice** (Senior Partner)
 - [ ] Court date created with SCHEDULED status
 - [ ] Activity feed shows chronological events
 - [ ] My Work page reflects correct assignments
+- [ ] **Terminology**: Time tab shows "Time Recordings" not "Time Entries", action item labels correct throughout
 
 ---
 
@@ -255,6 +257,7 @@ Actor: **Alice** (Senior Partner)
 - [ ] Conflict check found Mokoena as adverse party (AMBER/RED)
 - [ ] Adverse party "Road Accident Fund" linked to Sipho matter
 - [ ] Trust dashboard shows accurate summary
+- [ ] **Terminology**: Trust pages use "Client" not "Customer", ledger labels consistent with legal terms
 
 ---
 
@@ -323,6 +326,7 @@ Actor: **Alice** (billing)
 - [ ] Fee note numbering is sequential
 - [ ] Trust fee transfer reduced Moroka ledger balance
 - [ ] Fee estimate set and tracking for Apex matter
+- [ ] **Terminology**: "Fee Notes" not "Invoices" on list/detail pages, "Disbursement" not "Expense" on line items, "Fee Estimate" not "Budget" on tab heading
 
 ---
 
@@ -371,6 +375,7 @@ Actor: **Alice** (billing)
 - [ ] Court date lifecycle: SCHEDULED → POSTPONED → new SCHEDULED
 - [ ] Payment recorded, fee note status = PAID
 - [ ] Resource utilization data present
+- [ ] **Terminology**: Court Calendar labels, reconciliation page headings, and fee note status badges all use legal terms
 
 ---
 
@@ -429,6 +434,7 @@ Actor: **Alice** (billing)
 - [ ] Second billing cycle completed (3 more fee notes)
 - [ ] Trust fee transfer for Moroka reduces ledger balance
 - [ ] Reports functional with meaningful data
+- [ ] **Terminology**: Report headings use "Matter Profitability" not "Project Profitability", "Time Recordings" not "Time Entries" in report filters
 
 ---
 
@@ -481,6 +487,7 @@ Actor: **Alice** (billing)
 - [ ] Estate matter progression tracked (2 items completed, L&D in progress)
 - [ ] Information request sent (Mailpit)
 - [ ] Resource utilization shows meaningful data
+- [ ] **Terminology**: Conflict check results, information request emails, and resource pages all use legal terms consistently
 
 ---
 
@@ -572,14 +579,40 @@ Actor: **Alice** (full review)
 - [ ] Section 35 report generated with all required data
 - [ ] Investment register shows §86 basis distinction
 - [ ] Role-based access enforced (Carol blocked from admin/trust config/trust approval)
-- [ ] All UI shows legal terminology throughout: "Matter", "Client", "Fee Note", "Disbursement", "Action Item", "Engagement Letter", "Mandate", "Tariff Schedule"
+- [ ] All UI shows legal terminology throughout: "Matter", "Client", "Fee Note", "Disbursement", "Action Item", "Engagement Letter", "Mandate", "Fee Estimate", "Time Recording", "Tariff Schedule"
 - [ ] **Overall verdict: Could Mathebula & Partners actually run their practice on this platform?** [ YES / NO ]
+
+### Fork-Readiness Assessment
+
+Rate each area PASS / PARTIAL / FAIL. All must be PASS or PARTIAL (with documented workaround) for fork-readiness.
+
+| Area | Criteria | Rating |
+|------|----------|--------|
+| **Terminology** | All UI labels use legal-za terms (Matter, Client, Fee Note, Disbursement, Action Item, Engagement Letter, Mandate, Fee Estimate, Time Recording, Tariff Schedule). No generic terms visible. | [ ] |
+| **Matter Templates** | 4 templates seed correctly, each produces 9 action items, matterType custom field populated. | [ ] |
+| **Trust Accounting** | Deposits, fee transfers, reconciliation, interest run (LPFF split), investments (§86(3)/(4)) all functional. | [ ] |
+| **LSSA Tariff** | Tariff line items auto-populate amounts from schedule on fee notes. | [ ] |
+| **Conflict Checks** | Name search returns clear/amber/red results, adverse party registry populated and cross-referenced. | [ ] |
+| **Court Calendar** | Date lifecycle (SCHEDULED/POSTPONED/HEARD), linked to matters, date display correct. | [ ] |
+| **Prescription Tracking** | Prescription type identified, date calculated, days remaining displayed. | [ ] |
+| **Section 35 Compliance** | Data pack generates with trust summary, ledger balances, reconciliation status, interest allocations, investment register. | [ ] |
+| **FICA/KYC** | Checklist auto-instantiated, completion triggers ACTIVE transition, compliance overview reflects status. | [ ] |
+| **Fee Notes (Billing)** | Lifecycle (DRAFT/APPROVED/SENT/PAID), sequential numbering, VAT calculation, disbursement lines, email delivery. | [ ] |
+| **Role-Based Access** | Carol (Member) blocked from rates/trust config/trust approval. Bob (Admin) has admin access. Alice (Owner) has full access. | [ ] |
+| **Reports & Profitability** | Time tracking, matter profitability, and utilization reports render with correct data across all 4 clients. | [ ] |
+| **Data Integrity** | 4 clients (all ACTIVE), 9 matters, 7+ fee notes, trust balances reconcile, investment register accurate. | [ ] |
+| **Screenshot Baselines** | All 25 regression baselines captured, 16 curated hero shots saved to documentation directory. | [ ] |
+
+**Fork-readiness verdict**: [ READY / NOT READY — list blocking issues below ]
+
+Blocking issues (if any):
+1. _none_
 
 ---
 
 ## Screenshot Summary
 
-### Regression Baselines (~16 captures)
+### Regression Baselines (25 captures)
 
 | Step | File Name | Description |
 |---|---|---|
@@ -587,7 +620,7 @@ Actor: **Alice** (full review)
 | 1.3 | `day-01-conflict-check-clear.png` | Conflict check clear result |
 | 1.22 | `day-01-litigation-template-items.png` | Matter with pre-populated action items |
 | 2.8 | `day-02-client-legal-fields.png` | Client detail with legal custom fields |
-| 2.16 | `day-02-estates-template.png` | Estates matter template |
+| 2.16 | `day-02-estates-template.png` | Deceased Estate matter template |
 | 7.22 | `day-07-court-calendar-entry.png` | Court calendar with first entry |
 | 7.25 | `day-07-my-work-legal.png` | My Work page with action items |
 | 14.8 | `day-14-trust-deposit-ledger.png` | Trust deposit + client ledger balance |
@@ -614,7 +647,7 @@ Actor: **Alice** (full review)
 1. `trust-dashboard-overview.png` — Trust Accounting dashboard with balance cards
 2. `conflict-check-clear-result.png` — Green "no conflicts found" result
 3. `conflict-check-adverse-match.png` — Amber/red adverse party detected
-4. `litigation-template-action-items.png` — Matter with 9 pre-populated legal tasks
+4. `litigation-template-action-items.png` — Matter with 9 pre-populated action items
 5. `court-calendar-scheduled.png` — Court calendar with entries
 6. `prescription-tracker-days.png` — Prescription days remaining countdown
 7. `trust-deposit-form.png` — Trust deposit transaction form

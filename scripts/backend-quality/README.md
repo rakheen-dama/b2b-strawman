@@ -11,6 +11,7 @@ This folder reduces the manual steps needed to execute the backend quality backl
 - `run-ticket.sh`: runs a single ticket in its worktree with Codex or Claude
 - `run-program.sh`: orchestrates the whole backend improvement effort wave by wave
 - `status.sh`: prints current orchestrator state
+- `monitor.sh`: live dashboard for orchestrator progress and ticket logs
 - `list-tickets.sh`: prints ticket summaries and dependencies
 
 ## One Command
@@ -59,6 +60,12 @@ Show current status:
 
 ```bash
 ./scripts/backend-quality/status.sh
+```
+
+Live monitor:
+
+```bash
+./scripts/backend-quality/monitor.sh
 ```
 
 Dry-run the full program:

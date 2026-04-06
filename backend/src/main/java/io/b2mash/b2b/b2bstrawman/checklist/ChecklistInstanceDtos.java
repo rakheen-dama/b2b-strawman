@@ -30,6 +30,11 @@ public final class ChecklistInstanceDtos {
       String notes,
       UUID documentId,
       UUID dependsOnItemId,
+      String verificationProvider,
+      String verificationReference,
+      String verificationStatus,
+      Instant verifiedAt,
+      Map<String, Object> verificationMetadata,
       Instant createdAt,
       Instant updatedAt) {
 
@@ -52,6 +57,11 @@ public final class ChecklistInstanceDtos {
           item.getNotes(),
           item.getDocumentId(),
           item.getDependsOnItemId(),
+          item.getVerificationProvider(),
+          item.getVerificationReference(),
+          item.getVerificationStatus(),
+          item.getVerifiedAt(),
+          item.getVerificationMetadata(),
           item.getCreatedAt(),
           item.getUpdatedAt());
     }

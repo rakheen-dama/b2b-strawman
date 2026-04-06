@@ -135,6 +135,11 @@ export interface ChecklistInstanceItemResponse {
   notes: string | null;
   documentId: string | null;
   dependsOnItemId: string | null;
+  verificationProvider?: string | null;
+  verificationReference?: string | null;
+  verificationStatus?: string | null;
+  verifiedAt?: string | null;
+  verificationMetadata?: Record<string, unknown> | null;
   createdAt: string;
   updatedAt: string;
 }

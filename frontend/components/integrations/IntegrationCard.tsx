@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import useSWR from "swr";
-import { Calculator, Sparkles, PenTool, CreditCard, KeyRound, Mail } from "lucide-react";
+import { Calculator, Sparkles, PenTool, CreditCard, KeyRound, Mail, ShieldCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -39,6 +39,7 @@ const DOMAIN_ICONS: Record<
   AI: Sparkles,
   DOCUMENT_SIGNING: PenTool,
   EMAIL: Mail,
+  KYC_VERIFICATION: ShieldCheck,
   PAYMENT: CreditCard,
 };
 

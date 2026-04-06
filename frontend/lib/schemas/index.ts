@@ -39,6 +39,9 @@ export type {
   InterruptPrescriptionFormData,
 } from "./legal";
 
+export { kycVerifySchema } from "./kyc";
+export type { KycVerifyFormData } from "./kyc";
+
 export {
   createTrustAccountSchema,
   recordDepositSchema,

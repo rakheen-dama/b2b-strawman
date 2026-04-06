@@ -4,6 +4,28 @@ import userEvent from "@testing-library/user-event";
 import { ChecklistInstanceItemRow } from "@/components/compliance/ChecklistInstanceItemRow";
 import type { ChecklistInstanceItemResponse, Document } from "@/lib/types";
 
+// Mock next/navigation (required by ChecklistInstanceItemRow → KycVerificationDialog)
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({
+    refresh: vi.fn(),
+    push: vi.fn(),
+    replace: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+    prefetch: vi.fn(),
+  }),
+}));
+
+// Mock kyc-actions to avoid server-only import chain
+vi.mock(
+  "@/app/(app)/org/[slug]/customers/[id]/kyc-actions",
+  () => ({
+    verifyKycAction: vi.fn().mockResolvedValue({ success: true }),
+    getKycStatusAction: vi.fn().mockResolvedValue({ configured: false, provider: null }),
+    getKycResultAction: vi.fn().mockResolvedValue({ success: true, data: null }),
+  }),
+);
+
 const baseItem: ChecklistInstanceItemResponse = {
   id: "item-1",
   instanceId: "inst-1",

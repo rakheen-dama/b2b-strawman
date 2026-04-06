@@ -17,6 +17,16 @@ vi.mock("@/app/(app)/org/[slug]/customers/[id]/checklist-actions", () => ({
   instantiateChecklist: vi.fn().mockResolvedValue({ success: true }),
 }));
 
+// Mock kyc-actions to avoid server-only import chain
+vi.mock(
+  "@/app/(app)/org/[slug]/customers/[id]/kyc-actions",
+  () => ({
+    verifyKycAction: vi.fn().mockResolvedValue({ success: true }),
+    getKycStatusAction: vi.fn().mockResolvedValue({ configured: false, provider: null }),
+    getKycResultAction: vi.fn().mockResolvedValue({ success: true, data: null }),
+  }),
+);
+
 const mockInstances: ChecklistInstanceResponse[] = [
   {
     id: "inst-1",

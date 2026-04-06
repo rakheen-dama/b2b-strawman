@@ -19,7 +19,7 @@ This phase corrects and extends the legal-za terminology map so the UI feels pur
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 465 | Legal Terminology Map Fix & Extension | Frontend | -- | S | 465A | |
+| 465 | Legal Terminology Map Fix & Extension | Frontend | -- | S | 465A | **Done** (PR #964) |
 | 466 | Matter-Type Project Template Seeder | Backend | -- | M | 466A, 466B | |
 | 467 | Screenshot Infrastructure + Regression Baselines | E2E/Frontend | -- | S | 467A | |
 | 468 | 90-Day Lifecycle Script Writing | Process | 465, 466 | M | 468A | |
@@ -90,7 +90,7 @@ TERMINOLOGY FIX          MATTER TEMPLATES          SCREENSHOT INFRA
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 0a (parallel) | 465 | 465A | Fix legal-za terminology map (~25 mappings), update unit + integration tests. Frontend only. | |
+| 0a (parallel) | 465 | 465A | Fix legal-za terminology map (~25 mappings), update unit + integration tests. Frontend only. | **Done** (PR #964) |
 | 0b (parallel) | 466 | 466A | Create `ProjectTemplatePackSeeder` + `ProjectTemplatePackDefinition` following `AbstractPackSeeder` pattern. Backend only. | |
 | 0c (parallel) | 467 | 467A | Playwright `toHaveScreenshot()` config, screenshot helper utility, directory structure, sample baseline. E2E only. | |
 
@@ -131,7 +131,7 @@ TERMINOLOGY FIX          MATTER TEMPLATES          SCREENSHOT INFRA
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **465A** | 465.1--465.4 | Update `terminology-map.ts` with ~25 corrected mappings, update unit test assertions, update integration test assertions (fix `Document -> Pleading` test), verify no regressions. Frontend only. | |
+| **465A** | 465.1--465.4 | Update `terminology-map.ts` with ~25 corrected mappings, update unit test assertions, update integration test assertions (fix `Document -> Pleading` test), verify no regressions. Frontend only. | **Done** (PR #964) |
 
 ### Tasks
 

@@ -9,7 +9,7 @@
   "checklistTemplate": {
     "name": "Legal Client Onboarding",
     "slug": "legal-za-client-onboarding",
-    "autoInstantiate": false,
+    "autoInstantiate": true,
     "items": [
       {
         "name": "Proof of Identity",

@@ -5,7 +5,7 @@
 - **QA Position**: Day 1, Step 1.1 (BLOCKED — Conflict Check page crashes)
 - **Cycle**: 1
 - **E2E Stack**: READY
-- **NEEDS_REBUILD**: frontend (GAP-D1-01 frontend fix merged)
+- **NEEDS_REBUILD**: frontend, backend (GAP-D1-01 frontend fix, GAP-D0-01 backend fix merged)
 - **Branch**: `bugfix_cycle_2026-04-06`
 - **Scenario**: `qa/testplan/qa-legal-lifecycle-test-plan.md`
 - **Focus**: Full 90-day lifecycle for SA law firm (Mathebula & Partners). Trust accounting, LSSA tariff, conflict checks, court calendar, prescription tracking, fee notes, reconciliation, interest runs, investments, Section 35 compliance, FICA/KYC, role-based access.
@@ -40,7 +40,7 @@
 
 | ID | Summary | Severity | Status | Owner | PR | Notes |
 |----|---------|----------|--------|-------|----|-------|
-| GAP-D0-01 | No legal matter templates (Litigation, Deceased Estate Admin, Collections, Commercial) seeded by legal-za profile | HIGH | SPEC_READY | Dev | — | Root cause: `OrgSettingsService.updateVerticalProfile()` doesn't call `projectTemplatePackSeeder`. Fix: add seeder call after line 714. |
+| GAP-D0-01 | No legal matter templates (Litigation, Deceased Estate Admin, Collections, Commercial) seeded by legal-za profile | HIGH | FIXED | Dev | PR #971 | Added `projectTemplatePackSeeder.seedPacksForTenant()` call in `updateVerticalProfile()`. NEEDS_REBUILD: backend. |
 | GAP-D0-02 | Trust Accounting lacks "Create Trust Account" dialog — cannot create trust accounts from UI | HIGH | WONT_FIX | Dev | — | Not a stub — full dashboard exists (Phase 61). Missing: CreateTrustAccountDialog component. Workaround: create via API. Exceeds 2hr scope. |
 | GAP-D0-03 | No Settings > Modules page to verify/toggle legal modules | LOW | WONT_FIX | Dev | — | New feature required. Modules work correctly via profile system. Exceeds scope. |
 | GAP-D0-04 | "Projects" group header not renamed to "Matters" in sidebar | LOW | SPEC_READY | Dev | — | Fix: change `{zone.label}` to `{t(zone.label)}` in nav-zone.tsx line 45. |
@@ -58,3 +58,4 @@
 | 2026-04-06T16:05Z | QA | Day 1 started. Login as Bob. Conflict Check page crashes with TypeError (GAP-D1-01 CRITICAL BLOCKER). Clients page loads OK with "New Client" button. STOPPED at Step 1.1 per blocker rule. |
 | 2026-04-06T18:00Z | Product | Triaged all 8 OPEN items. GAP-D1-01 (CRITICAL blocker): defensive defaults from PR #910 confirmed on branch but likely stale Docker image — spec'd rebuild + belt-and-suspenders defaults. GAP-D0-01 (HIGH): root cause confirmed in OrgSettingsService line 714 — projectTemplatePackSeeder not called on profile switch. GAP-D0-02 (HIGH): reclassified to WONT_FIX — full dashboard exists but CreateTrustAccountDialog missing, exceeds 2hr scope. GAP-D0-03 (LOW): WONT_FIX — new feature. GAP-D0-04/05/06 (LOW): all spec'd — terminology + role mapping fixes. GAP-D0-07 (MEDIUM): spec'd — parameterize seed script. 6 items SPEC_READY, 2 WONT_FIX. |
 | 2026-04-06T18:30Z | Dev | **GAP-D1-01 FIXED** (PR #970, merged). Added defensive `?.content ?? []` and `?.page?.totalElements ?? 0` defaults in 3 files: page.tsx (server fetch), conflict-check-client.tsx (client refetch), conflict-check-history.tsx (history refetch). 3 files, 6 lines changed. Build green, 302 test files / 1871 tests pass. NEEDS_REBUILD: frontend. |
+| 2026-04-06T19:41Z | Dev | **GAP-D0-01 FIXED** (PR #971, merged). Added `projectTemplatePackSeeder.seedPacksForTenant()` call in `OrgSettingsService.updateVerticalProfile()` after existing rate and schedule pack seeder calls. Injected `ProjectTemplatePackSeeder` as constructor dependency. 1 file, +7/-2 lines. OrgSettingsIntegrationTest 38/38 pass. NEEDS_REBUILD: backend. |

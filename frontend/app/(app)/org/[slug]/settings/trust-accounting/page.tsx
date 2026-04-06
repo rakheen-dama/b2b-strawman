@@ -7,6 +7,7 @@ import {
   Landmark,
   Bell,
   Plus,
+  Info,
 } from "lucide-react";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { getOrgSettings } from "@/lib/api/settings";
@@ -20,6 +21,7 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import type { TrustAccount, LpffRate } from "@/lib/types/trust";
 
 export default async function TrustAccountingSettingsPage({
@@ -134,39 +136,48 @@ export default async function TrustAccountingSettingsPage({
               tracking client funds.
             </p>
           ) : (
-            <div className="divide-y divide-slate-200 dark:divide-slate-800">
-              {trustAccounts.map((account) => (
-                <div
-                  key={account.id}
-                  className="flex items-center justify-between py-3 first:pt-0 last:pb-0"
-                >
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <p className="font-medium text-slate-900 dark:text-slate-100">
-                        {account.accountName}
+            <>
+              <div className="divide-y divide-slate-200 dark:divide-slate-800">
+                {trustAccounts.map((account) => (
+                  <div
+                    key={account.id}
+                    className="flex items-center justify-between py-3 first:pt-0 last:pb-0"
+                  >
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium text-slate-900 dark:text-slate-100">
+                          {account.accountName}
+                        </p>
+                        {account.isPrimary && (
+                          <Badge variant="success">Primary</Badge>
+                        )}
+                        <Badge
+                          variant={
+                            account.status === "ACTIVE" ? "success" : "neutral"
+                          }
+                        >
+                          {account.status}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                        {account.bankName} &middot; {account.branchCode} &middot;{" "}
+                        {account.accountNumber}
                       </p>
-                      {account.isPrimary && (
-                        <Badge variant="success">Primary</Badge>
-                      )}
-                      <Badge
-                        variant={
-                          account.status === "ACTIVE" ? "success" : "neutral"
-                        }
-                      >
-                        {account.status}
-                      </Badge>
                     </div>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">
-                      {account.bankName} &middot; {account.branchCode} &middot;{" "}
-                      {account.accountNumber}
+                    <p className="text-xs text-slate-400">
+                      {account.accountType}
                     </p>
                   </div>
-                  <p className="text-xs text-slate-400">
-                    {account.accountType}
-                  </p>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+              <Alert className="mt-4" data-testid="section-86-6-settings-advisory">
+                <Info className="size-4" />
+                <AlertDescription>
+                  The bank must have an arrangement with the Legal Practitioners
+                  Fidelity Fund (Section 86(6)). Contact the LPFF to verify.
+                </AlertDescription>
+              </Alert>
+            </>
           )}
         </CardContent>
       </Card>

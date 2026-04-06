@@ -239,6 +239,8 @@ export interface TrustDashboardData {
 
 export type TrustInvestmentStatus = "ACTIVE" | "MATURED" | "WITHDRAWN";
 
+export type InvestmentBasis = "FIRM_DISCRETION" | "CLIENT_INSTRUCTION";
+
 export interface TrustInvestment {
   id: string;
   trustAccountId: string;
@@ -257,6 +259,7 @@ export interface TrustInvestment {
   depositTransactionId: string;
   withdrawalTransactionId: string | null;
   notes: string | null;
+  investmentBasis: InvestmentBasis;
   createdAt: string;
   updatedAt: string;
 }
@@ -292,5 +295,7 @@ export interface InterestAllocation {
   lpffShare: number;
   clientShare: number;
   trustTransactionId: string | null;
+  lpffRateId: string | null;
+  statutoryRateApplied: boolean;
   createdAt: string;
 }

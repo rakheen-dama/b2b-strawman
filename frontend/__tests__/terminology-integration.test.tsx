@@ -235,7 +235,7 @@ describe("372B: legal-za terminology overrides", () => {
     expect(screen.getByTestId("result").textContent).toBe("Client");
   });
 
-  it("t('Document') returns 'Pleading' for legal-za profile", () => {
+  it("t('Document') passes through unchanged for legal-za profile (mapping removed)", () => {
     function TestConsumer() {
       const { t } = useTerminology();
       return <span data-testid="result">{t("Document")}</span>;
@@ -247,6 +247,40 @@ describe("372B: legal-za terminology overrides", () => {
       </TerminologyProvider>,
     );
 
-    expect(screen.getByTestId("result").textContent).toBe("Pleading");
+    expect(screen.getByTestId("result").textContent).toBe("Document");
+  });
+});
+
+// ---- 465.3: Updated legal-za terminology integration tests ----
+
+describe("465: legal-za terminology fixes", () => {
+  it("t('Invoice') returns 'Fee Note' for legal-za profile", () => {
+    function TestConsumer() {
+      const { t } = useTerminology();
+      return <span data-testid="result">{t("Invoice")}</span>;
+    }
+
+    render(
+      <TerminologyProvider verticalProfile="legal-za">
+        <TestConsumer />
+      </TerminologyProvider>,
+    );
+
+    expect(screen.getByTestId("result").textContent).toBe("Fee Note");
+  });
+
+  it("t('Task') returns 'Action Item' for legal-za profile", () => {
+    function TestConsumer() {
+      const { t } = useTerminology();
+      return <span data-testid="result">{t("Task")}</span>;
+    }
+
+    render(
+      <TerminologyProvider verticalProfile="legal-za">
+        <TestConsumer />
+      </TerminologyProvider>,
+    );
+
+    expect(screen.getByTestId("result").textContent).toBe("Action Item");
   });
 });

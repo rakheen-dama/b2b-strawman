@@ -21,7 +21,7 @@ This phase corrects and extends the legal-za terminology map so the UI feels pur
 |------|------|-------|------|--------|--------|--------|
 | 465 | Legal Terminology Map Fix & Extension | Frontend | -- | S | 465A | **Done** (PR #964) |
 | 466 | Matter-Type Project Template Seeder | Backend | -- | M | 466A, 466B | **Done** (PR #965) |
-| 467 | Screenshot Infrastructure + Regression Baselines | E2E/Frontend | -- | S | 467A | |
+| 467 | Screenshot Infrastructure + Regression Baselines | E2E/Frontend | -- | S | 467A | **Done** (PR #966) |
 | 468 | 90-Day Lifecycle Script Writing | Process | 465, 466 | M | 468A | |
 | 469 | Lifecycle Execution + Gap Report | Process/E2E | 467, 468 | L | 469A, 469B | |
 
@@ -92,7 +92,7 @@ TERMINOLOGY FIX          MATTER TEMPLATES          SCREENSHOT INFRA
 |-------|------|-------|---------|--------|
 | 0a (parallel) | 465 | 465A | Fix legal-za terminology map (~25 mappings), update unit + integration tests. Frontend only. | **Done** (PR #964) |
 | 0b (parallel) | 466 | 466A | Create `ProjectTemplatePackSeeder` + `ProjectTemplatePackDefinition` following `AbstractPackSeeder` pattern. Backend only. | **Done** (PR #965) |
-| 0c (parallel) | 467 | 467A | Playwright `toHaveScreenshot()` config, screenshot helper utility, directory structure, sample baseline. E2E only. | |
+| 0c (parallel) | 467 | 467A | Playwright `toHaveScreenshot()` config, screenshot helper utility, directory structure, sample baseline. E2E only. | **Done** (PR #966) |
 
 ### Stage 1: Template Pack Content (after 466A)
 
@@ -226,7 +226,7 @@ TERMINOLOGY FIX          MATTER TEMPLATES          SCREENSHOT INFRA
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **467A** | 467.1--467.6 | Playwright config updates, screenshot helper utility, directory structure, sample baseline test. E2E only. ~5 files touched. | |
+| **467A** | 467.1--467.6 | Playwright config updates, screenshot helper utility, directory structure, sample baseline test. E2E only. ~5 files touched. | **Done** (PR #966) |
 
 ### Tasks
 

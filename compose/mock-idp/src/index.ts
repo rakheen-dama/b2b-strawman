@@ -52,6 +52,8 @@ app.post("/token", (req, res) => {
     organization: [orgSlug],
     groups: USER_GROUPS[userId] || [],
     email: user?.email || `${userId}@unknown.local`,
+    name: user ? `${user.firstName} ${user.lastName}` : null,
+    role: user?.defaultRole || "member",
   };
 
   const privateKeyPem = rsaPrivateKey.export({ type: "pkcs8", format: "pem" });

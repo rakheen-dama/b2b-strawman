@@ -20,7 +20,7 @@ This phase corrects and extends the legal-za terminology map so the UI feels pur
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 465 | Legal Terminology Map Fix & Extension | Frontend | -- | S | 465A | **Done** (PR #964) |
-| 466 | Matter-Type Project Template Seeder | Backend | -- | M | 466A, 466B | |
+| 466 | Matter-Type Project Template Seeder | Backend | -- | M | 466A, 466B | **Done** (PR #965) |
 | 467 | Screenshot Infrastructure + Regression Baselines | E2E/Frontend | -- | S | 467A | |
 | 468 | 90-Day Lifecycle Script Writing | Process | 465, 466 | M | 468A | |
 | 469 | Lifecycle Execution + Gap Report | Process/E2E | 467, 468 | L | 469A, 469B | |
@@ -91,14 +91,14 @@ TERMINOLOGY FIX          MATTER TEMPLATES          SCREENSHOT INFRA
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 0a (parallel) | 465 | 465A | Fix legal-za terminology map (~25 mappings), update unit + integration tests. Frontend only. | **Done** (PR #964) |
-| 0b (parallel) | 466 | 466A | Create `ProjectTemplatePackSeeder` + `ProjectTemplatePackDefinition` following `AbstractPackSeeder` pattern. Backend only. | |
+| 0b (parallel) | 466 | 466A | Create `ProjectTemplatePackSeeder` + `ProjectTemplatePackDefinition` following `AbstractPackSeeder` pattern. Backend only. | **Done** (PR #965) |
 | 0c (parallel) | 467 | 467A | Playwright `toHaveScreenshot()` config, screenshot helper utility, directory structure, sample baseline. E2E only. | |
 
 ### Stage 1: Template Pack Content (after 466A)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 1a | 466 | 466B | 4 legal project template pack JSON files with pre-populated task lists + integration tests. Backend only. | |
+| 1a | 466 | 466B | 4 legal project template pack JSON files with pre-populated task lists + integration tests. Backend only. | **Done** (PR #965) |
 
 ### Stage 2: Lifecycle Script (after 465A + 466B)
 
@@ -172,8 +172,8 @@ TERMINOLOGY FIX          MATTER TEMPLATES          SCREENSHOT INFRA
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **466A** | 466.1--466.7 | Create `ProjectTemplatePackDefinition` record, `ProjectTemplatePackSeeder` extending `AbstractPackSeeder`, register in `TenantProvisioningService`, OrgSettings tracking. Backend only. ~8 files. | |
-| **466B** | 466.8--466.13 | Create `project-template-packs/legal-za.json` with 4 templates + 36 tasks, integration tests verifying template creation + task counts. Backend only. ~4 files. | |
+| **466A** | 466.1--466.7 | Create `ProjectTemplatePackDefinition` record, `ProjectTemplatePackSeeder` extending `AbstractPackSeeder`, register in `TenantProvisioningService`, OrgSettings tracking. Backend only. ~8 files. | **Done** (PR #965) |
+| **466B** | 466.8--466.13 | Create `project-template-packs/legal-za.json` with 4 templates + 36 tasks, integration tests verifying template creation + task counts. Backend only. ~4 files. | **Done** (PR #965) |
 
 ### Tasks
 

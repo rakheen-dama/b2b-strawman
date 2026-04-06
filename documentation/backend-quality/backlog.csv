@@ -1,0 +1,23 @@
+id,wave,title,depends_on
+BE-001,1,Standardize backend API error responses with centralized ProblemDetail,
+BE-002,1,Reduce duplicated ProblemDetail construction across exception classes,BE-001
+BE-003,1,Replace API-leaking IllegalArgumentException with typed domain/API exceptions,"BE-001|BE-002"
+BE-019,1,Add HTTP contract tests for standardized backend error responses,BE-001
+BE-004,2,Introduce Spring MVC actor injection to remove direct RequestScopes access from controllers,
+BE-005,2,Refactor org settings endpoints into thin controller plus service validation flow,BE-004
+BE-006,2,Move portal authentication orchestration out of controller,"BE-004|BE-001"
+BE-007,3,Remove repository-backed response enrichment from selected controllers,BE-004
+BE-008,3,Eliminate direct repository injection from non-dev controllers,"BE-005|BE-006|BE-007"
+BE-009,3,Move large nested controller DTOs into dedicated request/response classes,
+BE-010,3,Replace string action parameters with enums and Spring validation,BE-001
+BE-011,4,Decompose invoice service into focused collaborators,BE-001
+BE-012,4,Decompose billing run service into lifecycle selection and generation workflows,BE-011
+BE-013,5,Identify and plan the next oversized services for decomposition,"BE-011|BE-012"
+BE-014,5,Move reusable business invariants out of controller or service branching,"BE-011|BE-012"
+BE-015,5,Centralize reusable validation logic for files ranges and action inputs,BE-001
+BE-016,6,Introduce tenant-aware test fixtures and helpers for backend integration tests,
+BE-017,6,Define and document backend test taxonomy and coupling rules,
+BE-018,6,Reduce implementation coupling in selected backend integration tests,"BE-016|BE-017"
+BE-020,7,Enforce backend architecture rules with automated tests,"BE-008|BE-004|BE-001"
+BE-021,7,Add guardrails for oversized services and controllers,"BE-011|BE-012"
+BE-022,7,Add backend contribution checklist for controller exception and test quality,"BE-001|BE-004|BE-017"

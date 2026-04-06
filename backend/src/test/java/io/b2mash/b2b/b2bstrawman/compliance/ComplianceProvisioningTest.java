@@ -67,7 +67,7 @@ class ComplianceProvisioningTest {
         () -> {
           var template = templateRepository.findBySlug("generic-client-onboarding");
           assertThat(template).isPresent();
-          assertThat(template.get().isAutoInstantiate()).isTrue();
+          assertThat(template.get().isAutoInstantiate()).isFalse();
           assertThat(template.get().isActive()).isTrue();
           return null;
         });
@@ -97,7 +97,7 @@ class ComplianceProvisioningTest {
   }
 
   @Test
-  void creatingCustomerAndStartingOnboardingInstantiatesGenericChecklist() {
+  void creatingCustomerAndStartingOnboardingDoesNotInstantiateGenericChecklist() {
     UUID customerId =
         runInTenant(
             () -> {
@@ -111,21 +111,15 @@ class ComplianceProvisioningTest {
               return customerRepository.save(customer).getId();
             });
 
-    // Transition to ONBOARDING — should auto-instantiate generic-client-onboarding checklist
+    // Transition to ONBOARDING — generic pack no longer auto-instantiates (GAP-D1-05)
     runInTenant(() -> lifecycleService.transition(customerId, "ONBOARDING", null, memberId));
 
     runInTenant(
         () -> {
           var instances = instanceRepository.findByCustomerId(customerId);
-          assertThat(instances).isNotEmpty();
-
-          // Find the generic-onboarding template to confirm it's one of the instances
-          var genericTemplate =
-              templateRepository.findBySlug("generic-client-onboarding").orElseThrow();
-          assertThat(instances).anyMatch(i -> i.getTemplateId().equals(genericTemplate.getId()));
-
-          // All instances should be IN_PROGRESS
-          assertThat(instances).allMatch(i -> "IN_PROGRESS".equals(i.getStatus()));
+          // No auto-instantiated checklists — generic pack is autoInstantiate=false,
+          // and this tenant has no vertical profile so legal-za pack doesn't apply
+          assertThat(instances).isEmpty();
           return null;
         });
   }

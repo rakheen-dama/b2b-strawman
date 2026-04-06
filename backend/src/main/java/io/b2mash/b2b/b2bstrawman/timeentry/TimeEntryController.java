@@ -1,8 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.timeentry;
 
-import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
-import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
-import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -14,9 +11,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,25 +27,19 @@ import org.springframework.web.bind.annotation.RestController;
 public class TimeEntryController {
 
   private final TimeEntryService timeEntryService;
-  private final MemberNameResolver memberNameResolver;
-  private final InvoiceRepository invoiceRepository;
   private final TimeEntryBatchService timeEntryBatchService;
 
   public TimeEntryController(
-      TimeEntryService timeEntryService,
-      MemberNameResolver memberNameResolver,
-      InvoiceRepository invoiceRepository,
-      TimeEntryBatchService timeEntryBatchService) {
+      TimeEntryService timeEntryService, TimeEntryBatchService timeEntryBatchService) {
     this.timeEntryService = timeEntryService;
-    this.memberNameResolver = memberNameResolver;
-    this.invoiceRepository = invoiceRepository;
     this.timeEntryBatchService = timeEntryBatchService;
   }
 
   @PostMapping("/api/tasks/{taskId}/time-entries")
   public ResponseEntity<TimeEntryResponse> createTimeEntry(
-      @PathVariable UUID taskId, @Valid @RequestBody CreateTimeEntryRequest request) {
-    var actor = ActorContext.fromRequestScopes();
+      @PathVariable UUID taskId,
+      @Valid @RequestBody CreateTimeEntryRequest request,
+      ActorContext actor) {
 
     var result =
         timeEntryService.createTimeEntry(
@@ -62,8 +51,8 @@ public class TimeEntryController {
             request.description(),
             actor);
 
-    var names = resolveNames(List.of(result.entry()));
-    var invoiceNumbers = resolveInvoiceNumbers(List.of(result.entry()));
+    var names = timeEntryService.resolveNames(List.of(result.entry()));
+    var invoiceNumbers = timeEntryService.resolveInvoiceNumbers(List.of(result.entry()));
     return ResponseEntity.created(URI.create("/api/time-entries/" + result.entry().getId()))
         .body(TimeEntryResponse.from(result.entry(), names, invoiceNumbers, result.rateWarning()));
   }
@@ -72,12 +61,12 @@ public class TimeEntryController {
   public ResponseEntity<List<TimeEntryResponse>> listTimeEntries(
       @PathVariable UUID taskId,
       @RequestParam(required = false) Boolean billable,
-      @RequestParam(required = false) BillingStatus billingStatus) {
-    var actor = ActorContext.fromRequestScopes();
+      @RequestParam(required = false) BillingStatus billingStatus,
+      ActorContext actor) {
 
     var entries = timeEntryService.listTimeEntriesByTask(taskId, actor, billable, billingStatus);
-    var names = resolveNames(entries);
-    var invoiceNumbers = resolveInvoiceNumbers(entries);
+    var names = timeEntryService.resolveNames(entries);
+    var invoiceNumbers = timeEntryService.resolveInvoiceNumbers(entries);
     var response =
         entries.stream().map(e -> TimeEntryResponse.from(e, names, invoiceNumbers)).toList();
     return ResponseEntity.ok(response);
@@ -87,19 +76,20 @@ public class TimeEntryController {
   public ResponseEntity<TimeEntryResponse> toggleBillable(
       @PathVariable UUID projectId,
       @PathVariable UUID id,
-      @Valid @RequestBody ToggleBillableRequest request) {
-    var actor = ActorContext.fromRequestScopes();
+      @Valid @RequestBody ToggleBillableRequest request,
+      ActorContext actor) {
 
     var entry = timeEntryService.toggleBillable(projectId, id, request.billable(), actor);
-    var names = resolveNames(List.of(entry));
-    var invoiceNumbers = resolveInvoiceNumbers(List.of(entry));
+    var names = timeEntryService.resolveNames(List.of(entry));
+    var invoiceNumbers = timeEntryService.resolveInvoiceNumbers(List.of(entry));
     return ResponseEntity.ok(TimeEntryResponse.from(entry, names, invoiceNumbers));
   }
 
   @PutMapping("/api/time-entries/{id}")
   public ResponseEntity<TimeEntryResponse> updateTimeEntry(
-      @PathVariable UUID id, @Valid @RequestBody UpdateTimeEntryRequest request) {
-    var actor = ActorContext.fromRequestScopes();
+      @PathVariable UUID id,
+      @Valid @RequestBody UpdateTimeEntryRequest request,
+      ActorContext actor) {
 
     var entry =
         timeEntryService.updateTimeEntry(
@@ -111,56 +101,23 @@ public class TimeEntryController {
             request.description(),
             actor);
 
-    var names = resolveNames(List.of(entry));
-    var invoiceNumbers = resolveInvoiceNumbers(List.of(entry));
+    var names = timeEntryService.resolveNames(List.of(entry));
+    var invoiceNumbers = timeEntryService.resolveInvoiceNumbers(List.of(entry));
     return ResponseEntity.ok(TimeEntryResponse.from(entry, names, invoiceNumbers));
   }
 
   @PostMapping("/api/time-entries/batch")
   public ResponseEntity<BatchTimeEntryResult> createBatch(
-      @Valid @RequestBody BatchTimeEntryRequest request) {
-    var actor = ActorContext.fromRequestScopes();
+      @Valid @RequestBody BatchTimeEntryRequest request, ActorContext actor) {
     var result = timeEntryBatchService.createBatch(request, actor);
     return ResponseEntity.ok(result);
   }
 
   @DeleteMapping("/api/time-entries/{id}")
-  public ResponseEntity<Void> deleteTimeEntry(@PathVariable UUID id) {
-    var actor = ActorContext.fromRequestScopes();
+  public ResponseEntity<Void> deleteTimeEntry(@PathVariable UUID id, ActorContext actor) {
 
     timeEntryService.deleteTimeEntry(id, actor);
     return ResponseEntity.noContent().build();
-  }
-
-  /**
-   * Batch-loads member names for all member IDs referenced by the given time entries. Returns a map
-   * of member UUID to display name.
-   */
-  private Map<UUID, String> resolveNames(List<TimeEntry> entries) {
-    var ids =
-        entries.stream().map(TimeEntry::getMemberId).filter(Objects::nonNull).distinct().toList();
-    return memberNameResolver.resolveNames(ids);
-  }
-
-  /**
-   * Batch-loads invoice numbers for all invoice IDs referenced by the given time entries. Returns a
-   * map of invoice UUID to human-readable invoice number (e.g., "INV-0001"). Drafts without an
-   * assigned number are represented as "Draft".
-   */
-  private Map<UUID, String> resolveInvoiceNumbers(List<TimeEntry> entries) {
-    var invoiceIds =
-        entries.stream().map(TimeEntry::getInvoiceId).filter(Objects::nonNull).distinct().toList();
-
-    if (invoiceIds.isEmpty()) {
-      return Map.of();
-    }
-
-    return invoiceRepository.findAllById(invoiceIds).stream()
-        .collect(
-            Collectors.toMap(
-                Invoice::getId,
-                inv -> inv.getInvoiceNumber() != null ? inv.getInvoiceNumber() : "Draft",
-                (a, b) -> a));
   }
 
   // --- DTOs ---

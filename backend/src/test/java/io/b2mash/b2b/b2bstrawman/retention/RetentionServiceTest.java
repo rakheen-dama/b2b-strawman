@@ -374,7 +374,7 @@ class RetentionServiceTest {
             () ->
                 runInTenant(
                     () -> retentionPolicyService.create("TASK", -1, "RECORD_CREATED", "FLAG")))
-        .isInstanceOf(IllegalArgumentException.class)
+        .isInstanceOf(io.b2mash.b2b.b2bstrawman.exception.InvalidStateException.class)
         .hasMessageContaining("retentionDays");
   }
 
@@ -384,7 +384,7 @@ class RetentionServiceTest {
             () ->
                 runInTenant(
                     () -> retentionPolicyService.create("  ", 30, "RECORD_CREATED", "FLAG")))
-        .isInstanceOf(IllegalArgumentException.class)
+        .isInstanceOf(io.b2mash.b2b.b2bstrawman.exception.InvalidStateException.class)
         .hasMessageContaining("recordType");
   }
 

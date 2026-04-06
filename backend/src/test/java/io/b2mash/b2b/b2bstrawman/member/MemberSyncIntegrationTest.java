@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.member;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -441,27 +440,26 @@ class MemberSyncIntegrationTest {
   // --- Race fix: retry on unprovisioned schema ---
 
   @Test
-  void shouldThrowWhenOrgNotProvisioned() {
+  void shouldThrowWhenOrgNotProvisioned() throws Exception {
     // An org ID that was never provisioned exhausts all 5 retry attempts and throws
-    // IllegalArgumentException, which MockMvc propagates as a ServletException.
-    assertThrows(
-        jakarta.servlet.ServletException.class,
-        () ->
-            mockMvc.perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {
-                          "clerkOrgId": "org_does_not_exist",
-                          "clerkUserId": "user_unprovisioned",
-                          "email": "ghost@test.com",
-                          "name": "Ghost",
-                          "avatarUrl": null,
-                          "orgRole": "member"
-                        }
-                        """)));
+    // IllegalArgumentException, which the GlobalExceptionHandler catches and returns 400.
+    mockMvc
+        .perform(
+            post("/internal/members/sync")
+                .header("X-API-KEY", API_KEY)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "clerkOrgId": "org_does_not_exist",
+                      "clerkUserId": "user_unprovisioned",
+                      "email": "ghost@test.com",
+                      "name": "Ghost",
+                      "avatarUrl": null,
+                      "orgRole": "member"
+                    }
+                    """))
+        .andExpect(status().isBadRequest());
   }
 
   // --- Race fix: null name/avatarUrl accepted on create ---

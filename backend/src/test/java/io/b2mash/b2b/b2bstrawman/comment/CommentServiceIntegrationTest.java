@@ -54,19 +54,12 @@ class CommentServiceIntegrationTest extends AbstractIntegrationTest {
         mockMvc, ORG_B_ID, "user_cs_tenant_b", "cs_tenantb@test.com", "Tenant B User", "owner");
 
     // Create a project in tenant A (owner is auto-assigned as lead)
-    var projectResult =
-        mockMvc
-            .perform(
-                post("/api/projects")
-                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cs_owner"))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"name": "Comment Svc Test Project", "description": "For comment svc tests"}
-                        """))
-            .andExpect(status().isCreated())
-            .andReturn();
-    projectId = TestEntityHelper.extractIdFromLocation(projectResult);
+    projectId =
+        TestEntityHelper.createProject(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, "user_cs_owner"),
+            "Comment Svc Test Project",
+            "For comment svc tests");
 
     // Add admin and member to the project
     mockMvc
@@ -86,19 +79,13 @@ class CommentServiceIntegrationTest extends AbstractIntegrationTest {
         .andExpect(status().isCreated());
 
     // Create a task in the project
-    var taskResult =
-        mockMvc
-            .perform(
-                post("/api/projects/" + projectId + "/tasks")
-                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cs_owner"))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"title": "Comment Test Task", "priority": "HIGH"}
-                        """))
-            .andExpect(status().isCreated())
-            .andReturn();
-    taskId = TestEntityHelper.extractIdFromLocation(taskResult);
+    taskId =
+        TestEntityHelper.createTask(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, "user_cs_owner"),
+            projectId,
+            "Comment Test Task",
+            "HIGH");
 
     // Create a document in the project via upload-init
     var docInitResult =
@@ -116,33 +103,19 @@ class CommentServiceIntegrationTest extends AbstractIntegrationTest {
     documentId = extractJsonField(docInitResult, "documentId");
 
     // Create a project and task in tenant B
-    var projectBResult =
-        mockMvc
-            .perform(
-                post("/api/projects")
-                    .with(TestJwtFactory.ownerJwt(ORG_B_ID, "user_cs_tenant_b"))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"name": "Tenant B Project", "description": "B project"}
-                        """))
-            .andExpect(status().isCreated())
-            .andReturn();
-    projectBId = TestEntityHelper.extractIdFromLocation(projectBResult);
+    projectBId =
+        TestEntityHelper.createProject(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_B_ID, "user_cs_tenant_b"),
+            "Tenant B Project",
+            "B project");
 
-    var taskBResult =
-        mockMvc
-            .perform(
-                post("/api/projects/" + projectBId + "/tasks")
-                    .with(TestJwtFactory.ownerJwt(ORG_B_ID, "user_cs_tenant_b"))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"title": "Tenant B Task"}
-                        """))
-            .andExpect(status().isCreated())
-            .andReturn();
-    taskBId = TestEntityHelper.extractIdFromLocation(taskBResult);
+    taskBId =
+        TestEntityHelper.createTask(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_B_ID, "user_cs_tenant_b"),
+            projectBId,
+            "Tenant B Task");
   }
 
   // --- Task 59.9: CommentService integration tests ---

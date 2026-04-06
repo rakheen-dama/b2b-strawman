@@ -1,7 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.integration;
 
+import io.b2mash.b2b.b2bstrawman.exception.ProblemDetailFactory;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ProblemDetail;
 import org.springframework.web.ErrorResponseException;
 
 /**
@@ -11,14 +11,12 @@ import org.springframework.web.ErrorResponseException;
 public class IntegrationDisabledException extends ErrorResponseException {
 
   public IntegrationDisabledException(IntegrationDomain domain) {
-    super(HttpStatus.FORBIDDEN, createProblem(domain), null);
-  }
-
-  private static ProblemDetail createProblem(IntegrationDomain domain) {
-    var problem = ProblemDetail.forStatus(HttpStatus.FORBIDDEN);
-    problem.setTitle("Integration Disabled");
-    problem.setDetail(
-        "The " + domain.name() + " integration domain is not enabled for this organization.");
-    return problem;
+    super(
+        HttpStatus.FORBIDDEN,
+        ProblemDetailFactory.create(
+            HttpStatus.FORBIDDEN,
+            "Integration Disabled",
+            "The " + domain.name() + " integration domain is not enabled for this organization."),
+        null);
   }
 }

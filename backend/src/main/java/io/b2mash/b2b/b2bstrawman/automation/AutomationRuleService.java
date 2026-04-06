@@ -10,6 +10,7 @@ import io.b2mash.b2b.b2bstrawman.automation.dto.AutomationDtos.CreateRuleRequest
 import io.b2mash.b2b.b2bstrawman.automation.dto.AutomationDtos.TestRuleResponse;
 import io.b2mash.b2b.b2bstrawman.automation.dto.AutomationDtos.UpdateActionRequest;
 import io.b2mash.b2b.b2bstrawman.automation.dto.AutomationDtos.UpdateRuleRequest;
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import jakarta.persistence.EntityManager;
@@ -381,8 +382,8 @@ public class AutomationRuleService {
     Set<UUID> providedActionIds = new HashSet<>(actionIds);
     if (!currentActionIds.equals(providedActionIds)
         || actionIds.size() != currentActionIds.size()) {
-      throw new IllegalArgumentException(
-          "Provided action IDs must exactly match the rule's current actions");
+      throw new InvalidStateException(
+          "Validation error", "Provided action IDs must exactly match the rule's current actions");
     }
 
     Map<UUID, AutomationAction> actionMap = new HashMap<>();

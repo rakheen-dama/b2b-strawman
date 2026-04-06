@@ -50,6 +50,7 @@ public class CustomerService {
   private final CustomerProjectRepository customerProjectRepository;
   private final InvoiceRepository invoiceRepository;
   private final RetainerAgreementRepository retainerAgreementRepository;
+  private final io.b2mash.b2b.b2bstrawman.member.MemberNameResolver memberNameResolver;
 
   public CustomerService(
       CustomerRepository repository,
@@ -62,7 +63,8 @@ public class CustomerService {
       ProjectRepository projectRepository,
       CustomerProjectRepository customerProjectRepository,
       InvoiceRepository invoiceRepository,
-      RetainerAgreementRepository retainerAgreementRepository) {
+      RetainerAgreementRepository retainerAgreementRepository,
+      io.b2mash.b2b.b2bstrawman.member.MemberNameResolver memberNameResolver) {
     this.repository = repository;
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
@@ -74,6 +76,7 @@ public class CustomerService {
     this.customerProjectRepository = customerProjectRepository;
     this.invoiceRepository = invoiceRepository;
     this.retainerAgreementRepository = retainerAgreementRepository;
+    this.memberNameResolver = memberNameResolver;
   }
 
   @Transactional(readOnly = true)
@@ -375,5 +378,27 @@ public class CustomerService {
             saved.getId(), saved.getName(), saved.getEmail(), saved.getStatus(), orgId, tenantId));
 
     return saved;
+  }
+
+  // --- Name Resolution (moved from controller for BE-007) ---
+
+  /**
+   * Batch-loads member names for all createdBy and lifecycleStatusChangedBy IDs referenced by the
+   * given customers.
+   */
+  public Map<UUID, String> resolveCustomerMemberNames(List<Customer> customers) {
+    var ids =
+        customers.stream()
+            .flatMap(
+                c -> java.util.stream.Stream.of(c.getCreatedBy(), c.getLifecycleStatusChangedBy()))
+            .filter(java.util.Objects::nonNull)
+            .distinct()
+            .toList();
+
+    if (ids.isEmpty()) {
+      return Map.of();
+    }
+
+    return memberNameResolver.resolveNames(ids);
   }
 }

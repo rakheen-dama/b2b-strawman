@@ -29,10 +29,8 @@ public class ReportController {
       @PathVariable UUID projectId,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
-      @RequestParam(required = false, defaultValue = "false") boolean includeProjections) {
-    var actor = ActorContext.fromRequestScopes();
-    String orgRole = actor.orgRole();
-    UUID memberId = actor.memberId();
+      @RequestParam(required = false, defaultValue = "false") boolean includeProjections,
+      ActorContext actor) {
 
     var response =
         reportService.getProjectProfitability(projectId, from, to, actor, includeProjections);
@@ -44,10 +42,8 @@ public class ReportController {
       @PathVariable UUID customerId,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
-      @RequestParam(required = false, defaultValue = "false") boolean includeProjections) {
-    var actor = ActorContext.fromRequestScopes();
-    String orgRole = actor.orgRole();
-    UUID memberId = actor.memberId();
+      @RequestParam(required = false, defaultValue = "false") boolean includeProjections,
+      ActorContext actor) {
 
     var response =
         reportService.getCustomerProfitability(customerId, from, to, actor, includeProjections);
@@ -72,10 +68,8 @@ public class ReportController {
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
       @RequestParam(required = false) UUID customerId,
-      @RequestParam(required = false, defaultValue = "false") boolean includeProjections) {
-    var actor = ActorContext.fromRequestScopes();
-    String orgRole = actor.orgRole();
-    UUID memberId = actor.memberId();
+      @RequestParam(required = false, defaultValue = "false") boolean includeProjections,
+      ActorContext actor) {
 
     var response =
         reportService.getOrgProfitability(from, to, customerId, actor, includeProjections);

@@ -40,6 +40,7 @@ public class CommentService {
   private final AuditService auditService;
   private final ApplicationEventPublisher eventPublisher;
   private final MemberNameResolver memberNameResolver;
+  private final io.b2mash.b2b.b2bstrawman.member.MemberRepository memberRepository;
   private final ProjectLifecycleGuard projectLifecycleGuard;
 
   public CommentService(
@@ -50,6 +51,7 @@ public class CommentService {
       AuditService auditService,
       ApplicationEventPublisher eventPublisher,
       MemberNameResolver memberNameResolver,
+      io.b2mash.b2b.b2bstrawman.member.MemberRepository memberRepository,
       ProjectLifecycleGuard projectLifecycleGuard) {
     this.commentRepository = commentRepository;
     this.projectAccessService = projectAccessService;
@@ -58,6 +60,7 @@ public class CommentService {
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
     this.memberNameResolver = memberNameResolver;
+    this.memberRepository = memberRepository;
     this.projectLifecycleGuard = projectLifecycleGuard;
   }
 
@@ -373,5 +376,31 @@ public class CommentService {
 
   private String resolveActorName(UUID memberId) {
     return memberNameResolver.resolveName(memberId);
+  }
+
+  // --- Author Resolution (moved from controller for BE-007) ---
+
+  /** Info about a comment author for response enrichment. */
+  public record AuthorInfo(String name, String avatarUrl) {}
+
+  /** Batch-resolves author information for the given comments. */
+  public Map<UUID, AuthorInfo> resolveAuthors(java.util.List<Comment> comments) {
+    var ids =
+        comments.stream()
+            .map(Comment::getAuthorMemberId)
+            .filter(java.util.Objects::nonNull)
+            .distinct()
+            .toList();
+
+    if (ids.isEmpty()) {
+      return Map.of();
+    }
+
+    return memberRepository.findAllById(ids).stream()
+        .collect(
+            java.util.stream.Collectors.toMap(
+                io.b2mash.b2b.b2bstrawman.member.Member::getId,
+                m -> new AuthorInfo(m.getName(), m.getAvatarUrl()),
+                (a, b) -> a));
   }
 }

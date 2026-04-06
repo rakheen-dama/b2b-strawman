@@ -11,6 +11,7 @@ import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLine;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineType;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
+import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationRepository;
@@ -27,7 +28,9 @@ import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -533,5 +536,20 @@ public class RetainerPeriodService {
             })
         .filter(v -> v != null)
         .toList();
+  }
+
+  /** Resolves member display names for closedBy fields across a list of retainer periods. */
+  public Map<UUID, String> resolvePeriodNames(List<RetainerPeriod> periods) {
+    var ids =
+        periods.stream()
+            .map(RetainerPeriod::getClosedBy)
+            .filter(Objects::nonNull)
+            .distinct()
+            .toList();
+    if (ids.isEmpty()) return Map.of();
+    return memberRepository.findAllById(ids).stream()
+        .collect(
+            Collectors.toMap(
+                Member::getId, m -> m.getName() != null ? m.getName() : "", (a, b) -> a));
   }
 }

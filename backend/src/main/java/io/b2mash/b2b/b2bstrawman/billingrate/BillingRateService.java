@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
@@ -33,6 +34,7 @@ public class BillingRateService {
   private final CustomerProjectRepository customerProjectRepository;
   private final CustomerRepository customerRepository;
   private final ProjectRepository projectRepository;
+  private final MemberRepository memberRepository;
   private final ProjectAccessService projectAccessService;
   private final AuditService auditService;
 
@@ -41,12 +43,14 @@ public class BillingRateService {
       CustomerProjectRepository customerProjectRepository,
       CustomerRepository customerRepository,
       ProjectRepository projectRepository,
+      MemberRepository memberRepository,
       ProjectAccessService projectAccessService,
       AuditService auditService) {
     this.billingRateRepository = billingRateRepository;
     this.customerProjectRepository = customerProjectRepository;
     this.customerRepository = customerRepository;
     this.projectRepository = projectRepository;
+    this.memberRepository = memberRepository;
     this.projectAccessService = projectAccessService;
     this.auditService = auditService;
   }
@@ -344,5 +348,61 @@ public class BillingRateService {
     if (customerId != null && customerRepository.findById(customerId).isEmpty()) {
       throw new ResourceNotFoundException("Customer", customerId);
     }
+  }
+
+  // --- Name Resolution (moved from controller for BE-007) ---
+
+  /** Lookup container for resolved member, project, and customer names. */
+  public record NameLookup(
+      Map<UUID, String> members, Map<UUID, String> projects, Map<UUID, String> customers) {}
+
+  /** Batch-resolves member, project, and customer names for the given billing rates. */
+  public NameLookup resolveNames(List<BillingRate> rates) {
+    var memberIds =
+        rates.stream()
+            .map(BillingRate::getMemberId)
+            .filter(java.util.Objects::nonNull)
+            .distinct()
+            .toList();
+    var projectIds =
+        rates.stream()
+            .map(BillingRate::getProjectId)
+            .filter(java.util.Objects::nonNull)
+            .distinct()
+            .toList();
+    var customerIds =
+        rates.stream()
+            .map(BillingRate::getCustomerId)
+            .filter(java.util.Objects::nonNull)
+            .distinct()
+            .toList();
+
+    var memberNames =
+        memberIds.isEmpty()
+            ? Map.<UUID, String>of()
+            : memberRepository.findAllById(memberIds).stream()
+                .collect(
+                    java.util.stream.Collectors.toMap(
+                        io.b2mash.b2b.b2bstrawman.member.Member::getId,
+                        m -> m.getName() != null ? m.getName() : "",
+                        (a, b) -> a));
+
+    var projectNames =
+        projectIds.isEmpty()
+            ? Map.<UUID, String>of()
+            : projectRepository.findAllById(projectIds).stream()
+                .collect(
+                    java.util.stream.Collectors.toMap(
+                        p -> p.getId(), p -> p.getName(), (a, b) -> a));
+
+    var customerNames =
+        customerIds.isEmpty()
+            ? Map.<UUID, String>of()
+            : customerRepository.findAllById(customerIds).stream()
+                .collect(
+                    java.util.stream.Collectors.toMap(
+                        c -> c.getId(), c -> c.getName(), (a, b) -> a));
+
+    return new NameLookup(memberNames, projectNames, customerNames);
   }
 }

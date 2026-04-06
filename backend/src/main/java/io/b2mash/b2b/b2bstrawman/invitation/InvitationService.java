@@ -126,10 +126,10 @@ public class InvitationService {
   }
 
   @Transactional(readOnly = true)
-  public InvitationListResponse listInvitations(String statusFilter) {
+  public InvitationListResponse listInvitations(InvitationStatus statusFilter) {
     var invitations =
-        (statusFilter != null && !statusFilter.isBlank())
-            ? invitationRepository.findAllByStatusOrderByCreatedAtDesc(parseStatus(statusFilter))
+        statusFilter != null
+            ? invitationRepository.findAllByStatusOrderByCreatedAtDesc(statusFilter)
             : invitationRepository.findAllByOrderByCreatedAtDesc();
 
     var responses = invitations.stream().map(PendingInvitationResponse::from).toList();
@@ -191,18 +191,5 @@ public class InvitationService {
     invitation.accept();
     invitationRepository.save(invitation);
     log.info("Marked invitation id={} as accepted", invitationId);
-  }
-
-  private InvitationStatus parseStatus(String statusFilter) {
-    try {
-      return InvitationStatus.valueOf(statusFilter.toUpperCase().trim());
-    } catch (IllegalArgumentException ex) {
-      throw new InvalidStateException(
-          "Invalid status filter",
-          "'"
-              + statusFilter
-              + "' is not a valid invitation status. Valid values: "
-              + java.util.Arrays.toString(InvitationStatus.values()));
-    }
   }
 }

@@ -3,8 +3,6 @@ package io.b2mash.b2b.b2bstrawman.project;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.SetFieldGroupsRequest;
-import io.b2mash.b2b.b2bstrawman.member.Member;
-import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
@@ -28,11 +26,9 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -54,21 +50,18 @@ public class ProjectController {
   private final ViewFilterHelper viewFilterHelper;
   private final ProjectSetupStatusService projectSetupStatusService;
   private final UnbilledTimeSummaryService unbilledTimeSummaryService;
-  private final MemberRepository memberRepository;
 
   public ProjectController(
       ProjectService projectService,
       EntityTagService entityTagService,
       ViewFilterHelper viewFilterHelper,
       ProjectSetupStatusService projectSetupStatusService,
-      UnbilledTimeSummaryService unbilledTimeSummaryService,
-      MemberRepository memberRepository) {
+      UnbilledTimeSummaryService unbilledTimeSummaryService) {
     this.projectService = projectService;
     this.entityTagService = entityTagService;
     this.viewFilterHelper = viewFilterHelper;
     this.projectSetupStatusService = projectSetupStatusService;
     this.unbilledTimeSummaryService = unbilledTimeSummaryService;
-    this.memberRepository = memberRepository;
   }
 
   @GetMapping
@@ -77,16 +70,13 @@ public class ProjectController {
       @RequestParam(required = false) String status,
       @RequestParam(required = false) LocalDate dueBefore,
       @RequestParam(required = false) UUID customerId,
-      @RequestParam(required = false) Map<String, String> allParams) {
-
-    var actor = ActorContext.fromRequestScopes();
-    String orgRole = actor.orgRole();
-    UUID memberId = actor.memberId();
+      @RequestParam(required = false) Map<String, String> allParams,
+      ActorContext actor) {
 
     // --- View-based filtering (server-side SQL) ---
     if (view != null) {
       // Build access control set: regular members only see projects they have access to
-      boolean isAdminOrOwner = "admin".equals(orgRole) || "owner".equals(orgRole);
+      boolean isAdminOrOwner = actor.isOwnerOrAdmin();
       Set<UUID> accessibleIds = null;
       if (!isAdminOrOwner) {
         accessibleIds =
@@ -106,7 +96,7 @@ public class ProjectController {
         }
         var projectIds = filtered.stream().map(Project::getId).toList();
         var tagsByEntityId = entityTagService.getEntityTagsBatch("PROJECT", projectIds);
-        var memberNames = resolveNames(filtered);
+        var memberNames = projectService.resolveProjectMemberNames(filtered);
 
         var responses =
             filtered.stream()
@@ -157,7 +147,7 @@ public class ProjectController {
     var projectIds = projectsWithRoles.stream().map(pwr -> pwr.project().getId()).toList();
     var tagsByEntityId = entityTagService.getEntityTagsBatch("PROJECT", projectIds);
     var allProjects = projectsWithRoles.stream().map(pwr -> pwr.project()).toList();
-    var memberNames = resolveNames(allProjects);
+    var memberNames = projectService.resolveProjectMemberNames(allProjects);
 
     var projects =
         projectsWithRoles.stream()
@@ -196,11 +186,10 @@ public class ProjectController {
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<ProjectResponse> getProject(@PathVariable UUID id) {
-    var actor = ActorContext.fromRequestScopes();
+  public ResponseEntity<ProjectResponse> getProject(@PathVariable UUID id, ActorContext actor) {
     var pwr = projectService.getProject(id, actor);
     var tags = entityTagService.getEntityTags("PROJECT", id);
-    var memberNames = resolveNames(List.of(pwr.project()));
+    var memberNames = projectService.resolveProjectMemberNames(List.of(pwr.project()));
     return ResponseEntity.ok(
         ProjectResponse.from(pwr.project(), pwr.projectRole(), tags, memberNames));
   }
@@ -219,15 +208,14 @@ public class ProjectController {
             request.appliedFieldGroups(),
             request.customerId(),
             request.dueDate());
-    var memberNames = resolveNames(List.of(project));
+    var memberNames = projectService.resolveProjectMemberNames(List.of(project));
     return ResponseEntity.created(URI.create("/api/projects/" + project.getId()))
         .body(ProjectResponse.from(project, Roles.PROJECT_LEAD, memberNames));
   }
 
   @PutMapping("/{id}")
   public ResponseEntity<ProjectResponse> updateProject(
-      @PathVariable UUID id, @Valid @RequestBody UpdateProjectRequest request) {
-    var actor = ActorContext.fromRequestScopes();
+      @PathVariable UUID id, @Valid @RequestBody UpdateProjectRequest request, ActorContext actor) {
     var pwr =
         projectService.updateProject(
             id,
@@ -239,7 +227,7 @@ public class ProjectController {
             request.customerId(),
             request.dueDate());
     var tags = entityTagService.getEntityTags("PROJECT", id);
-    var memberNames = resolveNames(List.of(pwr.project()));
+    var memberNames = projectService.resolveProjectMemberNames(List.of(pwr.project()));
     return ResponseEntity.ok(
         ProjectResponse.from(pwr.project(), pwr.projectRole(), tags, memberNames));
   }
@@ -253,31 +241,30 @@ public class ProjectController {
   @PatchMapping("/{id}/complete")
   @RequiresCapability("PROJECT_MANAGEMENT")
   public ResponseEntity<ProjectResponse> completeProject(
-      @PathVariable UUID id, @RequestBody(required = false) CompleteProjectRequest request) {
-    var actor = ActorContext.fromRequestScopes();
+      @PathVariable UUID id,
+      @RequestBody(required = false) CompleteProjectRequest request,
+      ActorContext actor) {
     boolean ack = request != null && Boolean.TRUE.equals(request.acknowledgeUnbilledTime());
     var project = projectService.completeProject(id, ack, actor);
-    var memberNames = resolveNames(List.of(project));
+    var memberNames = projectService.resolveProjectMemberNames(List.of(project));
     var tags = entityTagService.getEntityTags("PROJECT", id);
     return ResponseEntity.ok(ProjectResponse.from(project, null, tags, memberNames));
   }
 
   @PatchMapping("/{id}/archive")
   @RequiresCapability("PROJECT_MANAGEMENT")
-  public ResponseEntity<ProjectResponse> archiveProject(@PathVariable UUID id) {
-    var actor = ActorContext.fromRequestScopes();
+  public ResponseEntity<ProjectResponse> archiveProject(@PathVariable UUID id, ActorContext actor) {
     var project = projectService.archiveProject(id, actor);
-    var memberNames = resolveNames(List.of(project));
+    var memberNames = projectService.resolveProjectMemberNames(List.of(project));
     var tags = entityTagService.getEntityTags("PROJECT", id);
     return ResponseEntity.ok(ProjectResponse.from(project, null, tags, memberNames));
   }
 
   @PatchMapping("/{id}/reopen")
   @RequiresCapability("PROJECT_MANAGEMENT")
-  public ResponseEntity<ProjectResponse> reopenProject(@PathVariable UUID id) {
-    var actor = ActorContext.fromRequestScopes();
+  public ResponseEntity<ProjectResponse> reopenProject(@PathVariable UUID id, ActorContext actor) {
     var project = projectService.reopenProject(id, actor);
-    var memberNames = resolveNames(List.of(project));
+    var memberNames = projectService.resolveProjectMemberNames(List.of(project));
     var tags = entityTagService.getEntityTags("PROJECT", id);
     return ResponseEntity.ok(ProjectResponse.from(project, null, tags, memberNames));
   }
@@ -285,16 +272,16 @@ public class ProjectController {
   @PutMapping("/{id}/field-groups")
   @RequiresCapability("PROJECT_MANAGEMENT")
   public ResponseEntity<List<FieldDefinitionResponse>> setFieldGroups(
-      @PathVariable UUID id, @Valid @RequestBody SetFieldGroupsRequest request) {
-    var actor = ActorContext.fromRequestScopes();
+      @PathVariable UUID id,
+      @Valid @RequestBody SetFieldGroupsRequest request,
+      ActorContext actor) {
     var fieldDefs = projectService.setFieldGroups(id, request.appliedFieldGroups(), actor);
     return ResponseEntity.ok(fieldDefs);
   }
 
   @PostMapping("/{id}/tags")
   public ResponseEntity<List<TagResponse>> setProjectTags(
-      @PathVariable UUID id, @Valid @RequestBody SetEntityTagsRequest request) {
-    var actor = ActorContext.fromRequestScopes();
+      @PathVariable UUID id, @Valid @RequestBody SetEntityTagsRequest request, ActorContext actor) {
     // Verify project access
     projectService.getProject(id, actor);
     var tags = entityTagService.setEntityTags("PROJECT", id, request.tagIds());
@@ -302,8 +289,8 @@ public class ProjectController {
   }
 
   @GetMapping("/{id}/tags")
-  public ResponseEntity<List<TagResponse>> getProjectTags(@PathVariable UUID id) {
-    var actor = ActorContext.fromRequestScopes();
+  public ResponseEntity<List<TagResponse>> getProjectTags(
+      @PathVariable UUID id, ActorContext actor) {
     // Verify project access
     projectService.getProject(id, actor);
     var tags = entityTagService.getEntityTags("PROJECT", id);
@@ -319,20 +306,6 @@ public class ProjectController {
   @RequiresCapability("PROJECT_MANAGEMENT")
   public ResponseEntity<UnbilledTimeSummary> getUnbilledSummary(@PathVariable UUID id) {
     return ResponseEntity.ok(unbilledTimeSummaryService.getProjectUnbilledSummary(id));
-  }
-
-  private Map<UUID, String> resolveNames(List<Project> projects) {
-    var ids =
-        projects.stream()
-            .flatMap(p -> Stream.of(p.getCreatedBy(), p.getCompletedBy()))
-            .filter(Objects::nonNull)
-            .distinct()
-            .toList();
-    if (ids.isEmpty()) return Map.of();
-    return memberRepository.findAllById(ids).stream()
-        .collect(
-            Collectors.toMap(
-                Member::getId, m -> m.getName() != null ? m.getName() : "", (a, b) -> a));
   }
 
   private static List<ProjectStatus> parseProjectStatuses(String status) {

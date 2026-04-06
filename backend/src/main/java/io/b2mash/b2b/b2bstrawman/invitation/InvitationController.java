@@ -39,7 +39,7 @@ public class InvitationController {
   @GetMapping
   @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<InvitationListResponse> listInvitations(
-      @RequestParam(required = false) String status) {
+      @RequestParam(required = false) InvitationStatus status) {
     return ResponseEntity.ok(invitationService.listInvitations(status));
   }
 

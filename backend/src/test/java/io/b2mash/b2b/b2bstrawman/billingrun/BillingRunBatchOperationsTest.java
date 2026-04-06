@@ -25,7 +25,6 @@ import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
@@ -364,15 +363,7 @@ class BillingRunBatchOperationsTest {
     assertThat(failureCount).isZero();
   }
 
-  @Test
-  @Order(8)
-  void partitionUtility_splitsCorrectly() {
-    var result = BillingRunService.partition(List.of(1, 2, 3, 4, 5), 2);
-    assertThat(result).hasSize(3);
-    assertThat(result.get(0)).containsExactly(1, 2);
-    assertThat(result.get(1)).containsExactly(3, 4);
-    assertThat(result.get(2)).containsExactly(5);
-  }
+  // partition() was inlined into BillingRunService — test removed (method no longer public)
 
   // --- Helpers ---
 

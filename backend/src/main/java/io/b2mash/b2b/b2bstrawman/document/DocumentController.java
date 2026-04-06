@@ -40,14 +40,12 @@ public class DocumentController {
   public ResponseEntity<UploadInitResponse> initiateUpload(
       @PathVariable UUID projectId,
       @Valid @RequestBody UploadInitRequest request,
-      JwtAuthenticationToken auth) {
+      JwtAuthenticationToken auth,
+      ActorContext actor) {
     String orgId = JwtUtils.extractOrgId(auth.getToken());
     if (orgId == null) {
       throw new MissingOrganizationContextException();
     }
-    var actor = ActorContext.fromRequestScopes();
-    String orgRole = actor.orgRole();
-    UUID memberId = actor.memberId();
 
     var result =
         documentService.initiateUpload(
@@ -128,29 +126,22 @@ public class DocumentController {
   // --- Confirm, cancel, project listing, download (existing) ---
 
   @PostMapping("/api/documents/{documentId}/confirm")
-  public ResponseEntity<DocumentResponse> confirmUpload(@PathVariable UUID documentId) {
-    var actor = ActorContext.fromRequestScopes();
-    String orgRole = actor.orgRole();
-    UUID memberId = actor.memberId();
+  public ResponseEntity<DocumentResponse> confirmUpload(
+      @PathVariable UUID documentId, ActorContext actor) {
     var document = documentService.confirmUpload(documentId, actor);
     var memberNames = documentService.resolveUploaderNames(List.of(document));
     return ResponseEntity.ok(DocumentResponse.from(document, memberNames));
   }
 
   @DeleteMapping("/api/documents/{documentId}/cancel")
-  public ResponseEntity<Void> cancelUpload(@PathVariable UUID documentId) {
-    var actor = ActorContext.fromRequestScopes();
-    String orgRole = actor.orgRole();
-    UUID memberId = actor.memberId();
+  public ResponseEntity<Void> cancelUpload(@PathVariable UUID documentId, ActorContext actor) {
     documentService.cancelUpload(documentId, actor);
     return ResponseEntity.noContent().build();
   }
 
   @GetMapping("/api/projects/{projectId}/documents")
-  public ResponseEntity<List<DocumentResponse>> listDocuments(@PathVariable UUID projectId) {
-    var actor = ActorContext.fromRequestScopes();
-    String orgRole = actor.orgRole();
-    UUID memberId = actor.memberId();
+  public ResponseEntity<List<DocumentResponse>> listDocuments(
+      @PathVariable UUID projectId, ActorContext actor) {
     var documents = documentService.listDocuments(projectId, actor);
     var memberNames = documentService.resolveUploaderNames(documents);
     var response = documents.stream().map(d -> DocumentResponse.from(d, memberNames)).toList();
@@ -158,10 +149,8 @@ public class DocumentController {
   }
 
   @GetMapping("/api/documents/{documentId}/presign-download")
-  public ResponseEntity<PresignDownloadResponse> presignDownload(@PathVariable UUID documentId) {
-    var actor = ActorContext.fromRequestScopes();
-    String orgRole = actor.orgRole();
-    UUID memberId = actor.memberId();
+  public ResponseEntity<PresignDownloadResponse> presignDownload(
+      @PathVariable UUID documentId, ActorContext actor) {
     var result = documentService.getPresignedDownloadUrl(documentId, actor);
     return ResponseEntity.ok(new PresignDownloadResponse(result.url(), result.expiresInSeconds()));
   }

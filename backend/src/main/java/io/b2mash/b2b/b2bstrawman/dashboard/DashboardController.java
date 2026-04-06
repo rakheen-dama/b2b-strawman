@@ -42,10 +42,8 @@ public class DashboardController {
    * Requires view access to the project.
    */
   @GetMapping("/api/projects/{projectId}/health")
-  public ResponseEntity<ProjectHealthDetail> getProjectHealth(@PathVariable UUID projectId) {
-    var actor = ActorContext.fromRequestScopes();
-    String orgRole = actor.orgRole();
-    UUID memberId = actor.memberId();
+  public ResponseEntity<ProjectHealthDetail> getProjectHealth(
+      @PathVariable UUID projectId, ActorContext actor) {
     String tenantId = RequestScopes.TENANT_ID.get();
 
     projectAccessService.requireViewAccess(projectId, actor);
@@ -58,10 +56,8 @@ public class DashboardController {
    * Returns task counts broken down by status for a project. Requires view access to the project.
    */
   @GetMapping("/api/projects/{projectId}/task-summary")
-  public ResponseEntity<TaskSummary> getTaskSummary(@PathVariable UUID projectId) {
-    var actor = ActorContext.fromRequestScopes();
-    String orgRole = actor.orgRole();
-    UUID memberId = actor.memberId();
+  public ResponseEntity<TaskSummary> getTaskSummary(
+      @PathVariable UUID projectId, ActorContext actor) {
     String tenantId = RequestScopes.TENANT_ID.get();
 
     projectAccessService.requireViewAccess(projectId, actor);
@@ -78,15 +74,13 @@ public class DashboardController {
   public ResponseEntity<List<MemberHoursEntry>> getProjectMemberHours(
       @PathVariable UUID projectId,
       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+      ActorContext actor) {
     if (from.isAfter(to)) {
       throw new InvalidStateException(
           "Invalid Date Range", "'from' date must not be after 'to' date");
     }
 
-    var actor = ActorContext.fromRequestScopes();
-    String orgRole = actor.orgRole();
-    UUID memberId = actor.memberId();
     String tenantId = RequestScopes.TENANT_ID.get();
 
     projectAccessService.requireViewAccess(projectId, actor);
@@ -122,11 +116,8 @@ public class DashboardController {
    * then by completion percent ascending.
    */
   @GetMapping("/api/dashboard/project-health")
-  public ResponseEntity<List<ProjectHealth>> getProjectHealthList() {
+  public ResponseEntity<List<ProjectHealth>> getProjectHealthList(ActorContext actor) {
     String tenantId = RequestScopes.TENANT_ID.get();
-    var actor = ActorContext.fromRequestScopes();
-    String orgRole = actor.orgRole();
-    UUID memberId = actor.memberId();
 
     var healthList = dashboardService.getProjectHealthList(tenantId, actor);
     return ResponseEntity.ok(healthList);
@@ -139,16 +130,14 @@ public class DashboardController {
   @GetMapping("/api/dashboard/team-workload")
   public ResponseEntity<List<TeamWorkloadEntry>> getTeamWorkload(
       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+      ActorContext actor) {
     if (from.isAfter(to)) {
       throw new InvalidStateException(
           "Invalid Date Range", "'from' date must not be after 'to' date");
     }
 
     String tenantId = RequestScopes.TENANT_ID.get();
-    var actor = ActorContext.fromRequestScopes();
-    String orgRole = actor.orgRole();
-    UUID memberId = actor.memberId();
 
     var workload = dashboardService.getTeamWorkload(tenantId, actor, from, to);
     return ResponseEntity.ok(workload);
@@ -160,13 +149,10 @@ public class DashboardController {
    */
   @GetMapping("/api/dashboard/activity")
   public ResponseEntity<List<CrossProjectActivityItem>> getCrossProjectActivity(
-      @RequestParam(defaultValue = "10") int limit) {
+      @RequestParam(defaultValue = "10") int limit, ActorContext actor) {
     limit = Math.max(1, Math.min(50, limit));
 
     String tenantId = RequestScopes.TENANT_ID.get();
-    var actor = ActorContext.fromRequestScopes();
-    String orgRole = actor.orgRole();
-    UUID memberId = actor.memberId();
 
     var activity = dashboardService.getCrossProjectActivity(tenantId, actor, limit);
     return ResponseEntity.ok(activity);

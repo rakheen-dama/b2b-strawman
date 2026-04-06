@@ -28,8 +28,8 @@ public class TaskItemController {
   }
 
   @GetMapping("/api/tasks/{taskId}/items")
-  public ResponseEntity<List<TaskItemResponse>> listItems(@PathVariable UUID taskId) {
-    var actor = ActorContext.fromRequestScopes();
+  public ResponseEntity<List<TaskItemResponse>> listItems(
+      @PathVariable UUID taskId, ActorContext actor) {
 
     var items = taskItemService.listItems(taskId, actor);
     var response = items.stream().map(TaskItemResponse::from).toList();
@@ -38,8 +38,9 @@ public class TaskItemController {
 
   @PostMapping("/api/tasks/{taskId}/items")
   public ResponseEntity<TaskItemResponse> addItem(
-      @PathVariable UUID taskId, @Valid @RequestBody CreateTaskItemRequest request) {
-    var actor = ActorContext.fromRequestScopes();
+      @PathVariable UUID taskId,
+      @Valid @RequestBody CreateTaskItemRequest request,
+      ActorContext actor) {
 
     int sortOrder = request.sortOrder() != null ? request.sortOrder() : 0;
     var item = taskItemService.addItem(taskId, request.title(), sortOrder, actor);
@@ -52,8 +53,8 @@ public class TaskItemController {
   public ResponseEntity<TaskItemResponse> updateItem(
       @PathVariable UUID taskId,
       @PathVariable UUID itemId,
-      @Valid @RequestBody UpdateTaskItemRequest request) {
-    var actor = ActorContext.fromRequestScopes();
+      @Valid @RequestBody UpdateTaskItemRequest request,
+      ActorContext actor) {
 
     var item = taskItemService.updateItem(itemId, request.title(), request.sortOrder(), actor);
     return ResponseEntity.ok(TaskItemResponse.from(item));
@@ -61,8 +62,7 @@ public class TaskItemController {
 
   @PutMapping("/api/tasks/{taskId}/items/{itemId}/toggle")
   public ResponseEntity<TaskItemResponse> toggleItem(
-      @PathVariable UUID taskId, @PathVariable UUID itemId) {
-    var actor = ActorContext.fromRequestScopes();
+      @PathVariable UUID taskId, @PathVariable UUID itemId, ActorContext actor) {
 
     var item = taskItemService.toggleItem(itemId, actor);
     return ResponseEntity.ok(TaskItemResponse.from(item));
@@ -70,8 +70,8 @@ public class TaskItemController {
 
   @DeleteMapping("/api/tasks/{taskId}/items/{itemId}")
   @RequiresCapability("PROJECT_MANAGEMENT")
-  public ResponseEntity<Void> deleteItem(@PathVariable UUID taskId, @PathVariable UUID itemId) {
-    var actor = ActorContext.fromRequestScopes();
+  public ResponseEntity<Void> deleteItem(
+      @PathVariable UUID taskId, @PathVariable UUID itemId, ActorContext actor) {
 
     taskItemService.deleteItem(itemId, actor);
     return ResponseEntity.noContent().build();
@@ -80,8 +80,7 @@ public class TaskItemController {
   @PutMapping("/api/tasks/{taskId}/items/reorder")
   @RequiresCapability("PROJECT_MANAGEMENT")
   public ResponseEntity<List<TaskItemResponse>> reorderItems(
-      @PathVariable UUID taskId, @Valid @RequestBody ReorderRequest request) {
-    var actor = ActorContext.fromRequestScopes();
+      @PathVariable UUID taskId, @Valid @RequestBody ReorderRequest request, ActorContext actor) {
 
     var items = taskItemService.reorderItems(taskId, request.orderedIds(), actor);
     var response = items.stream().map(TaskItemResponse::from).toList();

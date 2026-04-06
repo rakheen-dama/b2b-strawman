@@ -1,30 +1,24 @@
 package io.b2mash.b2b.b2bstrawman.task;
 
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.SetFieldGroupsRequest;
-import io.b2mash.b2b.b2bstrawman.member.Member;
-import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import io.b2mash.b2b.b2bstrawman.tag.EntityTagService;
 import io.b2mash.b2b.b2bstrawman.tag.TagFilterUtil;
 import io.b2mash.b2b.b2bstrawman.tag.dto.SetEntityTagsRequest;
 import io.b2mash.b2b.b2bstrawman.tag.dto.TagResponse;
+import io.b2mash.b2b.b2bstrawman.task.dto.TaskDtos.CompleteTaskResponse;
+import io.b2mash.b2b.b2bstrawman.task.dto.TaskDtos.CreateTaskRequest;
+import io.b2mash.b2b.b2bstrawman.task.dto.TaskDtos.TaskResponse;
+import io.b2mash.b2b.b2bstrawman.task.dto.TaskDtos.UpdateTaskRequest;
 import io.b2mash.b2b.b2bstrawman.view.CustomFieldFilterUtil;
 import io.b2mash.b2b.b2bstrawman.view.ViewFilterHelper;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import java.net.URI;
-import java.time.Instant;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -40,25 +34,23 @@ import org.springframework.web.bind.annotation.RestController;
 public class TaskController {
 
   private final TaskService taskService;
-  private final MemberRepository memberRepository;
   private final EntityTagService entityTagService;
   private final ViewFilterHelper viewFilterHelper;
 
   public TaskController(
       TaskService taskService,
-      MemberRepository memberRepository,
       EntityTagService entityTagService,
       ViewFilterHelper viewFilterHelper) {
     this.taskService = taskService;
-    this.memberRepository = memberRepository;
     this.entityTagService = entityTagService;
     this.viewFilterHelper = viewFilterHelper;
   }
 
   @PostMapping("/api/projects/{projectId}/tasks")
   public ResponseEntity<TaskResponse> createTask(
-      @PathVariable UUID projectId, @Valid @RequestBody CreateTaskRequest request) {
-    var actor = ActorContext.fromRequestScopes();
+      @PathVariable UUID projectId,
+      @Valid @RequestBody CreateTaskRequest request,
+      ActorContext actor) {
 
     var task =
         taskService.createTask(
@@ -75,7 +67,7 @@ public class TaskController {
             request.recurrenceRule(),
             request.recurrenceEndDate());
 
-    var names = resolveNames(List.of(task));
+    var names = taskService.resolveTaskMemberNames(List.of(task));
     return ResponseEntity.created(URI.create("/api/tasks/" + task.getId()))
         .body(TaskResponse.from(task, names, List.of()));
   }
@@ -89,8 +81,8 @@ public class TaskController {
       @RequestParam(required = false) String priority,
       @RequestParam(required = false) String assigneeFilter,
       @RequestParam(required = false) Boolean recurring,
-      @RequestParam(required = false) Map<String, String> allParams) {
-    var actor = ActorContext.fromRequestScopes();
+      @RequestParam(required = false) Map<String, String> allParams,
+      ActorContext actor) {
 
     // --- View-based filtering (server-side SQL) ---
     if (view != null) {
@@ -102,7 +94,7 @@ public class TaskController {
         if (Boolean.TRUE.equals(recurring)) {
           filtered = filtered.stream().filter(Task::isRecurring).toList();
         }
-        var names = resolveNames(filtered);
+        var names = taskService.resolveTaskMemberNames(filtered);
         var taskIds = filtered.stream().map(Task::getId).toList();
         var tagsByEntityId = entityTagService.getEntityTagsBatch("TASK", taskIds);
 
@@ -121,7 +113,7 @@ public class TaskController {
     var taskEntities =
         taskService.listTasks(
             projectId, actor, status, assigneeId, priority, assigneeFilter, recurring);
-    var names = resolveNames(taskEntities);
+    var names = taskService.resolveTaskMemberNames(taskEntities);
 
     // Batch-load tags for all tasks (2 queries instead of 2N)
     var taskIds = taskEntities.stream().map(Task::getId).toList();
@@ -157,19 +149,17 @@ public class TaskController {
   }
 
   @GetMapping("/api/tasks/{id}")
-  public ResponseEntity<TaskResponse> getTask(@PathVariable UUID id) {
-    var actor = ActorContext.fromRequestScopes();
+  public ResponseEntity<TaskResponse> getTask(@PathVariable UUID id, ActorContext actor) {
 
     var task = taskService.getTask(id, actor);
-    var names = resolveNames(List.of(task));
+    var names = taskService.resolveTaskMemberNames(List.of(task));
     var tags = entityTagService.getEntityTags("TASK", id);
     return ResponseEntity.ok(TaskResponse.from(task, names, tags));
   }
 
   @PutMapping("/api/tasks/{id}")
   public ResponseEntity<TaskResponse> updateTask(
-      @PathVariable UUID id, @Valid @RequestBody UpdateTaskRequest request) {
-    var actor = ActorContext.fromRequestScopes();
+      @PathVariable UUID id, @Valid @RequestBody UpdateTaskRequest request, ActorContext actor) {
 
     var task =
         taskService.updateTask(
@@ -187,63 +177,58 @@ public class TaskController {
             request.recurrenceRule(),
             request.recurrenceEndDate());
 
-    var names = resolveNames(List.of(task));
+    var names = taskService.resolveTaskMemberNames(List.of(task));
     var tags = entityTagService.getEntityTags("TASK", id);
     return ResponseEntity.ok(TaskResponse.from(task, names, tags));
   }
 
   @DeleteMapping("/api/tasks/{id}")
-  public ResponseEntity<Void> deleteTask(@PathVariable UUID id) {
-    var actor = ActorContext.fromRequestScopes();
+  public ResponseEntity<Void> deleteTask(@PathVariable UUID id, ActorContext actor) {
 
     taskService.deleteTask(id, actor);
     return ResponseEntity.noContent().build();
   }
 
   @PostMapping("/api/tasks/{id}/claim")
-  public ResponseEntity<TaskResponse> claimTask(@PathVariable UUID id) {
-    var actor = ActorContext.fromRequestScopes();
+  public ResponseEntity<TaskResponse> claimTask(@PathVariable UUID id, ActorContext actor) {
 
     var task = taskService.claimTask(id, actor);
-    var names = resolveNames(List.of(task));
+    var names = taskService.resolveTaskMemberNames(List.of(task));
     var tags = entityTagService.getEntityTags("TASK", id);
     return ResponseEntity.ok(TaskResponse.from(task, names, tags));
   }
 
   @PostMapping("/api/tasks/{id}/release")
-  public ResponseEntity<TaskResponse> releaseTask(@PathVariable UUID id) {
-    var actor = ActorContext.fromRequestScopes();
+  public ResponseEntity<TaskResponse> releaseTask(@PathVariable UUID id, ActorContext actor) {
 
     var task = taskService.releaseTask(id, actor);
-    var names = resolveNames(List.of(task));
+    var names = taskService.resolveTaskMemberNames(List.of(task));
     var tags = entityTagService.getEntityTags("TASK", id);
     return ResponseEntity.ok(TaskResponse.from(task, names, tags));
   }
 
   @PatchMapping("/api/tasks/{id}/complete")
-  public ResponseEntity<CompleteTaskResponse> completeTask(@PathVariable UUID id) {
-    var actor = ActorContext.fromRequestScopes();
+  public ResponseEntity<CompleteTaskResponse> completeTask(
+      @PathVariable UUID id, ActorContext actor) {
 
     var result = taskService.completeTask(id, actor);
     return ResponseEntity.ok(buildCompleteTaskResponse(result, id));
   }
 
   @PatchMapping("/api/tasks/{id}/cancel")
-  public ResponseEntity<TaskResponse> cancelTask(@PathVariable UUID id) {
-    var actor = ActorContext.fromRequestScopes();
+  public ResponseEntity<TaskResponse> cancelTask(@PathVariable UUID id, ActorContext actor) {
 
     var task = taskService.cancelTask(id, actor);
-    var names = resolveNames(List.of(task));
+    var names = taskService.resolveTaskMemberNames(List.of(task));
     var tags = entityTagService.getEntityTags("TASK", id);
     return ResponseEntity.ok(TaskResponse.from(task, names, tags));
   }
 
   @PatchMapping("/api/tasks/{id}/reopen")
-  public ResponseEntity<TaskResponse> reopenTask(@PathVariable UUID id) {
-    var actor = ActorContext.fromRequestScopes();
+  public ResponseEntity<TaskResponse> reopenTask(@PathVariable UUID id, ActorContext actor) {
 
     var task = taskService.reopenTask(id, actor);
-    var names = resolveNames(List.of(task));
+    var names = taskService.resolveTaskMemberNames(List.of(task));
     var tags = entityTagService.getEntityTags("TASK", id);
     return ResponseEntity.ok(TaskResponse.from(task, names, tags));
   }
@@ -251,16 +236,16 @@ public class TaskController {
   @PutMapping("/api/tasks/{id}/field-groups")
   @RequiresCapability("PROJECT_MANAGEMENT")
   public ResponseEntity<List<FieldDefinitionResponse>> setFieldGroups(
-      @PathVariable UUID id, @Valid @RequestBody SetFieldGroupsRequest request) {
-    var actor = ActorContext.fromRequestScopes();
+      @PathVariable UUID id,
+      @Valid @RequestBody SetFieldGroupsRequest request,
+      ActorContext actor) {
     var fieldDefs = taskService.setFieldGroups(id, request.appliedFieldGroups(), actor);
     return ResponseEntity.ok(fieldDefs);
   }
 
   @PostMapping("/api/tasks/{id}/tags")
   public ResponseEntity<List<TagResponse>> setTaskTags(
-      @PathVariable UUID id, @Valid @RequestBody SetEntityTagsRequest request) {
-    var actor = ActorContext.fromRequestScopes();
+      @PathVariable UUID id, @Valid @RequestBody SetEntityTagsRequest request, ActorContext actor) {
     // Verify task access
     taskService.getTask(id, actor);
     var tags = entityTagService.setEntityTags("TASK", id, request.tagIds());
@@ -268,8 +253,7 @@ public class TaskController {
   }
 
   @GetMapping("/api/tasks/{id}/tags")
-  public ResponseEntity<List<TagResponse>> getTaskTags(@PathVariable UUID id) {
-    var actor = ActorContext.fromRequestScopes();
+  public ResponseEntity<List<TagResponse>> getTaskTags(@PathVariable UUID id, ActorContext actor) {
     // Verify task access
     taskService.getTask(id, actor);
     var tags = entityTagService.getEntityTags("TASK", id);
@@ -286,7 +270,7 @@ public class TaskController {
         result.nextInstance() != null
             ? List.of(result.completedTask(), result.nextInstance())
             : List.of(result.completedTask());
-    var names = resolveNames(tasksForNames);
+    var names = taskService.resolveTaskMemberNames(tasksForNames);
     var tags = entityTagService.getEntityTags("TASK", completedTaskId);
 
     TaskResponse nextInstanceResponse = null;
@@ -297,139 +281,5 @@ public class TaskController {
 
     return new CompleteTaskResponse(
         TaskResponse.from(result.completedTask(), names, tags), nextInstanceResponse);
-  }
-
-  /**
-   * Batch-loads member names for all assignee and createdBy IDs referenced by the given tasks.
-   * Returns a map of member UUID to display name.
-   */
-  private Map<UUID, String> resolveNames(List<Task> tasks) {
-    var ids =
-        tasks.stream()
-            .flatMap(t -> Stream.of(t.getAssigneeId(), t.getCreatedBy(), t.getCompletedBy()))
-            .filter(Objects::nonNull)
-            .distinct()
-            .toList();
-
-    if (ids.isEmpty()) {
-      return Map.of();
-    }
-
-    return memberRepository.findAllById(ids).stream()
-        .collect(
-            Collectors.toMap(
-                Member::getId, m -> m.getName() != null ? m.getName() : "", (a, b) -> a));
-  }
-
-  // --- DTOs ---
-
-  /**
-   * Request body for task creation.
-   *
-   * @param assigneeId Optional. The member to pre-assign the task to at creation time. Only honored
-   *     for admin/owner callers; silently ignored for regular members. See {@link
-   *     TaskService#createTask} for the permission asymmetry rationale.
-   */
-  public record CreateTaskRequest(
-      @NotBlank(message = "title is required")
-          @Size(max = 500, message = "title must be at most 500 characters")
-          String title,
-      String description,
-      @Size(max = 20, message = "priority must be at most 20 characters") String priority,
-      @Size(max = 100, message = "type must be at most 100 characters") String type,
-      LocalDate dueDate,
-      Map<String, Object> customFields,
-      List<UUID> appliedFieldGroups,
-      UUID assigneeId,
-      @Size(max = 100, message = "recurrenceRule must be at most 100 characters")
-          String recurrenceRule,
-      LocalDate recurrenceEndDate) {}
-
-  public record UpdateTaskRequest(
-      @NotBlank(message = "title is required")
-          @Size(max = 500, message = "title must be at most 500 characters")
-          String title,
-      String description,
-      @NotBlank(message = "priority is required")
-          @Size(max = 20, message = "priority must be at most 20 characters")
-          String priority,
-      @NotBlank(message = "status is required")
-          @Size(max = 20, message = "status must be at most 20 characters")
-          String status,
-      @Size(max = 100, message = "type must be at most 100 characters") String type,
-      LocalDate dueDate,
-      UUID assigneeId,
-      Map<String, Object> customFields,
-      List<UUID> appliedFieldGroups,
-      @Size(max = 100, message = "recurrenceRule must be at most 100 characters")
-          String recurrenceRule,
-      LocalDate recurrenceEndDate) {}
-
-  /**
-   * Backward-compatible response for the complete endpoint. The completed task fields are unwrapped
-   * to the top level (so response.status, response.title, etc. still work). The optional
-   * nextInstance field is a nested TaskResponse for the next recurring instance.
-   */
-  public record CompleteTaskResponse(
-      @JsonUnwrapped TaskResponse completedTask, TaskResponse nextInstance) {}
-
-  public record TaskResponse(
-      UUID id,
-      UUID projectId,
-      String title,
-      String description,
-      String status,
-      String priority,
-      String type,
-      UUID assigneeId,
-      String assigneeName,
-      UUID createdBy,
-      String createdByName,
-      LocalDate dueDate,
-      int version,
-      Instant createdAt,
-      Instant updatedAt,
-      Instant completedAt,
-      UUID completedBy,
-      String completedByName,
-      Instant cancelledAt,
-      Map<String, Object> customFields,
-      List<UUID> appliedFieldGroups,
-      List<TagResponse> tags,
-      String recurrenceRule,
-      LocalDate recurrenceEndDate,
-      UUID parentTaskId,
-      boolean isRecurring) {
-
-    public static TaskResponse from(
-        Task task, Map<UUID, String> memberNames, List<TagResponse> tags) {
-      return new TaskResponse(
-          task.getId(),
-          task.getProjectId(),
-          task.getTitle(),
-          task.getDescription(),
-          task.getStatus().name(),
-          task.getPriority().name(),
-          task.getType(),
-          task.getAssigneeId(),
-          task.getAssigneeId() != null ? memberNames.get(task.getAssigneeId()) : null,
-          task.getCreatedBy(),
-          memberNames.get(task.getCreatedBy()),
-          task.getDueDate(),
-          task.getVersion(),
-          task.getCreatedAt(),
-          task.getUpdatedAt(),
-          task.getCompletedAt(),
-          task.getCompletedBy(),
-          task.getCompletedBy() != null ? memberNames.get(task.getCompletedBy()) : null,
-          task.getCancelledAt(),
-          task.getCustomFields(),
-          task.getAppliedFieldGroups(),
-          tags,
-          task.getRecurrenceRule(),
-          task.getRecurrenceEndDate(),
-          task.getParentTaskId(),
-          task.isRecurring());
-    }
   }
 }

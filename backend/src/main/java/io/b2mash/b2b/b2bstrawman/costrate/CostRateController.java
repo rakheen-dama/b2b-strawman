@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.costrate;
 
-import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import jakarta.validation.Valid;
@@ -14,7 +13,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -32,32 +30,23 @@ import org.springframework.web.bind.annotation.RestController;
 public class CostRateController {
 
   private final CostRateService costRateService;
-  private final MemberNameResolver memberNameResolver;
 
-  public CostRateController(
-      CostRateService costRateService, MemberNameResolver memberNameResolver) {
+  public CostRateController(CostRateService costRateService) {
     this.costRateService = costRateService;
-    this.memberNameResolver = memberNameResolver;
   }
 
   @GetMapping
   @RequiresCapability("FINANCIAL_VISIBILITY")
   public ResponseEntity<ListResponse<CostRateResponse>> listCostRates(
-      @RequestParam(required = false) UUID memberId) {
-    var actor = ActorContext.fromRequestScopes();
-
+      @RequestParam(required = false) UUID memberId, ActorContext actor) {
     var rates = costRateService.listCostRates(memberId, actor);
-    var memberNames = resolveMemberNames(rates);
-    var content = rates.stream().map(r -> CostRateResponse.from(r, memberNames)).toList();
-    return ResponseEntity.ok(new ListResponse<>(content));
+    return ResponseEntity.ok(new ListResponse<>(costRateService.toResponses(rates)));
   }
 
   @PostMapping
   @RequiresCapability("FINANCIAL_VISIBILITY")
   public ResponseEntity<CostRateResponse> createCostRate(
-      @Valid @RequestBody CreateCostRateRequest request) {
-    var actor = ActorContext.fromRequestScopes();
-
+      @Valid @RequestBody CreateCostRateRequest request, ActorContext actor) {
     var rate =
         costRateService.createCostRate(
             request.memberId(),
@@ -66,18 +55,16 @@ public class CostRateController {
             request.effectiveFrom(),
             request.effectiveTo(),
             actor);
-
-    var memberNames = resolveMemberNames(List.of(rate));
     return ResponseEntity.created(URI.create("/api/cost-rates/" + rate.getId()))
-        .body(CostRateResponse.from(rate, memberNames));
+        .body(costRateService.toResponse(rate));
   }
 
   @PutMapping("/{id}")
   @RequiresCapability("FINANCIAL_VISIBILITY")
   public ResponseEntity<CostRateResponse> updateCostRate(
-      @PathVariable UUID id, @Valid @RequestBody UpdateCostRateRequest request) {
-    var actor = ActorContext.fromRequestScopes();
-
+      @PathVariable UUID id,
+      @Valid @RequestBody UpdateCostRateRequest request,
+      ActorContext actor) {
     var rate =
         costRateService.updateCostRate(
             id,
@@ -86,26 +73,14 @@ public class CostRateController {
             request.effectiveFrom(),
             request.effectiveTo(),
             actor);
-
-    var memberNames = resolveMemberNames(List.of(rate));
-    return ResponseEntity.ok(CostRateResponse.from(rate, memberNames));
+    return ResponseEntity.ok(costRateService.toResponse(rate));
   }
 
   @DeleteMapping("/{id}")
   @RequiresCapability("FINANCIAL_VISIBILITY")
-  public ResponseEntity<Void> deleteCostRate(@PathVariable UUID id) {
-    var actor = ActorContext.fromRequestScopes();
-
+  public ResponseEntity<Void> deleteCostRate(@PathVariable UUID id, ActorContext actor) {
     costRateService.deleteCostRate(id, actor);
     return ResponseEntity.noContent().build();
-  }
-
-  // --- Name Resolution ---
-
-  private Map<UUID, String> resolveMemberNames(List<CostRate> rates) {
-    var memberIds =
-        rates.stream().map(CostRate::getMemberId).filter(Objects::nonNull).distinct().toList();
-    return memberNameResolver.resolveNames(memberIds);
   }
 
   // --- DTOs ---

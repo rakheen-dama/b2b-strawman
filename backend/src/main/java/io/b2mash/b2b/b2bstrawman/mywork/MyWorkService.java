@@ -47,7 +47,7 @@ public class MyWorkService {
    */
   @Transactional(readOnly = true)
   public MyWorkController.MyWorkTasksResponse getMyTasks(
-      UUID memberId, String filter, String status, UUID projectId) {
+      UUID memberId, String filter, TaskStatus status, UUID projectId) {
 
     List<Task> assigned = Collections.emptyList();
     List<Task> unassigned = Collections.emptyList();
@@ -63,11 +63,10 @@ public class MyWorkService {
       unassigned = taskRepository.findUnassignedInMemberProjects(memberId);
     }
 
-    // Apply optional status filter (convert String to TaskStatus for enum comparison)
+    // Apply optional status filter
     if (status != null) {
-      TaskStatus taskStatus = TaskStatus.valueOf(status);
-      assigned = assigned.stream().filter(t -> taskStatus == t.getStatus()).toList();
-      unassigned = unassigned.stream().filter(t -> taskStatus == t.getStatus()).toList();
+      assigned = assigned.stream().filter(t -> status == t.getStatus()).toList();
+      unassigned = unassigned.stream().filter(t -> status == t.getStatus()).toList();
     }
 
     // Apply optional projectId filter

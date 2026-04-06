@@ -19,17 +19,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/members")
 public class OrgMemberController {
 
-  private final MemberRepository memberRepository;
+  private final MemberSyncService memberSyncService;
   private final OrgRoleService orgRoleService;
 
-  public OrgMemberController(MemberRepository memberRepository, OrgRoleService orgRoleService) {
-    this.memberRepository = memberRepository;
+  public OrgMemberController(MemberSyncService memberSyncService, OrgRoleService orgRoleService) {
+    this.memberSyncService = memberSyncService;
     this.orgRoleService = orgRoleService;
   }
 
   @GetMapping
   public ResponseEntity<List<OrgMemberResponse>> listOrgMembers() {
-    var members = memberRepository.findAll().stream().map(OrgMemberResponse::from).toList();
+    var members = memberSyncService.listAll().stream().map(OrgMemberResponse::from).toList();
     return ResponseEntity.ok(members);
   }
 

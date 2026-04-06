@@ -18,6 +18,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.ProblemDetailAssertions;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
@@ -30,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -197,16 +199,17 @@ class CustomerIntegrationTest {
                     """))
         .andExpect(status().isCreated());
 
-    mockMvc
-        .perform(
+    var result =
+        mockMvc.perform(
             post("/api/customers")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cust_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
                     {"name": "Second", "email": "duplicate@test.com"}
-                    """))
-        .andExpect(status().isConflict());
+                    """));
+    ProblemDetailAssertions.assertProblemWithDetail(
+        result, HttpStatus.CONFLICT, "Customer email conflict", "duplicate@test.com");
   }
 
   @Test
@@ -304,30 +307,30 @@ class CustomerIntegrationTest {
 
   @Test
   void shouldReject400WhenNameIsMissing() throws Exception {
-    mockMvc
-        .perform(
+    var result =
+        mockMvc.perform(
             post("/api/customers")
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_cust_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
                     {"email": "valid@test.com"}
-                    """))
-        .andExpect(status().isBadRequest());
+                    """));
+    ProblemDetailAssertions.assertValidationErrors(result, "name");
   }
 
   @Test
   void shouldReject400WhenEmailIsMissing() throws Exception {
-    mockMvc
-        .perform(
+    var result =
+        mockMvc.perform(
             post("/api/customers")
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_cust_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
                     {"name": "No Email"}
-                    """))
-        .andExpect(status().isBadRequest());
+                    """));
+    ProblemDetailAssertions.assertValidationErrors(result, "email");
   }
 
   @Test
@@ -348,11 +351,11 @@ class CustomerIntegrationTest {
 
   @Test
   void shouldReturn404ForNonexistentCustomer() throws Exception {
-    mockMvc
-        .perform(
+    var result =
+        mockMvc.perform(
             get("/api/customers/00000000-0000-0000-0000-000000000000")
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cust_owner")))
-        .andExpect(status().isNotFound());
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_cust_owner")));
+    ProblemDetailAssertions.assertProblem(result, HttpStatus.NOT_FOUND, "Customer not found");
   }
 
   // --- Capability Tests (added in Epic 315A) ---

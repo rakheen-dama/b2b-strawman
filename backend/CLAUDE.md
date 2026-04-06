@@ -324,6 +324,26 @@ ScopedValue.where(RequestScopes.TENANT_ID, "tenant_test123").run(() -> {
 });
 ```
 
+### Test Taxonomy
+
+| Type | Location | Annotations | What it tests | Dependencies allowed |
+|------|----------|-------------|---------------|---------------------|
+| Integration (HTTP) | `*IntegrationTest.java` | `@SpringBootTest`, `@AutoConfigureMockMvc`, `@Import(TestcontainersConfiguration.class)` | Full request→response cycle via MockMvc | Real DB (Testcontainers), all Spring beans |
+| Service | `*ServiceTest.java` | Same as integration | Service logic with real dependencies | Real DB, repositories, other services |
+| Architecture | `architecture/*Test.java` | `@AnalyzeClasses` | Package dependencies, naming conventions | ArchUnit (no Spring context) |
+
+**Naming conventions:**
+- `*IntegrationTest` — HTTP-level tests using MockMvc
+- `*ServiceTest` — service-level tests with Spring context
+- `*Test` — general tests (unit or integration)
+- Never suffix with `Tests` (plural)
+
+**Test coupling rules:**
+- HTTP tests assert response status + JSON shape, not internal state
+- Service tests may inject repositories for setup, but prefer `TestEntityHelper` API calls
+- Never mock repositories in integration tests — use real Testcontainers Postgres
+- Error path tests must assert ProblemDetail fields (status, title, detail), not just HTTP status code
+
 ## Error Handling & Resilience
 
 ### Exception Pattern

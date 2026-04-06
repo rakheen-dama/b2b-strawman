@@ -4,17 +4,24 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.MemberContextNotBoundException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.TypeMismatchException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 @ControllerAdvice
@@ -48,9 +55,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                     "reason", "insufficient_role"))
             .build());
 
-    var problem = ProblemDetail.forStatus(HttpStatus.FORBIDDEN);
-    problem.setTitle("Access denied");
-    problem.setDetail("Insufficient permissions for this operation");
+    var problem =
+        ProblemDetailFactory.create(
+            HttpStatus.FORBIDDEN, "Access denied", "Insufficient permissions for this operation");
     return ResponseEntity.status(HttpStatus.FORBIDDEN).body(problem);
   }
 
@@ -83,9 +90,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
   public ResponseEntity<ProblemDetail> handleMemberContextNotBound(
       MemberContextNotBoundException ex) {
     log.error("Member context invariant violation: {}", ex.getMessage());
-    var problem = ProblemDetail.forStatus(HttpStatus.INTERNAL_SERVER_ERROR);
-    problem.setTitle("Member context not available");
-    problem.setDetail("Unable to resolve member identity for request");
+    var problem =
+        ProblemDetailFactory.create(
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            "Member context not available",
+            "Unable to resolve member identity for request");
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(problem);
   }
 
@@ -123,9 +132,106 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
   public ResponseEntity<ProblemDetail> handleOptimisticLock(
       ObjectOptimisticLockingFailureException ex) {
     log.warn("Optimistic locking failure: {}", ex.getMessage());
-    var problem = ProblemDetail.forStatus(HttpStatus.CONFLICT);
-    problem.setTitle("Concurrent modification");
-    problem.setDetail("Resource was modified concurrently. Please retry.");
+    var problem =
+        ProblemDetailFactory.create(
+            HttpStatus.CONFLICT,
+            "Concurrent modification",
+            "Resource was modified concurrently. Please retry.");
     return ResponseEntity.status(HttpStatus.CONFLICT).body(problem);
+  }
+
+  @Override
+  protected ResponseEntity<Object> handleMethodArgumentNotValid(
+      MethodArgumentNotValidException ex,
+      HttpHeaders headers,
+      HttpStatusCode status,
+      WebRequest request) {
+    List<Map<String, String>> fieldErrors =
+        ex.getBindingResult().getFieldErrors().stream()
+            .map(
+                fe ->
+                    Map.of(
+                        "field",
+                        fe.getField(),
+                        "message",
+                        fe.getDefaultMessage() != null ? fe.getDefaultMessage() : "invalid"))
+            .toList();
+
+    var problem =
+        ProblemDetailFactory.create(
+            HttpStatus.BAD_REQUEST,
+            "Validation failed",
+            fieldErrors.size() + " field(s) have validation errors",
+            Map.of("fieldErrors", fieldErrors));
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problem);
+  }
+
+  @Override
+  protected ResponseEntity<Object> handleHttpMessageNotReadable(
+      org.springframework.http.converter.HttpMessageNotReadableException ex,
+      HttpHeaders headers,
+      HttpStatusCode status,
+      WebRequest request) {
+    var problem =
+        ProblemDetailFactory.create(
+            HttpStatus.BAD_REQUEST,
+            "Malformed request body",
+            "The request body could not be read or parsed");
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problem);
+  }
+
+  @Override
+  protected ResponseEntity<Object> handleTypeMismatch(
+      TypeMismatchException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+    var problem =
+        ProblemDetailFactory.create(
+            HttpStatus.BAD_REQUEST,
+            "Invalid parameter value",
+            "Parameter '"
+                + ex.getPropertyName()
+                + "' should be of type "
+                + (ex.getRequiredType() != null
+                    ? ex.getRequiredType().getSimpleName()
+                    : "unknown"));
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problem);
+  }
+
+  @ExceptionHandler(ConstraintViolationException.class)
+  public ResponseEntity<ProblemDetail> handleConstraintViolation(ConstraintViolationException ex) {
+    List<Map<String, String>> violations =
+        ex.getConstraintViolations().stream()
+            .map(
+                cv ->
+                    Map.of(
+                        "field", cv.getPropertyPath().toString(),
+                        "message", cv.getMessage()))
+            .toList();
+
+    var problem =
+        ProblemDetailFactory.create(
+            HttpStatus.BAD_REQUEST,
+            "Constraint violation",
+            violations.size() + " constraint(s) violated",
+            Map.of("violations", violations));
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problem);
+  }
+
+  @ExceptionHandler(IllegalArgumentException.class)
+  public ResponseEntity<ProblemDetail> handleIllegalArgument(IllegalArgumentException ex) {
+    log.warn("Illegal argument: {}", ex.getMessage());
+    var problem =
+        ProblemDetailFactory.create(HttpStatus.BAD_REQUEST, "Invalid argument", ex.getMessage());
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problem);
+  }
+
+  @ExceptionHandler(Exception.class)
+  public ResponseEntity<ProblemDetail> handleAll(Exception ex) {
+    log.error("Unhandled exception", ex);
+    var problem =
+        ProblemDetailFactory.create(
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            "Internal server error",
+            "An unexpected error occurred");
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(problem);
   }
 }

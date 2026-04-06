@@ -1,10 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.billingrate;
 
-import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
-import io.b2mash.b2b.b2bstrawman.member.Member;
-import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
-import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -15,10 +11,7 @@ import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -36,19 +29,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class BillingRateController {
 
   private final BillingRateService billingRateService;
-  private final MemberRepository memberRepository;
-  private final ProjectRepository projectRepository;
-  private final CustomerRepository customerRepository;
 
-  public BillingRateController(
-      BillingRateService billingRateService,
-      MemberRepository memberRepository,
-      ProjectRepository projectRepository,
-      CustomerRepository customerRepository) {
+  public BillingRateController(BillingRateService billingRateService) {
     this.billingRateService = billingRateService;
-    this.memberRepository = memberRepository;
-    this.projectRepository = projectRepository;
-    this.customerRepository = customerRepository;
   }
 
   @GetMapping
@@ -58,7 +41,7 @@ public class BillingRateController {
       @RequestParam(required = false) UUID customerId) {
 
     var rates = billingRateService.listRates(memberId, projectId, customerId);
-    var names = resolveNames(rates);
+    var names = billingRateService.resolveNames(rates);
     var content = rates.stream().map(r -> BillingRateResponse.from(r, names)).toList();
     return ResponseEntity.ok(new ListResponse<>(content));
   }
@@ -67,8 +50,7 @@ public class BillingRateController {
   // project-scoped rate overrides. Fine-grained permission is enforced in the service layer.
   @PostMapping
   public ResponseEntity<BillingRateResponse> createRate(
-      @Valid @RequestBody CreateBillingRateRequest request) {
-    var actor = ActorContext.fromRequestScopes();
+      @Valid @RequestBody CreateBillingRateRequest request, ActorContext actor) {
 
     var rate =
         billingRateService.createRate(
@@ -81,7 +63,7 @@ public class BillingRateController {
             request.effectiveTo(),
             actor);
 
-    var names = resolveNames(List.of(rate));
+    var names = billingRateService.resolveNames(List.of(rate));
     return ResponseEntity.created(URI.create("/api/billing-rates/" + rate.getId()))
         .body(BillingRateResponse.from(rate, names));
   }
@@ -90,8 +72,9 @@ public class BillingRateController {
   // project-scoped rate overrides. Fine-grained permission is enforced in the service layer.
   @PutMapping("/{id}")
   public ResponseEntity<BillingRateResponse> updateRate(
-      @PathVariable UUID id, @Valid @RequestBody UpdateBillingRateRequest request) {
-    var actor = ActorContext.fromRequestScopes();
+      @PathVariable UUID id,
+      @Valid @RequestBody UpdateBillingRateRequest request,
+      ActorContext actor) {
 
     var rate =
         billingRateService.updateRate(
@@ -102,15 +85,14 @@ public class BillingRateController {
             request.effectiveTo(),
             actor);
 
-    var names = resolveNames(List.of(rate));
+    var names = billingRateService.resolveNames(List.of(rate));
     return ResponseEntity.ok(BillingRateResponse.from(rate, names));
   }
 
   // ORG_MEMBER included: project leads (who are ORG_MEMBERs) need write access for
   // project-scoped rate overrides. Fine-grained permission is enforced in the service layer.
   @DeleteMapping("/{id}")
-  public ResponseEntity<Void> deleteRate(@PathVariable UUID id) {
-    var actor = ActorContext.fromRequestScopes();
+  public ResponseEntity<Void> deleteRate(@PathVariable UUID id, ActorContext actor) {
 
     billingRateService.deleteRate(id, actor);
     return ResponseEntity.noContent().build();
@@ -131,43 +113,7 @@ public class BillingRateController {
     return ResponseEntity.ok(new ResolvedRateResponse(null, null, null, null));
   }
 
-  // --- Name Resolution ---
-
-  private NameLookup resolveNames(List<BillingRate> rates) {
-    var memberIds =
-        rates.stream().map(BillingRate::getMemberId).filter(Objects::nonNull).distinct().toList();
-    var projectIds =
-        rates.stream().map(BillingRate::getProjectId).filter(Objects::nonNull).distinct().toList();
-    var customerIds =
-        rates.stream().map(BillingRate::getCustomerId).filter(Objects::nonNull).distinct().toList();
-
-    var memberNames =
-        memberIds.isEmpty()
-            ? Map.<UUID, String>of()
-            : memberRepository.findAllById(memberIds).stream()
-                .collect(
-                    Collectors.toMap(
-                        Member::getId, m -> m.getName() != null ? m.getName() : "", (a, b) -> a));
-
-    var projectNames =
-        projectIds.isEmpty()
-            ? Map.<UUID, String>of()
-            : projectRepository.findAllById(projectIds).stream()
-                .collect(Collectors.toMap(p -> p.getId(), p -> p.getName(), (a, b) -> a));
-
-    var customerNames =
-        customerIds.isEmpty()
-            ? Map.<UUID, String>of()
-            : customerRepository.findAllById(customerIds).stream()
-                .collect(Collectors.toMap(c -> c.getId(), c -> c.getName(), (a, b) -> a));
-
-    return new NameLookup(memberNames, projectNames, customerNames);
-  }
-
   // --- DTOs ---
-
-  record NameLookup(
-      Map<UUID, String> members, Map<UUID, String> projects, Map<UUID, String> customers) {}
 
   public record ListResponse<T>(List<T> content) {}
 
@@ -210,7 +156,7 @@ public class BillingRateController {
       Instant createdAt,
       Instant updatedAt) {
 
-    public static BillingRateResponse from(BillingRate rate, NameLookup names) {
+    public static BillingRateResponse from(BillingRate rate, BillingRateService.NameLookup names) {
       return new BillingRateResponse(
           rate.getId(),
           rate.getMemberId(),

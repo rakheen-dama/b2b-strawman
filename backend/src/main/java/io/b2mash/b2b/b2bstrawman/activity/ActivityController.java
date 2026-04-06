@@ -40,9 +40,8 @@ public class ActivityController {
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "20") int size,
       @RequestParam(required = false) String entityType,
-      @RequestParam(required = false) Instant since) {
-
-    var actor = ActorContext.fromRequestScopes();
+      @RequestParam(required = false) Instant since,
+      ActorContext actor) {
 
     var pageable = PageRequest.of(page, Math.min(size, 50));
     var activity =

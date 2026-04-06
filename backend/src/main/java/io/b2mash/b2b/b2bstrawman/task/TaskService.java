@@ -1075,4 +1075,28 @@ public class TaskService {
           "Invalid task priority", "Invalid task priority: '" + priority + "'");
     }
   }
+
+  // --- Name Resolution (moved from controller for BE-007) ---
+
+  /**
+   * Batch-loads member names for all assignee, createdBy, and completedBy IDs referenced by the
+   * given tasks.
+   */
+  public Map<UUID, String> resolveTaskMemberNames(List<Task> tasks) {
+    var ids =
+        tasks.stream()
+            .flatMap(
+                t ->
+                    java.util.stream.Stream.of(
+                        t.getAssigneeId(), t.getCreatedBy(), t.getCompletedBy()))
+            .filter(Objects::nonNull)
+            .distinct()
+            .toList();
+
+    if (ids.isEmpty()) {
+      return Map.of();
+    }
+
+    return memberNameResolver.resolveNames(ids);
+  }
 }

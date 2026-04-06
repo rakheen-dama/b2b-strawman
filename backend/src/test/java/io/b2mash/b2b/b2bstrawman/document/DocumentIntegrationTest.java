@@ -58,19 +58,12 @@ class DocumentIntegrationTest {
         mockMvc, ORG_ID, "user_nonmember", "doc_nonmember@test.com", "NonMember", "member");
 
     // Create a project in tenant A (owner becomes lead)
-    var result =
-        mockMvc
-            .perform(
-                post("/api/projects")
-                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_owner"))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"name": "Doc Test Project", "description": "For document tests"}
-                        """))
-            .andExpect(status().isCreated())
-            .andReturn();
-    projectId = TestEntityHelper.extractIdFromLocation(result);
+    projectId =
+        TestEntityHelper.createProject(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, "user_owner"),
+            "Doc Test Project",
+            "For document tests");
 
     // Add member user to the project so they can access documents
     mockMvc
@@ -82,19 +75,12 @@ class DocumentIntegrationTest {
         .andExpect(status().isCreated());
 
     // Create a project in tenant B
-    var resultB =
-        mockMvc
-            .perform(
-                post("/api/projects")
-                    .with(TestJwtFactory.ownerJwt(ORG_B_ID, "user_tenant_b_owner"))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"name": "Tenant B Project", "description": "For tenant B"}
-                        """))
-            .andExpect(status().isCreated())
-            .andReturn();
-    projectBId = TestEntityHelper.extractIdFromLocation(resultB);
+    projectBId =
+        TestEntityHelper.createProject(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_B_ID, "user_tenant_b_owner"),
+            "Tenant B Project",
+            "For tenant B");
   }
 
   // --- Upload flow (init → confirm) ---

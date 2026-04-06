@@ -7,10 +7,10 @@ import io.b2mash.b2b.b2bstrawman.assistant.tool.TenantToolContext;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
-import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.TaskService;
+import io.b2mash.b2b.b2bstrawman.testutil.TenantTestSupport;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.List;
 import java.util.Map;
@@ -59,24 +59,24 @@ class SearchAndNavigationToolsTest {
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
 
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .where(RequestScopes.ORG_ID, ORG_ID)
-        .where(RequestScopes.MEMBER_ID, memberIdOwner)
-        .where(RequestScopes.ORG_ROLE, "owner")
-        .run(
-            () -> {
-              var actor = new ActorContext(memberIdOwner, "owner");
+    TenantTestSupport.runAsActor(
+        tenantSchema,
+        ORG_ID,
+        memberIdOwner,
+        "owner",
+        () -> {
+          var actor = new ActorContext(memberIdOwner, "owner");
 
-              customerService.createCustomer(
-                  "Searchable Customer", "search_cust@test.com", null, null, null, memberIdOwner);
+          customerService.createCustomer(
+              "Searchable Customer", "search_cust@test.com", null, null, null, memberIdOwner);
 
-              var project =
-                  projectService.createProject(
-                      "Searchable Project", "A project to search for", memberIdOwner);
+          var project =
+              projectService.createProject(
+                  "Searchable Project", "A project to search for", memberIdOwner);
 
-              taskService.createTask(
-                  project.getId(), "Searchable Task", null, "MEDIUM", "TASK", null, actor);
-            });
+          taskService.createTask(
+              project.getId(), "Searchable Task", null, "MEDIUM", "TASK", null, actor);
+        });
   }
 
   @Test
@@ -125,11 +125,6 @@ class SearchAndNavigationToolsTest {
   }
 
   private void runInTenantScope(Runnable action) {
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .where(RequestScopes.ORG_ID, ORG_ID)
-        .where(RequestScopes.MEMBER_ID, memberIdOwner)
-        .where(RequestScopes.ORG_ROLE, "owner")
-        .where(RequestScopes.CAPABILITIES, Set.of())
-        .run(action);
+    TenantTestSupport.runAsActor(tenantSchema, ORG_ID, memberIdOwner, "owner", action);
   }
 }

@@ -42,6 +42,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+// TODO(BE-013): This service exceeds 800 lines — decompose when adding new features
 @Service
 public class NotificationService {
 

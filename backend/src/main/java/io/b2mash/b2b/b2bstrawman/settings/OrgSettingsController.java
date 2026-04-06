@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.settings;
 
-import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import jakarta.validation.Valid;
@@ -14,7 +13,6 @@ import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -32,10 +30,6 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/api/settings")
 public class OrgSettingsController {
 
-  private static final long MAX_LOGO_SIZE = 2 * 1024 * 1024; // 2MB
-  private static final java.util.Set<String> ALLOWED_CONTENT_TYPES =
-      java.util.Set.of("image/png", "image/jpeg", "image/svg+xml");
-
   private final OrgSettingsService orgSettingsService;
 
   public OrgSettingsController(OrgSettingsService orgSettingsService) {
@@ -51,11 +45,7 @@ public class OrgSettingsController {
   @PutMapping
   @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<SettingsResponse> updateSettings(
-      @Valid @RequestBody UpdateSettingsRequest request) {
-    var actor = ActorContext.fromRequestScopes();
-    String orgRole = actor.orgRole();
-    UUID memberId = actor.memberId();
-
+      @Valid @RequestBody UpdateSettingsRequest request, ActorContext actor) {
     return ResponseEntity.ok(
         orgSettingsService.updateSettingsWithBranding(
             request.defaultCurrency(),
@@ -70,43 +60,21 @@ public class OrgSettingsController {
 
   @PostMapping(value = "/logo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   @RequiresCapability("TEAM_OVERSIGHT")
-  public ResponseEntity<SettingsResponse> uploadLogo(@RequestParam("file") MultipartFile file) {
-    if (file.isEmpty()) {
-      throw new InvalidStateException("Invalid file", "File is empty");
-    }
-    if (file.getSize() > MAX_LOGO_SIZE) {
-      throw new InvalidStateException("File too large", "Logo file must be under 2MB");
-    }
-    String contentType = file.getContentType();
-    if (contentType == null || !ALLOWED_CONTENT_TYPES.contains(contentType)) {
-      throw new InvalidStateException("Invalid file type", "Logo must be PNG, JPG, or SVG");
-    }
-
-    var actor = ActorContext.fromRequestScopes();
-    String orgRole = actor.orgRole();
-    UUID memberId = actor.memberId();
-
+  public ResponseEntity<SettingsResponse> uploadLogo(
+      @RequestParam("file") MultipartFile file, ActorContext actor) {
     return ResponseEntity.ok(orgSettingsService.uploadLogo(file, actor));
   }
 
   @DeleteMapping("/logo")
   @RequiresCapability("TEAM_OVERSIGHT")
-  public ResponseEntity<SettingsResponse> deleteLogo() {
-    var actor = ActorContext.fromRequestScopes();
-    String orgRole = actor.orgRole();
-    UUID memberId = actor.memberId();
-
+  public ResponseEntity<SettingsResponse> deleteLogo(ActorContext actor) {
     return ResponseEntity.ok(orgSettingsService.deleteLogo(actor));
   }
 
   @PatchMapping("/compliance")
   @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<SettingsResponse> updateComplianceSettings(
-      @Valid @RequestBody UpdateComplianceSettingsRequest request) {
-    var actor = ActorContext.fromRequestScopes();
-    String orgRole = actor.orgRole();
-    UUID memberId = actor.memberId();
-
+      @Valid @RequestBody UpdateComplianceSettingsRequest request, ActorContext actor) {
     return ResponseEntity.ok(
         orgSettingsService.updateComplianceSettings(
             request.dormancyThresholdDays(), request.dataRequestDeadlineDays(), actor));
@@ -115,10 +83,7 @@ public class OrgSettingsController {
   @PatchMapping("/tax")
   @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<SettingsResponse> updateTaxSettings(
-      @Valid @RequestBody UpdateTaxSettingsRequest request) {
-    var actor = ActorContext.fromRequestScopes();
-    String orgRole = actor.orgRole();
-    UUID memberId = actor.memberId();
+      @Valid @RequestBody UpdateTaxSettingsRequest request, ActorContext actor) {
     return ResponseEntity.ok(
         orgSettingsService.updateTaxSettings(
             request.taxRegistrationNumber(),
@@ -131,10 +96,7 @@ public class OrgSettingsController {
   @PatchMapping("/acceptance")
   @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<SettingsResponse> updateAcceptanceSettings(
-      @Valid @RequestBody UpdateAcceptanceSettingsRequest request) {
-    var actor = ActorContext.fromRequestScopes();
-    String orgRole = actor.orgRole();
-    UUID memberId = actor.memberId();
+      @Valid @RequestBody UpdateAcceptanceSettingsRequest request, ActorContext actor) {
     return ResponseEntity.ok(
         orgSettingsService.updateAcceptanceSettings(request.acceptanceExpiryDays(), actor));
   }
@@ -142,10 +104,7 @@ public class OrgSettingsController {
   @PatchMapping("/time-reminders")
   @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<SettingsResponse> updateTimeReminderSettings(
-      @Valid @RequestBody UpdateTimeReminderSettingsRequest request) {
-    var actor = ActorContext.fromRequestScopes();
-    String orgRole = actor.orgRole();
-    UUID memberId = actor.memberId();
+      @Valid @RequestBody UpdateTimeReminderSettingsRequest request, ActorContext actor) {
     return ResponseEntity.ok(
         orgSettingsService.updateTimeReminderSettings(
             request.timeReminderEnabled(),
@@ -158,10 +117,7 @@ public class OrgSettingsController {
   @PatchMapping("/capacity")
   @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<SettingsResponse> updateCapacitySettings(
-      @Valid @RequestBody UpdateCapacitySettingsRequest request) {
-    var actor = ActorContext.fromRequestScopes();
-    String orgRole = actor.orgRole();
-    UUID memberId = actor.memberId();
+      @Valid @RequestBody UpdateCapacitySettingsRequest request, ActorContext actor) {
     return ResponseEntity.ok(
         orgSettingsService.updateDefaultWeeklyCapacityHours(
             request.defaultWeeklyCapacityHours(), actor));
@@ -170,10 +126,7 @@ public class OrgSettingsController {
   @PatchMapping("/batch-billing")
   @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<SettingsResponse> updateBatchBillingSettings(
-      @Valid @RequestBody UpdateBatchBillingSettingsRequest request) {
-    var actor = ActorContext.fromRequestScopes();
-    String orgRole = actor.orgRole();
-    UUID memberId = actor.memberId();
+      @Valid @RequestBody UpdateBatchBillingSettingsRequest request, ActorContext actor) {
     return ResponseEntity.ok(
         orgSettingsService.updateBatchBillingSettings(
             request.billingBatchAsyncThreshold(),
@@ -186,8 +139,7 @@ public class OrgSettingsController {
   @PatchMapping("/data-protection")
   @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<SettingsResponse> updateDataProtectionSettings(
-      @Valid @RequestBody DataProtectionSettingsRequest request) {
-    var actor = ActorContext.fromRequestScopes();
+      @Valid @RequestBody DataProtectionSettingsRequest request, ActorContext actor) {
     return ResponseEntity.ok(orgSettingsService.updateDataProtectionSettings(request, actor));
   }
 
@@ -195,8 +147,7 @@ public class OrgSettingsController {
   @PatchMapping("/vertical-profile")
   @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<SettingsResponse> updateVerticalProfile(
-      @Valid @RequestBody UpdateVerticalProfileRequest request) {
-    var actor = ActorContext.fromRequestScopes();
+      @Valid @RequestBody UpdateVerticalProfileRequest request, ActorContext actor) {
     return ResponseEntity.ok(
         orgSettingsService.updateVerticalProfile(request.verticalProfile(), actor));
   }

@@ -38,9 +38,10 @@ public class GeneratedDocumentController {
 
   @GetMapping
   public ResponseEntity<List<GeneratedDocumentListResponse>> listGeneratedDocuments(
-      @RequestParam TemplateEntityType entityType, @RequestParam UUID entityId) {
+      @RequestParam TemplateEntityType entityType,
+      @RequestParam UUID entityId,
+      ActorContext actor) {
     if (entityType == TemplateEntityType.PROJECT) {
-      var actor = ActorContext.fromRequestScopes();
       projectAccessService.requireViewAccess(entityId, actor);
     }
     var documents = generatedDocumentService.listByEntity(entityType, entityId);
@@ -48,10 +49,9 @@ public class GeneratedDocumentController {
   }
 
   @GetMapping("/{id}/download")
-  public ResponseEntity<Void> downloadGeneratedDocument(@PathVariable UUID id) {
+  public ResponseEntity<Void> downloadGeneratedDocument(@PathVariable UUID id, ActorContext actor) {
     var generatedDoc = generatedDocumentService.getById(id);
     if (generatedDoc.getPrimaryEntityType() == TemplateEntityType.PROJECT) {
-      var actor = ActorContext.fromRequestScopes();
       projectAccessService.requireViewAccess(generatedDoc.getPrimaryEntityId(), actor);
     }
     var presigned = storageService.generateDownloadUrl(generatedDoc.getS3Key(), URL_EXPIRY);

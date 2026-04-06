@@ -1,9 +1,9 @@
 package io.b2mash.b2b.b2bstrawman.exception;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ProblemDetail;
 import org.springframework.web.ErrorResponseException;
 
 /**
@@ -13,14 +13,13 @@ import org.springframework.web.ErrorResponseException;
 public class MissingRequiredClausesException extends ErrorResponseException {
 
   public MissingRequiredClausesException(List<UUID> missingClauseIds) {
-    super(HttpStatus.UNPROCESSABLE_ENTITY, createProblem(missingClauseIds), null);
-  }
-
-  private static ProblemDetail createProblem(List<UUID> missingClauseIds) {
-    var problem = ProblemDetail.forStatus(HttpStatus.UNPROCESSABLE_ENTITY);
-    problem.setTitle("Missing required clauses");
-    problem.setDetail("Required clause(s) missing: " + missingClauseIds);
-    problem.setProperty("missingClauseIds", missingClauseIds);
-    return problem;
+    super(
+        HttpStatus.UNPROCESSABLE_ENTITY,
+        ProblemDetailFactory.create(
+            HttpStatus.UNPROCESSABLE_ENTITY,
+            "Missing required clauses",
+            "Required clause(s) missing: " + missingClauseIds,
+            Map.of("missingClauseIds", missingClauseIds)),
+        null);
   }
 }

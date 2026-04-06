@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.checklist;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceDtos.ChecklistInstanceItemResponse;
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceDtos.ChecklistInstanceResponse;
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceDtos.ChecklistProgressDto;
 import io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleService;
@@ -471,6 +472,21 @@ public class ChecklistInstanceService {
     log.info("Checklist instance {} auto-completed", instanceId);
 
     checkLifecycleAdvance(instance.getCustomerId(), actorId);
+  }
+
+  /** Resolves member name for a single checklist item's completedBy field. */
+  public ChecklistInstanceItemResponse toItemResponse(ChecklistInstanceItem item) {
+    Map<UUID, String> names;
+    if (item.getCompletedBy() == null) {
+      names = Map.of();
+    } else {
+      names =
+          memberRepository.findAllById(List.of(item.getCompletedBy())).stream()
+              .collect(
+                  Collectors.toMap(
+                      Member::getId, m -> m.getName() != null ? m.getName() : "", (a, b) -> a));
+    }
+    return ChecklistInstanceItemResponse.from(item, names);
   }
 
   private Map<UUID, String> resolveNames(

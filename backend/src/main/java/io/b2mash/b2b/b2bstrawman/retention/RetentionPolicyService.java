@@ -34,16 +34,16 @@ public class RetentionPolicyService {
   public RetentionPolicy create(
       String recordType, int retentionDays, String triggerEvent, String action) {
     if (recordType == null || recordType.isBlank()) {
-      throw new IllegalArgumentException("recordType must not be blank");
+      throw new InvalidStateException("Validation error", "recordType must not be blank");
     }
     if (triggerEvent == null || triggerEvent.isBlank()) {
-      throw new IllegalArgumentException("triggerEvent must not be blank");
+      throw new InvalidStateException("Validation error", "triggerEvent must not be blank");
     }
     if (action == null || action.isBlank()) {
-      throw new IllegalArgumentException("action must not be blank");
+      throw new InvalidStateException("Validation error", "action must not be blank");
     }
     if (retentionDays < 0) {
-      throw new IllegalArgumentException("retentionDays must not be negative");
+      throw new InvalidStateException("Validation error", "retentionDays must not be negative");
     }
     validateFinancialMinimum(recordType, retentionDays);
     if (policyRepository.existsByRecordTypeAndTriggerEvent(recordType, triggerEvent)) {
@@ -62,10 +62,10 @@ public class RetentionPolicyService {
   @Transactional
   public RetentionPolicy update(UUID id, int retentionDays, String action) {
     if (action == null || action.isBlank()) {
-      throw new IllegalArgumentException("action must not be blank");
+      throw new InvalidStateException("Validation error", "action must not be blank");
     }
     if (retentionDays < 0) {
-      throw new IllegalArgumentException("retentionDays must not be negative");
+      throw new InvalidStateException("Validation error", "retentionDays must not be negative");
     }
     var policy =
         policyRepository
@@ -89,10 +89,10 @@ public class RetentionPolicyService {
             .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("RetentionPolicy", id));
     if (retentionDays != null && retentionDays < 0) {
-      throw new IllegalArgumentException("retentionDays must not be negative");
+      throw new InvalidStateException("Validation error", "retentionDays must not be negative");
     }
     if (action != null && action.isBlank()) {
-      throw new IllegalArgumentException("action must not be blank");
+      throw new InvalidStateException("Validation error", "action must not be blank");
     }
     int effectiveDays = retentionDays != null ? retentionDays : policy.getRetentionDays();
     String effectiveAction = action != null ? action : policy.getAction();

@@ -1,7 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.comment;
 
-import io.b2mash.b2b.b2bstrawman.member.Member;
-import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -11,9 +9,7 @@ import java.net.URI;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -31,19 +27,16 @@ import org.springframework.web.bind.annotation.RestController;
 public class CommentController {
 
   private final CommentService commentService;
-  private final MemberRepository memberRepository;
 
-  public CommentController(CommentService commentService, MemberRepository memberRepository) {
+  public CommentController(CommentService commentService) {
     this.commentService = commentService;
-    this.memberRepository = memberRepository;
   }
 
   @PostMapping
   public ResponseEntity<CommentResponse> createComment(
-      @PathVariable UUID projectId, @Valid @RequestBody CreateCommentRequest request) {
-    var actor = ActorContext.fromRequestScopes();
-    String orgRole = actor.orgRole();
-    UUID memberId = actor.memberId();
+      @PathVariable UUID projectId,
+      @Valid @RequestBody CreateCommentRequest request,
+      ActorContext actor) {
 
     var comment =
         commentService.createComment(
@@ -54,7 +47,7 @@ public class CommentController {
             request.visibility(),
             actor);
 
-    var authors = resolveAuthors(List.of(comment));
+    var authors = commentService.resolveAuthors(List.of(comment));
     return ResponseEntity.created(
             URI.create("/api/projects/" + projectId + "/comments/" + comment.getId()))
         .body(CommentResponse.from(comment, authors));
@@ -66,17 +59,15 @@ public class CommentController {
       @RequestParam String entityType,
       @RequestParam(required = false) UUID entityId,
       @RequestParam(defaultValue = "0") int page,
-      @RequestParam(defaultValue = "50") int size) {
-    var actor = ActorContext.fromRequestScopes();
-    String orgRole = actor.orgRole();
-    UUID memberId = actor.memberId();
+      @RequestParam(defaultValue = "50") int size,
+      ActorContext actor) {
 
     var commentPage =
         commentService.listComments(
             projectId, entityType, entityId, PageRequest.of(page, size), actor);
 
     var comments = commentPage.getContent();
-    var authors = resolveAuthors(comments);
+    var authors = commentService.resolveAuthors(comments);
     var responses = comments.stream().map(c -> CommentResponse.from(c, authors)).toList();
 
     return ResponseEntity.ok(responses);
@@ -86,51 +77,26 @@ public class CommentController {
   public ResponseEntity<CommentResponse> updateComment(
       @PathVariable UUID projectId,
       @PathVariable UUID commentId,
-      @Valid @RequestBody UpdateCommentRequest request) {
-    var actor = ActorContext.fromRequestScopes();
-    String orgRole = actor.orgRole();
-    UUID memberId = actor.memberId();
+      @Valid @RequestBody UpdateCommentRequest request,
+      ActorContext actor) {
 
     var comment =
         commentService.updateComment(
             projectId, commentId, request.body(), request.visibility(), actor);
 
-    var authors = resolveAuthors(List.of(comment));
+    var authors = commentService.resolveAuthors(List.of(comment));
     return ResponseEntity.ok(CommentResponse.from(comment, authors));
   }
 
   @DeleteMapping("/{commentId}")
   public ResponseEntity<Void> deleteComment(
-      @PathVariable UUID projectId, @PathVariable UUID commentId) {
-    var actor = ActorContext.fromRequestScopes();
-    String orgRole = actor.orgRole();
-    UUID memberId = actor.memberId();
+      @PathVariable UUID projectId, @PathVariable UUID commentId, ActorContext actor) {
 
     commentService.deleteComment(projectId, commentId, actor);
     return ResponseEntity.noContent().build();
   }
 
-  private Map<UUID, AuthorInfo> resolveAuthors(List<Comment> comments) {
-    var ids =
-        comments.stream()
-            .map(Comment::getAuthorMemberId)
-            .filter(Objects::nonNull)
-            .distinct()
-            .toList();
-
-    if (ids.isEmpty()) {
-      return Map.of();
-    }
-
-    return memberRepository.findAllById(ids).stream()
-        .collect(
-            Collectors.toMap(
-                Member::getId, m -> new AuthorInfo(m.getName(), m.getAvatarUrl()), (a, b) -> a));
-  }
-
   // --- DTOs ---
-
-  record AuthorInfo(String name, String avatarUrl) {}
 
   public record CreateCommentRequest(
       @NotBlank(message = "entityType is required") String entityType,
@@ -161,7 +127,8 @@ public class CommentController {
       Instant createdAt,
       Instant updatedAt) {
 
-    public static CommentResponse from(Comment comment, Map<UUID, AuthorInfo> authors) {
+    public static CommentResponse from(
+        Comment comment, Map<UUID, CommentService.AuthorInfo> authors) {
       var author = authors.get(comment.getAuthorMemberId());
       return new CommentResponse(
           comment.getId(),

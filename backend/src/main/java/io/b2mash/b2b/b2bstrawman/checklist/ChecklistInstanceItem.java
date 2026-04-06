@@ -9,6 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
@@ -66,6 +67,22 @@ public class ChecklistInstanceItem {
   @JdbcTypeCode(SqlTypes.JSON)
   @Column(name = "applicable_entity_types", columnDefinition = "jsonb")
   private List<String> applicableEntityTypes;
+
+  @Column(name = "verification_provider", length = 30)
+  private String verificationProvider;
+
+  @Column(name = "verification_reference", length = 200)
+  private String verificationReference;
+
+  @Column(name = "verification_status", length = 20)
+  private String verificationStatus;
+
+  @Column(name = "verified_at")
+  private Instant verifiedAt;
+
+  @JdbcTypeCode(SqlTypes.JSON)
+  @Column(name = "verification_metadata", columnDefinition = "jsonb")
+  private Map<String, Object> verificationMetadata;
 
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
@@ -219,6 +236,46 @@ public class ChecklistInstanceItem {
 
   public List<String> getApplicableEntityTypes() {
     return applicableEntityTypes;
+  }
+
+  public String getVerificationProvider() {
+    return verificationProvider;
+  }
+
+  public void setVerificationProvider(String verificationProvider) {
+    this.verificationProvider = verificationProvider;
+  }
+
+  public String getVerificationReference() {
+    return verificationReference;
+  }
+
+  public void setVerificationReference(String verificationReference) {
+    this.verificationReference = verificationReference;
+  }
+
+  public String getVerificationStatus() {
+    return verificationStatus;
+  }
+
+  public void setVerificationStatus(String verificationStatus) {
+    this.verificationStatus = verificationStatus;
+  }
+
+  public Instant getVerifiedAt() {
+    return verifiedAt;
+  }
+
+  public void setVerifiedAt(Instant verifiedAt) {
+    this.verifiedAt = verifiedAt;
+  }
+
+  public Map<String, Object> getVerificationMetadata() {
+    return verificationMetadata;
+  }
+
+  public void setVerificationMetadata(Map<String, Object> verificationMetadata) {
+    this.verificationMetadata = verificationMetadata;
   }
 
   public Instant getCreatedAt() {

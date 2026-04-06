@@ -23,7 +23,9 @@ public class IntegrationGuardService {
    */
   @Transactional(readOnly = true)
   public void requireEnabled(IntegrationDomain domain) {
-    if (domain == IntegrationDomain.PAYMENT || domain == IntegrationDomain.EMAIL) {
+    if (domain == IntegrationDomain.PAYMENT
+        || domain == IntegrationDomain.EMAIL
+        || domain == IntegrationDomain.KYC_VERIFICATION) {
       return; // Always available — core infrastructure, not feature-gated
     }
 
@@ -38,6 +40,7 @@ public class IntegrationGuardService {
                       case AI -> s.isAiEnabled();
                       case DOCUMENT_SIGNING -> s.isDocumentSigningEnabled();
                       case EMAIL -> true; // unreachable due to early return
+                      case KYC_VERIFICATION -> true; // unreachable due to early return
                       case PAYMENT -> true; // unreachable due to early return
                     })
             .orElse(false); // No settings row = all flags disabled

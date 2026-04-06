@@ -196,6 +196,32 @@ public class KycVerificationService {
   }
 
   /**
+   * Retrieves a previous KYC verification result by provider reference.
+   *
+   * @param reference the provider reference to look up
+   * @return the verification result reconstructed from checklist item data
+   * @throws ResourceNotFoundException if no checklist item has that reference
+   */
+  @Transactional(readOnly = true)
+  public KycVerificationResult getResult(String reference) {
+    var item =
+        checklistInstanceItemRepository
+            .findByVerificationReference(reference)
+            .orElseThrow(() -> new ResourceNotFoundException("KYC verification result", reference));
+
+    return new KycVerificationResult(
+        item.getVerificationStatus() != null
+            ? KycVerificationStatus.valueOf(item.getVerificationStatus())
+            : KycVerificationStatus.ERROR,
+        item.getVerificationProvider(),
+        item.getVerificationReference(),
+        null,
+        null,
+        item.getVerifiedAt(),
+        item.getVerificationMetadata() != null ? item.getVerificationMetadata() : Map.of());
+  }
+
+  /**
    * Returns whether a KYC integration is configured and enabled for the current tenant.
    *
    * @return status response with configured flag and provider name

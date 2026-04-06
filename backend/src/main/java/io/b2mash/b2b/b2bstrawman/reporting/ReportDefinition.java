@@ -82,6 +82,17 @@ public class ReportDefinition {
     this.updatedAt = Instant.now();
   }
 
+  /** Update all mutable definition fields during seed pack upsert. */
+  public void updateDefinition(
+      String templateBody,
+      Map<String, Object> parameterSchema,
+      Map<String, Object> columnDefinitions) {
+    this.templateBody = templateBody;
+    this.parameterSchema = parameterSchema;
+    this.columnDefinitions = columnDefinitions;
+    this.updatedAt = Instant.now();
+  }
+
   // --- Getters ---
 
   public UUID getId() {

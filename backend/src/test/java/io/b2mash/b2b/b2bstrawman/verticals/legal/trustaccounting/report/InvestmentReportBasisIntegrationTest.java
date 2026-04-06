@@ -392,15 +392,9 @@ class InvestmentReportBasisIntegrationTest {
 
   @Test
   @SuppressWarnings("unchecked")
-  void section35DataPack_noClientInstructionInvestments_omitsSection() {
+  void section35DataPack_bothBasisPresent_includesBothSectionsAndNoLegacyFallback() {
     runInTenant(
         () -> {
-          // We can't easily remove the CLIENT_INSTRUCTION investment we already placed,
-          // but we can verify the conditional logic by checking: if we query the
-          // investment register with CLIENT_INSTRUCTION filter, it returns results.
-          // The section35 pack includes both because both exist.
-          // Instead, verify the structure: if rows exist, section appears; if not, it's omitted.
-
           var params = new HashMap<String, Object>();
           params.put("trust_account_id", trustAccountId);
           params.put("financial_year_end", "2026-03-31");
@@ -429,7 +423,7 @@ class InvestmentReportBasisIntegrationTest {
           assertThat(clientSection).isPresent();
           assertThat((int) clientSection.get().get("rowCount")).isEqualTo(1);
 
-          // Verify there is NO empty "Investment Register" fallback section
+          // Verify there is NO legacy "Investment Register" fallback section
           var emptyRegister =
               sections.stream()
                   .filter(s -> "Investment Register".equals(s.get("sectionName")))

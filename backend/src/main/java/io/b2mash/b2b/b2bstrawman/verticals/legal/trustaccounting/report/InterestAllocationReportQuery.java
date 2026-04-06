@@ -67,25 +67,11 @@ public class InterestAllocationReportQuery implements ReportQuery {
   private List<Map<String, Object>> queryRows(Map<String, Object> parameters) {
     var interestRunId = ReportParamUtils.requireUuid(parameters, "interest_run_id");
 
-    // Verify the interest run exists and get trust account ID for rate lookup
-    var interestRun =
-        interestRunRepository
-            .findById(interestRunId)
-            .orElseThrow(() -> new ResourceNotFoundException("InterestRun", interestRunId));
+    // Verify the interest run exists
+    interestRunRepository
+        .findById(interestRunId)
+        .orElseThrow(() -> new ResourceNotFoundException("InterestRun", interestRunId));
 
-    // Look up the latest general LPFF rate for the trust account
-    var latestRates =
-        lpffRateRepository.findByTrustAccountIdOrderByEffectiveFromDesc(
-            interestRun.getTrustAccountId());
-    String generalRateDisplay =
-        latestRates.isEmpty()
-            ? "N/A"
-            : latestRates
-                    .getFirst()
-                    .getLpffSharePercent()
-                    .multiply(new BigDecimal("100"))
-                    .setScale(0, RoundingMode.HALF_UP)
-                + "%";
     String statutoryRateDisplay =
         TrustAccountingConstants.STATUTORY_LPFF_SHARE_PERCENT
                 .multiply(new BigDecimal("100"))
@@ -115,12 +101,33 @@ public class InterestAllocationReportQuery implements ReportQuery {
               row.put("lpffShare", alloc.getLpffShare());
               row.put("clientShare", alloc.getClientShare());
               row.put("statutoryRateApplied", alloc.isStatutoryRateApplied());
-              row.put(
-                  "rateSource",
-                  alloc.isStatutoryRateApplied() ? statutoryRateDisplay : generalRateDisplay);
+              row.put("rateSource", resolveRateSource(alloc, statutoryRateDisplay));
               return (Map<String, Object>) row;
             })
         .toList();
+  }
+
+  /**
+   * Resolve the rate display string from the persisted allocation, not the latest trust-account
+   * rate. When statutoryRateApplied is true, use the statutory constant. Otherwise load the
+   * specific LpffRate that was recorded on the allocation at calculation time.
+   */
+  private String resolveRateSource(InterestAllocation alloc, String statutoryRateDisplay) {
+    if (alloc.isStatutoryRateApplied()) {
+      return statutoryRateDisplay;
+    }
+    if (alloc.getLpffRateId() != null) {
+      return lpffRateRepository
+          .findById(alloc.getLpffRateId())
+          .map(
+              rate ->
+                  rate.getLpffSharePercent()
+                          .multiply(new BigDecimal("100"))
+                          .setScale(0, RoundingMode.HALF_UP)
+                      + "%")
+          .orElse("N/A");
+    }
+    return "N/A";
   }
 
   private Map<String, Object> computeSummary(List<Map<String, Object>> rows) {

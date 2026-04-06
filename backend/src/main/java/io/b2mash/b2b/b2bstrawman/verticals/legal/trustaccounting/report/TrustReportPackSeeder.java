@@ -81,7 +81,10 @@ public class TrustReportPackSeeder {
         .findBySlug(definition.getSlug())
         .ifPresentOrElse(
             existing -> {
-              existing.updateTemplate(definition.getTemplateBody());
+              existing.updateDefinition(
+                  definition.getTemplateBody(),
+                  definition.getParameterSchema(),
+                  definition.getColumnDefinitions());
               reportDefinitionRepository.save(existing);
             },
             () -> reportDefinitionRepository.save(definition));

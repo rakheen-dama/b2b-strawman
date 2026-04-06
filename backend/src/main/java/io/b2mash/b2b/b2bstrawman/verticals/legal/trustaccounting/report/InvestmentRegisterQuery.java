@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.report;
 
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.reporting.ReportQuery;
 import io.b2mash.b2b.b2bstrawman.reporting.ReportResult;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
@@ -67,7 +68,16 @@ public class InvestmentRegisterQuery implements ReportQuery {
 
     List<TrustInvestment> investments;
     if (basisFilter != null) {
-      var basis = InvestmentBasis.valueOf(basisFilter);
+      InvestmentBasis basis;
+      try {
+        basis = InvestmentBasis.valueOf(basisFilter);
+      } catch (IllegalArgumentException e) {
+        throw new InvalidStateException(
+            "Invalid Investment Basis",
+            "Unsupported investmentBasis value: '"
+                + basisFilter
+                + "'. Valid values are: FIRM_DISCRETION, CLIENT_INSTRUCTION");
+      }
       investments =
           investmentRepository
               .findByTrustAccountIdAndInvestmentBasisOrderByDepositDateDesc(
@@ -111,9 +121,6 @@ public class InvestmentRegisterQuery implements ReportQuery {
         customerRepository.findByIdIn(customerIds).stream()
             .collect(Collectors.toMap(c -> c.getId(), c -> c.getName()));
 
-    final String generalRate = generalRateDisplay;
-    final String statutoryRate = statutoryRateDisplay;
-
     return investments.stream()
         .map(
             inv -> {
@@ -136,8 +143,8 @@ public class InvestmentRegisterQuery implements ReportQuery {
               row.put(
                   "applicableLpffRate",
                   inv.getInvestmentBasis() == InvestmentBasis.FIRM_DISCRETION
-                      ? generalRate
-                      : statutoryRate);
+                      ? generalRateDisplay
+                      : statutoryRateDisplay);
               return (Map<String, Object>) row;
             })
         .toList();

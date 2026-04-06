@@ -106,15 +106,6 @@ public class Section35DataPackQuery implements ReportQuery {
           irClientResult);
     }
 
-    // If neither section has rows, note no investments exist
-    if (irFirmResult.rows().isEmpty() && irClientResult.rows().isEmpty()) {
-      var meta = new LinkedHashMap<String, Object>();
-      meta.put("sectionName", "Investment Register");
-      meta.put("note", "No investments found");
-      meta.put("rowCount", 0);
-      sectionSummaries.add(meta);
-    }
-
     // Section 5: Interest Allocation (latest run within year)
     assembleInterestAllocationSection(
         trustAccountId, financialYearStart, financialYearEnd, allRows, sectionSummaries);

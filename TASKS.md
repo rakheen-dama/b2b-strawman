@@ -517,7 +517,7 @@
 | 455 | Frontend: Investment Form + Register + Interest Table Updates | Frontend | 453 | M | 455A | **Done** (PR #960) |
 | 456 | KYC Adapter Infrastructure: Port, Adapters, Service | Backend | 452 | M | 456A, 456B | **Done** (PR #961) |
 | 457 | KYC Controller + Integration Status Endpoint | Backend | 456 | S | 457A | **Done** (PR #962) |
-| 458 | Frontend: KYC Verification Dialog + Checklist Integration + Settings Card | Frontend | 457 | M | 458A, 458B | |
+| 458 | Frontend: KYC Verification Dialog + Checklist Integration + Settings Card | Frontend | 457 | M | 458A, 458B | **Done** (PR #963) |
 | **Phase 63 — Custom Field Graduation** | | | | | | See [tasks/phase63-custom-field-graduation.md](tasks/phase63-custom-field-graduation.md) |
 | 459 | Foundation: Migration + Customer Entity/DTO Updates | Backend | -- | M | 459A, 459B | |
 | 460 | Project/Task/Invoice Entity/DTO Updates + Enums | Backend | 459A | S | 460A | |

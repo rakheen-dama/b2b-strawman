@@ -28,7 +28,7 @@ Phase 61 closes two compliance gaps identified in the Phase 60 trust accounting 
 | 455 | Frontend: Investment Form + Register + Interest Table Updates | Frontend | 453 | M | 455A | **Done** (PR #960) |
 | 456 | KYC Adapter Infrastructure: Port, Adapters, Service | Backend | 452 | M | 456A, 456B | **Done** (PR #961) |
 | 457 | KYC Controller + ChecklistInstanceItem Extension | Backend | 456 | S | 457A | **Done** (PR #962) |
-| 458 | Frontend: KYC Verification Dialog + Checklist Integration | Frontend | 457 | M | 458A, 458B | |
+| 458 | Frontend: KYC Verification Dialog + Checklist Integration | Frontend | 457 | M | 458A, 458B | **Done** (PR #963) |
 
 ---
 
@@ -135,13 +135,13 @@ Phase 21 (BYOAK integration infrastructure exists)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 4a (parallel) | 455 | 455A | Place Investment dialog: investment basis radio group + help text + 86(6) advisory note. Investment register table: basis column + filter + statutory rate display. Interest allocation table: "5% (statutory)" display. Frontend tests (~8). Frontend only. | **Done** (PR #960) |
-| 4b (parallel) | 458 | 458A | Conditional "Verify Now" button on FICA checklist items. KYC verification dialog with POPIA consent flow. Result display per status (VERIFIED/NOT_VERIFIED/NEEDS_REVIEW/ERROR). Types, Zod schemas, server actions. Frontend tests (~6). Frontend only. | |
+| 4b (parallel) | 458 | 458A | Conditional "Verify Now" button on FICA checklist items. KYC verification dialog with POPIA consent flow. Result display per status (VERIFIED/NOT_VERIFIED/NEEDS_REVIEW/ERROR). Types, Zod schemas, server actions. Frontend tests (~6). Frontend only. | **Done** (PR #963) |
 
 ### Stage 5: Frontend KYC Settings
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 5a | 458 | 458B | KYC integration settings card in Settings -> Integrations. Configure dialog (provider selector, API key, test connection). Remove integration action. Frontend tests (~4). Frontend only. | |
+| 5a | 458 | 458B | KYC integration settings card in Settings -> Integrations. Configure dialog (provider selector, API key, test connection). Remove integration action. Frontend tests (~4). Frontend only. | **Done** (PR #963) |
 
 ### Timeline
 
@@ -515,8 +515,8 @@ Stage 5:  [458B]                                             <- KYC settings car
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **458A** | 458.1--458.7 | Conditional "Verify Now" button on FICA checklist items. KYC verification dialog with POPIA consent checkbox, provider display, pre-filled fields, result display per status (VERIFIED/NOT_VERIFIED/NEEDS_REVIEW/ERROR). Previous verification result badge. TypeScript types, Zod schemas, server actions. Frontend tests (~6). Frontend only. | |
-| **458B** | 458.8--458.12 | KYC integration settings card in Settings -> Integrations. Configure dialog (provider selector, API key input, test connection button). Remove integration action. Frontend tests (~4). Frontend only. | |
+| **458A** | 458.1--458.7 | Conditional "Verify Now" button on FICA checklist items. KYC verification dialog with POPIA consent checkbox, provider display, pre-filled fields, result display per status (VERIFIED/NOT_VERIFIED/NEEDS_REVIEW/ERROR). Previous verification result badge. TypeScript types, Zod schemas, server actions. Frontend tests (~6). Frontend only. | **Done** (PR #963) |
+| **458B** | 458.8--458.12 | KYC integration settings card in Settings -> Integrations. Configure dialog (provider selector, API key input, test connection button). Remove integration action. Frontend tests (~4). Frontend only. | **Done** (PR #963) |
 
 ### Tasks
 

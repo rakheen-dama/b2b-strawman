@@ -4,10 +4,13 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.reporting.ReportQuery;
 import io.b2mash.b2b.b2bstrawman.reporting.ReportResult;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountingConstants;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest.InterestAllocation;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest.InterestAllocationRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.interest.InterestRunRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.lpff.LpffRateRepository;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,14 +25,17 @@ public class InterestAllocationReportQuery implements ReportQuery {
   private final InterestRunRepository interestRunRepository;
   private final InterestAllocationRepository allocationRepository;
   private final CustomerRepository customerRepository;
+  private final LpffRateRepository lpffRateRepository;
 
   public InterestAllocationReportQuery(
       InterestRunRepository interestRunRepository,
       InterestAllocationRepository allocationRepository,
-      CustomerRepository customerRepository) {
+      CustomerRepository customerRepository,
+      LpffRateRepository lpffRateRepository) {
     this.interestRunRepository = interestRunRepository;
     this.allocationRepository = allocationRepository;
     this.customerRepository = customerRepository;
+    this.lpffRateRepository = lpffRateRepository;
   }
 
   @Override
@@ -61,10 +67,30 @@ public class InterestAllocationReportQuery implements ReportQuery {
   private List<Map<String, Object>> queryRows(Map<String, Object> parameters) {
     var interestRunId = ReportParamUtils.requireUuid(parameters, "interest_run_id");
 
-    // Verify the interest run exists
-    interestRunRepository
-        .findById(interestRunId)
-        .orElseThrow(() -> new ResourceNotFoundException("InterestRun", interestRunId));
+    // Verify the interest run exists and get trust account ID for rate lookup
+    var interestRun =
+        interestRunRepository
+            .findById(interestRunId)
+            .orElseThrow(() -> new ResourceNotFoundException("InterestRun", interestRunId));
+
+    // Look up the latest general LPFF rate for the trust account
+    var latestRates =
+        lpffRateRepository.findByTrustAccountIdOrderByEffectiveFromDesc(
+            interestRun.getTrustAccountId());
+    String generalRateDisplay =
+        latestRates.isEmpty()
+            ? "N/A"
+            : latestRates
+                    .getFirst()
+                    .getLpffSharePercent()
+                    .multiply(new BigDecimal("100"))
+                    .setScale(0, RoundingMode.HALF_UP)
+                + "%";
+    String statutoryRateDisplay =
+        TrustAccountingConstants.STATUTORY_LPFF_SHARE_PERCENT
+                .multiply(new BigDecimal("100"))
+                .setScale(0, RoundingMode.HALF_UP)
+            + "% (statutory)";
 
     var allocations = allocationRepository.findByInterestRunId(interestRunId);
 
@@ -88,6 +114,10 @@ public class InterestAllocationReportQuery implements ReportQuery {
               row.put("grossInterest", alloc.getGrossInterest());
               row.put("lpffShare", alloc.getLpffShare());
               row.put("clientShare", alloc.getClientShare());
+              row.put("statutoryRateApplied", alloc.isStatutoryRateApplied());
+              row.put(
+                  "rateSource",
+                  alloc.isStatutoryRateApplied() ? statutoryRateDisplay : generalRateDisplay);
               return (Map<String, Object>) row;
             })
         .toList();

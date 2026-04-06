@@ -506,7 +506,7 @@ class TrustReportQueryIntegrationTest {
           assertThat(sectionNames).contains("Trust Receipts & Payments");
           assertThat(sectionNames).contains("Client Trust Balances");
           assertThat(sectionNames).contains("Trust Reconciliation");
-          assertThat(sectionNames).contains("Investment Register");
+          assertThat(sectionNames).contains("Section 86(3) Investments (Firm Discretion)");
 
           // Verify rows have section markers
           var rowSections =

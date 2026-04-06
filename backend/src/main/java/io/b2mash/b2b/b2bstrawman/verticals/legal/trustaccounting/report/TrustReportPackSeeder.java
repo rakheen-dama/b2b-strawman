@@ -347,7 +347,18 @@ public class TrustReportPackSeeder {
                     "required",
                     false,
                     "options",
-                    List.of("ACTIVE", "MATURED", "WITHDRAWN"))));
+                    List.of("ACTIVE", "MATURED", "WITHDRAWN")),
+                Map.of(
+                    "name",
+                    "investmentBasis",
+                    "type",
+                    "enum",
+                    "label",
+                    "Investment Basis",
+                    "required",
+                    false,
+                    "options",
+                    List.of("FIRM_DISCRETION", "CLIENT_INSTRUCTION"))));
 
     var columnDefinitions =
         Map.<String, Object>of(
@@ -378,7 +389,9 @@ public class TrustReportPackSeeder {
                     "currency",
                     "format",
                     "0.00"),
-                Map.of("key", "status", "label", "Status", "type", "string")));
+                Map.of("key", "status", "label", "Status", "type", "string"),
+                Map.of("key", "investmentBasis", "label", "Basis", "type", "string"),
+                Map.of("key", "applicableLpffRate", "label", "LPFF Rate", "type", "string")));
 
     var def =
         new ReportDefinition(
@@ -461,7 +474,8 @@ public class TrustReportPackSeeder {
                     "type",
                     "currency",
                     "format",
-                    "0.00")));
+                    "0.00"),
+                Map.of("key", "rateSource", "label", "Rate Source", "type", "string")));
 
     var def =
         new ReportDefinition(
@@ -706,7 +720,7 @@ public class TrustReportPackSeeder {
               <div class="header-right"><div th:text="'Generated: ' + ${generatedAt}" style="font-size: 10px; color: #666;"></div></div>
           </div>
           <table class="data">
-              <thead><tr><th>Client</th><th>Institution</th><th>Account #</th><th class="text-right">Principal</th><th class="text-right">Rate</th><th>Deposit</th><th>Maturity</th><th class="text-right">Interest</th><th>Status</th></tr></thead>
+              <thead><tr><th>Client</th><th>Institution</th><th>Account #</th><th class="text-right">Principal</th><th class="text-right">Rate</th><th>Deposit</th><th>Maturity</th><th class="text-right">Interest</th><th>Status</th><th>Basis</th><th>LPFF Rate</th></tr></thead>
               <tbody>
                   <tr th:each="row : ${rows}">
                       <td th:text="${row['clientName']}"></td><td th:text="${row['institution']}"></td><td th:text="${row['accountNumber']}"></td>
@@ -715,6 +729,8 @@ public class TrustReportPackSeeder {
                       <td th:text="${row['depositDate']}"></td><td th:text="${row['maturityDate']}"></td>
                       <td class="text-right" th:text="${#numbers.formatDecimal(row['interestEarned'], 1, 2)}"></td>
                       <td th:text="${row['status']}"></td>
+                      <td th:text="${row['investmentBasis']}"></td>
+                      <td th:text="${row['applicableLpffRate']}"></td>
                   </tr>
               </tbody>
           </table>
@@ -741,7 +757,7 @@ public class TrustReportPackSeeder {
               <div class="header-right"><div th:text="'Generated: ' + ${generatedAt}" style="font-size: 10px; color: #666;"></div></div>
           </div>
           <table class="data">
-              <thead><tr><th>Client</th><th class="text-right">Avg Daily Balance</th><th class="text-right">Days</th><th class="text-right">Gross Interest</th><th class="text-right">LPFF Share</th><th class="text-right">Client Share</th></tr></thead>
+              <thead><tr><th>Client</th><th class="text-right">Avg Daily Balance</th><th class="text-right">Days</th><th class="text-right">Gross Interest</th><th class="text-right">LPFF Share</th><th class="text-right">Client Share</th><th>Rate Source</th></tr></thead>
               <tbody>
                   <tr th:each="row : ${rows}">
                       <td th:text="${row['clientName']}"></td>
@@ -750,6 +766,7 @@ public class TrustReportPackSeeder {
                       <td class="text-right" th:text="${#numbers.formatDecimal(row['grossInterest'], 1, 2)}"></td>
                       <td class="text-right" th:text="${#numbers.formatDecimal(row['lpffShare'], 1, 2)}"></td>
                       <td class="text-right" th:text="${#numbers.formatDecimal(row['clientShare'], 1, 2)}"></td>
+                      <td th:text="${row['rateSource']}"></td>
                   </tr>
               </tbody>
           </table>

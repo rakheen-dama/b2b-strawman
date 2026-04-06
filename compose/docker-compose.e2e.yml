@@ -142,6 +142,8 @@ services:
       dockerfile: Dockerfile
     container_name: e2e-seed
     restart: "no"
+    environment:
+      VERTICAL_PROFILE: ${VERTICAL_PROFILE:-accounting-za}
     depends_on:
       backend:
         condition: service_healthy

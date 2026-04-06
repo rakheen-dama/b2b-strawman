@@ -83,14 +83,15 @@ class IntegrationControllerTest {
         .perform(
             get("/api/integrations").with(TestJwtFactory.ownerJwt(ORG_ID, "user_intctrl_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$", hasSize(5)))
+        .andExpect(jsonPath("$", hasSize(6)))
         .andExpect(jsonPath("$[0].domain").value("ACCOUNTING"))
         .andExpect(jsonPath("$[0].providerSlug").value(nullValue()))
         .andExpect(jsonPath("$[0].enabled").value(false))
         .andExpect(jsonPath("$[1].domain").value("AI"))
         .andExpect(jsonPath("$[2].domain").value("DOCUMENT_SIGNING"))
         .andExpect(jsonPath("$[3].domain").value("EMAIL"))
-        .andExpect(jsonPath("$[4].domain").value("PAYMENT"));
+        .andExpect(jsonPath("$[4].domain").value("KYC_VERIFICATION"))
+        .andExpect(jsonPath("$[5].domain").value("PAYMENT"));
   }
 
   @Test
@@ -123,7 +124,7 @@ class IntegrationControllerTest {
         .perform(
             get("/api/integrations").with(TestJwtFactory.adminJwt(ORG_ID, "user_intctrl_admin")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$", hasSize(5)));
+        .andExpect(jsonPath("$", hasSize(6)));
   }
 
   @Test

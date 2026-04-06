@@ -6,6 +6,7 @@ public enum IntegrationDomain {
   AI("noop"),
   DOCUMENT_SIGNING("noop"),
   EMAIL("smtp"),
+  KYC_VERIFICATION("noop"),
   PAYMENT("noop");
 
   private final String defaultSlug;

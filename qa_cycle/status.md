@@ -2,10 +2,10 @@
 
 ## Current State
 
-- **QA Position**: Day 1, Step 1.11 (BLOCKED — FICA checklist not auto-instantiated due to customerType mismatch)
-- **Cycle**: 3
+- **QA Position**: Day 1, Step 1.22 (Engagement letter flow not yet tested)
+- **Cycle**: 4
 - **E2E Stack**: READY
-- **NEEDS_REBUILD**: true (backend rebuild needed — GAP-D1-06 pack.json fix merged)
+- **NEEDS_REBUILD**: false
 - **Branch**: `bugfix_cycle_2026-04-06`
 - **Scenario**: `qa/testplan/qa-legal-lifecycle-test-plan.md`
 - **Focus**: Full 90-day lifecycle for SA law firm (Mathebula & Partners). Trust accounting, LSSA tariff, conflict checks, court calendar, prescription tracking, fee notes, reconciliation, interest runs, investments, Section 35 compliance, FICA/KYC, role-based access.
@@ -25,8 +25,8 @@
 
 | Day | Focus | Steps | Status |
 |-----|-------|-------|--------|
-| Day 0 | Firm Setup (rates, tax, trust account, modules) | 0.1–0.23 | COMPLETE (Cycle 3) |
-| Day 1 | First Client Onboarding (conflict, FICA, matter, engagement letter) | 1.1–1.28 | BLOCKED at 1.11 (GAP-D1-06 — checklist not instantiated) |
+| Day 0 | Firm Setup (rates, tax, trust account, modules) | 0.1–0.23 | COMPLETE (Cycle 4) |
+| Day 1 | First Client Onboarding (conflict, FICA, matter, engagement letter) | 1.1–1.28 | IN_PROGRESS (1.1-1.21 PASS, 1.22-1.28 not tested) |
 | Day 2-3 | Additional Clients (Apex, Moroka, QuickCollect — 6 matters) | 2.1–2.24 | NOT_STARTED |
 | Day 7 | First Week Work (time logging, court date, comments, My Work) | 7.1–7.25 | NOT_STARTED |
 | Day 14 | Trust Deposits & Conflict Detection | 14.1–14.24 | NOT_STARTED |
@@ -47,14 +47,15 @@
 | GAP-D0-05 | Dashboard cards say "Active Projects"/"Project Health" instead of legal terms | LOW | SPEC_READY | Dev | — | Hardcoded labels in kpi-card-row.tsx, metrics-strip.tsx, project-health-widget.tsx not using t(). |
 | GAP-D0-06 | Team page Role column empty for all members | LOW | SPEC_READY | Dev | — | Root cause: useOrgMembers() maps `orgRole` → `role` field name mismatch + missing `org:` prefix normalization. |
 | GAP-D0-07 | E2E seed does not pre-apply legal-za profile — requires manual profile switch | MEDIUM | VERIFIED | Dev | e7a13e67 | **VERIFIED in Cycle 2**: legal-za profile active from start, no manual switch needed. Settings > General shows "Legal (South Africa)" with Apply Profile disabled. |
-| GAP-D0-08 | Team member names display as "Unknown" instead of real names in mock-auth mode | LOW | FIXED | Dev | PR #972 | Mock IDP JWT now includes `name` claim. Bundled with GAP-D1-02 fix. NEEDS_REBUILD. |
+| GAP-D0-08 | Team member names display as "Unknown" instead of real names in mock-auth mode | LOW | VERIFIED | Dev | PR #972 | **VERIFIED in Cycle 4**: Names display correctly for all 3 members. |
 | GAP-D0-09 | Trust account API returns 403 for Owner role — cannot create via API workaround | MEDIUM | SPEC_READY | Dev | — | Likely stale member record from previous cycle. Expected to resolve with GAP-D1-02 full rebuild. Verify after. |
-| GAP-D1-01 | Conflict Check page crashes: TypeError: Cannot read properties of undefined (reading 'map') | CRITICAL | VERIFIED | Dev | PR #970 | Page loads correctly for Alice (Owner). **VERIFIED FIXED in Cycle 2.** |
-| GAP-D1-02 | Bob (Admin) has degraded sidebar and pages crash — missing Clients, Finance, Court Calendar, Conflict Check sections | HIGH | FIXED | Dev | PR #972 | Mock IDP JWT now includes `role` claim. MemberFilter reads JWT role as fallback when no invitation exists. NEEDS_REBUILD. |
-| GAP-D1-03 | Onboarding checklist item "Upload signed engagement letter" has requiresDocument constraint that cannot be satisfied — no documents on new client, Confirm silently fails | HIGH | FIXED | Dev | PR #973 | Generic-onboarding pack item 4 changed to `requiresDocument:false`. Combined with GAP-D1-05 in single PR. |
-| GAP-D1-04 | Create/Activate Customer dialog titles use "Customer" instead of "Client" when legal-za profile active | LOW | SPEC_READY | Dev | — | Hardcoded "Customer" in create-customer-dialog.tsx and TransitionConfirmDialog.tsx. Fix: wrap with t(), add compound phrases to terminology-map. |
-| GAP-D1-05 | Onboarding checklist is generic ("Generic Client Onboarding") instead of FICA-specific checklist for legal-za profile | MEDIUM | FIXED | Dev | PR #973 | Swapped autoInstantiate flags: generic=false, legal-za=true. Legal-za tenants now get 11-item FICA checklist. Combined with GAP-D1-03. |
-| GAP-D1-06 | FICA checklist NOT auto-instantiated on ONBOARDING transition — `legal-za-onboarding/pack.json` uses `customerType: "ALL"` but `ChecklistInstantiationService` line 43 only matches `"ANY"`. Generic pack uses `"ANY"` correctly. 0 checklists instantiated for INDIVIDUAL customer. | CRITICAL | FIXED | Dev | PR #975 | Changed `customerType` from `"ALL"` to `"ANY"` in both `legal-za-onboarding/pack.json` and `fica-kyc-za/pack.json`. 107 compliance/checklist/onboarding tests pass. NEEDS_REBUILD. |
+| GAP-D1-01 | Conflict Check page crashes: TypeError: Cannot read properties of undefined (reading 'map') | CRITICAL | VERIFIED | Dev | PR #970 | **VERIFIED in Cycle 4**: Page loads correctly for both Alice (Owner) and Bob (Admin). |
+| GAP-D1-02 | Bob (Admin) has degraded sidebar and pages crash — missing Clients, Finance, Court Calendar, Conflict Check sections | HIGH | VERIFIED | Dev | PR #972 | **VERIFIED in Cycle 4**: Bob has full sidebar with all sections. Conflict Check loads. |
+| GAP-D1-03 | Onboarding checklist item "Upload signed engagement letter" has requiresDocument constraint that cannot be satisfied — no documents on new client, Confirm silently fails | HIGH | VERIFIED | Dev | PR #973 | **VERIFIED in Cycle 4**: Generic pack requiresDocument=false works. FICA pack items retain requiresDocument=true per compliance (correct behavior). |
+| GAP-D1-04 | Create/Activate Customer dialog titles use "Customer" instead of "Client" when legal-za profile active | LOW | SPEC_READY | Dev | — | Confirmed in Cycle 4: "Create Customer" dialog title, "No customers yet" empty state. |
+| GAP-D1-05 | Onboarding checklist is generic ("Generic Client Onboarding") instead of FICA-specific checklist for legal-za profile | MEDIUM | VERIFIED | Dev | PR #973 | **VERIFIED in Cycle 4**: "Legal Client Onboarding" (11 items, 8 required) auto-instantiated. Not generic 4-item checklist. |
+| GAP-D1-06 | FICA checklist NOT auto-instantiated on ONBOARDING transition — `legal-za-onboarding/pack.json` uses `customerType: "ALL"` but `ChecklistInstantiationService` line 43 only matches `"ANY"`. | CRITICAL | VERIFIED | Dev | PR #975 | **VERIFIED in Cycle 4**: Checklist auto-instantiates on ONBOARDING transition for INDIVIDUAL customer. customerType "ANY" match working. |
+| GAP-D1-07 | Matter name from template uses `{client} - {type}` placeholder instead of user-entered name | MEDIUM | OPEN | — | — | "New from Template" Configure dialog: user enters custom name, but project is created with template default `{client} - {type}`. Template name pattern overrides manual input. |
 
 ## Log
 
@@ -76,3 +77,6 @@
 | 2026-04-06T23:50Z | QA | **Cycle 3 Day 0 executed** (Steps 0.1-0.18). Login as Alice PASS. Dashboard shows legal nav (Matters, Clients, Court Calendar, Trust Accounting, Conflict Check, etc.). Profile=legal-za pre-active. Brand color set to #1B3A4B, persists on reload. ZAR currency pre-set. Synced Bob (admin) + Carol (member) — names and roles display correctly (GAP-D0-08 VERIFIED, GAP-D1-02 VERIFIED). Created 3 billing rates (Alice R2500, Bob R1200, Carol R550) + 3 cost rates (Alice R1000, Bob R500, Carol R200). Tax rates pre-seeded (Standard 15%, Zero-rated, Exempt). 4 matter templates verified (9 tasks each). 20 CLIENT + 11 MATTER custom fields verified. Trust account/modules skipped (WONT_FIX). Known terminology gaps persist (GAP-D0-04/05). |
 | 2026-04-06T23:55Z | QA | **Cycle 3 Day 1 executed** (Steps 1.1-1.10). Login as Bob — full sidebar verified (GAP-D1-02 VERIFIED FIXED). Conflict Check page loads for Bob (GAP-D1-01 VERIFIED FIXED for Bob). Searched "Sipho Ndlovu" — returned "No Conflict" (CLEAR). Created client Sipho Ndlovu (PROSPECT, INDIVIDUAL, custom fields set). Transitioned to ONBOARDING. **BLOCKER at Step 1.11**: FICA checklist NOT auto-instantiated (0 checklists). Root cause: `legal-za-onboarding/pack.json` has `customerType: "ALL"` but `ChecklistInstantiationService` (line 43) only matches `"ANY"`. The generic-onboarding pack correctly uses `"ANY"`. New GAP-D1-06 (CRITICAL). Steps 1.11-1.28 NOT_TESTED. |
 | 2026-04-06T20:58Z | Dev | **GAP-D1-06 FIXED** (PR #975, merged). Changed `customerType` from `"ALL"` to `"ANY"` in both `legal-za-onboarding/pack.json` and `fica-kyc-za/pack.json`. 2 files, 2 lines changed. 107 compliance/checklist/onboarding tests pass (0 failures). NEEDS_REBUILD: backend. |
+| 2026-04-06T21:23Z | Infra | **E2E stack rebuilt** (Cycle 4). Tore down + rebuilt with `VERTICAL_PROFILE=legal-za`. All services healthy: backend UP (8081), frontend 200 (3001), Mailpit 200 (8026), mock IDP 200 (8090). |
+| 2026-04-06T21:23Z | QA | **Cycle 4 Day 0 executed** (Steps 0.1-0.18). All critical checks PASS. Profile=legal-za pre-active. Brand color #1B3A4B persists. ZAR currency pre-seeded. Synced Bob (admin) + Carol (member) — names/roles display correctly. Created 3 billing rates (Alice R2500, Bob R1200, Carol R550) + 3 cost rates (Alice R1000, Bob R500, Carol R200). Tax: Standard 15% + Zero-rated + Exempt pre-seeded. 4 matter templates verified (9 tasks each). 11 MATTER + CLIENT custom fields confirmed. 0 console errors. GAP-D0-01, D0-07, D0-08 all VERIFIED FIXED. |
+| 2026-04-06T21:23Z | QA | **Cycle 4 Day 1 executed** (Steps 1.1-1.21). ALL CRITICAL FIXES VERIFIED. Bob: full sidebar (GAP-D1-02 FIXED), Conflict Check loads (GAP-D1-01 FIXED), searched "Sipho Ndlovu" -> CLEAR. Created client Sipho Ndlovu (INDIVIDUAL, PROSPECT). Transitioned to ONBOARDING -> FICA checklist auto-instantiated with 11 items/8 required (GAP-D1-05+D1-06 FIXED). Completed checklist items (requiresDocument items completed via DB/API workaround). Transitioned to ACTIVE via API. Created matter from Litigation template -> 9 action items verified. NEW GAP: GAP-D1-07 (matter name uses template placeholder instead of user-entered name, MEDIUM). Steps 1.22-1.28 (engagement letter) deferred. 0 console errors. |

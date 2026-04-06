@@ -59,7 +59,12 @@ export default async function InvestmentsPage({
   searchParams: Promise<{ investmentBasis?: string }>;
 }) {
   const { slug: _slug } = await params;
-  const { investmentBasis: basisFilter } = await searchParams;
+  const { investmentBasis: rawBasis } = await searchParams;
+
+  const VALID_BASES: InvestmentBasis[] = ["FIRM_DISCRETION", "CLIENT_INSTRUCTION"];
+  const basisFilter = rawBasis && VALID_BASES.includes(rawBasis as InvestmentBasis)
+    ? (rawBasis as InvestmentBasis)
+    : undefined;
 
   // Module gating
   let settings;
@@ -255,7 +260,9 @@ export default async function InvestmentsPage({
                                 5% (statutory)
                               </span>
                             ) : (
-                              `${(Number(inv.interestRate) * 100).toFixed(1)}%`
+                              <span className="text-slate-600 dark:text-slate-400">
+                                Arrangement
+                              </span>
                             )}
                           </td>
                           <td className="py-3 pr-4 text-slate-950 dark:text-slate-50">

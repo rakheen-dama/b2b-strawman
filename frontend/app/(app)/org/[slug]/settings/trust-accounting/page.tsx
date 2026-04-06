@@ -7,7 +7,6 @@ import {
   Landmark,
   Bell,
   Plus,
-  Info,
 } from "lucide-react";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { getOrgSettings } from "@/lib/api/settings";
@@ -21,7 +20,7 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Section866Advisory } from "@/components/trust/Section866Advisory";
 import type { TrustAccount, LpffRate } from "@/lib/types/trust";
 
 export default async function TrustAccountingSettingsPage({
@@ -164,19 +163,16 @@ export default async function TrustAccountingSettingsPage({
                         {account.accountNumber}
                       </p>
                     </div>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-sm text-slate-400">
                       {account.accountType}
                     </p>
                   </div>
                 ))}
               </div>
-              <Alert className="mt-4" data-testid="section-86-6-settings-advisory">
-                <Info className="size-4" />
-                <AlertDescription>
-                  The bank must have an arrangement with the Legal Practitioners
-                  Fidelity Fund (Section 86(6)). Contact the LPFF to verify.
-                </AlertDescription>
-              </Alert>
+              <Section866Advisory
+                className="mt-4"
+                data-testid="section-86-6-settings-advisory"
+              />
             </>
           )}
         </CardContent>

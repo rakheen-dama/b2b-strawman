@@ -362,9 +362,11 @@ export function InterestRunWizard({
                     ))}
                   </tbody>
                 </table>
-                <p className="mt-3 text-xs text-slate-500 dark:text-slate-400" data-testid="statutory-footnote">
-                  Section 86(5): client-instructed investments carry a statutory 5% LPFF share.
-                </p>
+                {allocations.some((a) => a.statutoryRateApplied) && (
+                  <p className="mt-3 text-xs text-slate-500 dark:text-slate-400" data-testid="statutory-footnote">
+                    Section 86(5): client-instructed investments carry a statutory 5% LPFF share.
+                  </p>
+                )}
               </div>
             )}
 

@@ -271,13 +271,17 @@ describe("Epic 455 — Investment Basis", () => {
     expect(screen.getByText("5% (statutory)")).toBeInTheDocument();
   });
 
-  // Test 6: Filter dropdown renders with options
-  it("filter dropdown renders with All, Firm Discretion, and Client Instruction options", async () => {
+  // Test 6: Filter dropdown renders and passes investmentBasis to fetchInvestments
+  it("filter dropdown renders and investmentBasis flows to fetchInvestments", async () => {
     mockFetchInvestments.mockResolvedValue([makeInvestment()]);
 
-    await renderInvestmentsPage();
+    await renderInvestmentsPage({ investmentBasis: "CLIENT_INSTRUCTION" });
 
     expect(screen.getByTestId("investment-basis-filter")).toBeInTheDocument();
+    expect(mockFetchInvestments).toHaveBeenCalledWith(
+      "acc-1",
+      "CLIENT_INSTRUCTION",
+    );
   });
 
   // Test 7: Interest allocation shows "5% (statutory)" for 86(4) allocations

@@ -12,7 +12,7 @@ export async function fetchInvestments(
 ): Promise<TrustInvestment[]> {
   let url = `/api/trust-accounts/${accountId}/investments?size=100&sort=depositDate,desc`;
   if (investmentBasis) {
-    url += `&investmentBasis=${investmentBasis}`;
+    url += `&investmentBasis=${encodeURIComponent(investmentBasis)}`;
   }
   const response = await api.get<{
     content: TrustInvestment[];

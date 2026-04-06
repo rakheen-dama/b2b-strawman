@@ -28,7 +28,7 @@ export function InvestmentBasisFilter({
       params.set("investmentBasis", value);
     }
     const qs = params.toString();
-    router.push(qs ? `${pathname}?${qs}` : pathname);
+    router.replace(qs ? `${pathname}?${qs}` : pathname);
   }
 
   return (

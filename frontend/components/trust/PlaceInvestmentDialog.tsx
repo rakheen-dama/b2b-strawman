@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { Loader2, Info } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -25,8 +25,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Label } from "@/components/ui/label";
+import { Section866Advisory } from "@/components/trust/Section866Advisory";
 import {
   placeInvestmentSchema,
   type PlaceInvestmentFormData,
@@ -309,13 +309,7 @@ export function PlaceInvestmentDialog({
               )}
             />
 
-            <Alert data-testid="section-86-6-advisory">
-              <Info className="size-4" />
-              <AlertDescription>
-                The bank must have an arrangement with the Legal Practitioners
-                Fidelity Fund (Section 86(6)). Contact the LPFF to verify.
-              </AlertDescription>
-            </Alert>
+            <Section866Advisory />
 
             {error && <p className="text-sm text-destructive">{error}</p>}
 

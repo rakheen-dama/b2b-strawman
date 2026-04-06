@@ -530,7 +530,7 @@
 | 466 | Matter-Type Project Template Seeder | Backend | -- | M | 466A, 466B | **Done** (PR #965) |
 | 467 | Screenshot Infrastructure + Regression Baselines | E2E/Frontend | -- | S | 467A | **Done** (PR #966) |
 | 468 | 90-Day Lifecycle Script Finalization | Process | 465, 466 | M | 468A | **Done** (PR #967) |
-| 469 | Lifecycle Execution + Gap Report | Process/E2E | 467, 468 | L | 469A, 469B | |
+| 469 | Lifecycle Execution + Gap Report | Process/E2E | 467, 468 | L | 469A, 469B | **Done** (PR #968) |
 
 ---
 

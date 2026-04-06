@@ -23,7 +23,7 @@ This phase corrects and extends the legal-za terminology map so the UI feels pur
 | 466 | Matter-Type Project Template Seeder | Backend | -- | M | 466A, 466B | **Done** (PR #965) |
 | 467 | Screenshot Infrastructure + Regression Baselines | E2E/Frontend | -- | S | 467A | **Done** (PR #966) |
 | 468 | 90-Day Lifecycle Script Writing | Process | 465, 466 | M | 468A | **Done** (PR #967) |
-| 469 | Lifecycle Execution + Gap Report | Process/E2E | 467, 468 | L | 469A, 469B | |
+| 469 | Lifecycle Execution + Gap Report | Process/E2E | 467, 468 | L | 469A, 469B | **Done** (PR #968) |
 
 ---
 
@@ -110,8 +110,8 @@ TERMINOLOGY FIX          MATTER TEMPLATES          SCREENSHOT INFRA
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 3a | 469 | 469A | Execute lifecycle Days 0--45 via Playwright, capture regression baselines + curated screenshots. E2E. | |
-| 3b | 469 | 469B | Execute lifecycle Days 60--90, produce gap report, final screenshots. E2E + Process. | |
+| 3a | 469 | 469A | Execute lifecycle Days 0--45 via Playwright, capture regression baselines + curated screenshots. E2E. | **Done** (PR #968) |
+| 3b | 469 | 469B | Execute lifecycle Days 60--90, produce gap report, final screenshots. E2E + Process. | **Done** (PR #968) |
 
 ---
 
@@ -308,8 +308,8 @@ TERMINOLOGY FIX          MATTER TEMPLATES          SCREENSHOT INFRA
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **469A** | 469.1--469.5 | Execute lifecycle Days 0-45: firm setup, client onboarding, first work week, trust deposits, conflict detection, first billing cycle, reconciliation. Capture baselines. E2E test files. | |
-| **469B** | 469.6--469.10 | Execute lifecycle Days 60-90: interest run, second billing, complex engagement, adverse parties, quarter review, Section 35 report. Produce gap report. E2E + Process. | |
+| **469A** | 469.1--469.5 | Execute lifecycle Days 0-45: firm setup, client onboarding, first work week, trust deposits, conflict detection, first billing cycle, reconciliation. Capture baselines. E2E test files. | **Done** (PR #968) |
+| **469B** | 469.6--469.10 | Execute lifecycle Days 60-90: interest run, second billing, complex engagement, adverse parties, quarter review, Section 35 report. Produce gap report. E2E + Process. | **Done** (PR #968) |
 
 ### Tasks
 

@@ -2,8 +2,8 @@
 
 ## Current State
 
-- **QA Position**: Day 1, Step 1.1 (BLOCKED — Conflict Check page crashes)
-- **Cycle**: 1
+- **QA Position**: Day 1, Step 1.14 (BLOCKED — onboarding checklist document requirement prevents ACTIVE transition)
+- **Cycle**: 2
 - **E2E Stack**: READY
 - **NEEDS_REBUILD**: false (rebuilt with VERTICAL_PROFILE=legal-za, includes GAP-D0-01, GAP-D1-01, GAP-D0-07 fixes)
 - **Branch**: `bugfix_cycle_2026-04-06`
@@ -25,8 +25,8 @@
 
 | Day | Focus | Steps | Status |
 |-----|-------|-------|--------|
-| Day 0 | Firm Setup (rates, tax, trust account, modules) | 0.1–0.23 | DONE (7 gaps) |
-| Day 1 | First Client Onboarding (conflict, FICA, matter, engagement letter) | 1.1–1.28 | BLOCKED at 1.1 |
+| Day 0 | Firm Setup (rates, tax, trust account, modules) | 0.1–0.23 | COMPLETE (known gaps) |
+| Day 1 | First Client Onboarding (conflict, FICA, matter, engagement letter) | 1.1–1.28 | BLOCKED at 1.14 (GAP-D1-03) |
 | Day 2-3 | Additional Clients (Apex, Moroka, QuickCollect — 6 matters) | 2.1–2.24 | NOT_STARTED |
 | Day 7 | First Week Work (time logging, court date, comments, My Work) | 7.1–7.25 | NOT_STARTED |
 | Day 14 | Trust Deposits & Conflict Detection | 14.1–14.24 | NOT_STARTED |
@@ -40,14 +40,20 @@
 
 | ID | Summary | Severity | Status | Owner | PR | Notes |
 |----|---------|----------|--------|-------|----|-------|
-| GAP-D0-01 | No legal matter templates (Litigation, Deceased Estate Admin, Collections, Commercial) seeded by legal-za profile | HIGH | FIXED | Dev | PR #971 | Added `projectTemplatePackSeeder.seedPacksForTenant()` call in `updateVerticalProfile()`. VERIFIED: 4 legal templates present after rebuild with legal-za seed. |
+| GAP-D0-01 | No legal matter templates (Litigation, Deceased Estate Admin, Collections, Commercial) seeded by legal-za profile | HIGH | VERIFIED | Dev | PR #971 | **VERIFIED in Cycle 2**: 4 legal templates present (each with 9 tasks) on Project Templates page from initial provisioning. |
 | GAP-D0-02 | Trust Accounting lacks "Create Trust Account" dialog — cannot create trust accounts from UI | HIGH | WONT_FIX | Dev | — | Not a stub — full dashboard exists (Phase 61). Missing: CreateTrustAccountDialog component. Workaround: create via API. Exceeds 2hr scope. |
 | GAP-D0-03 | No Settings > Modules page to verify/toggle legal modules | LOW | WONT_FIX | Dev | — | New feature required. Modules work correctly via profile system. Exceeds scope. |
 | GAP-D0-04 | "Projects" group header not renamed to "Matters" in sidebar | LOW | SPEC_READY | Dev | — | Fix: change `{zone.label}` to `{t(zone.label)}` in nav-zone.tsx line 45. |
 | GAP-D0-05 | Dashboard cards say "Active Projects"/"Project Health" instead of legal terms | LOW | SPEC_READY | Dev | — | Hardcoded labels in kpi-card-row.tsx, metrics-strip.tsx, project-health-widget.tsx not using t(). |
 | GAP-D0-06 | Team page Role column empty for all members | LOW | SPEC_READY | Dev | — | Root cause: useOrgMembers() maps `orgRole` → `role` field name mismatch + missing `org:` prefix normalization. |
-| GAP-D0-07 | E2E seed does not pre-apply legal-za profile — requires manual profile switch | MEDIUM | FIXED | Dev | e7a13e67 | Parameterized seed.sh + docker-compose.e2e.yml with `VERTICAL_PROFILE` env var (default: accounting-za). Rebuilt with legal-za, verified: profile=legal-za, 4 legal modules enabled, 4 legal matter templates seeded. |
-| GAP-D1-01 | Conflict Check page crashes: TypeError: Cannot read properties of undefined (reading 'map') | CRITICAL | FIXED | Dev | PR #970 | Added `?.content ?? []` and `?.page?.totalElements ?? 0` defaults in page.tsx, conflict-check-client.tsx, conflict-check-history.tsx. REBUILT: frontend image updated. |
+| GAP-D0-07 | E2E seed does not pre-apply legal-za profile — requires manual profile switch | MEDIUM | VERIFIED | Dev | e7a13e67 | **VERIFIED in Cycle 2**: legal-za profile active from start, no manual switch needed. Settings > General shows "Legal (South Africa)" with Apply Profile disabled. |
+| GAP-D0-08 | Team member names display as "Unknown" instead of real names in mock-auth mode | LOW | OPEN | Dev | — | Mock-auth member sync does not populate display names. Email addresses are correct. |
+| GAP-D0-09 | Trust account API returns 403 for Owner role — cannot create via API workaround | MEDIUM | OPEN | Dev | — | Blocks trust account creation entirely in E2E stack. May be role mapping issue in mock-auth. |
+| GAP-D1-01 | Conflict Check page crashes: TypeError: Cannot read properties of undefined (reading 'map') | CRITICAL | VERIFIED | Dev | PR #970 | Page loads correctly for Alice (Owner). **VERIFIED FIXED in Cycle 2.** |
+| GAP-D1-02 | Bob (Admin) has degraded sidebar and pages crash — missing Clients, Finance, Court Calendar, Conflict Check sections | HIGH | OPEN | Dev | — | Only Owner role has full legal-za navigation. Admin/Member roles lose legal module nav items. Conflict Check page shows "Something went wrong" for Bob. |
+| GAP-D1-03 | Onboarding checklist item "Upload signed engagement letter" has requiresDocument constraint that cannot be satisfied — no documents on new client, Confirm silently fails | HIGH | OPEN | Dev | — | **BLOCKER**: Prevents completing onboarding checklist, blocks ONBOARDING -> ACTIVE transition. Manual Activate also blocked. Cascades to block matter creation and all subsequent Day 1+ steps. |
+| GAP-D1-04 | Create/Activate Customer dialog titles use "Customer" instead of "Client" when legal-za profile active | LOW | OPEN | Dev | — | Terminology gap in dialog titles. |
+| GAP-D1-05 | Onboarding checklist is generic ("Generic Client Onboarding") instead of FICA-specific checklist for legal-za profile | MEDIUM | OPEN | Dev | — | legal-za should seed FICA-compliant checklist (Certified ID, Proof of Address, etc.) |
 
 ## Log
 
@@ -60,3 +66,5 @@
 | 2026-04-06T18:30Z | Dev | **GAP-D1-01 FIXED** (PR #970, merged). Added defensive `?.content ?? []` and `?.page?.totalElements ?? 0` defaults in 3 files: page.tsx (server fetch), conflict-check-client.tsx (client refetch), conflict-check-history.tsx (history refetch). 3 files, 6 lines changed. Build green, 302 test files / 1871 tests pass. NEEDS_REBUILD: frontend. |
 | 2026-04-06T19:41Z | Dev | **GAP-D0-01 FIXED** (PR #971, merged). Added `projectTemplatePackSeeder.seedPacksForTenant()` call in `OrgSettingsService.updateVerticalProfile()` after existing rate and schedule pack seeder calls. Injected `ProjectTemplatePackSeeder` as constructor dependency. 1 file, +7/-2 lines. OrgSettingsIntegrationTest 38/38 pass. NEEDS_REBUILD: backend. |
 | 2026-04-06T20:15Z | Dev | **GAP-D0-07 FIXED** (commit e7a13e67). Parameterized `VERTICAL_PROFILE` env var in seed.sh and docker-compose.e2e.yml (default: accounting-za). **E2E stack rebuilt** with `VERTICAL_PROFILE=legal-za`. Verified: verticalProfile=legal-za, enabledModules=[court_calendar, conflict_check, lssa_tariff, trust_accounting], 4 legal matter templates (Litigation, Deceased Estate Admin, Collections, Commercial). GAP-D0-01 also verified resolved — templates seeded from initial provisioning. Note: seed Step 2 (plan-sync) fails with 404 — pre-existing issue, `/internal/orgs/plan-sync` endpoint does not exist in backend. Members/customer/project not seeded due to `set -eu` exit. |
+| 2026-04-06T21:16Z | QA | **Cycle 2 Day 0 executed.** All steps 0.1-0.23 tested. Profile=legal-za verified pre-active. Created 3 billing rates (Alice R2500, Bob R1200, Carol R550) + 3 cost rates (Alice R1000, Bob R500, Carol R200). VAT 15% pre-seeded. 4 matter templates verified (each 9 tasks). Trust account creation still blocked (GAP-D0-02 WONT_FIX + new GAP-D0-09 API 403). Custom fields loaded for both matter and client entities. GAP-D0-01 VERIFIED FIXED. GAP-D0-07 VERIFIED FIXED. GAP-D1-01 VERIFIED FIXED (page loads for Alice). New: GAP-D0-08 (Unknown member names), GAP-D0-09 (trust API 403). |
+| 2026-04-06T21:16Z | QA | **Cycle 2 Day 1 executed (partial, BLOCKED).** Steps 1.1-1.13 tested. Bob (Admin) sidebar degraded and Conflict Check crashes (GAP-D1-02 HIGH). Continued as Alice. Conflict check for "Sipho Ndlovu" returned CLEAR. Client created (Prospect), transitioned to Onboarding. Generic checklist auto-instantiated (4 items, not FICA-specific — GAP-D1-05). Completed 3/4 items. **BLOCKER**: Item 4 "Upload signed engagement letter" has requiresDocument constraint — no documents available on new client, Confirm silently fails (GAP-D1-03 HIGH). Client stuck at ONBOARDING. Manual Activate also blocked. Steps 1.16-1.28 NOT_TESTED due to cascade. |

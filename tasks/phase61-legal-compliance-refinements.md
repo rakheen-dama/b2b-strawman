@@ -25,7 +25,7 @@ Phase 61 closes two compliance gaps identified in the Phase 60 trust accounting 
 | 452 | Foundation: V86 Migration + InvestmentBasis Enum + TrustAccountingConstants | Backend | -- (Phase 60 complete) | S | 452A | **Done** (PR #957) |
 | 453 | Interest Calculation Basis Distinction + Audit Trail | Backend | 452 | M | 453A, 453B | **Done** (PR #958) |
 | 454 | Investment Register Report + Section 35 Data Pack Updates | Backend | 453 | S | 454A | **Done** (PR #959) |
-| 455 | Frontend: Investment Form + Register + Interest Table Updates | Frontend | 453 | M | 455A | |
+| 455 | Frontend: Investment Form + Register + Interest Table Updates | Frontend | 453 | M | 455A | **Done** (PR #960) |
 | 456 | KYC Adapter Infrastructure: Port, Adapters, Service | Backend | 452 | M | 456A, 456B | |
 | 457 | KYC Controller + ChecklistInstanceItem Extension | Backend | 456 | S | 457A | |
 | 458 | Frontend: KYC Verification Dialog + Checklist Integration | Frontend | 457 | M | 458A, 458B | |
@@ -134,7 +134,7 @@ Phase 21 (BYOAK integration infrastructure exists)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 4a (parallel) | 455 | 455A | Place Investment dialog: investment basis radio group + help text + 86(6) advisory note. Investment register table: basis column + filter + statutory rate display. Interest allocation table: "5% (statutory)" display. Frontend tests (~8). Frontend only. | |
+| 4a (parallel) | 455 | 455A | Place Investment dialog: investment basis radio group + help text + 86(6) advisory note. Investment register table: basis column + filter + statutory rate display. Interest allocation table: "5% (statutory)" display. Frontend tests (~8). Frontend only. | **Done** (PR #960) |
 | 4b (parallel) | 458 | 458A | Conditional "Verify Now" button on FICA checklist items. KYC verification dialog with POPIA consent flow. Result display per status (VERIFIED/NOT_VERIFIED/NEEDS_REVIEW/ERROR). Types, Zod schemas, server actions. Frontend tests (~6). Frontend only. | |
 
 ### Stage 5: Frontend KYC Settings
@@ -340,7 +340,7 @@ Stage 5:  [458B]                                             <- KYC settings car
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **455A** | 455.1--455.7 | Place Investment dialog: investment basis radio group with help text. 86(6) advisory note on dialog and trust account form. Investment register table: basis column (badge) + filter dropdown. Interest allocation table: "5% (statutory)" for 86(4) allocations + footnote. TypeScript types + Zod schema updates. Frontend tests (~8). Frontend only. | |
+| **455A** | 455.1--455.7 | Place Investment dialog: investment basis radio group with help text. 86(6) advisory note on dialog and trust account form. Investment register table: basis column (badge) + filter dropdown. Interest allocation table: "5% (statutory)" for 86(4) allocations + footnote. TypeScript types + Zod schema updates. Frontend tests (~8). Frontend only. | **Done** (PR #960) |
 
 ### Tasks
 

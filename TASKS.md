@@ -514,7 +514,7 @@
 | 452 | Foundation: V86 Migration + InvestmentBasis Enum + TrustAccountingConstants | Backend | -- | S | 452A | **Done** (PR #957) |
 | 453 | Interest Calculation Basis Distinction + Audit Trail | Backend | 452 | M | 453A, 453B | **Done** (PR #958) |
 | 454 | Investment Register Report + Section 35 Data Pack Updates | Backend | 453 | S | 454A | **Done** (PR #959) |
-| 455 | Frontend: Investment Form + Register + Interest Table Updates | Frontend | 453 | M | 455A | |
+| 455 | Frontend: Investment Form + Register + Interest Table Updates | Frontend | 453 | M | 455A | **Done** (PR #960) |
 | 456 | KYC Adapter Infrastructure: Port, Adapters, Service | Backend | 452 | M | 456A, 456B | |
 | 457 | KYC Controller + Integration Status Endpoint | Backend | 456 | S | 457A | |
 | 458 | Frontend: KYC Verification Dialog + Checklist Integration + Settings Card | Frontend | 457 | M | 458A, 458B | |

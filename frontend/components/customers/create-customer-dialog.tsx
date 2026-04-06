@@ -207,11 +207,11 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>
-            {step === 1 ? "Create Customer" : "Additional Information"}
+            {step === 1 ? t("Create Customer") : "Additional Information"}
           </DialogTitle>
           <DialogDescription>
             {step === 1
-              ? "Step 1 of 2 — Add a new customer to your organization."
+              ? `Step 1 of 2 — Add a new ${t("customer")} to your organization.`
               : "Step 2 of 2 — Fill in any required intake fields."}
           </DialogDescription>
         </DialogHeader>
@@ -229,7 +229,7 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
                       <FormLabel>Name</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Customer name"
+                          placeholder={`${t("Customer")} name`}
                           maxLength={255}
                           autoFocus
                           {...field}
@@ -332,7 +332,7 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
                       </FormLabel>
                       <FormControl>
                         <Textarea
-                          placeholder="Any additional notes about this customer..."
+                          placeholder={`Any additional notes about this ${t("customer")}...`}
                           maxLength={2000}
                           rows={3}
                           {...field}
@@ -427,7 +427,7 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
                 onClick={handleSubmit}
                 disabled={isSubmitting || isLoadingFields}
               >
-                {isSubmitting ? "Creating..." : "Create Customer"}
+                {isSubmitting ? "Creating..." : t("Create Customer")}
               </Button>
             </>
           )}

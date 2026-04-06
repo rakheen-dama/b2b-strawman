@@ -2,7 +2,7 @@
 
 ## Current State
 
-- **QA Position**: Day 14 COMPLETE. Day 1 Steps 1.22-1.28 (engagement letter) deferred. Next: Day 30.
+- **QA Position**: Day 60 COMPLETE. Day 1 Steps 1.22-1.28 (engagement letter) deferred. Next: Day 75.
 - **Cycle**: 4
 - **E2E Stack**: READY
 - **NEEDS_REBUILD**: false
@@ -30,9 +30,9 @@
 | Day 2-3 | Additional Clients (Apex, Moroka, QuickCollect — 6 matters) | 2.1–2.24 | COMPLETE (Cycle 4) |
 | Day 7 | First Week Work (time logging, court date, comments, My Work) | 7.1–7.25 | COMPLETE (Cycle 4) |
 | Day 14 | Trust Deposits & Conflict Detection | 14.1–14.24 | COMPLETE (Cycle 4, trust steps BLOCKED by GAP-D0-02) |
-| Day 30 | First Billing Cycle (fee notes, tariff, trust transfer, budget) | 30.1–30.33 | NOT_STARTED |
-| Day 45 | Reconciliation & Prescription | 45.1–45.22 | NOT_STARTED |
-| Day 60 | Interest Run & Second Billing | 60.1–60.29 | NOT_STARTED |
+| Day 30 | First Billing Cycle (fee notes, tariff, trust transfer, budget) | 30.1–30.33 | COMPLETE (Cycle 4, tariff NaN GAP-D30-01, add line error GAP-D30-02, trust BLOCKED) |
+| Day 45 | Reconciliation & Prescription | 45.1–45.22 | COMPLETE (Cycle 4, trust recon BLOCKED, court postpone PASS, payment PASS) |
+| Day 60 | Interest Run & Second Billing | 60.1–60.29 | COMPLETE (Cycle 4, interest/investment BLOCKED by trust, reports PASS) |
 | Day 75 | Complex Engagement & Adverse Parties | 75.1–75.21 | NOT_STARTED |
 | Day 90 | Quarter Review & Section 35 Compliance | 90.1–90.40 | NOT_STARTED |
 
@@ -62,6 +62,16 @@
 | GAP-D7-04 | Activity feed shows "a task" instead of actual task names | LOW | OPEN | — | — | Activity entries like "Bob Admin logged 2h on task 'a task'" should show the real task name. |
 | GAP-D7-05 | Adverse Parties tab has no "Add Adverse Party" button -- read-only display | MEDIUM | OPEN | — | — | Tab displays linked adverse parties correctly but provides no create/link functionality. |
 | GAP-D14-01 | Conflict check does not match against adverse party names or matter names/descriptions | MEDIUM | OPEN | — | — | Searching "Mokoena" returns NO_CONFLICT despite "vs Mokoena" in matter name. Only matches client names. |
+| GAP-D30-01 | LSSA tariff items all show "R NaN" in Add Tariff Items dialog — tariff rates not loaded/parsed from DB. Cannot add tariff line items to invoices. | HIGH | OPEN | — | — | All 19 tariff items across 7 sections display "R NaN". Add to Invoice silently fails. Tariff schedule data likely missing amount field or parsing float from null. |
+| GAP-D30-02 | "Add Line" to invoice returns "The request body could not be read or parsed" backend error — manual line items cannot be added | HIGH | OPEN | — | — | Blocks disbursement lines and fixed-fee invoicing. Only unbilled-time-based invoice generation works. Frontend sends request but backend cannot deserialize. |
+| GAP-D30-03 | Invoice list page heading says "Invoices" and button says "New Invoice" instead of "Fee Notes"/"New Fee Note" when legal-za profile active | LOW | OPEN | — | — | Breadcrumb correctly says "fee notes", detail page says "Fee Note". Only list page heading/button not translated. |
+| GAP-D30-04 | Invoice prerequisite dialog requires Address Line 1, City, Country, Tax Number filled — not prompted during client creation | LOW | OPEN | — | — | Discovery UX gap: users must fill address custom fields before creating first invoice for a client. |
+| GAP-D30-05 | Project column on invoice line items shows "{client} - {type}" template placeholder | LOW | OPEN | — | — | Same root cause as GAP-D1-07. Affects invoice detail line items Project column. |
+| GAP-D45-01 | Court date postponement replaces existing entry instead of keeping original POSTPONED + creating new SCHEDULED | MEDIUM | OPEN | — | — | Single row updated with new date and Postponed status. Expected: old row=POSTPONED, new row=SCHEDULED. |
+| GAP-D45-02 | Prescription tracking requires manual tracker creation — not auto-derived from matter type | MEDIUM | OPEN | — | — | Prescriptions tab shows "No prescription trackers found" with Add Tracker button. Personal injury matters should auto-create 3-year tracker. |
+| GAP-D45-03 | Resources page shows 3 "Unknown" member entries alongside 3 real members | LOW | OPEN | — | — | Stale API-created member records from earlier test cycles. |
+| GAP-D60-01 | Profitability report heading says "Project Profitability Report" instead of "Matter Profitability Report" for legal-za profile | LOW | OPEN | — | — | Column header also says "Project" instead of "Matter". |
+| GAP-D60-02 | Customer column in profitability report shows "—" (dash) for all rows | MEDIUM | OPEN | — | — | Client association not populated in report data despite clients being linked to projects/matters. |
 
 ## Log
 
@@ -89,3 +99,6 @@
 | 2026-04-06T21:30Z | QA | **Cycle 4 Day 2-3 executed** (Steps 2.1-2.24). All 3 additional clients created and verified: Apex Holdings (COMPANY), Moroka Family Trust (TRUST), QuickCollect Services (COMPANY). All conflict checks CLEAR. FICA checklist auto-instantiates for all client types (INDIVIDUAL, COMPANY, TRUST) confirming customerType "ANY" fix works universally. All 4 clients ACTIVE. 5 additional matters created from templates (1 Commercial, 1 Estates, 3 Collections) — all with 9 tasks each. Total: 4 clients ACTIVE, 6 matters, 54 action items. API-created matters have correct names (GAP-D1-07 is frontend-only). 0 console errors. |
 | 2026-04-06T19:55Z | QA | **Cycle 4 Day 7 executed** (Steps 7.1-7.25). Multi-user time logging across 4 matters: Carol 3 entries (90+60+45 min on Sipho/Mokoena/Pillay), Bob 2 entries (120+180 min on Sipho/Apex), Alice 1 entry (60 min on Moroka). All 6 rate snapshots correct (Carol R550, Bob R1200, Alice R2500). Comment added by Bob on Sipho task. Court date created via DB (GAP-D7-01: matter dropdown empty in Schedule dialog). Activity feed shows chronological events. My Work page shows Carol's assigned task + time breakdown. 7 new gaps found: GAP-D7-01 (court date dialog, HIGH), GAP-D7-02 (add member crash), GAP-D7-03 (member status change), GAP-D7-04 (activity task names), GAP-D7-05 (adverse parties read-only). |
 | 2026-04-06T19:55Z | QA | **Cycle 4 Day 14 executed** (Steps 14.1-14.24). Trust accounting steps 14.1-14.11 and 14.22-14.24 BLOCKED by GAP-D0-02 (no create trust account button). Conflict check for "Mokoena" returned NO_CONFLICT (GAP-D14-01: doesn't search matter names). Adverse party "Road Accident Fund" added to Sipho matter via DB (GAP-D7-05: no UI add button). 3 more time entries logged via UI: Carol 120+60 min, Bob 90 min. Total time entries: 9 (13h 45m all billable). 1 new gap: GAP-D14-01 (conflict check scope). |
+| 2026-04-06T20:16Z | QA | **Cycle 4 Day 30 executed** (Steps 30.1-30.29). Invoice created for Sipho from unbilled time (3 lines, R4,325 + 15% VAT = R4,973.75). LSSA tariff dialog loads with 19 items across 7 sections but ALL amounts show "R NaN" (GAP-D30-01 HIGH). Manual "Add Line" fails with "request body could not be read" backend error (GAP-D30-02 HIGH). Invoice lifecycle PASS: DRAFT -> APPROVED (INV-0001 assigned) -> SENT (email confirmed in Mailpit). Apex invoice created from unbilled time (R4,140 DRAFT). Trust transfer steps BLOCKED (GAP-D0-02). 5 new gaps: GAP-D30-01 (tariff NaN), GAP-D30-02 (add line error), GAP-D30-03 (terminology), GAP-D30-04 (address prereq UX), GAP-D30-05 (placeholder in project column). |
+| 2026-04-06T20:16Z | QA | **Cycle 4 Day 45 executed** (Steps 45.1-45.22). Trust reconciliation BLOCKED (GAP-D0-02). Court date postponement PASS: Sipho motion postponed from 2026-05-06 to 2026-05-20 with reason "respondent counsel unavailable". Status changed to Postponed. Note: postponement updates existing entry rather than creating new SCHEDULED alongside old POSTPONED (GAP-D45-01). Prescription tracking tab exists on Court Calendar but shows "No trackers found" — requires manual creation (GAP-D45-02). Payment recording PASS: INV-0001 marked PAID with reference "EFT-2026-SN-001", Payment History section shows payment date and reference. Resources page loads with capacity grid (GAP-D45-03: 3 Unknown members). 3 new gaps. |
+| 2026-04-06T20:16Z | QA | **Cycle 4 Day 60 executed** (Steps 60.1-60.29). Interest/investment steps BLOCKED (GAP-D0-02 no trust). Second billing cycle partially blocked — Sipho unbilled time consumed, manual lines blocked by GAP-D30-02. Profitability report PASS: 5 matters with correct revenue/cost/margin (total 13.75h, R13,737.50 revenue, R5,500 cost, 59.96% margin). Export CSV/PDF buttons enabled after report run. Reports page has 3 categories: Invoice Aging, Project Profitability, Timesheet. 2 new gaps: GAP-D60-01 (terminology), GAP-D60-02 (customer column blank in report). 0 console errors across all 3 days. |

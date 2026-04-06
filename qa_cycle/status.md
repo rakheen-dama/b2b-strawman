@@ -2,10 +2,10 @@
 
 ## Current State
 
-- **QA Position**: Day 1, Step 1.14 (BLOCKED — onboarding checklist document requirement prevents ACTIVE transition)
-- **Cycle**: 2
+- **QA Position**: Day 1, Step 1.11 (BLOCKED — FICA checklist not auto-instantiated due to customerType mismatch)
+- **Cycle**: 3
 - **E2E Stack**: READY
-- **NEEDS_REBUILD**: true (mock IDP + backend changes from GAP-D1-02+D0-08+D1-03+D1-05 need full E2E rebuild)
+- **NEEDS_REBUILD**: true (backend fix needed for GAP-D1-06)
 - **Branch**: `bugfix_cycle_2026-04-06`
 - **Scenario**: `qa/testplan/qa-legal-lifecycle-test-plan.md`
 - **Focus**: Full 90-day lifecycle for SA law firm (Mathebula & Partners). Trust accounting, LSSA tariff, conflict checks, court calendar, prescription tracking, fee notes, reconciliation, interest runs, investments, Section 35 compliance, FICA/KYC, role-based access.
@@ -25,8 +25,8 @@
 
 | Day | Focus | Steps | Status |
 |-----|-------|-------|--------|
-| Day 0 | Firm Setup (rates, tax, trust account, modules) | 0.1–0.23 | COMPLETE (known gaps) |
-| Day 1 | First Client Onboarding (conflict, FICA, matter, engagement letter) | 1.1–1.28 | BLOCKED at 1.14 (GAP-D1-03) |
+| Day 0 | Firm Setup (rates, tax, trust account, modules) | 0.1–0.23 | COMPLETE (Cycle 3) |
+| Day 1 | First Client Onboarding (conflict, FICA, matter, engagement letter) | 1.1–1.28 | BLOCKED at 1.11 (GAP-D1-06 — checklist not instantiated) |
 | Day 2-3 | Additional Clients (Apex, Moroka, QuickCollect — 6 matters) | 2.1–2.24 | NOT_STARTED |
 | Day 7 | First Week Work (time logging, court date, comments, My Work) | 7.1–7.25 | NOT_STARTED |
 | Day 14 | Trust Deposits & Conflict Detection | 14.1–14.24 | NOT_STARTED |
@@ -54,6 +54,7 @@
 | GAP-D1-03 | Onboarding checklist item "Upload signed engagement letter" has requiresDocument constraint that cannot be satisfied — no documents on new client, Confirm silently fails | HIGH | FIXED | Dev | PR #973 | Generic-onboarding pack item 4 changed to `requiresDocument:false`. Combined with GAP-D1-05 in single PR. |
 | GAP-D1-04 | Create/Activate Customer dialog titles use "Customer" instead of "Client" when legal-za profile active | LOW | SPEC_READY | Dev | — | Hardcoded "Customer" in create-customer-dialog.tsx and TransitionConfirmDialog.tsx. Fix: wrap with t(), add compound phrases to terminology-map. |
 | GAP-D1-05 | Onboarding checklist is generic ("Generic Client Onboarding") instead of FICA-specific checklist for legal-za profile | MEDIUM | FIXED | Dev | PR #973 | Swapped autoInstantiate flags: generic=false, legal-za=true. Legal-za tenants now get 11-item FICA checklist. Combined with GAP-D1-03. |
+| GAP-D1-06 | FICA checklist NOT auto-instantiated on ONBOARDING transition — `legal-za-onboarding/pack.json` uses `customerType: "ALL"` but `ChecklistInstantiationService` line 43 only matches `"ANY"`. Generic pack uses `"ANY"` correctly. 0 checklists instantiated for INDIVIDUAL customer. | CRITICAL | OPEN | Dev | — | Root cause: `legal-za-onboarding/pack.json` line 8 has `"customerType": "ALL"` but service matches against `List.of(customerType, "ANY")`. Fix: change pack.json to `"ANY"` or update service to also match `"ALL"`. Same bug in `fica-kyc-za/pack.json`. NEEDS_REBUILD after fix. |
 
 ## Log
 
@@ -71,3 +72,6 @@
 | 2026-04-06T22:00Z | Product | **Cycle 2 triage complete — all 5 OPEN items now SPEC_READY.** Root causes confirmed via code inspection: (1) GAP-D1-03 BLOCKER: generic-onboarding pack item 4 `requiresDocument:true` creates chicken-and-egg on new clients. Fix: set to `false`. (2) GAP-D1-02 HIGH: mock IDP JWT missing `role` claim, MemberFilter creates Bob as "member" not "admin". Fix: add `role`+`name` to JWT, read in MemberFilter. (3) GAP-D0-09 MEDIUM: likely stale member from Cycle 1, expected to resolve with GAP-D1-02 full rebuild. (4) GAP-D1-05 MEDIUM: legal-za-onboarding pack has `autoInstantiate:false` while generic has `true`. Fix: swap both. (5) GAP-D1-04 LOW: hardcoded "Customer" in dialog titles. Fix: wrap with t(). (6) GAP-D0-08 LOW: mock IDP JWT missing `name` claim, bundled with GAP-D1-02. Fix specs written to qa_cycle/fix-specs/. Implementation priority: GAP-D1-03+D1-05 (unblocks lifecycle) → GAP-D1-02+D0-08 (unblocks multi-user) → GAP-D0-09 (verify) → GAP-D1-04 (terminology). |
 | 2026-04-06T22:35Z | Dev | **GAP-D1-02+D0-08 FIXED** (PR #972, merged). Added `name` and `role` claims to mock IDP JWT payload (`compose/mock-idp/src/index.ts`). Added JWT `role` claim fallback in `MemberFilter.lazyCreateMember()` — reads role from JWT when no pending invitation exists, before first-member-owner promotion. 2 files, +11 lines. Mock IDP build green, backend 185 targeted tests pass (0 failures). NEEDS_REBUILD: mock-idp + backend Docker images. |
 | 2026-04-06T22:35Z | Dev | **GAP-D1-03+D1-05 FIXED** (PR #973, merged). Three pack JSON changes: (1) generic-onboarding item 4 `requiresDocument` false + `requiredDocumentLabel` null, (2) generic-onboarding `autoInstantiate` false, (3) legal-za-onboarding `autoInstantiate` true. Updated ComplianceProvisioningTest to match. 107 compliance/checklist/onboarding tests pass. NEEDS_REBUILD: backend. |
+| 2026-04-06T23:40Z | Infra | **E2E stack rebuilt** (Cycle 3). Pulled latest from bugfix_cycle_2026-04-06 (PRs #970-973 merged). Tore down + rebuilt with `VERTICAL_PROFILE=legal-za`. All services healthy: backend UP (8081), frontend 200 (3001), Mailpit 200 (8026), mock IDP 200 (8090). Verified: legal-za profile active (automation-legal-za pack applied, LSSA tariff seeded, 4 matter templates present). NEEDS_REBUILD cleared. Starting Cycle 3 QA execution. |
+| 2026-04-06T23:50Z | QA | **Cycle 3 Day 0 executed** (Steps 0.1-0.18). Login as Alice PASS. Dashboard shows legal nav (Matters, Clients, Court Calendar, Trust Accounting, Conflict Check, etc.). Profile=legal-za pre-active. Brand color set to #1B3A4B, persists on reload. ZAR currency pre-set. Synced Bob (admin) + Carol (member) — names and roles display correctly (GAP-D0-08 VERIFIED, GAP-D1-02 VERIFIED). Created 3 billing rates (Alice R2500, Bob R1200, Carol R550) + 3 cost rates (Alice R1000, Bob R500, Carol R200). Tax rates pre-seeded (Standard 15%, Zero-rated, Exempt). 4 matter templates verified (9 tasks each). 20 CLIENT + 11 MATTER custom fields verified. Trust account/modules skipped (WONT_FIX). Known terminology gaps persist (GAP-D0-04/05). |
+| 2026-04-06T23:55Z | QA | **Cycle 3 Day 1 executed** (Steps 1.1-1.10). Login as Bob — full sidebar verified (GAP-D1-02 VERIFIED FIXED). Conflict Check page loads for Bob (GAP-D1-01 VERIFIED FIXED for Bob). Searched "Sipho Ndlovu" — returned "No Conflict" (CLEAR). Created client Sipho Ndlovu (PROSPECT, INDIVIDUAL, custom fields set). Transitioned to ONBOARDING. **BLOCKER at Step 1.11**: FICA checklist NOT auto-instantiated (0 checklists). Root cause: `legal-za-onboarding/pack.json` has `customerType: "ALL"` but `ChecklistInstantiationService` (line 43) only matches `"ANY"`. The generic-onboarding pack correctly uses `"ANY"`. New GAP-D1-06 (CRITICAL). Steps 1.11-1.28 NOT_TESTED. |

@@ -1,150 +1,48 @@
-# QA Cycle Status — Phase 55 Legal Foundations / Keycloak Dev Stack (2026-04-04)
+# QA Cycle Status — 90-Day SA Law Firm Lifecycle (2026-04-06)
 
 ## Current State
 
-- **QA Position**: ALL_VERIFIED (Cycle 2). All 12 FIXED gaps verified. 0 reopened.
-- **Cycle**: 2
-- **Dev Stack**: READY
+- **QA Position**: Day 0, Step 0.1 (not started)
+- **Cycle**: 0
+- **E2E Stack**: READY
 - **NEEDS_REBUILD**: false
-- **Branch**: `bugfix_cycle_2026-04-04`
-- **Scenario**: `qa/testplan/phase55-legal-foundations.md`
-- **Focus**: Legal foundations — matter types, practice areas, legal entity management, conflict checks, court/jurisdiction registry, legal calendar, trust accounting foundations
-- **Auth Mode**: Keycloak (not mock-auth). Firm uses JWT via gateway BFF.
+- **Branch**: `bugfix_cycle_2026-04-06`
+- **Scenario**: `qa/testplan/qa-legal-lifecycle-test-plan.md`
+- **Focus**: Full 90-day lifecycle for SA law firm (Mathebula & Partners). Trust accounting, LSSA tariff, conflict checks, court calendar, prescription tracking, fee notes, reconciliation, interest runs, investments, Section 35 compliance, FICA/KYC, role-based access.
+- **Auth Mode**: Mock-auth (E2E stack)
 
 ## Environment
 
 | Service | URL | Status |
 |---------|-----|--------|
-| Frontend | http://localhost:3000 | UP (PID 74243) |
-| Backend | http://localhost:8080 | UP (PID 43171) |
-| Gateway (BFF) | http://localhost:8443 | UP (PID 74067) |
-| Portal | http://localhost:3002 | UP (PID 74299) |
-| Keycloak | http://localhost:8180 | UP (Docker: b2b-keycloak) |
-| Mailpit | http://localhost:8025 | UP (Docker: b2b-mailpit) |
-| LocalStack | http://localhost:4566 | UP (Docker: b2b-localstack) |
-| Postgres | b2mash.local:5432 | UP (Docker: b2b-postgres) |
+| Frontend (mock auth) | http://localhost:3001 | UP |
+| Backend (e2e profile) | http://localhost:8081 | UP |
+| Mock IDP | http://localhost:8090 | UP |
+| Mailpit | http://localhost:8026 | UP |
+| Postgres | localhost:5433 | UP |
 
-## Existing Data (from previous cycles)
+## Test Plan Structure
 
-- **Org**: "Thornton & Associates" (alias=thornton-associates, schema=tenant_4a171ca30392)
-- **Users**: padmin@docteams.local (platform-admin), thandi@thornton-test.local (owner), bob@thornton-test.local (admin)
-- All passwords: `password`
-
-## Legal Tenant Data (Moyo & Dlamini Attorneys)
-
-| Entity | Name | ID |
-|--------|------|----|
-| Org | Moyo & Dlamini Attorneys | moyo-dlamini-attorneys / schema: tenant_555bfc30b94c |
-| User | Alice Moyo (owner) | alice@moyo-dlamini.local / password |
-| Client | Sipho Mabena | 23a5f2af-2fc0-4aa3-8a01-46e66f42a230 |
-| Client | Kagiso Mining (Pty) Ltd | 55da8ecd-31b3-4156-b425-72dedc2771fb |
-| Client | Nkosi Family Trust | 87c11958-13e6-4760-ac1b-3023c0ff842f |
-| Client | Precious Modise | 7694912e-b5c7-4024-9fe7-0f5261748b3d |
-| Matter | Mabena v Road Accident Fund | 6f63b914-dc41-4426-9623-ce52dc54d99b |
-| Matter | Mining Rights Application | 54f1c77f-a8c9-4c3a-aeea-b07321f89400 |
-| Matter | Nkosi Estate Administration | 4a32ff82-9f0f-433f-8cf4-0aefe763a2ce |
-| Matter | Modise Divorce Proceedings | 19f9a8ab-cb1d-49f7-a50f-79f753b0f58b |
-| Adverse Party | Road Accident Fund | 35b4abd9-8f4f-4435-bd75-c6c5c6fff9dd |
-| Adverse Party | BHP Minerals SA | 5f242c26-f099-4ce7-b398-65f587e7ba12 |
-| Adverse Party | Thandi Modise | 94041847-26b6-44b0-9601-8eb4c58110be |
-| Adverse Party | James Nkosi | 05deb75e-ded8-4dae-a5d5-2b0da511d68c |
-| Court Date | Mabena TRIAL 2026-05-15 | ae76b4a2-997b-4395-9273-1eed3436c2ee |
-| Court Date | Mabena PRE_TRIAL 2026-04-10 | 03b5e56e-849f-4a66-b652-d19e3c0d5af1 |
-| Court Date | Mining HEARING 2026-04-25 | 367c7e05-22b6-4867-ab9d-479a608c2b3a |
-| Court Date | Modise MEDIATION 2026-04-18 | c6d6259d-5ed8-4580-838d-13513b77521b |
-| Prescription | Mabena DELICT_3Y (2027-06-15) | 52af6a78-8351-4146-9fc5-e1fdd60bce90 |
-| Prescription | Mining GENERAL_3Y (2026-01-10) | 06fef4ef-4c2b-4f85-bae9-e10d4ee57ed5 |
-
-## API Auth Note
-
-Direct grant tokens MUST include `scope=openid organization` to get org claims:
-
-```bash
-TOKEN=$(curl -sf -X POST "http://localhost:8180/realms/docteams/protocol/openid-connect/token" \
-  -d "client_id=gateway-bff" \
-  -d "client_secret=docteams-web-secret" \
-  -d "grant_type=password" \
-  -d "username=thandi@thornton-test.local" \
-  -d "password=password" \
-  -d "scope=openid organization" | jq -r '.access_token')
-```
+| Day | Focus | Steps | Status |
+|-----|-------|-------|--------|
+| Day 0 | Firm Setup (rates, tax, trust account, modules) | 0.1–0.23 | NOT_STARTED |
+| Day 1 | First Client Onboarding (conflict, FICA, matter, engagement letter) | 1.1–1.28 | NOT_STARTED |
+| Day 2-3 | Additional Clients (Apex, Moroka, QuickCollect — 6 matters) | 2.1–2.24 | NOT_STARTED |
+| Day 7 | First Week Work (time logging, court date, comments, My Work) | 7.1–7.25 | NOT_STARTED |
+| Day 14 | Trust Deposits & Conflict Detection | 14.1–14.24 | NOT_STARTED |
+| Day 30 | First Billing Cycle (fee notes, tariff, trust transfer, budget) | 30.1–30.33 | NOT_STARTED |
+| Day 45 | Reconciliation & Prescription | 45.1–45.22 | NOT_STARTED |
+| Day 60 | Interest Run & Second Billing | 60.1–60.29 | NOT_STARTED |
+| Day 75 | Complex Engagement & Adverse Parties | 75.1–75.21 | NOT_STARTED |
+| Day 90 | Quarter Review & Section 35 Compliance | 90.1–90.40 | NOT_STARTED |
 
 ## Tracker
 
 | ID | Summary | Severity | Status | Owner | PR | Notes |
 |----|---------|----------|--------|-------|----|-------|
-| GAP-P55-001 | Demo provisioning `addMember` fails in KC 26.5.0 | major | WONT_FIX | Backend | — | KC 26.5 Organizations API changed. `POST /organizations/{orgId}/members` requires invite flow. Needs KC API research. See `fix-specs/GAP-P55-001.md`. |
-| GAP-P55-002 | Prescription tracker does not detect expired status | major | VERIFIED | Backend | PR #912 | Mining GENERAL_3Y (2026-01-10) now shows EXPIRED. API + UI confirmed. |
-| GAP-P55-003 | Direct URL for gated modules shows generic error | minor | VERIFIED | Frontend | PR #916 | Code-verified: all 3 pages render "Module Not Available" with descriptive message. Thornton API confirms enabledModules=[]. |
-| GAP-P55-004 | Court Calendar missing date range and client filters | minor | VERIFIED | Frontend | PR #918 | From/To date inputs and "Search client/matter" text input present. Typing "Mabena" filters to 2 rows. |
-| GAP-P55-005 | Court date type badge shows raw enum with underscore | cosmetic | VERIFIED | Frontend | PR #913 | "Pre-Trial" displays correctly in list view, dashboard widget, and detail panel. |
-| GAP-P55-006 | "New Court Date" dialog crashes with TypeError | major | VERIFIED | Frontend | PR #910 | Dialog opens successfully with all fields (Matter, Type, Date, Time, Court, etc.). No crash. |
-| GAP-P55-007 | Postponement reason not visible in court date detail | minor | VERIFIED | Backend | PR #914 | Postponed Trial via API with reason. Detail panel shows "Outcome: Postponed: Counsel unavailable due to scheduling conflict". |
-| GAP-P55-008 | No Edit action for court dates | minor | VERIFIED | Frontend | PR #919 | "Edit" appears in Actions dropdown for SCHEDULED and POSTPONED court dates. Terminal states have no actions. |
-| GAP-P55-009 | Dashboard "Upcoming Court Dates" widget shows error | minor | VERIFIED | Frontend | PR #909 | Widget loads data: "Pre-Trial | Mabena v Road Accident Fund | Johannesburg High Court". |
-| GAP-P55-010 | Adverse party search does not match on partial name tokens | major | VERIFIED | Backend | PR #917 | "BHP" returns BHP Minerals SA, "Road" returns Road Accident Fund. Both previously returned 0. |
-| GAP-P55-011 | Conflict Check page crashes on load (TypeError in Controller) | major | VERIFIED | Frontend | PR #910 | Page loads with form (Name, ID, Reg Number, Check Type, Customer, Matter) and History tab. No crash. |
-| GAP-P55-012 | Tariff Schedules page crashes on load (data shape mismatch) | major | VERIFIED | Frontend | PR #911 | Page loads showing 3 schedules with item counts and Clone buttons. No crash. |
-| GAP-P55-013 | No manual trigger for court date reminder job | minor | WONT_FIX | Backend | — | Out of scope for bugfix cycle. Job logic verified correct via code review. GAP-P55-002 fix addresses the primary impact. See `fix-specs/GAP-P55-013.md`. |
-| GAP-P55-014 | "Customer:" label on matter detail instead of "Client:" for legal tenant | cosmetic | VERIFIED | Frontend | PR #913 | Matter detail header shows "Client:" (via TerminologyText). Legal terminology confirmed. |
 
 ## Log
 
 | Timestamp | Agent | Action |
 |-----------|-------|--------|
-| 2026-04-04T00:00Z | Setup | Phase 55 Legal Foundations QA cycle initialized on branch bugfix_cycle_2026-04-04. Scenario: qa/testplan/phase55-legal-foundations.md. Reusing org data from previous cycles. |
-| 2026-04-04T00:17Z | Infra | Docker infra started (Postgres, Keycloak, LocalStack, Mailpit). Keycloak realm docteams verified with platform admin user. Gateway health check was failing due to Redis health indicator (Redis dep exists for production but not used in dev with JDBC sessions). Fixed by disabling `management.health.redis.enabled` in default profile, re-enabled in production profile. All 8 services now UP and healthy. |
-| 2026-04-04T00:34Z | QA | T0: Legal tenant provisioned (manual KC invite + internal API workaround for GAP-P55-001). Schema: tenant_555bfc30b94c. Alice (owner) logged in. |
-| 2026-04-04T00:38Z | QA | T0: Seeded 4 clients (ACTIVE), 4 matters, 4 adverse parties (linked), 4 court dates (SCHEDULED), 2 prescription trackers. Packs verified (field defs, tariffs, clauses). |
-| 2026-04-04T00:40Z | QA | T0.9 readiness checkpoint PASSED. All data counts verified. |
-| 2026-04-04T00:42Z | QA | T7: Module gating verified. Accounting tenant (Thornton) sidebar has zero legal nav items. API returns 403 for all 3 legal endpoints. Direct URL shows generic error (GAP-P55-003). |
-| 2026-04-04T00:45Z | QA | T1.1: Court Calendar list view verified — 4 dates visible, columns correct, status badges correct. Found GAP-P55-004 (missing filters) and GAP-P55-005 (enum display). |
-| 2026-04-04T00:46Z | QA | Checkpoint results written. 5 gaps logged (0 blocker, 2 major, 2 minor, 1 cosmetic). QA position: T1.2. |
-| 2026-04-04T00:58Z | QA | T1.2: Calendar View — all 6 checkpoints PASS. Month grid with markers on correct dates, detail popup works on click. |
-| 2026-04-04T00:58Z | QA | T1.3: Create Court Date — "New Court Date" button crashes page (GAP-P55-006). Backend API works (created TAXATION for Nkosi Estate via API). |
-| 2026-04-04T00:58Z | QA | T1.4: Postpone — PASS. PRE_TRIAL postponed to 2026-04-17, status=POSTPONED. Reason not shown in detail (GAP-P55-007). |
-| 2026-04-04T00:58Z | QA | T1.5: Cancel — PASS. Mediation cancelled, reason visible under "Outcome" label. No actions on terminal state. |
-| 2026-04-04T00:58Z | QA | T1.6: Record Outcome — PASS. Hearing marked Heard, outcome text visible. Terminal state enforced. |
-| 2026-04-04T00:58Z | QA | T1.7: State Machine — terminal states (CANCELLED, HEARD) have no actions. POSTPONED has Cancel+Record Outcome but no Edit (GAP-P55-008). |
-| 2026-04-04T00:58Z | QA | T2.1: Prescription List — 2 trackers visible. Mabena DELICT_3Y correct. Mining GENERAL_3Y shows RUNNING (should be EXPIRED, confirms GAP-P55-002). |
-| 2026-04-04T00:58Z | QA | T3.1: Adverse Party List — 4 parties visible. Type badges partially formatted (GAP-P55-005 class). |
-| 2026-04-04T00:58Z | QA | T3.2: Adverse Party Search — BROKEN. "BHP" and "Road" return 0 results (GAP-P55-010). Backend search query issue. |
-| 2026-04-04T00:58Z | QA | Dashboard: "Upcoming Court Dates" widget shows "Unable to load court dates" (GAP-P55-009). |
-| 2026-04-04T00:58Z | QA | Checkpoint results written. 10 total gaps (0 blocker, 4 major, 4 minor, 1 cosmetic, 1 from dashboard). QA position: T4.1. |
-| 2026-04-04T01:16Z | QA | T4: Conflict Check — page crashes on load (GAP-P55-011, same Controller .map() bug as GAP-P55-006). All 10 sub-checkpoints tested via API: exact ID match PASS, reg number match PASS, fuzzy name match PASS (0.84 score), alias match PASS (POTENTIAL_CONFLICT, 0.65), no-conflict PASS, customer cross-check PASS (EXISTING_CLIENT), resolve PROCEED PASS, resolve WAIVER_OBTAINED PASS, history+filters PASS, validation PASS. |
-| 2026-04-04T01:16Z | QA | T5: Tariff Management — page crashes on load (GAP-P55-012, data shape mismatch: API returns array, frontend expects paginated). All backend operations via API: 1 system schedule (19 items), immutability enforced (400 on PUT/DELETE), clone works (deep copy, 19 items), edit/add/delete items on custom schedule PASS, create from scratch PASS. |
-| 2026-04-04T01:16Z | QA | T6: Invoice Tariff Integration — BLOCKED. Invoice creation fails 422 (customer missing address_line1, city, country, tax_number). These are pack-managed fields requiring field group setup. Time entries also require tasks (none exist). |
-| 2026-04-04T01:16Z | QA | T8: Matter Detail Integration — Court Dates tab on Mabena matter shows 2 dates (PRE_TRIAL postponed, TRIAL scheduled), sorted chronologically. "New Court Date" button present. Adverse Parties tab on Mining Rights shows "BHP Minerals SA (Pty) Ltd" (Opposing Party). Prescription trackers not shown on matter detail page. |
-| 2026-04-04T01:16Z | QA | T9: Notifications — SKIP. Reminder job cron-only (6 AM daily), no manual trigger (GAP-P55-013). Zero COURT_DATE_REMINDER or PRESCRIPTION_WARNING notifications. Only 4 AUTOMATION_ACTION_FAILED notifications exist. Code review confirms job logic is correct. |
-| 2026-04-04T01:16Z | QA | T10: Multi-Vertical Coexistence — Data isolation PASS (Moyo 4 projects/4 customers, Thornton 14/5, zero overlap). Module gating PASS (403 on all legal APIs for Thornton). Pack isolation PASS (legal: "SA Legal — Matter Details", accounting: "SA Accounting — Engagement Details"). Terminology PASS (sidebar: "Matters"/"Clients") with minor inconsistency on detail page (GAP-P55-014: "Customer:" instead of "Client:"). Tariff isolation PASS (403 for Thornton). |
-| 2026-04-04T01:16Z | QA | ALL TRACKS COMPLETE (Cycle 1). 14 total gaps: 0 blocker, 6 major, 5 minor, 2 cosmetic, 1 dashboard. Core architecture (schema isolation, module gating, conflict detection, tariff management) is solid at the API level. Primary issue: 3 legal module frontend pages crash on load (court date dialog, conflict check page, tariffs page) — all related to undefined array access in react-hook-form/component rendering. |
-| 2026-04-04T02:00Z | Product | Triage complete. 14 gaps analyzed, codebase searched for root causes. Results: 12 SPEC_READY, 2 WONT_FIX. |
-| 2026-04-04T02:00Z | Product | WONT_FIX: GAP-P55-001 (KC 26.5 API change, needs research), GAP-P55-013 (manual job trigger, out of scope). |
-| 2026-04-04T02:00Z | Product | Grouped specs: GAP-P55-006+011 (same defensive `?? []` pattern), GAP-P55-005+014 (both display/terminology). |
-| 2026-04-04T02:00Z | Product | Root causes confirmed: GAP-P55-009 = wrong URL path (`/api/court-calendar/upcoming` vs `/api/court-dates/upcoming`). GAP-P55-012 = backend returns `List<>`, frontend expects paginated `{ content, page }`. GAP-P55-010 = `pg_trgm similarity()` fails on short tokens. GAP-P55-002 = no dynamic status computation at query time. |
-| 2026-04-04T02:00Z | Product | Fix specs written to `qa_cycle/fix-specs/GAP-P55-*.md`. 9 spec files total. Priority order: (1) crashers 006+011, 012; (2) wrong data 002, 009, 010; (3) missing features 004, 007, 008; (4) cosmetic 005+014, 003. |
-| 2026-04-04T02:10Z | Dev | **GAP-P55-009 FIXED** (PR #909, merged). Changed `fetchUpcoming()` URL from `/api/court-calendar/upcoming` to `/api/court-dates/upcoming` in `frontend/app/(app)/org/[slug]/court-calendar/actions.ts`. 1 file, 1 line changed. Build green, 1800 tests pass. |
-| 2026-04-04T02:20Z | Dev | **GAP-P55-006+011 FIXED** (PR #910, merged). Added `?? []` defensive defaults in 4 files: `fetchProjects()` in court-calendar/actions.ts and conflict-check/actions.ts, `fetchCustomers()` in conflict-check/actions.ts, plus client-side state setters in CreateCourtDateDialog and ConflictCheckForm. 4 files, 6 lines changed. Build green, all tests pass. |
-| 2026-04-04T02:35Z | Dev | **GAP-P55-012 FIXED** (PR #911, merged). Changed `fetchTariffSchedules()` and `fetchTariffItems()` to return plain arrays instead of paginated response objects. Updated 5 consumer files (page.tsx, tariff-browser-client.tsx, tariff-item-browser.tsx, tariff-line-dialog.tsx, actions.ts) and 2 test files. Removed unused `PaginatedResponse` interface. 7 files changed (-132/+100 lines). Build green, 291 test files / 1800 tests pass. |
-| 2026-04-04T02:45Z | Dev | **GAP-P55-002 FIXED** (PR #912, merged). Added `computeEffectiveStatus()` in `PrescriptionTrackerService.buildResponse()` to dynamically evaluate prescription status at query time. EXPIRED if prescriptionDate <= today, WARNED if within 90 days (matches CourtDateReminderJob threshold), terminal states (INTERRUPTED/EXPIRED) preserved. Updated 2 existing tests to use relative dates (time-proof), added 3 new tests (expired, warned, terminal-state preservation). 2 files changed (+123/-16 lines). 13 Prescription tests pass. NEEDS_REBUILD: backend. |
-| 2026-04-04T02:55Z | Dev | **GAP-P55-005+014 FIXED** (PR #913, merged). Fixed `dateTypeLabel()` in 3 locations to split on `_`, capitalize each word, join with `-` (e.g., "PRE_TRIAL" -> "Pre-Trial"). Replaced hardcoded "Customer:" with `<TerminologyText template="{Customer}:" />` on project detail page. 4 files changed (+14/-5 lines). Build green, 1800 tests pass. |
-| 2026-04-04T03:20Z | Dev | **GAP-P55-007 FIXED** (PR #914, merged). Stored postpone reason in existing `outcome` field (prefixed "Postponed: ") in `CourtCalendarService.postponeCourtDate()`. No frontend changes needed — detail panel already displays outcome. Added outcome assertions to service + controller tests. 3 files changed (+6/-1 lines). 22 court date tests pass. NEEDS_REBUILD: backend. |
-| 2026-04-04T03:30Z | Dev | **GAP-P55-003 FIXED** (PR #916, merged). Replaced `notFound()` with "Module Not Available" UI in court-calendar, conflict-check, and legal/tariffs pages. Each shows module-specific message (e.g., "The Court Calendar module is not enabled for your organization."). 3 files changed (+30/-3 lines). Build green, 1800 tests pass. |
-| 2026-04-04T03:35Z | Dev | **GAP-P55-010 FIXED** (PR #917, merged). Added `findByNameContaining` ILIKE query to `AdversePartyRepository`. Updated `AdversePartyService.list()` to use substring match as primary search, `similarity()` as secondary fuzzy fallback, alias match as tertiary. Results merged with dedup preserving substring-match priority. 2 files changed (+22/-3 lines). 13 AdverseParty tests pass. NEEDS_REBUILD: backend. |
-| 2026-04-04T03:45Z | Dev | **GAP-P55-004 FIXED** (PR #918, merged). Added date range (from/to) inputs and client/matter text search to court calendar filter bar. Date filters wired to backend `CourtDateFilters`; text search uses client-side `useMemo` filter on `customerName`/`projectName`. 1 file changed (+47/-6 lines). Build green, 1800 tests pass. |
-| 2026-04-04T03:55Z | Dev | **GAP-P55-008 FIXED** (PR #919, merged). Created `EditCourtDateDialog` component (pre-populated with existing court date values, calls `updateCourtDate` action). Added `canEdit` to `canTransition()` for SCHEDULED/POSTPONED statuses. Wired "Edit" menu item into list view dropdown (before Postpone) and "Edit" button into detail side panel. Updated `ProjectCourtDatesTab` and all test usages with new `onEdit` prop. Added `editCourtDateSchema` to `lib/schemas/legal.ts`. 6 files changed (+406 lines). Build green, 291 test files / 1800 tests pass. |
-| 2026-04-04T04:05Z | Infra | Backend restarted (PID 72936 -> 43171) after PRs #912, #914, #917 merged (Java changes: prescription status computation, postpone reason storage, adverse party substring search). All 4 services healthy. NEEDS_REBUILD cleared. |
-| 2026-04-04T05:03Z | QA | **Cycle 2 — Fix Verification Started.** Verifying all 12 FIXED gaps. Alice Moyo session active (legal tenant). |
-| 2026-04-04T05:03Z | QA | **GAP-P55-009 VERIFIED.** Dashboard "Upcoming Court Dates" widget loads data (Pre-Trial, Mabena v RAF). |
-| 2026-04-04T05:03Z | QA | **GAP-P55-005 VERIFIED.** Type badges show "Pre-Trial" (not "Pre_trial") in list, widget, and detail. |
-| 2026-04-04T05:03Z | QA | **GAP-P55-004 VERIFIED.** Date range (from/to) and client/matter search inputs present. "Mabena" filters to 2 rows. |
-| 2026-04-04T05:03Z | QA | **GAP-P55-006 VERIFIED.** "New Court Date" dialog opens without crash. All fields render correctly. |
-| 2026-04-04T05:03Z | QA | **GAP-P55-008 VERIFIED.** "Edit" in Actions dropdown for SCHEDULED and POSTPONED dates. Also in detail panel. |
-| 2026-04-04T05:03Z | QA | **GAP-P55-007 VERIFIED.** Postponed Trial with reason. Detail panel shows "Outcome: Postponed: Counsel unavailable due to scheduling conflict". |
-| 2026-04-04T05:03Z | QA | **GAP-P55-002 VERIFIED.** Mining GENERAL_3Y (2026-01-10) shows EXPIRED in Prescriptions tab and API. Mabena DELICT_3Y correctly RUNNING. |
-| 2026-04-04T05:03Z | QA | **GAP-P55-011 VERIFIED.** Conflict Check page loads with full form and History tab. No crash. |
-| 2026-04-04T05:03Z | QA | **GAP-P55-012 VERIFIED.** Tariff Schedules page loads showing 3 schedules with item counts. No crash. |
-| 2026-04-04T05:03Z | QA | **GAP-P55-014 VERIFIED.** Matter detail header shows "Client:" (not "Customer:") via TerminologyText. |
-| 2026-04-04T05:03Z | QA | **GAP-P55-003 VERIFIED** (code-verified). All 3 gated pages render "Module Not Available" message. Thornton enabledModules=[]. |
-| 2026-04-04T05:03Z | QA | **GAP-P55-010 VERIFIED.** "BHP" returns 1 result, "Road" returns 1 result. Both previously returned 0. |
-| 2026-04-04T05:03Z | QA | **Cycle 2 COMPLETE.** 12/12 FIXED gaps verified. 0 reopened. Phase 55 Legal Foundations bugfix cycle is done. |
+| 2026-04-06T09:00Z | Setup | QA cycle initialized. Branch: bugfix_cycle_2026-04-06. E2E stack confirmed running (frontend:3001, backend:8081, mailpit:8026). |

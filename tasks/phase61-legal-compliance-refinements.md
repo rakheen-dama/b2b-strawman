@@ -23,7 +23,7 @@ Phase 61 closes two compliance gaps identified in the Phase 60 trust accounting 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 452 | Foundation: V86 Migration + InvestmentBasis Enum + TrustAccountingConstants | Backend | -- (Phase 60 complete) | S | 452A | **Done** (PR #957) |
-| 453 | Interest Calculation Basis Distinction + Audit Trail | Backend | 452 | M | 453A, 453B | |
+| 453 | Interest Calculation Basis Distinction + Audit Trail | Backend | 452 | M | 453A, 453B | **Done** (PR #958) |
 | 454 | Investment Register Report + Section 35 Data Pack Updates | Backend | 453 | S | 454A | |
 | 455 | Frontend: Investment Form + Register + Interest Table Updates | Frontend | 453 | M | 455A | |
 | 456 | KYC Adapter Infrastructure: Port, Adapters, Service | Backend | 452 | M | 456A, 456B | |
@@ -113,14 +113,14 @@ Phase 21 (BYOAK integration infrastructure exists)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 1a (parallel) | 453 | 453A | Extend `TrustInvestment` entity with `investmentBasis` field. Extend `TrustInvestmentService` to accept/return `investmentBasis`. Extend `InterestCalculationService` with conditional LPFF share logic (statutory 5% for CLIENT_INSTRUCTION, general rate for FIRM_DISCRETION). Extend `InterestAllocation` with `lpffRateId` + `statutoryRateApplied`. Integration tests (~12). Backend only. | |
+| 1a (parallel) | 453 | 453A | Extend `TrustInvestment` entity with `investmentBasis` field. Extend `TrustInvestmentService` to accept/return `investmentBasis`. Extend `InterestCalculationService` with conditional LPFF share logic (statutory 5% for CLIENT_INSTRUCTION, general rate for FIRM_DISCRETION). Extend `InterestAllocation` with `lpffRateId` + `statutoryRateApplied`. Integration tests (~12). Backend only. | **Done** (PR #958) |
 | 1b (parallel) | 456 | 456A | `KycVerificationPort` interface + `KycVerificationRequest` record + `KycVerificationResult` record + `KycVerificationStatus` enum + `VerifyNowKycAdapter` + `CheckIdKycAdapter` + `NoOpKycAdapter`. Add `KYC_VERIFICATION` to `IntegrationDomain` enum. Unit tests (~8). Backend only. | |
 
 ### Stage 2: Investment Endpoints + KYC Service (parallel tracks)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 2a (parallel) | 453 | 453B | Modify investment endpoints to accept/return `investmentBasis` field. Add `?investmentBasis=` filter parameter. Additional controller integration tests (~6). Backend only. | |
+| 2a (parallel) | 453 | 453B | Modify investment endpoints to accept/return `investmentBasis` field. Add `?investmentBasis=` filter parameter. Additional controller integration tests (~6). Backend only. | **Done** (PR #958) |
 | 2b (parallel) | 456 | 456B | `KycVerificationService` orchestrator (resolve adapter, call verify, update checklist item, record POPIA consent in metadata, audit). Extend `ChecklistInstanceItem` entity with 5 verification columns. Integration tests (~10). Backend only. | |
 
 ### Stage 3: Reports + KYC Controller (parallel tracks)
@@ -223,8 +223,8 @@ Stage 5:  [458B]                                             <- KYC settings car
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **453A** | 453.1--453.7 | Extend `TrustInvestment` entity with `investmentBasis` field. Extend `TrustInvestmentService` to accept/return `investmentBasis` in create flow. Extend `InterestCalculationService` with conditional LPFF share logic (statutory 5% for CLIENT_INSTRUCTION, general rate for FIRM_DISCRETION). Extend `InterestAllocation` entity with `lpffRateId` (nullable UUID) + `statutoryRateApplied` (boolean). Integration tests (~12). Backend only. | |
-| **453B** | 453.8--453.12 | Modify investment controller endpoints to accept `investmentBasis` in create request, include it in responses, and support `?investmentBasis=` filter parameter on list endpoint. Controller integration tests (~6). Backend only. | |
+| **453A** | 453.1--453.7 | Extend `TrustInvestment` entity with `investmentBasis` field. Extend `TrustInvestmentService` to accept/return `investmentBasis` in create flow. Extend `InterestCalculationService` with conditional LPFF share logic (statutory 5% for CLIENT_INSTRUCTION, general rate for FIRM_DISCRETION). Extend `InterestAllocation` entity with `lpffRateId` (nullable UUID) + `statutoryRateApplied` (boolean). Integration tests (~12). Backend only. | **Done** (PR #958) |
+| **453B** | 453.8--453.12 | Modify investment controller endpoints to accept `investmentBasis` in create request, include it in responses, and support `?investmentBasis=` filter parameter on list endpoint. Controller integration tests (~6). Backend only. | **Done** (PR #958) |
 
 ### Tasks
 

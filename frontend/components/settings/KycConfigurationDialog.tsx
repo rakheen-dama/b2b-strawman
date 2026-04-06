@@ -173,7 +173,8 @@ export function KycConfigurationDialog({
             />
           </div>
 
-          {/* Test Connection */}
+          {/* Test Connection — tests the saved integration config on the server,
+              not the unsaved form values. Save first, then test. */}
           <div className="flex items-center gap-3">
             <Button
               type="button"

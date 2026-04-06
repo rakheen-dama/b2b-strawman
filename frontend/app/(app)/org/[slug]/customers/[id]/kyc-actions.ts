@@ -10,17 +10,20 @@ interface ActionResult<T = undefined> {
   data?: T;
 }
 
-export async function verifyKycAction(data: {
-  customerId: string;
-  checklistInstanceItemId: string;
-  idNumber: string;
-  fullName: string;
-  idDocumentType?: string;
-  consentAcknowledged: boolean;
-}): Promise<ActionResult<KycVerifyResponse>> {
+export async function verifyKycAction(
+  slug: string,
+  data: {
+    customerId: string;
+    checklistInstanceItemId: string;
+    idNumber: string;
+    fullName: string;
+    idDocumentType?: string;
+    consentAcknowledged: boolean;
+  },
+): Promise<ActionResult<KycVerifyResponse>> {
   try {
     const result = await api.post<KycVerifyResponse>("/api/kyc/verify", data);
-    revalidatePath(`/org/[slug]/customers/${data.customerId}`);
+    revalidatePath(`/org/${slug}/customers/${data.customerId}`);
     return { success: true, data: result };
   } catch (error) {
     if (error instanceof ApiError) {

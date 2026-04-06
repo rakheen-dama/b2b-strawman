@@ -283,6 +283,7 @@ export function ChecklistInstancePanel({
                       kycConfigured={kycConfigured}
                       customerName={customerName}
                       customerId={customerId}
+                      slug={slug}
                     />
                   ))}
               </div>

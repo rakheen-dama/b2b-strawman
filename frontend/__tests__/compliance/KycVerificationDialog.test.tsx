@@ -62,7 +62,51 @@ describe("KycVerificationDialog — ChecklistInstanceItemRow integration", () =>
     cleanup();
   });
 
-  it("shows 'Verify Now' button when kycConfigured=true and item is PENDING", () => {
+  it("shows 'Verify Now' button when kycConfigured=true, item is PENDING, and has verificationProvider", () => {
+    const kycItem: ChecklistInstanceItemResponse = {
+      ...baseItem,
+      verificationProvider: "verifynow",
+    };
+    render(
+      <ChecklistInstanceItemRow
+        item={kycItem}
+        instanceItems={[kycItem]}
+        onComplete={mockOnComplete}
+        onSkip={mockOnSkip}
+        onReopen={mockOnReopen}
+        isAdmin={true}
+        kycConfigured={true}
+        customerName="John Doe"
+        customerId="cust-1"
+        slug="acme"
+      />,
+    );
+    expect(screen.getByText("Verify Now")).toBeInTheDocument();
+  });
+
+  it("hides 'Verify Now' button when kycConfigured=false", () => {
+    const kycItem: ChecklistInstanceItemResponse = {
+      ...baseItem,
+      verificationProvider: "verifynow",
+    };
+    render(
+      <ChecklistInstanceItemRow
+        item={kycItem}
+        instanceItems={[kycItem]}
+        onComplete={mockOnComplete}
+        onSkip={mockOnSkip}
+        onReopen={mockOnReopen}
+        isAdmin={true}
+        kycConfigured={false}
+        customerName="John Doe"
+        customerId="cust-1"
+        slug="acme"
+      />,
+    );
+    expect(screen.queryByText("Verify Now")).not.toBeInTheDocument();
+  });
+
+  it("hides 'Verify Now' button when item has no verificationProvider", () => {
     render(
       <ChecklistInstanceItemRow
         item={baseItem}
@@ -74,23 +118,7 @@ describe("KycVerificationDialog — ChecklistInstanceItemRow integration", () =>
         kycConfigured={true}
         customerName="John Doe"
         customerId="cust-1"
-      />,
-    );
-    expect(screen.getByText("Verify Now")).toBeInTheDocument();
-  });
-
-  it("hides 'Verify Now' button when kycConfigured=false", () => {
-    render(
-      <ChecklistInstanceItemRow
-        item={baseItem}
-        instanceItems={[baseItem]}
-        onComplete={mockOnComplete}
-        onSkip={mockOnSkip}
-        onReopen={mockOnReopen}
-        isAdmin={true}
-        kycConfigured={false}
-        customerName="John Doe"
-        customerId="cust-1"
+        slug="acme"
       />,
     );
     expect(screen.queryByText("Verify Now")).not.toBeInTheDocument();
@@ -101,6 +129,7 @@ describe("KycVerificationDialog — ChecklistInstanceItemRow integration", () =>
       ...baseItem,
       status: "COMPLETED",
       completedAt: "2026-02-18T12:00:00Z",
+      verificationProvider: "verifynow",
     };
     render(
       <ChecklistInstanceItemRow
@@ -113,6 +142,7 @@ describe("KycVerificationDialog — ChecklistInstanceItemRow integration", () =>
         kycConfigured={true}
         customerName="John Doe"
         customerId="cust-1"
+        slug="acme"
       />,
     );
     expect(screen.queryByText("Verify Now")).not.toBeInTheDocument();
@@ -126,6 +156,7 @@ describe("KycVerificationDialog — ChecklistInstanceItemRow integration", () =>
       <KycVerificationDialog
         open={true}
         onOpenChange={onOpenChange}
+        slug="acme"
         customerId="a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d"
         checklistInstanceItemId="b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e"
         customerName="John Doe"
@@ -169,6 +200,7 @@ describe("KycVerificationDialog — ChecklistInstanceItemRow integration", () =>
       <KycVerificationDialog
         open={true}
         onOpenChange={onOpenChange}
+        slug="acme"
         customerId="a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d"
         checklistInstanceItemId="b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e"
         customerName="John Doe"
@@ -221,6 +253,7 @@ describe("KycVerificationDialog — ChecklistInstanceItemRow integration", () =>
       <KycVerificationDialog
         open={true}
         onOpenChange={onOpenChange}
+        slug="acme"
         customerId="a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d"
         checklistInstanceItemId="b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e"
         customerName="John Doe"

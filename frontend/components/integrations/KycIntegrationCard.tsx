@@ -36,7 +36,8 @@ export function KycIntegrationCard({
   const [isRemoving, setIsRemoving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const isConfigured = !!integration?.providerSlug && integration.enabled;
+  const hasProvider = !!integration?.providerSlug;
+  const isConfigured = hasProvider && integration.enabled;
 
   function getStatusBadge() {
     if (!integration || !integration.providerSlug) {
@@ -53,7 +54,11 @@ export function KycIntegrationCard({
     setError(null);
     try {
       // Remove API key first
-      await deleteApiKeyAction(slug, "KYC_VERIFICATION");
+      const deleteResult = await deleteApiKeyAction(slug, "KYC_VERIFICATION");
+      if (!deleteResult.success) {
+        setError(deleteResult.error ?? "Failed to remove API key.");
+        return;
+      }
       // Then reset provider
       const result = await upsertIntegrationAction(slug, "KYC_VERIFICATION", {
         providerSlug: "",
@@ -114,7 +119,7 @@ export function KycIntegrationCard({
             >
               Configure
             </Button>
-            {isConfigured && (
+            {hasProvider && (
               <Button
                 variant="outline"
                 size="sm"

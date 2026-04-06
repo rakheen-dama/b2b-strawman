@@ -38,6 +38,7 @@ import type { KycVerifyResponse } from "@/lib/types";
 interface KycVerificationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  slug: string;
   customerId: string;
   checklistInstanceItemId: string;
   customerName: string;
@@ -59,6 +60,7 @@ function getProviderDescription(providerName?: string): string | null {
 export function KycVerificationDialog({
   open,
   onOpenChange,
+  slug,
   customerId,
   checklistInstanceItemId,
   customerName,
@@ -107,7 +109,7 @@ export function KycVerificationDialog({
     setError(null);
 
     try {
-      const actionResult = await verifyKycAction({
+      const actionResult = await verifyKycAction(slug, {
         customerId: values.customerId,
         checklistInstanceItemId: values.checklistInstanceItemId,
         idNumber: values.idNumber,

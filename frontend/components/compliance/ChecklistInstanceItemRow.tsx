@@ -41,6 +41,7 @@ interface ChecklistInstanceItemRowProps {
   kycConfigured?: boolean;
   customerName?: string;
   customerId?: string;
+  slug?: string;
 }
 
 export function ChecklistInstanceItemRow({
@@ -54,6 +55,7 @@ export function ChecklistInstanceItemRow({
   kycConfigured,
   customerName,
   customerId,
+  slug,
 }: ChecklistInstanceItemRowProps) {
   const router = useRouter();
   const [isPending, setIsPending] = useState(false);
@@ -298,7 +300,7 @@ export function ChecklistInstanceItemRow({
           <div className="flex shrink-0 gap-1">
             {isPendingStatus && isAdmin && !showCompleteForm && !showSkipForm && (
               <>
-                {kycConfigured && (
+                {kycConfigured && item.verificationProvider && (
                   <Button
                     size="sm"
                     variant="outline"
@@ -344,7 +346,7 @@ export function ChecklistInstanceItemRow({
       </div>
 
       {/* KYC Verification Dialog */}
-      {kycConfigured && (
+      {kycConfigured && customerId && slug && (
         <KycVerificationDialog
           open={kycDialogOpen}
           onOpenChange={(nextOpen) => {
@@ -353,7 +355,8 @@ export function ChecklistInstanceItemRow({
               router.refresh();
             }
           }}
-          customerId={customerId ?? ""}
+          slug={slug}
+          customerId={customerId}
           checklistInstanceItemId={item.id}
           customerName={customerName ?? ""}
         />

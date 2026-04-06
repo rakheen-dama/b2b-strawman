@@ -12,6 +12,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.retention.RetentionService;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
+import io.b2mash.b2b.b2bstrawman.seeder.ProjectTemplatePackSeeder;
 import io.b2mash.b2b.b2bstrawman.seeder.RatePackSeeder;
 import io.b2mash.b2b.b2bstrawman.seeder.SchedulePackSeeder;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsController.DataProtectionSettingsRequest;
@@ -48,6 +49,7 @@ public class OrgSettingsService {
   private final RetentionService retentionService;
   private final ProcessingActivityService processingActivityService;
   private final ComplianceTemplatePackSeeder complianceTemplatePackSeeder;
+  private final ProjectTemplatePackSeeder projectTemplatePackSeeder;
   private final RatePackSeeder ratePackSeeder;
   private final SchedulePackSeeder schedulePackSeeder;
 
@@ -59,6 +61,7 @@ public class OrgSettingsService {
       RetentionService retentionService,
       ProcessingActivityService processingActivityService,
       ComplianceTemplatePackSeeder complianceTemplatePackSeeder,
+      ProjectTemplatePackSeeder projectTemplatePackSeeder,
       RatePackSeeder ratePackSeeder,
       SchedulePackSeeder schedulePackSeeder) {
     this.orgSettingsRepository = orgSettingsRepository;
@@ -68,6 +71,7 @@ public class OrgSettingsService {
     this.retentionService = retentionService;
     this.processingActivityService = processingActivityService;
     this.complianceTemplatePackSeeder = complianceTemplatePackSeeder;
+    this.projectTemplatePackSeeder = projectTemplatePackSeeder;
     this.ratePackSeeder = ratePackSeeder;
     this.schedulePackSeeder = schedulePackSeeder;
   }
@@ -649,8 +653,8 @@ public class OrgSettingsService {
 
   /**
    * Updates the vertical profile, setting enabledModules and terminologyNamespace from registry.
-   * After saving, triggers rate and schedule pack seeders for the new profile. Seeding is
-   * idempotent — switching to the same profile multiple times is safe.
+   * After saving, triggers rate, project template, and schedule pack seeders for the new profile.
+   * Seeding is idempotent — switching to the same profile multiple times is safe.
    */
   @Transactional
   public SettingsResponse updateVerticalProfile(String verticalProfile, ActorContext actor) {
@@ -711,6 +715,7 @@ public class OrgSettingsService {
     String tenantId = RequestScopes.TENANT_ID.get();
     String orgId = RequestScopes.ORG_ID.get();
     ratePackSeeder.seedPacksForTenant(tenantId, orgId);
+    projectTemplatePackSeeder.seedPacksForTenant(tenantId, orgId);
     schedulePackSeeder.seedPacksForTenant(tenantId, orgId);
 
     return toSettingsResponse(settings);

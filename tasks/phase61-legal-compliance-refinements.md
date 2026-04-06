@@ -24,7 +24,7 @@ Phase 61 closes two compliance gaps identified in the Phase 60 trust accounting 
 |------|------|-------|------|--------|--------|--------|
 | 452 | Foundation: V86 Migration + InvestmentBasis Enum + TrustAccountingConstants | Backend | -- (Phase 60 complete) | S | 452A | **Done** (PR #957) |
 | 453 | Interest Calculation Basis Distinction + Audit Trail | Backend | 452 | M | 453A, 453B | **Done** (PR #958) |
-| 454 | Investment Register Report + Section 35 Data Pack Updates | Backend | 453 | S | 454A | |
+| 454 | Investment Register Report + Section 35 Data Pack Updates | Backend | 453 | S | 454A | **Done** (PR #959) |
 | 455 | Frontend: Investment Form + Register + Interest Table Updates | Frontend | 453 | M | 455A | |
 | 456 | KYC Adapter Infrastructure: Port, Adapters, Service | Backend | 452 | M | 456A, 456B | |
 | 457 | KYC Controller + ChecklistInstanceItem Extension | Backend | 456 | S | 457A | |
@@ -127,7 +127,7 @@ Phase 21 (BYOAK integration infrastructure exists)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 3a (parallel) | 454 | 454A | Extend investment register report data provider (basis column + LPFF rate per investment). Update Section 35 data pack to separate 86(3) and 86(4) investments. Integration tests (~8). Backend only. | |
+| 3a (parallel) | 454 | 454A | Extend investment register report data provider (basis column + LPFF rate per investment). Update Section 35 data pack to separate 86(3) and 86(4) investments. Integration tests (~8). Backend only. | **Done** (PR #959) |
 | 3b (parallel) | 457 | 457A | `KycVerificationController` with 3 endpoints: `POST /api/kyc/verify`, `GET /api/kyc/result/{ref}`, `GET /api/integrations/kyc/status`. Controller integration tests (~6). Backend only. | |
 
 ### Stage 4: Frontend Investment + Frontend KYC (parallel tracks)
@@ -291,7 +291,7 @@ Stage 5:  [458B]                                             <- KYC settings car
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **454A** | 454.1--454.5 | Extend investment register report data provider to include `investmentBasis` and applicable LPFF rate per investment. Update Section 35 data pack to separate 86(3) and 86(4) investments with respective rates. Integration tests (~8). Backend only. | |
+| **454A** | 454.1--454.5 | Extend investment register report data provider to include `investmentBasis` and applicable LPFF rate per investment. Update Section 35 data pack to separate 86(3) and 86(4) investments with respective rates. Integration tests (~8). Backend only. | **Done** (PR #959) |
 
 ### Tasks
 

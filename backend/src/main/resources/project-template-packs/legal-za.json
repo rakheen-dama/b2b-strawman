@@ -1,0 +1,331 @@
+{
+  "packId": "legal-za-project-templates",
+  "verticalProfile": "legal-za",
+  "version": 1,
+  "templates": [
+    {
+      "name": "Litigation (Personal Injury / General)",
+      "namePattern": "{client} - {type}",
+      "description": "Standard litigation workflow for personal injury and general civil matters. Matter type: LITIGATION",
+      "billableDefault": true,
+      "matterType": "LITIGATION",
+      "tasks": [
+        {
+          "name": "Initial consultation & case assessment",
+          "description": "Taking instructions, evaluating merits",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 2.0
+        },
+        {
+          "name": "Letter of demand",
+          "description": "Pre-litigation demand per Prescription Act",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 1.5
+        },
+        {
+          "name": "Issue summons / combined summons",
+          "description": "Court filing",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 3.0
+        },
+        {
+          "name": "File plea / exception / counterclaim",
+          "description": "Defensive pleading",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 4.0
+        },
+        {
+          "name": "Discovery -- request & exchange documents",
+          "description": "Rule 35 discovery",
+          "priority": "MEDIUM",
+          "assigneeRole": "ANY_MEMBER",
+          "billable": true,
+          "estimatedHours": 6.0
+        },
+        {
+          "name": "Pre-trial conference preparation",
+          "description": "Rule 37 conference",
+          "priority": "MEDIUM",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 4.0
+        },
+        {
+          "name": "Trial / hearing attendance",
+          "description": "Court appearance",
+          "priority": "URGENT",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 8.0
+        },
+        {
+          "name": "Post-judgment -- taxation of costs / appeal",
+          "description": "If applicable",
+          "priority": "MEDIUM",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 3.0
+        },
+        {
+          "name": "Execution -- warrant / attachment",
+          "description": "If judgment in favour",
+          "priority": "LOW",
+          "assigneeRole": "ANY_MEMBER",
+          "billable": true,
+          "estimatedHours": 2.0
+        }
+      ]
+    },
+    {
+      "name": "Deceased Estate Administration",
+      "namePattern": "{client} - Estate of {deceased}",
+      "description": "Administration of deceased estate from reporting to final distribution. Matter type: ESTATES",
+      "billableDefault": true,
+      "matterType": "ESTATES",
+      "tasks": [
+        {
+          "name": "Obtain death certificate & will",
+          "description": "First step, required for reporting",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 1.0
+        },
+        {
+          "name": "Report estate to Master of High Court",
+          "description": "J294 form within 14 days",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 2.0
+        },
+        {
+          "name": "Obtain Letters of Executorship",
+          "description": "Master issues after acceptance",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 1.5
+        },
+        {
+          "name": "Advertise for creditors (Gazette + local newspaper)",
+          "description": "30-day notice period",
+          "priority": "MEDIUM",
+          "assigneeRole": "ANY_MEMBER",
+          "billable": true,
+          "estimatedHours": 1.0
+        },
+        {
+          "name": "Inventory of assets & liabilities",
+          "description": "Full estate inventory",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 4.0
+        },
+        {
+          "name": "Open estate bank account",
+          "description": "Trust/estate banking",
+          "priority": "MEDIUM",
+          "assigneeRole": "ANY_MEMBER",
+          "billable": true,
+          "estimatedHours": 1.0
+        },
+        {
+          "name": "Prepare Liquidation & Distribution account",
+          "description": "Core deliverable",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 6.0
+        },
+        {
+          "name": "Lodge L&D account with Master",
+          "description": "Filing + inspection period",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 2.0
+        },
+        {
+          "name": "Distribute estate & file final account",
+          "description": "Close out matter",
+          "priority": "MEDIUM",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 3.0
+        }
+      ]
+    },
+    {
+      "name": "Collections (Debt Recovery)",
+      "namePattern": "{client} - Collections v {debtor}",
+      "description": "Debt recovery workflow from demand to execution. Matter type: COLLECTIONS",
+      "billableDefault": true,
+      "matterType": "COLLECTIONS",
+      "tasks": [
+        {
+          "name": "Client intake & verify claim documentation",
+          "description": "Confirm amount, basis, supporting docs",
+          "priority": "HIGH",
+          "assigneeRole": "ANY_MEMBER",
+          "billable": true,
+          "estimatedHours": 1.5
+        },
+        {
+          "name": "Skip tracing / debtor address verification",
+          "description": "TPN, credit bureau, CIPC searches",
+          "priority": "MEDIUM",
+          "assigneeRole": "ANY_MEMBER",
+          "billable": true,
+          "estimatedHours": 1.0
+        },
+        {
+          "name": "Letter of demand -- Section 129 notice",
+          "description": "NCA-compliant 20 business day notice",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 1.5
+        },
+        {
+          "name": "Issue summons",
+          "description": "If demand unanswered",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 3.0
+        },
+        {
+          "name": "Apply for default judgment",
+          "description": "If no appearance to defend",
+          "priority": "MEDIUM",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 2.0
+        },
+        {
+          "name": "Issue warrant of execution -- movables",
+          "description": "Sheriff instruction",
+          "priority": "MEDIUM",
+          "assigneeRole": "ANY_MEMBER",
+          "billable": true,
+          "estimatedHours": 1.5
+        },
+        {
+          "name": "Issue warrant of execution -- immovables (if applicable)",
+          "description": "Property attachment (rare for small claims)",
+          "priority": "LOW",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 3.0
+        },
+        {
+          "name": "Sale in execution / asset attachment",
+          "description": "Auction process",
+          "priority": "LOW",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 4.0
+        },
+        {
+          "name": "Close matter & report to client",
+          "description": "Final account, archive",
+          "priority": "LOW",
+          "assigneeRole": "ANY_MEMBER",
+          "billable": true,
+          "estimatedHours": 1.0
+        }
+      ]
+    },
+    {
+      "name": "Commercial (Corporate & Contract)",
+      "namePattern": "{client} - {transaction}",
+      "description": "Corporate and commercial transaction workflow. Matter type: COMMERCIAL",
+      "billableDefault": true,
+      "matterType": "COMMERCIAL",
+      "tasks": [
+        {
+          "name": "Client intake & scope of work",
+          "description": "Define engagement scope",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 2.0
+        },
+        {
+          "name": "Due diligence review",
+          "description": "Legal/commercial review",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 8.0
+        },
+        {
+          "name": "First draft -- agreement / memorandum",
+          "description": "Primary drafting",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 6.0
+        },
+        {
+          "name": "Internal review & quality check",
+          "description": "Peer review",
+          "priority": "MEDIUM",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 3.0
+        },
+        {
+          "name": "Client review & feedback incorporation",
+          "description": "Client comments, redlines",
+          "priority": "MEDIUM",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 4.0
+        },
+        {
+          "name": "Counterparty negotiation",
+          "description": "Multi-round negotiation",
+          "priority": "MEDIUM",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 6.0
+        },
+        {
+          "name": "Final draft & execution copies",
+          "description": "Clean copies for signing",
+          "priority": "HIGH",
+          "assigneeRole": "ANY_MEMBER",
+          "billable": true,
+          "estimatedHours": 2.0
+        },
+        {
+          "name": "Signing & witness coordination",
+          "description": "Logistics, witnessing",
+          "priority": "MEDIUM",
+          "assigneeRole": "ANY_MEMBER",
+          "billable": true,
+          "estimatedHours": 1.5
+        },
+        {
+          "name": "Post-execution -- filing & compliance",
+          "description": "CIPC filings, register updates",
+          "priority": "LOW",
+          "assigneeRole": "ANY_MEMBER",
+          "billable": true,
+          "estimatedHours": 2.0
+        }
+      ]
+    }
+  ]
+}

@@ -92,6 +92,10 @@ public class OrgSettings {
   @Column(name = "schedule_pack_status", columnDefinition = "jsonb")
   private List<Map<String, Object>> schedulePackStatus;
 
+  @JdbcTypeCode(SqlTypes.JSON)
+  @Column(name = "project_template_pack_status", columnDefinition = "jsonb")
+  private List<Map<String, Object>> projectTemplatePackStatus;
+
   @Column(name = "default_request_reminder_days")
   private Integer defaultRequestReminderDays;
 
@@ -473,6 +477,38 @@ public class OrgSettings {
       return false;
     }
     return this.schedulePackStatus.stream()
+        .anyMatch(
+            entry ->
+                packId.equals(entry.get("packId"))
+                    && ((Number) entry.get("version")).intValue() == version);
+  }
+
+  public List<Map<String, Object>> getProjectTemplatePackStatus() {
+    return projectTemplatePackStatus;
+  }
+
+  /** Records a project template pack application. Idempotent -- skips if already applied. */
+  public void recordProjectTemplatePackApplication(String packId, int version) {
+    if (isProjectTemplatePackApplied(packId, version)) {
+      return;
+    }
+    if (this.projectTemplatePackStatus == null) {
+      this.projectTemplatePackStatus = new ArrayList<>();
+    }
+    var entry = new HashMap<String, Object>();
+    entry.put("packId", packId);
+    entry.put("version", version);
+    entry.put("appliedAt", Instant.now().toString());
+    this.projectTemplatePackStatus.add(entry);
+    this.updatedAt = Instant.now();
+  }
+
+  /** Returns true if the given project template pack (specific version) has been applied. */
+  public boolean isProjectTemplatePackApplied(String packId, int version) {
+    if (this.projectTemplatePackStatus == null) {
+      return false;
+    }
+    return this.projectTemplatePackStatus.stream()
         .anyMatch(
             entry ->
                 packId.equals(entry.get("packId"))

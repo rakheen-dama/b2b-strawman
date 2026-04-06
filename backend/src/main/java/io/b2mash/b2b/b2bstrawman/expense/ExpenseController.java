@@ -43,8 +43,9 @@ public class ExpenseController {
 
   @PostMapping("/api/projects/{projectId}/expenses")
   public ResponseEntity<ExpenseResponse> createExpense(
-      @PathVariable UUID projectId, @Valid @RequestBody CreateExpenseRequest request) {
-    var actor = ActorContext.fromRequestScopes();
+      @PathVariable UUID projectId,
+      @Valid @RequestBody CreateExpenseRequest request,
+      ActorContext actor) {
     var expense =
         expenseService.createExpense(
             projectId,
@@ -72,8 +73,8 @@ public class ExpenseController {
       @RequestParam(required = false) LocalDate from,
       @RequestParam(required = false) LocalDate to,
       @RequestParam(required = false) UUID memberId,
-      Pageable pageable) {
-    var actor = ActorContext.fromRequestScopes();
+      Pageable pageable,
+      ActorContext actor) {
     var page =
         expenseService.listExpenses(projectId, category, from, to, memberId, pageable, actor);
     var names = resolveNames(page.getContent());
@@ -82,8 +83,7 @@ public class ExpenseController {
 
   @GetMapping("/api/projects/{projectId}/expenses/{id}")
   public ResponseEntity<ExpenseResponse> getExpense(
-      @PathVariable UUID projectId, @PathVariable UUID id) {
-    var actor = ActorContext.fromRequestScopes();
+      @PathVariable UUID projectId, @PathVariable UUID id, ActorContext actor) {
     var expense = expenseService.getExpense(projectId, id, actor);
     var names = resolveNames(List.of(expense));
     return ResponseEntity.ok(ExpenseResponse.from(expense, names));
@@ -93,8 +93,8 @@ public class ExpenseController {
   public ResponseEntity<ExpenseResponse> updateExpense(
       @PathVariable UUID projectId,
       @PathVariable UUID id,
-      @Valid @RequestBody UpdateExpenseRequest request) {
-    var actor = ActorContext.fromRequestScopes();
+      @Valid @RequestBody UpdateExpenseRequest request,
+      ActorContext actor) {
     var expense =
         expenseService.updateExpense(
             projectId,
@@ -115,8 +115,8 @@ public class ExpenseController {
   }
 
   @DeleteMapping("/api/projects/{projectId}/expenses/{id}")
-  public ResponseEntity<Void> deleteExpense(@PathVariable UUID projectId, @PathVariable UUID id) {
-    var actor = ActorContext.fromRequestScopes();
+  public ResponseEntity<Void> deleteExpense(
+      @PathVariable UUID projectId, @PathVariable UUID id, ActorContext actor) {
     expenseService.deleteExpense(projectId, id, actor);
     return ResponseEntity.noContent().build();
   }
@@ -124,8 +124,7 @@ public class ExpenseController {
   @PatchMapping("/api/projects/{projectId}/expenses/{id}/write-off")
   @RequiresCapability("FINANCIAL_VISIBILITY")
   public ResponseEntity<ExpenseResponse> writeOffExpense(
-      @PathVariable UUID projectId, @PathVariable UUID id) {
-    var actor = ActorContext.fromRequestScopes();
+      @PathVariable UUID projectId, @PathVariable UUID id, ActorContext actor) {
     var expense = expenseService.writeOffExpense(projectId, id, actor);
     var names = resolveNames(List.of(expense));
     return ResponseEntity.ok(ExpenseResponse.from(expense, names));
@@ -134,8 +133,7 @@ public class ExpenseController {
   @PatchMapping("/api/projects/{projectId}/expenses/{id}/restore")
   @RequiresCapability("FINANCIAL_VISIBILITY")
   public ResponseEntity<ExpenseResponse> restoreExpense(
-      @PathVariable UUID projectId, @PathVariable UUID id) {
-    var actor = ActorContext.fromRequestScopes();
+      @PathVariable UUID projectId, @PathVariable UUID id, ActorContext actor) {
     var expense = expenseService.restoreExpense(projectId, id, actor);
     var names = resolveNames(List.of(expense));
     return ResponseEntity.ok(ExpenseResponse.from(expense, names));

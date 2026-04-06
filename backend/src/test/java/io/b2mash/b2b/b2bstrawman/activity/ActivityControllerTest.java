@@ -58,19 +58,12 @@ class ActivityControllerTest extends AbstractIntegrationTest {
     memberUuid = UUID.fromString(memberIdMember);
 
     // Create a project
-    var projectResult =
-        mockMvc
-            .perform(
-                post("/api/projects")
-                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ac_owner"))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"name": "Activity Ctrl Test Project", "description": "For activity ctrl tests"}
-                        """))
-            .andExpect(status().isCreated())
-            .andReturn();
-    projectId = TestEntityHelper.extractIdFromLocation(projectResult);
+    projectId =
+        TestEntityHelper.createProject(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, "user_ac_owner"),
+            "Activity Ctrl Test Project",
+            "For activity ctrl tests");
     projectUuid = UUID.fromString(projectId);
 
     // Add member to the project

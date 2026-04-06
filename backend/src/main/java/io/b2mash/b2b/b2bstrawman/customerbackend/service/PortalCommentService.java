@@ -7,6 +7,7 @@ import io.b2mash.b2b.b2bstrawman.comment.CommentRepository;
 import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalReadModelRepository;
 import io.b2mash.b2b.b2bstrawman.event.CommentCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
@@ -29,16 +30,19 @@ public class PortalCommentService {
   private final PortalReadModelRepository readModelRepository;
   private final AuditService auditService;
   private final ApplicationEventPublisher eventPublisher;
+  private final PortalContactRepository portalContactRepository;
 
   public PortalCommentService(
       CommentRepository commentRepository,
       PortalReadModelRepository readModelRepository,
       AuditService auditService,
-      ApplicationEventPublisher eventPublisher) {
+      ApplicationEventPublisher eventPublisher,
+      PortalContactRepository portalContactRepository) {
     this.commentRepository = commentRepository;
     this.readModelRepository = readModelRepository;
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
+    this.portalContactRepository = portalContactRepository;
   }
 
   /**
@@ -104,5 +108,14 @@ public class PortalCommentService {
             "SHARED"));
 
     return comment;
+  }
+
+  /** Resolves the display name for a portal contact. Returns "Portal User" if not found. */
+  public String resolveContactDisplayName(UUID contactId) {
+    var contact = portalContactRepository.findById(contactId).orElse(null);
+    if (contact != null && contact.getDisplayName() != null) {
+      return contact.getDisplayName();
+    }
+    return "Portal User";
   }
 }

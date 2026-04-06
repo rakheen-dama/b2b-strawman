@@ -15,6 +15,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.ProblemDetailAssertions;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.Set;
@@ -26,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -196,16 +198,16 @@ class RetentionControllerTest {
         .andExpect(status().isCreated());
 
     // Duplicate create
-    mockMvc
-        .perform(
+    var result =
+        mockMvc.perform(
             post("/api/retention-policies")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_retctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
                     {"recordType":"DOCUMENT","retentionDays":365,"triggerEvent":"DOCUMENT_ARCHIVED","action":"PURGE"}
-                    """))
-        .andExpect(status().isConflict());
+                    """));
+    ProblemDetailAssertions.assertProblem(result, HttpStatus.CONFLICT, "Policy already exists");
   }
 
   @Test
@@ -267,11 +269,12 @@ class RetentionControllerTest {
 
   @Test
   void deletePolicy_notFound_returns404() throws Exception {
-    mockMvc
-        .perform(
+    var result =
+        mockMvc.perform(
             delete("/api/retention-policies/" + UUID.randomUUID())
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_retctrl_owner")))
-        .andExpect(status().isNotFound());
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_retctrl_owner")));
+    ProblemDetailAssertions.assertProblem(
+        result, HttpStatus.NOT_FOUND, "RetentionPolicy not found");
   }
 
   @Test
@@ -495,16 +498,17 @@ class RetentionControllerTest {
     String policyId = JsonPath.read(createResult.getResponse().getContentAsString(), "$.id");
 
     // Try to update below the financial minimum (ZA default = 60 months = 1800 days)
-    mockMvc
-        .perform(
+    var result =
+        mockMvc.perform(
             put("/api/settings/retention-policies/" + policyId)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_retctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
                     {"retentionDays":30}
-                    """))
-        .andExpect(status().isBadRequest());
+                    """));
+    ProblemDetailAssertions.assertProblem(
+        result, HttpStatus.BAD_REQUEST, "Retention period too short");
   }
 
   @Test

@@ -36,7 +36,10 @@ public class AdminBillingService {
 
   @Transactional(readOnly = true)
   public List<AdminTenantBillingResponse> listTenants(
-      String statusFilter, String billingMethodFilter, String profileFilter, String search) {
+      Subscription.SubscriptionStatus statusFilter,
+      BillingMethod billingMethodFilter,
+      String profileFilter,
+      String search) {
     var subscriptions = subscriptionRepository.findAll();
     var orgIds = subscriptions.stream().map(Subscription::getOrganizationId).toList();
     var orgs = organizationRepository.findAllById(orgIds);
@@ -48,14 +51,10 @@ public class AdminBillingService {
     return subscriptions.stream()
         .filter(
             sub -> {
-              if (statusFilter != null
-                  && !statusFilter.isBlank()
-                  && !sub.getSubscriptionStatus().name().equals(statusFilter)) {
+              if (statusFilter != null && sub.getSubscriptionStatus() != statusFilter) {
                 return false;
               }
-              if (billingMethodFilter != null
-                  && !billingMethodFilter.isBlank()
-                  && !sub.getBillingMethod().name().equals(billingMethodFilter)) {
+              if (billingMethodFilter != null && sub.getBillingMethod() != billingMethodFilter) {
                 return false;
               }
               if (search != null && !search.isBlank()) {

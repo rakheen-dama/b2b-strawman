@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.billing;
 
+import io.b2mash.b2b.b2bstrawman.exception.ProblemDetailFactory;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.Organization;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
@@ -9,6 +10,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import org.slf4j.Logger;
@@ -103,23 +105,27 @@ public class SubscriptionGuardFilter extends OncePerRequestFilter {
 
   private void writeSubscriptionRequiredResponse(
       HttpServletRequest request, HttpServletResponse response) throws IOException {
-    var problem = ProblemDetail.forStatus(HttpStatus.FORBIDDEN);
+    var problem =
+        ProblemDetailFactory.create(
+            HttpStatus.FORBIDDEN,
+            "Subscription required",
+            "Your subscription has expired. Subscribe to regain full access.",
+            Map.of("resubscribeUrl", "/settings/billing"));
     problem.setType(URI.create("subscription_required"));
-    problem.setTitle("Subscription required");
-    problem.setDetail("Your subscription has expired. Subscribe to regain full access.");
     problem.setInstance(URI.create(request.getRequestURI()));
-    problem.setProperty("resubscribeUrl", "/settings/billing");
     writeProblemDetail(response, problem);
   }
 
   private void writeLockedResponse(HttpServletRequest request, HttpServletResponse response)
       throws IOException {
-    var problem = ProblemDetail.forStatus(HttpStatus.FORBIDDEN);
+    var problem =
+        ProblemDetailFactory.create(
+            HttpStatus.FORBIDDEN,
+            "Account locked",
+            "Your account has been locked. Resubscribe to access your data.",
+            Map.of("resubscribeUrl", "/settings/billing"));
     problem.setType(URI.create("subscription_locked"));
-    problem.setTitle("Account locked");
-    problem.setDetail("Your account has been locked. Resubscribe to access your data.");
     problem.setInstance(URI.create(request.getRequestURI()));
-    problem.setProperty("resubscribeUrl", "/settings/billing");
     writeProblemDetail(response, problem);
   }
 

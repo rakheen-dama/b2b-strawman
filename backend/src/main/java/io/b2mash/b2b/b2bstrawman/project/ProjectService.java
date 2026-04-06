@@ -497,4 +497,25 @@ public class ProjectService {
 
     return project;
   }
+
+  // --- Name Resolution (moved from controller for BE-007) ---
+
+  /**
+   * Batch-loads member names for all createdBy and completedBy IDs referenced by the given
+   * projects.
+   */
+  public Map<UUID, String> resolveProjectMemberNames(List<Project> projects) {
+    var ids =
+        projects.stream()
+            .flatMap(p -> java.util.stream.Stream.of(p.getCreatedBy(), p.getCompletedBy()))
+            .filter(java.util.Objects::nonNull)
+            .distinct()
+            .toList();
+
+    if (ids.isEmpty()) {
+      return Map.of();
+    }
+
+    return memberNameResolver.resolveNames(ids);
+  }
 }

@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+// TODO(BE-013): This service exceeds 800 lines — decompose when adding new features
 @Service
 public class OrgSettingsService {
 
@@ -36,6 +37,9 @@ public class OrgSettingsService {
   private static final String DEFAULT_CURRENCY = "USD";
   private static final BigDecimal DEFAULT_WEEKLY_CAPACITY_HOURS = new BigDecimal("40.00");
   private static final Duration LOGO_URL_EXPIRY = Duration.ofHours(1);
+  private static final long MAX_LOGO_SIZE = 2 * 1024 * 1024; // 2MB
+  private static final java.util.Set<String> ALLOWED_LOGO_CONTENT_TYPES =
+      java.util.Set.of("image/png", "image/jpeg", "image/svg+xml");
 
   private final OrgSettingsRepository orgSettingsRepository;
   private final AuditService auditService;
@@ -187,10 +191,21 @@ public class OrgSettingsService {
     return toSettingsResponse(settings);
   }
 
-  /** Uploads a logo to storage and updates the org settings. */
+  /** Uploads a logo to storage and updates the org settings. Validates file constraints first. */
   @Transactional
   public SettingsResponse uploadLogo(MultipartFile file, ActorContext actor) {
     requireAdminOrOwner(actor.orgRole());
+
+    if (file.isEmpty()) {
+      throw new InvalidStateException("Invalid file", "File is empty");
+    }
+    if (file.getSize() > MAX_LOGO_SIZE) {
+      throw new InvalidStateException("File too large", "Logo file must be under 2MB");
+    }
+    String contentType = file.getContentType();
+    if (contentType == null || !ALLOWED_LOGO_CONTENT_TYPES.contains(contentType)) {
+      throw new InvalidStateException("Invalid file type", "Logo must be PNG, JPG, or SVG");
+    }
 
     String tenantId = RequestScopes.TENANT_ID.get();
     String ext = extensionFromContentType(file.getContentType());

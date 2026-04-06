@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.customer;
 
+import io.b2mash.b2b.b2bstrawman.customer.dto.CustomerDtos.CustomerProjectResponse;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import java.net.URI;
 import java.time.Instant;
@@ -25,31 +26,27 @@ public class ProjectCustomerController {
 
   @GetMapping
   public ResponseEntity<List<LinkedCustomerResponse>> listCustomersForProject(
-      @PathVariable UUID projectId) {
-    var actor = ActorContext.fromRequestScopes();
-    UUID memberId = actor.memberId();
+      @PathVariable UUID projectId, ActorContext actor) {
 
     var customers = customerProjectService.listCustomersForProject(projectId, actor);
     return ResponseEntity.ok(customers.stream().map(LinkedCustomerResponse::from).toList());
   }
 
   @PostMapping("/{customerId}")
-  public ResponseEntity<CustomerController.CustomerProjectResponse> linkCustomerToProject(
-      @PathVariable UUID projectId, @PathVariable UUID customerId) {
-    var actor = ActorContext.fromRequestScopes();
-    UUID memberId = actor.memberId();
+  public ResponseEntity<CustomerProjectResponse> linkCustomerToProject(
+      @PathVariable UUID projectId, @PathVariable UUID customerId, ActorContext actor) {
 
-    var link = customerProjectService.linkCustomerToProject(customerId, projectId, memberId, actor);
+    var link =
+        customerProjectService.linkCustomerToProject(
+            customerId, projectId, actor.memberId(), actor);
     return ResponseEntity.created(
             URI.create("/api/projects/" + projectId + "/customers/" + customerId))
-        .body(CustomerController.CustomerProjectResponse.from(link));
+        .body(CustomerProjectResponse.from(link));
   }
 
   @DeleteMapping("/{customerId}")
   public ResponseEntity<Void> unlinkCustomerFromProject(
-      @PathVariable UUID projectId, @PathVariable UUID customerId) {
-    var actor = ActorContext.fromRequestScopes();
-    UUID memberId = actor.memberId();
+      @PathVariable UUID projectId, @PathVariable UUID customerId, ActorContext actor) {
 
     customerProjectService.unlinkCustomerFromProject(customerId, projectId, actor);
     return ResponseEntity.noContent().build();

@@ -4,7 +4,6 @@ import io.b2mash.b2b.b2bstrawman.customerbackend.service.PortalCommentService;
 import io.b2mash.b2b.b2bstrawman.customerbackend.service.PortalReadModelService;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -30,15 +29,11 @@ public class PortalCommentController {
 
   private final PortalReadModelService portalReadModelService;
   private final PortalCommentService portalCommentService;
-  private final PortalContactRepository portalContactRepository;
 
   public PortalCommentController(
-      PortalReadModelService portalReadModelService,
-      PortalCommentService portalCommentService,
-      PortalContactRepository portalContactRepository) {
+      PortalReadModelService portalReadModelService, PortalCommentService portalCommentService) {
     this.portalReadModelService = portalReadModelService;
     this.portalCommentService = portalCommentService;
-    this.portalContactRepository = portalContactRepository;
   }
 
   /** Lists comments for a portal project. Returns 404 if the project is not linked to customer. */
@@ -76,10 +71,7 @@ public class PortalCommentController {
     UUID authorId = customerId; // fallback
     if (RequestScopes.PORTAL_CONTACT_ID.isBound()) {
       authorId = RequestScopes.PORTAL_CONTACT_ID.get();
-      var contact = portalContactRepository.findById(authorId).orElse(null);
-      if (contact != null && contact.getDisplayName() != null) {
-        authorName = contact.getDisplayName();
-      }
+      authorName = portalCommentService.resolveContactDisplayName(authorId);
     }
 
     // Delegate to service (transactional: save, read-model sync, audit, event)

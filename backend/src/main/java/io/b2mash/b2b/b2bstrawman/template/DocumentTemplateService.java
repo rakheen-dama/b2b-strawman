@@ -48,7 +48,6 @@ public class DocumentTemplateService {
 
   private static final String DOCX_CONTENT_TYPE =
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-  private static final long MAX_DOCX_SIZE = 10 * 1024 * 1024; // 10MB
   private static final Duration URL_EXPIRY = Duration.ofHours(1);
 
   private final DocumentTemplateRepository documentTemplateRepository;
@@ -178,22 +177,8 @@ public class DocumentTemplateService {
   @Transactional
   public TemplateDetailResponse uploadDocxTemplate(
       MultipartFile file, String name, String description, String category, String entityType) {
-    // Validate MIME type
-    String contentType = file.getContentType();
-    if (!DOCX_CONTENT_TYPE.equals(contentType)) {
-      throw new InvalidStateException(
-          "Invalid file type",
-          "Expected MIME type '" + DOCX_CONTENT_TYPE + "' but got '" + contentType + "'");
-    }
-
-    // Validate file size
-    if (file.getSize() > MAX_DOCX_SIZE) {
-      throw new InvalidStateException(
-          "File too large",
-          "Maximum file size is 10MB, but the uploaded file is "
-              + (file.getSize() / (1024 * 1024))
-              + "MB");
-    }
+    // Validate file
+    FileValidationHelper.validateDocxFile(file);
 
     // Validate name
     if (name == null || name.isBlank()) {
@@ -657,22 +642,8 @@ public class DocumentTemplateService {
           "Not a DOCX template", "Only DOCX templates can have their file replaced");
     }
 
-    // Validate MIME type
-    String contentType = file.getContentType();
-    if (!DOCX_CONTENT_TYPE.equals(contentType)) {
-      throw new InvalidStateException(
-          "Invalid file type",
-          "Expected MIME type '" + DOCX_CONTENT_TYPE + "' but got '" + contentType + "'");
-    }
-
-    // Validate file size
-    if (file.getSize() > MAX_DOCX_SIZE) {
-      throw new InvalidStateException(
-          "File too large",
-          "Maximum file size is 10MB, but the uploaded file is "
-              + (file.getSize() / (1024 * 1024))
-              + "MB");
-    }
+    // Validate file
+    FileValidationHelper.validateDocxFile(file);
 
     // Sanitize filename
     String originalFilename = file.getOriginalFilename();

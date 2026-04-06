@@ -41,6 +41,7 @@ public class TimeEntryService {
   private final ApplicationEventPublisher applicationEventPublisher;
   private final TimeEntryValidationService timeEntryValidationService;
   private final RateSnapshotService rateSnapshotService;
+  private final io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository invoiceRepository;
 
   public TimeEntryService(
       TimeEntryRepository timeEntryRepository,
@@ -51,13 +52,15 @@ public class TimeEntryService {
       MemberNameResolver memberNameResolver,
       ApplicationEventPublisher applicationEventPublisher,
       TimeEntryValidationService timeEntryValidationService,
-      RateSnapshotService rateSnapshotService) {
+      RateSnapshotService rateSnapshotService,
+      io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository invoiceRepository) {
     this.timeEntryRepository = timeEntryRepository;
     this.taskRepository = taskRepository;
     this.projectAccessService = projectAccessService;
     this.auditService = auditService;
     this.budgetCheckService = budgetCheckService;
     this.memberNameResolver = memberNameResolver;
+    this.invoiceRepository = invoiceRepository;
     this.applicationEventPublisher = applicationEventPublisher;
     this.timeEntryValidationService = timeEntryValidationService;
     this.rateSnapshotService = rateSnapshotService;
@@ -552,5 +555,43 @@ public class TimeEntryService {
           "Cannot modify time entry",
           "Only the creator or a project lead/admin/owner can modify this time entry");
     }
+  }
+
+  // --- Name Resolution (moved from controller for BE-007) ---
+
+  /** Batch-loads member names for all member IDs referenced by the given time entries. */
+  public Map<UUID, String> resolveNames(java.util.List<TimeEntry> entries) {
+    var ids =
+        entries.stream()
+            .map(TimeEntry::getMemberId)
+            .filter(java.util.Objects::nonNull)
+            .distinct()
+            .toList();
+    return memberNameResolver.resolveNames(ids);
+  }
+
+  /**
+   * Batch-loads invoice numbers for all invoice IDs referenced by the given time entries. Returns a
+   * map of invoice UUID to human-readable invoice number. Drafts without an assigned number are
+   * represented as "Draft".
+   */
+  public Map<UUID, String> resolveInvoiceNumbers(java.util.List<TimeEntry> entries) {
+    var invoiceIds =
+        entries.stream()
+            .map(TimeEntry::getInvoiceId)
+            .filter(java.util.Objects::nonNull)
+            .distinct()
+            .toList();
+
+    if (invoiceIds.isEmpty()) {
+      return Map.of();
+    }
+
+    return invoiceRepository.findAllById(invoiceIds).stream()
+        .collect(
+            java.util.stream.Collectors.toMap(
+                io.b2mash.b2b.b2bstrawman.invoice.Invoice::getId,
+                inv -> inv.getInvoiceNumber() != null ? inv.getInvoiceNumber() : "Draft",
+                (a, b) -> a));
   }
 }

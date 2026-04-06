@@ -24,8 +24,8 @@ public class ProjectTimeSummaryController {
   public ResponseEntity<ProjectTimeSummaryResponse> getProjectTimeSummary(
       @PathVariable UUID id,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
-    var actor = ActorContext.fromRequestScopes();
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+      ActorContext actor) {
 
     var summary = timeEntryService.getProjectTimeSummary(id, actor, from, to);
     return ResponseEntity.ok(ProjectTimeSummaryResponse.from(id, summary));
@@ -35,8 +35,8 @@ public class ProjectTimeSummaryController {
   public ResponseEntity<List<MemberTimeSummaryResponse>> getProjectTimeSummaryByMember(
       @PathVariable UUID id,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
-    var actor = ActorContext.fromRequestScopes();
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+      ActorContext actor) {
 
     var summaries = timeEntryService.getProjectTimeSummaryByMember(id, actor, from, to);
     var response = summaries.stream().map(MemberTimeSummaryResponse::from).toList();
@@ -47,8 +47,8 @@ public class ProjectTimeSummaryController {
   public ResponseEntity<List<TaskTimeSummaryResponse>> getProjectTimeSummaryByTask(
       @PathVariable UUID id,
       @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
-    var actor = ActorContext.fromRequestScopes();
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+      ActorContext actor) {
 
     var summaries = timeEntryService.getProjectTimeSummaryByTask(id, actor, from, to);
     var response = summaries.stream().map(TaskTimeSummaryResponse::from).toList();

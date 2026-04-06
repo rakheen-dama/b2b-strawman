@@ -18,6 +18,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.ProblemDetailAssertions;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
@@ -30,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -256,30 +258,30 @@ class ProjectIntegrationTest {
 
   @Test
   void shouldReject400WhenNameIsBlank() throws Exception {
-    mockMvc
-        .perform(
+    var result =
+        mockMvc.perform(
             post("/api/projects")
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
                     {"name": "", "description": "desc"}
-                    """))
-        .andExpect(status().isBadRequest());
+                    """));
+    ProblemDetailAssertions.assertValidationErrors(result, "name");
   }
 
   @Test
   void shouldReject400WhenNameIsMissing() throws Exception {
-    mockMvc
-        .perform(
+    var result =
+        mockMvc.perform(
             post("/api/projects")
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
                     {"description": "desc"}
-                    """))
-        .andExpect(status().isBadRequest());
+                    """));
+    ProblemDetailAssertions.assertValidationErrors(result, "name");
   }
 
   @Test
@@ -314,34 +316,34 @@ class ProjectIntegrationTest {
 
   @Test
   void shouldReturn404ForNonexistentProject() throws Exception {
-    mockMvc
-        .perform(
+    var result =
+        mockMvc.perform(
             get("/api/projects/00000000-0000-0000-0000-000000000000")
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_owner")))
-        .andExpect(status().isNotFound());
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_owner")));
+    ProblemDetailAssertions.assertProblem(result, HttpStatus.NOT_FOUND, "Project not found");
   }
 
   @Test
   void shouldReturn404WhenUpdatingNonexistentProject() throws Exception {
-    mockMvc
-        .perform(
+    var result =
+        mockMvc.perform(
             put("/api/projects/00000000-0000-0000-0000-000000000000")
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
                     {"name": "Ghost", "description": "nope"}
-                    """))
-        .andExpect(status().isNotFound());
+                    """));
+    ProblemDetailAssertions.assertProblem(result, HttpStatus.NOT_FOUND, "Project not found");
   }
 
   @Test
   void shouldReturn404WhenDeletingNonexistentProject() throws Exception {
-    mockMvc
-        .perform(
+    var result =
+        mockMvc.perform(
             delete("/api/projects/00000000-0000-0000-0000-000000000000")
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_owner")))
-        .andExpect(status().isNotFound());
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_owner")));
+    ProblemDetailAssertions.assertProblem(result, HttpStatus.NOT_FOUND, "Project not found");
   }
 
   // --- RBAC ---

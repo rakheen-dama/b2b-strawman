@@ -11,6 +11,7 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.ProblemDetailAssertions;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.UUID;
@@ -21,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -128,8 +130,8 @@ class InvitationControllerTest {
         .andExpect(status().isCreated());
 
     // Second invitation for same email should fail with 409
-    mockMvc
-        .perform(
+    var result =
+        mockMvc.perform(
             post("/api/invitations")
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_inv_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
@@ -137,8 +139,8 @@ class InvitationControllerTest {
                     """
                     {"email": "%s", "orgRoleId": "%s"}
                     """
-                        .formatted(email, adminRoleId)))
-        .andExpect(status().isConflict());
+                        .formatted(email, adminRoleId)));
+    ProblemDetailAssertions.assertProblem(result, HttpStatus.CONFLICT, "Pending invitation exists");
   }
 
   @Test
@@ -266,10 +268,11 @@ class InvitationControllerTest {
 
   @Test
   void revokeInvitation_notFound_returns404() throws Exception {
-    mockMvc
-        .perform(
+    var result =
+        mockMvc.perform(
             delete("/api/invitations/" + UUID.randomUUID())
-                .with(TestJwtFactory.adminJwt(ORG_ID, "user_inv_admin")))
-        .andExpect(status().isNotFound());
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_inv_admin")));
+    ProblemDetailAssertions.assertProblem(
+        result, HttpStatus.NOT_FOUND, "PendingInvitation not found");
   }
 }

@@ -28,8 +28,8 @@ public class CalendarController {
       @RequestParam(required = false) UUID projectId,
       @RequestParam(required = false) String type,
       @RequestParam(required = false) UUID assigneeId,
-      @RequestParam(required = false, defaultValue = "false") boolean overdue) {
-    var actor = ActorContext.fromRequestScopes();
+      @RequestParam(required = false, defaultValue = "false") boolean overdue,
+      ActorContext actor) {
     var response =
         calendarService.getCalendarItems(actor, from, to, projectId, type, assigneeId, overdue);
     return ResponseEntity.ok(response);

@@ -1,8 +1,8 @@
 package io.b2mash.b2b.b2bstrawman.exception;
 
 import io.b2mash.b2b.b2bstrawman.template.TemplateValidationService.TemplateValidationResult;
+import java.util.Map;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ProblemDetail;
 import org.springframework.web.ErrorResponseException;
 
 /**
@@ -12,16 +12,14 @@ import org.springframework.web.ErrorResponseException;
 public class ValidationWarningException extends ErrorResponseException {
 
   public ValidationWarningException(TemplateValidationResult validationResult) {
-    super(HttpStatus.UNPROCESSABLE_ENTITY, createProblem(validationResult), null);
-  }
-
-  private static ProblemDetail createProblem(TemplateValidationResult validationResult) {
-    var problem = ProblemDetail.forStatus(HttpStatus.UNPROCESSABLE_ENTITY);
-    problem.setTitle("Required context fields missing");
-    problem.setDetail(
-        "Template has required context fields that are not populated. "
-            + "Set acknowledgeWarnings=true to generate anyway.");
-    problem.setProperty("validationResult", validationResult);
-    return problem;
+    super(
+        HttpStatus.UNPROCESSABLE_ENTITY,
+        ProblemDetailFactory.create(
+            HttpStatus.UNPROCESSABLE_ENTITY,
+            "Required context fields missing",
+            "Template has required context fields that are not populated. "
+                + "Set acknowledgeWarnings=true to generate anyway.",
+            Map.of("validationResult", validationResult)),
+        null);
   }
 }

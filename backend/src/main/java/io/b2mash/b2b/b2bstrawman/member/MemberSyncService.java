@@ -235,5 +235,10 @@ public class MemberSyncService {
         .getSchemaName();
   }
 
+  /** Returns all members in the current tenant schema. */
+  public List<Member> listAll() {
+    return memberRepository.findAll();
+  }
+
   public record SyncResult(UUID memberId, boolean created) {}
 }

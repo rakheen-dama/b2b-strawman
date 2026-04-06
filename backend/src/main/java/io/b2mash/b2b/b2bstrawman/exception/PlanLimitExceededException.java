@@ -1,7 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.exception;
 
+import java.util.Map;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ProblemDetail;
 import org.springframework.web.ErrorResponseException;
 
 /**
@@ -11,14 +11,13 @@ import org.springframework.web.ErrorResponseException;
 public class PlanLimitExceededException extends ErrorResponseException {
 
   public PlanLimitExceededException(String detail) {
-    super(HttpStatus.FORBIDDEN, createProblem(detail), null);
-  }
-
-  private static ProblemDetail createProblem(String detail) {
-    var problem = ProblemDetail.forStatus(HttpStatus.FORBIDDEN);
-    problem.setTitle("Plan limit exceeded");
-    problem.setDetail(detail);
-    problem.setProperty("upgradeUrl", "/settings/billing");
-    return problem;
+    super(
+        HttpStatus.FORBIDDEN,
+        ProblemDetailFactory.create(
+            HttpStatus.FORBIDDEN,
+            "Plan limit exceeded",
+            detail,
+            Map.of("upgradeUrl", "/settings/billing")),
+        null);
   }
 }

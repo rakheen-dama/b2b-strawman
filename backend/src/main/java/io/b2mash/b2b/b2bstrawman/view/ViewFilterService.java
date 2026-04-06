@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.view;
 
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import java.util.ArrayList;
@@ -125,7 +126,7 @@ public class ViewFilterService {
       Map<String, Object> extraParams) {
 
     if (!ALLOWED_TABLES.contains(tableName)) {
-      throw new IllegalArgumentException("Invalid table name: " + tableName);
+      throw new InvalidStateException("Validation error", "Invalid table name: " + tableName);
     }
 
     Map<String, Object> params = new HashMap<>();

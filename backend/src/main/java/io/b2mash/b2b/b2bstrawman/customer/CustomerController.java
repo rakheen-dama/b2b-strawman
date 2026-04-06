@@ -2,18 +2,23 @@ package io.b2mash.b2b.b2bstrawman.customer;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEvent;
 import io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleService;
+import io.b2mash.b2b.b2bstrawman.customer.dto.CustomerDtos.CreateCustomerRequest;
+import io.b2mash.b2b.b2bstrawman.customer.dto.CustomerDtos.CustomerProjectResponse;
+import io.b2mash.b2b.b2bstrawman.customer.dto.CustomerDtos.CustomerResponse;
+import io.b2mash.b2b.b2bstrawman.customer.dto.CustomerDtos.DormancyCheckResult;
+import io.b2mash.b2b.b2bstrawman.customer.dto.CustomerDtos.LinkedProjectResponse;
+import io.b2mash.b2b.b2bstrawman.customer.dto.CustomerDtos.TransitionRequest;
+import io.b2mash.b2b.b2bstrawman.customer.dto.CustomerDtos.TransitionResponse;
+import io.b2mash.b2b.b2bstrawman.customer.dto.CustomerDtos.UpdateCustomerRequest;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.SetFieldGroupsRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceService;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UnbilledTimeResponse;
-import io.b2mash.b2b.b2bstrawman.member.Member;
-import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactService;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactSummary;
-import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.setupstatus.AggregatedCompletenessResponse;
 import io.b2mash.b2b.b2bstrawman.setupstatus.CompletenessScore;
 import io.b2mash.b2b.b2bstrawman.setupstatus.CustomerReadiness;
@@ -27,18 +32,11 @@ import io.b2mash.b2b.b2bstrawman.tag.dto.TagResponse;
 import io.b2mash.b2b.b2bstrawman.view.CustomFieldFilterUtil;
 import io.b2mash.b2b.b2bstrawman.view.ViewFilterHelper;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import java.net.URI;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -63,7 +61,6 @@ public class CustomerController {
   private final CustomerLifecycleService customerLifecycleService;
   private final UnbilledTimeSummaryService unbilledTimeSummaryService;
   private final CustomerReadinessService customerReadinessService;
-  private final MemberRepository memberRepository;
   private final PortalContactService portalContactService;
 
   public CustomerController(
@@ -75,7 +72,6 @@ public class CustomerController {
       CustomerLifecycleService customerLifecycleService,
       UnbilledTimeSummaryService unbilledTimeSummaryService,
       CustomerReadinessService customerReadinessService,
-      MemberRepository memberRepository,
       PortalContactService portalContactService) {
     this.customerService = customerService;
     this.customerProjectService = customerProjectService;
@@ -85,7 +81,6 @@ public class CustomerController {
     this.customerLifecycleService = customerLifecycleService;
     this.unbilledTimeSummaryService = unbilledTimeSummaryService;
     this.customerReadinessService = customerReadinessService;
-    this.memberRepository = memberRepository;
     this.portalContactService = portalContactService;
   }
 
@@ -104,7 +99,7 @@ public class CustomerController {
       if (filtered != null) {
         var customerIds = filtered.stream().map(Customer::getId).toList();
         var tagsByEntityId = entityTagService.getEntityTagsBatch("CUSTOMER", customerIds);
-        var memberNames = resolveNames(filtered);
+        var memberNames = customerService.resolveCustomerMemberNames(filtered);
 
         var responses =
             filtered.stream()
@@ -126,7 +121,7 @@ public class CustomerController {
     // Batch-load tags for all customers (2 queries instead of 2N)
     var customerIds = customerEntities.stream().map(Customer::getId).toList();
     var tagsByEntityId = entityTagService.getEntityTagsBatch("CUSTOMER", customerIds);
-    var memberNames = resolveNames(customerEntities);
+    var memberNames = customerService.resolveCustomerMemberNames(customerEntities);
 
     var customers =
         customerEntities.stream()
@@ -183,7 +178,7 @@ public class CustomerController {
   public ResponseEntity<CustomerResponse> getCustomer(@PathVariable UUID id) {
     var customer = customerService.getCustomer(id);
     var tags = entityTagService.getEntityTags("CUSTOMER", id);
-    var memberNames = resolveNames(List.of(customer));
+    var memberNames = customerService.resolveCustomerMemberNames(List.of(customer));
     return ResponseEntity.ok(CustomerResponse.from(customer, tags, memberNames));
   }
 
@@ -203,7 +198,7 @@ public class CustomerController {
             request.customFields(),
             request.appliedFieldGroups(),
             request.customerType());
-    var memberNames = resolveNames(List.of(customer));
+    var memberNames = customerService.resolveCustomerMemberNames(List.of(customer));
     return ResponseEntity.created(URI.create("/api/customers/" + customer.getId()))
         .body(CustomerResponse.from(customer, List.of(), memberNames));
   }
@@ -223,7 +218,7 @@ public class CustomerController {
             request.customFields(),
             request.appliedFieldGroups());
     var tags = entityTagService.getEntityTags("CUSTOMER", id);
-    var memberNames = resolveNames(List.of(customer));
+    var memberNames = customerService.resolveCustomerMemberNames(List.of(customer));
     return ResponseEntity.ok(CustomerResponse.from(customer, tags, memberNames));
   }
 
@@ -232,7 +227,7 @@ public class CustomerController {
   public ResponseEntity<CustomerResponse> archiveCustomer(@PathVariable UUID id) {
     var customer = customerService.archiveCustomer(id);
     var tags = entityTagService.getEntityTags("CUSTOMER", id);
-    var memberNames = resolveNames(List.of(customer));
+    var memberNames = customerService.resolveCustomerMemberNames(List.of(customer));
     return ResponseEntity.ok(CustomerResponse.from(customer, tags, memberNames));
   }
 
@@ -241,7 +236,7 @@ public class CustomerController {
   public ResponseEntity<CustomerResponse> unarchiveCustomer(@PathVariable UUID id) {
     var customer = customerService.unarchiveCustomer(id);
     var tags = entityTagService.getEntityTags("CUSTOMER", id);
-    var memberNames = resolveNames(List.of(customer));
+    var memberNames = customerService.resolveCustomerMemberNames(List.of(customer));
     return ResponseEntity.ok(CustomerResponse.from(customer, tags, memberNames));
   }
 
@@ -249,19 +244,16 @@ public class CustomerController {
 
   @PostMapping("/{id}/projects/{projectId}")
   public ResponseEntity<CustomerProjectResponse> linkProject(
-      @PathVariable UUID id, @PathVariable UUID projectId) {
-    var actor = ActorContext.fromRequestScopes();
-    UUID memberId = actor.memberId();
+      @PathVariable UUID id, @PathVariable UUID projectId, ActorContext actor) {
 
-    var link = customerProjectService.linkCustomerToProject(id, projectId, memberId, actor);
+    var link = customerProjectService.linkCustomerToProject(id, projectId, actor.memberId(), actor);
     return ResponseEntity.created(URI.create("/api/customers/" + id + "/projects/" + projectId))
         .body(CustomerProjectResponse.from(link));
   }
 
   @DeleteMapping("/{id}/projects/{projectId}")
-  public ResponseEntity<Void> unlinkProject(@PathVariable UUID id, @PathVariable UUID projectId) {
-    var actor = ActorContext.fromRequestScopes();
-    UUID memberId = actor.memberId();
+  public ResponseEntity<Void> unlinkProject(
+      @PathVariable UUID id, @PathVariable UUID projectId, ActorContext actor) {
 
     customerProjectService.unlinkCustomerFromProject(id, projectId, actor);
     return ResponseEntity.noContent().build();
@@ -269,9 +261,7 @@ public class CustomerController {
 
   @GetMapping("/{id}/projects")
   public ResponseEntity<List<LinkedProjectResponse>> listProjectsForCustomer(
-      @PathVariable UUID id) {
-    var actor = ActorContext.fromRequestScopes();
-    UUID memberId = actor.memberId();
+      @PathVariable UUID id, ActorContext actor) {
     var projects = customerProjectService.listProjectsForCustomer(id, actor);
     return ResponseEntity.ok(projects.stream().map(LinkedProjectResponse::from).toList());
   }
@@ -339,7 +329,7 @@ public class CustomerController {
     UUID actorId = RequestScopes.requireMemberId();
     var customer =
         customerLifecycleService.transition(id, request.targetStatus(), request.notes(), actorId);
-    var memberNames = resolveNames(List.of(customer));
+    var memberNames = customerService.resolveCustomerMemberNames(List.of(customer));
     return ResponseEntity.ok(TransitionResponse.from(customer, memberNames));
   }
 
@@ -355,150 +345,4 @@ public class CustomerController {
   public ResponseEntity<DormancyCheckResult> runDormancyCheck() {
     return ResponseEntity.ok(customerLifecycleService.runDormancyCheck());
   }
-
-  private Map<UUID, String> resolveNames(List<Customer> customers) {
-    var ids =
-        customers.stream()
-            .flatMap(c -> Stream.of(c.getCreatedBy(), c.getLifecycleStatusChangedBy()))
-            .filter(Objects::nonNull)
-            .distinct()
-            .toList();
-    if (ids.isEmpty()) return Map.of();
-    return memberRepository.findAllById(ids).stream()
-        .collect(
-            Collectors.toMap(
-                Member::getId, m -> m.getName() != null ? m.getName() : "", (a, b) -> a));
-  }
-
-  // --- DTOs ---
-
-  public record CreateCustomerRequest(
-      @NotBlank(message = "name is required")
-          @Size(max = 255, message = "name must be at most 255 characters")
-          String name,
-      @NotBlank(message = "email is required")
-          @Email(message = "email must be a valid email address")
-          @Size(max = 255, message = "email must be at most 255 characters")
-          String email,
-      @Size(max = 50, message = "phone must be at most 50 characters") String phone,
-      @Size(max = 100, message = "idNumber must be at most 100 characters") String idNumber,
-      String notes,
-      Map<String, Object> customFields,
-      List<UUID> appliedFieldGroups,
-      CustomerType customerType) {}
-
-  public record UpdateCustomerRequest(
-      @NotBlank(message = "name is required")
-          @Size(max = 255, message = "name must be at most 255 characters")
-          String name,
-      @NotBlank(message = "email is required")
-          @Email(message = "email must be a valid email address")
-          @Size(max = 255, message = "email must be at most 255 characters")
-          String email,
-      @Size(max = 50, message = "phone must be at most 50 characters") String phone,
-      @Size(max = 100, message = "idNumber must be at most 100 characters") String idNumber,
-      String notes,
-      Map<String, Object> customFields,
-      List<UUID> appliedFieldGroups) {}
-
-  public record CustomerResponse(
-      UUID id,
-      String name,
-      String email,
-      String phone,
-      String idNumber,
-      String status,
-      String notes,
-      UUID createdBy,
-      String createdByName,
-      Instant createdAt,
-      Instant updatedAt,
-      Map<String, Object> customFields,
-      List<UUID> appliedFieldGroups,
-      List<TagResponse> tags,
-      LifecycleStatus lifecycleStatus,
-      CustomerType customerType,
-      Instant lifecycleStatusChangedAt) {
-
-    public static CustomerResponse from(Customer customer) {
-      return from(customer, List.of(), Map.of());
-    }
-
-    public static CustomerResponse from(Customer customer, List<TagResponse> tags) {
-      return from(customer, tags, Map.of());
-    }
-
-    public static CustomerResponse from(
-        Customer customer, List<TagResponse> tags, Map<UUID, String> memberNames) {
-      return new CustomerResponse(
-          customer.getId(),
-          customer.getName(),
-          customer.getEmail(),
-          customer.getPhone(),
-          customer.getIdNumber(),
-          customer.getStatus(),
-          customer.getNotes(),
-          customer.getCreatedBy(),
-          customer.getCreatedBy() != null ? memberNames.get(customer.getCreatedBy()) : null,
-          customer.getCreatedAt(),
-          customer.getUpdatedAt(),
-          customer.getCustomFields(),
-          customer.getAppliedFieldGroups(),
-          tags,
-          customer.getLifecycleStatus(),
-          customer.getCustomerType(),
-          customer.getLifecycleStatusChangedAt());
-    }
-  }
-
-  public record CustomerProjectResponse(
-      UUID customerId, UUID projectId, UUID linkedBy, Instant createdAt) {
-
-    public static CustomerProjectResponse from(CustomerProject link) {
-      return new CustomerProjectResponse(
-          link.getCustomerId(), link.getProjectId(), link.getLinkedBy(), link.getCreatedAt());
-    }
-  }
-
-  public record LinkedProjectResponse(UUID id, String name, String description, Instant createdAt) {
-
-    public static LinkedProjectResponse from(Project project) {
-      return new LinkedProjectResponse(
-          project.getId(), project.getName(), project.getDescription(), project.getCreatedAt());
-    }
-  }
-
-  // --- Lifecycle DTOs ---
-
-  public record TransitionRequest(@NotBlank String targetStatus, String notes) {}
-
-  public record TransitionResponse(
-      UUID id,
-      String name,
-      String lifecycleStatus,
-      Instant lifecycleStatusChangedAt,
-      UUID lifecycleStatusChangedBy,
-      String lifecycleStatusChangedByName) {
-
-    public static TransitionResponse from(Customer customer) {
-      return from(customer, Map.of());
-    }
-
-    public static TransitionResponse from(Customer customer, Map<UUID, String> memberNames) {
-      return new TransitionResponse(
-          customer.getId(),
-          customer.getName(),
-          customer.getLifecycleStatus().name(),
-          customer.getLifecycleStatusChangedAt(),
-          customer.getLifecycleStatusChangedBy(),
-          customer.getLifecycleStatusChangedBy() != null
-              ? memberNames.get(customer.getLifecycleStatusChangedBy())
-              : null);
-    }
-  }
-
-  public record DormancyCheckResult(int thresholdDays, List<DormancyCandidate> candidates) {}
-
-  public record DormancyCandidate(
-      UUID customerId, String customerName, Instant lastActivityDate, long daysSinceActivity) {}
 }

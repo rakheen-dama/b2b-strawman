@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.mywork;
 
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.task.Task;
+import io.b2mash.b2b.b2bstrawman.task.TaskStatus;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +27,7 @@ public class MyWorkController {
   @GetMapping("/tasks")
   public ResponseEntity<MyWorkTasksResponse> getMyTasks(
       @RequestParam(required = false) String filter,
-      @RequestParam(required = false) String status,
+      @RequestParam(required = false) TaskStatus status,
       @RequestParam(required = false) UUID projectId) {
     UUID memberId = RequestScopes.requireMemberId();
 

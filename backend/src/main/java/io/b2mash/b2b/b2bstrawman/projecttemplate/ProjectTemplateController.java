@@ -84,9 +84,9 @@ public class ProjectTemplateController {
 
   @PostMapping("/from-project/{projectId}")
   public ResponseEntity<ProjectTemplateResponse> saveFromProject(
-      @PathVariable UUID projectId, @Valid @RequestBody SaveFromProjectRequest request) {
-    var actor = ActorContext.fromRequestScopes();
-    UUID memberId = actor.memberId();
+      @PathVariable UUID projectId,
+      @Valid @RequestBody SaveFromProjectRequest request,
+      ActorContext actor) {
     var response = projectTemplateService.saveFromProject(projectId, request, actor);
     return ResponseEntity.created(URI.create("/api/project-templates/" + response.id()))
         .body(response);

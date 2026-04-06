@@ -2,9 +2,11 @@ package io.b2mash.b2b.b2bstrawman.costrate;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.costrate.CostRateController.CostRateResponse;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
@@ -12,6 +14,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -27,6 +30,7 @@ public class CostRateService {
 
   private final CostRateRepository costRateRepository;
   private final AuditService auditService;
+  private final MemberNameResolver memberNameResolver;
 
   /**
    * Resolved cost rate result containing the hourly cost, currency, and the cost rate ID that was
@@ -34,9 +38,13 @@ public class CostRateService {
    */
   public record ResolvedCostRate(BigDecimal hourlyCost, String currency, UUID costRateId) {}
 
-  public CostRateService(CostRateRepository costRateRepository, AuditService auditService) {
+  public CostRateService(
+      CostRateRepository costRateRepository,
+      AuditService auditService,
+      MemberNameResolver memberNameResolver) {
     this.costRateRepository = costRateRepository;
     this.auditService = auditService;
+    this.memberNameResolver = memberNameResolver;
   }
 
   /**
@@ -206,6 +214,24 @@ public class CostRateService {
       return costRateRepository.findAllOrderByEffectiveFromDesc();
     }
     return costRateRepository.findByMemberId(memberId);
+  }
+
+  /** Returns cost rate responses with resolved member names for a list of cost rates. */
+  public List<CostRateResponse> toResponses(List<CostRate> rates) {
+    var memberNames = resolveMemberNames(rates);
+    return rates.stream().map(r -> CostRateResponse.from(r, memberNames)).toList();
+  }
+
+  /** Returns a cost rate response with resolved member name. */
+  public CostRateResponse toResponse(CostRate rate) {
+    var memberNames = resolveMemberNames(List.of(rate));
+    return CostRateResponse.from(rate, memberNames);
+  }
+
+  private Map<UUID, String> resolveMemberNames(List<CostRate> rates) {
+    var memberIds =
+        rates.stream().map(CostRate::getMemberId).filter(Objects::nonNull).distinct().toList();
+    return memberNameResolver.resolveNames(memberIds);
   }
 
   /**

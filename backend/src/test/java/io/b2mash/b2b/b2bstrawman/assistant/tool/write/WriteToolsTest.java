@@ -9,12 +9,12 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
-import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.task.TaskService;
+import io.b2mash.b2b.b2bstrawman.testutil.TenantTestSupport;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
@@ -344,13 +344,12 @@ class WriteToolsTest {
   }
 
   private void runInTenantScope(Runnable action) {
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .where(RequestScopes.ORG_ID, ORG_ID)
-        .where(RequestScopes.MEMBER_ID, memberIdOwner)
-        .where(RequestScopes.ORG_ROLE, "owner")
-        .where(
-            RequestScopes.CAPABILITIES,
-            Set.of("PROJECT_MANAGEMENT", "CUSTOMER_MANAGEMENT", "INVOICING"))
-        .run(action);
+    TenantTestSupport.runAsActor(
+        tenantSchema,
+        ORG_ID,
+        memberIdOwner,
+        "owner",
+        Set.of("PROJECT_MANAGEMENT", "CUSTOMER_MANAGEMENT", "INVOICING"),
+        action);
   }
 }

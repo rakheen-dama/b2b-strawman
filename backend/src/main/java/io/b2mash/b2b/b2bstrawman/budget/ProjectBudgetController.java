@@ -29,15 +29,15 @@ public class ProjectBudgetController {
   }
 
   @GetMapping
-  public ResponseEntity<BudgetStatusResponse> getBudget(@PathVariable UUID projectId) {
-    var actor = ActorContext.fromRequestScopes();
+  public ResponseEntity<BudgetStatusResponse> getBudget(
+      @PathVariable UUID projectId, ActorContext actor) {
     var status = projectBudgetService.getBudgetWithStatus(projectId, actor);
     return ResponseEntity.ok(BudgetStatusResponse.from(status));
   }
 
   @GetMapping("/status")
-  public ResponseEntity<LightweightStatusResponse> getBudgetStatus(@PathVariable UUID projectId) {
-    var actor = ActorContext.fromRequestScopes();
+  public ResponseEntity<LightweightStatusResponse> getBudgetStatus(
+      @PathVariable UUID projectId, ActorContext actor) {
     var status = projectBudgetService.getBudgetStatusOnly(projectId, actor);
     return ResponseEntity.ok(LightweightStatusResponse.from(status));
   }
@@ -45,8 +45,9 @@ public class ProjectBudgetController {
   @PutMapping
   @RequiresCapability("FINANCIAL_VISIBILITY")
   public ResponseEntity<BudgetStatusResponse> upsertBudget(
-      @PathVariable UUID projectId, @Valid @RequestBody UpsertBudgetRequest request) {
-    var actor = ActorContext.fromRequestScopes();
+      @PathVariable UUID projectId,
+      @Valid @RequestBody UpsertBudgetRequest request,
+      ActorContext actor) {
     var status =
         projectBudgetService.upsertBudget(
             projectId,
@@ -61,8 +62,7 @@ public class ProjectBudgetController {
 
   @DeleteMapping
   @RequiresCapability("FINANCIAL_VISIBILITY")
-  public ResponseEntity<Void> deleteBudget(@PathVariable UUID projectId) {
-    var actor = ActorContext.fromRequestScopes();
+  public ResponseEntity<Void> deleteBudget(@PathVariable UUID projectId, ActorContext actor) {
     projectBudgetService.deleteBudget(projectId, actor);
     return ResponseEntity.noContent().build();
   }

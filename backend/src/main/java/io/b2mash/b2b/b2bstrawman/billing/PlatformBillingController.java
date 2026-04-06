@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.billing;
 import io.b2mash.b2b.b2bstrawman.billing.AdminBillingDtos.AdminBillingOverrideRequest;
 import io.b2mash.b2b.b2bstrawman.billing.AdminBillingDtos.AdminTenantBillingResponse;
 import io.b2mash.b2b.b2bstrawman.billing.AdminBillingDtos.ExtendTrialRequest;
+import io.b2mash.b2b.b2bstrawman.billing.Subscription.SubscriptionStatus;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
@@ -30,8 +31,8 @@ public class PlatformBillingController {
 
   @GetMapping("/tenants")
   public ResponseEntity<List<AdminTenantBillingResponse>> listTenants(
-      @RequestParam(required = false) String status,
-      @RequestParam(required = false) String billingMethod,
+      @RequestParam(required = false) SubscriptionStatus status,
+      @RequestParam(required = false) BillingMethod billingMethod,
       @RequestParam(required = false) String profile,
       @RequestParam(required = false) String search) {
     return ResponseEntity.ok(

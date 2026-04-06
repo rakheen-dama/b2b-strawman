@@ -5,16 +5,12 @@ import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceDtos.ChecklistInstan
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceDtos.CompleteItemRequest;
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceDtos.InstantiateChecklistRequest;
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceDtos.SkipItemRequest;
-import io.b2mash.b2b.b2bstrawman.member.Member;
-import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,12 +23,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class ChecklistInstanceController {
 
   private final ChecklistInstanceService checklistInstanceService;
-  private final MemberRepository memberRepository;
 
-  public ChecklistInstanceController(
-      ChecklistInstanceService checklistInstanceService, MemberRepository memberRepository) {
+  public ChecklistInstanceController(ChecklistInstanceService checklistInstanceService) {
     this.checklistInstanceService = checklistInstanceService;
-    this.memberRepository = memberRepository;
   }
 
   @GetMapping("/api/customers/{customerId}/checklists")
@@ -65,7 +58,7 @@ public class ChecklistInstanceController {
     UUID actorId = RequestScopes.requireMemberId();
     var item =
         checklistInstanceService.completeItem(id, request.notes(), request.documentId(), actorId);
-    return ResponseEntity.ok(ChecklistInstanceItemResponse.from(item, resolveItemNames(item)));
+    return ResponseEntity.ok(checklistInstanceService.toItemResponse(item));
   }
 
   @PutMapping("/api/checklist-items/{id}/skip")
@@ -74,7 +67,7 @@ public class ChecklistInstanceController {
       @PathVariable UUID id, @Valid @RequestBody SkipItemRequest request) {
     UUID actorId = RequestScopes.requireMemberId();
     var item = checklistInstanceService.skipItem(id, request.reason(), actorId);
-    return ResponseEntity.ok(ChecklistInstanceItemResponse.from(item, resolveItemNames(item)));
+    return ResponseEntity.ok(checklistInstanceService.toItemResponse(item));
   }
 
   @PutMapping("/api/checklist-items/{id}/reopen")
@@ -82,14 +75,6 @@ public class ChecklistInstanceController {
   public ResponseEntity<ChecklistInstanceItemResponse> reopenItem(@PathVariable UUID id) {
     UUID actorId = RequestScopes.requireMemberId();
     var item = checklistInstanceService.reopenItem(id, actorId);
-    return ResponseEntity.ok(ChecklistInstanceItemResponse.from(item, resolveItemNames(item)));
-  }
-
-  private Map<UUID, String> resolveItemNames(ChecklistInstanceItem item) {
-    if (item.getCompletedBy() == null) return Map.of();
-    return memberRepository.findAllById(List.of(item.getCompletedBy())).stream()
-        .collect(
-            Collectors.toMap(
-                Member::getId, m -> m.getName() != null ? m.getName() : "", (a, b) -> a));
+    return ResponseEntity.ok(checklistInstanceService.toItemResponse(item));
   }
 }

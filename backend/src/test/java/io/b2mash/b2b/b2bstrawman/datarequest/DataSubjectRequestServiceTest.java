@@ -10,11 +10,11 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.member.MemberSyncService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
-import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
+import io.b2mash.b2b.b2bstrawman.testutil.TenantTestSupport;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.UUID;
@@ -366,21 +366,28 @@ class DataSubjectRequestServiceTest {
     var auth = new TestingAuthenticationToken("user_dsr_svc_test", null, Collections.emptyList());
     SecurityContextHolder.getContext().setAuthentication(auth);
 
-    return ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .where(RequestScopes.ORG_ID, ORG_ID)
-        .where(RequestScopes.MEMBER_ID, memberId)
-        .call(
-            () ->
-                transactionTemplate.execute(
-                    tx -> {
-                      try {
-                        return callable.call();
-                      } catch (RuntimeException e) {
-                        throw e;
-                      } catch (Exception e) {
-                        throw new RuntimeException(e);
-                      }
-                    }));
+    try {
+      return TenantTestSupport.callAsActor(
+          tenantSchema,
+          ORG_ID,
+          memberId,
+          "owner",
+          () ->
+              transactionTemplate.execute(
+                  tx -> {
+                    try {
+                      return callable.call();
+                    } catch (RuntimeException e) {
+                      throw e;
+                    } catch (Exception e) {
+                      throw new RuntimeException(e);
+                    }
+                  }));
+    } catch (RuntimeException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private void runInTenant(Runnable runnable) {

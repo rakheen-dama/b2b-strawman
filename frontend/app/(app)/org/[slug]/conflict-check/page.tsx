@@ -37,8 +37,8 @@ export default async function ConflictCheckPage({
 
   try {
     const result = await fetchConflictChecks();
-    initialChecks = result.content;
-    initialTotal = result.page.totalElements;
+    initialChecks = result?.content ?? [];
+    initialTotal = result?.page?.totalElements ?? 0;
   } catch (error) {
     console.error("Failed to fetch conflict checks:", error);
   }

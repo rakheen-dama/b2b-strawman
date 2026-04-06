@@ -22,7 +22,6 @@ import io.b2mash.b2b.b2bstrawman.integration.IntegrationRegistry;
 import io.b2mash.b2b.b2bstrawman.integration.OrgIntegration;
 import io.b2mash.b2b.b2bstrawman.integration.OrgIntegrationRepository;
 import io.b2mash.b2b.b2bstrawman.integration.secret.SecretStore;
-import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
@@ -57,7 +56,6 @@ class KycVerificationControllerTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
   @Autowired private ChecklistInstanceItemRepository checklistInstanceItemRepository;
   @Autowired private ChecklistInstanceRepository checklistInstanceRepository;
@@ -256,6 +254,37 @@ class KycVerificationControllerTest {
                     """
                         .formatted(customerId, checklistItemId)))
         .andExpect(status().isForbidden());
+  }
+
+  @Test
+  @Order(7)
+  void getResult_withMemberRole_returns403() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/kyc/result/" + verificationReference)
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_kyc_ctrl_member")))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  @Order(8)
+  void getKycStatus_withMemberRole_returns200() throws Exception {
+    // Members have VIEW_TRUST capability — read-only access is allowed
+    mockMvc
+        .perform(
+            get("/api/integrations/kyc/status")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_kyc_ctrl_member")))
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  @Order(9)
+  void getResult_withInvalidReference_returns404() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/kyc/result/non-existent-reference")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_kyc_ctrl_owner")))
+        .andExpect(status().isNotFound());
   }
 
   // --- Helpers ---

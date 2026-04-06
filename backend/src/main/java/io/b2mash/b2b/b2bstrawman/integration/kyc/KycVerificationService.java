@@ -210,15 +210,25 @@ public class KycVerificationService {
             .orElseThrow(() -> new ResourceNotFoundException("KYC verification result", reference));
 
     return new KycVerificationResult(
-        item.getVerificationStatus() != null
-            ? KycVerificationStatus.valueOf(item.getVerificationStatus())
-            : KycVerificationStatus.ERROR,
+        parseStatus(item.getVerificationStatus()),
         item.getVerificationProvider(),
         item.getVerificationReference(),
         null,
         null,
         item.getVerifiedAt(),
         item.getVerificationMetadata() != null ? item.getVerificationMetadata() : Map.of());
+  }
+
+  private KycVerificationStatus parseStatus(String status) {
+    if (status == null) {
+      return KycVerificationStatus.ERROR;
+    }
+    try {
+      return KycVerificationStatus.valueOf(status);
+    } catch (IllegalArgumentException e) {
+      log.warn("Unrecognized KYC verification status '{}', defaulting to ERROR", status);
+      return KycVerificationStatus.ERROR;
+    }
   }
 
   /**

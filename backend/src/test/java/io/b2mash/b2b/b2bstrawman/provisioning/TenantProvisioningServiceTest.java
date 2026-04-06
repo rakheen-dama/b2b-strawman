@@ -23,6 +23,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMapping;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
 import io.b2mash.b2b.b2bstrawman.reporting.StandardReportPackSeeder;
+import io.b2mash.b2b.b2bstrawman.seeder.ProjectTemplatePackSeeder;
 import io.b2mash.b2b.b2bstrawman.seeder.RatePackSeeder;
 import io.b2mash.b2b.b2bstrawman.seeder.SchedulePackSeeder;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
@@ -64,6 +65,7 @@ class TenantProvisioningServiceTest {
   @Mock private RequestPackSeeder requestPackSeeder;
   @Mock private AutomationTemplateSeeder automationTemplateSeeder;
   @Mock private RatePackSeeder ratePackSeeder;
+  @Mock private ProjectTemplatePackSeeder projectTemplatePackSeeder;
   @Mock private SchedulePackSeeder schedulePackSeeder;
   @Mock private LegalTariffSeeder legalTariffSeeder;
   @Mock private TenantTransactionHelper tenantTransactionHelper;

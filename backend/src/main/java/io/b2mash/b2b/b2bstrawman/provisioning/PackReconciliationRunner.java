@@ -7,6 +7,7 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldPackSeeder;
 import io.b2mash.b2b.b2bstrawman.informationrequest.RequestPackSeeder;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.reporting.StandardReportPackSeeder;
+import io.b2mash.b2b.b2bstrawman.seeder.ProjectTemplatePackSeeder;
 import io.b2mash.b2b.b2bstrawman.seeder.RatePackSeeder;
 import io.b2mash.b2b.b2bstrawman.seeder.SchedulePackSeeder;
 import io.b2mash.b2b.b2bstrawman.template.TemplatePackSeeder;
@@ -41,6 +42,7 @@ public class PackReconciliationRunner implements ApplicationRunner {
   private final RequestPackSeeder requestPackSeeder;
   private final AutomationTemplateSeeder automationTemplateSeeder;
   private final RatePackSeeder ratePackSeeder;
+  private final ProjectTemplatePackSeeder projectTemplatePackSeeder;
   private final SchedulePackSeeder schedulePackSeeder;
   private final LegalTariffSeeder legalTariffSeeder;
 
@@ -54,6 +56,7 @@ public class PackReconciliationRunner implements ApplicationRunner {
       RequestPackSeeder requestPackSeeder,
       AutomationTemplateSeeder automationTemplateSeeder,
       RatePackSeeder ratePackSeeder,
+      ProjectTemplatePackSeeder projectTemplatePackSeeder,
       SchedulePackSeeder schedulePackSeeder,
       LegalTariffSeeder legalTariffSeeder) {
     this.mappingRepository = mappingRepository;
@@ -65,6 +68,7 @@ public class PackReconciliationRunner implements ApplicationRunner {
     this.requestPackSeeder = requestPackSeeder;
     this.automationTemplateSeeder = automationTemplateSeeder;
     this.ratePackSeeder = ratePackSeeder;
+    this.projectTemplatePackSeeder = projectTemplatePackSeeder;
     this.schedulePackSeeder = schedulePackSeeder;
     this.legalTariffSeeder = legalTariffSeeder;
   }
@@ -94,6 +98,7 @@ public class PackReconciliationRunner implements ApplicationRunner {
         requestPackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
         automationTemplateSeeder.seedPacksForTenant(schemaName, clerkOrgId);
         ratePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
+        projectTemplatePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
         schedulePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
         legalTariffSeeder.seedForTenant(schemaName, clerkOrgId);
 

@@ -75,7 +75,7 @@ export function ProjectHealthWidget({
       <Card data-testid="project-health-panel">
         <CardHeader>
           <CardTitle className="text-sm font-medium">
-            Project Health
+            {t("Project Health")}
           </CardTitle>
         </CardHeader>
         <CardContent>

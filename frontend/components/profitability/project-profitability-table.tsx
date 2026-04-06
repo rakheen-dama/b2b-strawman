@@ -13,6 +13,7 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { HelpTip } from "@/components/help-tip";
+import { useTerminology } from "@/lib/terminology";
 import { formatCurrency, formatCurrencySafe } from "@/lib/format";
 import { getOrgProfitability } from "@/app/(app)/org/[slug]/profitability/actions";
 import type {
@@ -75,6 +76,7 @@ export function ProjectProfitabilityTable({
   initialFrom,
   initialTo,
 }: ProjectProfitabilityTableProps) {
+  const { t } = useTerminology();
   const [data, setData] = useState<OrgProfitabilityResponse>(initialData);
   const [from, setFrom] = useState(initialFrom);
   const [to, setTo] = useState(initialTo);
@@ -113,7 +115,7 @@ export function ProjectProfitabilityTable({
       <CardHeader>
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <CardTitle className="flex items-center gap-2">
-            Project Profitability
+            {t("Project Profitability")}
             <HelpTip code="dashboard.profitability" />
           </CardTitle>
           <div className="flex items-center gap-2">
@@ -168,7 +170,7 @@ export function ProjectProfitabilityTable({
                     onClick={() => toggleSort("projectName")}
                     className="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-slate-100"
                   >
-                    Project
+                    {t("Project")}
                     <ArrowUpDown className="size-3" />
                   </button>
                 </TableHead>
@@ -177,7 +179,7 @@ export function ProjectProfitabilityTable({
                     onClick={() => toggleSort("customerName")}
                     className="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-slate-100"
                   >
-                    Customer
+                    {t("Customer")}
                     <ArrowUpDown className="size-3" />
                   </button>
                 </TableHead>

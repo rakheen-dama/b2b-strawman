@@ -11,6 +11,7 @@ import { formatCurrency, formatDate } from "@/lib/format";
 import { Receipt, CreditCard } from "lucide-react";
 import Link from "next/link";
 import { HelpTip } from "@/components/help-tip";
+import { TerminologyHeading } from "@/components/terminology-heading";
 import { docsLink } from "@/lib/docs";
 
 function computeSummary(invoices: InvoiceResponse[]) {
@@ -114,7 +115,7 @@ export default async function InvoicesPage({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <h1 className="flex items-center gap-2 font-display text-3xl text-slate-950 dark:text-slate-50">
-            Invoices
+            <TerminologyHeading term="Invoices" />
             <HelpTip code="invoices.lifecycle" />
           </h1>
           {invoices.length > 0 && (
@@ -132,7 +133,7 @@ export default async function InvoicesPage({
           href={`/org/${slug}/invoices`}
           className="border-b-2 border-slate-900 px-4 py-2 text-sm font-medium text-slate-900 dark:border-slate-100 dark:text-slate-100"
         >
-          Invoices
+          <TerminologyHeading term="Invoices" />
         </Link>
         <Link
           href={`/org/${slug}/invoices/billing-runs`}

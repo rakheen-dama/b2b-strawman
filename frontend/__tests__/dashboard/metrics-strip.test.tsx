@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { MetricsStrip } from "@/components/dashboard/metrics-strip";
+import { TerminologyProvider } from "@/lib/terminology";
 import type { KpiResponse, ProjectHealth } from "@/lib/dashboard-types";
 import type { TeamCapacityGrid } from "@/lib/api/capacity";
 
@@ -91,13 +92,19 @@ const mockProjectHealth: ProjectHealth[] = [
   },
 ];
 
+function renderWithProvider(ui: React.ReactElement) {
+  return render(
+    <TerminologyProvider verticalProfile={null}>{ui}</TerminologyProvider>,
+  );
+}
+
 describe("MetricsStrip", () => {
   afterEach(() => {
     cleanup();
   });
 
   it("renders 6 metric cells", () => {
-    render(
+    renderWithProvider(
       <MetricsStrip
         kpis={mockKpis}
         capacityData={mockCapacityData}
@@ -115,7 +122,7 @@ describe("MetricsStrip", () => {
   });
 
   it("handles null/undefined KPI values gracefully", () => {
-    render(
+    renderWithProvider(
       <MetricsStrip
         kpis={null}
         capacityData={null}
@@ -131,7 +138,7 @@ describe("MetricsStrip", () => {
   });
 
   it("displays correct active project count", () => {
-    render(
+    renderWithProvider(
       <MetricsStrip
         kpis={mockKpis}
         capacityData={mockCapacityData}
@@ -145,7 +152,7 @@ describe("MetricsStrip", () => {
   });
 
   it("displays overdue tasks with severity color", () => {
-    render(
+    renderWithProvider(
       <MetricsStrip
         kpis={mockKpis}
         capacityData={mockCapacityData}
@@ -158,7 +165,7 @@ describe("MetricsStrip", () => {
   });
 
   it("displays budget health dot counts", () => {
-    render(
+    renderWithProvider(
       <MetricsStrip
         kpis={mockKpis}
         capacityData={mockCapacityData}
@@ -172,7 +179,7 @@ describe("MetricsStrip", () => {
   });
 
   it("displays team utilization from capacity data", () => {
-    render(
+    renderWithProvider(
       <MetricsStrip
         kpis={mockKpis}
         capacityData={mockCapacityData}

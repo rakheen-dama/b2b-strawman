@@ -42,7 +42,7 @@ export function NavZone({ zone, slug, onNavItemClick }: NavZoneProps) {
         className="flex w-full items-center justify-between px-3 py-1.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
       >
         <span className="text-[11px] font-medium tracking-widest text-white/40 uppercase">
-          {zone.label}
+          {t(zone.label)}
         </span>
         <ChevronRight
           className={cn(

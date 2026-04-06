@@ -4,6 +4,7 @@ import { TrendingUp, TrendingDown } from "lucide-react";
 import { Sparkline } from "@/components/dashboard/sparkline";
 import { MicroStackedBar } from "@/components/dashboard/micro-stacked-bar";
 import { RadialGauge } from "@/components/dashboard/radial-gauge";
+import { useTerminology } from "@/lib/terminology";
 import type { KpiResponse, ProjectHealth } from "@/lib/dashboard-types";
 import type { TeamCapacityGrid } from "@/lib/api/capacity";
 
@@ -35,6 +36,7 @@ export function MetricsStrip({
   capacityData,
   projectHealth,
 }: MetricsStripProps) {
+  const { t } = useTerminology();
   const trendValues = kpis?.trend?.map((t) => t.value) ?? [];
   const billableHours = kpis
     ? (kpis.totalHoursLogged * (kpis.billablePercent ?? 0)) / 100
@@ -71,7 +73,7 @@ export function MetricsStrip({
         className="rounded-lg border border-slate-200/60 bg-card p-3"
       >
         <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500">
-          Active Projects
+          {t("Active Projects")}
         </p>
         <div className="mt-1 flex items-center justify-between">
           <span className="font-mono text-xl font-bold tabular-nums">

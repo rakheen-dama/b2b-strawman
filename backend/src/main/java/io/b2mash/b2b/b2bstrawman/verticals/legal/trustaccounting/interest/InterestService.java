@@ -304,8 +304,10 @@ public class InterestService {
             clientInvestments.stream()
                 .anyMatch(
                     inv ->
-                        "ACTIVE".equals(inv.getStatus())
-                            && inv.getInvestmentBasis() == InvestmentBasis.CLIENT_INSTRUCTION);
+                        inv.getInvestmentBasis() == InvestmentBasis.CLIENT_INSTRUCTION
+                            && !inv.getDepositDate().isAfter(periodEnd)
+                            && (inv.getWithdrawalDate() == null
+                                || !inv.getWithdrawalDate().isBefore(periodStart)));
 
         // Determine LPFF share based on investment basis
         UUID allocationLpffRateId;

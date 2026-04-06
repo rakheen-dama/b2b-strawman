@@ -476,6 +476,27 @@ class TrustInvestmentControllerTest {
                         .formatted(customerId)))
         .andExpect(status().isCreated());
 
+    // Also create a FIRM_DISCRETION investment so the filter has something to exclude
+    mockMvc
+        .perform(
+            post("/api/trust-accounts/" + trustAccountId + "/investments")
+                .with(ownerJwt)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "customerId": "%s",
+                      "institution": "Filter Test Bank FD",
+                      "accountNumber": "8880005555",
+                      "principal": 2000.00,
+                      "interestRate": 0.0500,
+                      "depositDate": "2026-03-01",
+                      "investmentBasis": "FIRM_DISCRETION"
+                    }
+                    """
+                        .formatted(customerId)))
+        .andExpect(status().isCreated());
+
     // Filter by CLIENT_INSTRUCTION
     var result =
         mockMvc
@@ -489,6 +510,7 @@ class TrustInvestmentControllerTest {
     var content = result.getResponse().getContentAsString();
     var investments =
         (net.minidev.json.JSONArray) JsonPath.read(content, "$.content[*].investmentBasis");
+    assertThat(investments).isNotEmpty();
     for (Object basis : investments) {
       assertThat(basis.toString()).isEqualTo("CLIENT_INSTRUCTION");
     }

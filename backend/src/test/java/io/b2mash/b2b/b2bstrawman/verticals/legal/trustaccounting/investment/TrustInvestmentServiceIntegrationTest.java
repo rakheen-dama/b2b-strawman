@@ -14,6 +14,7 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -163,7 +164,8 @@ class TrustInvestmentServiceIntegrationTest {
                             new BigDecimal("0.0650"),
                             LocalDate.of(2026, 2, 1),
                             LocalDate.of(2026, 8, 1),
-                            "6-month fixed deposit")));
+                            "6-month fixed deposit",
+                            InvestmentBasis.FIRM_DISCRETION)));
 
     assertThat(response.status()).isEqualTo("ACTIVE");
     assertThat(response.principal()).isEqualByComparingTo(new BigDecimal("50000.00"));
@@ -196,7 +198,8 @@ class TrustInvestmentServiceIntegrationTest {
                             new BigDecimal("0.0700"),
                             LocalDate.of(2026, 2, 1),
                             LocalDate.of(2026, 5, 1),
-                            null)));
+                            null,
+                            InvestmentBasis.FIRM_DISCRETION)));
 
     // Record interest twice
     var afterFirst =
@@ -236,7 +239,8 @@ class TrustInvestmentServiceIntegrationTest {
                             new BigDecimal("0.0550"),
                             LocalDate.of(2026, 2, 1),
                             null, // call deposit — no maturity date
-                            "Call deposit")));
+                            "Call deposit",
+                            InvestmentBasis.FIRM_DISCRETION)));
 
     // Record some interest
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -274,7 +278,8 @@ class TrustInvestmentServiceIntegrationTest {
                             new BigDecimal("0.0500"),
                             LocalDate.now().minusDays(60),
                             LocalDate.now().plusDays(10), // matures in 10 days
-                            "Short-term deposit")));
+                            "Short-term deposit",
+                            InvestmentBasis.FIRM_DISCRETION)));
 
     // Place an investment that matures far in the future
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -291,7 +296,8 @@ class TrustInvestmentServiceIntegrationTest {
                         new BigDecimal("0.0400"),
                         LocalDate.now().minusDays(30),
                         LocalDate.now().plusDays(365), // matures in a year
-                        "Long-term deposit")));
+                        "Long-term deposit",
+                        InvestmentBasis.FIRM_DISCRETION)));
 
     // Query for investments maturing within 30 days
     var maturing =
@@ -326,7 +332,8 @@ class TrustInvestmentServiceIntegrationTest {
                                     new BigDecimal("0.0800"),
                                     LocalDate.of(2026, 3, 1),
                                     LocalDate.of(2026, 9, 1),
-                                    null))))
+                                    null,
+                                    InvestmentBasis.FIRM_DISCRETION))))
         .isInstanceOf(InvalidStateException.class)
         .hasMessageContaining("Insufficient balance");
   }
@@ -349,7 +356,8 @@ class TrustInvestmentServiceIntegrationTest {
                             new BigDecimal("0.0500"),
                             LocalDate.of(2026, 2, 1),
                             null,
-                            null)));
+                            null,
+                            InvestmentBasis.FIRM_DISCRETION)));
 
     // Withdraw first time — should succeed
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -364,5 +372,109 @@ class TrustInvestmentServiceIntegrationTest {
                     .call(() -> investmentService.withdrawInvestment(placed.id())))
         .isInstanceOf(InvalidStateException.class)
         .hasMessageContaining("ACTIVE or MATURED");
+  }
+
+  // --- 453.6: Investment basis field tests ---
+
+  @Test
+  void placeInvestment_withClientInstruction_persistsCorrectly() throws Exception {
+    var response =
+        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+            .where(RequestScopes.MEMBER_ID, ownerMemberId)
+            .call(
+                () ->
+                    investmentService.placeInvestment(
+                        trustAccountId,
+                        new TrustInvestmentService.PlaceInvestmentRequest(
+                            customerId,
+                            "Investec",
+                            "4440001111",
+                            new BigDecimal("3000.00"),
+                            new BigDecimal("0.0750"),
+                            LocalDate.of(2026, 3, 1),
+                            LocalDate.of(2026, 9, 1),
+                            "Client-instructed deposit",
+                            InvestmentBasis.CLIENT_INSTRUCTION)));
+
+    assertThat(response.investmentBasis()).isEqualTo(InvestmentBasis.CLIENT_INSTRUCTION);
+    assertThat(response.status()).isEqualTo("ACTIVE");
+  }
+
+  @Test
+  void placeInvestment_withFirmDiscretion_persistsCorrectly() throws Exception {
+    var response =
+        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+            .where(RequestScopes.MEMBER_ID, ownerMemberId)
+            .call(
+                () ->
+                    investmentService.placeInvestment(
+                        trustAccountId,
+                        new TrustInvestmentService.PlaceInvestmentRequest(
+                            customerId,
+                            "Capitec",
+                            "5550002222",
+                            new BigDecimal("2000.00"),
+                            new BigDecimal("0.0600"),
+                            LocalDate.of(2026, 3, 1),
+                            LocalDate.of(2026, 9, 1),
+                            "Firm-discretion deposit",
+                            InvestmentBasis.FIRM_DISCRETION)));
+
+    assertThat(response.investmentBasis()).isEqualTo(InvestmentBasis.FIRM_DISCRETION);
+    assertThat(response.status()).isEqualTo("ACTIVE");
+  }
+
+  @Test
+  void placeInvestment_defaultBasis_isFirmDiscretion() throws Exception {
+    // The entity defaults to FIRM_DISCRETION when the column DB default is applied.
+    // Since InvestmentBasis is @NotNull on request, the service always gets an explicit value.
+    // This test verifies that passing FIRM_DISCRETION explicitly works the same as the DB default.
+    var response =
+        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+            .where(RequestScopes.MEMBER_ID, ownerMemberId)
+            .call(
+                () ->
+                    investmentService.placeInvestment(
+                        trustAccountId,
+                        new TrustInvestmentService.PlaceInvestmentRequest(
+                            customerId,
+                            "Standard Bank",
+                            "6660003333",
+                            new BigDecimal("1500.00"),
+                            new BigDecimal("0.0500"),
+                            LocalDate.of(2026, 3, 1),
+                            null,
+                            null,
+                            InvestmentBasis.FIRM_DISCRETION)));
+
+    assertThat(response.investmentBasis()).isEqualTo(InvestmentBasis.FIRM_DISCRETION);
+  }
+
+  @Test
+  void getInvestment_returnsBasisInResponse() throws Exception {
+    var placed =
+        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+            .where(RequestScopes.MEMBER_ID, ownerMemberId)
+            .call(
+                () ->
+                    investmentService.placeInvestment(
+                        trustAccountId,
+                        new TrustInvestmentService.PlaceInvestmentRequest(
+                            customerId,
+                            "FNB",
+                            "7770004444",
+                            new BigDecimal("1000.00"),
+                            new BigDecimal("0.0450"),
+                            LocalDate.of(2026, 3, 1),
+                            LocalDate.of(2026, 6, 1),
+                            null,
+                            InvestmentBasis.CLIENT_INSTRUCTION)));
+
+    var fetched =
+        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+            .where(RequestScopes.MEMBER_ID, ownerMemberId)
+            .call(() -> investmentService.getInvestment(placed.id()));
+
+    assertThat(fetched.investmentBasis()).isEqualTo(InvestmentBasis.CLIENT_INSTRUCTION);
   }
 }

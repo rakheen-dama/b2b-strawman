@@ -7,8 +7,11 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountStatus;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountingConstants;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.lpff.LpffRate;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.lpff.LpffRateRepository;
@@ -49,6 +52,7 @@ public class InterestService {
   private final LpffRateRepository lpffRateRepository;
   private final TrustTransactionRepository trustTransactionRepository;
   private final ClientLedgerCardRepository clientLedgerCardRepository;
+  private final TrustInvestmentRepository investmentRepository;
   private final VerticalModuleGuard moduleGuard;
   private final AuditService auditService;
 
@@ -59,6 +63,7 @@ public class InterestService {
       LpffRateRepository lpffRateRepository,
       TrustTransactionRepository trustTransactionRepository,
       ClientLedgerCardRepository clientLedgerCardRepository,
+      TrustInvestmentRepository investmentRepository,
       VerticalModuleGuard moduleGuard,
       AuditService auditService) {
     this.interestRunRepository = interestRunRepository;
@@ -67,6 +72,7 @@ public class InterestService {
     this.lpffRateRepository = lpffRateRepository;
     this.trustTransactionRepository = trustTransactionRepository;
     this.clientLedgerCardRepository = clientLedgerCardRepository;
+    this.investmentRepository = investmentRepository;
     this.moduleGuard = moduleGuard;
     this.auditService = auditService;
   }
@@ -102,6 +108,8 @@ public class InterestService {
       BigDecimal lpffShare,
       BigDecimal clientShare,
       UUID trustTransactionId,
+      UUID lpffRateId,
+      boolean statutoryRateApplied,
       Instant createdAt) {}
 
   // --- Service Methods ---
@@ -289,9 +297,38 @@ public class InterestService {
       var grossInterest = clientGrossInterest.setScale(2, RoundingMode.HALF_UP);
 
       if (BigDecimal.ZERO.compareTo(grossInterest) < 0) {
-        // LPFF share is sum of per-segment shares (each rounded individually);
-        // client share is the remainder to preserve rounding integrity
-        var lpffShare = clientLpffShareSum;
+        // Check if the client has CLIENT_INSTRUCTION investments for this trust account
+        var clientInvestments =
+            investmentRepository.findByTrustAccountIdAndCustomerId(accountId, customerId);
+        boolean hasClientInstructionInvestment =
+            clientInvestments.stream()
+                .anyMatch(
+                    inv ->
+                        inv.getInvestmentBasis() == InvestmentBasis.CLIENT_INSTRUCTION
+                            && !inv.getDepositDate().isAfter(periodEnd)
+                            && (inv.getWithdrawalDate() == null
+                                || !inv.getWithdrawalDate().isBefore(periodStart)));
+
+        // Determine LPFF share based on investment basis
+        UUID allocationLpffRateId;
+        boolean allocationStatutoryRateApplied;
+        BigDecimal lpffShare;
+
+        if (hasClientInstructionInvestment) {
+          // Section 86(5): statutory 5% LPFF share for client-instructed investments
+          lpffShare =
+              grossInterest
+                  .multiply(TrustAccountingConstants.STATUTORY_LPFF_SHARE_PERCENT)
+                  .setScale(2, RoundingMode.HALF_UP);
+          allocationLpffRateId = null;
+          allocationStatutoryRateApplied = true;
+        } else {
+          // General arrangement: use configured LpffRate table rate
+          lpffShare = clientLpffShareSum;
+          allocationLpffRateId = baseRate.getId();
+          allocationStatutoryRateApplied = false;
+        }
+
         var clientShareAmount = grossInterest.subtract(lpffShare);
 
         var avgDailyBalance =
@@ -306,7 +343,9 @@ public class InterestService {
                 (int) daysInPeriod,
                 grossInterest,
                 lpffShare,
-                clientShareAmount);
+                clientShareAmount,
+                allocationLpffRateId,
+                allocationStatutoryRateApplied);
         allocations.add(allocation);
 
         totalInterest = totalInterest.add(grossInterest);
@@ -618,6 +657,8 @@ public class InterestService {
         alloc.getLpffShare(),
         alloc.getClientShare(),
         alloc.getTrustTransactionId(),
+        alloc.getLpffRateId(),
+        alloc.isStatutoryRateApplied(),
         alloc.getCreatedAt());
   }
 }

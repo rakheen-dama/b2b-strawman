@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment;
 
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -12,7 +13,12 @@ public interface TrustInvestmentRepository extends JpaRepository<TrustInvestment
   Page<TrustInvestment> findByTrustAccountIdOrderByDepositDateDesc(
       UUID trustAccountId, Pageable pageable);
 
+  Page<TrustInvestment> findByTrustAccountIdAndInvestmentBasisOrderByDepositDateDesc(
+      UUID trustAccountId, InvestmentBasis investmentBasis, Pageable pageable);
+
   List<TrustInvestment> findByCustomerId(UUID customerId);
+
+  List<TrustInvestment> findByTrustAccountIdAndCustomerId(UUID trustAccountId, UUID customerId);
 
   List<TrustInvestment> findByStatusAndMaturityDateBetween(
       String status, LocalDate maturityStart, LocalDate maturityEnd);

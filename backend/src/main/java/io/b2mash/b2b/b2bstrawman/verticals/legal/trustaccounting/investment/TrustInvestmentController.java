@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment;
 
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.PlaceInvestmentRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.investment.TrustInvestmentService.TrustInvestmentResponse;
 import jakarta.validation.Valid;
@@ -36,8 +37,11 @@ public class TrustInvestmentController {
   @GetMapping("/api/trust-accounts/{accountId}/investments")
   @RequiresCapability("VIEW_TRUST")
   public ResponseEntity<Page<TrustInvestmentResponse>> listInvestments(
-      @PathVariable UUID accountId, Pageable pageable) {
-    return ResponseEntity.ok(investmentService.listInvestments(accountId, pageable));
+      @PathVariable UUID accountId,
+      @RequestParam(required = false) InvestmentBasis investmentBasis,
+      Pageable pageable) {
+    return ResponseEntity.ok(
+        investmentService.listInvestments(accountId, investmentBasis, pageable));
   }
 
   @GetMapping("/api/trust-investments/{investmentId}")

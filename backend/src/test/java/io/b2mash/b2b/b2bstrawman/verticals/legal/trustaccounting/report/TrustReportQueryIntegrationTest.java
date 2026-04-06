@@ -185,7 +185,9 @@ class TrustReportQueryIntegrationTest {
                         new BigDecimal("0.0650"),
                         LocalDate.of(2025, 5, 1),
                         LocalDate.of(2025, 11, 1),
-                        "6-month fixed deposit for report test")));
+                        "6-month fixed deposit for report test",
+                        io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.InvestmentBasis
+                            .FIRM_DISCRETION)));
 
     // Create a reconciliation directly via repository (API requires bank statement upload)
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)

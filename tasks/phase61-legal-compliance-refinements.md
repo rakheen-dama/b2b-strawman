@@ -27,7 +27,7 @@ Phase 61 closes two compliance gaps identified in the Phase 60 trust accounting 
 | 454 | Investment Register Report + Section 35 Data Pack Updates | Backend | 453 | S | 454A | **Done** (PR #959) |
 | 455 | Frontend: Investment Form + Register + Interest Table Updates | Frontend | 453 | M | 455A | **Done** (PR #960) |
 | 456 | KYC Adapter Infrastructure: Port, Adapters, Service | Backend | 452 | M | 456A, 456B | **Done** (PR #961) |
-| 457 | KYC Controller + ChecklistInstanceItem Extension | Backend | 456 | S | 457A | |
+| 457 | KYC Controller + ChecklistInstanceItem Extension | Backend | 456 | S | 457A | **Done** (PR #962) |
 | 458 | Frontend: KYC Verification Dialog + Checklist Integration | Frontend | 457 | M | 458A, 458B | |
 
 ---
@@ -128,7 +128,7 @@ Phase 21 (BYOAK integration infrastructure exists)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 3a (parallel) | 454 | 454A | Extend investment register report data provider (basis column + LPFF rate per investment). Update Section 35 data pack to separate 86(3) and 86(4) investments. Integration tests (~8). Backend only. | **Done** (PR #959) |
-| 3b (parallel) | 457 | 457A | `KycVerificationController` with 3 endpoints: `POST /api/kyc/verify`, `GET /api/kyc/result/{ref}`, `GET /api/integrations/kyc/status`. Controller integration tests (~6). Backend only. | |
+| 3b (parallel) | 457 | 457A | `KycVerificationController` with 3 endpoints: `POST /api/kyc/verify`, `GET /api/kyc/result/{ref}`, `GET /api/integrations/kyc/status`. Controller integration tests (~6). Backend only. | **Done** (PR #962) |
 
 ### Stage 4: Frontend Investment + Frontend KYC (parallel tracks)
 
@@ -468,7 +468,7 @@ Stage 5:  [458B]                                             <- KYC settings car
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **457A** | 457.1--457.5 | `KycVerificationController` with 3 endpoints: `POST /api/kyc/verify`, `GET /api/kyc/result/{ref}`, `GET /api/integrations/kyc/status`. Request/response DTOs. `@RequiresCapability` on all endpoints. Controller integration tests (~6). Backend only. | |
+| **457A** | 457.1--457.5 | `KycVerificationController` with 3 endpoints: `POST /api/kyc/verify`, `GET /api/kyc/result/{ref}`, `GET /api/integrations/kyc/status`. Request/response DTOs. `@RequiresCapability` on all endpoints. Controller integration tests (~6). Backend only. | **Done** (PR #962) |
 
 ### Tasks
 

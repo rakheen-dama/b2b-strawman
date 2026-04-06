@@ -51,6 +51,66 @@ describe("terminology", () => {
     expect(t("Rate Cards")).toBe("Fee Schedules");
   });
 
+  // 465.2 — legal-za unit tests
+  it("t('Invoice') returns 'Fee Note' for legal-za", () => {
+    const t = makeTFn("legal-za");
+    expect(t("Invoice")).toBe("Fee Note");
+  });
+
+  it("t('Expense') returns 'Disbursement' for legal-za", () => {
+    const t = makeTFn("legal-za");
+    expect(t("Expense")).toBe("Disbursement");
+  });
+
+  it("t('Retainer') returns 'Mandate' for legal-za", () => {
+    const t = makeTFn("legal-za");
+    expect(t("Retainer")).toBe("Mandate");
+  });
+
+  it("t('Budget') returns 'Fee Estimate' for legal-za", () => {
+    const t = makeTFn("legal-za");
+    expect(t("Budget")).toBe("Fee Estimate");
+  });
+
+  it("t('Task') returns 'Action Item' for legal-za", () => {
+    const t = makeTFn("legal-za");
+    expect(t("Task")).toBe("Action Item");
+  });
+
+  // 465.2 — all case variants for legal-za
+  it("all case variants map correctly for legal-za", () => {
+    const t = makeTFn("legal-za");
+    expect(t("Project")).toBe("Matter");
+    expect(t("Projects")).toBe("Matters");
+    expect(t("project")).toBe("matter");
+    expect(t("projects")).toBe("matters");
+    expect(t("Task")).toBe("Action Item");
+    expect(t("Tasks")).toBe("Action Items");
+    expect(t("task")).toBe("action item");
+    expect(t("tasks")).toBe("action items");
+    expect(t("Customer")).toBe("Client");
+    expect(t("Customers")).toBe("Clients");
+    expect(t("customer")).toBe("client");
+    expect(t("customers")).toBe("clients");
+    expect(t("Invoice")).toBe("Fee Note");
+    expect(t("Invoices")).toBe("Fee Notes");
+    expect(t("invoice")).toBe("fee note");
+    expect(t("invoices")).toBe("fee notes");
+    expect(t("Expense")).toBe("Disbursement");
+    expect(t("Expenses")).toBe("Disbursements");
+    expect(t("expense")).toBe("disbursement");
+    expect(t("expenses")).toBe("disbursements");
+    expect(t("Retainer")).toBe("Mandate");
+    expect(t("Retainers")).toBe("Mandates");
+    expect(t("retainer")).toBe("mandate");
+    expect(t("retainers")).toBe("mandates");
+    expect(t("Budget")).toBe("Fee Estimate");
+    expect(t("Time Entry")).toBe("Time Recording");
+    expect(t("Time Entries")).toBe("Time Recordings");
+    expect(t("Rate Card")).toBe("Tariff Schedule");
+    expect(t("Rate Cards")).toBe("Tariff Schedules");
+  });
+
   // 364.5 — Integration test: provider in component tree
   it("useTerminology hook returns correct t() when consumed inside TerminologyProvider", () => {
     function TestConsumer() {

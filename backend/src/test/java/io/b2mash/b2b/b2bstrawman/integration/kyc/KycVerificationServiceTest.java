@@ -227,6 +227,63 @@ class KycVerificationServiceTest {
   }
 
   @Test
+  void checklistItemBelongingToDifferentCustomerThrowsResourceNotFoundException() {
+    // Create a second customer and a checklist item belonging to it
+    var otherCustomerId = new UUID[1];
+    var otherItemId = new UUID[1];
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var otherCustomer =
+                      customerRepository.saveAndFlush(
+                          createActiveCustomer("Other Corp", "other_kyc@test.com", memberId));
+                  otherCustomerId[0] = otherCustomer.getId();
+
+                  // Create a checklist item belonging to the other customer
+                  int idx = counter.incrementAndGet();
+                  var template =
+                      new ChecklistTemplate(
+                          "Other Template " + idx,
+                          "Template for other customer",
+                          "other-kyc-" + idx + "-" + UUID.randomUUID().toString().substring(0, 8),
+                          "ANY",
+                          "CUSTOM",
+                          false);
+                  template = checklistTemplateRepository.saveAndFlush(template);
+                  var templateItem =
+                      new ChecklistTemplateItem(template.getId(), "Other FICA", 1, true);
+                  templateItem = checklistTemplateItemRepository.saveAndFlush(templateItem);
+                  var instance =
+                      new ChecklistInstance(template.getId(), otherCustomerId[0], Instant.now());
+                  instance = checklistInstanceRepository.saveAndFlush(instance);
+                  var item =
+                      new ChecklistInstanceItem(
+                          instance.getId(),
+                          templateItem.getId(),
+                          "Other FICA " + idx,
+                          "Verify identity",
+                          1,
+                          true,
+                          false,
+                          null);
+                  item = checklistInstanceItemRepository.saveAndFlush(item);
+                  otherItemId[0] = item.getId();
+                }));
+
+    // Try to verify the other customer's item using the first customer's ID — should fail
+    runInTenant(
+        () -> {
+          var request = new KycVerificationRequest("9001015009087", "John Doe", null, "SA_ID");
+          assertThatThrownBy(
+                  () ->
+                      kycVerificationService.verifyIdentity(
+                          customerId, otherItemId[0], request, true, memberId))
+              .isInstanceOf(ResourceNotFoundException.class);
+        });
+  }
+
+  @Test
   void checklistItemNotFoundThrowsResourceNotFoundException() {
     runInTenant(
         () -> {

@@ -1,5 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.integration.kyc;
 
+import jakarta.validation.constraints.NotBlank;
+
 /**
  * Request payload for a KYC identity verification check.
  *
@@ -9,4 +11,7 @@ package io.b2mash.b2b.b2bstrawman.integration.kyc;
  * @param idDocumentType document type: "SA_ID", "SMART_ID", or "PASSPORT"
  */
 public record KycVerificationRequest(
-    String idNumber, String fullName, String dateOfBirth, String idDocumentType) {}
+    @NotBlank(message = "ID number is required") String idNumber,
+    @NotBlank(message = "Full name is required") String fullName,
+    String dateOfBirth,
+    String idDocumentType) {}

@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.integration.kyc;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceItemRepository;
+import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.IntegrationDomain;
@@ -28,16 +29,19 @@ public class KycVerificationService {
 
   private final IntegrationRegistry integrationRegistry;
   private final ChecklistInstanceItemRepository checklistInstanceItemRepository;
+  private final ChecklistInstanceRepository checklistInstanceRepository;
   private final AuditService auditService;
   private final OrgIntegrationRepository orgIntegrationRepository;
 
   public KycVerificationService(
       IntegrationRegistry integrationRegistry,
       ChecklistInstanceItemRepository checklistInstanceItemRepository,
+      ChecklistInstanceRepository checklistInstanceRepository,
       AuditService auditService,
       OrgIntegrationRepository orgIntegrationRepository) {
     this.integrationRegistry = integrationRegistry;
     this.checklistInstanceItemRepository = checklistInstanceItemRepository;
+    this.checklistInstanceRepository = checklistInstanceRepository;
     this.auditService = auditService;
     this.orgIntegrationRepository = orgIntegrationRepository;
   }
@@ -78,6 +82,16 @@ public class KycVerificationService {
                 () ->
                     new ResourceNotFoundException(
                         "ChecklistInstanceItem", checklistInstanceItemId));
+
+    // 2b. Verify checklist item belongs to the specified customer
+    var instance =
+        checklistInstanceRepository
+            .findById(item.getInstanceId())
+            .orElseThrow(
+                () -> new ResourceNotFoundException("ChecklistInstance", item.getInstanceId()));
+    if (!instance.getCustomerId().equals(customerId)) {
+      throw new ResourceNotFoundException("ChecklistInstanceItem", checklistInstanceItemId);
+    }
 
     // 3. Resolve the KYC adapter for the tenant
     var adapter =

@@ -41,18 +41,20 @@ public class CheckIdKycAdapter implements KycVerificationPort {
   @Override
   public KycVerificationResult verify(KycVerificationRequest request) {
     try {
-      var apiKey = resolveApiKey();
       log.info(
           "CheckId: performing format validation for idDocumentType={}", request.idDocumentType());
 
       var providerReference = "CID-" + UUID.randomUUID();
-      var metadata = new LinkedHashMap<String, String>();
+      var metadata = new LinkedHashMap<String, Object>();
 
       // Extract embedded data from SA ID number (YYMMDD SSSS C A Z)
       if (request.idNumber() != null && request.idNumber().length() == 13) {
         var idNum = request.idNumber();
+        // SA ID convention: YY > 25 assumed 1900s, YY <= 25 assumed 2000s
+        int yy = Integer.parseInt(idNum.substring(0, 2));
+        var centuryPrefix = yy > 25 ? "19" : "20";
         var birthDate =
-            "19"
+            centuryPrefix
                 + idNum.substring(0, 2)
                 + "-"
                 + idNum.substring(2, 4)

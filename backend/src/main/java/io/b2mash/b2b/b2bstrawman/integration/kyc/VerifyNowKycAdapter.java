@@ -38,9 +38,7 @@ public class VerifyNowKycAdapter implements KycVerificationPort {
     try {
       var apiKey = resolveApiKey();
       log.info(
-          "VerifyNow: initiating verification for idDocumentType={}, fullName={}",
-          request.idDocumentType(),
-          request.fullName());
+          "VerifyNow: initiating verification for idDocumentType={}", request.idDocumentType());
 
       // POST /verifications — submit verification request
       // In a real implementation this would be an HTTP call to VerifyNow's API.

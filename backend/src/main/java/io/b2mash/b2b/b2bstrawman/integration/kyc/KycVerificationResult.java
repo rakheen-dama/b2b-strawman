@@ -21,4 +21,4 @@ public record KycVerificationResult(
     String reasonCode,
     String reasonDescription,
     Instant verifiedAt,
-    Map<String, String> metadata) {}
+    Map<String, Object> metadata) {}

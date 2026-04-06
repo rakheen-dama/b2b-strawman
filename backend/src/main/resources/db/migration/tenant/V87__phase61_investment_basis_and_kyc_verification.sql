@@ -36,6 +36,8 @@ ALTER TABLE checklist_instance_items
 ALTER TABLE checklist_instance_items
     ADD COLUMN IF NOT EXISTS verification_metadata JSONB;
 
+-- ERROR status is deliberately excluded from the DB constraint: the service never persists
+-- ERROR to the checklist item (errors are returned to the caller without updating the item).
 DO $$ BEGIN
     ALTER TABLE checklist_instance_items
         ADD CONSTRAINT chk_verification_status

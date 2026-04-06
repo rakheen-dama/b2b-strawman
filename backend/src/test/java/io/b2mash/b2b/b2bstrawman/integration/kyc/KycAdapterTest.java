@@ -85,6 +85,19 @@ class KycAdapterTest {
   }
 
   @Test
+  void checkId_extractsYear2000sBirthDateCorrectly() {
+    when(secretStore.retrieve(anyString())).thenReturn("test-api-key");
+    var adapter = new CheckIdKycAdapter(secretStore);
+    // ID starting with 0501... => born 2005-01-15 (YY=05 <= 25 => 2000s)
+    var request = new KycVerificationRequest("0501155009087", "Young Person", null, "SA_ID");
+
+    var result = adapter.verify(request);
+
+    assertThat(result.metadata()).containsEntry("extracted_birth_date", "2005-01-15");
+    assertThat(result.metadata()).containsEntry("format_valid", "true");
+  }
+
+  @Test
   void checkId_marksFormatInvalidForShortIdNumber() {
     when(secretStore.retrieve(anyString())).thenReturn("test-api-key");
     var adapter = new CheckIdKycAdapter(secretStore);

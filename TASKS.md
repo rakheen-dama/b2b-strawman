@@ -511,7 +511,7 @@
 | 450 | Frontend: Interest + Investments + Reports Pages | Frontend | 445, 446, 447 | M | 450A, 450B | **Done** (PRs #951, #952) |
 | 451 | Frontend: Matter/Customer Trust Tabs + Settings + Sidebar + Coexistence Tests | Frontend | 448, 449, 450 | M | 451A, 451B | **Done** (PRs #954, #956) |
 | **Phase 61 — Legal Compliance Refinements: Section 86 Investment Distinction & KYC Verification** | | | | | | See [tasks/phase61-legal-compliance-refinements.md](tasks/phase61-legal-compliance-refinements.md) |
-| 452 | Foundation: V86 Migration + InvestmentBasis Enum + TrustAccountingConstants | Backend | -- | S | 452A | |
+| 452 | Foundation: V86 Migration + InvestmentBasis Enum + TrustAccountingConstants | Backend | -- | S | 452A | **Done** (PR #957) |
 | 453 | Interest Calculation Basis Distinction + Audit Trail | Backend | 452 | M | 453A, 453B | |
 | 454 | Investment Register Report + Section 35 Data Pack Updates | Backend | 453 | S | 454A | |
 | 455 | Frontend: Investment Form + Register + Interest Table Updates | Frontend | 453 | M | 455A | |

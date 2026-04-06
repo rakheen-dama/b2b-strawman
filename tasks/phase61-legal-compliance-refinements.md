@@ -22,7 +22,7 @@ Phase 61 closes two compliance gaps identified in the Phase 60 trust accounting 
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 452 | Foundation: V86 Migration + InvestmentBasis Enum + TrustAccountingConstants | Backend | -- (Phase 60 complete) | S | 452A | |
+| 452 | Foundation: V86 Migration + InvestmentBasis Enum + TrustAccountingConstants | Backend | -- (Phase 60 complete) | S | 452A | **Done** (PR #957) |
 | 453 | Interest Calculation Basis Distinction + Audit Trail | Backend | 452 | M | 453A, 453B | |
 | 454 | Investment Register Report + Section 35 Data Pack Updates | Backend | 453 | S | 454A | |
 | 455 | Frontend: Investment Form + Register + Interest Table Updates | Frontend | 453 | M | 455A | |
@@ -107,7 +107,7 @@ Phase 21 (BYOAK integration infrastructure exists)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 0a | 452 | 452A | V86 tenant migration (`investment_basis` column on `trust_investments`, 5 verification columns on `checklist_instance_items`, `lpff_rate_id` + `statutory_rate_applied` on `interest_allocations`). `InvestmentBasis` enum. `TrustAccountingConstants` class with `STATUTORY_LPFF_SHARE_PERCENT`. Unit tests (~3). Backend only. | |
+| 0a | 452 | 452A | V86 tenant migration (`investment_basis` column on `trust_investments`, 5 verification columns on `checklist_instance_items`, `lpff_rate_id` + `statutory_rate_applied` on `interest_allocations`). `InvestmentBasis` enum. `TrustAccountingConstants` class with `STATUTORY_LPFF_SHARE_PERCENT`. Unit tests (~3). Backend only. | **Done** (PR #957) |
 
 ### Stage 1: Investment Basis Logic + KYC Port/Adapters (parallel tracks)
 
@@ -172,7 +172,7 @@ Stage 5:  [458B]                                             <- KYC settings car
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **452A** | 452.1--452.5 | V86 tenant migration (ALTER TABLE for investment_basis + 5 checklist verification columns + 2 interest_allocations audit columns + CHECK constraints). `InvestmentBasis` enum. `TrustAccountingConstants` class with `STATUTORY_LPFF_SHARE_PERCENT = 0.05`. Unit tests (~3). Backend only. | |
+| **452A** | 452.1--452.5 | V86 tenant migration (ALTER TABLE for investment_basis + 5 checklist verification columns + 2 interest_allocations audit columns + CHECK constraints). `InvestmentBasis` enum. `TrustAccountingConstants` class with `STATUTORY_LPFF_SHARE_PERCENT = 0.05`. Unit tests (~3). Backend only. | **Done** (PR #957) |
 
 ### Tasks
 

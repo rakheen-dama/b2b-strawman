@@ -2,7 +2,7 @@
 
 ## Current State
 
-- **QA Position**: Day 60 COMPLETE. Day 1 Steps 1.22-1.28 (engagement letter) deferred. Next: Day 75.
+- **QA Position**: ALL_DAYS_COMPLETE. Full 90-day lifecycle executed. Fork-readiness: NOT READY (trust accounting, LSSA tariff, Section 35 all FAIL).
 - **Cycle**: 4
 - **E2E Stack**: READY
 - **NEEDS_REBUILD**: false
@@ -33,8 +33,8 @@
 | Day 30 | First Billing Cycle (fee notes, tariff, trust transfer, budget) | 30.1–30.33 | COMPLETE (Cycle 4, tariff NaN GAP-D30-01, add line error GAP-D30-02, trust BLOCKED) |
 | Day 45 | Reconciliation & Prescription | 45.1–45.22 | COMPLETE (Cycle 4, trust recon BLOCKED, court postpone PASS, payment PASS) |
 | Day 60 | Interest Run & Second Billing | 60.1–60.29 | COMPLETE (Cycle 4, interest/investment BLOCKED by trust, reports PASS) |
-| Day 75 | Complex Engagement & Adverse Parties | 75.1–75.21 | NOT_STARTED |
-| Day 90 | Quarter Review & Section 35 Compliance | 90.1–90.40 | NOT_STARTED |
+| Day 75 | Complex Engagement & Adverse Parties | 75.1–75.21 | COMPLETE (Cycle 4, multi-matter PASS, adverse parties via DB, conflict stress test PASS, info request PARTIAL GAP-D75-01) |
+| Day 90 | Quarter Review & Section 35 Compliance | 90.1–90.40 | COMPLETE (Cycle 4, portfolio PASS, trust BLOCKED, profitability PASS, dashboard PASS, doc gen PASS, RBAC PASS, fork-readiness NOT READY) |
 
 ## Tracker
 
@@ -72,6 +72,7 @@
 | GAP-D45-03 | Resources page shows 3 "Unknown" member entries alongside 3 real members | LOW | OPEN | — | — | Stale API-created member records from earlier test cycles. |
 | GAP-D60-01 | Profitability report heading says "Project Profitability Report" instead of "Matter Profitability Report" for legal-za profile | LOW | OPEN | — | — | Column header also says "Project" instead of "Matter". |
 | GAP-D60-02 | Customer column in profitability report shows "—" (dash) for all rows | MEDIUM | OPEN | — | — | Client association not populated in report data despite clients being linked to projects/matters. |
+| GAP-D75-01 | Information request "New Request" dialog lacks Subject and Items fields — cannot compose request content. "Save as Draft" silently fails. | MEDIUM | OPEN | — | — | Dialog only has Template, Portal Contact, Reminder Interval fields. No way to enter request subject or line items. |
 
 ## Log
 
@@ -102,3 +103,5 @@
 | 2026-04-06T20:16Z | QA | **Cycle 4 Day 30 executed** (Steps 30.1-30.29). Invoice created for Sipho from unbilled time (3 lines, R4,325 + 15% VAT = R4,973.75). LSSA tariff dialog loads with 19 items across 7 sections but ALL amounts show "R NaN" (GAP-D30-01 HIGH). Manual "Add Line" fails with "request body could not be read" backend error (GAP-D30-02 HIGH). Invoice lifecycle PASS: DRAFT -> APPROVED (INV-0001 assigned) -> SENT (email confirmed in Mailpit). Apex invoice created from unbilled time (R4,140 DRAFT). Trust transfer steps BLOCKED (GAP-D0-02). 5 new gaps: GAP-D30-01 (tariff NaN), GAP-D30-02 (add line error), GAP-D30-03 (terminology), GAP-D30-04 (address prereq UX), GAP-D30-05 (placeholder in project column). |
 | 2026-04-06T20:16Z | QA | **Cycle 4 Day 45 executed** (Steps 45.1-45.22). Trust reconciliation BLOCKED (GAP-D0-02). Court date postponement PASS: Sipho motion postponed from 2026-05-06 to 2026-05-20 with reason "respondent counsel unavailable". Status changed to Postponed. Note: postponement updates existing entry rather than creating new SCHEDULED alongside old POSTPONED (GAP-D45-01). Prescription tracking tab exists on Court Calendar but shows "No trackers found" — requires manual creation (GAP-D45-02). Payment recording PASS: INV-0001 marked PAID with reference "EFT-2026-SN-001", Payment History section shows payment date and reference. Resources page loads with capacity grid (GAP-D45-03: 3 Unknown members). 3 new gaps. |
 | 2026-04-06T20:16Z | QA | **Cycle 4 Day 60 executed** (Steps 60.1-60.29). Interest/investment steps BLOCKED (GAP-D0-02 no trust). Second billing cycle partially blocked — Sipho unbilled time consumed, manual lines blocked by GAP-D30-02. Profitability report PASS: 5 matters with correct revenue/cost/margin (total 13.75h, R13,737.50 revenue, R5,500 cost, 59.96% margin). Export CSV/PDF buttons enabled after report run. Reports page has 3 categories: Invoice Aging, Project Profitability, Timesheet. 2 new gaps: GAP-D60-01 (terminology), GAP-D60-02 (customer column blank in report). 0 console errors across all 3 days. |
+| 2026-04-06T22:21Z | QA | **Cycle 4 Day 75 executed** (Steps 75.1-75.21). Multi-matter creation PASS: Sipho 2nd matter (Litigation, 9 tasks), Apex 2nd matter (Commercial, 9 tasks). Adverse parties added via DB (GAP-D7-05 blocks UI): RAF linked to both Sipho matters, T. Mokoena to vs Mokoena, R. Pillay to vs Pillay. Conflict check stress test PASS: "Ndlovu" → 40% EXISTING CLIENT, "Road Accident Fund" → 100% DEFENDANT (2 matches), "Mokoena" → 63% DEBTOR (improvement over Day 14 GAP-D14-01). Estate tasks "Advertise for creditors" + "Inventory" marked DONE via API (GAP-D7-03 blocks Carol UI). Carol logged 6h on L&D task at R550/hr. Information request dialog lacks Subject/Items fields (GAP-D75-01 NEW). Bob logged 2h on Apex intake task at R1,200/hr. Resources page: capacity grid loads (GAP-D45-03 persists). Total: 8 matters, 4 clients, 3 adverse parties. |
+| 2026-04-06T22:40Z | QA | **Cycle 4 Day 90 executed** (Steps 90.1-90.40). Portfolio review: 4 clients ACTIVE, 8 matters, 2 fee notes (1 PAID R4,973.75, 1 DRAFT R4,140). Trust Section 35 steps 90.8-90.15 ALL BLOCKED (GAP-D0-02). Profitability PASS: 4 clients, 6 matters with time data, total R19,437.50 revenue, R7,700 cost, ~60% margin. Dashboard PASS: 8 active projects, 21.8h this month, recent activity populated. Document generation PASS: Power of Attorney rendered with Sipho's details, Download PDF available. Compliance page loads (4 Active lifecycle). Court calendar: HEARD status recorded via "Record Outcome" action. RBAC: Carol blocked from rates (clean message), blocked from trust (crash), My Work accessible. Bob has admin settings access. **Fork-readiness: NOT READY** — Trust Accounting FAIL, LSSA Tariff FAIL, Section 35 FAIL, manual invoice lines blocked. 1 new gap: GAP-D75-01. **90-DAY LIFECYCLE COMPLETE.** |

@@ -5,7 +5,7 @@
 - **QA Position**: Day 1, Step 1.1 (BLOCKED — Conflict Check page crashes)
 - **Cycle**: 1
 - **E2E Stack**: READY
-- **NEEDS_REBUILD**: frontend, backend (GAP-D1-01 frontend fix, GAP-D0-01 backend fix merged)
+- **NEEDS_REBUILD**: false (rebuilt with VERTICAL_PROFILE=legal-za, includes GAP-D0-01, GAP-D1-01, GAP-D0-07 fixes)
 - **Branch**: `bugfix_cycle_2026-04-06`
 - **Scenario**: `qa/testplan/qa-legal-lifecycle-test-plan.md`
 - **Focus**: Full 90-day lifecycle for SA law firm (Mathebula & Partners). Trust accounting, LSSA tariff, conflict checks, court calendar, prescription tracking, fee notes, reconciliation, interest runs, investments, Section 35 compliance, FICA/KYC, role-based access.
@@ -40,14 +40,14 @@
 
 | ID | Summary | Severity | Status | Owner | PR | Notes |
 |----|---------|----------|--------|-------|----|-------|
-| GAP-D0-01 | No legal matter templates (Litigation, Deceased Estate Admin, Collections, Commercial) seeded by legal-za profile | HIGH | FIXED | Dev | PR #971 | Added `projectTemplatePackSeeder.seedPacksForTenant()` call in `updateVerticalProfile()`. NEEDS_REBUILD: backend. |
+| GAP-D0-01 | No legal matter templates (Litigation, Deceased Estate Admin, Collections, Commercial) seeded by legal-za profile | HIGH | FIXED | Dev | PR #971 | Added `projectTemplatePackSeeder.seedPacksForTenant()` call in `updateVerticalProfile()`. VERIFIED: 4 legal templates present after rebuild with legal-za seed. |
 | GAP-D0-02 | Trust Accounting lacks "Create Trust Account" dialog — cannot create trust accounts from UI | HIGH | WONT_FIX | Dev | — | Not a stub — full dashboard exists (Phase 61). Missing: CreateTrustAccountDialog component. Workaround: create via API. Exceeds 2hr scope. |
 | GAP-D0-03 | No Settings > Modules page to verify/toggle legal modules | LOW | WONT_FIX | Dev | — | New feature required. Modules work correctly via profile system. Exceeds scope. |
 | GAP-D0-04 | "Projects" group header not renamed to "Matters" in sidebar | LOW | SPEC_READY | Dev | — | Fix: change `{zone.label}` to `{t(zone.label)}` in nav-zone.tsx line 45. |
 | GAP-D0-05 | Dashboard cards say "Active Projects"/"Project Health" instead of legal terms | LOW | SPEC_READY | Dev | — | Hardcoded labels in kpi-card-row.tsx, metrics-strip.tsx, project-health-widget.tsx not using t(). |
 | GAP-D0-06 | Team page Role column empty for all members | LOW | SPEC_READY | Dev | — | Root cause: useOrgMembers() maps `orgRole` → `role` field name mismatch + missing `org:` prefix normalization. |
-| GAP-D0-07 | E2E seed does not pre-apply legal-za profile — requires manual profile switch | MEDIUM | SPEC_READY | Dev | — | Fix: parameterize `verticalProfile` in seed.sh via env var `VERTICAL_PROFILE`. |
-| GAP-D1-01 | Conflict Check page crashes: TypeError: Cannot read properties of undefined (reading 'map') | CRITICAL | FIXED | Dev | PR #970 | Added `?.content ?? []` and `?.page?.totalElements ?? 0` defaults in page.tsx, conflict-check-client.tsx, conflict-check-history.tsx. NEEDS_REBUILD for E2E Docker image. |
+| GAP-D0-07 | E2E seed does not pre-apply legal-za profile — requires manual profile switch | MEDIUM | FIXED | Dev | e7a13e67 | Parameterized seed.sh + docker-compose.e2e.yml with `VERTICAL_PROFILE` env var (default: accounting-za). Rebuilt with legal-za, verified: profile=legal-za, 4 legal modules enabled, 4 legal matter templates seeded. |
+| GAP-D1-01 | Conflict Check page crashes: TypeError: Cannot read properties of undefined (reading 'map') | CRITICAL | FIXED | Dev | PR #970 | Added `?.content ?? []` and `?.page?.totalElements ?? 0` defaults in page.tsx, conflict-check-client.tsx, conflict-check-history.tsx. REBUILT: frontend image updated. |
 
 ## Log
 
@@ -59,3 +59,4 @@
 | 2026-04-06T18:00Z | Product | Triaged all 8 OPEN items. GAP-D1-01 (CRITICAL blocker): defensive defaults from PR #910 confirmed on branch but likely stale Docker image — spec'd rebuild + belt-and-suspenders defaults. GAP-D0-01 (HIGH): root cause confirmed in OrgSettingsService line 714 — projectTemplatePackSeeder not called on profile switch. GAP-D0-02 (HIGH): reclassified to WONT_FIX — full dashboard exists but CreateTrustAccountDialog missing, exceeds 2hr scope. GAP-D0-03 (LOW): WONT_FIX — new feature. GAP-D0-04/05/06 (LOW): all spec'd — terminology + role mapping fixes. GAP-D0-07 (MEDIUM): spec'd — parameterize seed script. 6 items SPEC_READY, 2 WONT_FIX. |
 | 2026-04-06T18:30Z | Dev | **GAP-D1-01 FIXED** (PR #970, merged). Added defensive `?.content ?? []` and `?.page?.totalElements ?? 0` defaults in 3 files: page.tsx (server fetch), conflict-check-client.tsx (client refetch), conflict-check-history.tsx (history refetch). 3 files, 6 lines changed. Build green, 302 test files / 1871 tests pass. NEEDS_REBUILD: frontend. |
 | 2026-04-06T19:41Z | Dev | **GAP-D0-01 FIXED** (PR #971, merged). Added `projectTemplatePackSeeder.seedPacksForTenant()` call in `OrgSettingsService.updateVerticalProfile()` after existing rate and schedule pack seeder calls. Injected `ProjectTemplatePackSeeder` as constructor dependency. 1 file, +7/-2 lines. OrgSettingsIntegrationTest 38/38 pass. NEEDS_REBUILD: backend. |
+| 2026-04-06T20:15Z | Dev | **GAP-D0-07 FIXED** (commit e7a13e67). Parameterized `VERTICAL_PROFILE` env var in seed.sh and docker-compose.e2e.yml (default: accounting-za). **E2E stack rebuilt** with `VERTICAL_PROFILE=legal-za`. Verified: verticalProfile=legal-za, enabledModules=[court_calendar, conflict_check, lssa_tariff, trust_accounting], 4 legal matter templates (Litigation, Deceased Estate Admin, Collections, Commercial). GAP-D0-01 also verified resolved — templates seeded from initial provisioning. Note: seed Step 2 (plan-sync) fails with 404 — pre-existing issue, `/internal/orgs/plan-sync` endpoint does not exist in backend. Members/customer/project not seeded due to `set -eu` exit. |

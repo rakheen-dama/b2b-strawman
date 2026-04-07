@@ -60,7 +60,7 @@ vi.mock("@/app/(app)/org/[slug]/legal/tariffs/actions", () => ({
       itemNumber: "1(a)",
       description: "Instructions to institute action",
       unit: "PER_ITEM",
-      rateInCents: 85000,
+      amount: 850.00,
       notes: null,
       createdAt: "2026-01-01T00:00:00Z",
       updatedAt: "2026-01-01T00:00:00Z",

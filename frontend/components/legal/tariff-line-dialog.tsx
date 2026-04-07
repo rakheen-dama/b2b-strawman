@@ -25,8 +25,8 @@ interface SelectedItem {
   quantity: number;
 }
 
-function formatZAR(rateInCents: number): string {
-  return `R ${(rateInCents / 100).toFixed(2)}`;
+function formatZAR(amount: number): string {
+  return `R ${amount.toFixed(2)}`;
 }
 
 interface TariffLineDialogProps {
@@ -114,7 +114,7 @@ export function TariffLineDialog({
   }
 
   const totalAmount = Array.from(selectedItems.values()).reduce(
-    (sum, { item, quantity }) => sum + item.rateInCents * quantity,
+    (sum, { item, quantity }) => sum + item.amount * quantity,
     0,
   );
 
@@ -128,8 +128,7 @@ export function TariffLineDialog({
         const result = await addLineItem(slug, invoiceId, customerId, {
           description: `${item.itemNumber} - ${item.description}`,
           quantity,
-          unitPrice: item.rateInCents / 100,
-          lineType: "TARIFF",
+          unitPrice: item.amount,
           tariffItemId: item.id,
         });
         if (!result.success) {
@@ -213,7 +212,7 @@ export function TariffLineDialog({
                       {item.itemNumber} - {item.description}
                     </span>
                     <Badge variant="neutral" className="shrink-0 text-xs">
-                      {formatZAR(item.rateInCents)}
+                      {formatZAR(item.amount)}
                     </Badge>
                     <span className="shrink-0 text-slate-500">&times;</span>
                     <Input

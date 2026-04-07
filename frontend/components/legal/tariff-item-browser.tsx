@@ -23,8 +23,8 @@ const UNIT_LABELS: Record<string, string> = {
   PER_DAY: "Per Day",
 };
 
-function formatZAR(rateInCents: number): string {
-  return `R ${(rateInCents / 100).toFixed(2)}`;
+function formatZAR(amount: number): string {
+  return `R ${amount.toFixed(2)}`;
 }
 
 /** Group items by a simple section heuristic: first word(s) of itemNumber or description prefix */
@@ -192,7 +192,7 @@ export function TariffItemBrowser({
                           {UNIT_LABELS[item.unit] ?? item.unit}
                         </Badge>
                         <span className="shrink-0 font-medium text-slate-900 dark:text-slate-100">
-                          {formatZAR(item.rateInCents)}
+                          {formatZAR(item.amount)}
                         </span>
                       </div>
                     );

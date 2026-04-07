@@ -80,4 +80,23 @@ public interface ProjectRepository extends JpaRepository<Project, UUID> {
   /** Batch-loads projects for multiple customers in a single query. */
   @Query("SELECT p FROM Project p WHERE p.customerId IN :customerIds ORDER BY p.createdAt DESC")
   List<Project> findByCustomerIdIn(@Param("customerIds") Collection<UUID> customerIds);
+
+  /**
+   * Fuzzy and substring name search for conflict checking. Matches projects where the search term
+   * appears as a substring (case-insensitive) OR has pg_trgm similarity above the threshold. This
+   * dual approach catches both exact substring matches (e.g., "Mokoena" in "vs Mokoena") and fuzzy
+   * matches (e.g., "Mokwena" vs "Mokoena").
+   */
+  @Query(
+      value =
+          "SELECT * FROM projects"
+              + " WHERE lower(name) LIKE '%' || lower(:name) || '%'"
+              + " OR public.similarity(lower(name), lower(:name)) > :threshold"
+              + " ORDER BY public.similarity(lower(name), lower(:name)) DESC"
+              + " LIMIT :maxResults",
+      nativeQuery = true)
+  List<Project> findBySimilarName(
+      @Param("name") String name,
+      @Param("threshold") double threshold,
+      @Param("maxResults") int maxResults);
 }

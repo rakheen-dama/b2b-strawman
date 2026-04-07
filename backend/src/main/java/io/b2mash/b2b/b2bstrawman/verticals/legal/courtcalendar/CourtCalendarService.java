@@ -241,33 +241,51 @@ public class CourtCalendarService {
   public CourtDateResponse postponeCourtDate(UUID id, PostponeRequest request) {
     moduleGuard.requireModule(MODULE_ID);
 
-    var courtDate =
+    var original =
         courtDateRepository
             .findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("CourtDate", id));
 
-    validateTransition(courtDate.getStatus(), "POSTPONED");
+    validateTransition(original.getStatus(), "POSTPONED");
 
-    courtDate.setScheduledDate(request.newDate());
-    courtDate.setStatus("POSTPONED");
+    // 1. Mark original as POSTPONED (keep original date)
+    original.setStatus("POSTPONED");
     if (request.reason() != null && !request.reason().isBlank()) {
-      courtDate.setOutcome("Postponed: " + request.reason());
+      original.setOutcome("Postponed: " + request.reason());
     }
-    courtDate.setUpdatedAt(Instant.now());
+    original.setUpdatedAt(Instant.now());
+    courtDateRepository.save(original);
 
-    var saved = courtDateRepository.save(courtDate);
+    // 2. Create new SCHEDULED entry with the new date
+    var newCourtDate =
+        new CourtDate(
+            original.getProjectId(),
+            original.getCustomerId(),
+            original.getDateType(),
+            request.newDate(),
+            original.getScheduledTime(),
+            original.getCourtName(),
+            original.getCourtReference(),
+            original.getJudgeMagistrate(),
+            "Rescheduled from " + original.getScheduledDate(),
+            original.getReminderDays(),
+            original.getCreatedBy());
+
+    var saved = courtDateRepository.save(newCourtDate);
 
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("court_date.postponed")
             .entityType("court_date")
-            .entityId(saved.getId())
+            .entityId(original.getId())
             .details(
                 Map.of(
                     "new_date",
                     request.newDate().toString(),
                     "reason",
-                    request.reason() != null ? request.reason() : ""))
+                    request.reason() != null ? request.reason() : "",
+                    "new_entry_id",
+                    saved.getId().toString()))
             .build());
 
     return toResponse(saved);

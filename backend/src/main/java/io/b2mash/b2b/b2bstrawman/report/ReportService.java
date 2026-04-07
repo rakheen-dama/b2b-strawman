@@ -261,10 +261,18 @@ public class ReportService {
             .distinct()
             .toList();
     for (var projectId : allProjectIds) {
+      // First try CustomerProject links (many-to-many join table)
       var links = customerProjectRepository.findByProjectId(projectId);
       if (!links.isEmpty()) {
         var customer = customerRepository.findById(links.getFirst().getCustomerId());
         customer.ifPresent(c -> customerNameByProject.put(projectId, c.getName()));
+      } else {
+        // Fallback: check direct customerId on the Project entity
+        projectRepository
+            .findById(projectId)
+            .filter(p -> p.getCustomerId() != null)
+            .flatMap(p -> customerRepository.findById(p.getCustomerId()))
+            .ifPresent(c -> customerNameByProject.put(projectId, c.getName()));
       }
     }
 

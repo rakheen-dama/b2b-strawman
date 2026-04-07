@@ -304,6 +304,7 @@ public class InvoiceCreationService {
       BigDecimal unitPrice =
           (request.unitPrice() != null) ? request.unitPrice() : tariffItem.getAmount();
 
+      int sortOrder = request.sortOrder() != null ? request.sortOrder() : 0;
       line =
           new InvoiceLine(
               invoiceId,
@@ -312,7 +313,7 @@ public class InvoiceCreationService {
               description,
               request.quantity(),
               unitPrice,
-              request.sortOrder());
+              sortOrder);
       line.setLineType(InvoiceLineType.TARIFF);
       line.setTariffItemId(request.tariffItemId());
       line.setLineSource("TARIFF");
@@ -325,6 +326,7 @@ public class InvoiceCreationService {
         throw new InvalidStateException(
             "Unit price required", "Manual line items require a unit price");
       }
+      int sortOrder = request.sortOrder() != null ? request.sortOrder() : 0;
       line =
           new InvoiceLine(
               invoiceId,
@@ -333,7 +335,7 @@ public class InvoiceCreationService {
               request.description(),
               request.quantity(),
               request.unitPrice(),
-              request.sortOrder());
+              sortOrder);
       line.setLineType(InvoiceLineType.MANUAL);
     }
 
@@ -389,8 +391,8 @@ public class InvoiceCreationService {
       throw new ResourceNotFoundException("InvoiceLine", lineId);
     }
 
-    line.update(
-        request.description(), request.quantity(), request.unitPrice(), request.sortOrder());
+    int sortOrder = request.sortOrder() != null ? request.sortOrder() : line.getSortOrder();
+    line.update(request.description(), request.quantity(), request.unitPrice(), sortOrder);
 
     if (request.taxRateId() != null) {
       invoiceTaxService.applyTaxToLine(line, request.taxRateId());

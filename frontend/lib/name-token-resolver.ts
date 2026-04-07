@@ -13,6 +13,7 @@ export function resolveNameTokens(
 
   if (customerName !== undefined) {
     result = result.replace(/\{customer\}/g, customerName);
+    result = result.replace(/\{client\}/g, customerName);
   }
 
   // Full month name in English: "January", "February", etc.
@@ -26,6 +27,9 @@ export function resolveNameTokens(
   // 4-digit year
   const year = String(date.getFullYear());
   result = result.replace(/\{year\}/g, year);
+
+  // Strip any remaining unresolved tokens (e.g. {deceased}, {debtor}, {transaction})
+  result = result.replace(/\{[a-z_]+\}/g, "").replace(/\s{2,}/g, " ").trim();
 
   return result;
 }

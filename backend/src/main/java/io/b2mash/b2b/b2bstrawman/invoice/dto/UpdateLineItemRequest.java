@@ -11,6 +11,6 @@ public record UpdateLineItemRequest(
     @NotBlank String description,
     @NotNull @Positive BigDecimal quantity,
     @NotNull @PositiveOrZero BigDecimal unitPrice,
-    @PositiveOrZero int sortOrder,
+    @PositiveOrZero Integer sortOrder,
     UUID taxRateId,
     Boolean clearTaxRate) {}

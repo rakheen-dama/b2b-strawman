@@ -106,6 +106,7 @@ public class TimeEntryService {
 
     var auditDetails = new LinkedHashMap<String, Object>();
     auditDetails.put("task_id", taskId.toString());
+    auditDetails.put("title", task.getTitle());
     auditDetails.put("duration_minutes", durationMinutes);
     auditDetails.put("billable", billable);
     auditDetails.put("project_id", task.getProjectId().toString());
@@ -345,6 +346,7 @@ public class TimeEntryService {
       }
     }
 
+    details.put("title", task.getTitle());
     details.put("project_id", task.getProjectId().toString());
 
     auditService.log(
@@ -402,6 +404,7 @@ public class TimeEntryService {
             .details(
                 Map.of(
                     "task_id", entry.getTaskId().toString(),
+                    "title", task.getTitle(),
                     "project_id", task.getProjectId().toString()))
             .build());
 

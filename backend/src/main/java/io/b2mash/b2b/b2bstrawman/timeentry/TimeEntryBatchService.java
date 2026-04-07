@@ -120,6 +120,7 @@ public class TimeEntryBatchService {
                   // Audit logging (matches TimeEntryService.createTimeEntry pattern)
                   var auditDetails = new LinkedHashMap<String, Object>();
                   auditDetails.put("task_id", item.taskId().toString());
+                  auditDetails.put("title", task.getTitle());
                   auditDetails.put("duration_minutes", item.durationMinutes());
                   auditDetails.put("billable", item.billable());
                   auditDetails.put("project_id", task.getProjectId().toString());

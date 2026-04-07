@@ -179,7 +179,7 @@ class CourtCalendarServiceTest {
   }
 
   @Test
-  void postponeCourtDate_updatesDateAndSetsPostponed() {
+  void postponeCourtDate_keepsOriginalAsPostponedAndCreatesNewScheduled() {
     runInTenant(
         () ->
             transactionTemplate.executeWithoutResult(
@@ -200,12 +200,21 @@ class CourtCalendarServiceTest {
 
                   var postponeRequest =
                       new PostponeRequest(LocalDate.of(2026, 8, 15), "Judge unavailable");
-                  var postponed =
+                  var newEntry =
                       courtCalendarService.postponeCourtDate(created.id(), postponeRequest);
 
-                  assertThat(postponed.status()).isEqualTo("POSTPONED");
-                  assertThat(postponed.scheduledDate()).isEqualTo(LocalDate.of(2026, 8, 15));
-                  assertThat(postponed.outcome()).isEqualTo("Postponed: Judge unavailable");
+                  // New entry should be SCHEDULED with the new date
+                  assertThat(newEntry.status()).isEqualTo("SCHEDULED");
+                  assertThat(newEntry.scheduledDate()).isEqualTo(LocalDate.of(2026, 8, 15));
+                  assertThat(newEntry.id()).isNotEqualTo(created.id());
+                  assertThat(newEntry.description()).isEqualTo("Rescheduled from 2026-07-10");
+                  assertThat(newEntry.courtName()).isEqualTo("Pretoria High Court");
+
+                  // Original should be POSTPONED with original date preserved
+                  var original = courtCalendarService.getById(created.id());
+                  assertThat(original.status()).isEqualTo("POSTPONED");
+                  assertThat(original.scheduledDate()).isEqualTo(LocalDate.of(2026, 7, 10));
+                  assertThat(original.outcome()).isEqualTo("Postponed: Judge unavailable");
                 }));
   }
 

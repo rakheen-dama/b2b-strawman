@@ -117,6 +117,7 @@ class TimeEntryServiceAuditTest {
               assertThat(event.getEntityType()).isEqualTo("time_entry");
               assertThat(event.getEntityId()).isEqualTo(entryId);
               assertThat(event.getDetails()).containsEntry("task_id", taskId.toString());
+              assertThat(event.getDetails()).containsEntry("title", "TE Audit Task");
               assertThat(event.getDetails()).containsEntry("duration_minutes", 120);
               assertThat(event.getDetails()).containsEntry("billable", true);
               assertThat(event.getActorType()).isEqualTo("USER");
@@ -217,6 +218,7 @@ class TimeEntryServiceAuditTest {
               var event = page.getContent().getFirst();
               assertThat(event.getEventType()).isEqualTo("time_entry.deleted");
               assertThat(event.getDetails()).containsEntry("task_id", taskId.toString());
+              assertThat(event.getDetails()).containsEntry("title", "TE Audit Task");
             });
   }
 
@@ -261,11 +263,13 @@ class TimeEntryServiceAuditTest {
 
               assertThat(page.getTotalElements()).isEqualTo(1);
               var event = page.getContent().getFirst();
-              // Details now always includes project_id even when no fields changed
+              // Details now always includes title, project_id, and actor_name even when no
+              // fields changed
               assertThat(event.getDetails()).isNotNull();
+              assertThat(event.getDetails()).containsKey("title");
               assertThat(event.getDetails()).containsKey("project_id");
               assertThat(event.getDetails()).containsKey("actor_name");
-              assertThat(event.getDetails()).hasSize(2);
+              assertThat(event.getDetails()).hasSize(3);
             });
   }
 }

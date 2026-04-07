@@ -263,6 +263,33 @@ class ConflictCheckServiceTest {
                 }));
   }
 
+  // --- Project name matching tests (GAP-D14-01) ---
+
+  @Test
+  void performCheck_matchesProjectMatterName() {
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  // Create a project with a name containing a party name
+                  var matterProject =
+                      new Project("Debt Recovery - vs Mokoena (R45,000)", "Test matter", memberId);
+                  matterProject.setCustomerId(customerId);
+                  projectRepository.saveAndFlush(matterProject);
+
+                  var request =
+                      new PerformConflictCheckRequest(
+                          "Mokoena", null, null, "NEW_CLIENT", null, null);
+
+                  var response = conflictCheckService.performCheck(request, memberId);
+
+                  assertThat(response.result()).isIn("CONFLICT_FOUND", "POTENTIAL_CONFLICT");
+                  assertThat(response.conflictsFound()).isNotEmpty();
+                  assertThat(response.conflictsFound())
+                      .anyMatch(c -> "MATTER_NAME".equals(c.relationship()));
+                }));
+  }
+
   // --- 401.7: Audit and resolution tests ---
 
   @Test

@@ -199,7 +199,7 @@ export const createTariffItemSchema = z.object({
     ["PER_ITEM", "PER_PAGE", "PER_FOLIO", "PER_QUARTER_HOUR", "PER_HOUR", "PER_DAY"],
     { message: "Unit is required" }
   ),
-  rateInCents: z.number().int().min(0, "Rate must be non-negative"),
+  amount: z.number().min(0, "Amount must be non-negative"),
   notes: z.string().max(2000).optional().or(z.literal("")),
 });
 

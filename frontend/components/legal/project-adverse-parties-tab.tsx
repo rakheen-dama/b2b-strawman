@@ -16,6 +16,7 @@ import {
   fetchProjectAdverseParties,
   unlinkAdverseParty,
 } from "@/app/(app)/org/[slug]/legal/adverse-parties/actions";
+import { LinkAdversePartyToProjectDialog } from "@/components/legal/link-adverse-party-to-project-dialog";
 import type { AdversePartyLink, AdversePartyRelationship } from "@/lib/types";
 
 interface ProjectAdversePartiesTabProps {
@@ -91,7 +92,14 @@ export function ProjectAdversePartiesTab({
 
   if (parties.length === 0) {
     return (
-      <div data-testid="project-adverse-parties-tab">
+      <div data-testid="project-adverse-parties-tab" className="space-y-4">
+        <div className="flex justify-end">
+          <LinkAdversePartyToProjectDialog
+            slug={slug}
+            projectId={projectId}
+            onSuccess={() => mutate()}
+          />
+        </div>
         <div className="rounded-lg border border-slate-200 p-8 text-center dark:border-slate-800">
           <p className="text-sm text-slate-500 dark:text-slate-400">
             No adverse parties linked to this project.
@@ -103,6 +111,13 @@ export function ProjectAdversePartiesTab({
 
   return (
     <div data-testid="project-adverse-parties-tab" className="space-y-4">
+      <div className="flex justify-end">
+        <LinkAdversePartyToProjectDialog
+          slug={slug}
+          projectId={projectId}
+          onSuccess={() => mutate()}
+        />
+      </div>
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>

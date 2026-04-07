@@ -5,7 +5,7 @@
   "templates": [
     {
       "name": "Litigation (Personal Injury / General)",
-      "namePattern": "{client} - {type}",
+      "namePattern": "{customer} - Litigation",
       "description": "Standard litigation workflow for personal injury and general civil matters. Matter type: LITIGATION",
       "billableDefault": true,
       "matterType": "LITIGATION",
@@ -86,7 +86,7 @@
     },
     {
       "name": "Deceased Estate Administration",
-      "namePattern": "{client} - Estate of {deceased}",
+      "namePattern": "{customer} - Estate",
       "description": "Administration of deceased estate from reporting to final distribution. Matter type: ESTATES",
       "billableDefault": true,
       "matterType": "ESTATES",
@@ -167,7 +167,7 @@
     },
     {
       "name": "Collections (Debt Recovery)",
-      "namePattern": "{client} - Collections v {debtor}",
+      "namePattern": "{customer} - Collections",
       "description": "Debt recovery workflow from demand to execution. Matter type: COLLECTIONS",
       "billableDefault": true,
       "matterType": "COLLECTIONS",
@@ -248,7 +248,7 @@
     },
     {
       "name": "Commercial (Corporate & Contract)",
-      "namePattern": "{client} - {transaction}",
+      "namePattern": "{customer} - Commercial",
       "description": "Corporate and commercial transaction workflow. Matter type: COMMERCIAL",
       "billableDefault": true,
       "matterType": "COMMERCIAL",

@@ -40,6 +40,7 @@ public class NameTokenResolver {
     String result = pattern;
     if (customer != null) {
       result = result.replace("{customer}", customer.getName());
+      result = result.replace("{client}", customer.getName());
     }
     if (referenceDate != null) {
       // Replace {month_short} before {month} for defensive ordering

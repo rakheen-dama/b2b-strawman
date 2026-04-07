@@ -84,8 +84,8 @@ export function LinkAdversePartyToProjectDialog({
     if (open) {
       Promise.all([fetchAdverseParties(), fetchCustomers()])
         .then(([ap, c]) => {
-          setAdverseParties(ap.content);
-          setCustomers(c);
+          setAdverseParties(ap?.content ?? []);
+          setCustomers(c ?? []);
         })
         .catch(() => {
           setAdverseParties([]);

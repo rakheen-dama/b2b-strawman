@@ -6,42 +6,42 @@
 -- ============================================================
 -- Customer: 13 new columns
 -- ============================================================
-ALTER TABLE customers ADD COLUMN registration_number VARCHAR(100);
-ALTER TABLE customers ADD COLUMN address_line1 VARCHAR(255);
-ALTER TABLE customers ADD COLUMN address_line2 VARCHAR(255);
-ALTER TABLE customers ADD COLUMN city VARCHAR(100);
-ALTER TABLE customers ADD COLUMN state_province VARCHAR(100);
-ALTER TABLE customers ADD COLUMN postal_code VARCHAR(20);
-ALTER TABLE customers ADD COLUMN country VARCHAR(2);
-ALTER TABLE customers ADD COLUMN tax_number VARCHAR(100);
-ALTER TABLE customers ADD COLUMN contact_name VARCHAR(255);
-ALTER TABLE customers ADD COLUMN contact_email VARCHAR(255);
-ALTER TABLE customers ADD COLUMN contact_phone VARCHAR(50);
-ALTER TABLE customers ADD COLUMN entity_type VARCHAR(30);
-ALTER TABLE customers ADD COLUMN financial_year_end DATE;
+ALTER TABLE customers ADD COLUMN IF NOT EXISTS registration_number VARCHAR(100);
+ALTER TABLE customers ADD COLUMN IF NOT EXISTS address_line1 VARCHAR(255);
+ALTER TABLE customers ADD COLUMN IF NOT EXISTS address_line2 VARCHAR(255);
+ALTER TABLE customers ADD COLUMN IF NOT EXISTS city VARCHAR(100);
+ALTER TABLE customers ADD COLUMN IF NOT EXISTS state_province VARCHAR(100);
+ALTER TABLE customers ADD COLUMN IF NOT EXISTS postal_code VARCHAR(20);
+ALTER TABLE customers ADD COLUMN IF NOT EXISTS country VARCHAR(2);
+ALTER TABLE customers ADD COLUMN IF NOT EXISTS tax_number VARCHAR(100);
+ALTER TABLE customers ADD COLUMN IF NOT EXISTS contact_name VARCHAR(255);
+ALTER TABLE customers ADD COLUMN IF NOT EXISTS contact_email VARCHAR(255);
+ALTER TABLE customers ADD COLUMN IF NOT EXISTS contact_phone VARCHAR(50);
+ALTER TABLE customers ADD COLUMN IF NOT EXISTS entity_type VARCHAR(30);
+ALTER TABLE customers ADD COLUMN IF NOT EXISTS financial_year_end DATE;
 
-CREATE INDEX idx_customers_registration_number ON customers(registration_number);
-CREATE INDEX idx_customers_tax_number ON customers(tax_number);
-CREATE INDEX idx_customers_entity_type ON customers(entity_type);
+CREATE INDEX IF NOT EXISTS idx_customers_registration_number ON customers(registration_number);
+CREATE INDEX IF NOT EXISTS idx_customers_tax_number ON customers(tax_number);
+CREATE INDEX IF NOT EXISTS idx_customers_entity_type ON customers(entity_type);
 
 -- ============================================================
 -- Project: 3 new columns
 -- ============================================================
-ALTER TABLE projects ADD COLUMN reference_number VARCHAR(100);
-ALTER TABLE projects ADD COLUMN priority VARCHAR(20);
-ALTER TABLE projects ADD COLUMN work_type VARCHAR(50);
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS reference_number VARCHAR(100);
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS priority VARCHAR(20);
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS work_type VARCHAR(50);
 
-CREATE INDEX idx_projects_work_type ON projects(work_type);
+CREATE INDEX IF NOT EXISTS idx_projects_work_type ON projects(work_type);
 
 -- ============================================================
 -- Task: 1 new column
 -- ============================================================
-ALTER TABLE tasks ADD COLUMN estimated_hours DECIMAL(8,2);
+ALTER TABLE tasks ADD COLUMN IF NOT EXISTS estimated_hours DECIMAL(8,2);
 
 -- ============================================================
 -- Invoice: 4 new columns
 -- ============================================================
-ALTER TABLE invoices ADD COLUMN po_number VARCHAR(100);
-ALTER TABLE invoices ADD COLUMN tax_type VARCHAR(20);
-ALTER TABLE invoices ADD COLUMN billing_period_start DATE;
-ALTER TABLE invoices ADD COLUMN billing_period_end DATE;
+ALTER TABLE invoices ADD COLUMN IF NOT EXISTS po_number VARCHAR(100);
+ALTER TABLE invoices ADD COLUMN IF NOT EXISTS tax_type VARCHAR(20);
+ALTER TABLE invoices ADD COLUMN IF NOT EXISTS billing_period_start DATE;
+ALTER TABLE invoices ADD COLUMN IF NOT EXISTS billing_period_end DATE;

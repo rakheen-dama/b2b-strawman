@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -76,6 +77,45 @@ public class Customer {
 
   @Column(name = "offboarded_at")
   private Instant offboardedAt;
+
+  @Column(name = "registration_number", length = 100)
+  private String registrationNumber;
+
+  @Column(name = "address_line1", length = 255)
+  private String addressLine1;
+
+  @Column(name = "address_line2", length = 255)
+  private String addressLine2;
+
+  @Column(name = "city", length = 100)
+  private String city;
+
+  @Column(name = "state_province", length = 100)
+  private String stateProvince;
+
+  @Column(name = "postal_code", length = 20)
+  private String postalCode;
+
+  @Column(name = "country", length = 2)
+  private String country;
+
+  @Column(name = "tax_number", length = 100)
+  private String taxNumber;
+
+  @Column(name = "contact_name", length = 255)
+  private String contactName;
+
+  @Column(name = "contact_email", length = 255)
+  private String contactEmail;
+
+  @Column(name = "contact_phone", length = 50)
+  private String contactPhone;
+
+  @Column(name = "entity_type", length = 30)
+  private String entityType;
+
+  @Column(name = "financial_year_end")
+  private LocalDate financialYearEnd;
 
   protected Customer() {}
 
@@ -164,6 +204,18 @@ public class Customer {
     this.email = "anon-" + this.id + "@anonymized.invalid";
     this.phone = null;
     this.idNumber = null;
+    this.contactName = null;
+    this.contactEmail = null;
+    this.contactPhone = null;
+    this.addressLine1 = null;
+    this.addressLine2 = null;
+    this.city = null;
+    this.stateProvince = null;
+    this.postalCode = null;
+    this.country = null;
+    this.taxNumber = null;
+    this.registrationNumber = null;
+    this.financialYearEnd = null;
     this.updatedAt = Instant.now();
   }
 
@@ -266,6 +318,123 @@ public class Customer {
 
   public void setOffboardedAt(Instant offboardedAt) {
     this.offboardedAt = offboardedAt;
+    this.updatedAt = Instant.now();
+  }
+
+  public String getRegistrationNumber() {
+    return registrationNumber;
+  }
+
+  public void setRegistrationNumber(String registrationNumber) {
+    this.registrationNumber = registrationNumber;
+    this.updatedAt = Instant.now();
+  }
+
+  public String getAddressLine1() {
+    return addressLine1;
+  }
+
+  public void setAddressLine1(String addressLine1) {
+    this.addressLine1 = addressLine1;
+    this.updatedAt = Instant.now();
+  }
+
+  public String getAddressLine2() {
+    return addressLine2;
+  }
+
+  public void setAddressLine2(String addressLine2) {
+    this.addressLine2 = addressLine2;
+    this.updatedAt = Instant.now();
+  }
+
+  public String getCity() {
+    return city;
+  }
+
+  public void setCity(String city) {
+    this.city = city;
+    this.updatedAt = Instant.now();
+  }
+
+  public String getStateProvince() {
+    return stateProvince;
+  }
+
+  public void setStateProvince(String stateProvince) {
+    this.stateProvince = stateProvince;
+    this.updatedAt = Instant.now();
+  }
+
+  public String getPostalCode() {
+    return postalCode;
+  }
+
+  public void setPostalCode(String postalCode) {
+    this.postalCode = postalCode;
+    this.updatedAt = Instant.now();
+  }
+
+  public String getCountry() {
+    return country;
+  }
+
+  public void setCountry(String country) {
+    this.country = country;
+    this.updatedAt = Instant.now();
+  }
+
+  public String getTaxNumber() {
+    return taxNumber;
+  }
+
+  public void setTaxNumber(String taxNumber) {
+    this.taxNumber = taxNumber;
+    this.updatedAt = Instant.now();
+  }
+
+  public String getContactName() {
+    return contactName;
+  }
+
+  public void setContactName(String contactName) {
+    this.contactName = contactName;
+    this.updatedAt = Instant.now();
+  }
+
+  public String getContactEmail() {
+    return contactEmail;
+  }
+
+  public void setContactEmail(String contactEmail) {
+    this.contactEmail = contactEmail;
+    this.updatedAt = Instant.now();
+  }
+
+  public String getContactPhone() {
+    return contactPhone;
+  }
+
+  public void setContactPhone(String contactPhone) {
+    this.contactPhone = contactPhone;
+    this.updatedAt = Instant.now();
+  }
+
+  public String getEntityType() {
+    return entityType;
+  }
+
+  public void setEntityType(String entityType) {
+    this.entityType = entityType;
+    this.updatedAt = Instant.now();
+  }
+
+  public LocalDate getFinancialYearEnd() {
+    return financialYearEnd;
+  }
+
+  public void setFinancialYearEnd(LocalDate financialYearEnd) {
+    this.financialYearEnd = financialYearEnd;
     this.updatedAt = Instant.now();
   }
 }

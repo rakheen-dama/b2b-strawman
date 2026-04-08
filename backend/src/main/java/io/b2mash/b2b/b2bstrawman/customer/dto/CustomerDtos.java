@@ -10,6 +10,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -31,7 +32,22 @@ public final class CustomerDtos {
       String notes,
       Map<String, Object> customFields,
       List<UUID> appliedFieldGroups,
-      CustomerType customerType) {}
+      CustomerType customerType,
+      @Size(max = 100, message = "registrationNumber must be at most 100 characters")
+          String registrationNumber,
+      @Size(max = 255, message = "addressLine1 must be at most 255 characters") String addressLine1,
+      @Size(max = 255, message = "addressLine2 must be at most 255 characters") String addressLine2,
+      @Size(max = 100, message = "city must be at most 100 characters") String city,
+      @Size(max = 100, message = "stateProvince must be at most 100 characters")
+          String stateProvince,
+      @Size(max = 20, message = "postalCode must be at most 20 characters") String postalCode,
+      @Size(max = 2, message = "country must be at most 2 characters") String country,
+      @Size(max = 100, message = "taxNumber must be at most 100 characters") String taxNumber,
+      @Size(max = 255, message = "contactName must be at most 255 characters") String contactName,
+      @Size(max = 255, message = "contactEmail must be at most 255 characters") String contactEmail,
+      @Size(max = 50, message = "contactPhone must be at most 50 characters") String contactPhone,
+      @Size(max = 30, message = "entityType must be at most 30 characters") String entityType,
+      LocalDate financialYearEnd) {}
 
   public record UpdateCustomerRequest(
       @NotBlank(message = "name is required")
@@ -45,7 +61,22 @@ public final class CustomerDtos {
       @Size(max = 100, message = "idNumber must be at most 100 characters") String idNumber,
       String notes,
       Map<String, Object> customFields,
-      List<UUID> appliedFieldGroups) {}
+      List<UUID> appliedFieldGroups,
+      @Size(max = 100, message = "registrationNumber must be at most 100 characters")
+          String registrationNumber,
+      @Size(max = 255, message = "addressLine1 must be at most 255 characters") String addressLine1,
+      @Size(max = 255, message = "addressLine2 must be at most 255 characters") String addressLine2,
+      @Size(max = 100, message = "city must be at most 100 characters") String city,
+      @Size(max = 100, message = "stateProvince must be at most 100 characters")
+          String stateProvince,
+      @Size(max = 20, message = "postalCode must be at most 20 characters") String postalCode,
+      @Size(max = 2, message = "country must be at most 2 characters") String country,
+      @Size(max = 100, message = "taxNumber must be at most 100 characters") String taxNumber,
+      @Size(max = 255, message = "contactName must be at most 255 characters") String contactName,
+      @Size(max = 255, message = "contactEmail must be at most 255 characters") String contactEmail,
+      @Size(max = 50, message = "contactPhone must be at most 50 characters") String contactPhone,
+      @Size(max = 30, message = "entityType must be at most 30 characters") String entityType,
+      LocalDate financialYearEnd) {}
 
   public record CustomerResponse(
       UUID id,
@@ -64,7 +95,20 @@ public final class CustomerDtos {
       List<TagResponse> tags,
       LifecycleStatus lifecycleStatus,
       CustomerType customerType,
-      Instant lifecycleStatusChangedAt) {
+      Instant lifecycleStatusChangedAt,
+      String registrationNumber,
+      String addressLine1,
+      String addressLine2,
+      String city,
+      String stateProvince,
+      String postalCode,
+      String country,
+      String taxNumber,
+      String contactName,
+      String contactEmail,
+      String contactPhone,
+      String entityType,
+      LocalDate financialYearEnd) {
 
     public static CustomerResponse from(Customer customer) {
       return from(customer, List.of(), Map.of());
@@ -93,7 +137,20 @@ public final class CustomerDtos {
           tags,
           customer.getLifecycleStatus(),
           customer.getCustomerType(),
-          customer.getLifecycleStatusChangedAt());
+          customer.getLifecycleStatusChangedAt(),
+          customer.getRegistrationNumber(),
+          customer.getAddressLine1(),
+          customer.getAddressLine2(),
+          customer.getCity(),
+          customer.getStateProvince(),
+          customer.getPostalCode(),
+          customer.getCountry(),
+          customer.getTaxNumber(),
+          customer.getContactName(),
+          customer.getContactEmail(),
+          customer.getContactPhone(),
+          customer.getEntityType(),
+          customer.getFinancialYearEnd());
     }
   }
 

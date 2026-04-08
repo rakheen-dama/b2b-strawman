@@ -172,10 +172,11 @@ public class Invoice {
     this.paymentTerms = paymentTerms;
     this.taxAmount = taxAmount != null ? taxAmount : BigDecimal.ZERO;
     this.total = this.subtotal.add(this.taxAmount);
-    this.poNumber = poNumber;
-    this.taxType = taxType;
-    this.billingPeriodStart = billingPeriodStart;
-    this.billingPeriodEnd = billingPeriodEnd;
+    this.poNumber = poNumber != null ? poNumber : this.poNumber;
+    this.taxType = taxType != null ? taxType : this.taxType;
+    this.billingPeriodStart =
+        billingPeriodStart != null ? billingPeriodStart : this.billingPeriodStart;
+    this.billingPeriodEnd = billingPeriodEnd != null ? billingPeriodEnd : this.billingPeriodEnd;
     this.updatedAt = Instant.now();
   }
 

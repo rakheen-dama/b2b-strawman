@@ -191,9 +191,9 @@ public class Project {
     this.description = description;
     this.customerId = customerId != null ? customerId : this.customerId;
     this.dueDate = dueDate != null ? dueDate : this.dueDate;
-    this.referenceNumber = referenceNumber;
-    this.priority = priority;
-    this.workType = workType;
+    this.referenceNumber = referenceNumber != null ? referenceNumber : this.referenceNumber;
+    this.priority = priority != null ? priority : this.priority;
+    this.workType = workType != null ? workType : this.workType;
     this.updatedAt = Instant.now();
   }
 

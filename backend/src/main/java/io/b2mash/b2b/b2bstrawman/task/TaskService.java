@@ -32,6 +32,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectLifecycleGuard;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -258,7 +259,7 @@ public class TaskService {
       UUID assigneeId,
       String recurrenceRule,
       LocalDate recurrenceEndDate,
-      java.math.BigDecimal estimatedHours) {
+      BigDecimal estimatedHours) {
     // Any project member can create tasks; view access is sufficient
     projectAccessService.requireViewAccess(projectId, actor);
 
@@ -452,7 +453,7 @@ public class TaskService {
       List<UUID> appliedFieldGroups,
       String recurrenceRule,
       LocalDate recurrenceEndDate,
-      java.math.BigDecimal estimatedHours) {
+      BigDecimal estimatedHours) {
     var task =
         taskRepository
             .findById(taskId)
@@ -517,6 +518,7 @@ public class TaskService {
     UUID oldAssigneeId = task.getAssigneeId();
     LocalDate oldDueDate = task.getDueDate();
     String oldType = task.getType();
+    BigDecimal oldEstimatedHours = task.getEstimatedHours();
 
     task.update(
         title,
@@ -542,6 +544,7 @@ public class TaskService {
             .trackAsString("assignee_id", oldAssigneeId, assigneeId)
             .trackAsString("due_date", oldDueDate, dueDate)
             .trackAsString("type", oldType, type)
+            .trackAsString("estimatedHours", oldEstimatedHours, estimatedHours)
             .buildMutable();
 
     details.put("project_id", task.getProjectId().toString());

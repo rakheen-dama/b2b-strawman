@@ -1,9 +1,11 @@
 package io.b2mash.b2b.b2bstrawman.invoice;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
@@ -151,5 +153,141 @@ class InvoiceNewFieldsIntegrationTest {
         .andExpect(jsonPath("$.taxType").doesNotExist())
         .andExpect(jsonPath("$.billingPeriodStart").doesNotExist())
         .andExpect(jsonPath("$.billingPeriodEnd").doesNotExist());
+  }
+
+  @Test
+  void createInvoiceWithDueDateAndNewFieldsRetainsAllFields() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/invoices")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inf_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "customerId": "%s",
+                      "currency": "ZAR",
+                      "dueDate": "2026-06-30",
+                      "poNumber": "PO-DUE-TEST",
+                      "taxType": "GST"
+                    }
+                    """
+                        .formatted(customerId)))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.dueDate").value("2026-06-30"))
+        .andExpect(jsonPath("$.poNumber").value("PO-DUE-TEST"))
+        .andExpect(jsonPath("$.taxType").value("GST"));
+  }
+
+  @Test
+  void updateInvoiceNewFieldsViaPutPersistsChanges() throws Exception {
+    // Create a draft invoice first
+    var createResult =
+        mockMvc
+            .perform(
+                post("/api/invoices")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inf_owner"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "customerId": "%s",
+                          "currency": "ZAR",
+                          "poNumber": "PO-ORIG",
+                          "taxType": "VAT"
+                        }
+                        """
+                            .formatted(customerId)))
+            .andExpect(status().isCreated())
+            .andReturn();
+
+    String invoiceId = JsonPath.read(createResult.getResponse().getContentAsString(), "$.id");
+
+    // Update the invoice with new field values via PUT
+    mockMvc
+        .perform(
+            put("/api/invoices/" + invoiceId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inf_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "poNumber": "PO-UPDATED",
+                      "taxType": "GST",
+                      "billingPeriodStart": "2026-02-01",
+                      "billingPeriodEnd": "2026-02-28"
+                    }
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.poNumber").value("PO-UPDATED"))
+        .andExpect(jsonPath("$.taxType").value("GST"))
+        .andExpect(jsonPath("$.billingPeriodStart").value("2026-02-01"))
+        .andExpect(jsonPath("$.billingPeriodEnd").value("2026-02-28"));
+  }
+
+  @Test
+  void updateInvoiceWithNullNewFieldsRetainsExistingValues() throws Exception {
+    // Create a draft invoice with new fields
+    var createResult =
+        mockMvc
+            .perform(
+                post("/api/invoices")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inf_owner"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "customerId": "%s",
+                          "currency": "ZAR",
+                          "poNumber": "PO-RETAIN",
+                          "taxType": "SALES_TAX",
+                          "billingPeriodStart": "2026-03-01",
+                          "billingPeriodEnd": "2026-03-31"
+                        }
+                        """
+                            .formatted(customerId)))
+            .andExpect(status().isCreated())
+            .andReturn();
+
+    String invoiceId = JsonPath.read(createResult.getResponse().getContentAsString(), "$.id");
+
+    // Update only notes — new fields should be retained
+    mockMvc
+        .perform(
+            put("/api/invoices/" + invoiceId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inf_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "notes": "Updated notes"
+                    }
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.notes").value("Updated notes"))
+        .andExpect(jsonPath("$.poNumber").value("PO-RETAIN"))
+        .andExpect(jsonPath("$.taxType").value("SALES_TAX"))
+        .andExpect(jsonPath("$.billingPeriodStart").value("2026-03-01"))
+        .andExpect(jsonPath("$.billingPeriodEnd").value("2026-03-31"));
+  }
+
+  @Test
+  void createInvoiceWithInvalidBillingPeriodReturns400() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/invoices")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inf_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "customerId": "%s",
+                      "currency": "ZAR",
+                      "billingPeriodStart": "2026-03-31",
+                      "billingPeriodEnd": "2026-03-01"
+                    }
+                    """
+                        .formatted(customerId)))
+        .andExpect(status().isBadRequest());
   }
 }

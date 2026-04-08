@@ -120,4 +120,44 @@ class ProjectNewFieldsIntegrationTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.workType").value("LITIGATION"));
   }
+
+  @Test
+  void updateProjectWithoutNewFieldsRetainsExistingValues() throws Exception {
+    var projectResult =
+        mockMvc
+            .perform(
+                post("/api/projects")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pnf_owner"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "name": "Retain Fields Project",
+                          "referenceNumber": "REF-KEEP",
+                          "priority": "MEDIUM",
+                          "workType": "ADVISORY"
+                        }
+                        """))
+            .andExpect(status().isCreated())
+            .andReturn();
+    var projectId = TestEntityHelper.extractIdFromLocation(projectResult);
+
+    // Update only name — new fields should be retained
+    mockMvc
+        .perform(
+            put("/api/projects/" + projectId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pnf_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "name": "Retain Fields Project Renamed"
+                    }
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.name").value("Retain Fields Project Renamed"))
+        .andExpect(jsonPath("$.referenceNumber").value("REF-KEEP"))
+        .andExpect(jsonPath("$.priority").value("MEDIUM"))
+        .andExpect(jsonPath("$.workType").value("ADVISORY"));
+  }
 }

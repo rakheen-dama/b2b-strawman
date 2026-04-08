@@ -136,24 +136,24 @@ public class InvoiceCreationService {
             organization.getName(),
             createdBy);
 
-    // Set new fields via setters (simpler than routing through updateDraft for creation)
-    if (request.poNumber() != null) {
-      invoice.setPoNumber(request.poNumber());
-    }
-    if (request.taxType() != null) {
-      invoice.setTaxType(request.taxType());
-    }
-    if (request.billingPeriodStart() != null) {
-      invoice.setBillingPeriodStart(request.billingPeriodStart());
-    }
-    if (request.billingPeriodEnd() != null) {
-      invoice.setBillingPeriodEnd(request.billingPeriodEnd());
-    }
-
-    if (request.dueDate() != null) {
-      invoice.updateDraft(request.dueDate(), request.notes(), request.paymentTerms(), null);
-    } else if (request.notes() != null || request.paymentTerms() != null) {
-      invoice.updateDraft(null, request.notes(), request.paymentTerms(), null);
+    // Set all draft fields in one call to avoid the 4-arg overload wiping new fields
+    if (request.dueDate() != null
+        || request.notes() != null
+        || request.paymentTerms() != null
+        || request.poNumber() != null
+        || request.taxType() != null
+        || request.billingPeriodStart() != null
+        || request.billingPeriodEnd() != null) {
+      validateBillingPeriod(request.billingPeriodStart(), request.billingPeriodEnd());
+      invoice.updateDraft(
+          request.dueDate(),
+          request.notes(),
+          request.paymentTerms(),
+          null,
+          request.poNumber(),
+          request.taxType(),
+          request.billingPeriodStart(),
+          request.billingPeriodEnd());
     }
 
     invoice = invoiceRepository.save(invoice);
@@ -215,6 +215,8 @@ public class InvoiceCreationService {
           "Tax amount cannot be manually set when invoice lines have tax rates applied."
               + " Edit individual line tax rates instead.");
     }
+
+    validateBillingPeriod(request.billingPeriodStart(), request.billingPeriodEnd());
 
     try {
       invoice.updateDraft(
@@ -573,6 +575,16 @@ public class InvoiceCreationService {
   }
 
   // --- Private helpers ---
+
+  private void validateBillingPeriod(
+      java.time.LocalDate billingPeriodStart, java.time.LocalDate billingPeriodEnd) {
+    if (billingPeriodStart != null
+        && billingPeriodEnd != null
+        && billingPeriodEnd.isBefore(billingPeriodStart)) {
+      throw new InvalidStateException(
+          "Invalid billing period", "Billing period end date must not be before start date");
+    }
+  }
 
   io.b2mash.b2b.b2bstrawman.customer.Customer validateInvoicePrerequisites(UUID customerId) {
     var customer =

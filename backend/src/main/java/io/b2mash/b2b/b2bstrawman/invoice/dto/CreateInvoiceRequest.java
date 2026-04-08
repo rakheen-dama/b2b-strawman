@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.invoice.dto;
 
+import io.b2mash.b2b.b2bstrawman.invoice.TaxType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -14,4 +15,8 @@ public record CreateInvoiceRequest(
     List<UUID> expenseIds,
     LocalDate dueDate,
     String notes,
-    @Size(max = 100) String paymentTerms) {}
+    @Size(max = 100) String paymentTerms,
+    @Size(max = 100) String poNumber,
+    TaxType taxType,
+    LocalDate billingPeriodStart,
+    LocalDate billingPeriodEnd) {}

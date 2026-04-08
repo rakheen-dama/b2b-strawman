@@ -136,6 +136,20 @@ public class InvoiceCreationService {
             organization.getName(),
             createdBy);
 
+    // Set new fields via setters (simpler than routing through updateDraft for creation)
+    if (request.poNumber() != null) {
+      invoice.setPoNumber(request.poNumber());
+    }
+    if (request.taxType() != null) {
+      invoice.setTaxType(request.taxType());
+    }
+    if (request.billingPeriodStart() != null) {
+      invoice.setBillingPeriodStart(request.billingPeriodStart());
+    }
+    if (request.billingPeriodEnd() != null) {
+      invoice.setBillingPeriodEnd(request.billingPeriodEnd());
+    }
+
     if (request.dueDate() != null) {
       invoice.updateDraft(request.dueDate(), request.notes(), request.paymentTerms(), null);
     } else if (request.notes() != null || request.paymentTerms() != null) {
@@ -204,7 +218,14 @@ public class InvoiceCreationService {
 
     try {
       invoice.updateDraft(
-          request.dueDate(), request.notes(), request.paymentTerms(), request.taxAmount());
+          request.dueDate(),
+          request.notes(),
+          request.paymentTerms(),
+          request.taxAmount(),
+          request.poNumber(),
+          request.taxType(),
+          request.billingPeriodStart(),
+          request.billingPeriodEnd());
     } catch (IllegalStateException e) {
       throw new ResourceConflictException("Invoice not editable", e.getMessage());
     }

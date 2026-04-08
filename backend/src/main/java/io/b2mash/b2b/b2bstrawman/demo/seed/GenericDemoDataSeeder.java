@@ -268,6 +268,7 @@ public class GenericDemoDataSeeder extends BaseDemoDataSeeder {
               assignee,
               createdBy,
               null,
+              null,
               null);
         } else if (statusRoll < 8) {
           // IN_PROGRESS

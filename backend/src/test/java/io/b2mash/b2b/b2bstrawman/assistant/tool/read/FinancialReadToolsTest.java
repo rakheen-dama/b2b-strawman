@@ -146,7 +146,17 @@ class FinancialReadToolsTest {
         () -> {
           var request =
               new CreateInvoiceRequest(
-                  customerId, "USD", List.of(timeEntryId), null, null, null, null);
+                  customerId,
+                  "USD",
+                  List.of(timeEntryId),
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null,
+                  null);
           var invoiceResponse = invoiceService.createDraft(request, memberIdOwner);
           invoiceId = invoiceResponse.id();
         });

@@ -562,6 +562,7 @@ public class ProjectTemplateService {
             assigneeId,
             memberId,
             null,
+            null,
             null);
       }
       projectTaskRepository.save(task);
@@ -677,6 +678,7 @@ public class ProjectTemplateService {
             task.getDueDate(),
             assigneeId,
             actingMemberId,
+            null,
             null,
             null);
       }

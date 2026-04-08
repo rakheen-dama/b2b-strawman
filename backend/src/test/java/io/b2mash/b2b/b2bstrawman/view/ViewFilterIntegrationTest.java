@@ -156,6 +156,7 @@ class ViewFilterIntegrationTest {
                       null,
                       memberIdOwner,
                       null,
+                      null,
                       null);
                   t2.update(
                       "Done Task",
@@ -166,6 +167,7 @@ class ViewFilterIntegrationTest {
                       null,
                       null,
                       memberIdOwner,
+                      null,
                       null,
                       null);
                   t2 = taskRepository.saveAndFlush(t2);

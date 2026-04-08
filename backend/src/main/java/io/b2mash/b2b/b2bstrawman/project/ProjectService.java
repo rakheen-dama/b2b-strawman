@@ -97,7 +97,7 @@ public class ProjectService {
 
   @Transactional
   public Project createProject(String name, String description, UUID createdBy) {
-    return createProject(name, description, createdBy, null, null, null, null);
+    return createProject(name, description, createdBy, null, null, null, null, null, null, null);
   }
 
   @Transactional
@@ -108,7 +108,16 @@ public class ProjectService {
       Map<String, Object> customFields,
       List<UUID> appliedFieldGroups) {
     return createProject(
-        name, description, createdBy, customFields, appliedFieldGroups, null, null);
+        name,
+        description,
+        createdBy,
+        customFields,
+        appliedFieldGroups,
+        null,
+        null,
+        null,
+        null,
+        null);
   }
 
   @Transactional
@@ -120,6 +129,31 @@ public class ProjectService {
       List<UUID> appliedFieldGroups,
       UUID customerId,
       LocalDate dueDate) {
+    return createProject(
+        name,
+        description,
+        createdBy,
+        customFields,
+        appliedFieldGroups,
+        customerId,
+        dueDate,
+        null,
+        null,
+        null);
+  }
+
+  @Transactional
+  public Project createProject(
+      String name,
+      String description,
+      UUID createdBy,
+      Map<String, Object> customFields,
+      List<UUID> appliedFieldGroups,
+      UUID customerId,
+      LocalDate dueDate,
+      String referenceNumber,
+      ProjectPriority priority,
+      String workType) {
     // Validate customer link and resolve customer name for naming pattern
     String customerName = null;
     if (customerId != null) {
@@ -138,6 +172,15 @@ public class ProjectService {
     }
     if (dueDate != null) {
       project.setDueDate(dueDate);
+    }
+    if (referenceNumber != null) {
+      project.setReferenceNumber(referenceNumber);
+    }
+    if (priority != null) {
+      project.setPriority(priority);
+    }
+    if (workType != null) {
+      project.setWorkType(workType);
     }
 
     project = repository.save(project);
@@ -188,7 +231,7 @@ public class ProjectService {
   @Transactional
   public ProjectWithRole updateProject(
       UUID id, String name, String description, ActorContext actor) {
-    return updateProject(id, name, description, actor, null, null, null, null);
+    return updateProject(id, name, description, actor, null, null, null, null, null, null, null);
   }
 
   @Transactional
@@ -200,7 +243,17 @@ public class ProjectService {
       Map<String, Object> customFields,
       List<UUID> appliedFieldGroups) {
     return updateProject(
-        id, name, description, actor, customFields, appliedFieldGroups, null, null);
+        id,
+        name,
+        description,
+        actor,
+        customFields,
+        appliedFieldGroups,
+        null,
+        null,
+        null,
+        null,
+        null);
   }
 
   @Transactional
@@ -213,6 +266,33 @@ public class ProjectService {
       List<UUID> appliedFieldGroups,
       UUID customerId,
       LocalDate dueDate) {
+    return updateProject(
+        id,
+        name,
+        description,
+        actor,
+        customFields,
+        appliedFieldGroups,
+        customerId,
+        dueDate,
+        null,
+        null,
+        null);
+  }
+
+  @Transactional
+  public ProjectWithRole updateProject(
+      UUID id,
+      String name,
+      String description,
+      ActorContext actor,
+      Map<String, Object> customFields,
+      List<UUID> appliedFieldGroups,
+      UUID customerId,
+      LocalDate dueDate,
+      String referenceNumber,
+      ProjectPriority priority,
+      String workType) {
     var project =
         repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Project", id));
     var access = projectAccessService.requireEditAccess(id, actor);
@@ -227,6 +307,9 @@ public class ProjectService {
     String oldDescription = project.getDescription();
     UUID oldCustomerId = project.getCustomerId();
     LocalDate oldDueDate = project.getDueDate();
+    String oldReferenceNumber = project.getReferenceNumber();
+    ProjectPriority oldPriority = project.getPriority();
+    String oldWorkType = project.getWorkType();
 
     // Validate and set custom fields
     if (customFields != null) {
@@ -241,7 +324,7 @@ public class ProjectService {
     }
 
     // Use Project.update() which applies null-means-no-change convention
-    project.update(name, description, customerId, dueDate);
+    project.update(name, description, customerId, dueDate, referenceNumber, priority, workType);
     project = repository.save(project);
 
     // Create CustomerProject join record if customerId was set/changed and no link exists yet
@@ -265,6 +348,9 @@ public class ProjectService {
             .track("description", oldDescription, description)
             .trackAsString("customerId", oldCustomerId, newCustomerId)
             .trackAsString("dueDate", oldDueDate, newDueDate)
+            .track("referenceNumber", oldReferenceNumber, referenceNumber)
+            .trackAsString("priority", oldPriority, priority)
+            .track("workType", oldWorkType, workType)
             .build();
 
     auditService.log(

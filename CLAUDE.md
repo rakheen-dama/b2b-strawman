@@ -35,7 +35,7 @@ pnpm install && pnpm dev      # Port 3000
 
 # Backend (from backend/)
 ./mvnw spring-boot:run        # Port 8080
-./mvnw spring-boot:test-run   # Alternative: uses Testcontainers, no Docker Compose needed
+./mvnw spring-boot:test-run   # Alternative: uses embedded Postgres, no Docker needed
 
 # Stop infrastructure
 bash compose/scripts/dev-down.sh          # Preserve data

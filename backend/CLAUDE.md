@@ -7,11 +7,11 @@ Spring Boot 4.0.2 / Java 25 / Maven backend for a multi-tenant B2B SaaS platform
 ```bash
 ./mvnw spring-boot:run                    # Dev server on port 8080
 ./mvnw clean package                      # Build JAR
-./mvnw test                               # Run tests
-./mvnw spring-boot:test-run               # Run with Testcontainers (local Postgres)
+./mvnw test                               # Run tests (embedded Postgres, no Docker needed)
+./mvnw spring-boot:test-run               # Run with embedded Postgres (no Docker needed)
 ```
 
-Requires Docker running for Testcontainers (tests and local dev). Postgres available via `../compose/` — run `docker compose up -d` from there first for manual dev.
+Tests use embedded Postgres (zonky) — no Docker required. Postgres for local dev available via `../compose/` — run `docker compose up -d` from there first for manual dev.
 
 ## Project Structure
 
@@ -60,7 +60,8 @@ Organize by **feature**, not by layer. Each feature package contains its entity,
 - Never set `hibernate.multiTenancy` property — Hibernate 7 auto-detects from registered provider
 - Never use `java -jar` for the Docker entry point — use `org.springframework.boot.loader.launch.JarLauncher`
 - Never make `TestcontainersConfiguration` package-private — it must be `public` for `@Import` from subpackages
-- Never use `@ActiveProfiles("local")` in tests — use `@ActiveProfiles("test")`. The "local" profile connects to Docker Compose Postgres. Tests must run against ephemeral Testcontainers only.
+- Never use `@ActiveProfiles("local")` in tests — use `@ActiveProfiles("test")`. The "local" profile connects to Docker Compose Postgres. Tests must run against embedded Postgres only.
+- Never add Testcontainers `PostgreSQLContainer` or `LocalStackContainer` to tests — use the embedded Postgres and `InMemoryStorageService` provided by `TestcontainersConfiguration`. Testcontainers Docker containers cause cascading failures under resource constraints.
 - Never use flat JWT claims (`org_id`, `org_role`) — Clerk JWT v2 nests org claims under `"o"`: `jwt.getClaim("o")` returns `Map<String, Object>` with keys `id`, `rol`, `slg`
 - Never use `ThreadLocal` for request-scoped context — use `ScopedValue` via `RequestScopes` (guaranteed cleanup, virtual thread safe)
 - Never call `RequestScopes.TENANT_ID.get()` without checking `isBound()` first or accepting `NoSuchElementException`
@@ -227,10 +228,18 @@ Authorization uses `@RequiresCapability` annotations on controllers. Capabilitie
 
 ## Testing
 
-- **Integration tests**: Testcontainers with PostgreSQL — tests spin up real Postgres in Docker
+- **Database**: Embedded Postgres (zonky `io.zonky.test:embedded-postgres`) — real Postgres 16 binary, no Docker required. Pinned via `embedded-postgres-binaries-bom` in `dependencyManagement`.
+- **S3/Storage**: `InMemoryStorageService` (test utility) replaces LocalStack for all tests. Uses `ConcurrentHashMap` with the same key validation regex as `S3StorageAdapter`.
 - **REST tests**: MockMvc + Spring REST Docs (generates API documentation from tests)
-- **Test config**: `TestcontainersConfiguration.java` provides `@ServiceConnection` PostgreSQL container
-- Run `TestBackendApplication.main()` for local dev with Testcontainers (no Docker Compose needed)
+- **Test config**: `TestcontainersConfiguration.java` provides embedded Postgres + `InMemoryStorageService` beans
+- **Email tests**: GreenMail on unique fixed ports per test class (13025/13026/13027) to avoid SMTP conflicts
+- Run `TestBackendApplication.main()` for local dev with embedded Postgres (no Docker needed)
+
+### Testcontainers Policy
+**Do NOT use Testcontainers** (Docker-based containers) for new tests. Use the existing embedded Postgres and `InMemoryStorageService` instead. Testcontainers caused cascading HikariPool failures due to Docker Desktop resource limits.
+- **Postgres**: Always use `@Import(TestcontainersConfiguration.class)` which provides embedded Postgres — never add `PostgreSQLContainer`
+- **S3/Storage**: Mock via `InMemoryStorageService` (auto-registered as `@Primary` by `TestcontainersConfiguration`). If a test needs to verify real S3 presigned URL HTTP round-trips, that is an exceptional case requiring explicit justification.
+- **Other services** (Redis, Kafka, etc.): Mock or use embedded alternatives. Only use Testcontainers if no embedded/in-memory alternative exists AND the test genuinely needs real infrastructure behavior.
 
 ### Shared Test Utilities (`testutil/`)
 
@@ -328,7 +337,7 @@ ScopedValue.where(RequestScopes.TENANT_ID, "tenant_test123").run(() -> {
 
 | Type | Location | Annotations | What it tests | Dependencies allowed |
 |------|----------|-------------|---------------|---------------------|
-| Integration (HTTP) | `*IntegrationTest.java` | `@SpringBootTest`, `@AutoConfigureMockMvc`, `@Import(TestcontainersConfiguration.class)` | Full request→response cycle via MockMvc | Real DB (Testcontainers), all Spring beans |
+| Integration (HTTP) | `*IntegrationTest.java` | `@SpringBootTest`, `@AutoConfigureMockMvc`, `@Import(TestcontainersConfiguration.class)` | Full request→response cycle via MockMvc | Real DB (embedded Postgres), all Spring beans |
 | Service | `*ServiceTest.java` | Same as integration | Service logic with real dependencies | Real DB, repositories, other services |
 | Architecture | `architecture/*Test.java` | `@AnalyzeClasses` | Package dependencies, naming conventions | ArchUnit (no Spring context) |
 
@@ -341,7 +350,7 @@ ScopedValue.where(RequestScopes.TENANT_ID, "tenant_test123").run(() -> {
 **Test coupling rules:**
 - HTTP tests assert response status + JSON shape, not internal state
 - Service tests may inject repositories for setup, but prefer `TestEntityHelper` API calls
-- Never mock repositories in integration tests — use real Testcontainers Postgres
+- Never mock repositories in integration tests — use real embedded Postgres
 - Error path tests must assert ProblemDetail fields (status, title, detail), not just HTTP status code
 
 ## Error Handling & Resilience

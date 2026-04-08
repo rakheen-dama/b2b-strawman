@@ -165,6 +165,15 @@ public class MemberFilter extends OncePerRequestFilter {
       }
     }
 
+    // If no invitation, check JWT for explicit role claim (mock-auth / Keycloak)
+    if (Roles.ORG_MEMBER.equals(effectiveRole)) {
+      String jwtRole = jwt.getClaimAsString("role");
+      if (jwtRole != null && !jwtRole.isBlank()) {
+        effectiveRole = jwtRole;
+        log.info("Using JWT role claim '{}' for user {}", jwtRole, clerkUserId);
+      }
+    }
+
     // First member in a newly-provisioned tenant becomes owner (founding user).
     if (Roles.ORG_MEMBER.equals(effectiveRole) && memberRepository.count() == 0) {
       effectiveRole = Roles.ORG_OWNER;

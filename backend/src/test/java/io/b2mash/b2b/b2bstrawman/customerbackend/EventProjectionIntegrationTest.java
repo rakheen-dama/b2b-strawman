@@ -227,7 +227,7 @@ class EventProjectionIntegrationTest {
                 .content("{\"targetStatus\": \"ONBOARDING\"}"))
         .andExpect(status().isOk());
     // Completing all checklist items auto-transitions ONBOARDING -> ACTIVE
-    TestChecklistHelper.completeChecklistItems(
+    TestChecklistHelper.transitionToActive(
         mockMvc, customerId, TestJwtFactory.ownerJwt(ORG_ID, "user_ep_owner"));
   }
 

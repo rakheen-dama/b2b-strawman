@@ -181,7 +181,8 @@ export interface TariffItem {
   itemNumber: string;
   description: string;
   unit: string;
-  rateInCents: number;
+  /** Amount in the base currency unit (e.g. Rands, not cents). Matches backend TariffItemResponse.amount. */
+  amount: number;
   notes: string | null;
   createdAt: string;
   updatedAt: string;

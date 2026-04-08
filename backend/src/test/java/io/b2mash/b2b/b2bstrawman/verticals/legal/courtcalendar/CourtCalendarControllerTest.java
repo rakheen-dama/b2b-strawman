@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar;
 
 import static io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.createActiveCustomer;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -247,7 +248,7 @@ class CourtCalendarControllerTest {
   }
 
   @Test
-  void postPostpone_returnsPostponedStatus() throws Exception {
+  void postPostpone_returnsNewScheduledEntry() throws Exception {
     var result =
         mockMvc
             .perform(
@@ -267,24 +268,43 @@ class CourtCalendarControllerTest {
             .andExpect(status().isCreated())
             .andReturn();
 
-    String id =
+    String originalId =
         com.jayway.jsonpath.JsonPath.read(result.getResponse().getContentAsString(), "$.id");
 
+    // Postpone returns the new SCHEDULED entry
+    var postponeResult =
+        mockMvc
+            .perform(
+                post("/api/court-dates/" + originalId + "/postpone")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_court_ctrl_owner"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "newDate": "2026-10-15",
+                          "reason": "Judge unavailable"
+                        }
+                        """))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("SCHEDULED"))
+            .andExpect(jsonPath("$.scheduledDate").value("2026-10-15"))
+            .andExpect(jsonPath("$.description").value("Rescheduled from 2026-09-01"))
+            .andReturn();
+
+    // New entry should have a different ID
+    String newId =
+        com.jayway.jsonpath.JsonPath.read(
+            postponeResult.getResponse().getContentAsString(), "$.id");
+    assertThat(newId).isNotEqualTo(originalId);
+
+    // Original entry should be POSTPONED with original date preserved
     mockMvc
         .perform(
-            post("/api/court-dates/" + id + "/postpone")
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_court_ctrl_owner"))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {
-                      "newDate": "2026-10-15",
-                      "reason": "Judge unavailable"
-                    }
-                    """))
+            get("/api/court-dates/" + originalId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_court_ctrl_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("POSTPONED"))
-        .andExpect(jsonPath("$.scheduledDate").value("2026-10-15"))
+        .andExpect(jsonPath("$.scheduledDate").value("2026-09-01"))
         .andExpect(jsonPath("$.outcome").value("Postponed: Judge unavailable"));
   }
 

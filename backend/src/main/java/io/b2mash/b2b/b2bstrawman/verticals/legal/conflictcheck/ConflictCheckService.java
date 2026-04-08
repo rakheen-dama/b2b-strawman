@@ -244,6 +244,37 @@ public class ConflictCheckService {
           buildCustomerConflict(customer, "NAME_SIMILARITY", score, request.checkedName()));
     }
 
+    // Search project/matter names (GAP-D14-01)
+    var projectNameMatches =
+        projectRepository.findBySimilarName(
+            request.checkedName(), FUZZY_THRESHOLD, MAX_SEARCH_RESULTS);
+    for (var project : projectNameMatches) {
+      double score = estimateSimilarity(project.getName(), request.checkedName());
+      // Boost score for substring matches — if the search term appears verbatim in the
+      // project name, ensure the score reflects a meaningful match even when trigram
+      // similarity is low due to the name being much longer than the search term.
+      if (project.getName().toLowerCase().contains(request.checkedName().toLowerCase())
+          && score < CONFLICT_THRESHOLD) {
+        score = CONFLICT_THRESHOLD;
+      }
+      if (score > highestScore) {
+        highestScore = score;
+      }
+      conflicts.add(
+          new ConflictDetail(
+              null,
+              null,
+              project.getCustomerId(),
+              null,
+              project.getId(),
+              project.getName(),
+              "MATTER_NAME",
+              "NAME_SIMILARITY",
+              score,
+              buildExplanation(
+                  "NAME_SIMILARITY", project.getName(), request.checkedName(), score)));
+    }
+
     for (var ap : aliasMatches) {
       if (isAdversePartyAlreadyFound(conflicts, ap.getId())) {
         continue;

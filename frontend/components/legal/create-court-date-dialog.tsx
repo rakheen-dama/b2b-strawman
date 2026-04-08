@@ -59,6 +59,8 @@ export function CreateCourtDateDialog({
   const [projects, setProjects] = useState<
     { id: string; name: string }[]
   >([]);
+  const [projectsLoading, setProjectsLoading] = useState(false);
+  const [projectsError, setProjectsError] = useState<string | null>(null);
 
   const form = useForm<CreateCourtDateFormData>({
     resolver: zodResolver(createCourtDateSchema),
@@ -77,9 +79,16 @@ export function CreateCourtDateDialog({
 
   useEffect(() => {
     if (open) {
+      setProjectsLoading(true);
+      setProjectsError(null);
       fetchProjects()
         .then((all) => setProjects(all ?? []))
-        .catch(() => setProjects([]));
+        .catch((err) => {
+          console.error("Failed to load matters:", err);
+          setProjects([]);
+          setProjectsError("Failed to load matters. Please try again.");
+        })
+        .finally(() => setProjectsLoading(false));
     }
   }, [open]);
 
@@ -148,9 +157,14 @@ export function CreateCourtDateDialog({
                     <select
                       value={field.value}
                       onChange={field.onChange}
+                      disabled={projectsLoading}
                       className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:placeholder:text-slate-400 dark:focus-visible:ring-slate-300"
                     >
-                      <option value="">-- Select matter --</option>
+                      <option value="">
+                        {projectsLoading
+                          ? "Loading matters..."
+                          : "-- Select matter --"}
+                      </option>
                       {projects.map((p) => (
                         <option key={p.id} value={p.id}>
                           {p.name}
@@ -158,6 +172,9 @@ export function CreateCourtDateDialog({
                       ))}
                     </select>
                   </FormControl>
+                  {projectsError && (
+                    <p className="text-sm text-red-600">{projectsError}</p>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}

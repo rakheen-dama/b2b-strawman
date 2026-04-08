@@ -63,7 +63,7 @@ management:
 logging:
   level:
     root: INFO
-    io.b2mash.b2b.b2bstrawman: DEBUG
+    io.b2mash.b2b.b2bstrawman: INFO
   structured:
     format:
       console: ecs

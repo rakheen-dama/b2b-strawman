@@ -5,6 +5,13 @@ import { useRouter } from "next/navigation";
 import { useMockAuthContext } from "./mock-context";
 import type { AuthUser, OrgMemberInfo } from "@/lib/auth/types";
 
+/** Normalize role string to org:-prefixed lowercase format (e.g. "owner" → "org:owner"). */
+function normalizeRole(role: string): string {
+  const lower = role.toLowerCase();
+  if (lower.startsWith("org:")) return lower;
+  return `org:${lower}`;
+}
+
 // This URL is used for direct browser-to-backend calls in mock/E2E mode only.
 // In production, Keycloak-authenticated requests go through the BFF gateway.
 // Since this module is only loaded when NEXT_PUBLIC_AUTH_PROVIDER=mock,
@@ -46,9 +53,15 @@ export function useOrgMembers(): {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then((res) => (res.ok ? res.json() : []))
-      .then((data: OrgMemberInfo[]) => {
+      .then((data: Array<Record<string, unknown>>) => {
         if (!cancelled) {
-          setMembers(Array.isArray(data) ? data : []);
+          const mapped: OrgMemberInfo[] = (Array.isArray(data) ? data : []).map((m) => ({
+            id: String(m.id ?? ""),
+            email: String(m.email ?? ""),
+            name: m.name ? String(m.name) : null,
+            role: normalizeRole(String(m.orgRole ?? m.role ?? "member")),
+          }));
+          setMembers(mapped);
         }
       })
       .catch((err) => {

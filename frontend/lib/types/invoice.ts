@@ -118,7 +118,6 @@ export interface AddLineItemRequest {
   unitPrice: number;
   sortOrder?: number;
   taxRateId?: string | null;
-  lineType?: string;
   tariffItemId?: string;
 }
 

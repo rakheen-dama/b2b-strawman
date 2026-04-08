@@ -158,14 +158,19 @@ export function NewFromTemplateDialog({
     await doCreateProject();
   }
 
-  // Update name preview when customer changes
+  // Update name preview when customer changes — only if user hasn't manually edited
   function handleCustomerChange(newCustomerId: string) {
+    const oldCustomerId = customerId;
     setCustomerId(newCustomerId);
     if (selectedTemplate) {
+      const oldCustomerName = customers.find((c) => c.id === oldCustomerId)?.name;
+      const oldPreview = resolveNameTokens(selectedTemplate.namePattern, oldCustomerName, new Date());
       const newCustomerName = customers.find((c) => c.id === newCustomerId)?.name;
-      setProjectName(
-        resolveNameTokens(selectedTemplate.namePattern, newCustomerName, new Date()),
-      );
+      const newPreview = resolveNameTokens(selectedTemplate.namePattern, newCustomerName, new Date());
+      // Only auto-update if user hasn't manually changed the name
+      if (projectName === oldPreview || projectName === selectedTemplate.namePattern) {
+        setProjectName(newPreview);
+      }
     }
   }
 

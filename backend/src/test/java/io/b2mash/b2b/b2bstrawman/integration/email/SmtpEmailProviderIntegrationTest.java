@@ -15,7 +15,7 @@ import org.springframework.mail.javamail.JavaMailSenderImpl;
 class SmtpEmailProviderIntegrationTest {
 
   @RegisterExtension
-  static GreenMailExtension greenMail = new GreenMailExtension(ServerSetupTest.SMTP);
+  static GreenMailExtension greenMail = new GreenMailExtension(ServerSetupTest.SMTP.dynamicPort());
 
   private SmtpEmailProvider provider;
 

@@ -24,8 +24,8 @@ import {
 } from "@/app/(app)/org/[slug]/projects/[id]/member-actions";
 import type { OrgMember, ProjectMember } from "@/lib/types";
 
-function MemberAvatar({ name }: { name: string }) {
-  const initial = name.charAt(0).toUpperCase();
+function MemberAvatar({ name }: { name: string | null }) {
+  const initial = (name ?? "?").charAt(0).toUpperCase();
   return (
     <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
       {initial}
@@ -122,14 +122,14 @@ export function AddMemberDialog({
                 {availableMembers.map((member) => (
                   <CommandItem
                     key={member.id}
-                    value={`${member.name} ${member.email}`}
+                    value={`${member.name ?? ""} ${member.email}`}
                     onSelect={() => handleAddMember(member.id)}
                     disabled={isAdding}
                     className="gap-3 py-3 data-[selected=true]:bg-slate-100 dark:data-[selected=true]:bg-slate-800"
                   >
                     <MemberAvatar name={member.name} />
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold">{member.name}</p>
+                      <p className="truncate text-sm font-semibold">{member.name ?? "Unknown"}</p>
                       <p className="truncate text-xs text-slate-600 dark:text-slate-400">{member.email}</p>
                     </div>
                   </CommandItem>

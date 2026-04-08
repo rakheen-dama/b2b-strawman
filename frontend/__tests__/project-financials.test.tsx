@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { ProjectFinancialsTab } from "@/components/profitability/project-financials-tab";
+import { TerminologyProvider } from "@/lib/terminology";
 import type { ProjectProfitabilityResponse } from "@/lib/types";
 
 function makeProfitability(
@@ -36,7 +37,7 @@ describe("ProjectFinancialsTab", () => {
 
   it("renders profitability data with currency breakdowns", () => {
     const profitability = makeProfitability();
-    render(<ProjectFinancialsTab profitability={profitability} />);
+    render(<TerminologyProvider verticalProfile={null}><ProjectFinancialsTab profitability={profitability} /></TerminologyProvider>);
 
     expect(screen.getByText("Project Profitability")).toBeInTheDocument();
     expect(screen.getByText("120.0h")).toBeInTheDocument();
@@ -61,7 +62,7 @@ describe("ProjectFinancialsTab", () => {
         },
       ],
     });
-    render(<ProjectFinancialsTab profitability={profitability} />);
+    render(<TerminologyProvider verticalProfile={null}><ProjectFinancialsTab profitability={profitability} /></TerminologyProvider>);
 
     // Cost shows N/A from formatCurrencySafe, margin and margin% show N/A
     const naElements = screen.getAllByText("N/A");
@@ -69,7 +70,7 @@ describe("ProjectFinancialsTab", () => {
   });
 
   it("shows empty state when profitability is null", () => {
-    render(<ProjectFinancialsTab profitability={null} />);
+    render(<TerminologyProvider verticalProfile={null}><ProjectFinancialsTab profitability={null} /></TerminologyProvider>);
 
     expect(screen.getByText("No financial data yet")).toBeInTheDocument();
     expect(

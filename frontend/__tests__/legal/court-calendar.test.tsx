@@ -255,6 +255,50 @@ describe("CreateCourtDateDialog", () => {
     expect(screen.getByLabelText("Date")).toBeInTheDocument();
     expect(screen.getByLabelText("Court Name")).toBeInTheDocument();
   });
+
+  it("populates matter dropdown with projects", async () => {
+    const { fetchProjects } = await import(
+      "@/app/(app)/org/[slug]/court-calendar/actions"
+    );
+    vi.mocked(fetchProjects).mockResolvedValueOnce([
+      { id: "p-1", name: "Smith v Jones" },
+      { id: "p-2", name: "Doe v City" },
+    ]);
+
+    const user = userEvent.setup();
+    render(<CreateCourtDateDialog slug="acme" />);
+
+    await user.click(screen.getByTestId("create-court-date-trigger"));
+
+    // Wait for projects to load
+    const matterSelect = screen.getByLabelText("Matter");
+    await vi.waitFor(() => {
+      expect(matterSelect).not.toBeDisabled();
+    });
+
+    const options = matterSelect.querySelectorAll("option");
+    expect(options.length).toBe(3); // placeholder + 2 projects
+    expect(options[1].textContent).toBe("Smith v Jones");
+    expect(options[2].textContent).toBe("Doe v City");
+  });
+
+  it("shows error message when fetchProjects fails", async () => {
+    const { fetchProjects } = await import(
+      "@/app/(app)/org/[slug]/court-calendar/actions"
+    );
+    vi.mocked(fetchProjects).mockRejectedValueOnce(new Error("Network error"));
+
+    const user = userEvent.setup();
+    render(<CreateCourtDateDialog slug="acme" />);
+
+    await user.click(screen.getByTestId("create-court-date-trigger"));
+
+    await vi.waitFor(() => {
+      expect(
+        screen.getByText("Failed to load matters. Please try again.")
+      ).toBeInTheDocument();
+    });
+  });
 });
 
 describe("CreatePrescriptionDialog", () => {

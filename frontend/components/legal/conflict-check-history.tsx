@@ -75,8 +75,8 @@ export function ConflictCheckHistory({
         if (resultFilter) filters.result = resultFilter;
         if (typeFilter) filters.checkType = typeFilter;
         const res = await fetchConflictChecks(filters);
-        setChecks(res.content);
-        setTotal(res.page.totalElements);
+        setChecks(res?.content ?? []);
+        setTotal(res?.page?.totalElements ?? 0);
       } catch (err) {
         console.error("Failed to refetch conflict checks:", err);
       }

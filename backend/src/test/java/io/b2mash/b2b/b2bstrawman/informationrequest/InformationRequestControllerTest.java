@@ -905,7 +905,7 @@ class InformationRequestControllerTest {
                 .content("{\"targetStatus\": \"ONBOARDING\"}"))
         .andExpect(status().isOk());
     // Complete all checklist items (auto-transitions ONBOARDING -> ACTIVE)
-    TestChecklistHelper.completeChecklistItems(mockMvc, activeCustomerId, jwt);
+    TestChecklistHelper.transitionToActive(mockMvc, activeCustomerId, jwt);
     return activeCustomerId;
   } // --- Capability Tests (added in Epic 315A) ---
 

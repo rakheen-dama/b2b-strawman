@@ -405,8 +405,8 @@ class DeleteProtectionIntegrationTest {
     // Transition PROSPECT -> ONBOARDING
     transitionCustomerLifecycle(customerId, "ONBOARDING");
 
-    // Complete all checklist items to auto-transition to ACTIVE
-    TestChecklistHelper.completeChecklistItems(
+    // Complete checklists (if any) and explicitly transition to ACTIVE
+    TestChecklistHelper.transitionToActive(
         mockMvc, customerId, TestJwtFactory.ownerJwt(ORG_ID, "user_dp_owner"));
 
     return UUID.fromString(customerId);

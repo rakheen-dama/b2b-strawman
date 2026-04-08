@@ -113,7 +113,7 @@ export async function createItem(
     itemNumber: string;
     description: string;
     unit: string;
-    rateInCents: number;
+    amount: number;
     notes?: string;
   },
 ): Promise<ActionResult> {

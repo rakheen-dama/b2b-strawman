@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { AlertTriangle } from "lucide-react";
 import { transitionCustomerLifecycle } from "@/app/(app)/org/[slug]/customers/[id]/lifecycle-actions";
+import { useTerminology } from "@/lib/terminology";
 import type { LifecycleStatus } from "@/lib/types";
 import type { PrerequisiteCheck } from "@/components/prerequisite/types";
 
@@ -88,6 +89,7 @@ export function TransitionConfirmDialog({
   onSuccess,
   onPrerequisiteFailed,
 }: TransitionConfirmDialogProps) {
+  const { t } = useTerminology();
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
@@ -153,7 +155,7 @@ export function TransitionConfirmDialog({
               </div>
             </div>
           )}
-          <AlertDialogTitle className="text-center">{meta.title}</AlertDialogTitle>
+          <AlertDialogTitle className="text-center">{t(meta.title)}</AlertDialogTitle>
           <AlertDialogDescription className="text-center">
             {meta.description}
           </AlertDialogDescription>

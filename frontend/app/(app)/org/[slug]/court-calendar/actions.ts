@@ -219,10 +219,10 @@ export async function interruptPrescription(
 export async function fetchProjects(): Promise<
   { id: string; name: string }[]
 > {
-  const result = await api.get<PaginatedResponse<{ id: string; name: string }>>(
+  const result = await api.get<{ id: string; name: string }[]>(
     "/api/projects?size=200"
   );
-  return result?.content ?? [];
+  return result ?? [];
 }
 
 // ── Dashboard ──────────────────────────────────────────────────────

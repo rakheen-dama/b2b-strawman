@@ -3,6 +3,7 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { LifecycleTransitionDropdown } from "@/components/compliance/LifecycleTransitionDropdown";
 import { SetupProgressCard } from "@/components/setup/setup-progress-card";
+import { TerminologyProvider } from "@/lib/terminology";
 import type { PrerequisiteCheck } from "@/components/prerequisite/types";
 
 // Mock server actions and prerequisite actions
@@ -66,11 +67,13 @@ describe("LifecycleTransitionDropdown — prerequisite integration", () => {
     mockCheckPrereqs.mockResolvedValueOnce(failedCheck);
 
     render(
-      <LifecycleTransitionDropdown
-        currentStatus="ONBOARDING"
-        customerId="cust-1"
-        slug="test-org"
-      />,
+      <TerminologyProvider verticalProfile={null}>
+        <LifecycleTransitionDropdown
+          currentStatus="ONBOARDING"
+          customerId="cust-1"
+          slug="test-org"
+        />
+      </TerminologyProvider>,
     );
 
     // Open the dropdown
@@ -107,11 +110,13 @@ describe("LifecycleTransitionDropdown — prerequisite integration", () => {
     mockCheckPrereqs.mockResolvedValueOnce(passedCheck);
 
     render(
-      <LifecycleTransitionDropdown
-        currentStatus="ONBOARDING"
-        customerId="cust-1"
-        slug="test-org"
-      />,
+      <TerminologyProvider verticalProfile={null}>
+        <LifecycleTransitionDropdown
+          currentStatus="ONBOARDING"
+          customerId="cust-1"
+          slug="test-org"
+        />
+      </TerminologyProvider>,
     );
 
     await user.click(screen.getByRole("button", { name: /change status/i }));
@@ -148,11 +153,13 @@ describe("LifecycleTransitionDropdown — prerequisite integration", () => {
     });
 
     render(
-      <LifecycleTransitionDropdown
-        currentStatus="ONBOARDING"
-        customerId="cust-1"
-        slug="test-org"
-      />,
+      <TerminologyProvider verticalProfile={null}>
+        <LifecycleTransitionDropdown
+          currentStatus="ONBOARDING"
+          customerId="cust-1"
+          slug="test-org"
+        />
+      </TerminologyProvider>,
     );
 
     await user.click(screen.getByRole("button", { name: /change status/i }));

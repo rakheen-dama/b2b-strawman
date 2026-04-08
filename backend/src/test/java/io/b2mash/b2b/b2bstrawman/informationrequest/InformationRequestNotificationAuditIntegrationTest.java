@@ -406,7 +406,7 @@ class InformationRequestNotificationAuditIntegrationTest {
                 .content("{\"targetStatus\": \"ONBOARDING\"}"))
         .andExpect(status().isOk());
     // Complete all checklist items (auto-transitions ONBOARDING -> ACTIVE)
-    TestChecklistHelper.completeChecklistItems(mockMvc, cid, jwt);
+    TestChecklistHelper.transitionToActive(mockMvc, cid, jwt);
     return cid;
   }
 

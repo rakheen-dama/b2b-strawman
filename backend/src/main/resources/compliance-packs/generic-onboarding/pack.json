@@ -8,7 +8,7 @@
   "checklistTemplate": {
     "name": "Generic Client Onboarding",
     "slug": "generic-client-onboarding",
-    "autoInstantiate": true,
+    "autoInstantiate": false,
     "items": [
       {
         "name": "Confirm client engagement",
@@ -42,8 +42,8 @@
         "description": "Obtain and upload the signed engagement letter from the client.",
         "sortOrder": 4,
         "required": true,
-        "requiresDocument": true,
-        "requiredDocumentLabel": "Signed engagement letter",
+        "requiresDocument": false,
+        "requiredDocumentLabel": null,
         "dependsOnItemKey": null
       }
     ]

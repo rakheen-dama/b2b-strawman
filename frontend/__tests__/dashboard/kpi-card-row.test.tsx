@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { KpiCardRow } from "@/components/dashboard/kpi-card-row";
+import { TerminologyProvider } from "@/lib/terminology";
 import type { KpiResponse } from "@/lib/dashboard-types";
 
 // Mock next/link to render as a plain anchor
@@ -40,13 +41,19 @@ const mockKpis: KpiResponse = {
   },
 };
 
+function renderWithProvider(ui: React.ReactElement) {
+  return render(
+    <TerminologyProvider verticalProfile={null}>{ui}</TerminologyProvider>,
+  );
+}
+
 describe("KpiCardRow", () => {
   afterEach(() => {
     cleanup();
   });
 
   it("renders 5 cards for admin users", () => {
-    render(
+    renderWithProvider(
       <KpiCardRow kpis={mockKpis} isAdmin={true} orgSlug="acme" />
     );
 
@@ -58,7 +65,7 @@ describe("KpiCardRow", () => {
   });
 
   it("renders 3 cards for non-admin users (hides Billable % and Avg. Margin)", () => {
-    render(
+    renderWithProvider(
       <KpiCardRow kpis={mockKpis} isAdmin={false} orgSlug="acme" />
     );
 
@@ -70,7 +77,7 @@ describe("KpiCardRow", () => {
   });
 
   it("renders empty state when kpis is null", () => {
-    render(
+    renderWithProvider(
       <KpiCardRow kpis={null} isAdmin={false} orgSlug="acme" />
     );
 
@@ -79,7 +86,7 @@ describe("KpiCardRow", () => {
   });
 
   it("displays active project count value", () => {
-    render(
+    renderWithProvider(
       <KpiCardRow kpis={mockKpis} isAdmin={true} orgSlug="acme" />
     );
 
@@ -87,7 +94,7 @@ describe("KpiCardRow", () => {
   });
 
   it("links active projects card to projects page", () => {
-    render(
+    renderWithProvider(
       <KpiCardRow kpis={mockKpis} isAdmin={false} orgSlug="acme" />
     );
 
@@ -99,7 +106,7 @@ describe("KpiCardRow", () => {
   });
 
   it("displays formatted hours value", () => {
-    render(
+    renderWithProvider(
       <KpiCardRow kpis={mockKpis} isAdmin={false} orgSlug="acme" />
     );
 
@@ -107,7 +114,7 @@ describe("KpiCardRow", () => {
   });
 
   it("displays overdue task count", () => {
-    render(
+    renderWithProvider(
       <KpiCardRow kpis={mockKpis} isAdmin={false} orgSlug="acme" />
     );
 

@@ -5,11 +5,11 @@
   "version": "1.0.0",
   "verticalProfile": "legal-za",
   "jurisdiction": "ZA",
-  "customerType": "ALL",
+  "customerType": "ANY",
   "checklistTemplate": {
     "name": "Legal Client Onboarding",
     "slug": "legal-za-client-onboarding",
-    "autoInstantiate": false,
+    "autoInstantiate": true,
     "items": [
       {
         "name": "Proof of Identity",

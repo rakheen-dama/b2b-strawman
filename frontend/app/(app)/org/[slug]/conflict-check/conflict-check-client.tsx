@@ -30,8 +30,8 @@ export function ConflictCheckClient({
     startTransition(async () => {
       try {
         const res = await fetchConflictChecks();
-        setChecks(res.content);
-        setTotal(res.page.totalElements);
+        setChecks(res?.content ?? []);
+        setTotal(res?.page?.totalElements ?? 0);
       } catch (err) {
         console.error("Failed to refetch conflict checks:", err);
       }

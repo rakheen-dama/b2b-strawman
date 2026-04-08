@@ -32,6 +32,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectLifecycleGuard;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -161,7 +162,19 @@ public class TaskService {
       LocalDate dueDate,
       ActorContext actor) {
     return createTask(
-        projectId, title, description, priority, type, dueDate, actor, null, null, null);
+        projectId,
+        title,
+        description,
+        priority,
+        type,
+        dueDate,
+        actor,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null);
   }
 
   /**
@@ -198,6 +211,7 @@ public class TaskService {
         appliedFieldGroups,
         assigneeId,
         null,
+        null,
         null);
   }
 
@@ -215,6 +229,37 @@ public class TaskService {
       UUID assigneeId,
       String recurrenceRule,
       LocalDate recurrenceEndDate) {
+    return createTask(
+        projectId,
+        title,
+        description,
+        priority,
+        type,
+        dueDate,
+        actor,
+        customFields,
+        appliedFieldGroups,
+        assigneeId,
+        recurrenceRule,
+        recurrenceEndDate,
+        null);
+  }
+
+  @Transactional
+  public Task createTask(
+      UUID projectId,
+      String title,
+      String description,
+      String priority,
+      String type,
+      LocalDate dueDate,
+      ActorContext actor,
+      Map<String, Object> customFields,
+      List<UUID> appliedFieldGroups,
+      UUID assigneeId,
+      String recurrenceRule,
+      LocalDate recurrenceEndDate,
+      BigDecimal estimatedHours) {
     // Any project member can create tasks; view access is sufficient
     projectAccessService.requireViewAccess(projectId, actor);
 
@@ -248,6 +293,9 @@ public class TaskService {
     }
     if (recurrenceEndDate != null) {
       task.setRecurrenceEndDate(recurrenceEndDate);
+    }
+    if (estimatedHours != null) {
+      task.setEstimatedHours(estimatedHours);
     }
 
     // Auto-apply field groups before save so audit events capture final state
@@ -324,6 +372,7 @@ public class TaskService {
         null,
         null,
         null,
+        null,
         null);
   }
 
@@ -353,6 +402,7 @@ public class TaskService {
         customFields,
         appliedFieldGroups,
         null,
+        null,
         null);
   }
 
@@ -371,6 +421,39 @@ public class TaskService {
       List<UUID> appliedFieldGroups,
       String recurrenceRule,
       LocalDate recurrenceEndDate) {
+    return updateTask(
+        taskId,
+        title,
+        description,
+        priority,
+        status,
+        type,
+        dueDate,
+        assigneeId,
+        actor,
+        customFields,
+        appliedFieldGroups,
+        recurrenceRule,
+        recurrenceEndDate,
+        null);
+  }
+
+  @Transactional
+  public Task updateTask(
+      UUID taskId,
+      String title,
+      String description,
+      String priority,
+      String status,
+      String type,
+      LocalDate dueDate,
+      UUID assigneeId,
+      ActorContext actor,
+      Map<String, Object> customFields,
+      List<UUID> appliedFieldGroups,
+      String recurrenceRule,
+      LocalDate recurrenceEndDate,
+      BigDecimal estimatedHours) {
     var task =
         taskRepository
             .findById(taskId)
@@ -435,6 +518,7 @@ public class TaskService {
     UUID oldAssigneeId = task.getAssigneeId();
     LocalDate oldDueDate = task.getDueDate();
     String oldType = task.getType();
+    BigDecimal oldEstimatedHours = task.getEstimatedHours();
 
     task.update(
         title,
@@ -446,7 +530,8 @@ public class TaskService {
         assigneeId,
         actor.memberId(),
         effectiveRecurrenceRule,
-        effectiveRecurrenceEndDate);
+        effectiveRecurrenceEndDate,
+        estimatedHours);
     task = taskRepository.save(task);
 
     // Build delta map -- only include changed fields
@@ -459,6 +544,7 @@ public class TaskService {
             .trackAsString("assignee_id", oldAssigneeId, assigneeId)
             .trackAsString("due_date", oldDueDate, dueDate)
             .trackAsString("type", oldType, type)
+            .trackAsString("estimatedHours", oldEstimatedHours, estimatedHours)
             .buildMutable();
 
     details.put("project_id", task.getProjectId().toString());

@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.invoice.dto;
 
 import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceStatus;
+import io.b2mash.b2b.b2bstrawman.invoice.TaxType;
 import io.b2mash.b2b.b2bstrawman.tax.dto.TaxBreakdownEntry;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -43,7 +44,11 @@ public record InvoiceResponse(
     String paymentDestination,
     List<TaxBreakdownEntry> taxBreakdown,
     boolean taxInclusive,
-    boolean hasPerLineTax) {
+    boolean hasPerLineTax,
+    String poNumber,
+    TaxType taxType,
+    LocalDate billingPeriodStart,
+    LocalDate billingPeriodEnd) {
 
   public static InvoiceResponse from(
       Invoice invoice,
@@ -85,6 +90,10 @@ public record InvoiceResponse(
         invoice.getPaymentDestination(),
         taxBreakdown,
         taxInclusive,
-        hasPerLineTax);
+        hasPerLineTax,
+        invoice.getPoNumber(),
+        invoice.getTaxType(),
+        invoice.getBillingPeriodStart(),
+        invoice.getBillingPeriodEnd());
   }
 }

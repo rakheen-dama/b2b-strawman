@@ -111,7 +111,7 @@ public class BillingRunGenerationService {
     for (var item : pendingItems) {
       try {
         var invoiceTotal =
-            transactionTemplate.execute(
+            transactionTemplate.<BigDecimal>execute(
                 status -> {
                   var freshItem = billingRunItemRepository.findById(item.getId()).orElseThrow();
                   freshItem.markGenerating();
@@ -126,6 +126,10 @@ public class BillingRunGenerationService {
                           run.getCurrency(),
                           timeEntryIds.isEmpty() ? null : timeEntryIds,
                           expenseIds.isEmpty() ? null : expenseIds,
+                          null,
+                          null,
+                          null,
+                          null,
                           null,
                           null,
                           null);

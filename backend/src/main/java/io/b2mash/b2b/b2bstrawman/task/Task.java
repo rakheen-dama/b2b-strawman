@@ -10,6 +10,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.Version;
+import jakarta.validation.constraints.DecimalMin;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -95,6 +97,10 @@ public class Task {
   @Column(name = "parent_task_id")
   private UUID parentTaskId;
 
+  @DecimalMin("0")
+  @Column(name = "estimated_hours", precision = 8, scale = 2)
+  private BigDecimal estimatedHours;
+
   protected Task() {}
 
   public Task(
@@ -132,7 +138,8 @@ public class Task {
       UUID assigneeId,
       UUID actorId,
       String recurrenceRule,
-      LocalDate recurrenceEndDate) {
+      LocalDate recurrenceEndDate,
+      BigDecimal estimatedHours) {
     this.title = title;
     this.description = description;
     this.priority = priority;
@@ -141,6 +148,7 @@ public class Task {
     this.assigneeId = assigneeId;
     this.recurrenceRule = recurrenceRule;
     this.recurrenceEndDate = recurrenceEndDate;
+    this.estimatedHours = estimatedHours;
 
     // Handle status transition with lifecycle timestamp bookkeeping
     if (newStatus != this.status) {
@@ -367,6 +375,15 @@ public class Task {
 
   public void setParentTaskId(UUID parentTaskId) {
     this.parentTaskId = parentTaskId;
+    this.updatedAt = Instant.now();
+  }
+
+  public BigDecimal getEstimatedHours() {
+    return estimatedHours;
+  }
+
+  public void setEstimatedHours(BigDecimal estimatedHours) {
+    this.estimatedHours = estimatedHours;
     this.updatedAt = Instant.now();
   }
 }

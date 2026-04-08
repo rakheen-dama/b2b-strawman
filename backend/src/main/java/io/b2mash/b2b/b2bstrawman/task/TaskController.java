@@ -65,7 +65,8 @@ public class TaskController {
             request.appliedFieldGroups(),
             request.assigneeId(),
             request.recurrenceRule(),
-            request.recurrenceEndDate());
+            request.recurrenceEndDate(),
+            request.estimatedHours());
 
     var names = taskService.resolveTaskMemberNames(List.of(task));
     return ResponseEntity.created(URI.create("/api/tasks/" + task.getId()))
@@ -175,7 +176,8 @@ public class TaskController {
             request.customFields(),
             request.appliedFieldGroups(),
             request.recurrenceRule(),
-            request.recurrenceEndDate());
+            request.recurrenceEndDate(),
+            request.estimatedHours());
 
     var names = taskService.resolveTaskMemberNames(List.of(task));
     var tags = entityTagService.getEntityTags("TASK", id);

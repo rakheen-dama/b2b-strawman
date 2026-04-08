@@ -207,7 +207,10 @@ public class ProjectController {
             request.customFields(),
             request.appliedFieldGroups(),
             request.customerId(),
-            request.dueDate());
+            request.dueDate(),
+            request.referenceNumber(),
+            request.priority(),
+            request.workType());
     var memberNames = projectService.resolveProjectMemberNames(List.of(project));
     return ResponseEntity.created(URI.create("/api/projects/" + project.getId()))
         .body(ProjectResponse.from(project, Roles.PROJECT_LEAD, memberNames));
@@ -225,7 +228,10 @@ public class ProjectController {
             request.customFields(),
             request.appliedFieldGroups(),
             request.customerId(),
-            request.dueDate());
+            request.dueDate(),
+            request.referenceNumber(),
+            request.priority(),
+            request.workType());
     var tags = entityTagService.getEntityTags("PROJECT", id);
     var memberNames = projectService.resolveProjectMemberNames(List.of(pwr.project()));
     return ResponseEntity.ok(
@@ -343,7 +349,11 @@ public class ProjectController {
       UUID customerId,
       LocalDate dueDate,
       Map<String, Object> customFields,
-      List<UUID> appliedFieldGroups) {}
+      List<UUID> appliedFieldGroups,
+      @Size(max = 100, message = "referenceNumber must be at most 100 characters")
+          String referenceNumber,
+      ProjectPriority priority,
+      @Size(max = 50, message = "workType must be at most 50 characters") String workType) {}
 
   public record UpdateProjectRequest(
       @NotBlank(message = "name is required")
@@ -353,7 +363,11 @@ public class ProjectController {
       UUID customerId,
       LocalDate dueDate,
       Map<String, Object> customFields,
-      List<UUID> appliedFieldGroups) {}
+      List<UUID> appliedFieldGroups,
+      @Size(max = 100, message = "referenceNumber must be at most 100 characters")
+          String referenceNumber,
+      ProjectPriority priority,
+      @Size(max = 50, message = "workType must be at most 50 characters") String workType) {}
 
   public record ProjectResponse(
       UUID id,
@@ -373,7 +387,10 @@ public class ProjectController {
       String projectRole,
       Map<String, Object> customFields,
       List<UUID> appliedFieldGroups,
-      List<TagResponse> tags) {
+      List<TagResponse> tags,
+      String referenceNumber,
+      ProjectPriority priority,
+      String workType) {
 
     public static ProjectResponse from(Project project) {
       return from(project, Map.of());
@@ -398,7 +415,10 @@ public class ProjectController {
           null,
           project.getCustomFields(),
           project.getAppliedFieldGroups(),
-          List.of());
+          List.of(),
+          project.getReferenceNumber(),
+          project.getPriority(),
+          project.getWorkType());
     }
 
     public static ProjectResponse from(
@@ -421,7 +441,10 @@ public class ProjectController {
           projectRole,
           project.getCustomFields(),
           project.getAppliedFieldGroups(),
-          List.of());
+          List.of(),
+          project.getReferenceNumber(),
+          project.getPriority(),
+          project.getWorkType());
     }
 
     public static ProjectResponse from(
@@ -447,7 +470,10 @@ public class ProjectController {
           projectRole,
           project.getCustomFields(),
           project.getAppliedFieldGroups(),
-          tags);
+          tags,
+          project.getReferenceNumber(),
+          project.getPriority(),
+          project.getWorkType());
     }
   }
 }

@@ -111,6 +111,19 @@ public class Invoice {
   @Column(name = "billing_run_id")
   private UUID billingRunId;
 
+  @Column(name = "po_number", length = 100)
+  private String poNumber;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "tax_type", length = 20)
+  private TaxType taxType;
+
+  @Column(name = "billing_period_start")
+  private LocalDate billingPeriodStart;
+
+  @Column(name = "billing_period_end")
+  private LocalDate billingPeriodEnd;
+
   protected Invoice() {}
 
   public Invoice(
@@ -139,6 +152,18 @@ public class Invoice {
 
   public void updateDraft(
       LocalDate dueDate, String notes, String paymentTerms, BigDecimal taxAmount) {
+    updateDraft(dueDate, notes, paymentTerms, taxAmount, null, null, null, null);
+  }
+
+  public void updateDraft(
+      LocalDate dueDate,
+      String notes,
+      String paymentTerms,
+      BigDecimal taxAmount,
+      String poNumber,
+      TaxType taxType,
+      LocalDate billingPeriodStart,
+      LocalDate billingPeriodEnd) {
     if (this.status != InvoiceStatus.DRAFT) {
       throw new IllegalStateException("Only draft invoices can be edited");
     }
@@ -147,6 +172,11 @@ public class Invoice {
     this.paymentTerms = paymentTerms;
     this.taxAmount = taxAmount != null ? taxAmount : BigDecimal.ZERO;
     this.total = this.subtotal.add(this.taxAmount);
+    this.poNumber = poNumber != null ? poNumber : this.poNumber;
+    this.taxType = taxType != null ? taxType : this.taxType;
+    this.billingPeriodStart =
+        billingPeriodStart != null ? billingPeriodStart : this.billingPeriodStart;
+    this.billingPeriodEnd = billingPeriodEnd != null ? billingPeriodEnd : this.billingPeriodEnd;
     this.updatedAt = Instant.now();
   }
 
@@ -396,6 +426,42 @@ public class Invoice {
 
   public void setBillingRunId(UUID billingRunId) {
     this.billingRunId = billingRunId;
+    this.updatedAt = Instant.now();
+  }
+
+  public String getPoNumber() {
+    return poNumber;
+  }
+
+  public void setPoNumber(String poNumber) {
+    this.poNumber = poNumber;
+    this.updatedAt = Instant.now();
+  }
+
+  public TaxType getTaxType() {
+    return taxType;
+  }
+
+  public void setTaxType(TaxType taxType) {
+    this.taxType = taxType;
+    this.updatedAt = Instant.now();
+  }
+
+  public LocalDate getBillingPeriodStart() {
+    return billingPeriodStart;
+  }
+
+  public void setBillingPeriodStart(LocalDate billingPeriodStart) {
+    this.billingPeriodStart = billingPeriodStart;
+    this.updatedAt = Instant.now();
+  }
+
+  public LocalDate getBillingPeriodEnd() {
+    return billingPeriodEnd;
+  }
+
+  public void setBillingPeriodEnd(LocalDate billingPeriodEnd) {
+    this.billingPeriodEnd = billingPeriodEnd;
     this.updatedAt = Instant.now();
   }
 }

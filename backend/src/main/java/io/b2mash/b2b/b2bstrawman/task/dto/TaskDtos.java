@@ -3,8 +3,10 @@ package io.b2mash.b2b.b2bstrawman.task.dto;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import io.b2mash.b2b.b2bstrawman.tag.dto.TagResponse;
 import io.b2mash.b2b.b2bstrawman.task.Task;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
@@ -36,7 +38,8 @@ public final class TaskDtos {
       UUID assigneeId,
       @Size(max = 100, message = "recurrenceRule must be at most 100 characters")
           String recurrenceRule,
-      LocalDate recurrenceEndDate) {}
+      LocalDate recurrenceEndDate,
+      @DecimalMin("0") BigDecimal estimatedHours) {}
 
   public record UpdateTaskRequest(
       @NotBlank(message = "title is required")
@@ -56,7 +59,8 @@ public final class TaskDtos {
       List<UUID> appliedFieldGroups,
       @Size(max = 100, message = "recurrenceRule must be at most 100 characters")
           String recurrenceRule,
-      LocalDate recurrenceEndDate) {}
+      LocalDate recurrenceEndDate,
+      @DecimalMin("0") BigDecimal estimatedHours) {}
 
   /**
    * Backward-compatible response for the complete endpoint. The completed task fields are unwrapped
@@ -92,7 +96,8 @@ public final class TaskDtos {
       String recurrenceRule,
       LocalDate recurrenceEndDate,
       UUID parentTaskId,
-      boolean isRecurring) {
+      boolean isRecurring,
+      BigDecimal estimatedHours) {
 
     public static TaskResponse from(
         Task task, Map<UUID, String> memberNames, List<TagResponse> tags) {
@@ -122,7 +127,8 @@ public final class TaskDtos {
           task.getRecurrenceRule(),
           task.getRecurrenceEndDate(),
           task.getParentTaskId(),
-          task.isRecurring());
+          task.isRecurring(),
+          task.getEstimatedHours());
     }
   }
 }

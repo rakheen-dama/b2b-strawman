@@ -87,7 +87,8 @@ public class CreateInvoiceDraftTool implements AssistantTool {
     }
 
     var request =
-        new CreateInvoiceRequest(customerId, currency, timeEntryIds, null, null, null, null);
+        new CreateInvoiceRequest(
+            customerId, currency, timeEntryIds, null, null, null, null, null, null, null, null);
     var invoiceResponse = invoiceService.createDraft(request, context.memberId());
 
     var result = new LinkedHashMap<String, Object>();

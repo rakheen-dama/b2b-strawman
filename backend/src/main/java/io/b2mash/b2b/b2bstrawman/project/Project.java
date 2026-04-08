@@ -71,6 +71,16 @@ public class Project {
   @Column(name = "applied_field_groups", columnDefinition = "jsonb")
   private List<UUID> appliedFieldGroups;
 
+  @Column(name = "reference_number", length = 100)
+  private String referenceNumber;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "priority", length = 20)
+  private ProjectPriority priority;
+
+  @Column(name = "work_type", length = 50)
+  private String workType;
+
   protected Project() {}
 
   public Project(String name, String description, UUID createdBy) {
@@ -142,11 +152,48 @@ public class Project {
     return archivedBy;
   }
 
-  public void update(String name, String description, UUID customerId, LocalDate dueDate) {
+  public String getReferenceNumber() {
+    return referenceNumber;
+  }
+
+  public void setReferenceNumber(String referenceNumber) {
+    this.referenceNumber = referenceNumber;
+    this.updatedAt = Instant.now();
+  }
+
+  public ProjectPriority getPriority() {
+    return priority;
+  }
+
+  public void setPriority(ProjectPriority priority) {
+    this.priority = priority;
+    this.updatedAt = Instant.now();
+  }
+
+  public String getWorkType() {
+    return workType;
+  }
+
+  public void setWorkType(String workType) {
+    this.workType = workType;
+    this.updatedAt = Instant.now();
+  }
+
+  public void update(
+      String name,
+      String description,
+      UUID customerId,
+      LocalDate dueDate,
+      String referenceNumber,
+      ProjectPriority priority,
+      String workType) {
     this.name = name;
     this.description = description;
     this.customerId = customerId != null ? customerId : this.customerId;
     this.dueDate = dueDate != null ? dueDate : this.dueDate;
+    this.referenceNumber = referenceNumber != null ? referenceNumber : this.referenceNumber;
+    this.priority = priority != null ? priority : this.priority;
+    this.workType = workType != null ? workType : this.workType;
     this.updatedAt = Instant.now();
   }
 

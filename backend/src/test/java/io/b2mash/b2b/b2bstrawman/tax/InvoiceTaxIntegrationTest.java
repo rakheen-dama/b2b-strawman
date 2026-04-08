@@ -428,7 +428,17 @@ class InvoiceTaxIntegrationTest {
 
                   var request =
                       new CreateInvoiceRequest(
-                          customerId, "USD", List.of(timeEntry.getId()), null, null, null, null);
+                          customerId,
+                          "USD",
+                          List.of(timeEntry.getId()),
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null);
 
                   var response = invoiceService.createDraft(request, memberIdOwner);
 
@@ -463,7 +473,17 @@ class InvoiceTaxIntegrationTest {
 
                   var request =
                       new CreateInvoiceRequest(
-                          customerId, "USD", List.of(timeEntry.getId()), null, null, null, null);
+                          customerId,
+                          "USD",
+                          List.of(timeEntry.getId()),
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null,
+                          null);
 
                   var response = invoiceService.createDraft(request, memberIdOwner);
 
@@ -503,7 +523,9 @@ class InvoiceTaxIntegrationTest {
     // Expect exception in separate scope
     runInTenant(
         () -> {
-          var updateRequest = new UpdateInvoiceRequest(null, null, null, new BigDecimal("50.00"));
+          var updateRequest =
+              new UpdateInvoiceRequest(
+                  null, null, null, new BigDecimal("50.00"), null, null, null, null);
 
           assertThatThrownBy(() -> invoiceService.updateDraft(invoiceId[0], updateRequest))
               .isInstanceOf(InvalidStateException.class);
@@ -532,7 +554,8 @@ class InvoiceTaxIntegrationTest {
                   var response =
                       invoiceService.updateDraft(
                           invoice.getId(),
-                          new UpdateInvoiceRequest(null, null, null, new BigDecimal("15.00")));
+                          new UpdateInvoiceRequest(
+                              null, null, null, new BigDecimal("15.00"), null, null, null, null));
 
                   assertThat(response.taxAmount()).isEqualByComparingTo(new BigDecimal("15.00"));
                   assertThat(response.total()).isEqualByComparingTo(new BigDecimal("115.00"));

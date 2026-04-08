@@ -197,7 +197,20 @@ public class CustomerController {
             createdBy,
             request.customFields(),
             request.appliedFieldGroups(),
-            request.customerType());
+            request.customerType(),
+            request.registrationNumber(),
+            request.addressLine1(),
+            request.addressLine2(),
+            request.city(),
+            request.stateProvince(),
+            request.postalCode(),
+            request.country(),
+            request.taxNumber(),
+            request.contactName(),
+            request.contactEmail(),
+            request.contactPhone(),
+            request.entityType(),
+            request.financialYearEnd());
     var memberNames = customerService.resolveCustomerMemberNames(List.of(customer));
     return ResponseEntity.created(URI.create("/api/customers/" + customer.getId()))
         .body(CustomerResponse.from(customer, List.of(), memberNames));
@@ -216,7 +229,20 @@ public class CustomerController {
             request.idNumber(),
             request.notes(),
             request.customFields(),
-            request.appliedFieldGroups());
+            request.appliedFieldGroups(),
+            request.registrationNumber(),
+            request.addressLine1(),
+            request.addressLine2(),
+            request.city(),
+            request.stateProvince(),
+            request.postalCode(),
+            request.country(),
+            request.taxNumber(),
+            request.contactName(),
+            request.contactEmail(),
+            request.contactPhone(),
+            request.entityType(),
+            request.financialYearEnd());
     var tags = entityTagService.getEntityTags("CUSTOMER", id);
     var memberNames = customerService.resolveCustomerMemberNames(List.of(customer));
     return ResponseEntity.ok(CustomerResponse.from(customer, tags, memberNames));

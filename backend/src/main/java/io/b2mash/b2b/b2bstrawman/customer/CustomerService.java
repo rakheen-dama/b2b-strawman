@@ -125,6 +125,55 @@ public class CustomerService {
       Map<String, Object> customFields,
       List<UUID> appliedFieldGroups,
       CustomerType customerType) {
+    return createCustomer(
+        name,
+        email,
+        phone,
+        idNumber,
+        notes,
+        createdBy,
+        customFields,
+        appliedFieldGroups,
+        customerType,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null);
+  }
+
+  @Transactional
+  public Customer createCustomer(
+      String name,
+      String email,
+      String phone,
+      String idNumber,
+      String notes,
+      UUID createdBy,
+      Map<String, Object> customFields,
+      List<UUID> appliedFieldGroups,
+      CustomerType customerType,
+      String registrationNumber,
+      String addressLine1,
+      String addressLine2,
+      String city,
+      String stateProvince,
+      String postalCode,
+      String country,
+      String taxNumber,
+      String contactName,
+      String contactEmail,
+      String contactPhone,
+      String entityType,
+      java.time.LocalDate financialYearEnd) {
     if (repository.existsByEmail(email)) {
       throw new ResourceConflictException(
           "Customer email conflict", "A customer with email " + email + " already exists");
@@ -158,6 +207,21 @@ public class CustomerService {
     if (appliedFieldGroups != null) {
       customer.setAppliedFieldGroups(appliedFieldGroups);
     }
+
+    // Set structural fields (Phase 63 graduated fields)
+    customer.setRegistrationNumber(registrationNumber);
+    customer.setAddressLine1(addressLine1);
+    customer.setAddressLine2(addressLine2);
+    customer.setCity(city);
+    customer.setStateProvince(stateProvince);
+    customer.setPostalCode(postalCode);
+    customer.setCountry(country);
+    customer.setTaxNumber(taxNumber);
+    customer.setContactName(contactName);
+    customer.setContactEmail(contactEmail);
+    customer.setContactPhone(contactPhone);
+    customer.setEntityType(entityType);
+    customer.setFinancialYearEnd(financialYearEnd);
 
     // Auto-apply field groups before save so audit events capture final state
     var autoApplyIds = fieldGroupService.resolveAutoApplyGroupIds(EntityType.CUSTOMER);
@@ -211,6 +275,53 @@ public class CustomerService {
       String notes,
       Map<String, Object> customFields,
       List<UUID> appliedFieldGroups) {
+    return updateCustomer(
+        id,
+        name,
+        email,
+        phone,
+        idNumber,
+        notes,
+        customFields,
+        appliedFieldGroups,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null);
+  }
+
+  @Transactional
+  public Customer updateCustomer(
+      UUID id,
+      String name,
+      String email,
+      String phone,
+      String idNumber,
+      String notes,
+      Map<String, Object> customFields,
+      List<UUID> appliedFieldGroups,
+      String registrationNumber,
+      String addressLine1,
+      String addressLine2,
+      String city,
+      String stateProvince,
+      String postalCode,
+      String country,
+      String taxNumber,
+      String contactName,
+      String contactEmail,
+      String contactPhone,
+      String entityType,
+      java.time.LocalDate financialYearEnd) {
     var customer =
         repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Customer", id));
 
@@ -239,8 +350,37 @@ public class CustomerService {
     String oldPhone = customer.getPhone();
     String oldIdNumber = customer.getIdNumber();
     String oldNotes = customer.getNotes();
+    String oldRegistrationNumber = customer.getRegistrationNumber();
+    String oldAddressLine1 = customer.getAddressLine1();
+    String oldAddressLine2 = customer.getAddressLine2();
+    String oldCity = customer.getCity();
+    String oldStateProvince = customer.getStateProvince();
+    String oldPostalCode = customer.getPostalCode();
+    String oldCountry = customer.getCountry();
+    String oldTaxNumber = customer.getTaxNumber();
+    String oldContactName = customer.getContactName();
+    String oldContactEmail = customer.getContactEmail();
+    String oldContactPhone = customer.getContactPhone();
+    String oldEntityType = customer.getEntityType();
+    java.time.LocalDate oldFinancialYearEnd = customer.getFinancialYearEnd();
 
     customer.update(name, email, phone, idNumber, notes);
+
+    // Set structural fields (Phase 63 graduated fields)
+    customer.setRegistrationNumber(registrationNumber);
+    customer.setAddressLine1(addressLine1);
+    customer.setAddressLine2(addressLine2);
+    customer.setCity(city);
+    customer.setStateProvince(stateProvince);
+    customer.setPostalCode(postalCode);
+    customer.setCountry(country);
+    customer.setTaxNumber(taxNumber);
+    customer.setContactName(contactName);
+    customer.setContactEmail(contactEmail);
+    customer.setContactPhone(contactPhone);
+    customer.setEntityType(entityType);
+    customer.setFinancialYearEnd(financialYearEnd);
+
     var saved = repository.save(customer);
 
     var details =
@@ -250,6 +390,19 @@ public class CustomerService {
             .trackAsString("phone", oldPhone, phone)
             .trackAsString("id_number", oldIdNumber, idNumber)
             .trackAsString("notes", oldNotes, notes)
+            .trackAsString("registration_number", oldRegistrationNumber, registrationNumber)
+            .trackAsString("address_line1", oldAddressLine1, addressLine1)
+            .trackAsString("address_line2", oldAddressLine2, addressLine2)
+            .trackAsString("city", oldCity, city)
+            .trackAsString("state_province", oldStateProvince, stateProvince)
+            .trackAsString("postal_code", oldPostalCode, postalCode)
+            .trackAsString("country", oldCountry, country)
+            .trackAsString("tax_number", oldTaxNumber, taxNumber)
+            .trackAsString("contact_name", oldContactName, contactName)
+            .trackAsString("contact_email", oldContactEmail, contactEmail)
+            .trackAsString("contact_phone", oldContactPhone, contactPhone)
+            .trackAsString("entity_type", oldEntityType, entityType)
+            .trackAsString("financial_year_end", oldFinancialYearEnd, financialYearEnd)
             .build();
 
     auditService.log(

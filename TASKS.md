@@ -520,7 +520,7 @@
 | 458 | Frontend: KYC Verification Dialog + Checklist Integration + Settings Card | Frontend | 457 | M | 458A, 458B | **Done** (PR #963) |
 | **Phase 63 — Custom Field Graduation** | | | | | | See [tasks/phase63-custom-field-graduation.md](tasks/phase63-custom-field-graduation.md) |
 | 459 | Foundation: Migration + Customer Entity/DTO Updates | Backend | -- | M | 459A, 459B | **Done** (PR #984) |
-| 460 | Project/Task/Invoice Entity/DTO Updates + Enums | Backend | 459A | S | 460A | |
+| 460 | Project/Task/Invoice Entity/DTO Updates + Enums | Backend | 459A | S | 460A | **Done** (PR #985) |
 | 461 | Service Layer Updates: Conflict Check, Deadline, Prerequisite | Backend | 459, 460 | M | 461A, 461B | |
 | 462 | Template Context Builders + Variable Metadata + Pack JSON Cleanup | Backend | 459, 460 | M | 462A, 462B | |
 | 463 | Frontend: Customer Form Restructuring + Detail Page | Frontend | 459B, 461 | M | 463A, 463B | |

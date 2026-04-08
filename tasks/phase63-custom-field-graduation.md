@@ -24,7 +24,7 @@ Phase 63 promotes approximately 21 custom fields across Customer, Project, Task,
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 459 | Foundation: Migration + Customer Entity/DTO Updates | Backend | -- (Phase 11, 33, 51, 55 complete) | M | 459A, 459B | **Done** (PR #984) |
-| 460 | Project/Task/Invoice Entity/DTO Updates + Enums | Backend | 459A | S | 460A | |
+| 460 | Project/Task/Invoice Entity/DTO Updates + Enums | Backend | 459A | S | 460A | **Done** (PR #985) |
 | 461 | Service Layer Updates: Conflict Check, Deadline, Prerequisite | Backend | 459, 460 | M | 461A, 461B | |
 | 462 | Template Context Builders + Variable Metadata + Pack JSON Cleanup | Backend | 459, 460 | M | 462A, 462B | |
 | 463 | Frontend: Customer Form Restructuring + Detail Page | Frontend | 459B, 461 | M | 463A, 463B | |
@@ -112,7 +112,7 @@ PHASE 12 (Templates) — all complete
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 1a (parallel) | 459 | 459B | Customer controller endpoint updates to accept/return 13 new fields. Controller integration tests (~4). Backend only. | **Done** (PR #984) |
-| 1b (parallel) | 460 | 460A | Project entity (3 fields) + `ProjectPriority` enum. Task entity (1 field). Invoice entity (4 fields) + `TaxType` enum. All DTOs. Service create/update extensions. Integration tests (~6). Backend only. | |
+| 1b (parallel) | 460 | 460A | Project entity (3 fields) + `ProjectPriority` enum. Task entity (1 field). Invoice entity (4 fields) + `TaxType` enum. All DTOs. Service create/update extensions. Integration tests (~6). Backend only. | **Done** (PR #985) |
 
 ### Stage 2: Service Layer + Template Context (parallel tracks)
 
@@ -238,7 +238,7 @@ Stage 5:  [463B]  //  [464B]                                    <- customer deta
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **460A** | 460.1--460.8 | Create `ProjectPriority` enum (LOW, MEDIUM, HIGH). Create `TaxType` enum (VAT, GST, SALES_TAX, NONE). Extend Project entity (3 fields: referenceNumber, priority, workType). Extend Task entity (1 field: estimatedHours). Extend Invoice entity (4 fields: poNumber, taxType, billingPeriodStart, billingPeriodEnd). Update all DTOs. Extend services. Integration tests (~6). Backend only. | |
+| **460A** | 460.1--460.8 | Create `ProjectPriority` enum (LOW, MEDIUM, HIGH). Create `TaxType` enum (VAT, GST, SALES_TAX, NONE). Extend Project entity (3 fields: referenceNumber, priority, workType). Extend Task entity (1 field: estimatedHours). Extend Invoice entity (4 fields: poNumber, taxType, billingPeriodStart, billingPeriodEnd). Update all DTOs. Extend services. Integration tests (~6). Backend only. | **Done** (PR #985) |
 
 ### Tasks
 

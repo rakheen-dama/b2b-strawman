@@ -1,8 +1,22 @@
 logging:
   level:
     root: ERROR
+    io.b2mash.b2b.b2bstrawman: ERROR
+    org.springframework: ERROR
 
 spring:
+  scheduling:
+    enabled: false
+  datasource:
+    app:
+      maximum-pool-size: 3
+      connection-timeout: 60000
+    migration:
+      maximum-pool-size: 2
+      connection-timeout: 60000
+    portal:
+      maximum-pool-size: 2
+      connection-timeout: 60000
   security:
     oauth2:
       resourceserver:
@@ -58,3 +72,4 @@ heykazi:
       merchant-key: test-merchant-key
       passphrase: test-passphrase
       sandbox: true
+

@@ -3,7 +3,6 @@ package io.b2mash.b2b.b2bstrawman.notification.channel;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.icegreen.greenmail.util.GreenMail;
-import com.icegreen.greenmail.util.ServerSetupTest;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.integration.email.EmailDeliveryLogRepository;
 import io.b2mash.b2b.b2bstrawman.integration.email.EmailDeliveryStatus;
@@ -35,7 +34,7 @@ class EmailNotificationChannelIntegrationTest {
   private static final GreenMail greenMail;
 
   static {
-    greenMail = new GreenMail(ServerSetupTest.SMTP);
+    greenMail = new GreenMail(new com.icegreen.greenmail.util.ServerSetup(13026, null, "smtp"));
     greenMail.start();
   }
 

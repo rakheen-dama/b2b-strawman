@@ -447,7 +447,7 @@ class ProjectCustomerLinkIntegrationTest {
         .andExpect(status().isOk());
 
     // Complete all checklist items (auto-transitions ONBOARDING -> ACTIVE)
-    TestChecklistHelper.completeChecklistItems(
+    TestChecklistHelper.transitionToActive(
         mockMvc, custId, TestJwtFactory.ownerJwt(ORG_ID, "user_pcl_owner"));
 
     return custId;

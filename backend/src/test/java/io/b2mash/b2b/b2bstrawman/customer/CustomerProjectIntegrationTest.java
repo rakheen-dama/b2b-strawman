@@ -618,6 +618,6 @@ class CustomerProjectIntegrationTest {
                 .content("{\"targetStatus\": \"ONBOARDING\"}"))
         .andExpect(status().isOk());
     // Completing all checklist items auto-transitions ONBOARDING -> ACTIVE
-    TestChecklistHelper.completeChecklistItems(mockMvc, customerId, jwt);
+    TestChecklistHelper.transitionToActive(mockMvc, customerId, jwt);
   }
 }

@@ -62,17 +62,9 @@ class CustomerLifecycleControllerTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.lifecycleStatus").value("ONBOARDING"));
 
-    // Complete all auto-instantiated checklist items — this auto-transitions to ACTIVE
-    TestChecklistHelper.completeChecklistItems(
+    // Complete checklists (if any) and explicitly transition to ACTIVE
+    TestChecklistHelper.transitionToActive(
         mockMvc, customerId, TestJwtFactory.ownerJwt(ORG_ID, "user_lc_owner"));
-
-    // Verify customer is now ACTIVE (auto-transitioned by checklist completion)
-    mockMvc
-        .perform(
-            get("/api/customers/" + customerId)
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_lc_owner")))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.lifecycleStatus").value("ACTIVE"));
 
     // ACTIVE -> DORMANT
     mockMvc
@@ -137,8 +129,8 @@ class CustomerLifecycleControllerTest {
                     """))
         .andExpect(status().isOk());
 
-    // Complete checklists — auto-transitions to ACTIVE
-    TestChecklistHelper.completeChecklistItems(
+    // Complete checklists (if any) and explicitly transition to ACTIVE
+    TestChecklistHelper.transitionToActive(
         mockMvc, customerId, TestJwtFactory.ownerJwt(ORG_ID, "user_lc_owner"));
 
     // Get lifecycle history

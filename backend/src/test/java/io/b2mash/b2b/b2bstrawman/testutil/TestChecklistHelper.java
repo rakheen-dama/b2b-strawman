@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.testutil;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -18,6 +19,27 @@ import org.springframework.test.web.servlet.MockMvc;
 public final class TestChecklistHelper {
 
   private TestChecklistHelper() {}
+
+  /**
+   * Transitions a customer from ONBOARDING to ACTIVE. Completes any auto-instantiated checklist
+   * items first. If no checklists exist (e.g., generic-onboarding with autoInstantiate=false), the
+   * explicit ACTIVE transition handles it since the onboarding guard passes when no checklists are
+   * pending.
+   */
+  public static void transitionToActive(
+      MockMvc mockMvc, String customerId, JwtRequestPostProcessor jwt) throws Exception {
+    completeChecklistItems(mockMvc, customerId, jwt);
+    mockMvc
+        .perform(
+            post("/api/customers/" + customerId + "/transition")
+                .with(jwt)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"targetStatus": "ACTIVE"}
+                    """))
+        .andExpect(status().isOk());
+  }
 
   @SuppressWarnings("unchecked")
   public static void completeChecklistItems(

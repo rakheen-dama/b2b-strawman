@@ -248,7 +248,7 @@ class PortalTaskSyncIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"targetStatus\": \"ONBOARDING\"}"))
         .andExpect(status().isOk());
-    TestChecklistHelper.completeChecklistItems(
+    TestChecklistHelper.transitionToActive(
         mockMvc, customerId, TestJwtFactory.ownerJwt(ORG_ID, "user_task_sync_owner"));
   }
 

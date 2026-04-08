@@ -259,7 +259,7 @@ class RetainerSummaryControllerTest {
                 .content("{\"targetStatus\": \"ONBOARDING\"}"))
         .andExpect(status().isOk());
     // Completing all checklist items auto-transitions ONBOARDING -> ACTIVE
-    TestChecklistHelper.completeChecklistItems(
+    TestChecklistHelper.transitionToActive(
         mockMvc, custId, TestJwtFactory.ownerJwt(ORG_ID, "user_rst_owner"));
   }
 }

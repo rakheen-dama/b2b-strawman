@@ -191,7 +191,7 @@ class InvoiceSyncIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"targetStatus\": \"ONBOARDING\"}"))
         .andExpect(status().isOk());
-    TestChecklistHelper.completeChecklistItems(
+    TestChecklistHelper.transitionToActive(
         mockMvc, customerId, TestJwtFactory.ownerJwt(ORG_ID, "user_inv_owner"));
   }
 

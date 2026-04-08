@@ -8,12 +8,18 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 
 /**
  * In-memory StorageService for tests. Replaces LocalStack S3 for all tests except
  * S3PresignedUrlServiceTest which needs real presigned URL HTTP round-trips.
  */
 public class InMemoryStorageService implements StorageService {
+
+  /** Same key validation as S3StorageAdapter — rejects path traversal and invalid formats. */
+  private static final Pattern KEY_PATTERN =
+      Pattern.compile(
+          "^org/[^/]+/(project/[^/]+|org-docs|customer/[^/]+|branding|generated|exports|templates/[^/]+)/[^/]+$");
 
   private final ConcurrentHashMap<String, byte[]> store = new ConcurrentHashMap<>();
 
@@ -49,12 +55,22 @@ public class InMemoryStorageService implements StorageService {
 
   @Override
   public PresignedUrl generateUploadUrl(String key, String contentType, Duration expiry) {
-    return new PresignedUrl("http://test-storage/upload/" + key, Instant.now().plus(expiry));
+    validateKey(key);
+    return new PresignedUrl(
+        "http://test-storage/test-bucket/" + key + "?upload=true", Instant.now().plus(expiry));
   }
 
   @Override
   public PresignedUrl generateDownloadUrl(String key, Duration expiry) {
-    return new PresignedUrl("http://test-storage/download/" + key, Instant.now().plus(expiry));
+    validateKey(key);
+    return new PresignedUrl(
+        "http://test-storage/test-bucket/" + key + "?download=true", Instant.now().plus(expiry));
+  }
+
+  private static void validateKey(String key) {
+    if (key == null || !KEY_PATTERN.matcher(key).matches()) {
+      throw new IllegalArgumentException("Invalid storage key format");
+    }
   }
 
   @Override

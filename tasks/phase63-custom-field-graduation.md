@@ -23,7 +23,7 @@ Phase 63 promotes approximately 21 custom fields across Customer, Project, Task,
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 459 | Foundation: Migration + Customer Entity/DTO Updates | Backend | -- (Phase 11, 33, 51, 55 complete) | M | 459A, 459B | |
+| 459 | Foundation: Migration + Customer Entity/DTO Updates | Backend | -- (Phase 11, 33, 51, 55 complete) | M | 459A, 459B | **Done** (PR #984) |
 | 460 | Project/Task/Invoice Entity/DTO Updates + Enums | Backend | 459A | S | 460A | |
 | 461 | Service Layer Updates: Conflict Check, Deadline, Prerequisite | Backend | 459, 460 | M | 461A, 461B | |
 | 462 | Template Context Builders + Variable Metadata + Pack JSON Cleanup | Backend | 459, 460 | M | 462A, 462B | |
@@ -105,13 +105,13 @@ PHASE 12 (Templates) — all complete
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 0a | 459 | 459A | V87 tenant migration (21 columns across 4 tables + 4 indexes). Customer entity extension (13 new fields). CustomerRequest/CustomerResponse DTO updates. CustomerService create/update extensions. Integration tests (~6). Backend only. | |
+| 0a | 459 | 459A | V87 tenant migration (21 columns across 4 tables + 4 indexes). Customer entity extension (13 new fields). CustomerRequest/CustomerResponse DTO updates. CustomerService create/update extensions. Integration tests (~6). Backend only. | **Done** (PR #984) |
 
 ### Stage 1: Customer Controller + Project/Task/Invoice Entities (parallel)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 1a (parallel) | 459 | 459B | Customer controller endpoint updates to accept/return 13 new fields. Controller integration tests (~4). Backend only. | |
+| 1a (parallel) | 459 | 459B | Customer controller endpoint updates to accept/return 13 new fields. Controller integration tests (~4). Backend only. | **Done** (PR #984) |
 | 1b (parallel) | 460 | 460A | Project entity (3 fields) + `ProjectPriority` enum. Task entity (1 field). Invoice entity (4 fields) + `TaxType` enum. All DTOs. Service create/update extensions. Integration tests (~6). Backend only. | |
 
 ### Stage 2: Service Layer + Template Context (parallel tracks)
@@ -171,8 +171,8 @@ Stage 5:  [463B]  //  [464B]                                    <- customer deta
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **459A** | 459.1--459.7 | V87 tenant migration (ALTER TABLE adding 21 columns across customers, projects, tasks, invoices + 4 indexes). Customer entity extension (13 new fields: registrationNumber, addressLine1, addressLine2, city, stateProvince, postalCode, country, taxNumber, contactName, contactEmail, contactPhone, entityType, financialYearEnd). CustomerRequest/CustomerResponse DTO updates. CustomerService create/update extensions. Integration tests (~6). Backend only. | |
-| **459B** | 459.8--459.11 | Customer controller endpoint updates: create and update endpoints accept the 13 new fields. Controller integration tests verifying round-trip persistence and response shape (~4). Backend only. | |
+| **459A** | 459.1--459.7 | V87 tenant migration (ALTER TABLE adding 21 columns across customers, projects, tasks, invoices + 4 indexes). Customer entity extension (13 new fields: registrationNumber, addressLine1, addressLine2, city, stateProvince, postalCode, country, taxNumber, contactName, contactEmail, contactPhone, entityType, financialYearEnd). CustomerRequest/CustomerResponse DTO updates. CustomerService create/update extensions. Integration tests (~6). Backend only. | **Done** (PR #984) |
+| **459B** | 459.8--459.11 | Customer controller endpoint updates: create and update endpoints accept the 13 new fields. Controller integration tests verifying round-trip persistence and response shape (~4). Backend only. | **Done** (PR #984) |
 
 ### Tasks
 

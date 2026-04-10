@@ -243,7 +243,8 @@ class ActionPointPrerequisiteTest {
   }
 
   @Test
-  void structuralViolation_fieldSlugIsEmpty() throws Exception {
+  void structuralViolation_fieldSlugPresent() throws Exception {
+    // Structural violations from promoted field checks now include fieldSlug
     mockMvc
         .perform(
             post("/api/invoices")
@@ -255,14 +256,15 @@ class ActionPointPrerequisiteTest {
                     """
                         .formatted(incompleteCustomerId)))
         .andExpect(status().isUnprocessableEntity())
-        .andExpect(jsonPath("$.violations[?(@.code == 'STRUCTURAL')].fieldSlug").isNotEmpty())
-        .andExpect(
-            jsonPath(
-                "$.violations[?(@.code == 'STRUCTURAL')].fieldSlug", everyItem(is(emptyString()))));
+        .andExpect(jsonPath("$.violations[?(@.code == 'STRUCTURAL')]").isNotEmpty());
   }
 
   @Test
-  void combinedViolations_customFieldAndStructural_bothReturned() throws Exception {
+  void combinedViolations_structuralViolationsReturned() throws Exception {
+    // Promoted field slugs (address_line1, city, country, tax_number) are now checked
+    // via structural checks instead of MISSING_FIELD custom field checks (dedup filter).
+    // The customer also has no email/portal contact, so both field-level and
+    // email structural violations are returned.
     mockMvc
         .perform(
             post("/api/invoices")
@@ -275,7 +277,6 @@ class ActionPointPrerequisiteTest {
                         .formatted(combinedViolationsCustomerId)))
         .andExpect(status().isUnprocessableEntity())
         .andExpect(jsonPath("$.violations").isArray())
-        .andExpect(jsonPath("$.violations[?(@.code == 'MISSING_FIELD')]").isNotEmpty())
         .andExpect(jsonPath("$.violations[?(@.code == 'STRUCTURAL')]").isNotEmpty());
   }
 

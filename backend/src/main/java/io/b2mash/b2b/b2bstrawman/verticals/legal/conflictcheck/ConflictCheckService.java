@@ -174,6 +174,19 @@ public class ConflictCheckService {
         }
       }
 
+      // Search customers by registration number (entity column)
+      var custRegMatch =
+          customerRepository.findByRegistrationNumber(request.checkedRegistrationNumber());
+      if (custRegMatch.isPresent()) {
+        conflicts.add(
+            buildCustomerConflict(
+                custRegMatch.get(),
+                "REGISTRATION_NUMBER_EXACT",
+                1.0,
+                request.checkedRegistrationNumber()));
+        regMatched = true;
+      }
+
       hasExactIdMatch |= regMatched;
     }
 

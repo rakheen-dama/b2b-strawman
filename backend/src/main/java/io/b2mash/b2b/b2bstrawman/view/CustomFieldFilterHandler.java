@@ -8,8 +8,9 @@ import java.util.regex.Pattern;
 import org.springframework.stereotype.Component;
 
 /**
- * Translates custom field filters into JSONB-based SQL predicates. Supports operators: eq, neq, gt,
- * gte, lt, lte, contains, in.
+ * Translates custom field filters into SQL predicates. For promoted fields (entity columns),
+ * generates direct column-based WHERE clauses. For non-promoted fields, generates JSONB-based SQL
+ * predicates. Supports operators: eq, neq, gt, gte, lt, lte, contains, in.
  */
 @Component
 public class CustomFieldFilterHandler {
@@ -29,7 +30,9 @@ public class CustomFieldFilterHandler {
           "lte", "<=");
 
   /**
-   * Builds SQL predicates for custom field filtering using JSONB operators.
+   * Builds SQL predicates for custom field filtering. For promoted field slugs, generates
+   * column-based WHERE clauses (e.g., {@code city = :cf_city}). For non-promoted fields, generates
+   * JSONB-based access expressions (e.g., {@code custom_fields ->> 'court' = :cf_court}).
    *
    * @param filterValue a Map of slug to {op, value} (e.g., {"court": {"op": "eq", "value":
    *     "high_court"}})
@@ -71,7 +74,7 @@ public class CustomFieldFilterHandler {
 
   private String buildFieldClause(
       String slug, String op, Object value, String paramName, Map<String, Object> params) {
-    // Validate slug to prevent SQL injection — slug is concatenated into JSONB access expressions
+    // Validate slug to prevent SQL injection -- slug is concatenated into expressions
     if (!SAFE_SLUG.matcher(slug).matches()) {
       return "";
     }
@@ -79,8 +82,13 @@ public class CustomFieldFilterHandler {
     // Hyphens are replaced with underscores to ensure valid parameter names.
     paramName = "cf_" + slug.replace('-', '_');
 
+    boolean isPromoted = CustomFieldFilterUtil.ALL_PROMOTED_SLUGS.contains(slug);
+
     if ("contains".equals(op)) {
       params.put(paramName, String.valueOf(value));
+      if (isPromoted) {
+        return slug + " ILIKE '%' || :" + paramName + " || '%'";
+      }
       return "custom_fields ->> '" + slug + "' ILIKE '%' || :" + paramName + " || '%'";
     }
 
@@ -88,6 +96,9 @@ public class CustomFieldFilterHandler {
       if (value instanceof List<?> list) {
         List<String> stringValues = list.stream().map(Object::toString).toList();
         params.put(paramName, stringValues);
+        if (isPromoted) {
+          return slug + " IN (:" + paramName + ")";
+        }
         return "custom_fields ->> '" + slug + "' IN (:" + paramName + ")";
       }
       return "";
@@ -99,6 +110,13 @@ public class CustomFieldFilterHandler {
     }
 
     params.put(paramName, String.valueOf(value));
+
+    if (isPromoted) {
+      if (NUMERIC_OPS.contains(op)) {
+        return slug + "::numeric " + sqlOp + " :" + paramName;
+      }
+      return slug + " " + sqlOp + " :" + paramName;
+    }
 
     if (NUMERIC_OPS.contains(op)) {
       return "(custom_fields ->> '" + slug + "')::numeric " + sqlOp + " :" + paramName;

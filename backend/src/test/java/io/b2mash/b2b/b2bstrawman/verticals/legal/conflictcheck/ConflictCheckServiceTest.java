@@ -343,6 +343,113 @@ class ConflictCheckServiceTest {
                 }));
   }
 
+  // --- 461.4: Registration number entity column matching tests ---
+
+  @Test
+  void performCheck_registrationNumber_findsCustomerByEntityColumn() {
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  // Create a customer with registration_number on the entity column
+                  var customer = createActiveCustomer("RegNum Corp", "regnum@test.com", memberId);
+                  customer.setRegistrationNumber("2021/987654/07");
+                  customerRepository.saveAndFlush(customer);
+
+                  var request =
+                      new PerformConflictCheckRequest(
+                          "Some Other Name", null, "2021/987654/07", "NEW_CLIENT", null, null);
+
+                  var response = conflictCheckService.performCheck(request, memberId);
+
+                  assertThat(response.result()).isEqualTo("CONFLICT_FOUND");
+                  assertThat(response.conflictsFound()).isNotEmpty();
+                  assertThat(response.conflictsFound())
+                      .anyMatch(
+                          c ->
+                              "REGISTRATION_NUMBER_EXACT".equals(c.matchType())
+                                  && "EXISTING_CLIENT".equals(c.relationship()));
+                }));
+  }
+
+  @Test
+  void performCheck_registrationNumber_nullRegistrationNumber_noCustomerMatch() {
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var request =
+                      new PerformConflictCheckRequest(
+                          "Zxywqrst Unique Name Corp", null, null, "NEW_CLIENT", null, null);
+
+                  var response = conflictCheckService.performCheck(request, memberId);
+
+                  // No registration number searched, no matches expected (unique name)
+                  assertThat(response.result()).isEqualTo("NO_CONFLICT");
+                  assertThat(response.conflictsFound()).isEmpty();
+                }));
+  }
+
+  @Test
+  void performCheck_registrationNumber_noMatch_returnsNoConflict() {
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var request =
+                      new PerformConflictCheckRequest(
+                          "Zxywqrst Unique Name Corp",
+                          null,
+                          "9999/000000/99",
+                          "NEW_CLIENT",
+                          null,
+                          null);
+
+                  var response = conflictCheckService.performCheck(request, memberId);
+
+                  assertThat(response.result()).isEqualTo("NO_CONFLICT");
+                  assertThat(response.conflictsFound()).isEmpty();
+                }));
+  }
+
+  @Test
+  void performCheck_registrationNumber_matchesBothAdversePartyAndCustomer() {
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  // Adverse party already has registration number "2020/123456/07"
+                  // Create a customer with the same registration number
+                  var customer = createActiveCustomer("Dual Match Corp", "dual@test.com", memberId);
+                  customer.setRegistrationNumber("2020/123456/07");
+                  customerRepository.saveAndFlush(customer);
+
+                  var request =
+                      new PerformConflictCheckRequest(
+                          "Zxywqrst Unique Name Corp",
+                          null,
+                          "2020/123456/07",
+                          "NEW_CLIENT",
+                          null,
+                          null);
+
+                  var response = conflictCheckService.performCheck(request, memberId);
+
+                  assertThat(response.result()).isEqualTo("CONFLICT_FOUND");
+                  // Should find both adverse party and customer matches
+                  assertThat(response.conflictsFound())
+                      .anyMatch(
+                          c ->
+                              "REGISTRATION_NUMBER_EXACT".equals(c.matchType())
+                                  && c.adversePartyId() != null);
+                  assertThat(response.conflictsFound())
+                      .anyMatch(
+                          c ->
+                              "REGISTRATION_NUMBER_EXACT".equals(c.matchType())
+                                  && "EXISTING_CLIENT".equals(c.relationship()));
+                }));
+  }
+
   // --- Helpers ---
 
   private void runInTenant(Runnable action) {

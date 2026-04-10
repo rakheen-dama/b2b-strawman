@@ -82,12 +82,14 @@ public final class TestCustomerFactory {
         "address_line1", "123 Test Street",
         "city", "Test City",
         "country", "ZA",
-        "tax_number", "VAT123456");
+        "tax_number", "VAT123456",
+        "contact_name", "Test Contact",
+        "contact_email", "contact@test.com");
   }
 
   /**
-   * Creates an ACTIVE customer with prerequisite custom fields pre-filled (address, city, country,
-   * tax number). Safe for invoice creation and proposal sending flows.
+   * Creates an ACTIVE customer with prerequisite fields pre-filled on both entity columns and
+   * JSONB. Safe for invoice creation and proposal sending flows.
    */
   public static Customer createActiveCustomerWithPrerequisiteFields(
       String name, String email, UUID createdBy) {
@@ -102,6 +104,13 @@ public final class TestCustomerFactory {
             CustomerType.INDIVIDUAL,
             LifecycleStatus.ACTIVE);
     customer.setCustomFields(new HashMap<>(prerequisiteCustomFields()));
+    // Also set promoted entity columns
+    customer.setAddressLine1("123 Test Street");
+    customer.setCity("Test City");
+    customer.setCountry("ZA");
+    customer.setTaxNumber("VAT123456");
+    customer.setContactName("Test Contact");
+    customer.setContactEmail("contact@test.com");
     return customer;
   }
 
@@ -118,17 +127,26 @@ public final class TestCustomerFactory {
   }
 
   /**
-   * Fills prerequisite custom fields directly in the database via JdbcTemplate. Useful for
-   * integration tests that need a customer to pass structural prerequisite checks.
+   * Fills prerequisite fields directly in the database via JdbcTemplate. Sets both JSONB custom
+   * fields and promoted entity columns to satisfy structural prerequisite checks for
+   * INVOICE_GENERATION, PROPOSAL_SEND, and other contexts.
    */
   public static void fillPrerequisiteFields(
       org.springframework.jdbc.core.JdbcTemplate jdbcTemplate,
       String schemaName,
       String customerIdStr) {
     jdbcTemplate.update(
-        ("UPDATE \"%s\".customers SET custom_fields ="
-                + " '{\"address_line1\":\"123 Test St\",\"city\":\"Test City\","
-                + "\"country\":\"ZA\",\"tax_number\":\"VAT123\"}'::jsonb WHERE id = ?::uuid")
+        ("UPDATE \"%s\".customers SET"
+                + " custom_fields = '{\"address_line1\":\"123 Test St\",\"city\":\"Test City\","
+                + "\"country\":\"ZA\",\"tax_number\":\"VAT123\","
+                + "\"contact_name\":\"Test Contact\",\"contact_email\":\"contact@test.com\"}'::jsonb,"
+                + " address_line1 = '123 Test St',"
+                + " city = 'Test City',"
+                + " country = 'ZA',"
+                + " tax_number = 'VAT123',"
+                + " contact_name = 'Test Contact',"
+                + " contact_email = 'contact@test.com'"
+                + " WHERE id = ?::uuid")
             .formatted(schemaName),
         customerIdStr);
   }

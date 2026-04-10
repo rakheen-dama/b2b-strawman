@@ -14,6 +14,7 @@ import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactService;
 import io.b2mash.b2b.b2bstrawman.portal.PortalJwtService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -29,6 +30,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -55,6 +57,8 @@ class PortalProposalControllerTest {
   @Autowired
   @Qualifier("portalJdbcClient")
   private JdbcClient portalJdbc;
+
+  @Autowired private JdbcTemplate jdbcTemplate;
 
   private UUID customerId;
   private UUID portalContactId;
@@ -171,6 +175,14 @@ class PortalProposalControllerTest {
             });
 
     otherPortalToken = portalJwtService.issueToken(otherCustomerId, ORG_ID);
+
+    // Fill promoted prerequisite fields (entity columns + JSONB) so PROPOSAL_SEND
+    // structural checks pass. The CustomFieldValidator strips unknown keys when no
+    // FieldDefinitions are seeded, so the 8-arg updateCustomer call above does not
+    // persist custom field values. Direct JDBC update populates both sources.
+    TestCustomerFactory.fillPrerequisiteFields(jdbcTemplate, tenantSchema, customerId.toString());
+    TestCustomerFactory.fillPrerequisiteFields(
+        jdbcTemplate, tenantSchema, otherCustomerId.toString());
 
     // Create proposals in tenant scope for accept/decline tests
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)

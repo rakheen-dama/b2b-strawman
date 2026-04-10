@@ -45,4 +45,10 @@ public interface CustomerRepository extends JpaRepository<Customer, UUID> {
 
   @Query(value = "SELECT * FROM customers WHERE id_number = :idNumber", nativeQuery = true)
   Optional<Customer> findByIdNumberExact(@Param("idNumber") String idNumber);
+
+  @Query(
+      value = "SELECT * FROM customers WHERE registration_number = :registrationNumber",
+      nativeQuery = true)
+  Optional<Customer> findByRegistrationNumber(
+      @Param("registrationNumber") String registrationNumber);
 }

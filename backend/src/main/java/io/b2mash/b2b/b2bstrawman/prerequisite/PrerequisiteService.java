@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.prerequisite;
 
+import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
@@ -11,6 +12,7 @@ import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.ProjectTemplateService;
 import io.b2mash.b2b.b2bstrawman.setupstatus.DocumentGenerationReadinessService;
 import io.b2mash.b2b.b2bstrawman.template.TemplateEntityType;
+import io.b2mash.b2b.b2bstrawman.view.CustomFieldFilterUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -69,15 +71,16 @@ public class PrerequisiteService {
       // Load the entity's custom fields
       Map<String, Object> customFields = loadCustomFields(entityType, entityId);
 
-      // Evaluate each required field
+      // Filter out promoted slugs to avoid duplicate violations with structural checks
       violations.addAll(
           requiredFields.stream()
+              .filter(fd -> !CustomFieldFilterUtil.ALL_PROMOTED_SLUGS.contains(fd.getSlug()))
               .filter(fd -> !isFieldFilled(fd, customFields))
               .map(fd -> buildViolation(fd, context, entityType, entityId))
               .toList());
     }
 
-    // Add structural checks
+    // Add structural checks (promoted field null-checks + existing structural checks)
     violations.addAll(checkStructural(context, entityType, entityId));
 
     if (violations.isEmpty()) {
@@ -148,10 +151,12 @@ public class PrerequisiteService {
         if (entityType == EntityType.CUSTOMER) {
           // Re-loads customer for structural check; trade-off: simplicity over avoiding a
           // redundant query when the caller (e.g. InvoiceService) already loaded the customer.
-          var customer =
-              customerRepository
-                  .findById(entityId)
-                  .orElseThrow(() -> new ResourceNotFoundException("Customer", entityId));
+          var customer = loadCustomer(entityId);
+
+          // Promoted field null-checks (address, tax number)
+          violations.addAll(StructuralPrerequisiteCheck.check(customer, context));
+
+          // Email/portal contact check
           var contacts = portalContactRepository.findByCustomerId(entityId);
           boolean hasContactWithEmail =
               contacts.stream().anyMatch(c -> c.getEmail() != null && !c.getEmail().isBlank());
@@ -172,7 +177,12 @@ public class PrerequisiteService {
       }
       case PROPOSAL_SEND -> {
         if (entityType == EntityType.CUSTOMER) {
-          // Check customer has portal contact with email
+          var customer = loadCustomer(entityId);
+
+          // Promoted field null-checks (contact name, contact email, address)
+          violations.addAll(StructuralPrerequisiteCheck.check(customer, context));
+
+          // Portal contact check
           var contacts = portalContactRepository.findByCustomerId(entityId);
           boolean hasContactWithEmail =
               contacts.stream().anyMatch(c -> c.getEmail() != null && !c.getEmail().isBlank());
@@ -218,6 +228,12 @@ public class PrerequisiteService {
     }
 
     return violations;
+  }
+
+  private Customer loadCustomer(UUID entityId) {
+    return customerRepository
+        .findById(entityId)
+        .orElseThrow(() -> new ResourceNotFoundException("Customer", entityId));
   }
 
   private Map<String, Object> loadCustomFields(EntityType entityType, UUID entityId) {

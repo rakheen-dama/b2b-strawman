@@ -9,7 +9,6 @@ import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -121,21 +120,28 @@ public class DeadlineCalculationService {
     // 3. Generate raw deadlines (before status overlay)
     List<RawDeadline> rawDeadlines = new ArrayList<>();
     for (Customer customer : customers) {
+      // Use promoted entity column for financial_year_end (LocalDate, no parsing needed).
+      // Fall back to JSONB for backward compatibility during migration.
+      LocalDate fye = customer.getFinancialYearEnd();
       Map<String, Object> customFields = customer.getCustomFields();
       if (customFields == null) {
-        continue;
+        customFields = Map.of();
       }
-      Object fyeValue = customFields.get("financial_year_end");
-      if (fyeValue == null) {
-        continue;
-      }
-      LocalDate fye;
-      try {
-        fye = LocalDate.parse(fyeValue.toString());
-      } catch (DateTimeParseException e) {
-        log.warn(
-            "Skipping customer {} — malformed financial_year_end: {}", customer.getId(), fyeValue);
-        continue;
+      if (fye == null) {
+        // Backward compat: try JSONB
+        Object fyeValue = customFields.get("financial_year_end");
+        if (fyeValue == null) {
+          continue;
+        }
+        try {
+          fye = LocalDate.parse(fyeValue.toString());
+        } catch (java.time.format.DateTimeParseException e) {
+          log.warn(
+              "Skipping customer {} -- malformed financial_year_end: {}",
+              customer.getId(),
+              fyeValue);
+          continue;
+        }
       }
 
       for (DeadlineType dt : deadlineTypes) {
@@ -350,22 +356,27 @@ public class DeadlineCalculationService {
     return LocalDate.of(year, fye.getMonthValue(), Math.min(day, maxDay));
   }
 
-  /** Best-effort project cross-referencing based on custom fields. */
+  /** Best-effort project cross-referencing based on entity columns and custom fields. */
   private UUID findLinkedProject(RawDeadline raw, Map<UUID, List<Project>> projectsByCustomer) {
     List<Project> projects = projectsByCustomer.get(raw.customerId());
     if (projects == null || projects.isEmpty()) {
       return null;
     }
     for (Project project : projects) {
+      // Use promoted entity column for work_type, with JSONB fallback for backward compat
+      String workType = project.getWorkType();
       Map<String, Object> fields = project.getCustomFields();
-      if (fields == null || fields.isEmpty()) {
-        continue;
+      if (workType == null && fields != null) {
+        Object engagementType = fields.get("engagement_type");
+        if (engagementType != null) {
+          workType = engagementType.toString();
+        }
       }
-      Object engagementType = fields.get("engagement_type");
-      Object taxYear = fields.get("tax_year");
-      if (engagementType != null
+      // tax_year stays in JSONB (not promoted)
+      Object taxYear = fields != null ? fields.get("tax_year") : null;
+      if (workType != null
           && taxYear != null
-          && engagementType.toString().equals(raw.category())
+          && workType.equals(raw.category())
           && taxYear.toString().equals(raw.periodKey())) {
         return project.getId();
       }

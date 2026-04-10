@@ -25,7 +25,7 @@ Phase 63 promotes approximately 21 custom fields across Customer, Project, Task,
 |------|------|-------|------|--------|--------|--------|
 | 459 | Foundation: Migration + Customer Entity/DTO Updates | Backend | -- (Phase 11, 33, 51, 55 complete) | M | 459A, 459B | **Done** (PR #984) |
 | 460 | Project/Task/Invoice Entity/DTO Updates + Enums | Backend | 459A | S | 460A | **Done** (PR #985) |
-| 461 | Service Layer Updates: Conflict Check, Deadline, Prerequisite | Backend | 459, 460 | M | 461A, 461B | |
+| 461 | Service Layer Updates: Conflict Check, Deadline, Prerequisite | Backend | 459, 460 | M | 461A, 461B | **Done** (PR #986) |
 | 462 | Template Context Builders + Variable Metadata + Pack JSON Cleanup | Backend | 459, 460 | M | 462A, 462B | |
 | 463 | Frontend: Customer Form Restructuring + Detail Page | Frontend | 459B, 461 | M | 463A, 463B | |
 | 464 | Frontend: Project/Task/Invoice Form + Detail Updates | Frontend | 460, 461 | M | 464A, 464B | |
@@ -118,14 +118,14 @@ PHASE 12 (Templates) — all complete
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 2a (parallel) | 461 | 461A | ConflictCheckService switch from JSONB to `customer.getRegistrationNumber()`. DeadlineCalculationService switch from JSONB to entity getters. CustomFieldFilterUtil switch for promoted fields. Integration tests (~8). Backend only. | |
+| 2a (parallel) | 461 | 461A | ConflictCheckService switch from JSONB to `customer.getRegistrationNumber()`. DeadlineCalculationService switch from JSONB to entity getters. CustomFieldFilterUtil switch for promoted fields. Integration tests (~8). Backend only. | **Done** (PR #986) |
 | 2b (parallel) | 462 | 462A | CustomerContextBuilder, ProjectContextBuilder, InvoiceContextBuilder: expose promoted fields as direct template variables with backward-compat `customFields.slug` aliases. VariableMetadataRegistry update. Integration tests (~6). Backend only. | |
 
 ### Stage 3: Prerequisite Service + Pack JSON Cleanup (parallel tracks)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 3a (parallel) | 461 | 461B | PrerequisiteService extension with structural prerequisite checks (invoice generation, proposal send). `StructuralPrerequisiteCheck` class. Integration tests (~6). Backend only. | |
+| 3a (parallel) | 461 | 461B | PrerequisiteService extension with structural prerequisite checks (invoice generation, proposal send). `StructuralPrerequisiteCheck` class. Integration tests (~6). Backend only. | **Done** (PR #986) |
 | 3b (parallel) | 462 | 462B | Pack JSON cleanup: delete `common-customer.json` and `common-invoice.json`. Slim 6 other pack files (remove promoted field entries). Update FieldPackSeeder to skip deleted files. Tests (~4). Backend only. | |
 
 ### Stage 4: Frontend Customer + Frontend Project/Task/Invoice (parallel tracks)
@@ -297,8 +297,8 @@ Stage 5:  [463B]  //  [464B]                                    <- customer deta
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **461A** | 461.1--461.5 | ConflictCheckService: switch `registration_number` JSONB read to `customer.getRegistrationNumber()`. DeadlineCalculationService: switch `financial_year_end` and `engagement_type` JSONB reads to entity getters. CustomFieldFilterUtil: add promoted field column mappings. Integration tests (~8). Backend only. | |
-| **461B** | 461.6--461.10 | PrerequisiteService extension: `StructuralPrerequisiteCheck` class mapping prerequisite contexts to entity column null-checks. Invoice generation checks: addressLine1, city, country, taxNumber. Proposal send checks: contactName, contactEmail. Integration tests (~6). Backend only. | |
+| **461A** | 461.1--461.5 | ConflictCheckService: switch `registration_number` JSONB read to `customer.getRegistrationNumber()`. DeadlineCalculationService: switch `financial_year_end` and `engagement_type` JSONB reads to entity getters. CustomFieldFilterUtil: add promoted field column mappings. Integration tests (~8). Backend only. | **Done** (PR #986) |
+| **461B** | 461.6--461.10 | PrerequisiteService extension: `StructuralPrerequisiteCheck` class mapping prerequisite contexts to entity column null-checks. Invoice generation checks: addressLine1, city, country, taxNumber. Proposal send checks: contactName, contactEmail. Integration tests (~6). Backend only. | **Done** (PR #986) |
 
 ### Tasks
 

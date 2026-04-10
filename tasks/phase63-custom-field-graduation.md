@@ -26,7 +26,7 @@ Phase 63 promotes approximately 21 custom fields across Customer, Project, Task,
 | 459 | Foundation: Migration + Customer Entity/DTO Updates | Backend | -- (Phase 11, 33, 51, 55 complete) | M | 459A, 459B | **Done** (PR #984) |
 | 460 | Project/Task/Invoice Entity/DTO Updates + Enums | Backend | 459A | S | 460A | **Done** (PR #985) |
 | 461 | Service Layer Updates: Conflict Check, Deadline, Prerequisite | Backend | 459, 460 | M | 461A, 461B | **Done** (PR #986) |
-| 462 | Template Context Builders + Variable Metadata + Pack JSON Cleanup | Backend | 459, 460 | M | 462A, 462B | |
+| 462 | Template Context Builders + Variable Metadata + Pack JSON Cleanup | Backend | 459, 460 | M | 462A, 462B | **Done** (PR #987) |
 | 463 | Frontend: Customer Form Restructuring + Detail Page | Frontend | 459B, 461 | M | 463A, 463B | |
 | 464 | Frontend: Project/Task/Invoice Form + Detail Updates | Frontend | 460, 461 | M | 464A, 464B | |
 
@@ -119,14 +119,14 @@ PHASE 12 (Templates) — all complete
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 2a (parallel) | 461 | 461A | ConflictCheckService switch from JSONB to `customer.getRegistrationNumber()`. DeadlineCalculationService switch from JSONB to entity getters. CustomFieldFilterUtil switch for promoted fields. Integration tests (~8). Backend only. | **Done** (PR #986) |
-| 2b (parallel) | 462 | 462A | CustomerContextBuilder, ProjectContextBuilder, InvoiceContextBuilder: expose promoted fields as direct template variables with backward-compat `customFields.slug` aliases. VariableMetadataRegistry update. Integration tests (~6). Backend only. | |
+| 2b (parallel) | 462 | 462A | CustomerContextBuilder, ProjectContextBuilder, InvoiceContextBuilder: expose promoted fields as direct template variables with backward-compat `customFields.slug` aliases. VariableMetadataRegistry update. Integration tests (~6). Backend only. | **Done** (PR #987) |
 
 ### Stage 3: Prerequisite Service + Pack JSON Cleanup (parallel tracks)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 3a (parallel) | 461 | 461B | PrerequisiteService extension with structural prerequisite checks (invoice generation, proposal send). `StructuralPrerequisiteCheck` class. Integration tests (~6). Backend only. | **Done** (PR #986) |
-| 3b (parallel) | 462 | 462B | Pack JSON cleanup: delete `common-customer.json` and `common-invoice.json`. Slim 6 other pack files (remove promoted field entries). Update FieldPackSeeder to skip deleted files. Tests (~4). Backend only. | |
+| 3b (parallel) | 462 | 462B | Pack JSON cleanup: delete `common-customer.json` and `common-invoice.json`. Slim 6 other pack files (remove promoted field entries). Update FieldPackSeeder to skip deleted files. Tests (~4). Backend only. | **Done** (PR #987) |
 
 ### Stage 4: Frontend Customer + Frontend Project/Task/Invoice (parallel tracks)
 
@@ -363,8 +363,8 @@ Stage 5:  [463B]  //  [464B]                                    <- customer deta
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **462A** | 462.1--462.5 | CustomerContextBuilder, ProjectContextBuilder, InvoiceContextBuilder: add promoted fields as direct template variables. Add backward-compat aliases (`customFields.tax_number`, `customFields.vat_number -> taxNumber`, `customFields.primary_contact_name -> contactName`, etc.). Update VariableMetadataRegistry to list promoted fields in entity field groups. Integration tests (~6). Backend only. | |
-| **462B** | 462.6--462.10 | Delete `common-customer.json` (after removing promoted fields, it may be empty or near-empty -- verify). Delete `common-invoice.json` (empty after removing promoted fields). Slim 6 other pack files by removing promoted field entries. Update FieldPackSeeder to handle deleted files. Tests (~4). Backend only. | |
+| **462A** | 462.1--462.5 | CustomerContextBuilder, ProjectContextBuilder, InvoiceContextBuilder: add promoted fields as direct template variables. Add backward-compat aliases (`customFields.tax_number`, `customFields.vat_number -> taxNumber`, `customFields.primary_contact_name -> contactName`, etc.). Update VariableMetadataRegistry to list promoted fields in entity field groups. Integration tests (~6). Backend only. | **Done** (PR #987) |
+| **462B** | 462.6--462.10 | Delete `common-customer.json` (after removing promoted fields, it may be empty or near-empty -- verify). Delete `common-invoice.json` (empty after removing promoted fields). Slim 6 other pack files by removing promoted field entries. Update FieldPackSeeder to handle deleted files. Tests (~4). Backend only. | **Done** (PR #987) |
 
 ### Tasks
 

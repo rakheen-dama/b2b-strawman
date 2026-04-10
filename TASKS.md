@@ -522,7 +522,7 @@
 | 459 | Foundation: Migration + Customer Entity/DTO Updates | Backend | -- | M | 459A, 459B | **Done** (PR #984) |
 | 460 | Project/Task/Invoice Entity/DTO Updates + Enums | Backend | 459A | S | 460A | **Done** (PR #985) |
 | 461 | Service Layer Updates: Conflict Check, Deadline, Prerequisite | Backend | 459, 460 | M | 461A, 461B | **Done** (PR #986) |
-| 462 | Template Context Builders + Variable Metadata + Pack JSON Cleanup | Backend | 459, 460 | M | 462A, 462B | |
+| 462 | Template Context Builders + Variable Metadata + Pack JSON Cleanup | Backend | 459, 460 | M | 462A, 462B | **Done** (PR #987) |
 | 463 | Frontend: Customer Form Restructuring + Detail Page | Frontend | 459B, 461 | M | 463A, 463B | |
 | 464 | Frontend: Project/Task/Invoice Form + Detail Updates | Frontend | 460, 461 | M | 464A, 464B | |
 | **Phase 64 — Legal Vertical QA: Terminology, Matter Templates & 90-Day Lifecycle** | | | | | | See [tasks/phase64-legal-vertical-qa.md](tasks/phase64-legal-vertical-qa.md) |

@@ -142,13 +142,60 @@ class StructuralPrerequisiteCheckTest {
   }
 
   @Test
-  void unknownContext_returnsEmptyViolations() {
+  void lifecycleActivation_mirrorsInvoiceGenerationFields() {
+    // LIFECYCLE_ACTIVATION uses the same structural check set as INVOICE_GENERATION so that a
+    // customer cannot transition to ACTIVE while missing billing address / tax info.
     var customer =
         TestCustomerFactory.createActiveCustomer("Test Corp", "test@test.com", MEMBER_ID);
+    // No promoted fields set → expect all four violations.
+
+    var violations =
+        StructuralPrerequisiteCheck.check(customer, PrerequisiteContext.LIFECYCLE_ACTIVATION);
+
+    assertThat(violations).hasSize(4);
+    assertThat(violations)
+        .extracting(PrerequisiteViolation::fieldSlug)
+        .containsExactlyInAnyOrder("address_line1", "city", "country", "tax_number");
+  }
+
+  @Test
+  void lifecycleActivation_allFieldsPresent_returnsEmptyViolations() {
+    var customer =
+        TestCustomerFactory.createActiveCustomer("Test Corp", "test@test.com", MEMBER_ID);
+    customer.setAddressLine1("123 Main St");
+    customer.setCity("Johannesburg");
+    customer.setCountry("ZA");
+    customer.setTaxNumber("VAT123456");
 
     var violations =
         StructuralPrerequisiteCheck.check(customer, PrerequisiteContext.LIFECYCLE_ACTIVATION);
 
     assertThat(violations).isEmpty();
+  }
+
+  @Test
+  void projectCreationContext_returnsEmptyViolations() {
+    // Non-covered context still returns empty (structural check is opt-in per context).
+    var customer =
+        TestCustomerFactory.createActiveCustomer("Test Corp", "test@test.com", MEMBER_ID);
+
+    var violations =
+        StructuralPrerequisiteCheck.check(customer, PrerequisiteContext.PROJECT_CREATION);
+
+    assertThat(violations).isEmpty();
+  }
+
+  @Test
+  void coveredSlugs_returnsFieldsForCoveredContextsOnly() {
+    assertThat(StructuralPrerequisiteCheck.coveredSlugs(PrerequisiteContext.INVOICE_GENERATION))
+        .containsExactlyInAnyOrder("address_line1", "city", "country", "tax_number");
+    assertThat(StructuralPrerequisiteCheck.coveredSlugs(PrerequisiteContext.PROPOSAL_SEND))
+        .containsExactlyInAnyOrder("contact_name", "contact_email", "address_line1");
+    assertThat(StructuralPrerequisiteCheck.coveredSlugs(PrerequisiteContext.LIFECYCLE_ACTIVATION))
+        .containsExactlyInAnyOrder("address_line1", "city", "country", "tax_number");
+    assertThat(StructuralPrerequisiteCheck.coveredSlugs(PrerequisiteContext.PROJECT_CREATION))
+        .isEmpty();
+    assertThat(StructuralPrerequisiteCheck.coveredSlugs(PrerequisiteContext.DOCUMENT_GENERATION))
+        .isEmpty();
   }
 }

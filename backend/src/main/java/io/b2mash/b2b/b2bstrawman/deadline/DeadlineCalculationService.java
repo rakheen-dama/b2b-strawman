@@ -124,12 +124,10 @@ public class DeadlineCalculationService {
       // Fall back to JSONB for backward compatibility during migration.
       LocalDate fye = customer.getFinancialYearEnd();
       Map<String, Object> customFields = customer.getCustomFields();
-      if (customFields == null) {
-        customFields = Map.of();
-      }
       if (fye == null) {
         // Backward compat: try JSONB
-        Object fyeValue = customFields.get("financial_year_end");
+        Map<String, Object> fallbackFields = customFields != null ? customFields : Map.of();
+        Object fyeValue = fallbackFields.get("financial_year_end");
         if (fyeValue == null) {
           continue;
         }
@@ -143,9 +141,11 @@ public class DeadlineCalculationService {
           continue;
         }
       }
+      // applicabilityRule consumers expect a non-null map.
+      Map<String, Object> applicabilityFields = customFields != null ? customFields : Map.of();
 
       for (DeadlineType dt : deadlineTypes) {
-        if (!dt.applicabilityRule().test(customFields)) {
+        if (!dt.applicabilityRule().test(applicabilityFields)) {
           continue;
         }
         generatePeriodsForType(dt, fye, from, to)

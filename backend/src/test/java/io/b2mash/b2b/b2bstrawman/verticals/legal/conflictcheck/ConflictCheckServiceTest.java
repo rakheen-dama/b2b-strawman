@@ -450,6 +450,49 @@ class ConflictCheckServiceTest {
                 }));
   }
 
+  @Test
+  void performCheck_registrationNumber_duplicateCustomers_returnsAllMatches() {
+    // Guard against IncorrectResultSizeDataAccessException: two customers sharing a registration
+    // number (import / migration data) must both appear in the conflict report rather than
+    // crashing the whole check.
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var customerA = createActiveCustomer("Dup Corp A", "dupA@test.com", memberId);
+                  customerA.setRegistrationNumber("1999/000001/07");
+                  customerRepository.saveAndFlush(customerA);
+
+                  var customerB = createActiveCustomer("Dup Corp B", "dupB@test.com", memberId);
+                  customerB.setRegistrationNumber("1999/000001/07");
+                  customerRepository.saveAndFlush(customerB);
+
+                  var request =
+                      new PerformConflictCheckRequest(
+                          "Zzzzz Absolutely Unique Name That Wont Match",
+                          null,
+                          "1999/000001/07",
+                          "NEW_CLIENT",
+                          null,
+                          null);
+
+                  var response = conflictCheckService.performCheck(request, memberId);
+
+                  assertThat(response.result()).isEqualTo("CONFLICT_FOUND");
+                  var customerMatches =
+                      response.conflictsFound().stream()
+                          .filter(
+                              c ->
+                                  "REGISTRATION_NUMBER_EXACT".equals(c.matchType())
+                                      && "EXISTING_CLIENT".equals(c.relationship()))
+                          .toList();
+                  assertThat(customerMatches).hasSize(2);
+                  assertThat(customerMatches)
+                      .extracting(ConflictCheckService.ConflictDetail::customerName)
+                      .containsExactlyInAnyOrder("Dup Corp A", "Dup Corp B");
+                }));
+  }
+
   // --- Helpers ---
 
   private void runInTenant(Runnable action) {

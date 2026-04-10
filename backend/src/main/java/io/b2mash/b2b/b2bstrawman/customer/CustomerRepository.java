@@ -46,9 +46,14 @@ public interface CustomerRepository extends JpaRepository<Customer, UUID> {
   @Query(value = "SELECT * FROM customers WHERE id_number = :idNumber", nativeQuery = true)
   Optional<Customer> findByIdNumberExact(@Param("idNumber") String idNumber);
 
+  /**
+   * Returns all customers with the given registration number. Returns a {@link List} rather than
+   * {@link Optional} because import / migration data routinely produces duplicate registration
+   * numbers — the legal conflict-check flow needs to iterate every match rather than fail with
+   * {@code IncorrectResultSizeDataAccessException}.
+   */
   @Query(
       value = "SELECT * FROM customers WHERE registration_number = :registrationNumber",
       nativeQuery = true)
-  Optional<Customer> findByRegistrationNumber(
-      @Param("registrationNumber") String registrationNumber);
+  List<Customer> findByRegistrationNumber(@Param("registrationNumber") String registrationNumber);
 }

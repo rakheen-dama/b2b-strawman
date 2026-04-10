@@ -98,15 +98,39 @@ class CustomFieldFilterUtilTest {
   }
 
   @Test
-  void matchesCustomFieldFilters_promotedFieldMissingFromPromotedMap_returnsFalse() {
+  void matchesCustomFieldFilters_promotedFieldMissingFromPromotedMap_fallsBackToJsonb() {
+    // Legacy / in-flight migration scenario: the caller didn't hydrate the promoted-fields map
+    // (e.g. controllers still using the 2-arg entry point) but the tenant still has the value in
+    // JSONB. We MUST match so that filters keep working during the JSONB→column migration.
     Map<String, Object> customFields = Map.of("city", "Johannesburg"); // JSONB has value
-    Map<String, Object> promotedFields = Map.of(); // but promoted map doesn't
+    Map<String, Object> promotedFields = Map.of(); // promoted map is empty
     Map<String, String> filters = Map.of("city", "Johannesburg");
 
-    // Promoted field should check promotedFields, not customFields JSONB
     assertThat(
             CustomFieldFilterUtil.matchesCustomFieldFilters(customFields, promotedFields, filters))
-        .isFalse();
+        .isTrue();
+  }
+
+  @Test
+  void matchesCustomFieldFilters_promotedFieldPrefersEntityColumnOverJsonb() {
+    // When both sources are populated, the entity column wins (post-migration source of truth).
+    Map<String, Object> customFields = Map.of("city", "Stale JSONB Value");
+    Map<String, Object> promotedFields = Map.of("city", "Johannesburg");
+    Map<String, String> filters = Map.of("city", "Johannesburg");
+
+    assertThat(
+            CustomFieldFilterUtil.matchesCustomFieldFilters(customFields, promotedFields, filters))
+        .isTrue();
+  }
+
+  @Test
+  void matchesCustomFieldFilters_twoArgCallerWithPromotedSlugInJsonb_matches() {
+    // Legacy 2-arg caller (e.g. CustomerController pre-migration): hasn't been updated to supply a
+    // promoted-fields map. A tenant that still stores city in JSONB must still match.
+    Map<String, Object> customFields = Map.of("city", "Durban");
+    Map<String, String> filters = Map.of("city", "Durban");
+
+    assertThat(CustomFieldFilterUtil.matchesCustomFieldFilters(customFields, filters)).isTrue();
   }
 
   @Test
@@ -140,6 +164,30 @@ class CustomFieldFilterUtilTest {
     assertThat(CustomFieldFilterUtil.TASK_PROMOTED_SLUGS).contains("estimated_hours");
     assertThat(CustomFieldFilterUtil.INVOICE_PROMOTED_SLUGS)
         .contains("po_number", "tax_type", "billing_period_start", "billing_period_end");
+  }
+
+  @Test
+  void isPromotedForEntity_scopesPromotedSlugsToEntity() {
+    // city is promoted on CUSTOMER, not on PROJECT/TASK/INVOICE
+    assertThat(CustomFieldFilterUtil.isPromotedForEntity("city", "CUSTOMER")).isTrue();
+    assertThat(CustomFieldFilterUtil.isPromotedForEntity("city", "PROJECT")).isFalse();
+    assertThat(CustomFieldFilterUtil.isPromotedForEntity("city", "TASK")).isFalse();
+    assertThat(CustomFieldFilterUtil.isPromotedForEntity("city", "INVOICE")).isFalse();
+
+    // estimated_hours is promoted on TASK only
+    assertThat(CustomFieldFilterUtil.isPromotedForEntity("estimated_hours", "TASK")).isTrue();
+    assertThat(CustomFieldFilterUtil.isPromotedForEntity("estimated_hours", "PROJECT")).isFalse();
+
+    // work_type is promoted on PROJECT only
+    assertThat(CustomFieldFilterUtil.isPromotedForEntity("work_type", "PROJECT")).isTrue();
+    assertThat(CustomFieldFilterUtil.isPromotedForEntity("work_type", "CUSTOMER")).isFalse();
+
+    // Non-promoted slug never matches
+    assertThat(CustomFieldFilterUtil.isPromotedForEntity("court", "CUSTOMER")).isFalse();
+
+    // Null/unknown entity types are conservatively non-promoted
+    assertThat(CustomFieldFilterUtil.isPromotedForEntity("city", null)).isFalse();
+    assertThat(CustomFieldFilterUtil.isPromotedForEntity("city", "UNKNOWN")).isFalse();
   }
 
   @Test

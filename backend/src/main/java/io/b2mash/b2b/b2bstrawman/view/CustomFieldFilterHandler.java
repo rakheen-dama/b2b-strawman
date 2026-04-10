@@ -31,13 +31,16 @@ public class CustomFieldFilterHandler {
 
   /**
    * Builds SQL predicates for custom field filtering. For promoted field slugs, generates
-   * column-based WHERE clauses (e.g., {@code city = :cf_city}). For non-promoted fields, generates
-   * JSONB-based access expressions (e.g., {@code custom_fields ->> 'court' = :cf_court}).
+   * column-based WHERE clauses (e.g., {@code city = :cf_city}) <em>only when the slug is promoted
+   * on the target {@code entityType}</em>; otherwise generates JSONB-based access expressions
+   * (e.g., {@code custom_fields ->> 'court' = :cf_court}). This guards against cross-entity leak
+   * where e.g. filtering {@code city} on a PROJECT view would otherwise emit a broken {@code
+   * projects.city} clause.
    *
    * @param filterValue a Map of slug to {op, value} (e.g., {"court": {"op": "eq", "value":
    *     "high_court"}})
    * @param params the parameter map to populate with named bindings
-   * @param entityType the entity type (unused for custom field filtering)
+   * @param entityType the entity type of the view being filtered (e.g. "CUSTOMER", "PROJECT")
    * @return SQL predicate fragment, or empty string if filterValue is null/empty
    */
   @SuppressWarnings("unchecked")
@@ -63,7 +66,7 @@ public class CustomFieldFilterHandler {
       Object value = opMap.get("value");
       String paramName = "cf_" + slug;
 
-      String clause = buildFieldClause(slug, op, value, paramName, params);
+      String clause = buildFieldClause(slug, op, value, paramName, params, entityType);
       if (!clause.isEmpty()) {
         clauses.add(clause);
       }
@@ -73,7 +76,12 @@ public class CustomFieldFilterHandler {
   }
 
   private String buildFieldClause(
-      String slug, String op, Object value, String paramName, Map<String, Object> params) {
+      String slug,
+      String op,
+      Object value,
+      String paramName,
+      Map<String, Object> params,
+      String entityType) {
     // Validate slug to prevent SQL injection -- slug is concatenated into expressions
     if (!SAFE_SLUG.matcher(slug).matches()) {
       return "";
@@ -82,7 +90,10 @@ public class CustomFieldFilterHandler {
     // Hyphens are replaced with underscores to ensure valid parameter names.
     paramName = "cf_" + slug.replace('-', '_');
 
-    boolean isPromoted = CustomFieldFilterUtil.ALL_PROMOTED_SLUGS.contains(slug);
+    // Entity-scoped: only treat as a column when the slug is promoted for THIS entity type.
+    // Cross-entity slugs (e.g. "city" on a PROJECT view) stay in JSONB to avoid emitting a
+    // reference to a column that does not exist on the target table.
+    boolean isPromoted = CustomFieldFilterUtil.isPromotedForEntity(slug, entityType);
 
     if ("contains".equals(op)) {
       params.put(paramName, String.valueOf(value));

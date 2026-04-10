@@ -135,15 +135,17 @@ public final class TestCustomerFactory {
       org.springframework.jdbc.core.JdbcTemplate jdbcTemplate,
       String schemaName,
       String customerIdStr) {
+    // Canonical test values — align with prerequisiteCustomFields() so that exact-value assertions
+    // in both helper paths stay consistent.
     jdbcTemplate.update(
         ("UPDATE \"%s\".customers SET"
-                + " custom_fields = '{\"address_line1\":\"123 Test St\",\"city\":\"Test City\","
-                + "\"country\":\"ZA\",\"tax_number\":\"VAT123\","
+                + " custom_fields = '{\"address_line1\":\"123 Test Street\",\"city\":\"Test City\","
+                + "\"country\":\"ZA\",\"tax_number\":\"VAT123456\","
                 + "\"contact_name\":\"Test Contact\",\"contact_email\":\"contact@test.com\"}'::jsonb,"
-                + " address_line1 = '123 Test St',"
+                + " address_line1 = '123 Test Street',"
                 + " city = 'Test City',"
                 + " country = 'ZA',"
-                + " tax_number = 'VAT123',"
+                + " tax_number = 'VAT123456',"
                 + " contact_name = 'Test Contact',"
                 + " contact_email = 'contact@test.com'"
                 + " WHERE id = ?::uuid")

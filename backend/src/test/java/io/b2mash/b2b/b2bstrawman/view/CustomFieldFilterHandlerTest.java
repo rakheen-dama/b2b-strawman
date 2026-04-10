@@ -185,6 +185,44 @@ class CustomFieldFilterHandlerTest {
   }
 
   @Test
+  void promotedField_onWrongEntityType_fallsBackToJsonb() {
+    // "city" is promoted on CUSTOMER only — on a PROJECT view it must NOT emit a column clause,
+    // otherwise we'd produce broken SQL referring to projects.city which does not exist.
+    Map<String, Object> params = new HashMap<>();
+    var fields = Map.of("city", (Object) Map.of("op", "eq", "value", "Durban"));
+
+    String result = handler.buildPredicate(fields, params, "PROJECT");
+
+    assertThat(result).isEqualTo("custom_fields ->> 'city' = :cf_city");
+    assertThat(params).containsEntry("cf_city", "Durban");
+  }
+
+  @Test
+  void promotedField_onWrongEntityType_taskSlugStaysJsonbOnCustomer() {
+    // "estimated_hours" is promoted on TASK only — on a CUSTOMER view it must stay in JSONB.
+    Map<String, Object> params = new HashMap<>();
+    var fields = Map.of("estimated_hours", (Object) Map.of("op", "gte", "value", 10));
+
+    String result = handler.buildPredicate(fields, params, "CUSTOMER");
+
+    assertThat(result)
+        .isEqualTo("(custom_fields ->> 'estimated_hours')::numeric >= :cf_estimated_hours");
+    assertThat(params).containsEntry("cf_estimated_hours", "10");
+  }
+
+  @Test
+  void promotedField_onWrongEntityType_workTypeStaysJsonbOnCustomer() {
+    // "work_type" is promoted on PROJECT only.
+    Map<String, Object> params = new HashMap<>();
+    var fields = Map.of("work_type", (Object) Map.of("op", "eq", "value", "audit"));
+
+    String result = handler.buildPredicate(fields, params, "CUSTOMER");
+
+    assertThat(result).isEqualTo("custom_fields ->> 'work_type' = :cf_work_type");
+    assertThat(params).containsEntry("cf_work_type", "audit");
+  }
+
+  @Test
   void mixedPromotedAndNonPromoted_generatesMixedClauses() {
     Map<String, Object> params = new HashMap<>();
     Map<String, Object> fields = new HashMap<>();

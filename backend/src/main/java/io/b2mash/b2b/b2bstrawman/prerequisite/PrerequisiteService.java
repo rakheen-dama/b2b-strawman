@@ -12,10 +12,10 @@ import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.ProjectTemplateService;
 import io.b2mash.b2b.b2bstrawman.setupstatus.DocumentGenerationReadinessService;
 import io.b2mash.b2b.b2bstrawman.template.TemplateEntityType;
-import io.b2mash.b2b.b2bstrawman.view.CustomFieldFilterUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -68,16 +68,29 @@ public class PrerequisiteService {
     List<PrerequisiteViolation> violations = new ArrayList<>();
 
     if (!requiredFields.isEmpty()) {
-      // Load the entity's custom fields
-      Map<String, Object> customFields = loadCustomFields(entityType, entityId);
+      // Load the entity (customer) once so the custom-field path can use the shared
+      // entity-column-with-JSONB-fallback helper. This also means tenants whose data has been
+      // migrated to entity columns still satisfy old FieldDefinitions that reference promoted
+      // slugs.
+      Customer customer = entityType == EntityType.CUSTOMER ? loadCustomer(entityId) : null;
+      Map<String, Object> customFields =
+          customer != null ? customer.getCustomFields() : loadCustomFields(entityType, entityId);
 
-      // Filter out promoted slugs to avoid duplicate violations with structural checks
-      violations.addAll(
-          requiredFields.stream()
-              .filter(fd -> !CustomFieldFilterUtil.ALL_PROMOTED_SLUGS.contains(fd.getSlug()))
-              .filter(fd -> !isFieldFilled(fd, customFields))
-              .map(fd -> buildViolation(fd, context, entityType, entityId))
-              .toList());
+      // Only dedup slugs that the structural check actually covers for THIS context. Promoted
+      // slugs in contexts without structural coverage (e.g. a bespoke tenant context) must still
+      // be checked by the custom-field path — otherwise the field would silently disappear from
+      // the violation report.
+      Set<String> structurallyCovered = StructuralPrerequisiteCheck.coveredSlugs(context);
+
+      for (FieldDefinition fd : requiredFields) {
+        if (structurallyCovered.contains(fd.getSlug())) {
+          // Structural check owns this slug for this context — skip to avoid duplicates.
+          continue;
+        }
+        if (!isFieldFilled(fd, customer, customFields)) {
+          violations.add(buildViolation(fd, context, entityType, entityId));
+        }
+      }
     }
 
     // Add structural checks (promoted field null-checks + existing structural checks)
@@ -128,7 +141,7 @@ public class PrerequisiteService {
 
     List<PrerequisiteViolation> violations =
         requiredFields.stream()
-            .filter(fd -> !isFieldFilled(fd, customFields))
+            .filter(fd -> !isFieldFilled(fd, customer, customFields))
             .map(
                 fd ->
                     buildViolation(
@@ -147,6 +160,13 @@ public class PrerequisiteService {
     List<PrerequisiteViolation> violations = new ArrayList<>();
 
     switch (context) {
+      case LIFECYCLE_ACTIVATION -> {
+        if (entityType == EntityType.CUSTOMER) {
+          var customer = loadCustomer(entityId);
+          // Promoted field null-checks (address + tax number, same as invoicing)
+          violations.addAll(StructuralPrerequisiteCheck.check(customer, context));
+        }
+      }
       case INVOICE_GENERATION -> {
         if (entityType == EntityType.CUSTOMER) {
           // Re-loads customer for structural check; trade-off: simplicity over avoiding a
@@ -223,7 +243,7 @@ public class PrerequisiteService {
         }
       }
       default -> {
-        // No structural checks for other contexts (LIFECYCLE_ACTIVATION, PROJECT_CREATION)
+        // No structural checks for other contexts (PROJECT_CREATION)
       }
     }
 
@@ -248,7 +268,21 @@ public class PrerequisiteService {
         "Prerequisite checks not yet supported for entity type: " + entityType);
   }
 
-  private boolean isFieldFilled(FieldDefinition fd, Map<String, Object> customFields) {
+  /**
+   * Checks whether a FieldDefinition is filled. For promoted Customer slugs, consults the entity
+   * column first (via {@link StructuralPrerequisiteCheck#hasCustomerFieldValue}) and falls back to
+   * JSONB so that tenants whose data lives in entity columns still satisfy old FieldDefinitions.
+   * For non-promoted slugs or non-Customer entities, reads JSONB directly via {@link
+   * CustomFieldUtils#isFieldValueFilled}.
+   */
+  private boolean isFieldFilled(
+      FieldDefinition fd, Customer customer, Map<String, Object> customFields) {
+    if (customer != null
+        && io.b2mash.b2b.b2bstrawman.view.CustomFieldFilterUtil.CUSTOMER_PROMOTED_SLUGS.contains(
+            fd.getSlug())) {
+      return StructuralPrerequisiteCheck.hasCustomerFieldValue(
+          customer, fd.getSlug(), customFields);
+    }
     Object value = customFields != null ? customFields.get(fd.getSlug()) : null;
     return CustomFieldUtils.isFieldValueFilled(fd, value);
   }

@@ -389,6 +389,127 @@ class PrerequisiteServiceTest {
         .anyMatch(v -> "STRUCTURAL".equals(v.code()) && v.message().contains("portal contact"));
   }
 
+  // --- Promoted-slug dedup / LIFECYCLE_ACTIVATION tests ---
+
+  @Test
+  void invoiceGeneration_promotedSlugFieldDefinition_producesExactlyOneStructuralViolation() {
+    // A legacy FieldDefinition requires "address_line1" for INVOICE_GENERATION. After Epic 459
+    // that slug is promoted; after 461B it is covered by StructuralPrerequisiteCheck. We must
+    // produce EXACTLY ONE violation (structural), not two (custom-field + structural) and not
+    // zero (silently dropped).
+    var fd = createFieldDefinition("Address Line 1", "address_line1", FieldType.TEXT);
+    fd.setRequiredForContexts(new ArrayList<>(List.of("INVOICE_GENERATION")));
+    mockFieldDefinitions(PrerequisiteContext.INVOICE_GENERATION, fd);
+
+    // Customer missing address_line1 on BOTH entity column and JSONB
+    var customer =
+        TestCustomerFactory.createCustomerWithStatus(
+            "No Address Corp", "noaddr@test.com", MEMBER_ID, LifecycleStatus.PROSPECT);
+    customer.setCustomFields(Map.of());
+    // address_line1 null
+    customer.setCity("Johannesburg");
+    customer.setCountry("ZA");
+    customer.setTaxNumber("VAT123456");
+    when(customerRepository.findById(CUSTOMER_ID)).thenReturn(Optional.of(customer));
+    mockPortalContactWithEmail();
+
+    var result =
+        service.checkForContext(
+            PrerequisiteContext.INVOICE_GENERATION, EntityType.CUSTOMER, CUSTOMER_ID);
+
+    assertThat(result.passed()).isFalse();
+    var addressViolations =
+        result.violations().stream().filter(v -> "address_line1".equals(v.fieldSlug())).toList();
+    assertThat(addressViolations).hasSize(1);
+    assertThat(addressViolations.getFirst().code()).isEqualTo("STRUCTURAL");
+  }
+
+  @Test
+  void invoiceGeneration_promotedSlugFilledInEntityColumn_producesNoViolation() {
+    // Same legacy FieldDefinition, but this time the tenant has migrated data into the entity
+    // column. No violation should be produced — neither the structural check nor the custom-field
+    // check should fail.
+    var fd = createFieldDefinition("Address Line 1", "address_line1", FieldType.TEXT);
+    fd.setRequiredForContexts(new ArrayList<>(List.of("INVOICE_GENERATION")));
+    mockFieldDefinitions(PrerequisiteContext.INVOICE_GENERATION, fd);
+    mockCustomerWithPromotedFields(Map.of()); // entity columns set, JSONB empty
+    mockPortalContactWithEmail();
+
+    var result =
+        service.checkForContext(
+            PrerequisiteContext.INVOICE_GENERATION, EntityType.CUSTOMER, CUSTOMER_ID);
+
+    assertThat(result.passed()).isTrue();
+    assertThat(result.violations()).isEmpty();
+  }
+
+  @Test
+  void lifecycleActivation_promotedSlugFieldDefinition_notSilentlyDropped() {
+    // A FieldDefinition requires "address_line1" for LIFECYCLE_ACTIVATION. Previously this was
+    // silently dropped because the dedup filter used a global promoted-slug set but the
+    // structural check only ran for INVOICE_GENERATION / PROPOSAL_SEND. Now LIFECYCLE_ACTIVATION
+    // has structural coverage, so the missing field MUST produce a violation (structural).
+    var fd = createFieldDefinition("Address Line 1", "address_line1", FieldType.TEXT);
+    fd.setRequiredForContexts(new ArrayList<>(List.of("LIFECYCLE_ACTIVATION")));
+    mockFieldDefinitions(PrerequisiteContext.LIFECYCLE_ACTIVATION, fd);
+
+    // Customer missing address_line1 on BOTH entity column and JSONB
+    var customer =
+        TestCustomerFactory.createCustomerWithStatus(
+            "Inactive Corp", "inactive@test.com", MEMBER_ID, LifecycleStatus.PROSPECT);
+    customer.setCustomFields(Map.of());
+    customer.setCity("Johannesburg");
+    customer.setCountry("ZA");
+    customer.setTaxNumber("VAT123456");
+    when(customerRepository.findById(CUSTOMER_ID)).thenReturn(Optional.of(customer));
+
+    var result =
+        service.checkForContext(
+            PrerequisiteContext.LIFECYCLE_ACTIVATION, EntityType.CUSTOMER, CUSTOMER_ID);
+
+    assertThat(result.passed()).isFalse();
+    assertThat(result.violations())
+        .anyMatch(v -> "address_line1".equals(v.fieldSlug()) && "STRUCTURAL".equals(v.code()));
+  }
+
+  @Test
+  void lifecycleActivation_promotedSlugInEntityColumn_passes() {
+    // Symmetric happy path: tenant has migrated data → no violation for the promoted slug.
+    var fd = createFieldDefinition("Address Line 1", "address_line1", FieldType.TEXT);
+    fd.setRequiredForContexts(new ArrayList<>(List.of("LIFECYCLE_ACTIVATION")));
+    mockFieldDefinitions(PrerequisiteContext.LIFECYCLE_ACTIVATION, fd);
+    mockCustomerWithPromotedFields(Map.of());
+
+    var result =
+        service.checkForContext(
+            PrerequisiteContext.LIFECYCLE_ACTIVATION, EntityType.CUSTOMER, CUSTOMER_ID);
+
+    assertThat(result.passed()).isTrue();
+    assertThat(result.violations()).isEmpty();
+  }
+
+  @Test
+  void checkEngagementPrerequisites_promotedSlugInEntityColumn_passes() {
+    // Engagement (project-template) check: a required custom field is a promoted slug and the
+    // customer has it ONLY in the entity column. Must pass — previously the service read only
+    // JSONB and falsely reported missing.
+    var templateId = UUID.randomUUID();
+    var fd = createFieldDefinition("Address Line 1", "address_line1", FieldType.TEXT);
+    when(projectTemplateService.getRequiredCustomerFields(templateId)).thenReturn(List.of(fd));
+
+    var customer =
+        TestCustomerFactory.createCustomerWithStatus(
+            "Migrated Corp", "mig@test.com", MEMBER_ID, LifecycleStatus.ACTIVE);
+    customer.setCustomFields(Map.of()); // JSONB empty
+    customer.setAddressLine1("123 Main St"); // entity column set
+    when(customerRepository.findById(CUSTOMER_ID)).thenReturn(Optional.of(customer));
+
+    var result = service.checkEngagementPrerequisites(CUSTOMER_ID, templateId);
+
+    assertThat(result.passed()).isTrue();
+    assertThat(result.violations()).isEmpty();
+  }
+
   // --- Helper methods ---
 
   private FieldDefinition createFieldDefinition(String name, String slug, FieldType fieldType) {

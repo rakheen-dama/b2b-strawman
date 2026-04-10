@@ -8,12 +8,14 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
+import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import java.time.Instant;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -70,12 +72,19 @@ public class ProjectContextBuilder implements TemplateContextBuilder {
     projectMap.put("description", project.getDescription());
     projectMap.put(
         "createdAt", project.getCreatedAt() != null ? project.getCreatedAt().toString() : null);
-    projectMap.put(
-        "customFields",
+    // Promoted structural project fields (Epic 460) — direct template variables.
+    projectMap.put("referenceNumber", project.getReferenceNumber());
+    projectMap.put("priority", project.getPriority() != null ? project.getPriority().name() : null);
+    projectMap.put("workType", project.getWorkType());
+    Map<String, Object> resolvedProjectCustomFields =
         contextHelper.resolveDropdownLabels(
             project.getCustomFields() != null ? project.getCustomFields() : Map.of(),
             EntityType.PROJECT,
-            fieldDefCache));
+            fieldDefCache);
+    // Wrap for mutation — may be immutable Map.of() for empty input.
+    var mutableProjectCustomFields = new LinkedHashMap<String, Object>(resolvedProjectCustomFields);
+    injectPromotedProjectAliases(mutableProjectCustomFields, project);
+    projectMap.put("customFields", mutableProjectCustomFields);
     context.put("project", projectMap);
 
     // customer.* (via CustomerProject join table, fallback to project.customerId)
@@ -98,18 +107,21 @@ public class ProjectContextBuilder implements TemplateContextBuilder {
                 customerMap.put("id", customer.getId());
                 customerMap.put("name", customer.getName());
                 customerMap.put("email", customer.getEmail());
+                CustomerContextBuilder.populatePromotedCustomerFields(customerMap, customer);
                 Map<String, Object> rawCustomFields =
                     customer.getCustomFields() != null ? customer.getCustomFields() : Map.of();
                 Map<String, Object> resolvedCustomFields =
                     contextHelper.resolveDropdownLabels(
                         rawCustomFields, EntityType.CUSTOMER, fieldDefCache);
-                customerMap.put("customFields", resolvedCustomFields);
+                var mutableCustomFields = new LinkedHashMap<String, Object>(resolvedCustomFields);
+                CustomerContextBuilder.injectPromotedCustomerAliases(mutableCustomFields, customer);
+                customerMap.put("customFields", mutableCustomFields);
                 log.debug(
                     "Project {} customer {} customFields: raw keys={}, resolved keys={}",
                     entityId,
                     custId,
                     rawCustomFields.keySet(),
-                    resolvedCustomFields != null ? resolvedCustomFields.keySet() : "null");
+                    mutableCustomFields.keySet());
                 context.put("customer", customerMap);
               },
               () -> {
@@ -177,5 +189,24 @@ public class ProjectContextBuilder implements TemplateContextBuilder {
     budgetMap.put("amount", budget.getBudgetAmount());
     budgetMap.put("currency", budget.getBudgetCurrency());
     return budgetMap;
+  }
+
+  /**
+   * Injects backward-compatible {@code customFields.<slug>} aliases for promoted project fields.
+   * Priority is serialized lowercase to match the old pack's dropdown values (low/medium/high);
+   * workType is aliased under both accounting and legal slugs.
+   */
+  private static void injectPromotedProjectAliases(
+      Map<String, Object> customFields, Project project) {
+    if (project.getReferenceNumber() != null) {
+      customFields.put("reference_number", project.getReferenceNumber());
+    }
+    if (project.getPriority() != null) {
+      customFields.put("priority", project.getPriority().name().toLowerCase(Locale.ROOT));
+    }
+    if (project.getWorkType() != null) {
+      customFields.put("engagement_type", project.getWorkType());
+      customFields.put("matter_type", project.getWorkType());
+    }
   }
 }

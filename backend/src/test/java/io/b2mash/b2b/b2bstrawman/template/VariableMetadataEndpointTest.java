@@ -84,7 +84,10 @@ class VariableMetadataEndpointTest {
 
   @Test
   void getVariables_customer_returnsStaticAndCustomFieldGroups() throws Exception {
-    // 4 static groups + 1 custom field group (customer custom fields)
+    // 4 static groups + 1 custom field group (customer custom fields).
+    // Post-Epic-462: Customer static group now includes 13 promoted structural
+    // fields (tax number, address, contact, etc.) in addition to the original
+    // 5 (id/name/email/phone/status), for a total of 18.
     mockMvc
         .perform(
             get("/api/templates/variables")
@@ -95,7 +98,7 @@ class VariableMetadataEndpointTest {
         .andExpect(jsonPath("$.groups").isArray())
         .andExpect(jsonPath("$.groups.length()", greaterThanOrEqualTo(5)))
         .andExpect(jsonPath("$.groups[0].label").value("Customer"))
-        .andExpect(jsonPath("$.groups[0].variables.length()").value(5))
+        .andExpect(jsonPath("$.groups[0].variables.length()").value(18))
         .andExpect(jsonPath("$.groups[0].variables[3].key").value("customer.phone"))
         .andExpect(jsonPath("$.groups[0].variables[4].key").value("customer.status"))
         .andExpect(jsonPath("$.groups[1].label").value("Invoice Summary"))
@@ -112,7 +115,10 @@ class VariableMetadataEndpointTest {
 
   @Test
   void getVariables_invoice_returnsStaticAndCustomFieldGroups() throws Exception {
-    // 5 static groups + custom field groups (no invoice pack, but customer + project)
+    // 5 static groups + custom field groups (no invoice pack, but customer + project).
+    // Post-Epic-462: Invoice static group now includes 4 promoted fields
+    // (poNumber, taxType, billingPeriodStart, billingPeriodEnd) in addition to
+    // the original 10, for a total of 14.
     mockMvc
         .perform(
             get("/api/templates/variables")
@@ -123,7 +129,7 @@ class VariableMetadataEndpointTest {
         .andExpect(jsonPath("$.groups").isArray())
         .andExpect(jsonPath("$.groups.length()", greaterThanOrEqualTo(7)))
         .andExpect(jsonPath("$.groups[0].label").value("Invoice"))
-        .andExpect(jsonPath("$.groups[0].variables.length()").value(10))
+        .andExpect(jsonPath("$.groups[0].variables.length()").value(14))
         .andExpect(jsonPath("$.groups[0].variables[0].key").value("invoice.id"))
         .andExpect(jsonPath("$.groups[0].variables[1].key").value("invoice.invoiceNumber"))
         .andExpect(jsonPath("$.groups[1].label").value("Customer"))
@@ -213,8 +219,10 @@ class VariableMetadataEndpointTest {
 
   @Test
   void getVariables_project_customFieldsHaveCorrectKeysAndTypes() throws Exception {
-    // Verify seeded project custom fields have correct dot-path keys and mapped types
-    // common-project pack seeds: reference_number (TEXT), priority (DROPDOWN), category (TEXT)
+    // Verify seeded project custom fields have correct dot-path keys and mapped types.
+    // Post-Epic-462: common-project pack now only contains `category` — reference_number
+    // and priority were promoted to structural columns on Project and are exposed directly
+    // under the static Project group instead of customFields.
     mockMvc
         .perform(
             get("/api/templates/variables")
@@ -227,25 +235,25 @@ class VariableMetadataEndpointTest {
             jsonPath(
                 "$.groups[?(@.prefix == 'project.customFields')].label", hasItem("Custom Fields")))
         .andExpect(
-            jsonPath("$.groups[?(@.prefix == 'project.customFields')].variables[*]", hasSize(3)))
-        // Verify keys use dot-path format
+            jsonPath("$.groups[?(@.prefix == 'project.customFields')].variables[*]", hasSize(1)))
+        // Verify the remaining custom field uses dot-path format
         .andExpect(
             jsonPath(
                 "$.groups[?(@.prefix == 'project.customFields')].variables[*].key",
-                hasItem("project.customFields.reference_number")))
-        .andExpect(
-            jsonPath(
-                "$.groups[?(@.prefix == 'project.customFields')].variables[*].key",
-                hasItem("project.customFields.priority")))
-        .andExpect(
-            jsonPath(
-                "$.groups[?(@.prefix == 'project.customFields')].variables[*].key",
-                hasItem("project.customFields.category")));
+                hasItem("project.customFields.category")))
+        // Promoted structural fields should now appear in the static Project group
+        .andExpect(jsonPath("$.groups[0].variables[*].key", hasItem("project.referenceNumber")))
+        .andExpect(jsonPath("$.groups[0].variables[*].key", hasItem("project.priority")));
   }
 
   @Test
   void getVariables_customerCustomFieldsAppearInInvoiceGroups() throws Exception {
-    // Customer custom fields should appear in INVOICE variable groups
+    // Customer custom fields should appear in INVOICE variable groups.
+    // Post-Epic-462: common-customer pack is deleted and its slugs (address_line1,
+    // tax_number, phone, etc.) are promoted structural columns. For a generic tenant,
+    // the remaining customer custom fields come from universal FICA compliance packs
+    // (sa-fica-individual + sa-fica-company) — sa_id_number, passport_number, risk_rating,
+    // company_registration_number, entity_type.
     mockMvc
         .perform(
             get("/api/templates/variables")
@@ -261,20 +269,19 @@ class VariableMetadataEndpointTest {
         .andExpect(
             jsonPath(
                 "$.groups[?(@.prefix == 'customer.customFields')].variables[*]",
-                hasSize(greaterThanOrEqualTo(8))))
-        // Verify known customer custom fields from common-customer pack are present
+                hasSize(greaterThanOrEqualTo(5))))
+        // Verify FICA customer custom fields are present
         .andExpect(
             jsonPath(
                 "$.groups[?(@.prefix == 'customer.customFields')].variables[*].key",
-                hasItem("customer.customFields.address_line1")))
+                hasItem("customer.customFields.sa_id_number")))
         .andExpect(
             jsonPath(
                 "$.groups[?(@.prefix == 'customer.customFields')].variables[*].key",
-                hasItem("customer.customFields.tax_number")))
-        .andExpect(
-            jsonPath(
-                "$.groups[?(@.prefix == 'customer.customFields')].variables[*].key",
-                hasItem("customer.customFields.phone")));
+                hasItem("customer.customFields.risk_rating")))
+        // Promoted fields should now appear under the static Customer group
+        .andExpect(jsonPath("$.groups[1].variables[*].key", hasItem("customer.taxNumber")))
+        .andExpect(jsonPath("$.groups[1].variables[*].key", hasItem("customer.addressLine1")));
   }
 
   @Test
@@ -314,7 +321,9 @@ class VariableMetadataEndpointTest {
 
   @Test
   void getVariables_customer_includesCustomerCustomFields() throws Exception {
-    // Customer template should include customer custom fields from seeded packs
+    // Customer template should include customer custom fields from seeded packs.
+    // Post-Epic-462: common-customer is gone; for a generic tenant, FICA universal
+    // compliance packs remain as the source of customer custom fields.
     mockMvc
         .perform(
             get("/api/templates/variables")
@@ -325,20 +334,20 @@ class VariableMetadataEndpointTest {
         .andExpect(
             jsonPath(
                 "$.groups[?(@.prefix == 'customer.customFields')].label", hasItem("Custom Fields")))
-        // At least 8 fields from common-customer pack (may have more from compliance packs)
+        // At least 5 FICA fields remain as customer custom fields after Epic 462 promotion
         .andExpect(
             jsonPath(
                 "$.groups[?(@.prefix == 'customer.customFields')].variables[*]",
-                hasSize(greaterThanOrEqualTo(8))))
-        // Verify known fields from common-customer pack
+                hasSize(greaterThanOrEqualTo(5))))
+        // Verify FICA fields are present
         .andExpect(
             jsonPath(
                 "$.groups[?(@.prefix == 'customer.customFields')].variables[*].key",
-                hasItem("customer.customFields.address_line1")))
+                hasItem("customer.customFields.sa_id_number")))
         .andExpect(
             jsonPath(
                 "$.groups[?(@.prefix == 'customer.customFields')].variables[*].key",
-                hasItem("customer.customFields.tax_number")));
+                hasItem("customer.customFields.risk_rating")));
   }
 
   @Test

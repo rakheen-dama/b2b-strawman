@@ -68,7 +68,16 @@ class LegalPackSeederIntegrationTest {
                       customerFields.stream()
                           .filter(f -> "legal-za-customer".equals(f.getPackId()))
                           .toList();
-                  assertThat(legalCustomerFields).hasSize(7);
+                  // Epic 462: legal-za-customer slimmed after promoting registration_number,
+                  // client_type, physical_address to structural columns. Remaining JSONB fields:
+                  // id_passport_number, postal_address, preferred_correspondence, referred_by.
+                  assertThat(legalCustomerFields)
+                      .extracting(f -> f.getSlug())
+                      .containsExactlyInAnyOrder(
+                          "id_passport_number",
+                          "postal_address",
+                          "preferred_correspondence",
+                          "referred_by");
 
                   var projectFields =
                       fieldDefinitionRepository.findByEntityTypeAndActiveTrueOrderBySortOrder(
@@ -77,7 +86,18 @@ class LegalPackSeederIntegrationTest {
                       projectFields.stream()
                           .filter(f -> "legal-za-project".equals(f.getPackId()))
                           .toList();
-                  assertThat(legalProjectFields).hasSize(8);
+                  // Epic 462: legal-za-project slimmed after promoting matter_type to a structural
+                  // column. Remaining JSONB fields:
+                  assertThat(legalProjectFields)
+                      .extracting(f -> f.getSlug())
+                      .containsExactlyInAnyOrder(
+                          "case_number",
+                          "court_name",
+                          "opposing_party",
+                          "opposing_attorney",
+                          "advocate_name",
+                          "date_of_instruction",
+                          "estimated_value");
                 }));
   }
 

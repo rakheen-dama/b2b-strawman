@@ -1,6 +1,6 @@
 {
   "packId": "legal-za-project",
-  "version": 1,
+  "version": 2,
   "verticalProfile": "legal-za",
   "entityType": "PROJECT",
   "group": {
@@ -11,31 +11,12 @@
   },
   "fields": [
     {
-      "slug": "matter_type",
-      "name": "Matter Type",
-      "fieldType": "DROPDOWN",
-      "description": "Classification of the legal matter",
-      "required": true,
-      "options": [
-        { "value": "LITIGATION", "label": "Litigation" },
-        { "value": "CONVEYANCING", "label": "Conveyancing" },
-        { "value": "COMMERCIAL", "label": "Commercial" },
-        { "value": "FAMILY_LAW", "label": "Family Law" },
-        { "value": "ESTATES", "label": "Estates" },
-        { "value": "LABOUR", "label": "Labour" },
-        { "value": "CRIMINAL", "label": "Criminal" },
-        { "value": "COLLECTIONS", "label": "Collections" },
-        { "value": "NOTARIAL", "label": "Notarial" }
-      ],
-      "sortOrder": 1
-    },
-    {
       "slug": "case_number",
       "name": "Case Number",
       "fieldType": "TEXT",
       "description": "Court-assigned case number for the matter",
       "required": false,
-      "sortOrder": 2
+      "sortOrder": 1
     },
     {
       "slug": "court_name",
@@ -43,7 +24,7 @@
       "fieldType": "TEXT",
       "description": "Name of the court in which the matter is heard",
       "required": false,
-      "sortOrder": 3
+      "sortOrder": 2
     },
     {
       "slug": "opposing_party",
@@ -51,7 +32,7 @@
       "fieldType": "TEXT",
       "description": "Name of the primary opposing party",
       "required": false,
-      "sortOrder": 4
+      "sortOrder": 3
     },
     {
       "slug": "opposing_attorney",
@@ -59,7 +40,7 @@
       "fieldType": "TEXT",
       "description": "Name of the opposing attorney or firm",
       "required": false,
-      "sortOrder": 5
+      "sortOrder": 4
     },
     {
       "slug": "advocate_name",
@@ -67,7 +48,7 @@
       "fieldType": "TEXT",
       "description": "Name of the instructed advocate (if briefed)",
       "required": false,
-      "sortOrder": 6
+      "sortOrder": 5
     },
     {
       "slug": "date_of_instruction",
@@ -75,7 +56,7 @@
       "fieldType": "DATE",
       "description": "Date on which the firm was instructed on the matter",
       "required": false,
-      "sortOrder": 7
+      "sortOrder": 6
     },
     {
       "slug": "estimated_value",
@@ -83,7 +64,7 @@
       "fieldType": "NUMBER",
       "description": "Estimated monetary value of the claim or matter",
       "required": false,
-      "sortOrder": 8
+      "sortOrder": 7
     }
   ]
 }

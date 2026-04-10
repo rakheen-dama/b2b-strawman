@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
+import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
@@ -13,6 +14,7 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -69,12 +71,25 @@ public class InvoiceContextBuilder implements TemplateContextBuilder {
     invoiceMap.put("total", invoice.getTotal());
     invoiceMap.put("currency", invoice.getCurrency());
     invoiceMap.put("notes", invoice.getNotes());
+    // Promoted structural invoice fields (Epic 460) — direct template variables.
+    invoiceMap.put("poNumber", invoice.getPoNumber());
+    invoiceMap.put("taxType", invoice.getTaxType() != null ? invoice.getTaxType().name() : null);
     invoiceMap.put(
-        "customFields",
+        "billingPeriodStart",
+        invoice.getBillingPeriodStart() != null
+            ? invoice.getBillingPeriodStart().toString()
+            : null);
+    invoiceMap.put(
+        "billingPeriodEnd",
+        invoice.getBillingPeriodEnd() != null ? invoice.getBillingPeriodEnd().toString() : null);
+    Map<String, Object> resolvedInvoiceCustomFields =
         contextHelper.resolveDropdownLabels(
             invoice.getCustomFields() != null ? invoice.getCustomFields() : Map.of(),
             EntityType.INVOICE,
-            fieldDefCache));
+            fieldDefCache);
+    var mutableInvoiceCustomFields = new LinkedHashMap<String, Object>(resolvedInvoiceCustomFields);
+    injectPromotedInvoiceAliases(mutableInvoiceCustomFields, invoice);
+    invoiceMap.put("customFields", mutableInvoiceCustomFields);
     context.put("invoice", invoiceMap);
 
     // lines[]
@@ -108,23 +123,35 @@ public class InvoiceContextBuilder implements TemplateContextBuilder {
               customerMap.put("id", customer.getId());
               customerMap.put("name", customer.getName());
               customerMap.put("email", customer.getEmail());
-              customerMap.put(
-                  "customFields",
+              CustomerContextBuilder.populatePromotedCustomerFields(customerMap, customer);
+              Map<String, Object> resolvedCustomerCustomFields =
                   contextHelper.resolveDropdownLabels(
                       customer.getCustomFields() != null ? customer.getCustomFields() : Map.of(),
                       EntityType.CUSTOMER,
-                      fieldDefCache));
+                      fieldDefCache);
+              var mutableCustomerCustomFields =
+                  new LinkedHashMap<String, Object>(resolvedCustomerCustomFields);
+              CustomerContextBuilder.injectPromotedCustomerAliases(
+                  mutableCustomerCustomFields, customer);
+              customerMap.put("customFields", mutableCustomerCustomFields);
               customerMap.put("address", invoice.getCustomerAddress());
               context.put("customer", customerMap);
 
-              // Top-level convenience alias for customer VAT number
-              @SuppressWarnings("unchecked")
-              var resolvedCustomFields = (Map<String, Object>) customerMap.get("customFields");
-              if (resolvedCustomFields != null && resolvedCustomFields.containsKey("vat_number")) {
-                context.put("customerVatNumber", resolvedCustomFields.get("vat_number"));
-              } else {
-                context.put("customerVatNumber", null);
+              // Top-level convenience alias for customer VAT number.
+              // Prefer the promoted structural column; fall back to JSONB for pre-Phase-63
+              // entities. Legacy data may use either `vat_number` or `tax_number` as the JSONB
+              // key — check both to maximise backward compatibility during the migration window.
+              String vatNumber = customer.getTaxNumber();
+              if (vatNumber == null) {
+                var legacyVatNumber = mutableCustomerCustomFields.get("vat_number");
+                var legacyTaxNumber = mutableCustomerCustomFields.get("tax_number");
+                if (legacyVatNumber != null) {
+                  vatNumber = legacyVatNumber.toString();
+                } else if (legacyTaxNumber != null) {
+                  vatNumber = legacyTaxNumber.toString();
+                }
               }
+              context.put("customerVatNumber", vatNumber);
             },
             () -> {
               context.put("customer", null);
@@ -144,6 +171,13 @@ public class InvoiceContextBuilder implements TemplateContextBuilder {
                           var projectMap = new LinkedHashMap<String, Object>();
                           projectMap.put("id", project.getId());
                           projectMap.put("name", project.getName());
+                          projectMap.put("referenceNumber", project.getReferenceNumber());
+                          projectMap.put(
+                              "priority",
+                              project.getPriority() != null
+                                  ? project.getPriority().name().toLowerCase(Locale.ROOT)
+                                  : null);
+                          projectMap.put("workType", project.getWorkType());
                           projectMap.put(
                               "customFields",
                               contextHelper.resolveDropdownLabels(
@@ -165,5 +199,25 @@ public class InvoiceContextBuilder implements TemplateContextBuilder {
     context.put("generatedBy", contextHelper.buildGeneratedByMap(memberId));
 
     return context;
+  }
+
+  /**
+   * Injects backward-compatible {@code customFields.<slug>} aliases for promoted invoice fields.
+   * {@code tax_type} is serialized lowercase to match the old pack dropdown values.
+   */
+  private static void injectPromotedInvoiceAliases(
+      Map<String, Object> customFields, Invoice invoice) {
+    if (invoice.getPoNumber() != null) {
+      customFields.put("purchase_order_number", invoice.getPoNumber());
+    }
+    if (invoice.getTaxType() != null) {
+      customFields.put("tax_type", invoice.getTaxType().name().toLowerCase(Locale.ROOT));
+    }
+    if (invoice.getBillingPeriodStart() != null) {
+      customFields.put("billing_period_start", invoice.getBillingPeriodStart().toString());
+    }
+    if (invoice.getBillingPeriodEnd() != null) {
+      customFields.put("billing_period_end", invoice.getBillingPeriodEnd().toString());
+    }
   }
 }

@@ -17,6 +17,7 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberInfo;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import io.b2mash.b2b.b2bstrawman.project.Project;
+import io.b2mash.b2b.b2bstrawman.project.ProjectPriority;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -268,6 +269,67 @@ class ProjectContextBuilderTest {
     assertThat(lead).isNotNull();
     assertThat(lead.get("name")).isEqualTo("Lead User");
     assertThat(lead.get("email")).isEqualTo("lead@test.com");
+  }
+
+  @Test
+  void buildContextExposesPromotedProjectFieldsAsDirectVariables() {
+    var project = new Project("Promoted Project", "desc", memberId);
+    project.setReferenceNumber("PRJ-0001");
+    project.setPriority(ProjectPriority.HIGH);
+    project.setWorkType("Litigation");
+
+    when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+    when(customerProjectRepository.findByProjectId(projectId)).thenReturn(List.of());
+    when(projectMemberRepository.findProjectMembersWithDetails(projectId)).thenReturn(List.of());
+    when(projectBudgetRepository.findByProjectId(projectId)).thenReturn(Optional.empty());
+    when(contextHelper.buildTagsList("PROJECT", projectId)).thenReturn(List.of());
+    when(contextHelper.buildOrgContext()).thenReturn(Map.of());
+    when(contextHelper.buildGeneratedByMap(memberId)).thenReturn(Map.of("name", "Unknown"));
+
+    var context = builder.buildContext(projectId, memberId);
+
+    @SuppressWarnings("unchecked")
+    var projectMap = (Map<String, Object>) context.get("project");
+
+    // Direct structural variables (Epic 460).
+    assertThat(projectMap.get("referenceNumber")).isEqualTo("PRJ-0001");
+    assertThat(projectMap.get("priority")).isEqualTo("HIGH");
+    assertThat(projectMap.get("workType")).isEqualTo("Litigation");
+
+    // Backward-compat aliases. Priority is lowercased to match the pre-Phase-63 pack values.
+    @SuppressWarnings("unchecked")
+    var customFields = (Map<String, Object>) projectMap.get("customFields");
+    assertThat(customFields).containsEntry("reference_number", "PRJ-0001");
+    assertThat(customFields).containsEntry("priority", "high");
+    assertThat(customFields).containsEntry("engagement_type", "Litigation");
+    assertThat(customFields).containsEntry("matter_type", "Litigation");
+  }
+
+  @Test
+  void buildContextPreservesLegacyPriorityWhenStructuralColumnIsNull() {
+    // Pre-Phase-63 projects may have `priority` only in the JSONB blob. When structural
+    // priority is null, the legacy value must be kept intact.
+    var project = new Project("Legacy Priority Project", "desc", memberId);
+    project.setCustomFields(Map.of("priority", "low", "reference_number", "OLD-REF"));
+
+    when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+    when(customerProjectRepository.findByProjectId(projectId)).thenReturn(List.of());
+    when(projectMemberRepository.findProjectMembersWithDetails(projectId)).thenReturn(List.of());
+    when(projectBudgetRepository.findByProjectId(projectId)).thenReturn(Optional.empty());
+    when(contextHelper.buildTagsList("PROJECT", projectId)).thenReturn(List.of());
+    when(contextHelper.buildOrgContext()).thenReturn(Map.of());
+    when(contextHelper.buildGeneratedByMap(memberId)).thenReturn(Map.of("name", "Unknown"));
+
+    var context = builder.buildContext(projectId, memberId);
+
+    @SuppressWarnings("unchecked")
+    var projectMap = (Map<String, Object>) context.get("project");
+    @SuppressWarnings("unchecked")
+    var customFields = (Map<String, Object>) projectMap.get("customFields");
+
+    assertThat(projectMap.get("priority")).isNull();
+    assertThat(customFields).containsEntry("priority", "low");
+    assertThat(customFields).containsEntry("reference_number", "OLD-REF");
   }
 
   @Test

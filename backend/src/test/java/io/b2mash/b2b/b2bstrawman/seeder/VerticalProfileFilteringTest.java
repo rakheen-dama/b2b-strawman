@@ -71,7 +71,9 @@ class VerticalProfileFilteringTest {
                       fieldDefinitionRepository.findByEntityTypeAndActiveTrueOrderBySortOrder(
                           EntityType.CUSTOMER);
 
-                  // Should have common-customer (universal) + accounting-za-customer (vertical)
+                  // Post-Epic-462: common-customer pack deleted (all fields promoted to
+                  // structural columns). Accounting tenant should still get accounting-za-customer
+                  // pack with the remaining 8 non-promoted fields.
                   var commonFields =
                       customerFields.stream()
                           .filter(f -> "common-customer".equals(f.getPackId()))
@@ -81,8 +83,8 @@ class VerticalProfileFilteringTest {
                           .filter(f -> "accounting-za-customer".equals(f.getPackId()))
                           .toList();
 
-                  assertThat(commonFields).hasSize(8);
-                  assertThat(accountingFields).hasSize(16);
+                  assertThat(commonFields).isEmpty();
+                  assertThat(accountingFields).hasSize(8);
                 }));
   }
 
@@ -98,7 +100,8 @@ class VerticalProfileFilteringTest {
                       fieldDefinitionRepository.findByEntityTypeAndActiveTrueOrderBySortOrder(
                           EntityType.CUSTOMER);
 
-                  // Should have common-customer (universal) only — no vertical-specific packs
+                  // Post-Epic-462: common-customer pack deleted (all fields promoted to
+                  // structural columns). Generic tenants should have no custom customer fields.
                   var commonFields =
                       customerFields.stream()
                           .filter(f -> "common-customer".equals(f.getPackId()))
@@ -108,7 +111,7 @@ class VerticalProfileFilteringTest {
                           .filter(f -> "accounting-za-customer".equals(f.getPackId()))
                           .toList();
 
-                  assertThat(commonFields).hasSize(8);
+                  assertThat(commonFields).isEmpty();
                   assertThat(accountingFields).isEmpty();
                 }));
   }
@@ -155,8 +158,8 @@ class VerticalProfileFilteringTest {
                           .filter(f -> "accounting-za-customer".equals(f.getPackId()))
                           .toList();
 
-                  // Should still be 16, not 32
-                  assertThat(accountingFields).hasSize(16);
+                  // Post-Epic-462: 8 remaining fields after promotion; should still be 8, not 16
+                  assertThat(accountingFields).hasSize(8);
                 }));
   }
 

@@ -7,6 +7,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
+import io.b2mash.b2b.b2bstrawman.template.PromotedFieldSlugs;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -55,22 +56,26 @@ class FieldPackSeederIntegrationTest {
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  // common-customer has 8 fields, compliance packs add 5 more (3 FICA
-                  // individual + 2 FICA company) = 13 total CUSTOMER fields
+                  // Post-Epic-462: common-customer pack is deleted (all fields promoted to
+                  // structural columns). Only compliance pack customer fields remain for the
+                  // default (null vertical) tenant.
                   var customerFields =
                       fieldDefinitionRepository.findByEntityTypeAndActiveTrueOrderBySortOrder(
                           EntityType.CUSTOMER);
-                  var projectFields =
-                      fieldDefinitionRepository.findByEntityTypeAndActiveTrueOrderBySortOrder(
-                          EntityType.PROJECT);
-
-                  // Filter to only field-pack-seeded fields
                   var fieldPackCustomerFields =
                       customerFields.stream()
                           .filter(f -> "common-customer".equals(f.getPackId()))
                           .toList();
-                  assertThat(fieldPackCustomerFields).hasSize(8);
-                  assertThat(projectFields).hasSize(3);
+                  assertThat(fieldPackCustomerFields).isEmpty();
+
+                  // common-project now has exactly 1 field (`category`) after promoting
+                  // reference_number and priority to structural columns.
+                  var projectFields =
+                      fieldDefinitionRepository.findByEntityTypeAndActiveTrueOrderBySortOrder(
+                          EntityType.PROJECT);
+                  assertThat(projectFields).hasSize(1);
+                  assertThat(projectFields.getFirst().getSlug()).isEqualTo("category");
+                  assertThat(projectFields.getFirst().getPackId()).isEqualTo("common-project");
                 }));
   }
 
@@ -81,23 +86,17 @@ class FieldPackSeederIntegrationTest {
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
+                  // common-customer group no longer exists.
                   var customerGroups =
                       fieldGroupRepository.findByEntityTypeAndActiveTrueOrderBySortOrder(
                           EntityType.CUSTOMER);
-                  // Filter to only field-pack-seeded groups
                   var fieldPackGroups =
                       customerGroups.stream()
                           .filter(g -> "common-customer".equals(g.getPackId()))
                           .toList();
-                  assertThat(fieldPackGroups).hasSize(1);
-                  assertThat(fieldPackGroups.getFirst().getSlug()).isEqualTo("contact_address");
-                  assertThat(fieldPackGroups.getFirst().getName()).isEqualTo("Contact & Address");
+                  assertThat(fieldPackGroups).isEmpty();
 
-                  var members =
-                      fieldGroupMemberRepository.findByFieldGroupIdOrderBySortOrder(
-                          fieldPackGroups.getFirst().getId());
-                  assertThat(members).hasSize(8);
-
+                  // Project group still exists but now has 1 member (`category` only).
                   var projectGroups =
                       fieldGroupRepository.findByEntityTypeAndActiveTrueOrderBySortOrder(
                           EntityType.PROJECT);
@@ -107,7 +106,7 @@ class FieldPackSeederIntegrationTest {
                   var projectMembers =
                       fieldGroupMemberRepository.findByFieldGroupIdOrderBySortOrder(
                           projectGroups.getFirst().getId());
-                  assertThat(projectMembers).hasSize(3);
+                  assertThat(projectMembers).hasSize(1);
                 }));
   }
 
@@ -120,15 +119,15 @@ class FieldPackSeederIntegrationTest {
                 tx -> {
                   var settings = orgSettingsRepository.findForCurrentTenant().orElseThrow();
                   assertThat(settings.getFieldPackStatus()).isNotNull();
-                  assertThat(settings.getFieldPackStatus()).hasSize(4);
+                  // Post-Epic-462: common-customer and common-invoice packs deleted.
+                  // Only common-project and common-task remain.
+                  assertThat(settings.getFieldPackStatus()).hasSize(2);
 
                   List<String> packIds =
                       settings.getFieldPackStatus().stream()
                           .map(entry -> (String) entry.get("packId"))
                           .toList();
-                  assertThat(packIds)
-                      .containsExactlyInAnyOrder(
-                          "common-customer", "common-invoice", "common-project", "common-task");
+                  assertThat(packIds).containsExactlyInAnyOrder("common-project", "common-task");
 
                   // Verify each entry has version and appliedAt
                   for (Map<String, Object> entry : settings.getFieldPackStatus()) {
@@ -148,7 +147,7 @@ class FieldPackSeederIntegrationTest {
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  // Counts should remain the same as initial seeding (filter by pack)
+                  // Counts should remain the same as initial seeding.
                   var customerFields =
                       fieldDefinitionRepository.findByEntityTypeAndActiveTrueOrderBySortOrder(
                           EntityType.CUSTOMER);
@@ -160,57 +159,38 @@ class FieldPackSeederIntegrationTest {
                       customerFields.stream()
                           .filter(f -> "common-customer".equals(f.getPackId()))
                           .toList();
-                  assertThat(fieldPackCustomerFields).hasSize(8);
-                  assertThat(projectFields).hasSize(3);
+                  assertThat(fieldPackCustomerFields).isEmpty();
+                  assertThat(projectFields).hasSize(1);
 
-                  var customerGroups =
-                      fieldGroupRepository.findByEntityTypeAndActiveTrueOrderBySortOrder(
-                          EntityType.CUSTOMER);
+                  // Project group still singleton — idempotent re-seed.
                   var projectGroups =
                       fieldGroupRepository.findByEntityTypeAndActiveTrueOrderBySortOrder(
                           EntityType.PROJECT);
-
-                  var fieldPackGroups =
-                      customerGroups.stream()
-                          .filter(g -> "common-customer".equals(g.getPackId()))
-                          .toList();
-                  assertThat(fieldPackGroups).hasSize(1);
                   assertThat(projectGroups).hasSize(1);
                 }));
   }
 
   @Test
-  void twoPacksSeedIndependently() {
+  void commonProjectPackSeedsCategoryFieldOnly() {
     runInTenant(
         tenantSchema,
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  // Verify both packs were applied
-                  var customerGroup =
-                      fieldGroupRepository
-                          .findByEntityTypeAndSlug(EntityType.CUSTOMER, "contact_address")
-                          .orElseThrow();
-                  assertThat(customerGroup.getPackId()).isEqualTo("common-customer");
-
+                  // common-project is the only common pack with CUSTOMER/PROJECT scope that
+                  // still applies. Verify its group + `category` field are present.
                   var projectGroup =
                       fieldGroupRepository
                           .findByEntityTypeAndSlug(EntityType.PROJECT, "project_info")
                           .orElseThrow();
                   assertThat(projectGroup.getPackId()).isEqualTo("common-project");
 
-                  // Verify fields are correctly associated to their entity types
-                  var addressLine1 =
+                  var category =
                       fieldDefinitionRepository
-                          .findByEntityTypeAndSlug(EntityType.CUSTOMER, "address_line1")
+                          .findByEntityTypeAndSlug(EntityType.PROJECT, "category")
                           .orElseThrow();
-                  assertThat(addressLine1.getEntityType()).isEqualTo(EntityType.CUSTOMER);
-
-                  var refNumber =
-                      fieldDefinitionRepository
-                          .findByEntityTypeAndSlug(EntityType.PROJECT, "reference_number")
-                          .orElseThrow();
-                  assertThat(refNumber.getEntityType()).isEqualTo(EntityType.PROJECT);
+                  assertThat(category.getEntityType()).isEqualTo(EntityType.PROJECT);
+                  assertThat(category.getPackId()).isEqualTo("common-project");
                 }));
   }
 
@@ -221,28 +201,6 @@ class FieldPackSeederIntegrationTest {
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  var customerFields =
-                      fieldDefinitionRepository.findByEntityTypeAndActiveTrueOrderBySortOrder(
-                          EntityType.CUSTOMER);
-
-                  // Filter to only field-pack-seeded fields
-                  var fieldPackCustomerFields =
-                      customerFields.stream()
-                          .filter(f -> "common-customer".equals(f.getPackId()))
-                          .toList();
-
-                  for (FieldDefinition fd : fieldPackCustomerFields) {
-                    assertThat(fd.getPackId())
-                        .as("packId for " + fd.getSlug())
-                        .isEqualTo("common-customer");
-                    assertThat(fd.getPackFieldKey())
-                        .as("packFieldKey for " + fd.getSlug())
-                        .isNotNull();
-                    assertThat(fd.getPackFieldKey())
-                        .as("packFieldKey matches slug for " + fd.getSlug())
-                        .isEqualTo(fd.getSlug());
-                  }
-
                   var projectFields =
                       fieldDefinitionRepository.findByEntityTypeAndActiveTrueOrderBySortOrder(
                           EntityType.PROJECT);
@@ -254,7 +212,73 @@ class FieldPackSeederIntegrationTest {
                     assertThat(fd.getPackFieldKey())
                         .as("packFieldKey for " + fd.getSlug())
                         .isNotNull();
+                    assertThat(fd.getPackFieldKey())
+                        .as("packFieldKey matches slug for " + fd.getSlug())
+                        .isEqualTo(fd.getSlug());
                   }
+                }));
+  }
+
+  @Test
+  void promotedSlugsAreNotSeededAsFieldDefinitions() {
+    // Epic 462 guarantee: promoted slugs must not be re-created as FieldDefinitions for newly
+    // provisioned tenants (they've moved to structural columns and backward-compat aliases).
+    // Slug lists are sourced from PromotedFieldSlugs to stay in sync with the single source of
+    // truth used by VariableMetadataRegistry and the template context builders. Task has no
+    // promoted custom-field slugs yet (PromotedFieldSlugs.TASK is empty), so no TASK loop.
+
+    runInTenant(
+        tenantSchema,
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  for (String slug : PromotedFieldSlugs.CUSTOMER) {
+                    assertThat(
+                            fieldDefinitionRepository.findByEntityTypeAndSlug(
+                                EntityType.CUSTOMER, slug))
+                        .as("Customer slug %s should NOT be seeded post-Epic-462", slug)
+                        .isEmpty();
+                  }
+                  for (String slug : PromotedFieldSlugs.PROJECT) {
+                    assertThat(
+                            fieldDefinitionRepository.findByEntityTypeAndSlug(
+                                EntityType.PROJECT, slug))
+                        .as("Project slug %s should NOT be seeded post-Epic-462", slug)
+                        .isEmpty();
+                  }
+                  for (String slug : PromotedFieldSlugs.INVOICE) {
+                    assertThat(
+                            fieldDefinitionRepository.findByEntityTypeAndSlug(
+                                EntityType.INVOICE, slug))
+                        .as("Invoice slug %s should NOT be seeded post-Epic-462", slug)
+                        .isEmpty();
+                  }
+                  for (String slug : PromotedFieldSlugs.TASK) {
+                    assertThat(
+                            fieldDefinitionRepository.findByEntityTypeAndSlug(
+                                EntityType.TASK, slug))
+                        .as("Task slug %s should NOT be seeded post-Epic-462", slug)
+                        .isEmpty();
+                  }
+                }));
+  }
+
+  @Test
+  void commonInvoicePackIsAbsentFromFieldPackStatus() {
+    // Epic 462: common-invoice.json was deleted — newly provisioned tenants must not record
+    // a FieldPackStatus entry for it.
+    runInTenant(
+        tenantSchema,
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var settings = orgSettingsRepository.findForCurrentTenant().orElseThrow();
+                  List<String> packIds =
+                      settings.getFieldPackStatus().stream()
+                          .map(entry -> (String) entry.get("packId"))
+                          .toList();
+                  assertThat(packIds).doesNotContain("common-invoice");
+                  assertThat(packIds).doesNotContain("common-customer");
                 }));
   }
 

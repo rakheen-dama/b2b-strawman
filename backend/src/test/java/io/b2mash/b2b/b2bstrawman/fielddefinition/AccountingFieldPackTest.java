@@ -39,7 +39,11 @@ class AccountingFieldPackTest {
   }
 
   @Test
-  void accountingTenantGets16CustomerFieldsFromAccountingPack() {
+  void accountingTenantGets8CustomerFieldsFromAccountingPack() {
+    // Post-Epic-462: 8 promoted fields removed (acct_company_registration_number, vat_number,
+    // acct_entity_type, financial_year_end, primary_contact_*, registered_address). Remaining:
+    // trading_as, sars_tax_reference, sars_efiling_profile, industry_sic_code, postal_address,
+    // fica_verified, fica_verification_date, referred_by.
     runInTenant(
         tenantSchema,
         () ->
@@ -53,23 +57,36 @@ class AccountingFieldPackTest {
                           .filter(f -> "accounting-za-customer".equals(f.getPackId()))
                           .toList();
 
-                  assertThat(accountingFields).hasSize(16);
+                  assertThat(accountingFields).hasSize(8);
 
-                  // Verify some key fields are present
                   var slugs = accountingFields.stream().map(FieldDefinition::getSlug).toList();
                   assertThat(slugs)
-                      .contains(
+                      .containsExactlyInAnyOrder(
+                          "trading_as",
+                          "sars_tax_reference",
+                          "sars_efiling_profile",
+                          "industry_sic_code",
+                          "postal_address",
+                          "fica_verified",
+                          "fica_verification_date",
+                          "referred_by");
+                  // Promoted slugs are gone from the pack.
+                  assertThat(slugs)
+                      .doesNotContain(
                           "acct_company_registration_number",
                           "vat_number",
-                          "sars_tax_reference",
-                          "financial_year_end",
                           "acct_entity_type",
-                          "fica_verified");
+                          "financial_year_end",
+                          "primary_contact_name",
+                          "primary_contact_email",
+                          "primary_contact_phone",
+                          "registered_address");
                 }));
   }
 
   @Test
-  void accountingTenantGets5ProjectFieldsFromAccountingPack() {
+  void accountingTenantGets4ProjectFieldsFromAccountingPack() {
+    // Post-Epic-462: engagement_type removed (promoted to Project.workType).
     runInTenant(
         tenantSchema,
         () ->
@@ -83,16 +100,16 @@ class AccountingFieldPackTest {
                           .filter(f -> "accounting-za-project".equals(f.getPackId()))
                           .toList();
 
-                  assertThat(accountingFields).hasSize(5);
+                  assertThat(accountingFields).hasSize(4);
 
                   var slugs = accountingFields.stream().map(FieldDefinition::getSlug).toList();
                   assertThat(slugs)
-                      .contains(
-                          "engagement_type",
+                      .containsExactlyInAnyOrder(
                           "tax_year",
                           "sars_submission_deadline",
                           "assigned_reviewer",
                           "complexity");
+                  assertThat(slugs).doesNotContain("engagement_type");
                 }));
   }
 

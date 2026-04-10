@@ -18,6 +18,7 @@ import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -238,6 +239,132 @@ class CustomerContextBuilderTest {
     var invoices = (List<Map<String, Object>>) context.get("invoices");
     assertThat(invoices).isEmpty();
     assertThat(context.get("totalOutstanding")).isEqualTo(BigDecimal.ZERO);
+  }
+
+  @Test
+  void buildContextExposesPromotedStructuralFieldsAsDirectVariables() {
+    var customer =
+        TestCustomerFactory.createActiveCustomer("Promoted Co", "p@example.com", memberId);
+    customer.setTaxNumber("VAT-100");
+    customer.setAddressLine1("1 Main St");
+    customer.setAddressLine2("Suite 2");
+    customer.setCity("Cape Town");
+    customer.setStateProvince("WC");
+    customer.setPostalCode("8001");
+    customer.setCountry("ZA");
+    customer.setContactName("Alice");
+    customer.setContactEmail("alice@example.com");
+    customer.setContactPhone("+27-21-555-0001");
+    customer.setEntityType("PTY_LTD");
+    customer.setFinancialYearEnd(LocalDate.of(2026, 2, 28));
+    customer.setRegistrationNumber("2020/123456/07");
+
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
+    when(customerProjectRepository.findByCustomerId(customerId)).thenReturn(List.of());
+    when(invoiceRepository.findByCustomerId(customerId)).thenReturn(List.of());
+    when(contextHelper.buildTagsList("CUSTOMER", customerId)).thenReturn(List.of());
+    when(contextHelper.buildOrgContext()).thenReturn(Map.of());
+    when(contextHelper.buildGeneratedByMap(memberId)).thenReturn(Map.of("name", "Unknown"));
+
+    var context = builder.buildContext(customerId, memberId);
+
+    @SuppressWarnings("unchecked")
+    var customerMap = (Map<String, Object>) context.get("customer");
+
+    // Direct promoted variables (Epic 459).
+    assertThat(customerMap.get("taxNumber")).isEqualTo("VAT-100");
+    assertThat(customerMap.get("addressLine1")).isEqualTo("1 Main St");
+    assertThat(customerMap.get("addressLine2")).isEqualTo("Suite 2");
+    assertThat(customerMap.get("city")).isEqualTo("Cape Town");
+    assertThat(customerMap.get("stateProvince")).isEqualTo("WC");
+    assertThat(customerMap.get("postalCode")).isEqualTo("8001");
+    assertThat(customerMap.get("country")).isEqualTo("ZA");
+    assertThat(customerMap.get("contactName")).isEqualTo("Alice");
+    assertThat(customerMap.get("contactEmail")).isEqualTo("alice@example.com");
+    assertThat(customerMap.get("contactPhone")).isEqualTo("+27-21-555-0001");
+    assertThat(customerMap.get("entityType")).isEqualTo("PTY_LTD");
+    assertThat(customerMap.get("financialYearEnd")).isEqualTo("2026-02-28");
+    assertThat(customerMap.get("registrationNumber")).isEqualTo("2020/123456/07");
+  }
+
+  @Test
+  void buildContextInjectsBackwardCompatCustomFieldAliasesForPromotedFields() {
+    var customer =
+        TestCustomerFactory.createActiveCustomer("Alias Co", "alias@example.com", memberId);
+    customer.setTaxNumber("VAT-42");
+    customer.setAddressLine1("42 Alias Way");
+    customer.setCity("Joburg");
+    customer.setCountry("ZA");
+    customer.setContactName("Bob");
+    customer.setContactEmail("bob@example.com");
+    customer.setContactPhone("+27-11-555-0042");
+    customer.setEntityType("SOLE_PROP");
+    customer.setRegistrationNumber("REG-42");
+    customer.setFinancialYearEnd(LocalDate.of(2026, 2, 28));
+
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
+    when(customerProjectRepository.findByCustomerId(customerId)).thenReturn(List.of());
+    when(invoiceRepository.findByCustomerId(customerId)).thenReturn(List.of());
+    when(contextHelper.buildTagsList("CUSTOMER", customerId)).thenReturn(List.of());
+    when(contextHelper.buildOrgContext()).thenReturn(Map.of());
+    when(contextHelper.buildGeneratedByMap(memberId)).thenReturn(Map.of("name", "Unknown"));
+
+    var context = builder.buildContext(customerId, memberId);
+
+    @SuppressWarnings("unchecked")
+    var customerMap = (Map<String, Object>) context.get("customer");
+    @SuppressWarnings("unchecked")
+    var customFields = (Map<String, Object>) customerMap.get("customFields");
+
+    // Backward-compat aliases so pre-Phase-63 templates still resolve.
+    assertThat(customFields).containsEntry("tax_number", "VAT-42");
+    assertThat(customFields).containsEntry("vat_number", "VAT-42");
+    assertThat(customFields).containsEntry("address_line1", "42 Alias Way");
+    assertThat(customFields).containsEntry("city", "Joburg");
+    assertThat(customFields).containsEntry("country", "ZA");
+    assertThat(customFields).containsEntry("primary_contact_name", "Bob");
+    assertThat(customFields).containsEntry("primary_contact_email", "bob@example.com");
+    assertThat(customFields).containsEntry("primary_contact_phone", "+27-11-555-0042");
+    assertThat(customFields).containsEntry("phone", "+27-11-555-0042");
+    assertThat(customFields).containsEntry("acct_entity_type", "SOLE_PROP");
+    assertThat(customFields).containsEntry("client_type", "SOLE_PROP");
+    assertThat(customFields).containsEntry("acct_company_registration_number", "REG-42");
+    assertThat(customFields).containsEntry("registration_number", "REG-42");
+    assertThat(customFields).containsEntry("registered_address", "42 Alias Way");
+    assertThat(customFields).containsEntry("physical_address", "42 Alias Way");
+    assertThat(customFields).containsEntry("financial_year_end", "2026-02-28");
+  }
+
+  @Test
+  void buildContextPreservesLegacyJsonbValuesWhenStructuralColumnsAreNull() {
+    // Pre-Phase-63 entities may carry promoted slugs only in the JSONB customFields blob.
+    // When the structural getter returns null, the builder must leave the legacy JSONB value
+    // untouched (not overwrite with null).
+    var customer =
+        TestCustomerFactory.createActiveCustomer("Legacy Co", "legacy@example.com", memberId);
+    customer.setCustomFields(
+        Map.of(
+            "tax_number", "LEGACY-VAT",
+            "vat_number", "LEGACY-VAT",
+            "address_line1", "Old Address"));
+
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
+    when(customerProjectRepository.findByCustomerId(customerId)).thenReturn(List.of());
+    when(invoiceRepository.findByCustomerId(customerId)).thenReturn(List.of());
+    when(contextHelper.buildTagsList("CUSTOMER", customerId)).thenReturn(List.of());
+    when(contextHelper.buildOrgContext()).thenReturn(Map.of());
+    when(contextHelper.buildGeneratedByMap(memberId)).thenReturn(Map.of("name", "Unknown"));
+
+    var context = builder.buildContext(customerId, memberId);
+
+    @SuppressWarnings("unchecked")
+    var customerMap = (Map<String, Object>) context.get("customer");
+    @SuppressWarnings("unchecked")
+    var customFields = (Map<String, Object>) customerMap.get("customFields");
+
+    assertThat(customFields).containsEntry("tax_number", "LEGACY-VAT");
+    assertThat(customFields).containsEntry("vat_number", "LEGACY-VAT");
+    assertThat(customFields).containsEntry("address_line1", "Old Address");
   }
 
   @Test

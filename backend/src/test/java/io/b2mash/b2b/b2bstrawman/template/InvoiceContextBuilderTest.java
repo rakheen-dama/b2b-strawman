@@ -13,10 +13,13 @@ import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLine;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
+import io.b2mash.b2b.b2bstrawman.invoice.TaxType;
 import io.b2mash.b2b.b2bstrawman.project.Project;
+import io.b2mash.b2b.b2bstrawman.project.ProjectPriority;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -78,6 +81,9 @@ class InvoiceContextBuilderTest {
     when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
 
     var project = new Project("Project X", "desc", memberId);
+    project.setReferenceNumber("PRJ-001");
+    project.setPriority(ProjectPriority.HIGH);
+    project.setWorkType("engagement");
     when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
 
     when(contextHelper.buildOrgContext()).thenReturn(Map.of());
@@ -104,6 +110,10 @@ class InvoiceContextBuilderTest {
     var projectMap = (Map<String, Object>) context.get("project");
     assertThat(projectMap).isNotNull();
     assertThat(projectMap.get("name")).isEqualTo("Project X");
+    // Promoted project fields (Epic 462) — advertised by VariableMetadataRegistry for invoices.
+    assertThat(projectMap.get("referenceNumber")).isEqualTo("PRJ-001");
+    assertThat(projectMap.get("priority")).isEqualTo("high");
+    assertThat(projectMap.get("workType")).isEqualTo("engagement");
   }
 
   @Test
@@ -151,6 +161,93 @@ class InvoiceContextBuilderTest {
     @SuppressWarnings("unchecked")
     var customFields = (Map<String, Object>) customerMap.get("customFields");
     assertThat(customFields).containsEntry("vat_number", "VAT123");
+  }
+
+  @Test
+  void buildContextExposesPromotedInvoiceFieldsAsDirectVariables() {
+    var invoice =
+        new Invoice(customerId, "ZAR", "Promoted Co", "p@test.com", null, "Org", memberId);
+    invoice.setPoNumber("PO-12345");
+    invoice.setTaxType(TaxType.VAT);
+    invoice.setBillingPeriodStart(LocalDate.of(2026, 1, 1));
+    invoice.setBillingPeriodEnd(LocalDate.of(2026, 1, 31));
+
+    when(invoiceRepository.findById(invoiceId)).thenReturn(Optional.of(invoice));
+    when(invoiceLineRepository.findByInvoiceIdOrderBySortOrder(invoiceId)).thenReturn(List.of());
+
+    var customer = TestCustomerFactory.createActiveCustomer("Promoted Co", "p@test.com", memberId);
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
+
+    when(contextHelper.buildOrgContext()).thenReturn(Map.of());
+    when(contextHelper.buildGeneratedByMap(memberId)).thenReturn(Map.of("name", "Unknown"));
+
+    var context = builder.buildContext(invoiceId, memberId);
+
+    @SuppressWarnings("unchecked")
+    var invoiceMap = (Map<String, Object>) context.get("invoice");
+
+    // Direct promoted variables (Epic 460).
+    assertThat(invoiceMap.get("poNumber")).isEqualTo("PO-12345");
+    assertThat(invoiceMap.get("taxType")).isEqualTo("VAT");
+    assertThat(invoiceMap.get("billingPeriodStart")).isEqualTo("2026-01-01");
+    assertThat(invoiceMap.get("billingPeriodEnd")).isEqualTo("2026-01-31");
+
+    // Backward-compat aliases. TaxType is lowercased to match pre-Phase-63 pack values.
+    @SuppressWarnings("unchecked")
+    var customFields = (Map<String, Object>) invoiceMap.get("customFields");
+    assertThat(customFields).containsEntry("purchase_order_number", "PO-12345");
+    assertThat(customFields).containsEntry("tax_type", "vat");
+    assertThat(customFields).containsEntry("billing_period_start", "2026-01-01");
+    assertThat(customFields).containsEntry("billing_period_end", "2026-01-31");
+  }
+
+  @Test
+  void buildContextExposesCustomerVatNumberViaPromotedTaxNumber() {
+    // Verifies Epic 462's customerVatNumber top-level convenience prefers the promoted
+    // structural customer.taxNumber column over the JSONB fallback.
+    var invoice = new Invoice(customerId, "ZAR", "Acme Co", "acme@test.com", null, "Org", memberId);
+    when(invoiceRepository.findById(invoiceId)).thenReturn(Optional.of(invoice));
+    when(invoiceLineRepository.findByInvoiceIdOrderBySortOrder(invoiceId)).thenReturn(List.of());
+
+    var customer = TestCustomerFactory.createActiveCustomer("Acme Co", "acme@test.com", memberId);
+    customer.setTaxNumber("VAT-777");
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
+
+    when(contextHelper.buildOrgContext()).thenReturn(Map.of());
+    when(contextHelper.buildGeneratedByMap(memberId)).thenReturn(Map.of("name", "Unknown"));
+
+    var context = builder.buildContext(invoiceId, memberId);
+
+    assertThat(context.get("customerVatNumber")).isEqualTo("VAT-777");
+
+    @SuppressWarnings("unchecked")
+    var customerMap = (Map<String, Object>) context.get("customer");
+    assertThat(customerMap.get("taxNumber")).isEqualTo("VAT-777");
+
+    // Backward-compat alias.
+    @SuppressWarnings("unchecked")
+    var customerCustomFields = (Map<String, Object>) customerMap.get("customFields");
+    assertThat(customerCustomFields).containsEntry("tax_number", "VAT-777");
+    assertThat(customerCustomFields).containsEntry("vat_number", "VAT-777");
+  }
+
+  @Test
+  void buildContextFallsBackToLegacyVatNumberWhenPromotedColumnIsNull() {
+    // Pre-Phase-63: no structural taxNumber, only JSONB vat_number.
+    var invoice = new Invoice(customerId, "ZAR", "Legacy Co", "l@test.com", null, "Org", memberId);
+    when(invoiceRepository.findById(invoiceId)).thenReturn(Optional.of(invoice));
+    when(invoiceLineRepository.findByInvoiceIdOrderBySortOrder(invoiceId)).thenReturn(List.of());
+
+    var customer = TestCustomerFactory.createActiveCustomer("Legacy Co", "l@test.com", memberId);
+    customer.setCustomFields(Map.of("vat_number", "LEGACY-VAT"));
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
+
+    when(contextHelper.buildOrgContext()).thenReturn(Map.of());
+    when(contextHelper.buildGeneratedByMap(memberId)).thenReturn(Map.of("name", "Unknown"));
+
+    var context = builder.buildContext(invoiceId, memberId);
+
+    assertThat(context.get("customerVatNumber")).isEqualTo("LEGACY-VAT");
   }
 
   @Test

@@ -193,6 +193,10 @@ public class CustomerContextBuilder implements TemplateContextBuilder {
    * customer blocks in project/invoice templates also see the aliases.
    */
   static void injectPromotedCustomerAliases(Map<String, Object> customFields, Customer customer) {
+    // Phase 63 semantics: the single structural column `Customer.taxNumber` backs BOTH the
+    // legacy `tax_number` and `vat_number` JSONB aliases. Pre-promotion packs used either slug
+    // depending on locale (generic vs ZA-VAT), so both aliases are populated from the same
+    // getter to keep existing templates rendering correctly. This co-assignment is intentional.
     putIfNotNull(customFields, "tax_number", customer.getTaxNumber());
     putIfNotNull(customFields, "vat_number", customer.getTaxNumber());
     putIfNotNull(customFields, "phone", customer.getContactPhone());

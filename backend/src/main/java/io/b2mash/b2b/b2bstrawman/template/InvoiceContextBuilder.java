@@ -138,10 +138,17 @@ public class InvoiceContextBuilder implements TemplateContextBuilder {
 
               // Top-level convenience alias for customer VAT number.
               // Prefer the promoted structural column; fall back to JSONB for pre-Phase-63
-              // entities.
+              // entities. Legacy data may use either `vat_number` or `tax_number` as the JSONB
+              // key — check both to maximise backward compatibility during the migration window.
               String vatNumber = customer.getTaxNumber();
-              if (vatNumber == null && mutableCustomerCustomFields.get("vat_number") != null) {
-                vatNumber = mutableCustomerCustomFields.get("vat_number").toString();
+              if (vatNumber == null) {
+                var legacyVatNumber = mutableCustomerCustomFields.get("vat_number");
+                var legacyTaxNumber = mutableCustomerCustomFields.get("tax_number");
+                if (legacyVatNumber != null) {
+                  vatNumber = legacyVatNumber.toString();
+                } else if (legacyTaxNumber != null) {
+                  vatNumber = legacyTaxNumber.toString();
+                }
               }
               context.put("customerVatNumber", vatNumber);
             },

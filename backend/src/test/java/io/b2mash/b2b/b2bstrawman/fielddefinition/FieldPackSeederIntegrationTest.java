@@ -7,6 +7,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
+import io.b2mash.b2b.b2bstrawman.template.PromotedFieldSlugs;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -222,60 +223,37 @@ class FieldPackSeederIntegrationTest {
   void promotedSlugsAreNotSeededAsFieldDefinitions() {
     // Epic 462 guarantee: promoted slugs must not be re-created as FieldDefinitions for newly
     // provisioned tenants (they've moved to structural columns and backward-compat aliases).
-    List<String> promotedCustomerSlugs =
-        List.of(
-            "address_line1",
-            "address_line2",
-            "city",
-            "state_province",
-            "postal_code",
-            "country",
-            "tax_number",
-            "phone",
-            "vat_number",
-            "primary_contact_name",
-            "primary_contact_email",
-            "primary_contact_phone",
-            "acct_company_registration_number",
-            "acct_entity_type",
-            "financial_year_end",
-            "registered_address",
-            "registration_number",
-            "client_type",
-            "physical_address");
-    List<String> promotedProjectSlugs =
-        List.of("reference_number", "priority", "engagement_type", "matter_type");
-    List<String> promotedInvoiceSlugs =
-        List.of("purchase_order_number", "tax_type", "billing_period_start", "billing_period_end");
-    List<String> promotedTaskSlugs = List.of("priority", "estimated_hours");
+    // Slug lists are sourced from PromotedFieldSlugs to stay in sync with the single source of
+    // truth used by VariableMetadataRegistry and the template context builders. Task has no
+    // promoted custom-field slugs yet (PromotedFieldSlugs.TASK is empty), so no TASK loop.
 
     runInTenant(
         tenantSchema,
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  for (String slug : promotedCustomerSlugs) {
+                  for (String slug : PromotedFieldSlugs.CUSTOMER) {
                     assertThat(
                             fieldDefinitionRepository.findByEntityTypeAndSlug(
                                 EntityType.CUSTOMER, slug))
                         .as("Customer slug %s should NOT be seeded post-Epic-462", slug)
                         .isEmpty();
                   }
-                  for (String slug : promotedProjectSlugs) {
+                  for (String slug : PromotedFieldSlugs.PROJECT) {
                     assertThat(
                             fieldDefinitionRepository.findByEntityTypeAndSlug(
                                 EntityType.PROJECT, slug))
                         .as("Project slug %s should NOT be seeded post-Epic-462", slug)
                         .isEmpty();
                   }
-                  for (String slug : promotedInvoiceSlugs) {
+                  for (String slug : PromotedFieldSlugs.INVOICE) {
                     assertThat(
                             fieldDefinitionRepository.findByEntityTypeAndSlug(
                                 EntityType.INVOICE, slug))
                         .as("Invoice slug %s should NOT be seeded post-Epic-462", slug)
                         .isEmpty();
                   }
-                  for (String slug : promotedTaskSlugs) {
+                  for (String slug : PromotedFieldSlugs.TASK) {
                     assertThat(
                             fieldDefinitionRepository.findByEntityTypeAndSlug(
                                 EntityType.TASK, slug))

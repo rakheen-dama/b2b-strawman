@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.springframework.stereotype.Component;
 
 /**
@@ -99,12 +100,12 @@ public class VariableMetadataRegistry {
     groups.add(new VariableGroup(label, prefix + ".customFields", variables));
   }
 
-  private static java.util.Set<String> promotedSlugsFor(EntityType entityType) {
+  private static Set<String> promotedSlugsFor(EntityType entityType) {
     return switch (entityType) {
       case CUSTOMER -> PromotedFieldSlugs.CUSTOMER;
       case PROJECT -> PromotedFieldSlugs.PROJECT;
       case INVOICE -> PromotedFieldSlugs.INVOICE;
-      default -> java.util.Set.of();
+      case TASK -> PromotedFieldSlugs.TASK;
     };
   }
 

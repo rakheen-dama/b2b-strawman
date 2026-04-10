@@ -21,9 +21,9 @@ import java.util.Set;
  * cleanup phase — filtering them here keeps the template picker clean without requiring a DB
  * migration.
  */
-final class PromotedFieldSlugs {
+public final class PromotedFieldSlugs {
 
-  static final Set<String> CUSTOMER =
+  public static final Set<String> CUSTOMER =
       Set.of(
           // common-customer (deleted)
           "address_line1",
@@ -48,11 +48,21 @@ final class PromotedFieldSlugs {
           "client_type",
           "physical_address");
 
-  static final Set<String> PROJECT =
+  public static final Set<String> PROJECT =
       Set.of("reference_number", "priority", "engagement_type", "matter_type");
 
-  static final Set<String> INVOICE =
+  public static final Set<String> INVOICE =
       Set.of("purchase_order_number", "tax_type", "billing_period_start", "billing_period_end");
+
+  /**
+   * Task entity promoted slugs — both backed by long-standing structural columns on {@code tasks}.
+   * {@code priority} has been a structural column since V9 (exposed via {@link
+   * io.b2mash.b2b.b2bstrawman.task.Task#getPriority()}); {@code estimated_hours} was added in V89
+   * (Phase 63, exposed via {@link io.b2mash.b2b.b2bstrawman.task.Task#getEstimatedHours()}). Both
+   * were historically duplicated into {@code common-task.json} as JSONB custom fields, which Epic
+   * 462 removes to avoid double-seeding and column/custom-field drift.
+   */
+  public static final Set<String> TASK = Set.of("priority", "estimated_hours");
 
   private PromotedFieldSlugs() {
     // static-only

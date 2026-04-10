@@ -38,8 +38,9 @@ class FieldPackJsonValidationTest {
       JsonNode root = objectMapper.readTree(is);
       assertThat(root.get("packId").asText()).isEqualTo("common-task");
       assertThat(root.get("entityType").asText()).isEqualTo("TASK");
-      // Post-Epic-462: only `category` remains (priority moved to Project promoted column set,
-      // estimated_hours awaiting a Task structural column in a later epic).
+      // Post-Epic-462: only `category` remains. `priority` is covered by Project's promoted
+      // column (no separate Task priority), and `estimated_hours` has its own structural column
+      // `tasks.estimated_hours` (see V89 migration + Task.estimatedHours).
       assertThat(root.get("fields")).hasSize(1);
       assertThat(root.get("fields").get(0).get("slug").asText()).isEqualTo("category");
     }
@@ -48,27 +49,21 @@ class FieldPackJsonValidationTest {
   @Test
   void commonCustomerPackDeleted() {
     // Post-Epic-462: common-customer.json was fully promoted to structural columns and deleted.
-    try (InputStream is =
-        getClass().getClassLoader().getResourceAsStream(PACK_DIR + "common-customer.json")) {
-      assertThat(is)
-          .as("common-customer.json should NOT exist on classpath after Epic 462 cleanup")
-          .isNull();
-    } catch (IOException e) {
-      // Null stream never throws on close; listed for compiler satisfaction.
-    }
+    InputStream is =
+        getClass().getClassLoader().getResourceAsStream(PACK_DIR + "common-customer.json");
+    assertThat(is)
+        .as("common-customer.json should NOT exist on classpath after Epic 462 cleanup")
+        .isNull();
   }
 
   @Test
   void commonInvoicePackDeleted() {
     // Post-Epic-462: common-invoice.json was fully promoted to structural columns and deleted.
-    try (InputStream is =
-        getClass().getClassLoader().getResourceAsStream(PACK_DIR + "common-invoice.json")) {
-      assertThat(is)
-          .as("common-invoice.json should NOT exist on classpath after Epic 462 cleanup")
-          .isNull();
-    } catch (IOException e) {
-      // Null stream never throws on close; listed for compiler satisfaction.
-    }
+    InputStream is =
+        getClass().getClassLoader().getResourceAsStream(PACK_DIR + "common-invoice.json");
+    assertThat(is)
+        .as("common-invoice.json should NOT exist on classpath after Epic 462 cleanup")
+        .isNull();
   }
 
   @Test

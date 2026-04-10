@@ -11,12 +11,20 @@
   },
   "fields": [
     {
+      "slug": "id_passport_number",
+      "name": "ID / Passport Number",
+      "fieldType": "TEXT",
+      "description": "South African ID number or passport number for natural persons",
+      "required": false,
+      "sortOrder": 1
+    },
+    {
       "slug": "postal_address",
       "name": "Postal Address",
       "fieldType": "TEXT",
       "description": "Postal address if different from physical address",
       "required": false,
-      "sortOrder": 1
+      "sortOrder": 2
     },
     {
       "slug": "preferred_correspondence",
@@ -29,7 +37,7 @@
         { "value": "POST", "label": "Post" },
         { "value": "HAND_DELIVERY", "label": "Hand Delivery" }
       ],
-      "sortOrder": 2
+      "sortOrder": 3
     },
     {
       "slug": "referred_by",
@@ -37,7 +45,7 @@
       "fieldType": "TEXT",
       "description": "Source of client referral for tracking",
       "required": false,
-      "sortOrder": 3
+      "sortOrder": 4
     }
   ]
 }

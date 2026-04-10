@@ -66,7 +66,10 @@ class TaskFieldPackSeedingIntegrationTest {
   }
 
   @Test
-  void task_pack_seeds_three_fields() {
+  void task_pack_seeds_category_field_only() {
+    // Post-Epic-462: common-task only seeds `category`. `priority` and `estimated_hours` were
+    // removed (priority is covered by Project promoted column; estimated_hours is reserved for a
+    // future structural column on Task).
     runInTenant(
         tenantSchema,
         () ->
@@ -78,38 +81,15 @@ class TaskFieldPackSeedingIntegrationTest {
                   var taskPackFields =
                       taskFields.stream().filter(f -> "common-task".equals(f.getPackId())).toList();
 
-                  assertThat(taskPackFields).hasSize(3);
+                  assertThat(taskPackFields).hasSize(1);
 
                   var slugs = taskPackFields.stream().map(FieldDefinition::getSlug).toList();
-                  assertThat(slugs)
-                      .containsExactlyInAnyOrder("priority", "category", "estimated_hours");
+                  assertThat(slugs).containsExactly("category");
 
-                  var priority =
-                      taskPackFields.stream()
-                          .filter(f -> "priority".equals(f.getSlug()))
-                          .findFirst()
-                          .orElseThrow();
-                  assertThat(priority.getFieldType()).isEqualTo(FieldType.DROPDOWN);
-                  assertThat(priority.getOptions()).isNotNull();
-                  assertThat(priority.getOptions()).hasSize(4);
-
-                  var category =
-                      taskPackFields.stream()
-                          .filter(f -> "category".equals(f.getSlug()))
-                          .findFirst()
-                          .orElseThrow();
+                  var category = taskPackFields.getFirst();
                   assertThat(category.getFieldType()).isEqualTo(FieldType.TEXT);
 
-                  var estimatedHours =
-                      taskPackFields.stream()
-                          .filter(f -> "estimated_hours".equals(f.getSlug()))
-                          .findFirst()
-                          .orElseThrow();
-                  assertThat(estimatedHours.getFieldType()).isEqualTo(FieldType.NUMBER);
-                  assertThat(estimatedHours.getValidation()).isNotNull();
-                  assertThat(estimatedHours.getValidation().get("min")).isNotNull();
-
-                  // Verify group membership (3 members in the task_info group)
+                  // Verify group membership (1 member in the task_info group)
                   var taskGroup =
                       fieldGroupRepository
                           .findByEntityTypeAndSlug(EntityType.TASK, "task_info")
@@ -117,7 +97,7 @@ class TaskFieldPackSeedingIntegrationTest {
                   var members =
                       fieldGroupMemberRepository.findByFieldGroupIdOrderBySortOrder(
                           taskGroup.getId());
-                  assertThat(members).hasSize(3);
+                  assertThat(members).hasSize(1);
                 }));
   }
 
@@ -143,7 +123,7 @@ class TaskFieldPackSeedingIntegrationTest {
                           EntityType.TASK);
                   var taskPackFields =
                       taskFields.stream().filter(f -> "common-task".equals(f.getPackId())).toList();
-                  assertThat(taskPackFields).hasSize(3);
+                  assertThat(taskPackFields).hasSize(1);
                 }));
   }
 

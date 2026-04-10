@@ -68,7 +68,9 @@ class LegalPackSeederIntegrationTest {
                       customerFields.stream()
                           .filter(f -> "legal-za-customer".equals(f.getPackId()))
                           .toList();
-                  assertThat(legalCustomerFields).hasSize(7);
+                  // Epic 462: legal-za-customer slimmed to 3 fields after promoting
+                  // registration_number, client_type, physical_address to structural columns.
+                  assertThat(legalCustomerFields).hasSize(3);
 
                   var projectFields =
                       fieldDefinitionRepository.findByEntityTypeAndActiveTrueOrderBySortOrder(
@@ -77,7 +79,8 @@ class LegalPackSeederIntegrationTest {
                       projectFields.stream()
                           .filter(f -> "legal-za-project".equals(f.getPackId()))
                           .toList();
-                  assertThat(legalProjectFields).hasSize(8);
+                  // Epic 462: legal-za-project slimmed to 7 fields after promoting matter_type.
+                  assertThat(legalProjectFields).hasSize(7);
                 }));
   }
 

@@ -99,7 +99,8 @@ class TemplateFieldPackLinkageTest {
     // Template references 3 custom field slugs:
     // - fpl_test_alpha and fpl_test_beta exist with packId="fpl-test-pack" → applied
     // - fpl_test_missing has no FieldDefinition → synthetic "common-customer" pack
-    //   (common-customer IS applied because the field pack seeder created fields)
+    //   Post-Epic-462: common-customer pack was deleted, so no FieldDefinition rows
+    //   carry packId="common-customer" and applied is false.
     mockMvc
         .perform(
             get("/api/templates/" + templateWithFieldsId + "/required-field-packs")
@@ -110,8 +111,8 @@ class TemplateFieldPackLinkageTest {
         // fpl-test-pack is present and applied (order may vary)
         .andExpect(jsonPath("$[?(@.packId == 'fpl-test-pack')].applied").value(true))
         .andExpect(jsonPath("$[?(@.packId == 'fpl-test-pack')].missingFields.length()").value(0))
-        // common-customer has the missing field
-        .andExpect(jsonPath("$[?(@.packId == 'common-customer')].applied").value(true))
+        // common-customer synthetic pack reports the missing field but is no longer applied
+        .andExpect(jsonPath("$[?(@.packId == 'common-customer')].applied").value(false))
         .andExpect(
             jsonPath("$[?(@.packId == 'common-customer')].missingFields[0]")
                 .value("customer.customFields.fpl_test_missing"));

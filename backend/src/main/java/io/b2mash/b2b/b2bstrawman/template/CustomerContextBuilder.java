@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.template;
 
+import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
@@ -68,16 +69,22 @@ public class CustomerContextBuilder implements TemplateContextBuilder {
     customerMap.put("email", customer.getEmail());
     customerMap.put("phone", customer.getPhone());
     customerMap.put("status", customer.getStatus());
+    // Promoted structural fields (Epic 459) — exposed as direct template variables.
+    populatePromotedCustomerFields(customerMap, customer);
     Map<String, Object> rawCustomFields =
         customer.getCustomFields() != null ? customer.getCustomFields() : Map.of();
     Map<String, Object> resolvedCustomFields =
         contextHelper.resolveDropdownLabels(rawCustomFields, EntityType.CUSTOMER, fieldDefCache);
-    customerMap.put("customFields", resolvedCustomFields);
+    // resolveDropdownLabels may return an immutable Map.of() for empty input — wrap before
+    // mutating.
+    var mutableCustomFields = new LinkedHashMap<String, Object>(resolvedCustomFields);
+    injectPromotedCustomerAliases(mutableCustomFields, customer);
+    customerMap.put("customFields", mutableCustomFields);
     log.debug(
         "Customer {} customFields: raw keys={}, resolved keys={}",
         entityId,
         rawCustomFields.keySet(),
-        resolvedCustomFields != null ? resolvedCustomFields.keySet() : "null");
+        mutableCustomFields.keySet());
     context.put("customer", customerMap);
 
     // projects[] (linked via CustomerProject)
@@ -152,5 +159,67 @@ public class CustomerContextBuilder implements TemplateContextBuilder {
     context.put("generatedBy", contextHelper.buildGeneratedByMap(memberId));
 
     return context;
+  }
+
+  /**
+   * Exposes the 13 structural customer fields promoted in Epic 459 as direct template variables
+   * (e.g. {@code ${customer.taxNumber}}). Package-private so {@link ProjectContextBuilder} and
+   * {@link InvoiceContextBuilder} can reuse it when building their nested customer blocks.
+   */
+  static void populatePromotedCustomerFields(Map<String, Object> customerMap, Customer customer) {
+    customerMap.put("taxNumber", customer.getTaxNumber());
+    customerMap.put("addressLine1", customer.getAddressLine1());
+    customerMap.put("addressLine2", customer.getAddressLine2());
+    customerMap.put("city", customer.getCity());
+    customerMap.put("stateProvince", customer.getStateProvince());
+    customerMap.put("postalCode", customer.getPostalCode());
+    customerMap.put("country", customer.getCountry());
+    customerMap.put("contactName", customer.getContactName());
+    customerMap.put("contactEmail", customer.getContactEmail());
+    customerMap.put("contactPhone", customer.getContactPhone());
+    customerMap.put("entityType", customer.getEntityType());
+    customerMap.put(
+        "financialYearEnd",
+        customer.getFinancialYearEnd() != null ? customer.getFinancialYearEnd().toString() : null);
+    customerMap.put("registrationNumber", customer.getRegistrationNumber());
+  }
+
+  /**
+   * Injects backward-compatible {@code customFields.<slug>} aliases into the given customFields
+   * map, pointing at the promoted structural getters. Only overwrites when the structural getter is
+   * non-null — pre-Phase-63 entities that still carry the value in JSONB are left alone.
+   *
+   * <p>Shared with {@link ProjectContextBuilder} and {@link InvoiceContextBuilder} so nested
+   * customer blocks in project/invoice templates also see the aliases.
+   */
+  static void injectPromotedCustomerAliases(Map<String, Object> customFields, Customer customer) {
+    putIfNotNull(customFields, "tax_number", customer.getTaxNumber());
+    putIfNotNull(customFields, "vat_number", customer.getTaxNumber());
+    putIfNotNull(customFields, "phone", customer.getContactPhone());
+    putIfNotNull(customFields, "primary_contact_name", customer.getContactName());
+    putIfNotNull(customFields, "primary_contact_email", customer.getContactEmail());
+    putIfNotNull(customFields, "primary_contact_phone", customer.getContactPhone());
+    putIfNotNull(
+        customFields, "acct_company_registration_number", customer.getRegistrationNumber());
+    putIfNotNull(customFields, "registration_number", customer.getRegistrationNumber());
+    putIfNotNull(customFields, "client_type", customer.getEntityType());
+    putIfNotNull(customFields, "acct_entity_type", customer.getEntityType());
+    putIfNotNull(customFields, "address_line1", customer.getAddressLine1());
+    putIfNotNull(customFields, "address_line2", customer.getAddressLine2());
+    putIfNotNull(customFields, "city", customer.getCity());
+    putIfNotNull(customFields, "state_province", customer.getStateProvince());
+    putIfNotNull(customFields, "postal_code", customer.getPostalCode());
+    putIfNotNull(customFields, "country", customer.getCountry());
+    putIfNotNull(customFields, "registered_address", customer.getAddressLine1());
+    putIfNotNull(customFields, "physical_address", customer.getAddressLine1());
+    if (customer.getFinancialYearEnd() != null) {
+      customFields.put("financial_year_end", customer.getFinancialYearEnd().toString());
+    }
+  }
+
+  private static void putIfNotNull(Map<String, Object> map, String key, Object value) {
+    if (value != null) {
+      map.put(key, value);
+    }
   }
 }

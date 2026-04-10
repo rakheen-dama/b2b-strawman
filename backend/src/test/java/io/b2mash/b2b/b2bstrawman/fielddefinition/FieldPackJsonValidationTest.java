@@ -14,28 +14,6 @@ class FieldPackJsonValidationTest {
   private final ObjectMapper objectMapper = new ObjectMapper();
 
   @Test
-  void commonInvoicePackExistsAndParsesCorrectly() throws IOException {
-    try (InputStream is =
-        getClass().getClassLoader().getResourceAsStream(PACK_DIR + "common-invoice.json")) {
-      assertThat(is).as("common-invoice.json should exist on classpath").isNotNull();
-
-      JsonNode root = objectMapper.readTree(is);
-      assertThat(root.get("packId").asText()).isEqualTo("common-invoice");
-      assertThat(root.get("entityType").asText()).isEqualTo("INVOICE");
-      assertThat(root.get("version").asInt()).isEqualTo(1);
-
-      JsonNode group = root.get("group");
-      assertThat(group.get("slug").asText()).isEqualTo("invoice_info");
-      assertThat(group.get("name").asText()).isEqualTo("Invoice Info");
-      assertThat(group.get("autoApply").asBoolean()).isTrue();
-
-      JsonNode fields = root.get("fields");
-      assertThat(fields.isArray()).isTrue();
-      assertThat(fields).hasSize(5);
-    }
-  }
-
-  @Test
   void commonProjectPackExistsAndParsesCorrectly() throws IOException {
     try (InputStream is =
         getClass().getClassLoader().getResourceAsStream(PACK_DIR + "common-project.json")) {
@@ -44,20 +22,10 @@ class FieldPackJsonValidationTest {
       JsonNode root = objectMapper.readTree(is);
       assertThat(root.get("packId").asText()).isEqualTo("common-project");
       assertThat(root.get("entityType").asText()).isEqualTo("PROJECT");
-      assertThat(root.get("fields")).hasSize(3);
-    }
-  }
-
-  @Test
-  void commonCustomerPackExistsAndParsesCorrectly() throws IOException {
-    try (InputStream is =
-        getClass().getClassLoader().getResourceAsStream(PACK_DIR + "common-customer.json")) {
-      assertThat(is).as("common-customer.json should exist on classpath").isNotNull();
-
-      JsonNode root = objectMapper.readTree(is);
-      assertThat(root.get("packId").asText()).isEqualTo("common-customer");
-      assertThat(root.get("entityType").asText()).isEqualTo("CUSTOMER");
-      assertThat(root.get("fields")).hasSize(8);
+      // Post-Epic-462: only `category` remains (reference_number and priority promoted to
+      // structural columns on Project).
+      assertThat(root.get("fields")).hasSize(1);
+      assertThat(root.get("fields").get(0).get("slug").asText()).isEqualTo("category");
     }
   }
 
@@ -70,14 +38,42 @@ class FieldPackJsonValidationTest {
       JsonNode root = objectMapper.readTree(is);
       assertThat(root.get("packId").asText()).isEqualTo("common-task");
       assertThat(root.get("entityType").asText()).isEqualTo("TASK");
+      // Post-Epic-462: only `category` remains (priority moved to Project promoted column set,
+      // estimated_hours awaiting a Task structural column in a later epic).
+      assertThat(root.get("fields")).hasSize(1);
+      assertThat(root.get("fields").get(0).get("slug").asText()).isEqualTo("category");
     }
   }
 
   @Test
-  void allFieldPackFieldsHaveRequiredProperties() throws IOException {
-    String[] packFiles = {
-      "common-invoice.json", "common-project.json", "common-customer.json", "common-task.json"
-    };
+  void commonCustomerPackDeleted() {
+    // Post-Epic-462: common-customer.json was fully promoted to structural columns and deleted.
+    try (InputStream is =
+        getClass().getClassLoader().getResourceAsStream(PACK_DIR + "common-customer.json")) {
+      assertThat(is)
+          .as("common-customer.json should NOT exist on classpath after Epic 462 cleanup")
+          .isNull();
+    } catch (IOException e) {
+      // Null stream never throws on close; listed for compiler satisfaction.
+    }
+  }
+
+  @Test
+  void commonInvoicePackDeleted() {
+    // Post-Epic-462: common-invoice.json was fully promoted to structural columns and deleted.
+    try (InputStream is =
+        getClass().getClassLoader().getResourceAsStream(PACK_DIR + "common-invoice.json")) {
+      assertThat(is)
+          .as("common-invoice.json should NOT exist on classpath after Epic 462 cleanup")
+          .isNull();
+    } catch (IOException e) {
+      // Null stream never throws on close; listed for compiler satisfaction.
+    }
+  }
+
+  @Test
+  void allRemainingCommonPackFieldsHaveRequiredProperties() throws IOException {
+    String[] packFiles = {"common-project.json", "common-task.json"};
 
     for (String packFile : packFiles) {
       try (InputStream is = getClass().getClassLoader().getResourceAsStream(PACK_DIR + packFile)) {
@@ -97,29 +93,6 @@ class FieldPackJsonValidationTest {
               .isTrue();
         }
       }
-    }
-  }
-
-  @Test
-  void invoicePackDropdownFieldHasOptions() throws IOException {
-    try (InputStream is =
-        getClass().getClassLoader().getResourceAsStream(PACK_DIR + "common-invoice.json")) {
-      JsonNode root = objectMapper.readTree(is);
-      JsonNode fields = root.get("fields");
-
-      // Find the tax_type DROPDOWN field
-      JsonNode taxTypeField = null;
-      for (JsonNode field : fields) {
-        if ("tax_type".equals(field.get("slug").asText())) {
-          taxTypeField = field;
-          break;
-        }
-      }
-
-      assertThat(taxTypeField).as("tax_type field should exist").isNotNull();
-      assertThat(taxTypeField.get("fieldType").asText()).isEqualTo("DROPDOWN");
-      assertThat(taxTypeField.get("options").isArray()).isTrue();
-      assertThat(taxTypeField.get("options")).hasSize(4);
     }
   }
 }

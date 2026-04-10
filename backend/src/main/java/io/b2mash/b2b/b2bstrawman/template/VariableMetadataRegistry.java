@@ -82,8 +82,10 @@ public class VariableMetadataRegistry {
     if (fields.isEmpty()) {
       return;
     }
+    var promotedSlugs = promotedSlugsFor(entityType);
     var variables =
         fields.stream()
+            .filter(fd -> !promotedSlugs.contains(fd.getSlug()))
             .map(
                 fd ->
                     new VariableInfo(
@@ -91,7 +93,19 @@ public class VariableMetadataRegistry {
                         fd.getName(),
                         FIELD_TYPE_TO_VARIABLE_TYPE.getOrDefault(fd.getFieldType(), "string")))
             .toList();
+    if (variables.isEmpty()) {
+      return;
+    }
     groups.add(new VariableGroup(label, prefix + ".customFields", variables));
+  }
+
+  private static java.util.Set<String> promotedSlugsFor(EntityType entityType) {
+    return switch (entityType) {
+      case CUSTOMER -> PromotedFieldSlugs.CUSTOMER;
+      case PROJECT -> PromotedFieldSlugs.PROJECT;
+      case INVOICE -> PromotedFieldSlugs.INVOICE;
+      default -> java.util.Set.of();
+    };
   }
 
   private void registerProjectVariables() {
@@ -105,7 +119,11 @@ public class VariableMetadataRegistry {
                 new VariableInfo("project.id", "Project ID", "string"),
                 new VariableInfo("project.name", "Project Name", "string"),
                 new VariableInfo("project.description", "Description", "string"),
-                new VariableInfo("project.createdAt", "Created At", "date"))));
+                new VariableInfo("project.createdAt", "Created At", "date"),
+                // Promoted structural project fields (Epic 460)
+                new VariableInfo("project.referenceNumber", "Reference Number", "string"),
+                new VariableInfo("project.priority", "Priority", "string"),
+                new VariableInfo("project.workType", "Work Type", "string"))));
 
     groups.add(
         new VariableGroup(
@@ -114,7 +132,21 @@ public class VariableMetadataRegistry {
             List.of(
                 new VariableInfo("customer.id", "Customer ID", "string"),
                 new VariableInfo("customer.name", "Customer Name", "string"),
-                new VariableInfo("customer.email", "Customer Email", "string"))));
+                new VariableInfo("customer.email", "Customer Email", "string"),
+                // Promoted structural customer fields (Epic 459)
+                new VariableInfo("customer.taxNumber", "Tax Number", "string"),
+                new VariableInfo("customer.registrationNumber", "Registration Number", "string"),
+                new VariableInfo("customer.entityType", "Entity Type", "string"),
+                new VariableInfo("customer.contactName", "Primary Contact Name", "string"),
+                new VariableInfo("customer.contactEmail", "Primary Contact Email", "string"),
+                new VariableInfo("customer.contactPhone", "Primary Contact Phone", "string"),
+                new VariableInfo("customer.addressLine1", "Address Line 1", "string"),
+                new VariableInfo("customer.addressLine2", "Address Line 2", "string"),
+                new VariableInfo("customer.city", "City", "string"),
+                new VariableInfo("customer.stateProvince", "State / Province", "string"),
+                new VariableInfo("customer.postalCode", "Postal Code", "string"),
+                new VariableInfo("customer.country", "Country", "string"),
+                new VariableInfo("customer.financialYearEnd", "Financial Year End", "date"))));
 
     groups.add(
         new VariableGroup(
@@ -163,7 +195,21 @@ public class VariableMetadataRegistry {
                 new VariableInfo("customer.name", "Customer Name", "string"),
                 new VariableInfo("customer.email", "Customer Email", "string"),
                 new VariableInfo("customer.phone", "Customer Phone", "string"),
-                new VariableInfo("customer.status", "Customer Status", "string"))));
+                new VariableInfo("customer.status", "Customer Status", "string"),
+                // Promoted structural customer fields (Epic 459)
+                new VariableInfo("customer.taxNumber", "Tax Number", "string"),
+                new VariableInfo("customer.registrationNumber", "Registration Number", "string"),
+                new VariableInfo("customer.entityType", "Entity Type", "string"),
+                new VariableInfo("customer.contactName", "Primary Contact Name", "string"),
+                new VariableInfo("customer.contactEmail", "Primary Contact Email", "string"),
+                new VariableInfo("customer.contactPhone", "Primary Contact Phone", "string"),
+                new VariableInfo("customer.addressLine1", "Address Line 1", "string"),
+                new VariableInfo("customer.addressLine2", "Address Line 2", "string"),
+                new VariableInfo("customer.city", "City", "string"),
+                new VariableInfo("customer.stateProvince", "State / Province", "string"),
+                new VariableInfo("customer.postalCode", "Postal Code", "string"),
+                new VariableInfo("customer.country", "Country", "string"),
+                new VariableInfo("customer.financialYearEnd", "Financial Year End", "date"))));
 
     groups.add(
         new VariableGroup(
@@ -213,7 +259,12 @@ public class VariableMetadataRegistry {
                 new VariableInfo("invoice.taxAmount", "Tax Amount", "currency"),
                 new VariableInfo("invoice.total", "Total", "currency"),
                 new VariableInfo("invoice.currency", "Currency", "string"),
-                new VariableInfo("invoice.notes", "Notes", "string"))));
+                new VariableInfo("invoice.notes", "Notes", "string"),
+                // Promoted structural invoice fields (Epic 460)
+                new VariableInfo("invoice.poNumber", "PO Number", "string"),
+                new VariableInfo("invoice.taxType", "Tax Type", "string"),
+                new VariableInfo("invoice.billingPeriodStart", "Billing Period Start", "date"),
+                new VariableInfo("invoice.billingPeriodEnd", "Billing Period End", "date"))));
 
     groups.add(
         new VariableGroup(
@@ -222,7 +273,21 @@ public class VariableMetadataRegistry {
             List.of(
                 new VariableInfo("customer.id", "Customer ID", "string"),
                 new VariableInfo("customer.name", "Customer Name", "string"),
-                new VariableInfo("customer.email", "Customer Email", "string"))));
+                new VariableInfo("customer.email", "Customer Email", "string"),
+                // Promoted structural customer fields (Epic 459)
+                new VariableInfo("customer.taxNumber", "Tax Number", "string"),
+                new VariableInfo("customer.registrationNumber", "Registration Number", "string"),
+                new VariableInfo("customer.entityType", "Entity Type", "string"),
+                new VariableInfo("customer.contactName", "Primary Contact Name", "string"),
+                new VariableInfo("customer.contactEmail", "Primary Contact Email", "string"),
+                new VariableInfo("customer.contactPhone", "Primary Contact Phone", "string"),
+                new VariableInfo("customer.addressLine1", "Address Line 1", "string"),
+                new VariableInfo("customer.addressLine2", "Address Line 2", "string"),
+                new VariableInfo("customer.city", "City", "string"),
+                new VariableInfo("customer.stateProvince", "State / Province", "string"),
+                new VariableInfo("customer.postalCode", "Postal Code", "string"),
+                new VariableInfo("customer.country", "Country", "string"),
+                new VariableInfo("customer.financialYearEnd", "Financial Year End", "date"))));
 
     groups.add(
         new VariableGroup(
@@ -230,7 +295,11 @@ public class VariableMetadataRegistry {
             "project",
             List.of(
                 new VariableInfo("project.id", "Project ID", "string"),
-                new VariableInfo("project.name", "Project Name", "string"))));
+                new VariableInfo("project.name", "Project Name", "string"),
+                // Promoted structural project fields (Epic 460)
+                new VariableInfo("project.referenceNumber", "Reference Number", "string"),
+                new VariableInfo("project.priority", "Priority", "string"),
+                new VariableInfo("project.workType", "Work Type", "string"))));
 
     groups.add(buildOrgGroup());
     groups.add(buildGeneratedGroup());

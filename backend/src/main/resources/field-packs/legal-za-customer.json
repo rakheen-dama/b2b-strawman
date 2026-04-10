@@ -1,6 +1,6 @@
 {
   "packId": "legal-za-customer",
-  "version": 1,
+  "version": 2,
   "verticalProfile": "legal-za",
   "entityType": "CUSTOMER",
   "group": {
@@ -11,54 +11,12 @@
   },
   "fields": [
     {
-      "slug": "client_type",
-      "name": "Client Type",
-      "fieldType": "DROPDOWN",
-      "description": "Legal entity classification for the client",
-      "required": true,
-      "options": [
-        { "value": "INDIVIDUAL", "label": "Individual" },
-        { "value": "COMPANY", "label": "Company" },
-        { "value": "TRUST", "label": "Trust" },
-        { "value": "CLOSE_CORPORATION", "label": "Close Corporation" },
-        { "value": "PARTNERSHIP", "label": "Partnership" },
-        { "value": "ESTATE", "label": "Estate" },
-        { "value": "GOVERNMENT", "label": "Government" }
-      ],
-      "sortOrder": 1
-    },
-    {
-      "slug": "id_passport_number",
-      "name": "ID / Passport Number",
-      "fieldType": "TEXT",
-      "description": "South African ID number or passport number for natural persons",
-      "required": false,
-      "sortOrder": 2
-    },
-    {
-      "slug": "registration_number",
-      "name": "Registration Number",
-      "fieldType": "TEXT",
-      "description": "CIPC registration number for companies, CCs, and trusts",
-      "required": false,
-      "sortOrder": 3
-    },
-    {
-      "slug": "physical_address",
-      "name": "Physical Address",
-      "fieldType": "TEXT",
-      "description": "Domicilium citandi et executandi address for service of legal documents",
-      "required": false,
-      "requiredForContexts": ["PROPOSAL_SEND"],
-      "sortOrder": 4
-    },
-    {
       "slug": "postal_address",
       "name": "Postal Address",
       "fieldType": "TEXT",
       "description": "Postal address if different from physical address",
       "required": false,
-      "sortOrder": 5
+      "sortOrder": 1
     },
     {
       "slug": "preferred_correspondence",
@@ -71,7 +29,7 @@
         { "value": "POST", "label": "Post" },
         { "value": "HAND_DELIVERY", "label": "Hand Delivery" }
       ],
-      "sortOrder": 6
+      "sortOrder": 2
     },
     {
       "slug": "referred_by",
@@ -79,7 +37,7 @@
       "fieldType": "TEXT",
       "description": "Source of client referral for tracking",
       "required": false,
-      "sortOrder": 7
+      "sortOrder": 3
     }
   ]
 }

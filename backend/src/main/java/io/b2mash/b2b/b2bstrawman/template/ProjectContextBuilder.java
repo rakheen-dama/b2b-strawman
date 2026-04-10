@@ -15,6 +15,7 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -201,7 +202,7 @@ public class ProjectContextBuilder implements TemplateContextBuilder {
       customFields.put("reference_number", project.getReferenceNumber());
     }
     if (project.getPriority() != null) {
-      customFields.put("priority", project.getPriority().name().toLowerCase());
+      customFields.put("priority", project.getPriority().name().toLowerCase(Locale.ROOT));
     }
     if (project.getWorkType() != null) {
       customFields.put("engagement_type", project.getWorkType());

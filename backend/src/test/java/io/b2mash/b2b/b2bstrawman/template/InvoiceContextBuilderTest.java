@@ -15,6 +15,7 @@ import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.TaxType;
 import io.b2mash.b2b.b2bstrawman.project.Project;
+import io.b2mash.b2b.b2bstrawman.project.ProjectPriority;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import java.math.BigDecimal;
@@ -80,6 +81,9 @@ class InvoiceContextBuilderTest {
     when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
 
     var project = new Project("Project X", "desc", memberId);
+    project.setReferenceNumber("PRJ-001");
+    project.setPriority(ProjectPriority.HIGH);
+    project.setWorkType("engagement");
     when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
 
     when(contextHelper.buildOrgContext()).thenReturn(Map.of());
@@ -106,6 +110,10 @@ class InvoiceContextBuilderTest {
     var projectMap = (Map<String, Object>) context.get("project");
     assertThat(projectMap).isNotNull();
     assertThat(projectMap.get("name")).isEqualTo("Project X");
+    // Promoted project fields (Epic 462) — advertised by VariableMetadataRegistry for invoices.
+    assertThat(projectMap.get("referenceNumber")).isEqualTo("PRJ-001");
+    assertThat(projectMap.get("priority")).isEqualTo("high");
+    assertThat(projectMap.get("workType")).isEqualTo("engagement");
   }
 
   @Test

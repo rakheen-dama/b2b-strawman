@@ -14,6 +14,7 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -170,6 +171,13 @@ public class InvoiceContextBuilder implements TemplateContextBuilder {
                           var projectMap = new LinkedHashMap<String, Object>();
                           projectMap.put("id", project.getId());
                           projectMap.put("name", project.getName());
+                          projectMap.put("referenceNumber", project.getReferenceNumber());
+                          projectMap.put(
+                              "priority",
+                              project.getPriority() != null
+                                  ? project.getPriority().name().toLowerCase(Locale.ROOT)
+                                  : null);
+                          projectMap.put("workType", project.getWorkType());
                           projectMap.put(
                               "customFields",
                               contextHelper.resolveDropdownLabels(
@@ -203,7 +211,7 @@ public class InvoiceContextBuilder implements TemplateContextBuilder {
       customFields.put("purchase_order_number", invoice.getPoNumber());
     }
     if (invoice.getTaxType() != null) {
-      customFields.put("tax_type", invoice.getTaxType().name().toLowerCase());
+      customFields.put("tax_type", invoice.getTaxType().name().toLowerCase(Locale.ROOT));
     }
     if (invoice.getBillingPeriodStart() != null) {
       customFields.put("billing_period_start", invoice.getBillingPeriodStart().toString());

@@ -324,13 +324,19 @@ class ChecklistInstanceAdvancedTest {
   void allInstancesComplete_lifecycleAdvancesToActive() {
     runInTenant(
         () -> {
-          // Create customer in ONBOARDING lifecycle status
+          // Create customer in ONBOARDING lifecycle status with structural fields filled so that
+          // the LIFECYCLE_ACTIVATION prerequisite check (address/city/country/tax_number) does not
+          // block the auto-transition to ACTIVE when all checklist items are completed.
           var customer =
               TestCustomerFactory.createCustomerWithStatus(
                   "Onboarding Customer " + uuid8(),
                   "onboarding" + emailCounter++ + "@test.com",
                   memberId,
                   LifecycleStatus.ONBOARDING);
+          customer.setAddressLine1("123 Test Street");
+          customer.setCity("Test City");
+          customer.setCountry("ZA");
+          customer.setTaxNumber("VAT123456");
           customer = customerRepository.save(customer);
           final UUID customerId = customer.getId();
 

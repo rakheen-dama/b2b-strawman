@@ -306,7 +306,9 @@ class CustomerLifecycleServiceTest {
             });
 
     try {
-      // Create customer in ONBOARDING with the required field filled
+      // Create customer in ONBOARDING with the required field filled. Epic 461B extends
+      // LIFECYCLE_ACTIVATION with structural checks (address/city/country/tax_number), so we
+      // must also populate the promoted entity columns for the activation to succeed.
       UUID customerId =
           ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
               .where(RequestScopes.ORG_ID, ORG_ID)
@@ -322,6 +324,10 @@ class CustomerLifecycleServiceTest {
                                     memberId,
                                     LifecycleStatus.ONBOARDING);
                             customer.setCustomFields(Map.of("prereq_gate_test_field_2", "12345"));
+                            customer.setAddressLine1("123 Main St");
+                            customer.setCity("Johannesburg");
+                            customer.setCountry("ZA");
+                            customer.setTaxNumber("VAT123456");
                             return customerRepository.save(customer).getId();
                           }));
 
@@ -356,6 +362,13 @@ class CustomerLifecycleServiceTest {
                               "lifecycle_svc_" + emailCounter + "@test.com",
                               memberId,
                               status);
+                      // Populate structural fields so LIFECYCLE_ACTIVATION prerequisite checks
+                      // (address_line1, city, country, tax_number) do not block ONBOARDING→ACTIVE
+                      // transitions in tests that are not testing prerequisite enforcement.
+                      customer.setAddressLine1("123 Test Street");
+                      customer.setCity("Test City");
+                      customer.setCountry("ZA");
+                      customer.setTaxNumber("VAT123456");
                       return customerRepository.save(customer).getId();
                     }));
   }

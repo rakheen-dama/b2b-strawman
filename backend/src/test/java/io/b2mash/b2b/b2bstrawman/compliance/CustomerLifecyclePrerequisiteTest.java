@@ -106,6 +106,11 @@ class CustomerLifecyclePrerequisiteTest {
                         "filled_ok_" + counter + "@test.com",
                         memberId,
                         fieldDefs);
+                // Fill structural fields so LIFECYCLE_ACTIVATION structural check passes
+                customer.setAddressLine1("123 Test Street");
+                customer.setCity("Test City");
+                customer.setCountry("ZA");
+                customer.setTaxNumber("VAT123456");
                 return customerRepository.save(customer).getId();
               });
 
@@ -123,7 +128,8 @@ class CustomerLifecyclePrerequisiteTest {
     var fieldDefs = createRequiredFieldDefinitions("missing_fields");
 
     try {
-      // Create ONBOARDING customer WITHOUT filling required fields
+      // Create ONBOARDING customer WITHOUT filling required custom fields but WITH structural
+      // fields (address/city/country/tax) so that only the 2 custom-field violations fire.
       UUID customerId =
           runInTenant(
               () -> {
@@ -133,6 +139,10 @@ class CustomerLifecyclePrerequisiteTest {
                         "missing_" + counter + "@test.com",
                         memberId,
                         LifecycleStatus.ONBOARDING);
+                customer.setAddressLine1("123 Test Street");
+                customer.setCity("Test City");
+                customer.setCountry("ZA");
+                customer.setTaxNumber("VAT123456");
                 return customerRepository.save(customer).getId();
               });
 
@@ -157,7 +167,9 @@ class CustomerLifecyclePrerequisiteTest {
 
   @Test
   void transitionToActive_noFieldsRequired_succeeds() {
-    // No field definitions with LIFECYCLE_ACTIVATION context — transition should succeed
+    // No field definitions with LIFECYCLE_ACTIVATION context — transition should succeed.
+    // Structural fields (address/city/country/tax) must be filled so the built-in structural
+    // prerequisite check for LIFECYCLE_ACTIVATION does not block the transition.
     UUID customerId =
         runInTenant(
             () -> {
@@ -167,6 +179,10 @@ class CustomerLifecyclePrerequisiteTest {
                       "no_prereqs_" + counter + "@test.com",
                       memberId,
                       LifecycleStatus.ONBOARDING);
+              customer.setAddressLine1("123 Test Street");
+              customer.setCity("Test City");
+              customer.setCountry("ZA");
+              customer.setTaxNumber("VAT123456");
               return customerRepository.save(customer).getId();
             });
 
@@ -216,6 +232,11 @@ class CustomerLifecyclePrerequisiteTest {
                         "auto_ok_" + counter + "@test.com",
                         memberId,
                         fieldDefs);
+                // Fill structural fields so LIFECYCLE_ACTIVATION structural check passes
+                customer.setAddressLine1("123 Test Street");
+                customer.setCity("Test City");
+                customer.setCountry("ZA");
+                customer.setTaxNumber("VAT123456");
                 return customerRepository.save(customer).getId();
               });
 
@@ -287,6 +308,13 @@ class CustomerLifecyclePrerequisiteTest {
                         "auto_notify_" + counter + "@test.com",
                         memberId,
                         LifecycleStatus.ONBOARDING);
+                // Fill structural fields so that only the 2 custom-field violations fire.
+                // Without this, structural checks add 4 more violations and the notification
+                // would say "6 incomplete required fields" rather than "2".
+                customer.setAddressLine1("123 Test Street");
+                customer.setCity("Test City");
+                customer.setCountry("ZA");
+                customer.setTaxNumber("VAT123456");
                 return customerRepository.save(customer).getId();
               });
 
@@ -321,7 +349,8 @@ class CustomerLifecyclePrerequisiteTest {
     var fieldDefs = createRequiredFieldDefinitions("handler_test");
 
     try {
-      // Create ONBOARDING customer without filling required fields
+      // Create ONBOARDING customer without filling required custom fields but WITH structural
+      // fields so only the 2 custom-field violations are returned in the 422 response.
       UUID customerId =
           runInTenant(
               () -> {
@@ -331,6 +360,10 @@ class CustomerLifecyclePrerequisiteTest {
                         "handler_" + counter + "@test.com",
                         memberId,
                         LifecycleStatus.ONBOARDING);
+                customer.setAddressLine1("123 Test Street");
+                customer.setCity("Test City");
+                customer.setCountry("ZA");
+                customer.setTaxNumber("VAT123456");
                 return customerRepository.save(customer).getId();
               });
 

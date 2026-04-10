@@ -12,6 +12,8 @@ import io.b2mash.b2b.b2bstrawman.deadline.DeadlineCalculationService.DeadlineSum
 import io.b2mash.b2b.b2bstrawman.deadline.FilingStatusService.CreateFilingStatusRequest;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.project.Project;
+import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.time.LocalDate;
@@ -43,6 +45,7 @@ class DeadlineCalculationServiceTest {
   @Autowired private DeadlineCalculationService deadlineCalculationService;
   @Autowired private FilingStatusService filingStatusService;
   @Autowired private CustomerRepository customerRepository;
+  @Autowired private ProjectRepository projectRepository;
 
   private String tenantSchema;
   private UUID memberId;
@@ -52,6 +55,7 @@ class DeadlineCalculationServiceTest {
   private UUID vatRegisteredCustomer; // ACTIVE, FYE + vat_number
   private UUID cipcRegisteredCustomer; // ACTIVE, FYE + cipc_registration_number
   private UUID prospectCustomerWithFye; // PROSPECT, FYE = 2025-02-28 (should be excluded)
+  private UUID entityColumnFyeCustomer; // ACTIVE, FYE set via entity column only
 
   @BeforeAll
   void setup() throws Exception {
@@ -67,37 +71,39 @@ class DeadlineCalculationServiceTest {
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  // Customer 1: ACTIVE with FYE
+                  // Customer 1: ACTIVE with FYE on entity column
                   var c1 = createActiveCustomer("Tax Corp", "tax@test.com", memberId);
-                  c1.setCustomFields(Map.of("financial_year_end", "2025-02-28"));
+                  c1.setFinancialYearEnd(LocalDate.of(2025, 2, 28));
                   c1 = customerRepository.saveAndFlush(c1);
                   activeCustomerWithFye = c1.getId();
 
-                  // Customer 2: ACTIVE with FYE + VAT number
+                  // Customer 2: ACTIVE with FYE entity column + VAT number in JSONB
                   var c2 = createActiveCustomer("VAT Corp", "vat@test.com", memberId);
-                  c2.setCustomFields(
-                      Map.of("financial_year_end", "2025-06-30", "vat_number", "4123456789"));
+                  c2.setFinancialYearEnd(LocalDate.of(2025, 6, 30));
+                  c2.setCustomFields(Map.of("vat_number", "4123456789"));
                   c2 = customerRepository.saveAndFlush(c2);
                   vatRegisteredCustomer = c2.getId();
 
-                  // Customer 3: ACTIVE with FYE + CIPC registration
+                  // Customer 3: ACTIVE with FYE entity column + CIPC registration in JSONB
                   var c3 = createActiveCustomer("CIPC Corp", "cipc@test.com", memberId);
-                  c3.setCustomFields(
-                      Map.of(
-                          "financial_year_end",
-                          "2025-03-31",
-                          "cipc_registration_number",
-                          "2020/123456/07"));
+                  c3.setFinancialYearEnd(LocalDate.of(2025, 3, 31));
+                  c3.setCustomFields(Map.of("cipc_registration_number", "2020/123456/07"));
                   c3 = customerRepository.saveAndFlush(c3);
                   cipcRegisteredCustomer = c3.getId();
 
-                  // Customer 4: PROSPECT with FYE (should be excluded)
+                  // Customer 4: PROSPECT with FYE entity column (should be excluded)
                   var c4 =
                       createCustomerWithStatus(
                           "Prospect Corp", "prospect@test.com", memberId, LifecycleStatus.PROSPECT);
-                  c4.setCustomFields(Map.of("financial_year_end", "2025-02-28"));
+                  c4.setFinancialYearEnd(LocalDate.of(2025, 2, 28));
                   customerRepository.saveAndFlush(c4);
                   prospectCustomerWithFye = c4.getId();
+
+                  // Customer 5: ACTIVE with FYE on entity column only (no JSONB at all)
+                  var c5 = createActiveCustomer("Entity Col Corp", "entcol@test.com", memberId);
+                  c5.setFinancialYearEnd(LocalDate.of(2025, 4, 30));
+                  c5 = customerRepository.saveAndFlush(c5);
+                  entityColumnFyeCustomer = c5.getId();
                 }));
   }
 
@@ -417,6 +423,101 @@ class DeadlineCalculationServiceTest {
 
           assertThat(filedOnly).isEmpty();
         });
+  }
+
+  // --- 461.5: Entity getter tests ---
+
+  @Test
+  void entityColumnFye_usedForDeadlineCalculation() {
+    runInTenant(
+        () -> {
+          // Customer 5 has FYE set ONLY on the entity column (no JSONB custom fields)
+          var deadlines =
+              deadlineCalculationService.calculateDeadlinesForCustomer(
+                  entityColumnFyeCustomer, LocalDate.of(2025, 1, 1), LocalDate.of(2026, 12, 31));
+
+          assertThat(deadlines).isNotEmpty();
+          // Should have tax deadlines calculated from FYE 2025-04-30
+          var taxDeadlines = deadlines.stream().filter(d -> "tax".equals(d.category())).toList();
+          assertThat(taxDeadlines).isNotEmpty();
+        });
+  }
+
+  @Test
+  void entityColumnFye_nullFinancialYearEnd_noDeadlinesGenerated() {
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  // Create customer with null FYE
+                  var customer = createActiveCustomer("No FYE Corp", "nofye@test.com", memberId);
+                  var saved = customerRepository.saveAndFlush(customer);
+
+                  var deadlines =
+                      deadlineCalculationService.calculateDeadlinesForCustomer(
+                          saved.getId(), LocalDate.of(2025, 1, 1), LocalDate.of(2026, 12, 31));
+
+                  assertThat(deadlines).isEmpty();
+                }));
+  }
+
+  @Test
+  void entityColumnWorkType_usedForProjectCrossReference() {
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  // Create a project with workType on entity column and tax_year in JSONB
+                  var project = new Project("Tax Engagement 2026", "Test engagement", memberId);
+                  project.setCustomerId(activeCustomerWithFye);
+                  project.setWorkType("tax");
+                  project.setCustomFields(Map.of("tax_year", "2026"));
+                  projectRepository.saveAndFlush(project);
+
+                  var deadlines =
+                      deadlineCalculationService.calculateDeadlinesForCustomer(
+                          activeCustomerWithFye,
+                          LocalDate.of(2026, 1, 1),
+                          LocalDate.of(2026, 12, 31));
+
+                  var taxDeadlines =
+                      deadlines.stream().filter(d -> "tax".equals(d.category())).toList();
+                  assertThat(taxDeadlines).isNotEmpty();
+                  // At least one tax deadline should be linked to the project
+                  assertThat(taxDeadlines).anyMatch(d -> d.linkedProjectId() != null);
+                }));
+  }
+
+  @Test
+  void taxYearStillReadFromJsonb_notPromoted() {
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  // Create project with workType on entity column but NO tax_year in JSONB
+                  var project = new Project("Tax Engagement No Year", "No tax year", memberId);
+                  project.setCustomerId(activeCustomerWithFye);
+                  project.setWorkType("tax");
+                  // No tax_year in custom fields
+                  projectRepository.saveAndFlush(project);
+
+                  var deadlines =
+                      deadlineCalculationService.calculateDeadlinesForCustomer(
+                          activeCustomerWithFye,
+                          LocalDate.of(2025, 1, 1),
+                          LocalDate.of(2026, 12, 31));
+
+                  // Deadlines should exist but the project without tax_year should NOT be
+                  // linked
+                  var taxDeadlines =
+                      deadlines.stream().filter(d -> "tax".equals(d.category())).toList();
+                  assertThat(taxDeadlines).isNotEmpty();
+                  // None should be linked to this project (no tax_year match)
+                  assertThat(taxDeadlines)
+                      .filteredOn(d -> d.linkedProjectId() != null)
+                      .extracting(d -> d.linkedProjectId())
+                      .doesNotContain(project.getId());
+                }));
   }
 
   private void runInTenant(Runnable action) {

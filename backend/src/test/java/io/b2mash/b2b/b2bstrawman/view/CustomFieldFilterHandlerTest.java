@@ -85,12 +85,12 @@ class CustomFieldFilterHandlerTest {
     Map<String, Object> params = new HashMap<>();
     Map<String, Object> fields = new HashMap<>();
     fields.put("court", Map.of("op", "eq", "value", "high_court"));
-    fields.put("priority", Map.of("op", "eq", "value", "HIGH"));
+    fields.put("region", Map.of("op", "eq", "value", "north"));
 
     String result = handler.buildPredicate(fields, params, "PROJECT");
 
     assertThat(result).contains("custom_fields ->> 'court' = :cf_court");
-    assertThat(result).contains("custom_fields ->> 'priority' = :cf_priority");
+    assertThat(result).contains("custom_fields ->> 'region' = :cf_region");
     assertThat(result).contains(" AND ");
   }
 
@@ -125,5 +125,114 @@ class CustomFieldFilterHandlerTest {
 
     assertThat(result).isEqualTo("custom_fields ->> 'filing-date_v2' = :cf_filing_date_v2");
     assertThat(params).containsEntry("cf_filing_date_v2", "2025-01-01");
+  }
+
+  // --- Promoted field tests ---
+
+  @Test
+  void promotedField_eqPredicate_generatesColumnClause() {
+    Map<String, Object> params = new HashMap<>();
+    var fields = Map.of("city", (Object) Map.of("op", "eq", "value", "Johannesburg"));
+
+    String result = handler.buildPredicate(fields, params, "CUSTOMER");
+
+    assertThat(result).isEqualTo("city = :cf_city");
+    assertThat(params).containsEntry("cf_city", "Johannesburg");
+  }
+
+  @Test
+  void promotedField_neqPredicate_generatesColumnClause() {
+    Map<String, Object> params = new HashMap<>();
+    var fields = Map.of("country", (Object) Map.of("op", "neq", "value", "US"));
+
+    String result = handler.buildPredicate(fields, params, "CUSTOMER");
+
+    assertThat(result).isEqualTo("country != :cf_country");
+    assertThat(params).containsEntry("cf_country", "US");
+  }
+
+  @Test
+  void promotedField_containsPredicate_generatesColumnClause() {
+    Map<String, Object> params = new HashMap<>();
+    var fields = Map.of("address_line1", (Object) Map.of("op", "contains", "value", "Main"));
+
+    String result = handler.buildPredicate(fields, params, "CUSTOMER");
+
+    assertThat(result).isEqualTo("address_line1 ILIKE '%' || :cf_address_line1 || '%'");
+    assertThat(params).containsEntry("cf_address_line1", "Main");
+  }
+
+  @Test
+  void promotedField_inPredicate_generatesColumnClause() {
+    Map<String, Object> params = new HashMap<>();
+    var fields = Map.of("work_type", (Object) Map.of("op", "in", "value", List.of("tax", "audit")));
+
+    String result = handler.buildPredicate(fields, params, "PROJECT");
+
+    assertThat(result).isEqualTo("work_type IN (:cf_work_type)");
+    assertThat(params).containsEntry("cf_work_type", List.of("tax", "audit"));
+  }
+
+  @Test
+  void promotedField_numericPredicate_generatesColumnCast() {
+    Map<String, Object> params = new HashMap<>();
+    var fields = Map.of("estimated_hours", (Object) Map.of("op", "gte", "value", 10));
+
+    String result = handler.buildPredicate(fields, params, "TASK");
+
+    assertThat(result).isEqualTo("estimated_hours::numeric >= :cf_estimated_hours");
+    assertThat(params).containsEntry("cf_estimated_hours", "10");
+  }
+
+  @Test
+  void promotedField_onWrongEntityType_fallsBackToJsonb() {
+    // "city" is promoted on CUSTOMER only — on a PROJECT view it must NOT emit a column clause,
+    // otherwise we'd produce broken SQL referring to projects.city which does not exist.
+    Map<String, Object> params = new HashMap<>();
+    var fields = Map.of("city", (Object) Map.of("op", "eq", "value", "Durban"));
+
+    String result = handler.buildPredicate(fields, params, "PROJECT");
+
+    assertThat(result).isEqualTo("custom_fields ->> 'city' = :cf_city");
+    assertThat(params).containsEntry("cf_city", "Durban");
+  }
+
+  @Test
+  void promotedField_onWrongEntityType_taskSlugStaysJsonbOnCustomer() {
+    // "estimated_hours" is promoted on TASK only — on a CUSTOMER view it must stay in JSONB.
+    Map<String, Object> params = new HashMap<>();
+    var fields = Map.of("estimated_hours", (Object) Map.of("op", "gte", "value", 10));
+
+    String result = handler.buildPredicate(fields, params, "CUSTOMER");
+
+    assertThat(result)
+        .isEqualTo("(custom_fields ->> 'estimated_hours')::numeric >= :cf_estimated_hours");
+    assertThat(params).containsEntry("cf_estimated_hours", "10");
+  }
+
+  @Test
+  void promotedField_onWrongEntityType_workTypeStaysJsonbOnCustomer() {
+    // "work_type" is promoted on PROJECT only.
+    Map<String, Object> params = new HashMap<>();
+    var fields = Map.of("work_type", (Object) Map.of("op", "eq", "value", "audit"));
+
+    String result = handler.buildPredicate(fields, params, "CUSTOMER");
+
+    assertThat(result).isEqualTo("custom_fields ->> 'work_type' = :cf_work_type");
+    assertThat(params).containsEntry("cf_work_type", "audit");
+  }
+
+  @Test
+  void mixedPromotedAndNonPromoted_generatesMixedClauses() {
+    Map<String, Object> params = new HashMap<>();
+    Map<String, Object> fields = new HashMap<>();
+    fields.put("city", Map.of("op", "eq", "value", "Durban"));
+    fields.put("court", Map.of("op", "eq", "value", "high_court"));
+
+    String result = handler.buildPredicate(fields, params, "CUSTOMER");
+
+    assertThat(result).contains("city = :cf_city");
+    assertThat(result).contains("custom_fields ->> 'court' = :cf_court");
+    assertThat(result).contains(" AND ");
   }
 }

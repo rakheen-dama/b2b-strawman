@@ -8,8 +8,9 @@ import java.util.regex.Pattern;
 import org.springframework.stereotype.Component;
 
 /**
- * Translates custom field filters into JSONB-based SQL predicates. Supports operators: eq, neq, gt,
- * gte, lt, lte, contains, in.
+ * Translates custom field filters into SQL predicates. For promoted fields (entity columns),
+ * generates direct column-based WHERE clauses. For non-promoted fields, generates JSONB-based SQL
+ * predicates. Supports operators: eq, neq, gt, gte, lt, lte, contains, in.
  */
 @Component
 public class CustomFieldFilterHandler {
@@ -29,12 +30,17 @@ public class CustomFieldFilterHandler {
           "lte", "<=");
 
   /**
-   * Builds SQL predicates for custom field filtering using JSONB operators.
+   * Builds SQL predicates for custom field filtering. For promoted field slugs, generates
+   * column-based WHERE clauses (e.g., {@code city = :cf_city}) <em>only when the slug is promoted
+   * on the target {@code entityType}</em>; otherwise generates JSONB-based access expressions
+   * (e.g., {@code custom_fields ->> 'court' = :cf_court}). This guards against cross-entity leak
+   * where e.g. filtering {@code city} on a PROJECT view would otherwise emit a broken {@code
+   * projects.city} clause.
    *
    * @param filterValue a Map of slug to {op, value} (e.g., {"court": {"op": "eq", "value":
    *     "high_court"}})
    * @param params the parameter map to populate with named bindings
-   * @param entityType the entity type (unused for custom field filtering)
+   * @param entityType the entity type of the view being filtered (e.g. "CUSTOMER", "PROJECT")
    * @return SQL predicate fragment, or empty string if filterValue is null/empty
    */
   @SuppressWarnings("unchecked")
@@ -60,7 +66,7 @@ public class CustomFieldFilterHandler {
       Object value = opMap.get("value");
       String paramName = "cf_" + slug;
 
-      String clause = buildFieldClause(slug, op, value, paramName, params);
+      String clause = buildFieldClause(slug, op, value, paramName, params, entityType);
       if (!clause.isEmpty()) {
         clauses.add(clause);
       }
@@ -70,8 +76,13 @@ public class CustomFieldFilterHandler {
   }
 
   private String buildFieldClause(
-      String slug, String op, Object value, String paramName, Map<String, Object> params) {
-    // Validate slug to prevent SQL injection — slug is concatenated into JSONB access expressions
+      String slug,
+      String op,
+      Object value,
+      String paramName,
+      Map<String, Object> params,
+      String entityType) {
+    // Validate slug to prevent SQL injection -- slug is concatenated into expressions
     if (!SAFE_SLUG.matcher(slug).matches()) {
       return "";
     }
@@ -79,8 +90,16 @@ public class CustomFieldFilterHandler {
     // Hyphens are replaced with underscores to ensure valid parameter names.
     paramName = "cf_" + slug.replace('-', '_');
 
+    // Entity-scoped: only treat as a column when the slug is promoted for THIS entity type.
+    // Cross-entity slugs (e.g. "city" on a PROJECT view) stay in JSONB to avoid emitting a
+    // reference to a column that does not exist on the target table.
+    boolean isPromoted = CustomFieldFilterUtil.isPromotedForEntity(slug, entityType);
+
     if ("contains".equals(op)) {
       params.put(paramName, String.valueOf(value));
+      if (isPromoted) {
+        return slug + " ILIKE '%' || :" + paramName + " || '%'";
+      }
       return "custom_fields ->> '" + slug + "' ILIKE '%' || :" + paramName + " || '%'";
     }
 
@@ -88,6 +107,9 @@ public class CustomFieldFilterHandler {
       if (value instanceof List<?> list) {
         List<String> stringValues = list.stream().map(Object::toString).toList();
         params.put(paramName, stringValues);
+        if (isPromoted) {
+          return slug + " IN (:" + paramName + ")";
+        }
         return "custom_fields ->> '" + slug + "' IN (:" + paramName + ")";
       }
       return "";
@@ -99,6 +121,13 @@ public class CustomFieldFilterHandler {
     }
 
     params.put(paramName, String.valueOf(value));
+
+    if (isPromoted) {
+      if (NUMERIC_OPS.contains(op)) {
+        return slug + "::numeric " + sqlOp + " :" + paramName;
+      }
+      return slug + " " + sqlOp + " :" + paramName;
+    }
 
     if (NUMERIC_OPS.contains(op)) {
       return "(custom_fields ->> '" + slug + "')::numeric " + sqlOp + " :" + paramName;

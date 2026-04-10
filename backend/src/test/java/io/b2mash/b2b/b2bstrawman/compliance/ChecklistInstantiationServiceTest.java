@@ -254,6 +254,12 @@ class ChecklistInstantiationServiceTest {
             memberId,
             type,
             status);
+    // Populate structural fields so LIFECYCLE_ACTIVATION prerequisite checks do not block
+    // ONBOARDING→ACTIVE transitions in tests that are not testing prerequisite enforcement.
+    customer.setAddressLine1("123 Test Street");
+    customer.setCity("Test City");
+    customer.setCountry("ZA");
+    customer.setTaxNumber("VAT123456");
     return customerRepository.save(customer);
   }
 

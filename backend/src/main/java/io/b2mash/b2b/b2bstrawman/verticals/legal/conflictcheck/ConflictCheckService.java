@@ -174,6 +174,22 @@ public class ConflictCheckService {
         }
       }
 
+      // Search customers by registration number (entity column). Use List (not Optional) because
+      // import / migration data can legitimately produce duplicate registration numbers — we must
+      // iterate every match rather than let Spring Data throw
+      // IncorrectResultSizeDataAccessException.
+      var custRegMatches =
+          customerRepository.findByRegistrationNumber(request.checkedRegistrationNumber());
+      for (var custRegMatch : custRegMatches) {
+        conflicts.add(
+            buildCustomerConflict(
+                custRegMatch,
+                "REGISTRATION_NUMBER_EXACT",
+                1.0,
+                request.checkedRegistrationNumber()));
+        regMatched = true;
+      }
+
       hasExactIdMatch |= regMatched;
     }
 

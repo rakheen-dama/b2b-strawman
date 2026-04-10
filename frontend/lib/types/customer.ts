@@ -33,6 +33,20 @@ export interface Customer {
   lifecycleStatus?: LifecycleStatus;
   customerType?: string;
   lifecycleStatusChangedAt?: string | null;
+  // Promoted customer fields (Epic 463 / Phase 63)
+  addressLine1?: string | null;
+  addressLine2?: string | null;
+  city?: string | null;
+  stateProvince?: string | null;
+  postalCode?: string | null;
+  country?: string | null;
+  taxNumber?: string | null;
+  contactName?: string | null;
+  contactEmail?: string | null;
+  contactPhone?: string | null;
+  registrationNumber?: string | null;
+  entityType?: string | null;
+  financialYearEnd?: string | null;
 }
 
 export interface TransitionResponse {
@@ -63,6 +77,20 @@ export interface CreateCustomerRequest {
   idNumber?: string;
   notes?: string;
   customerType?: CustomerType;
+  // Promoted customer fields (Epic 463 / Phase 63)
+  addressLine1?: string;
+  addressLine2?: string;
+  city?: string;
+  stateProvince?: string;
+  postalCode?: string;
+  country?: string;
+  taxNumber?: string;
+  contactName?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  registrationNumber?: string;
+  entityType?: string;
+  financialYearEnd?: string;
 }
 
 export interface UpdateCustomerRequest {
@@ -72,6 +100,20 @@ export interface UpdateCustomerRequest {
   idNumber?: string;
   notes?: string;
   customerType?: CustomerType;
+  // Promoted customer fields (Epic 463 / Phase 63)
+  addressLine1?: string;
+  addressLine2?: string;
+  city?: string;
+  stateProvince?: string;
+  postalCode?: string;
+  country?: string;
+  taxNumber?: string;
+  contactName?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  registrationNumber?: string;
+  entityType?: string;
+  financialYearEnd?: string;
 }
 
 export interface CustomerProject {

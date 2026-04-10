@@ -32,6 +32,12 @@ import { ArchiveCustomerDialog } from "@/components/customers/archive-customer-d
 import { DataExportDialog } from "@/components/customers/data-export-dialog";
 import { AnonymizeCustomerDialog } from "@/components/customers/anonymize-customer-dialog";
 import { CustomerProjectsPanel } from "@/components/customers/customer-projects-panel";
+import { CustomerAddressBlock } from "@/components/customers/customer-address-block";
+import { CustomerContactCard } from "@/components/customers/customer-contact-card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Briefcase } from "lucide-react";
+import { PROMOTED_CUSTOMER_SLUGS } from "@/lib/constants/promoted-field-slugs";
+import { ENTITY_TYPES } from "@/lib/constants/entity-types";
 import { CustomerDocumentsPanel } from "@/components/documents/customer-documents-panel";
 import { CustomerTabs } from "@/components/customers/customer-tabs";
 import { CustomerRatesTab } from "@/components/rates/customer-rates-tab";
@@ -162,7 +168,9 @@ export default async function CustomerDetailPage({
       getFieldDefinitions("CUSTOMER"),
       getFieldGroups("CUSTOMER"),
     ]);
-    customerFieldDefs = defs;
+    // Filter out promoted field slugs — they are rendered as first-class
+    // form fields (Epic 463) and should not appear in the custom field section.
+    customerFieldDefs = defs.filter((d) => !PROMOTED_CUSTOMER_SLUGS.has(d.slug));
     customerFieldGroups = groups;
 
     // Fetch members for each applied group
@@ -544,6 +552,70 @@ export default async function CustomerDetailPage({
             </p>
           </div>
         </div>
+      )}
+
+      {/* Promoted fields — Address, Contact, Business Details (Epic 463) */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <CustomerAddressBlock customer={customer} />
+        <CustomerContactCard customer={customer} />
+      </div>
+      {(customer.registrationNumber ||
+        customer.taxNumber ||
+        customer.entityType ||
+        customer.financialYearEnd) && (
+        <Card data-testid="customer-business-details">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <Briefcase className="size-5 text-slate-400" />
+              <CardTitle>Business Details</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <dl className="grid gap-4 text-sm sm:grid-cols-2">
+              {customer.registrationNumber && (
+                <div>
+                  <dt className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                    Registration Number
+                  </dt>
+                  <dd className="mt-1 text-slate-700 dark:text-slate-300">
+                    {customer.registrationNumber}
+                  </dd>
+                </div>
+              )}
+              {customer.taxNumber && (
+                <div>
+                  <dt className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                    Tax Number
+                  </dt>
+                  <dd className="mt-1 text-slate-700 dark:text-slate-300">
+                    {customer.taxNumber}
+                  </dd>
+                </div>
+              )}
+              {customer.entityType && (
+                <div>
+                  <dt className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                    Entity Type
+                  </dt>
+                  <dd className="mt-1 text-slate-700 dark:text-slate-300">
+                    {ENTITY_TYPES.find((e) => e.value === customer.entityType)?.label ??
+                      customer.entityType}
+                  </dd>
+                </div>
+              )}
+              {customer.financialYearEnd && (
+                <div>
+                  <dt className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                    Financial Year End
+                  </dt>
+                  <dd className="mt-1 text-slate-700 dark:text-slate-300">
+                    {formatDate(customer.financialYearEnd)}
+                  </dd>
+                </div>
+              )}
+            </dl>
+          </CardContent>
+        </Card>
       )}
 
       {/* Custom Fields */}

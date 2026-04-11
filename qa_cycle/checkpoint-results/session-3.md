@@ -92,6 +92,97 @@
 ### Phase E — Engagement letter
 #### 3.23 through 3.28 — NOT_EXECUTED (deferred to next turn)
 
+---
+
+## Resumed in Cycle 3 (2026-04-11)
+
+**Tester**: QA Agent turn 2
+
+### Phase C — FICA checklist tick-through (step 3.13–3.16)
+
+#### 3.13 — Mark FICA items ✓
+- **Result**: **BLOCKED — GAP-S3-03**
+- **Evidence**: All 6 required-document items on the Legal Client Onboarding pack (Proof of Identity, Proof of Address, Beneficial Ownership Declaration, Source of Funds Declaration, Engagement Letter Signed, FICA Risk Assessment, Sanctions Screening) require a document link via the inline combobox "Select a document..." which lists **"No documents uploaded"** until a document has been uploaded via the Documents tab. Clicking "Mark Complete" on an item expands an inline form with `role=combobox` + Confirm/Cancel; the server action accepts Confirm only when a documentId is attached — Confirm with `$undefined` documentId is silently no-op (captured via window.fetch instrumentation: every POST sent `[orgSlug, customerId, itemId, "", "$undefined"]`, progress never advanced past 1/11).
+- **The one item that did complete**: "Conflict Check Performed" was auto-marked at the moment Bob ran `/conflict-check` for "Sipho Dlamini" in step 3.4. So **conflict-check→checklist linking works for Sipho** (see GAP-S4-04 below — this linking did NOT work for Moroka).
+- **Additional blocker**: Customer Readiness widget lists "Blocking activation: Country is required for Customer Activation **and** Tax Number is required for Customer Activation". Step 3.15 (auto-transition to ACTIVE) is therefore blocked even if the FICA checklist were 100% complete — Sipho was created without Country (should have been ZA) and without a SARS tax number.
+- **Items that work without docs**: 2 items have Skip (Company Registration Docs, Trust Deed — both skippable for INDIVIDUAL clients); the required doc items do not.
+- **Workaround considered**: Upload 6 dummy PDFs via `/customers/{id}?tab=documents` Upload Document button, then re-open each checklist item and select each document from the combobox. Rejected as out of scope for the QA turn (6 uploads × ~8 MCP calls each = 48 calls).
+
+#### 3.14 — Complete remaining required FICA items
+- **Result**: NOT_EXECUTED — see GAP-S3-03
+
+#### 3.15 — Auto-transition to ACTIVE
+- **Result**: NOT_EXECUTED — would require both FICA complete AND Country + Tax Number filled on the client
+
+#### 3.16 — Reload, status sticks at ACTIVE
+- **Result**: NOT_EXECUTED
+
+### Phase D — Create matter from Litigation template
+
+#### 3.17 — Click New Matter (and find the correct path)
+- **Result**: PASS (after GAP-S3-05 workaround)
+- **Evidence**: The URL `http://localhost:3000/org/mathebula-partners/projects/new?customerId=…` renders a **Next.js ErrorBoundary** with "Something went wrong — Unable to load this page". Console error: `ApiError: Parameter 'id' should be of type UUID at apiRequest (ProjectDetailPage)`. The `new` segment is being parsed as a UUID route parameter. This is **GAP-S3-05** — a broken URL pattern. **Workaround**: Navigate to `/projects` list page, click the "New from Template" button which opens a Radix dialog.
+
+#### 3.18 — Select template: Litigation (Personal Injury / General)
+- **Result**: PASS
+- **Evidence**: Dialog "New from Template — Select Template" listed all 4 legal-za templates: Collections, Commercial, Deceased Estate, Litigation — each with "9 tasks". Selected Litigation via `mousedown` on the Radix Command option. "Next" button enabled after selection.
+
+#### 3.19 — Fill: Name = "Sipho Dlamini — Civil dispute", Client = Sipho
+- **Result**: PASS
+- **Evidence**: Step 2 dialog "New from Template — Configure" showed Project name input, Customer select (Sipho Dlamini option available), Project lead select (Bob/Thandi/Carol). Filled name = "Sipho Dlamini — Civil dispute", customer = Sipho Dlamini, lead = Bob Ndlovu. Clicked Create Project → redirect to `/projects/5ebdb4b6-36c4-46c5-acea-d9a2d286cebc`.
+
+#### 3.20 — Fill matter custom fields (case_number, court_name, etc.)
+- **Result**: **PARTIAL — GAP-S3-04**
+- **Evidence**: The new matter page shows **"No custom fields configured — Custom fields let you track additional information specific to your workflow."** The "SA Legal — Matter Details" field group (verified present in Settings → Custom Fields in Session 2) did NOT auto-attach when the matter was created from the Litigation template. Field group must be manually added via "Add Group" button.
+- **Impact**: Defeats the legal-vertical purpose of having a "Matter Details" field group. Matter creation from a legal-za template should auto-attach the SA Legal — Matter Details group.
+
+#### 3.21 — Matter has 9 pre-populated action items
+- **Result**: PASS
+- **Evidence**: Matter detail page header shows "Created Apr 11, 2026 · 0 documents · 1 member · **9 tasks**". Progress widget shows "Tasks 0/9 complete" and "Open 9". Confirms the Litigation template seeded 9 tasks. Screenshot: `qa_cycle/screenshots/session-3-sipho-litigation-matter-created.png`.
+
+#### 3.22 — Verify each action item shows estimated hours
+- **Result**: NOT_CHECKED (budget — tab click didn't switch to Tasks tab in testing, action items visible via counter not individually inspected)
+
+### Phase E — Engagement letter
+
+#### 3.23 — Navigate to Engagement Letters
+- **Result**: PASS (with PARTIAL)
+- **Evidence**: `/org/mathebula-partners/proposals` loads with H1 "Engagement Letters" (legal terminology correct), but the CTA button label reads **"New Proposal"** (legacy term — **GAP-S3-06**). The Engagement Letters list page is functionally reachable.
+
+#### 3.24 — Click New Engagement Letter
+- **Result**: PASS
+- **Evidence**: Clicked "New Proposal" button, modal opened titled "New Proposal — Create a proposal for a client engagement." (legacy wording). Fields: Title, Customer (Radix combobox), Fee Model (native select with options Retainer / Fixed Fee / **Hourly** — no **Contingency** option), Retainer Amount, Currency (ZAR prefill), Hours Included, Expiry Date.
+
+#### 3.25 through 3.28 — Fill hourly, save, send, Mailpit verify
+- **Result**: NOT_EXECUTED — budget
+- **Reason**: The Customer select is a Radix Select and requires browser_click via snapshot ref. Filling title + changing Fee Model to HOURLY via native `select.value = 'HOURLY'` worked, but the customer Radix combobox did not open via programmatic pointer events. Skipping to preserve budget for Session 4. **GAP**: None filed — the "Hourly" fee model is present, and the known contingency-fee gap (no Contingency option) is filed as **GAP-S5-01** instead (blocking scenario step 5.20).
+
+## Additional Gaps filed in Cycle 3
+
+### GAP-S3-03 — Legal FICA checklist blocks completion without uploaded documents AND without client Country/TaxNumber
+- **Severity**: MEDIUM (blocks the entire scenario PROSPECT → ACTIVE flow for Sipho)
+- **Description**: The Legal Client Onboarding pack has 8 required items of which 6 require an attached Document entity. On a brand-new Sipho client with zero documents, the "Select a document..." combobox inside each Mark Complete flow is empty ("No documents uploaded"). Clicking Confirm without a documentId silently fails at the Next.js Server Action layer — progress stays at 1/11. Additionally, even if all 11 were complete, the Customer Readiness widget enforces "Country is required" and "Tax Number is required" before auto-transitioning PROSPECT/ONBOARDING to ACTIVE. Sipho was created in Session 3 without a Country field (empty) and without a Tax Number field.
+- **Expected**: Either (a) allow FICA items to be marked complete with a free-text note in lieu of a linked document (for early-stage intake), or (b) surface an explicit upload-inside-item flow (e.g. "Upload & Link Document" button inside the Mark Complete form). Separately, the "Blocking activation" fields (Country + Tax Number) should be a required field in the New Client dialog — not silent post-create gates.
+- **Impact**: QA cannot easily walk a legal client to ACTIVE status end-to-end, and real users hit a dead-end when they've done the conflict-check and want to start using Matters but discover the lifecycle won't advance.
+
+### GAP-S3-04 — Matter custom field group not auto-attached on template-driven creation
+- **Severity**: LOW–MEDIUM
+- **Description**: Creating a matter from the "Litigation (Personal Injury / General)" legal-za template produces a matter with **no custom field groups** attached. Expected: the "SA Legal — Matter Details" group (case_number, court, opposing_party, advocate, date_of_instruction, estimated_value) should auto-attach when a matter is created from any legal-za matter template, since those fields are the raison d'être of the legal-vertical.
+- **Evidence**: `qa_cycle/screenshots/session-3-sipho-litigation-matter-created.png` shows "Field Groups" section with only an "+ Add Group" button and the "No custom fields configured" state below.
+
+### GAP-S3-05 — `/projects/new?customerId=…` route crashes with "Parameter 'id' should be of type UUID"
+- **Severity**: MEDIUM (stale URL pattern; deeply-linked "New Matter for this client" is broken)
+- **Description**: Navigating to `http://localhost:3000/org/mathebula-partners/projects/new?customerId=<uuid>` renders a Next.js ErrorBoundary titled "Something went wrong — Unable to load this page". Console: `ApiError: Parameter 'id' should be of type UUID at apiRequest` followed by the `<ProjectDetailPage>` stack. The `[projectId]` dynamic segment tries to resolve "new" as a UUID.
+- **Expected**: Either (a) `/projects/new` is a dedicated page with a create form, or (b) the client detail page's "New Matter" button opens the New-from-Template dialog without a URL change.
+- **Workaround**: Navigate to `/org/{slug}/projects` → click "New from Template".
+
+### GAP-S3-06 — Engagement Letters page still uses "Proposal" in button label and dialog copy
+- **Severity**: LOW (subset of GAP-S2-02)
+- **Description**: `/org/mathebula-partners/proposals` page H1 is "Engagement Letters" (legal term correct), but:
+  - CTA button label: **"New Proposal"** (should be "New Engagement Letter")
+  - Dialog title: **"New Proposal"** + subtitle **"Create a proposal for a client engagement."** (should be "New Engagement Letter" / "Create an engagement letter for a client.")
+- **Impact**: Inconsistency between list-page heading and modal chrome.
+
 ## Checkpoints
 - [x] Conflict check ran on the new client name (3.4)
 - [/] Sipho client walked PROSPECT → ONBOARDING (confirmed; ONBOARDING → ACTIVE not yet executed)

@@ -2,7 +2,7 @@
   "packId": "legal-za-individual-onboarding",
   "name": "SA Legal — Individual Client Onboarding",
   "description": "South African FICA checklist for individual legal clients — identity, address, source of funds, engagement formalities, and risk assessment per FIC Act s21A.",
-  "version": "2.0.0",
+  "version": "1.0.0",
   "verticalProfile": "legal-za",
   "jurisdiction": "ZA",
   "customerType": "INDIVIDUAL",

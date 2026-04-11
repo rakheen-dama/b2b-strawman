@@ -23,11 +23,7 @@ import { FieldDefinitionDialog } from "@/components/field-definitions/FieldDefin
 import { FieldGroupDialog } from "@/components/field-definitions/FieldGroupDialog";
 import { DeleteFieldDialog } from "@/components/field-definitions/DeleteFieldDialog";
 import { DeleteGroupDialog } from "@/components/field-definitions/DeleteGroupDialog";
-import type {
-  EntityType,
-  FieldDefinitionResponse,
-  FieldGroupResponse,
-} from "@/lib/types";
+import type { EntityType, FieldDefinitionResponse, FieldGroupResponse } from "@/lib/types";
 import {
   type PrerequisiteContext,
   PREREQUISITE_CONTEXT_LABELS,
@@ -67,10 +63,7 @@ export function CustomFieldsContent({
   ];
 
   return (
-    <Tabs
-      value={activeTab}
-      onValueChange={(v) => setActiveTab(v as EntityType)}
-    >
+    <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as EntityType)}>
       <div className="flex items-center gap-2">
         <TabsList variant="line">
           {ENTITY_TYPE_TABS.map((tab) => (
@@ -91,7 +84,11 @@ export function CustomFieldsContent({
                 Field Definitions
               </h2>
               {canManage && (
-                <FieldDefinitionDialog slug={slug} entityType={tab.value} allFieldsForType={fieldsByType[tab.value]}>
+                <FieldDefinitionDialog
+                  slug={slug}
+                  entityType={tab.value}
+                  allFieldsForType={fieldsByType[tab.value]}
+                >
                   <Button size="sm">
                     <Plus className="mr-1 size-4" />
                     Add Field
@@ -116,9 +113,7 @@ export function CustomFieldsContent({
                     <TableHead>Required For</TableHead>
                     <TableHead>Pack</TableHead>
                     <TableHead>Status</TableHead>
-                    {canManage && (
-                      <TableHead className="w-12">Actions</TableHead>
-                    )}
+                    {canManage && <TableHead className="w-12">Actions</TableHead>}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -139,20 +134,15 @@ export function CustomFieldsContent({
                         {field.required ? (
                           <Badge variant="warning">Required</Badge>
                         ) : (
-                          <span className="text-sm text-slate-400">
-                            Optional
-                          </span>
+                          <span className="text-sm text-slate-400">Optional</span>
                         )}
                       </TableCell>
                       <TableCell>
-                        {field.requiredForContexts &&
-                        field.requiredForContexts.length > 0 ? (
+                        {field.requiredForContexts && field.requiredForContexts.length > 0 ? (
                           <div className="flex flex-wrap gap-1">
                             {field.requiredForContexts.map((ctx) => (
                               <Badge key={ctx} variant="pro">
-                                {PREREQUISITE_CONTEXT_LABELS[
-                                  ctx as PrerequisiteContext
-                                ] ?? ctx}
+                                {PREREQUISITE_CONTEXT_LABELS[ctx as PrerequisiteContext] ?? ctx}
                               </Badge>
                             ))}
                           </div>
@@ -164,9 +154,7 @@ export function CustomFieldsContent({
                         {field.packId ? (
                           <Badge variant="pro">Pack</Badge>
                         ) : (
-                          <span className="text-sm text-slate-400">
-                            Custom
-                          </span>
+                          <span className="text-sm text-slate-400">Custom</span>
                         )}
                       </TableCell>
                       <TableCell>
@@ -180,11 +168,7 @@ export function CustomFieldsContent({
                         <TableCell>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button
-                                variant="plain"
-                                size="icon"
-                                className="size-8"
-                              >
+                              <Button variant="plain" size="icon" className="size-8">
                                 <MoreHorizontal className="size-4" />
                               </Button>
                             </DropdownMenuTrigger>
@@ -195,9 +179,7 @@ export function CustomFieldsContent({
                                 field={field}
                                 allFieldsForType={fieldsByType[tab.value]}
                               >
-                                <DropdownMenuItem
-                                  onSelect={(e) => e.preventDefault()}
-                                >
+                                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                                   Edit
                                 </DropdownMenuItem>
                               </FieldDefinitionDialog>
@@ -272,9 +254,7 @@ export function CustomFieldsContent({
                             </p>
                           )}
                           <div className="mt-2 flex flex-wrap gap-1.5">
-                            {group.packId && (
-                              <Badge variant="pro">Pack</Badge>
-                            )}
+                            {group.packId && <Badge variant="pro">Pack</Badge>}
                             {group.active ? (
                               <Badge variant="success">Active</Badge>
                             ) : (
@@ -286,11 +266,7 @@ export function CustomFieldsContent({
                       {canManage && (
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="plain"
-                              size="icon"
-                              className="size-8"
-                            >
+                            <Button variant="plain" size="icon" className="size-8">
                               <MoreHorizontal className="size-4" />
                             </Button>
                           </DropdownMenuTrigger>
@@ -302,9 +278,7 @@ export function CustomFieldsContent({
                               availableFields={allFields}
                               allGroups={groupsByType[tab.value]}
                             >
-                              <DropdownMenuItem
-                                onSelect={(e) => e.preventDefault()}
-                              >
+                              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                                 Edit
                               </DropdownMenuItem>
                             </FieldGroupDialog>

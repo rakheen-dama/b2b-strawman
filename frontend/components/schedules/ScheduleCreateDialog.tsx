@@ -20,9 +20,7 @@ import { FREQUENCY_OPTIONS } from "@/lib/schedule-constants";
 import type { RecurrenceFrequency } from "@/lib/schedule-constants";
 import type { ProjectTemplateResponse } from "@/lib/api/templates";
 import type { OrgMember, Customer } from "@/lib/types";
-import {
-  PostCreateActionsSection,
-} from "@/components/schedules/PostCreateActionsSection";
+import { PostCreateActionsSection } from "@/components/schedules/PostCreateActionsSection";
 import type {
   DocumentTemplateOption,
   RequestTemplateOption,
@@ -63,8 +61,7 @@ export function ScheduleCreateDialog({
   const [leadTimeDays, setLeadTimeDays] = useState(0);
   const [projectLeadMemberId, setProjectLeadMemberId] = useState("");
   const [nameOverride, setNameOverride] = useState("");
-  const [postCreateActions, setPostCreateActions] =
-    useState<PostCreateActions | null>(null);
+  const [postCreateActions, setPostCreateActions] = useState<PostCreateActions | null>(null);
 
   const selectedTemplate = templates.find((t) => t.id === selectedTemplateId) ?? null;
   const selectedCustomerName = customers.find((c) => c.id === customerId)?.name;
@@ -199,8 +196,7 @@ export function ScheduleCreateDialog({
           {/* End Date */}
           <div className="space-y-2">
             <Label htmlFor="schedule-end-date">
-              End Date{" "}
-              <span className="font-normal text-muted-foreground">(optional)</span>
+              End Date <span className="text-muted-foreground font-normal">(optional)</span>
             </Label>
             <Input
               id="schedule-end-date"
@@ -229,8 +225,7 @@ export function ScheduleCreateDialog({
           {orgMembers.length > 0 && (
             <div className="space-y-2">
               <Label htmlFor="schedule-lead-member">
-                Project Lead{" "}
-                <span className="font-normal text-muted-foreground">(optional)</span>
+                Project Lead <span className="text-muted-foreground font-normal">(optional)</span>
               </Label>
               <select
                 id="schedule-lead-member"
@@ -251,8 +246,7 @@ export function ScheduleCreateDialog({
           {/* Name Override */}
           <div className="space-y-2">
             <Label htmlFor="schedule-name-override">
-              Name Override{" "}
-              <span className="font-normal text-muted-foreground">(optional)</span>
+              Name Override <span className="text-muted-foreground font-normal">(optional)</span>
             </Label>
             <Input
               id="schedule-name-override"
@@ -278,7 +272,7 @@ export function ScheduleCreateDialog({
             onChange={setPostCreateActions}
           />
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && <p className="text-destructive text-sm">{error}</p>}
         </div>
 
         <DialogFooter>

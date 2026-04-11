@@ -87,22 +87,14 @@ export function RecordInvestmentInterestDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent
-        className="sm:max-w-md"
-        data-testid="record-investment-interest-dialog"
-      >
+      <DialogContent className="sm:max-w-md" data-testid="record-investment-interest-dialog">
         <DialogHeader>
           <DialogTitle>Record Interest Earned</DialogTitle>
-          <DialogDescription>
-            Record interest earned on this investment.
-          </DialogDescription>
+          <DialogDescription>Record interest earned on this investment.</DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-4"
-          >
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="amount"
@@ -116,9 +108,7 @@ export function RecordInvestmentInterestDialog({
                       min="0.01"
                       placeholder="0.00"
                       {...field}
-                      onChange={(e) =>
-                        field.onChange(parseFloat(e.target.value) || 0)
-                      }
+                      onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                     />
                   </FormControl>
                   <FormMessage />
@@ -126,7 +116,7 @@ export function RecordInvestmentInterestDialog({
               )}
             />
 
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {error && <p className="text-destructive text-sm">{error}</p>}
 
             <DialogFooter>
               <Button

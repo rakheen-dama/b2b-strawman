@@ -72,9 +72,7 @@ describe("Multi-vertical coexistence — nav visibility", () => {
   it("legal profile renders court calendar, conflict check, tariffs in sidebar nav", () => {
     // Collect all nav items that require one of the legal modules
     const legalNavItems = NAV_GROUPS.flatMap((g) => g.items).filter(
-      (item) =>
-        item.requiredModule &&
-        LEGAL_NAV_MODULES.includes(item.requiredModule),
+      (item) => item.requiredModule && LEGAL_NAV_MODULES.includes(item.requiredModule)
     );
 
     // Should find at least: Court Calendar, Conflict Check, Adverse Parties, Tariffs
@@ -89,14 +87,12 @@ describe("Multi-vertical coexistence — nav visibility", () => {
               <span data-testid={`nav-${item.label}`}>{item.label}</span>
             </ModuleGate>
           ))}
-        </>,
-      ),
+        </>
+      )
     );
 
     for (const item of legalNavItems) {
-      expect(
-        screen.getByTestId(`nav-${item.label}`),
-      ).toBeInTheDocument();
+      expect(screen.getByTestId(`nav-${item.label}`)).toBeInTheDocument();
     }
 
     unmount();
@@ -104,9 +100,7 @@ describe("Multi-vertical coexistence — nav visibility", () => {
 
   it("accounting profile does NOT render legal nav items", () => {
     const legalNavItems = NAV_GROUPS.flatMap((g) => g.items).filter(
-      (item) =>
-        item.requiredModule &&
-        LEGAL_NAV_MODULES.includes(item.requiredModule),
+      (item) => item.requiredModule && LEGAL_NAV_MODULES.includes(item.requiredModule)
     );
 
     render(
@@ -117,22 +111,18 @@ describe("Multi-vertical coexistence — nav visibility", () => {
               <span data-testid={`nav-${item.label}`}>{item.label}</span>
             </ModuleGate>
           ))}
-        </>,
-      ),
+        </>
+      )
     );
 
     for (const item of legalNavItems) {
-      expect(
-        screen.queryByTestId(`nav-${item.label}`),
-      ).not.toBeInTheDocument();
+      expect(screen.queryByTestId(`nav-${item.label}`)).not.toBeInTheDocument();
     }
   });
 
   it("legal profile does NOT render accounting-specific nav items", () => {
     const accountingNavItems = NAV_GROUPS.flatMap((g) => g.items).filter(
-      (item) =>
-        item.requiredModule &&
-        ACCOUNTING_NAV_MODULES.includes(item.requiredModule),
+      (item) => item.requiredModule && ACCOUNTING_NAV_MODULES.includes(item.requiredModule)
     );
 
     expect(accountingNavItems.length).toBeGreaterThanOrEqual(1);
@@ -145,14 +135,12 @@ describe("Multi-vertical coexistence — nav visibility", () => {
               <span data-testid={`nav-${item.label}`}>{item.label}</span>
             </ModuleGate>
           ))}
-        </>,
-      ),
+        </>
+      )
     );
 
     for (const item of accountingNavItems) {
-      expect(
-        screen.queryByTestId(`nav-${item.label}`),
-      ).not.toBeInTheDocument();
+      expect(screen.queryByTestId(`nav-${item.label}`)).not.toBeInTheDocument();
     }
   });
 
@@ -170,15 +158,13 @@ describe("Multi-vertical coexistence — nav visibility", () => {
           <ModuleGate module="lssa_tariff">
             <span data-testid="tariffs">Tariffs</span>
           </ModuleGate>
-        </>,
-      ),
+        </>
+      )
     );
 
     // Accounting: deadlines visible, court calendar and tariffs hidden
     expect(screen.getByTestId("deadlines")).toBeInTheDocument();
-    expect(
-      screen.queryByTestId("court-calendar"),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByTestId("court-calendar")).not.toBeInTheDocument();
     expect(screen.queryByTestId("tariffs")).not.toBeInTheDocument();
 
     // Switch to legal profile
@@ -194,8 +180,8 @@ describe("Multi-vertical coexistence — nav visibility", () => {
           <ModuleGate module="lssa_tariff">
             <span data-testid="tariffs">Tariffs</span>
           </ModuleGate>
-        </>,
-      ),
+        </>
+      )
     );
 
     // Legal: court calendar and tariffs visible, deadlines hidden

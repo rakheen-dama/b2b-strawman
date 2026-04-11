@@ -14,7 +14,7 @@ interface BrandingSectionProps {
   onDeleteLogo: () => Promise<{ success: boolean; error?: string }>;
   onSaveBranding: (
     brandColor: string,
-    footerText: string,
+    footerText: string
   ) => Promise<{ success: boolean; error?: string }>;
 }
 
@@ -27,9 +27,7 @@ export function BrandingSection({
   onSaveBranding,
 }: BrandingSectionProps) {
   const [brandColor, setBrandColor] = useState(settings.brandColor ?? "#000000");
-  const [footerText, setFooterText] = useState(
-    settings.documentFooterText ?? "",
-  );
+  const [footerText, setFooterText] = useState(settings.documentFooterText ?? "");
   const [logoUrl, setLogoUrl] = useState(settings.logoUrl ?? null);
   const [isUploading, setIsUploading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -117,9 +115,7 @@ export function BrandingSection({
     <div className="space-y-6 rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
       <div className="flex items-center gap-2">
         <Palette className="size-5 text-slate-600 dark:text-slate-400" />
-        <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-          Branding
-        </h2>
+        <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">Branding</h2>
       </div>
 
       <p className="text-sm text-slate-600 dark:text-slate-400">
@@ -142,7 +138,7 @@ export function BrandingSection({
                 type="button"
                 onClick={handleDeleteLogo}
                 disabled={isUploading}
-                className="absolute -right-2 -top-2 rounded-full bg-slate-950 p-0.5 text-white hover:bg-slate-700 dark:bg-slate-50 dark:text-slate-950 dark:hover:bg-slate-300"
+                className="absolute -top-2 -right-2 rounded-full bg-slate-950 p-0.5 text-white hover:bg-slate-700 dark:bg-slate-50 dark:text-slate-950 dark:hover:bg-slate-300"
               >
                 <X className="size-3" />
               </button>
@@ -169,9 +165,7 @@ export function BrandingSection({
             >
               {isUploading ? "Uploading..." : "Upload Logo"}
             </Button>
-            <p className="mt-1 text-xs text-slate-400">
-              PNG, JPG, or SVG. Max 2 MB.
-            </p>
+            <p className="mt-1 text-xs text-slate-400">PNG, JPG, or SVG. Max 2 MB.</p>
           </div>
         </div>
       </div>
@@ -194,9 +188,7 @@ export function BrandingSection({
             className="max-w-32 font-mono"
           />
           {!colorValid && brandColor && (
-            <span className="text-xs text-destructive">
-              Must be a valid hex color
-            </span>
+            <span className="text-destructive text-xs">Must be a valid hex color</span>
           )}
         </div>
       </div>
@@ -212,12 +204,10 @@ export function BrandingSection({
           rows={3}
           maxLength={500}
         />
-        <p className="text-xs text-slate-400">
-          {footerText.length}/500 characters
-        </p>
+        <p className="text-xs text-slate-400">{footerText.length}/500 characters</p>
       </div>
 
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && <p className="text-destructive text-sm">{error}</p>}
       {success && <p className="text-sm text-teal-600">{success}</p>}
 
       <div className="flex justify-end">

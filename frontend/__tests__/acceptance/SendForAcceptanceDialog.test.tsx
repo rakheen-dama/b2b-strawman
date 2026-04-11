@@ -37,9 +37,7 @@ describe("SendForAcceptanceDialog", () => {
     render(<SendForAcceptanceDialog {...baseProps} />);
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Send for Acceptance: Engagement Letter"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Send for Acceptance: Engagement Letter")).toBeInTheDocument();
     });
   });
 
@@ -62,12 +60,8 @@ describe("SendForAcceptanceDialog", () => {
 
     // Contacts should be visible
     await waitFor(() => {
-      expect(
-        screen.getByText("Jane Smith (jane@client.com)"),
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText("Bob Jones (bob@client.com)"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Jane Smith (jane@client.com)")).toBeInTheDocument();
+      expect(screen.getByText("Bob Jones (bob@client.com)")).toBeInTheDocument();
     });
   });
 
@@ -78,7 +72,7 @@ describe("SendForAcceptanceDialog", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByText("No portal contacts configured for this customer."),
+        screen.getByText("No portal contacts configured for this customer.")
       ).toBeInTheDocument();
     });
   });
@@ -103,9 +97,7 @@ describe("SendForAcceptanceDialog", () => {
 
     await user.click(screen.getByRole("combobox"));
     await waitFor(() => {
-      expect(
-        screen.getByText("Jane Smith (jane@client.com)"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Jane Smith (jane@client.com)")).toBeInTheDocument();
     });
     await user.click(screen.getByText("Jane Smith (jane@client.com)"));
 
@@ -113,11 +105,7 @@ describe("SendForAcceptanceDialog", () => {
     await user.click(screen.getByRole("button", { name: "Send" }));
 
     await waitFor(() => {
-      expect(mockSendForAcceptance).toHaveBeenCalledWith(
-        "doc-1",
-        "contact-1",
-        undefined,
-      );
+      expect(mockSendForAcceptance).toHaveBeenCalledWith("doc-1", "contact-1", undefined);
     });
 
     await waitFor(() => {
@@ -145,9 +133,7 @@ describe("SendForAcceptanceDialog", () => {
 
     await user.click(screen.getByRole("combobox"));
     await waitFor(() => {
-      expect(
-        screen.getByText("Jane Smith (jane@client.com)"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Jane Smith (jane@client.com)")).toBeInTheDocument();
     });
     await user.click(screen.getByText("Jane Smith (jane@client.com)"));
 

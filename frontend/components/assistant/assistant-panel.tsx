@@ -29,14 +29,8 @@ interface AssistantPanelProps {
 
 export function AssistantPanel({ slug, orgRole }: AssistantPanelProps) {
   const { isOpen, toggle } = useAssistant();
-  const {
-    messages,
-    isStreaming,
-    tokenUsage,
-    sendMessage,
-    stopStreaming,
-    confirmToolCall,
-  } = useAssistantChat();
+  const { messages, isStreaming, tokenUsage, sendMessage, stopStreaming, confirmToolCall } =
+    useAssistantChat();
 
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -49,9 +43,9 @@ export function AssistantPanel({ slug, orgRole }: AssistantPanelProps) {
         messages
           .filter((m) => m.role === "tool_result")
           .map((m) => m.toolCallId)
-          .filter(Boolean) as string[],
+          .filter(Boolean) as string[]
       ),
-    [messages],
+    [messages]
   );
 
   useEffect(() => {
@@ -94,25 +88,15 @@ export function AssistantPanel({ slug, orgRole }: AssistantPanelProps) {
           </div>
           <div className="flex items-center gap-2">
             {(tokenUsage.input > 0 || tokenUsage.output > 0) && (
-              <TokenUsageBadge
-                inputTokens={tokenUsage.input}
-                outputTokens={tokenUsage.output}
-              />
+              <TokenUsageBadge inputTokens={tokenUsage.input} outputTokens={tokenUsage.output} />
             )}
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              onClick={toggle}
-              aria-label="Close assistant"
-            >
+            <Button variant="ghost" size="icon-sm" onClick={toggle} aria-label="Close assistant">
               <span className="text-lg leading-none">&times;</span>
             </Button>
           </div>
         </SheetHeader>
 
-        <SheetDescription className="sr-only">
-          Chat with the DocTeams AI assistant
-        </SheetDescription>
+        <SheetDescription className="sr-only">Chat with the DocTeams AI assistant</SheetDescription>
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto px-1 py-3">
@@ -140,22 +124,14 @@ export function AssistantPanel({ slug, orgRole }: AssistantPanelProps) {
                 if (msg.role === "tool_use") {
                   if (msg.requiresConfirmation) {
                     return (
-                      <ConfirmationCard
-                        key={msg.id}
-                        message={msg}
-                        onConfirm={confirmToolCall}
-                      />
+                      <ConfirmationCard key={msg.id} message={msg} onConfirm={confirmToolCall} />
                     );
                   }
                   return (
                     <ToolUseCard
                       key={msg.id}
                       message={msg}
-                      isLoading={
-                        msg.toolCallId
-                          ? !toolResultIds.has(msg.toolCallId)
-                          : false
-                      }
+                      isLoading={msg.toolCallId ? !toolResultIds.has(msg.toolCallId) : false}
                     />
                   );
                 }

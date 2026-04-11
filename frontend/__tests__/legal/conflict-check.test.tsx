@@ -40,9 +40,7 @@ vi.mock("@/app/(app)/org/[slug]/conflict-check/actions", () => ({
       checkedAt: "2026-04-01T10:00:00Z",
     },
   }),
-  fetchConflictChecks: vi
-    .fn()
-    .mockResolvedValue({ content: [], page: { totalElements: 0 } }),
+  fetchConflictChecks: vi.fn().mockResolvedValue({ content: [], page: { totalElements: 0 } }),
   fetchConflictCheck: vi.fn(),
   resolveConflict: vi.fn().mockResolvedValue({ success: true }),
   fetchProjects: vi.fn().mockResolvedValue([]),
@@ -80,9 +78,7 @@ beforeEach(() => vi.clearAllMocks());
 
 // --- Helpers ---
 
-function makeConflictCheck(
-  overrides: Partial<ConflictCheck> = {}
-): ConflictCheck {
+function makeConflictCheck(overrides: Partial<ConflictCheck> = {}): ConflictCheck {
   return {
     id: "cc-1",
     checkedName: "Ndlovu Trading",
@@ -116,9 +112,7 @@ describe("ConflictCheckForm", () => {
     expect(screen.getByLabelText("Check Type *")).toBeInTheDocument();
     expect(screen.getByLabelText("ID Number")).toBeInTheDocument();
     expect(screen.getByLabelText("Registration Number")).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /Run Conflict Check/i })
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Run Conflict Check/i })).toBeInTheDocument();
   });
 });
 
@@ -149,13 +143,9 @@ describe("ConflictCheckResultDisplay", () => {
     // "Conflict Found" appears in both heading and badge
     expect(screen.getAllByText("Conflict Found").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("Ndlovu Trading")).toBeInTheDocument();
-    expect(
-      screen.getByText("Mabaso v Ndlovu Trading")
-    ).toBeInTheDocument();
+    expect(screen.getByText("Mabaso v Ndlovu Trading")).toBeInTheDocument();
     expect(screen.getByText("100%")).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /Resolve Conflict/i })
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Resolve Conflict/i })).toBeInTheDocument();
   });
 
   it("displays NO_CONFLICT result with green styling", () => {
@@ -168,9 +158,7 @@ describe("ConflictCheckResultDisplay", () => {
     // "No Conflict" appears in both heading and badge
     expect(screen.getAllByText("No Conflict").length).toBeGreaterThanOrEqual(1);
     // No resolve button for clean checks
-    expect(
-      screen.queryByRole("button", { name: /Resolve Conflict/i })
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Resolve Conflict/i })).not.toBeInTheDocument();
   });
 });
 
@@ -186,13 +174,7 @@ describe("ConflictCheckHistory", () => {
       }),
     ];
 
-    render(
-      <ConflictCheckHistory
-        initialChecks={checks}
-        initialTotal={2}
-        slug="acme"
-      />
-    );
+    render(<ConflictCheckHistory initialChecks={checks} initialTotal={2} slug="acme" />);
 
     const history = screen.getByTestId("conflict-check-history");
     expect(history).toBeInTheDocument();
@@ -229,16 +211,12 @@ describe("ResolveConflictDialog", () => {
     render(<ConflictCheckResultDisplay result={check} slug="acme" />);
 
     // Click resolve button
-    await user.click(
-      screen.getByRole("button", { name: /Resolve Conflict/i })
-    );
+    await user.click(screen.getByRole("button", { name: /Resolve Conflict/i }));
 
     // Dialog should appear
     const dialog = screen.getByTestId("resolve-conflict-dialog");
     expect(dialog).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", { name: "Resolve Conflict" })
-    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Resolve Conflict" })).toBeInTheDocument();
     expect(screen.getByLabelText("Resolution *")).toBeInTheDocument();
     expect(screen.getByLabelText("Notes")).toBeInTheDocument();
   });
@@ -247,9 +225,7 @@ describe("ResolveConflictDialog", () => {
 describe("Nav items - conflict check", () => {
   it("conflict-check nav item has requiredModule: conflict_check", () => {
     const clientsGroup = NAV_GROUPS.find((g) => g.id === "clients");
-    const conflictItem = clientsGroup?.items.find(
-      (i) => i.label === "Conflict Check"
-    );
+    const conflictItem = clientsGroup?.items.find((i) => i.label === "Conflict Check");
     expect(conflictItem).toBeDefined();
     expect(conflictItem?.requiredModule).toBe("conflict_check");
     expect(conflictItem?.requiredCapability).toBeUndefined();
@@ -257,20 +233,14 @@ describe("Nav items - conflict check", () => {
 
   it("conflict-check module gate hides content when disabled", () => {
     render(
-      <OrgProfileProvider
-        verticalProfile={null}
-        enabledModules={[]}
-        terminologyNamespace={null}
-      >
+      <OrgProfileProvider verticalProfile={null} enabledModules={[]} terminologyNamespace={null}>
         <ModuleGate module="conflict_check">
           <span>Conflict Check Content</span>
         </ModuleGate>
       </OrgProfileProvider>
     );
 
-    expect(
-      screen.queryByText("Conflict Check Content")
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText("Conflict Check Content")).not.toBeInTheDocument();
   });
 
   it("conflict-check module gate shows content when enabled", () => {

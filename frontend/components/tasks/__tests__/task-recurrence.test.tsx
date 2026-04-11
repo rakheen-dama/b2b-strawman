@@ -1,11 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import {
-  formatRecurrenceRule,
-  parseRecurrenceRule,
-  describeRecurrence,
-} from "@/lib/recurrence";
+import { formatRecurrenceRule, parseRecurrenceRule, describeRecurrence } from "@/lib/recurrence";
 
 // Must mock server-only before importing components that use it
 vi.mock("server-only", () => ({}));

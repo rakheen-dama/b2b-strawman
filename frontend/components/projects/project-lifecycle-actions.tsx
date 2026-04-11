@@ -10,10 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { CompleteProjectDialog } from "@/components/projects/complete-project-dialog";
-import {
-  archiveProject,
-  reopenProject,
-} from "@/app/(app)/org/[slug]/projects/actions";
+import { archiveProject, reopenProject } from "@/app/(app)/org/[slug]/projects/actions";
 import type { ProjectStatus } from "@/lib/types";
 
 interface ProjectLifecycleActionsProps {
@@ -57,16 +54,8 @@ export function ProjectLifecycleActions({
       {/* ACTIVE: Complete button + Archive in overflow */}
       {projectStatus === "ACTIVE" && (
         <>
-          <CompleteProjectDialog
-            slug={slug}
-            projectId={projectId}
-            projectName={projectName}
-          >
-            <Button
-              size="sm"
-              variant="soft"
-              data-testid="complete-project-btn"
-            >
+          <CompleteProjectDialog slug={slug} projectId={projectId} projectName={projectName}>
+            <Button size="sm" variant="soft" data-testid="complete-project-btn">
               <Check className="mr-1.5 size-4" />
               Complete Project
             </Button>

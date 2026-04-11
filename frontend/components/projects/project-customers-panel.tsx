@@ -53,11 +53,7 @@ export function ProjectCustomersPanel({
         {customers.length > 0 && <Badge variant="neutral">{customers.length}</Badge>}
       </div>
       {canManage && (
-        <LinkCustomerDialog
-          slug={slug}
-          projectId={projectId}
-          existingCustomers={customers}
-        >
+        <LinkCustomerDialog slug={slug} projectId={projectId} existingCustomers={customers}>
           <Button size="sm" variant="outline">
             <Plus className="mr-1.5 size-4" />
             Link Customer
@@ -88,18 +84,16 @@ export function ProjectCustomersPanel({
         <table className="w-full">
           <thead>
             <tr className="border-b border-slate-200 dark:border-slate-800">
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+              <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                 Name
               </th>
-              <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">
+              <th className="hidden px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase sm:table-cell dark:text-slate-400">
                 Email
               </th>
-              <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 lg:table-cell dark:text-slate-400">
+              <th className="hidden px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase lg:table-cell dark:text-slate-400">
                 Status
               </th>
-              {canManage && (
-                <th className="w-[60px] px-4 py-3" />
-              )}
+              {canManage && <th className="w-[60px] px-4 py-3" />}
             </tr>
           </thead>
           <tbody>

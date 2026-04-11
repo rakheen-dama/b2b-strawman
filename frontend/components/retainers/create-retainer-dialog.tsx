@@ -15,11 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Command,
   CommandEmpty,
@@ -43,11 +39,7 @@ import type {
   RolloverPolicy,
   CreateRetainerRequest,
 } from "@/lib/api/retainers";
-import {
-  FREQUENCY_LABELS,
-  TYPE_LABELS,
-  ROLLOVER_LABELS,
-} from "@/lib/retainer-constants";
+import { FREQUENCY_LABELS, TYPE_LABELS, ROLLOVER_LABELS } from "@/lib/retainer-constants";
 
 interface CreateRetainerDialogProps {
   slug: string;
@@ -55,11 +47,7 @@ interface CreateRetainerDialogProps {
   children: React.ReactNode;
 }
 
-export function CreateRetainerDialog({
-  slug,
-  customers,
-  children,
-}: CreateRetainerDialogProps) {
+export function CreateRetainerDialog({ slug, customers, children }: CreateRetainerDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -74,8 +62,7 @@ export function CreateRetainerDialog({
   const [endDate, setEndDate] = useState("");
   const [allocatedHours, setAllocatedHours] = useState("");
   const [periodFee, setPeriodFee] = useState("");
-  const [rolloverPolicy, setRolloverPolicy] =
-    useState<RolloverPolicy>("FORFEIT");
+  const [rolloverPolicy, setRolloverPolicy] = useState<RolloverPolicy>("FORFEIT");
   const [rolloverCapHours, setRolloverCapHours] = useState("");
   const [notes, setNotes] = useState("");
 
@@ -168,11 +155,7 @@ export function CreateRetainerDialog({
           {/* Customer Selector */}
           <div className="space-y-2">
             <Label>Customer</Label>
-            <Popover
-              open={customerPopoverOpen}
-              onOpenChange={setCustomerPopoverOpen}
-              modal={false}
-            >
+            <Popover open={customerPopoverOpen} onOpenChange={setCustomerPopoverOpen} modal={false}>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
@@ -180,9 +163,7 @@ export function CreateRetainerDialog({
                   aria-expanded={customerPopoverOpen}
                   className="w-full justify-between font-normal"
                 >
-                  {selectedCustomer
-                    ? selectedCustomer.name
-                    : "Select a customer..."}
+                  {selectedCustomer ? selectedCustomer.name : "Select a customer..."}
                   <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
@@ -205,19 +186,13 @@ export function CreateRetainerDialog({
                           <Check
                             className={cn(
                               "size-4 shrink-0",
-                              customerId === customer.id
-                                ? "opacity-100"
-                                : "opacity-0",
+                              customerId === customer.id ? "opacity-100" : "opacity-0"
                             )}
                           />
                           <div className="min-w-0 flex-1">
-                            <p className="truncate text-sm font-medium">
-                              {customer.name}
-                            </p>
+                            <p className="truncate text-sm font-medium">{customer.name}</p>
                             {customer.email && (
-                              <p className="truncate text-xs text-slate-500">
-                                {customer.email}
-                              </p>
+                              <p className="truncate text-xs text-slate-500">{customer.email}</p>
                             )}
                           </div>
                         </CommandItem>
@@ -243,10 +218,7 @@ export function CreateRetainerDialog({
           {/* Type */}
           <div className="space-y-2">
             <Label>Type</Label>
-            <Select
-              value={type}
-              onValueChange={(v) => setType(v as RetainerType)}
-            >
+            <Select value={type} onValueChange={(v) => setType(v as RetainerType)}>
               <SelectTrigger className="w-full" aria-label="Type">
                 <SelectValue />
               </SelectTrigger>
@@ -263,10 +235,7 @@ export function CreateRetainerDialog({
           {/* Frequency */}
           <div className="space-y-2">
             <Label>Frequency</Label>
-            <Select
-              value={frequency}
-              onValueChange={(v) => setFrequency(v as RetainerFrequency)}
-            >
+            <Select value={frequency} onValueChange={(v) => setFrequency(v as RetainerFrequency)}>
               <SelectTrigger className="w-full" aria-label="Frequency">
                 <SelectValue />
               </SelectTrigger>
@@ -313,9 +282,7 @@ export function CreateRetainerDialog({
                 <Label>Rollover Policy</Label>
                 <Select
                   value={rolloverPolicy}
-                  onValueChange={(v) =>
-                    setRolloverPolicy(v as RolloverPolicy)
-                  }
+                  onValueChange={(v) => setRolloverPolicy(v as RolloverPolicy)}
                 >
                   <SelectTrigger className="w-full" aria-label="Rollover Policy">
                     <SelectValue />
@@ -351,10 +318,7 @@ export function CreateRetainerDialog({
           {type === "FIXED_FEE" && (
             <div className="space-y-2">
               <Label htmlFor="period-fee-fixed">
-                Period Fee{" "}
-                <span className="font-normal text-muted-foreground">
-                  (optional)
-                </span>
+                Period Fee <span className="text-muted-foreground font-normal">(optional)</span>
               </Label>
               <Input
                 id="period-fee-fixed"
@@ -382,10 +346,7 @@ export function CreateRetainerDialog({
           {/* End Date (optional) */}
           <div className="space-y-2">
             <Label htmlFor="end-date">
-              End Date{" "}
-              <span className="font-normal text-muted-foreground">
-                (optional)
-              </span>
+              End Date <span className="text-muted-foreground font-normal">(optional)</span>
             </Label>
             <Input
               id="end-date"
@@ -398,10 +359,7 @@ export function CreateRetainerDialog({
           {/* Notes (optional) */}
           <div className="space-y-2">
             <Label htmlFor="retainer-notes">
-              Notes{" "}
-              <span className="font-normal text-muted-foreground">
-                (optional)
-              </span>
+              Notes <span className="text-muted-foreground font-normal">(optional)</span>
             </Label>
             <Textarea
               id="retainer-notes"
@@ -412,7 +370,7 @@ export function CreateRetainerDialog({
             />
           </div>
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && <p className="text-destructive text-sm">{error}</p>}
         </div>
 
         <DialogFooter>
@@ -424,11 +382,7 @@ export function CreateRetainerDialog({
           >
             Cancel
           </Button>
-          <Button
-            type="button"
-            onClick={handleSubmit}
-            disabled={!canSubmit}
-          >
+          <Button type="button" onClick={handleSubmit} disabled={!canSubmit}>
             {isSubmitting ? "Creating..." : "Create Retainer"}
           </Button>
         </DialogFooter>

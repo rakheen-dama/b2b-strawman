@@ -10,8 +10,7 @@ interface ActivityFeedProps {
 }
 
 export async function ActivityFeed({ projectId }: ActivityFeedProps) {
-  let initialItems: Awaited<ReturnType<typeof fetchProjectActivity>> | null =
-    null;
+  let initialItems: Awaited<ReturnType<typeof fetchProjectActivity>> | null = null;
 
   try {
     initialItems = await fetchProjectActivity(projectId, undefined, 0, 20);

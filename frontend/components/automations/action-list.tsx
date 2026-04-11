@@ -11,12 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { ActionForm } from "@/components/automations/action-form";
 import {
@@ -82,11 +77,7 @@ const DELAY_UNIT_OPTIONS: { value: DelayUnit; label: string }[] = [
   { value: "DAYS", label: "Days" },
 ];
 
-export function ActionList({
-  actions,
-  onActionsChange,
-  triggerType,
-}: ActionListProps) {
+export function ActionList({ actions, onActionsChange, triggerType }: ActionListProps) {
   const [addingType, setAddingType] = useState(false);
 
   function addAction(type: ActionType) {
@@ -103,16 +94,12 @@ export function ActionList({
   }
 
   function updateAction(index: number, updates: Partial<ActionRow>) {
-    const updated = actions.map((a, i) =>
-      i === index ? { ...a, ...updates } : a,
-    );
+    const updated = actions.map((a, i) => (i === index ? { ...a, ...updates } : a));
     onActionsChange(updated);
   }
 
   function removeAction(index: number) {
-    const updated = actions
-      .filter((_, i) => i !== index)
-      .map((a, i) => ({ ...a, sortOrder: i }));
+    const updated = actions.filter((_, i) => i !== index).map((a, i) => ({ ...a, sortOrder: i }));
     onActionsChange(updated);
   }
 
@@ -141,8 +128,7 @@ export function ActionList({
     <div className="space-y-3">
       {actions.length === 0 && !addingType && (
         <p className="text-sm text-slate-500 dark:text-slate-400">
-          No actions configured. Add an action to define what happens when
-          this rule triggers.
+          No actions configured. Add an action to define what happens when this rule triggers.
         </p>
       )}
 
@@ -200,13 +186,11 @@ export function ActionList({
                 </Button>
               </div>
             </CardHeader>
-            <CardContent className="space-y-4 px-4 pb-4 pt-0">
+            <CardContent className="space-y-4 px-4 pt-0 pb-4">
               <ActionForm
                 actionType={action.actionType}
                 actionConfig={action.actionConfig}
-                onConfigChange={(config) =>
-                  updateAction(index, { actionConfig: config })
-                }
+                onConfigChange={(config) => updateAction(index, { actionConfig: config })}
                 triggerType={triggerType}
               />
 
@@ -216,15 +200,10 @@ export function ActionList({
                   <Switch
                     id={`delay-toggle-${action.id}`}
                     checked={hasDelay}
-                    onCheckedChange={(checked) =>
-                      toggleDelay(index, checked as boolean)
-                    }
+                    onCheckedChange={(checked) => toggleDelay(index, checked as boolean)}
                     size="sm"
                   />
-                  <Label
-                    htmlFor={`delay-toggle-${action.id}`}
-                    className="text-sm font-normal"
-                  >
+                  <Label htmlFor={`delay-toggle-${action.id}`} className="text-sm font-normal">
                     Add Delay
                   </Label>
                 </div>
@@ -245,9 +224,7 @@ export function ActionList({
                     />
                     <Select
                       value={action.delayUnit ?? "HOURS"}
-                      onValueChange={(v) =>
-                        updateAction(index, { delayUnit: v as DelayUnit })
-                      }
+                      onValueChange={(v) => updateAction(index, { delayUnit: v as DelayUnit })}
                     >
                       <SelectTrigger className="w-28" aria-label="Delay unit">
                         <SelectValue />
@@ -282,22 +259,12 @@ export function ActionList({
               ))}
             </SelectContent>
           </Select>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => setAddingType(false)}
-          >
+          <Button type="button" variant="ghost" size="sm" onClick={() => setAddingType(false)}>
             Cancel
           </Button>
         </div>
       ) : (
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => setAddingType(true)}
-        >
+        <Button type="button" variant="outline" size="sm" onClick={() => setAddingType(true)}>
           <Plus className="mr-1.5 size-4" />
           Add Action
         </Button>

@@ -25,12 +25,10 @@ export default async function ChecklistsSettingsPage({
           <ChevronLeft className="size-4" />
           Settings
         </Link>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          Checklists
-        </h1>
+        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Checklists</h1>
         <p className="text-slate-600 dark:text-slate-400">
-          You do not have permission to manage checklist templates. Only admins and
-          owners can access this page.
+          You do not have permission to manage checklist templates. Only admins and owners can
+          access this page.
         </p>
       </div>
     );
@@ -55,9 +53,7 @@ export default async function ChecklistsSettingsPage({
       </Link>
 
       <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          Checklists
-        </h1>
+        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Checklists</h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           Manage checklist templates used during customer onboarding.
         </p>
@@ -75,7 +71,7 @@ export default async function ChecklistsSettingsPage({
       {templates.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <ClipboardCheck className="size-12 text-slate-300 dark:text-slate-700" />
-          <h2 className="mt-4 font-display text-lg text-slate-900 dark:text-slate-100">
+          <h2 className="font-display mt-4 text-lg text-slate-900 dark:text-slate-100">
             No checklist templates yet
           </h2>
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
@@ -87,22 +83,22 @@ export default async function ChecklistsSettingsPage({
           <table className="w-full">
             <thead>
               <tr className="border-b border-slate-200 dark:border-slate-800">
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Name
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Customer Type
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Source
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Auto-Instantiate
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Items
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-right text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Actions
                 </th>
               </tr>
@@ -131,9 +127,7 @@ export default async function ChecklistsSettingsPage({
                     <Badge variant="neutral">{template.customerType}</Badge>
                   </td>
                   <td className="px-4 py-3">
-                    <Badge
-                      variant={template.source === "ORG_CUSTOM" ? "success" : "neutral"}
-                    >
+                    <Badge variant={template.source === "ORG_CUSTOM" ? "success" : "neutral"}>
                       {template.source === "PLATFORM" ? "Platform" : "Custom"}
                     </Badge>
                   </td>

@@ -80,7 +80,7 @@ describe("ProjectMembersPanel", () => {
 
       expect(screen.getByText("No members yet")).toBeInTheDocument();
       expect(
-        screen.getByText("Add team members to collaborate on this project"),
+        screen.getByText("Add team members to collaborate on this project")
       ).toBeInTheDocument();
     });
 
@@ -110,9 +110,7 @@ describe("ProjectMembersPanel", () => {
     });
 
     it("displays member count in header", () => {
-      render(
-        <ProjectMembersPanel {...defaultProps} members={mockMembers} />,
-      );
+      render(<ProjectMembersPanel {...defaultProps} members={mockMembers} />);
 
       expect(screen.getByText("Members")).toBeInTheDocument();
       expect(screen.getByText("2")).toBeInTheDocument();
@@ -184,7 +182,7 @@ describe("ProjectMembersPanel", () => {
           canManage={true}
           isCurrentLead={true}
           currentUserId="user1" // Alice is current user (lead)
-        />,
+        />
       );
 
       // Open dropdown for Bob
@@ -204,7 +202,7 @@ describe("ProjectMembersPanel", () => {
           members={mockMembers}
           canManage={true}
           isCurrentLead={false}
-        />,
+        />
       );
 
       const actionButton = screen.getByRole("button", { name: /open menu/i });

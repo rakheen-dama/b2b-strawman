@@ -27,7 +27,7 @@ interface ClausePickerDialogProps {
       category: string;
       description: string | null;
       legacyBody: string | null;
-    }>,
+    }>
   ) => void;
 }
 
@@ -41,9 +41,7 @@ export function ClausePickerDialog({
   const [isLoading, setIsLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
-    new Set(),
-  );
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!open) {
@@ -70,10 +68,7 @@ export function ClausePickerDialog({
     load();
   }, [open]);
 
-  const existingSet = useMemo(
-    () => new Set(existingClauseIds),
-    [existingClauseIds],
-  );
+  const existingSet = useMemo(() => new Set(existingClauseIds), [existingClauseIds]);
 
   const filteredClauses = useMemo(() => {
     if (!search) return allClauses;
@@ -81,7 +76,7 @@ export function ClausePickerDialog({
     return allClauses.filter(
       (c) =>
         c.title.toLowerCase().includes(lower) ||
-        (c.description && c.description.toLowerCase().includes(lower)),
+        (c.description && c.description.toLowerCase().includes(lower))
     );
   }, [allClauses, search]);
 
@@ -97,10 +92,7 @@ export function ClausePickerDialog({
     return groups;
   }, [filteredClauses]);
 
-  const sortedCategories = useMemo(
-    () => Object.keys(grouped).sort(),
-    [grouped],
-  );
+  const sortedCategories = useMemo(() => Object.keys(grouped).sort(), [grouped]);
 
   function toggleCategory(category: string) {
     setExpandedCategories((prev) => {
@@ -142,13 +134,13 @@ export function ClausePickerDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
+      <DialogContent className="flex max-h-[80vh] max-w-2xl flex-col">
         <DialogHeader>
           <DialogTitle>Add Clauses</DialogTitle>
         </DialogHeader>
 
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+          <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-slate-400" />
           <Input
             placeholder="Search clauses..."
             value={search}
@@ -157,7 +149,7 @@ export function ClausePickerDialog({
           />
         </div>
 
-        <div className="flex-1 overflow-y-auto min-h-0 max-h-[50vh] space-y-1">
+        <div className="max-h-[50vh] min-h-0 flex-1 space-y-1 overflow-y-auto">
           {isLoading ? (
             <div className="flex h-32 items-center justify-center">
               <p className="text-sm text-slate-500">Loading clauses...</p>
@@ -208,16 +200,13 @@ export function ClausePickerDialog({
                             }}
                             aria-label={`Select ${clause.title}`}
                           />
-                          <div className="flex-1 min-w-0">
+                          <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2">
                               <span className="text-sm font-medium text-slate-950 dark:text-slate-50">
                                 {clause.title}
                               </span>
                               {isExisting && (
-                                <Badge
-                                  variant="outline"
-                                  className="text-xs"
-                                >
+                                <Badge variant="outline" className="text-xs">
                                   Already added
                                 </Badge>
                               )}
@@ -242,10 +231,7 @@ export function ClausePickerDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button
-            onClick={handleConfirm}
-            disabled={selectedIds.size === 0}
-          >
+          <Button onClick={handleConfirm} disabled={selectedIds.size === 0}>
             Add Selected ({selectedIds.size})
           </Button>
         </DialogFooter>

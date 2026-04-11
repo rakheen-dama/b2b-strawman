@@ -2,7 +2,15 @@ import { Suspense } from "react";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api, handleApiError, getFieldDefinitions, getViews, getTags } from "@/lib/api";
 import { RequiresCapability } from "@/lib/capabilities";
-import type { Customer, CustomerStatus, CompletenessScore, FieldDefinitionResponse, LifecycleStatus, SavedViewResponse, TagResponse } from "@/lib/types";
+import type {
+  Customer,
+  CustomerStatus,
+  CompletenessScore,
+  FieldDefinitionResponse,
+  LifecycleStatus,
+  SavedViewResponse,
+  TagResponse,
+} from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { CreateCustomerDialog } from "@/components/customers/create-customer-dialog";
 import { CompletenessBadge } from "@/components/customers/completeness-badge";
@@ -78,22 +86,33 @@ export default async function CustomersPage({
   const resolvedSearchParams = await searchParams;
   const capData = await fetchMyCapabilities();
 
-  if (!capData.isAdmin && !capData.isOwner && !capData.capabilities.includes("CUSTOMER_MANAGEMENT")) {
+  if (
+    !capData.isAdmin &&
+    !capData.isOwner &&
+    !capData.capabilities.includes("CUSTOMER_MANAGEMENT")
+  ) {
     return <PermissionDenied featureName="Customers" dashboardHref={`/org/${slug}/dashboard`} />;
   }
 
   const isAdmin = capData.isAdmin || capData.isOwner;
 
-  const currentViewId = typeof resolvedSearchParams.view === "string" ? resolvedSearchParams.view : null;
-  const rawLifecycleFilter = typeof resolvedSearchParams.lifecycleStatus === "string" ? resolvedSearchParams.lifecycleStatus : null;
+  const currentViewId =
+    typeof resolvedSearchParams.view === "string" ? resolvedSearchParams.view : null;
+  const rawLifecycleFilter =
+    typeof resolvedSearchParams.lifecycleStatus === "string"
+      ? resolvedSearchParams.lifecycleStatus
+      : null;
   const lifecycleFilter: LifecycleStatus | null =
-    rawLifecycleFilter !== null && VALID_LIFECYCLE_STATUSES.has(rawLifecycleFilter as LifecycleStatus)
+    rawLifecycleFilter !== null &&
+    VALID_LIFECYCLE_STATUSES.has(rawLifecycleFilter as LifecycleStatus)
       ? (rawLifecycleFilter as LifecycleStatus)
       : null;
 
   const showIncomplete = resolvedSearchParams.showIncomplete === "true";
-  const sortBy = typeof resolvedSearchParams.sortBy === "string" ? resolvedSearchParams.sortBy : null;
-  const sortDir = typeof resolvedSearchParams.sortDir === "string" ? resolvedSearchParams.sortDir : "asc";
+  const sortBy =
+    typeof resolvedSearchParams.sortBy === "string" ? resolvedSearchParams.sortBy : null;
+  const sortDir =
+    typeof resolvedSearchParams.sortDir === "string" ? resolvedSearchParams.sortDir : "asc";
 
   // Fetch saved views for customer entity type
   let views: SavedViewResponse[] = [];
@@ -191,7 +210,9 @@ export default async function CustomersPage({
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50"><TerminologyHeading term="Customers" /></h1>
+          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
+            <TerminologyHeading term="Customers" />
+          </h1>
           <span className="rounded-full bg-slate-200 px-2.5 py-0.5 text-sm text-slate-700 dark:bg-slate-800 dark:text-slate-300">
             {customers.length}
           </span>
@@ -218,7 +239,8 @@ export default async function CustomersPage({
       {/* Lifecycle Status Filter */}
       <div className="flex flex-wrap items-center gap-2">
         {LIFECYCLE_FILTER_OPTIONS.map((option) => {
-          const isActive = lifecycleFilter === option.value || (!lifecycleFilter && option.value === "");
+          const isActive =
+            lifecycleFilter === option.value || (!lifecycleFilter && option.value === "");
           const href = option.value
             ? `/org/${slug}/customers?lifecycleStatus=${option.value}`
             : `/org/${slug}/customers`;
@@ -263,7 +285,9 @@ export default async function CustomersPage({
           <EmptyState
             icon={Users}
             title={t("customers.list.heading")}
-            description={isAdmin ? t("customers.list.description") : t("customers.list.descriptionMember")}
+            description={
+              isAdmin ? t("customers.list.description") : t("customers.list.descriptionMember")
+            }
             action={isAdmin ? <CreateCustomerDialog slug={slug} /> : undefined}
             secondaryLink={{ label: "Read the guide", href: docsLink("/features/customers") }}
           />
@@ -273,22 +297,22 @@ export default async function CustomersPage({
           <table className="w-full">
             <thead>
               <tr className="border-b border-slate-200 dark:border-slate-800">
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Name
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Email
                 </th>
-                <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400 sm:table-cell">
+                <th className="hidden px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase sm:table-cell dark:text-slate-400">
                   Phone
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Lifecycle
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Status
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   <Link
                     href={completenessSortUrl}
                     className="inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-slate-200"
@@ -299,7 +323,7 @@ export default async function CustomersPage({
                     )}
                   </Link>
                 </th>
-                <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400 lg:table-cell">
+                <th className="hidden px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase lg:table-cell dark:text-slate-400">
                   Created
                 </th>
               </tr>
@@ -328,9 +352,7 @@ export default async function CustomersPage({
                               variant="outline"
                               className="text-xs"
                               style={
-                                tag.color
-                                  ? { borderColor: tag.color, color: tag.color }
-                                  : undefined
+                                tag.color ? { borderColor: tag.color, color: tag.color } : undefined
                               }
                             >
                               {tag.name}
@@ -354,7 +376,7 @@ export default async function CustomersPage({
                     <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">
                       {customer.email}
                     </td>
-                    <td className="hidden px-4 py-3 text-sm text-slate-600 dark:text-slate-400 sm:table-cell">
+                    <td className="hidden px-4 py-3 text-sm text-slate-600 sm:table-cell dark:text-slate-400">
                       {customer.phone || "\u2014"}
                     </td>
                     <td className="px-4 py-3">
@@ -372,7 +394,7 @@ export default async function CustomersPage({
                         <Badge variant="neutral">N/A</Badge>
                       )}
                     </td>
-                    <td className="hidden px-4 py-3 text-sm text-slate-400 dark:text-slate-600 lg:table-cell">
+                    <td className="hidden px-4 py-3 text-sm text-slate-400 lg:table-cell dark:text-slate-600">
                       {formatDate(customer.createdAt)}
                     </td>
                   </tr>

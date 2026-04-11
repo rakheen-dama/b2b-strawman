@@ -38,7 +38,7 @@ export function JurisdictionSelectorSection({
 }: JurisdictionSelectorSectionProps) {
   const router = useRouter();
   const [pendingJurisdiction, setPendingJurisdiction] = useState<string | null>(
-    currentJurisdiction,
+    currentJurisdiction
   );
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -90,13 +90,10 @@ export function JurisdictionSelectorSection({
   return (
     <>
       <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-        <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-          Jurisdiction
-        </h2>
+        <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">Jurisdiction</h2>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Select the data protection jurisdiction that applies to your
-          organisation. This determines default retention policies and
-          processing register entries.
+          Select the data protection jurisdiction that applies to your organisation. This determines
+          default retention policies and processing register entries.
         </p>
 
         <div className="mt-4 flex items-center gap-3">
@@ -112,22 +109,16 @@ export function JurisdictionSelectorSection({
               {JURISDICTIONS.map((j) => (
                 <SelectItem key={j.value} value={j.value} disabled={j.disabled}>
                   {j.label}
-                  {j.disabled && (
-                    <span className="ml-2 text-xs text-slate-400">
-                      (coming soon)
-                    </span>
-                  )}
+                  {j.disabled && <span className="ml-2 text-xs text-slate-400">(coming soon)</span>}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
 
-          {isSubmitting && (
-            <span className="text-sm text-slate-500">Saving...</span>
-          )}
+          {isSubmitting && <span className="text-sm text-slate-500">Saving...</span>}
         </div>
 
-        {error && <p className="mt-3 text-sm text-destructive">{error}</p>}
+        {error && <p className="text-destructive mt-3 text-sm">{error}</p>}
       </div>
 
       <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -135,8 +126,8 @@ export function JurisdictionSelectorSection({
           <AlertDialogHeader>
             <AlertDialogTitle>Set Data Protection Jurisdiction</AlertDialogTitle>
             <AlertDialogDescription>
-              Setting your jurisdiction will create default retention policies
-              and processing register entries. This cannot be undone. Continue?
+              Setting your jurisdiction will create default retention policies and processing
+              register entries. This cannot be undone. Continue?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

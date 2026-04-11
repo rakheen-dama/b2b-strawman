@@ -3,7 +3,20 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Loader2, AlertCircle, Calendar, FileText, CheckSquare, User, Clock, DollarSign, Activity, MessageSquare, Send } from "lucide-react";
+import {
+  ArrowLeft,
+  Loader2,
+  AlertCircle,
+  Calendar,
+  FileText,
+  CheckSquare,
+  User,
+  Clock,
+  DollarSign,
+  Activity,
+  MessageSquare,
+  Send,
+} from "lucide-react";
 import { portalApi, PortalApiError, clearPortalAuth } from "@/lib/portal-api";
 import { PortalDocumentTable } from "@/components/portal/portal-document-table";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +25,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { formatDate } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import type { PortalProject, PortalDocument, PortalTask, PortalSummary, PortalComment } from "@/lib/types";
+import type {
+  PortalProject,
+  PortalDocument,
+  PortalTask,
+  PortalSummary,
+  PortalComment,
+} from "@/lib/types";
 
 function getTaskStatusVariant(status: string): "neutral" | "warning" | "success" | "destructive" {
   switch (status) {
@@ -37,9 +56,7 @@ function PortalTaskList({ tasks }: { tasks: PortalTask[] }) {
       <Card>
         <CardContent className="flex flex-col items-center justify-center py-12 text-center">
           <CheckSquare className="mb-3 size-8 text-slate-300 dark:text-slate-600" />
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            No tasks for this project
-          </p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">No tasks for this project</p>
         </CardContent>
       </Card>
     );
@@ -51,10 +68,7 @@ function PortalTaskList({ tasks }: { tasks: PortalTask[] }) {
     <Card>
       <CardContent className="divide-y divide-slate-100 p-0 dark:divide-slate-800">
         {sorted.map((task) => (
-          <div
-            key={task.id}
-            className="flex items-center justify-between px-4 py-3"
-          >
+          <div key={task.id} className="flex items-center justify-between px-4 py-3">
             <div className="flex flex-col gap-1">
               <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
                 {task.name}
@@ -138,11 +152,9 @@ function PortalCommentSection({ projectId }: { projectId: string }) {
                   <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
                     {comment.authorName}
                   </span>
-                  <span className="text-xs text-slate-500">
-                    {formatDate(comment.createdAt)}
-                  </span>
+                  <span className="text-xs text-slate-500">{formatDate(comment.createdAt)}</span>
                 </div>
-                <p className="mt-1 text-sm text-slate-600 dark:text-slate-400 whitespace-pre-wrap">
+                <p className="mt-1 text-sm whitespace-pre-wrap text-slate-600 dark:text-slate-400">
                   {comment.content}
                 </p>
               </div>
@@ -167,11 +179,7 @@ function PortalCommentSection({ projectId }: { projectId: string }) {
           className="mt-auto shrink-0"
           disabled={!newComment.trim() || isSubmitting}
         >
-          {isSubmitting ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : (
-            <Send className="size-4" />
-          )}
+          {isSubmitting ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
         </Button>
       </form>
     </div>
@@ -233,7 +241,10 @@ export default function PortalProjectDetailPage() {
           <ArrowLeft className="mr-1.5 size-4" />
           Back to Projects
         </Link>
-        <div className="flex items-center gap-2 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-300" role="alert">
+        <div
+          className="flex items-center gap-2 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-300"
+          role="alert"
+        >
           <AlertCircle className="size-4 shrink-0" />
           {error}
         </div>
@@ -260,18 +271,12 @@ export default function PortalProjectDetailPage() {
           <h1 className="font-display text-2xl text-slate-950 dark:text-slate-50">
             {project?.name}
           </h1>
-          {project?.status && (
-            <Badge variant="neutral">{project.status}</Badge>
-          )}
+          {project?.status && <Badge variant="neutral">{project.status}</Badge>}
         </div>
         {project?.description ? (
-          <p className="mt-2 text-slate-600 dark:text-slate-400">
-            {project.description}
-          </p>
+          <p className="mt-2 text-slate-600 dark:text-slate-400">{project.description}</p>
         ) : (
-          <p className="mt-2 text-sm italic text-slate-400 dark:text-slate-600">
-            No description
-          </p>
+          <p className="mt-2 text-sm text-slate-400 italic dark:text-slate-600">No description</p>
         )}
         {project?.createdAt && (
           <div className="mt-2 flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-500">
@@ -289,7 +294,7 @@ export default function PortalProjectDetailPage() {
               <Clock className="size-5 text-slate-400" />
               <div>
                 <p className="text-xs text-slate-500">Total Hours</p>
-                <p className="font-mono text-lg font-semibold tabular-nums text-slate-900 dark:text-slate-100">
+                <p className="font-mono text-lg font-semibold text-slate-900 tabular-nums dark:text-slate-100">
                   {summary.totalHours}
                 </p>
               </div>
@@ -300,7 +305,7 @@ export default function PortalProjectDetailPage() {
               <DollarSign className="size-5 text-slate-400" />
               <div>
                 <p className="text-xs text-slate-500">Billable Hours</p>
-                <p className="font-mono text-lg font-semibold tabular-nums text-slate-900 dark:text-slate-100">
+                <p className="font-mono text-lg font-semibold text-slate-900 tabular-nums dark:text-slate-100">
                   {summary.billableHours}
                 </p>
               </div>

@@ -13,7 +13,7 @@ interface ActionResult {
 
 export async function updateTimeTrackingSettings(
   slug: string,
-  data: UpdateTimeTrackingSettingsRequest,
+  data: UpdateTimeTrackingSettingsRequest
 ): Promise<ActionResult> {
   const { orgSlug } = await getAuthContext();
   const caps = await fetchMyCapabilities();

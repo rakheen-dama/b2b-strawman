@@ -1,9 +1,6 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { cleanup, renderHook } from "@testing-library/react";
-import {
-  SubscriptionProvider,
-  useSubscription,
-} from "@/lib/subscription-context";
+import { SubscriptionProvider, useSubscription } from "@/lib/subscription-context";
 import type { BillingResponse } from "@/lib/internal-api";
 
 afterEach(() => {
@@ -12,7 +9,7 @@ afterEach(() => {
 
 function makeBillingResponse(
   status: string,
-  overrides?: Partial<BillingResponse>,
+  overrides?: Partial<BillingResponse>
 ): BillingResponse {
   return {
     status,
@@ -35,9 +32,7 @@ function makeBillingResponse(
 function wrapper(billingResponse: BillingResponse) {
   return function Wrapper({ children }: { children: React.ReactNode }) {
     return (
-      <SubscriptionProvider billingResponse={billingResponse}>
-        {children}
-      </SubscriptionProvider>
+      <SubscriptionProvider billingResponse={billingResponse}>{children}</SubscriptionProvider>
     );
   };
 }
@@ -104,45 +99,35 @@ describe("SubscriptionContext", () => {
   describe("canSubscribe (passthrough from API)", () => {
     it("is true for TRIALING", () => {
       const { result } = renderHook(() => useSubscription(), {
-        wrapper: wrapper(
-          makeBillingResponse("TRIALING", { canSubscribe: true }),
-        ),
+        wrapper: wrapper(makeBillingResponse("TRIALING", { canSubscribe: true })),
       });
       expect(result.current.canSubscribe).toBe(true);
     });
 
     it("is true for EXPIRED", () => {
       const { result } = renderHook(() => useSubscription(), {
-        wrapper: wrapper(
-          makeBillingResponse("EXPIRED", { canSubscribe: true }),
-        ),
+        wrapper: wrapper(makeBillingResponse("EXPIRED", { canSubscribe: true })),
       });
       expect(result.current.canSubscribe).toBe(true);
     });
 
     it("is true for GRACE_PERIOD", () => {
       const { result } = renderHook(() => useSubscription(), {
-        wrapper: wrapper(
-          makeBillingResponse("GRACE_PERIOD", { canSubscribe: true }),
-        ),
+        wrapper: wrapper(makeBillingResponse("GRACE_PERIOD", { canSubscribe: true })),
       });
       expect(result.current.canSubscribe).toBe(true);
     });
 
     it("is true for SUSPENDED", () => {
       const { result } = renderHook(() => useSubscription(), {
-        wrapper: wrapper(
-          makeBillingResponse("SUSPENDED", { canSubscribe: true }),
-        ),
+        wrapper: wrapper(makeBillingResponse("SUSPENDED", { canSubscribe: true })),
       });
       expect(result.current.canSubscribe).toBe(true);
     });
 
     it("is true for LOCKED", () => {
       const { result } = renderHook(() => useSubscription(), {
-        wrapper: wrapper(
-          makeBillingResponse("LOCKED", { canSubscribe: true }),
-        ),
+        wrapper: wrapper(makeBillingResponse("LOCKED", { canSubscribe: true })),
       });
       expect(result.current.canSubscribe).toBe(true);
     });
@@ -172,9 +157,7 @@ describe("SubscriptionContext", () => {
   describe("canCancel (passthrough from API)", () => {
     it("is true when API says true", () => {
       const { result } = renderHook(() => useSubscription(), {
-        wrapper: wrapper(
-          makeBillingResponse("ACTIVE", { canCancel: true }),
-        ),
+        wrapper: wrapper(makeBillingResponse("ACTIVE", { canCancel: true })),
       });
       expect(result.current.canCancel).toBe(true);
     });

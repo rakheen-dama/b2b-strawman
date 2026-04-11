@@ -3,14 +3,8 @@
 import { useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { Label } from "@/components/ui/label";
-import {
-  InlineFieldEditor,
-  type FieldValue,
-} from "@/components/prerequisite/inline-field-editor";
-import type {
-  IntakeField,
-  IntakeFieldGroup,
-} from "@/components/prerequisite/types";
+import { InlineFieldEditor, type FieldValue } from "@/components/prerequisite/inline-field-editor";
+import type { IntakeField, IntakeFieldGroup } from "@/components/prerequisite/types";
 
 /**
  * Evaluates whether a field should be visible based on its visibility condition.
@@ -18,7 +12,7 @@ import type {
  */
 export function isFieldVisible(
   field: IntakeField,
-  currentValues: Record<string, FieldValue>,
+  currentValues: Record<string, FieldValue>
 ): boolean {
   const condition = field.visibilityCondition;
   if (!condition) return true;
@@ -68,7 +62,7 @@ function GroupSection({ group, values, onChange }: GroupSectionProps) {
   if (visibleFields.length === 0) return null;
 
   return (
-    <div className="border border-slate-200 rounded-lg shadow-sm">
+    <div className="rounded-lg border border-slate-200 shadow-sm">
       <button
         type="button"
         className="flex w-full items-center gap-2 px-4 py-3 text-left text-sm font-medium text-slate-900 hover:bg-slate-50"
@@ -88,11 +82,9 @@ function GroupSection({ group, values, onChange }: GroupSectionProps) {
             <div key={field.id} className="space-y-1.5">
               <Label htmlFor={`inline-${field.slug}`} className="text-sm">
                 {field.name}
-                <span className="text-red-500 ml-0.5">*</span>
+                <span className="ml-0.5 text-red-500">*</span>
               </Label>
-              {field.description && (
-                <p className="text-xs text-slate-500">{field.description}</p>
-              )}
+              {field.description && <p className="text-xs text-slate-500">{field.description}</p>}
               <InlineFieldEditor
                 fieldDefinition={field}
                 value={values[field.slug] ?? null}
@@ -120,16 +112,11 @@ function GroupSection({ group, values, onChange }: GroupSectionProps) {
                 <div className="mt-3 space-y-4">
                   {optionalFields.map((field) => (
                     <div key={field.id} className="space-y-1.5">
-                      <Label
-                        htmlFor={`inline-${field.slug}`}
-                        className="text-sm"
-                      >
+                      <Label htmlFor={`inline-${field.slug}`} className="text-sm">
                         {field.name}
                       </Label>
                       {field.description && (
-                        <p className="text-xs text-slate-500">
-                          {field.description}
-                        </p>
+                        <p className="text-xs text-slate-500">{field.description}</p>
                       )}
                       <InlineFieldEditor
                         fieldDefinition={field}
@@ -148,11 +135,7 @@ function GroupSection({ group, values, onChange }: GroupSectionProps) {
   );
 }
 
-export function IntakeFieldsSection({
-  groups,
-  values,
-  onChange,
-}: IntakeFieldsSectionProps) {
+export function IntakeFieldsSection({ groups, values, onChange }: IntakeFieldsSectionProps) {
   if (groups.length === 0) return null;
 
   return (
@@ -162,7 +145,7 @@ export function IntakeFieldsSection({
         // that the component remounts (and re-derives isOpen) when a required
         // field becomes visible due to a visibility condition change.
         const hasVisibleRequired = group.fields.some(
-          (f) => f.required && isFieldVisible(f, values),
+          (f) => f.required && isFieldVisible(f, values)
         );
         return (
           <GroupSection

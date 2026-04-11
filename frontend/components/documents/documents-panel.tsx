@@ -354,21 +354,21 @@ export function DocumentsPanel({
           <Table>
             <TableHeader>
               <TableRow className="border-slate-200 hover:bg-transparent dark:border-slate-800">
-                <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   File
                 </TableHead>
-                <TableHead className="hidden text-xs uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">
+                <TableHead className="hidden text-xs tracking-wide text-slate-600 uppercase sm:table-cell dark:text-slate-400">
                   Size
                 </TableHead>
                 {showScope && (
-                  <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                  <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
                     Scope
                   </TableHead>
                 )}
-                <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Status
                 </TableHead>
-                <TableHead className="hidden text-xs uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">
+                <TableHead className="hidden text-xs tracking-wide text-slate-600 uppercase sm:table-cell dark:text-slate-400">
                   Uploaded
                 </TableHead>
                 <TableHead className="w-[60px]" />
@@ -386,7 +386,7 @@ export function DocumentsPanel({
                     <TableRow
                       className={cn(
                         "border-slate-100 transition-colors hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900",
-                        isExpanded && "bg-slate-50/50 dark:bg-slate-900/50",
+                        isExpanded && "bg-slate-50/50 dark:bg-slate-900/50"
                       )}
                     >
                       <TableCell>
@@ -438,7 +438,10 @@ export function DocumentsPanel({
                     </TableRow>
                     {isExpanded && (
                       <TableRow className="border-slate-100 dark:border-slate-800/50">
-                        <TableCell colSpan={colSpan} className="bg-slate-50/30 px-6 py-4 dark:bg-slate-900/30">
+                        <TableCell
+                          colSpan={colSpan}
+                          className="bg-slate-50/30 px-6 py-4 dark:bg-slate-900/30"
+                        >
                           <CommentSectionClient
                             projectId={projectId}
                             entityType="DOCUMENT"

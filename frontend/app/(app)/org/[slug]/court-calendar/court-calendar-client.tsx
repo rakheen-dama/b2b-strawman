@@ -15,17 +15,8 @@ import { EditCourtDateDialog } from "@/components/legal/edit-court-date-dialog";
 import { PostponeDialog } from "@/components/legal/postpone-dialog";
 import { CancelCourtDateDialog } from "@/components/legal/cancel-court-date-dialog";
 import { OutcomeDialog } from "@/components/legal/outcome-dialog";
-import {
-  fetchCourtDates,
-  fetchPrescriptionTrackers,
-  type CourtDateFilters,
-} from "./actions";
-import type {
-  CourtDate,
-  CourtDateStatus,
-  CourtDateType,
-  PrescriptionTracker,
-} from "@/lib/types";
+import { fetchCourtDates, fetchPrescriptionTrackers, type CourtDateFilters } from "./actions";
+import type { CourtDate, CourtDateStatus, CourtDateType, PrescriptionTracker } from "@/lib/types";
 
 type ViewMode = "list" | "calendar" | "prescriptions";
 
@@ -61,9 +52,7 @@ export function CourtCalendarClient({
   const [calMonth, setCalMonth] = useState(now.getMonth() + 1);
 
   // Detail panel
-  const [selectedCourtDate, setSelectedCourtDate] = useState<CourtDate | null>(
-    null
-  );
+  const [selectedCourtDate, setSelectedCourtDate] = useState<CourtDate | null>(null);
 
   // Dialog state
   const [editTarget, setEditTarget] = useState<CourtDate | null>(null);
@@ -154,15 +143,11 @@ export function CourtCalendarClient({
     if (!clientSearch.trim()) return courtDates;
     const q = clientSearch.toLowerCase();
     return courtDates.filter(
-      (d) =>
-        d.customerName?.toLowerCase().includes(q) ||
-        d.projectName?.toLowerCase().includes(q)
+      (d) => d.customerName?.toLowerCase().includes(q) || d.projectName?.toLowerCase().includes(q)
     );
   }, [courtDates, clientSearch]);
 
-  const scheduledCount = filteredCourtDates.filter(
-    (d) => d.status === "SCHEDULED"
-  ).length;
+  const scheduledCount = filteredCourtDates.filter((d) => d.status === "SCHEDULED").length;
 
   return (
     <div className="space-y-4">
@@ -239,9 +224,7 @@ export function CourtCalendarClient({
           </TabsList>
         </Tabs>
         <div className="flex items-center gap-2">
-          <span className="text-sm text-slate-600 dark:text-slate-400">
-            {total} court dates
-          </span>
+          <span className="text-sm text-slate-600 dark:text-slate-400">{total} court dates</span>
           {scheduledCount > 0 && (
             <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
               {scheduledCount} upcoming
@@ -251,12 +234,7 @@ export function CourtCalendarClient({
       </div>
 
       {/* Content area */}
-      <div
-        className={cn(
-          "flex gap-4",
-          isPending && "opacity-50 transition-opacity"
-        )}
-      >
+      <div className={cn("flex gap-4", isPending && "opacity-50 transition-opacity")}>
         <div className={selectedCourtDate ? "flex-1" : "w-full"}>
           {view === "list" && (
             <CourtDateListView
@@ -297,11 +275,7 @@ export function CourtCalendarClient({
           )}
 
           {view === "prescriptions" && (
-            <PrescriptionTab
-              trackers={trackers}
-              slug={slug}
-              onRefresh={refetchTrackers}
-            />
+            <PrescriptionTab trackers={trackers} slug={slug} onRefresh={refetchTrackers} />
           )}
         </div>
 
@@ -327,8 +301,7 @@ export function CourtCalendarClient({
                 <dt className="text-slate-500 dark:text-slate-400">Date</dt>
                 <dd className="font-mono text-slate-700 dark:text-slate-300">
                   {selectedCourtDate.scheduledDate}
-                  {selectedCourtDate.scheduledTime &&
-                    ` at ${selectedCourtDate.scheduledTime}`}
+                  {selectedCourtDate.scheduledTime && ` at ${selectedCourtDate.scheduledTime}`}
                 </dd>
               </div>
               <div>
@@ -348,9 +321,7 @@ export function CourtCalendarClient({
               </div>
               {selectedCourtDate.courtReference && (
                 <div>
-                  <dt className="text-slate-500 dark:text-slate-400">
-                    Reference
-                  </dt>
+                  <dt className="text-slate-500 dark:text-slate-400">Reference</dt>
                   <dd className="text-slate-700 dark:text-slate-300">
                     {selectedCourtDate.courtReference}
                   </dd>
@@ -358,9 +329,7 @@ export function CourtCalendarClient({
               )}
               {selectedCourtDate.judgeMagistrate && (
                 <div>
-                  <dt className="text-slate-500 dark:text-slate-400">
-                    Judge / Magistrate
-                  </dt>
+                  <dt className="text-slate-500 dark:text-slate-400">Judge / Magistrate</dt>
                   <dd className="text-slate-700 dark:text-slate-300">
                     {selectedCourtDate.judgeMagistrate}
                   </dd>
@@ -380,15 +349,11 @@ export function CourtCalendarClient({
               </div>
               <div>
                 <dt className="text-slate-500 dark:text-slate-400">Status</dt>
-                <dd className="text-slate-700 dark:text-slate-300">
-                  {selectedCourtDate.status}
-                </dd>
+                <dd className="text-slate-700 dark:text-slate-300">{selectedCourtDate.status}</dd>
               </div>
               {selectedCourtDate.outcome && (
                 <div>
-                  <dt className="text-slate-500 dark:text-slate-400">
-                    Outcome
-                  </dt>
+                  <dt className="text-slate-500 dark:text-slate-400">Outcome</dt>
                   <dd className="text-slate-700 dark:text-slate-300">
                     {selectedCourtDate.outcome}
                   </dd>
@@ -396,9 +361,7 @@ export function CourtCalendarClient({
               )}
               {selectedCourtDate.description && (
                 <div>
-                  <dt className="text-slate-500 dark:text-slate-400">
-                    Description
-                  </dt>
+                  <dt className="text-slate-500 dark:text-slate-400">Description</dt>
                   <dd className="text-slate-700 dark:text-slate-300">
                     {selectedCourtDate.description}
                   </dd>
@@ -434,10 +397,7 @@ export function CourtCalendarClient({
                   >
                     Cancel
                   </Button>
-                  <Button
-                    size="sm"
-                    onClick={() => setOutcomeTarget(selectedCourtDate)}
-                  >
+                  <Button size="sm" onClick={() => setOutcomeTarget(selectedCourtDate)}>
                     Record Outcome
                   </Button>
                 </>

@@ -11,7 +11,7 @@ import { classifyError } from "@/lib/error-handler";
 
 function makeApiError(
   status: number,
-  detailType?: string,
+  detailType?: string
 ): { status: number; detail?: { type: string } } {
   if (detailType) {
     return { status, detail: { type: detailType } };

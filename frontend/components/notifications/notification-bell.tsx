@@ -23,10 +23,7 @@ export function NotificationBell({ orgSlug }: NotificationBellProps) {
     if (!isOpen) return;
 
     function handleClickOutside(event: MouseEvent) {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target as Node)
-      ) {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     }
@@ -70,9 +67,7 @@ export function NotificationBell({ orgSlug }: NotificationBellProps) {
             aria-hidden="true"
             className={cn(
               "absolute -top-0.5 -right-0.5 flex items-center justify-center rounded-full bg-teal-600 text-[10px] font-medium text-white",
-              unreadCount > 99
-                ? "h-4 min-w-5 px-1"
-                : "size-4"
+              unreadCount > 99 ? "h-4 min-w-5 px-1" : "size-4"
             )}
           >
             {displayCount}
@@ -81,12 +76,12 @@ export function NotificationBell({ orgSlug }: NotificationBellProps) {
       </Button>
 
       {isOpen && (
-        <div role="dialog" aria-label="Notifications" className="absolute right-0 top-full z-50 mt-1 rounded-md border border-slate-200 bg-white shadow-lg dark:border-slate-800 dark:bg-slate-950">
-          <NotificationDropdown
-            orgSlug={orgSlug}
-            onClose={handleClose}
-            onCountChange={refetch}
-          />
+        <div
+          role="dialog"
+          aria-label="Notifications"
+          className="absolute top-full right-0 z-50 mt-1 rounded-md border border-slate-200 bg-white shadow-lg dark:border-slate-800 dark:bg-slate-950"
+        >
+          <NotificationDropdown orgSlug={orgSlug} onClose={handleClose} onCountChange={refetch} />
         </div>
       )}
     </div>

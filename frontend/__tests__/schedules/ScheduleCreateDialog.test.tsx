@@ -83,7 +83,7 @@ describe("ScheduleCreateDialog", () => {
         requestTemplates={[]}
       >
         <button>Create Schedule trigger</button>
-      </ScheduleCreateDialog>,
+      </ScheduleCreateDialog>
     );
     await user.click(screen.getByText("Create Schedule trigger"));
     expect(screen.getByText("New Recurring Schedule")).toBeInTheDocument();
@@ -101,7 +101,7 @@ describe("ScheduleCreateDialog", () => {
         requestTemplates={[]}
       >
         <button>Create Schedule trigger freq</button>
-      </ScheduleCreateDialog>,
+      </ScheduleCreateDialog>
     );
     await user.click(screen.getByText("Create Schedule trigger freq"));
     const frequencySelect = screen.getByLabelText("Frequency");
@@ -127,7 +127,7 @@ describe("ScheduleCreateDialog", () => {
         requestTemplates={[]}
       >
         <button>Create Schedule trigger date</button>
-      </ScheduleCreateDialog>,
+      </ScheduleCreateDialog>
     );
     await user.click(screen.getByText("Create Schedule trigger date"));
     const startDateInput = screen.getByLabelText("Start Date");
@@ -148,7 +148,7 @@ describe("ScheduleCreateDialog", () => {
         requestTemplates={[]}
       >
         <button>Create Schedule trigger preview</button>
-      </ScheduleCreateDialog>,
+      </ScheduleCreateDialog>
     );
     await user.click(screen.getByText("Create Schedule trigger preview"));
 
@@ -174,7 +174,7 @@ describe("ScheduleCreateDialog", () => {
         requestTemplates={[]}
       >
         <button>Create Schedule trigger submit</button>
-      </ScheduleCreateDialog>,
+      </ScheduleCreateDialog>
     );
     await user.click(screen.getByText("Create Schedule trigger submit"));
 
@@ -190,12 +190,15 @@ describe("ScheduleCreateDialog", () => {
     await user.click(screen.getByText("Create Schedule"));
 
     await waitFor(() => {
-      expect(mockCreateSchedule).toHaveBeenCalledWith("acme", expect.objectContaining({
-        templateId: "pt-1",
-        customerId: "cust-1",
-        frequency: "MONTHLY",
-        startDate: "2026-03-01",
-      }));
+      expect(mockCreateSchedule).toHaveBeenCalledWith(
+        "acme",
+        expect.objectContaining({
+          templateId: "pt-1",
+          customerId: "cust-1",
+          frequency: "MONTHLY",
+          startDate: "2026-03-01",
+        })
+      );
     });
 
     await waitFor(() => {

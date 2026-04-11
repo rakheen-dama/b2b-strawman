@@ -23,7 +23,7 @@ interface ActionResult {
 }
 
 export async function listAccessRequests(
-  status?: string,
+  status?: string
 ): Promise<{ success: boolean; data?: AccessRequest[]; error?: string }> {
   try {
     const params = new URLSearchParams();

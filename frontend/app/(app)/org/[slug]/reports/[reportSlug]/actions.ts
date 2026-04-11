@@ -18,7 +18,7 @@ export async function executeReportAction(
   slug: string,
   parameters: Record<string, unknown>,
   page: number,
-  size: number,
+  size: number
 ): Promise<ActionResult<ReportExecutionResponse>> {
   try {
     const data = await executeReport(slug, parameters, page, size);
@@ -33,7 +33,7 @@ export async function executeReportAction(
 
 export async function exportReportCsvAction(
   slug: string,
-  parameters: Record<string, unknown>,
+  parameters: Record<string, unknown>
 ): Promise<ActionResult<string>> {
   try {
     const data = await exportReportCsv(slug, parameters);
@@ -48,7 +48,7 @@ export async function exportReportCsvAction(
 
 export async function exportReportPdfAction(
   slug: string,
-  parameters: Record<string, unknown>,
+  parameters: Record<string, unknown>
 ): Promise<ActionResult<string>> {
   try {
     const data = await exportReportPdf(slug, parameters);
@@ -70,7 +70,7 @@ export interface EntityOption {
 }
 
 export async function fetchEntityOptionsAction(
-  entityType: string,
+  entityType: string
 ): Promise<ActionResult<EntityOption[]>> {
   try {
     const type = entityType.toLowerCase();

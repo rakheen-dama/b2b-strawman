@@ -66,19 +66,14 @@ describe("OverviewTab — Compact Setup Bar (395.2)", () => {
     const totalSteps = steps.length;
 
     render(
-      <details
-        data-testid="setup-progress-bar"
-        className="rounded-lg border bg-card"
-      >
+      <details data-testid="setup-progress-bar" className="bg-card rounded-lg border">
         <summary className="flex items-center gap-3 px-4 py-3">
           <div className="min-w-0 flex-1">
             <span className="text-sm font-medium">
               {completedSteps}/{totalSteps} setup steps complete
             </span>
             <div className="mt-1.5">
-              <CompletionProgressBar
-                percent={(completedSteps / totalSteps) * 100}
-              />
+              <CompletionProgressBar percent={(completedSteps / totalSteps) * 100} />
             </div>
           </div>
         </summary>
@@ -91,7 +86,7 @@ describe("OverviewTab — Compact Setup Bar (395.2)", () => {
             ))}
           </ul>
         </div>
-      </details>,
+      </details>
     );
 
     expect(screen.getByTestId("setup-progress-bar")).toBeInTheDocument();
@@ -116,7 +111,7 @@ describe("OverviewTab — Compact Setup Bar (395.2)", () => {
           </details>
         )}
         <p>Other content</p>
-      </div>,
+      </div>
     );
 
     expect(screen.queryByTestId("setup-progress-bar")).not.toBeInTheDocument();
@@ -127,7 +122,12 @@ describe("OverviewTab — Compact Setup Bar (395.2)", () => {
   it("shows correct count when some steps are complete", () => {
     const steps: SetupStep[] = [
       { label: "Customer assigned", complete: true, actionHref: "?tab=customers" },
-      { label: "Rate card configured", complete: true, actionHref: "?tab=rates", permissionRequired: true },
+      {
+        label: "Rate card configured",
+        complete: true,
+        actionHref: "?tab=rates",
+        permissionRequired: true,
+      },
       { label: "Budget set", complete: false, actionHref: "?tab=budget" },
       { label: "Team members added", complete: false, actionHref: "?tab=members" },
       { label: "Required fields filled", complete: false, actionHref: "#custom-fields" },
@@ -136,13 +136,13 @@ describe("OverviewTab — Compact Setup Bar (395.2)", () => {
     const totalSteps = steps.length;
 
     render(
-      <details data-testid="setup-progress-bar" className="rounded-lg border bg-card">
+      <details data-testid="setup-progress-bar" className="bg-card rounded-lg border">
         <summary className="flex items-center gap-3 px-4 py-3">
           <span className="text-sm font-medium">
             {completedSteps}/{totalSteps} setup steps complete
           </span>
         </summary>
-      </details>,
+      </details>
     );
 
     expect(screen.getByText("2/5 setup steps complete")).toBeInTheDocument();

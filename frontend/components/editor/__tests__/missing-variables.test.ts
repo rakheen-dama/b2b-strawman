@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  extractVariableKeys,
-  findMissingVariables,
-} from "../client-renderer";
+import { extractVariableKeys, findMissingVariables } from "../client-renderer";
 import type { TiptapNode } from "../client-renderer";
 
 function doc(...content: TiptapNode[]): TiptapNode {
@@ -23,28 +20,20 @@ function variable(key: string): TiptapNode {
 
 describe("extractVariableKeys", () => {
   it("extracts keys from a simple document", () => {
-    const node = doc(
-      paragraph(text("Hello "), variable("org.name"), text("!")),
-    );
+    const node = doc(paragraph(text("Hello "), variable("org.name"), text("!")));
     expect(extractVariableKeys(node)).toEqual(["org.name"]);
   });
 
   it("extracts keys from multiple paragraphs", () => {
-    const node = doc(
-      paragraph(variable("project.name")),
-      paragraph(variable("customer.name")),
-    );
+    const node = doc(paragraph(variable("project.name")), paragraph(variable("customer.name")));
     expect(extractVariableKeys(node)).toEqual(
-      expect.arrayContaining(["project.name", "customer.name"]),
+      expect.arrayContaining(["project.name", "customer.name"])
     );
     expect(extractVariableKeys(node)).toHaveLength(2);
   });
 
   it("deduplicates keys", () => {
-    const node = doc(
-      paragraph(variable("org.name")),
-      paragraph(variable("org.name")),
-    );
+    const node = doc(paragraph(variable("org.name")), paragraph(variable("org.name")));
     expect(extractVariableKeys(node)).toEqual(["org.name"]);
   });
 
@@ -59,26 +48,22 @@ describe("extractVariableKeys", () => {
   });
 
   it("extracts keys from clause bodies when clauses map is provided", () => {
-    const clauseBody: TiptapNode = doc(
-      paragraph(variable("customer.email"), variable("org.name")),
-    );
+    const clauseBody: TiptapNode = doc(paragraph(variable("customer.email"), variable("org.name")));
     const clauses = new Map<string, TiptapNode>([["clause-1", clauseBody]]);
-    const node = doc(
-      paragraph(variable("project.name")),
-      { type: "clauseBlock", attrs: { clauseId: "clause-1" } },
-    );
+    const node = doc(paragraph(variable("project.name")), {
+      type: "clauseBlock",
+      attrs: { clauseId: "clause-1" },
+    });
     const keys = extractVariableKeys(node, clauses);
-    expect(keys).toEqual(
-      expect.arrayContaining(["project.name", "customer.email", "org.name"]),
-    );
+    expect(keys).toEqual(expect.arrayContaining(["project.name", "customer.email", "org.name"]));
     expect(keys).toHaveLength(3);
   });
 
   it("ignores clause blocks when no clauses map is provided", () => {
-    const node = doc(
-      paragraph(variable("project.name")),
-      { type: "clauseBlock", attrs: { clauseId: "clause-1" } },
-    );
+    const node = doc(paragraph(variable("project.name")), {
+      type: "clauseBlock",
+      attrs: { clauseId: "clause-1" },
+    });
     const keys = extractVariableKeys(node);
     expect(keys).toEqual(["project.name"]);
   });
@@ -86,9 +71,7 @@ describe("extractVariableKeys", () => {
 
 describe("findMissingVariables", () => {
   it("identifies variables with no value in context", () => {
-    const node = doc(
-      paragraph(variable("project.name"), variable("project.budget")),
-    );
+    const node = doc(paragraph(variable("project.name"), variable("project.budget")));
     const context = { project: { name: "My Project" } };
     const missing = findMissingVariables(node, context);
     expect(missing).toEqual(new Set(["project.budget"]));
@@ -102,22 +85,13 @@ describe("findMissingVariables", () => {
   });
 
   it("marks all variables missing when context is empty", () => {
-    const node = doc(
-      paragraph(variable("project.name"), variable("customer.name")),
-    );
+    const node = doc(paragraph(variable("project.name"), variable("customer.name")));
     const missing = findMissingVariables(node, {});
-    expect(missing).toEqual(
-      new Set(["project.name", "customer.name"]),
-    );
+    expect(missing).toEqual(new Set(["project.name", "customer.name"]));
   });
 
   it("handles nested context paths", () => {
-    const node = doc(
-      paragraph(
-        variable("project.customFields.tax_ref"),
-        variable("project.name"),
-      ),
-    );
+    const node = doc(paragraph(variable("project.customFields.tax_ref"), variable("project.name")));
     const context = {
       project: { name: "Test", customFields: { tax_ref: "TR-001" } },
     };
@@ -133,14 +107,12 @@ describe("findMissingVariables", () => {
   });
 
   it("detects missing variables inside clause bodies", () => {
-    const clauseBody: TiptapNode = doc(
-      paragraph(variable("customer.email")),
-    );
+    const clauseBody: TiptapNode = doc(paragraph(variable("customer.email")));
     const clauses = new Map<string, TiptapNode>([["c1", clauseBody]]);
-    const node = doc(
-      paragraph(variable("project.name")),
-      { type: "clauseBlock", attrs: { clauseId: "c1" } },
-    );
+    const node = doc(paragraph(variable("project.name")), {
+      type: "clauseBlock",
+      attrs: { clauseId: "c1" },
+    });
     const context = { project: { name: "Test" } };
     const missing = findMissingVariables(node, context, clauses);
     expect(missing).toEqual(new Set(["customer.email"]));

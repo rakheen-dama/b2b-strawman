@@ -22,18 +22,14 @@ describe("MiniProgressRing", () => {
 
   it("applies auto-color correctly based on value thresholds", () => {
     // value > 66 = green
-    const { container: c1, unmount: u1 } = render(
-      <MiniProgressRing value={80} />
-    );
+    const { container: c1, unmount: u1 } = render(<MiniProgressRing value={80} />);
     const greenCircles = c1.querySelectorAll("circle");
     const greenArc = greenCircles[1];
     expect(greenArc.getAttribute("stroke")).toContain("green");
     u1();
 
     // value > 33 = amber
-    const { container: c2, unmount: u2 } = render(
-      <MiniProgressRing value={50} />
-    );
+    const { container: c2, unmount: u2 } = render(<MiniProgressRing value={50} />);
     const amberCircles = c2.querySelectorAll("circle");
     const amberArc = amberCircles[1];
     expect(amberArc.getAttribute("stroke")).toContain("amber");

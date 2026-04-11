@@ -31,8 +31,8 @@ describe("ExecutionHistory", () => {
     render(<ExecutionHistory executions={[]} slug="acme" />);
     expect(
       screen.getByText(
-        /No executions yet — projects will appear here after the first automated run/,
-      ),
+        /No executions yet — projects will appear here after the first automated run/
+      )
     ).toBeInTheDocument();
   });
 

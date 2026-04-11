@@ -8,8 +8,7 @@ const mockGetAcceptancePdf = vi.fn();
 const mockAcceptDocument = vi.fn();
 
 vi.mock("@/lib/api/portal-acceptance", () => ({
-  getAcceptancePageData: (...args: unknown[]) =>
-    mockGetAcceptancePageData(...args),
+  getAcceptancePageData: (...args: unknown[]) => mockGetAcceptancePageData(...args),
   getAcceptancePdf: (...args: unknown[]) => mockGetAcceptancePdf(...args),
   acceptDocument: (...args: unknown[]) => mockAcceptDocument(...args),
 }));
@@ -78,9 +77,7 @@ describe("AcceptancePage", () => {
       expect(screen.getByText("Request Expired")).toBeInTheDocument();
     });
 
-    expect(
-      screen.getByText(/This acceptance request expired on/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/This acceptance request expired on/)).toBeInTheDocument();
     // "Acme Corp" appears in both the branding header and the body copy
     expect(screen.getAllByText(/Acme Corp/).length).toBeGreaterThanOrEqual(1);
   });
@@ -105,9 +102,7 @@ describe("AcceptancePage", () => {
       expect(screen.getByText("Request Withdrawn")).toBeInTheDocument();
     });
 
-    expect(
-      screen.getByText(/This acceptance request has been withdrawn/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/This acceptance request has been withdrawn/)).toBeInTheDocument();
   });
 
   it("renders acceptance form for VIEWED status with PDF iframe", async () => {
@@ -134,17 +129,13 @@ describe("AcceptancePage", () => {
     });
 
     // PDF iframe should be present
-    const iframe = document.querySelector(
-      'iframe[title="Document preview"]',
-    ) as HTMLIFrameElement;
+    const iframe = document.querySelector('iframe[title="Document preview"]') as HTMLIFrameElement;
     expect(iframe).toBeInTheDocument();
     expect(iframe.src).toContain("blob:");
 
     // Acceptance form elements
     expect(screen.getByLabelText("Full Legal Name")).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "I Accept This Document" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "I Accept This Document" })).toBeInTheDocument();
   });
 
   it("submits acceptance with typed name and shows confirmation", async () => {
@@ -176,9 +167,7 @@ describe("AcceptancePage", () => {
 
     // Wait for the form to appear
     await waitFor(() => {
-      expect(
-        screen.getByRole("button", { name: "I Accept This Document" }),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "I Accept This Document" })).toBeInTheDocument();
     });
 
     // Type name
@@ -186,19 +175,14 @@ describe("AcceptancePage", () => {
     await user.type(input, "John Doe");
 
     // Submit
-    await user.click(
-      screen.getByRole("button", { name: "I Accept This Document" }),
-    );
+    await user.click(screen.getByRole("button", { name: "I Accept This Document" }));
 
     // Should show accepted confirmation
     await waitFor(() => {
       expect(screen.getByText("Document Accepted")).toBeInTheDocument();
     });
 
-    expect(mockAcceptDocument).toHaveBeenCalledWith(
-      "test-token-123",
-      "John Doe",
-    );
+    expect(mockAcceptDocument).toHaveBeenCalledWith("test-token-123", "John Doe");
   });
 
   it("disables submit button when name is too short", async () => {
@@ -223,9 +207,7 @@ describe("AcceptancePage", () => {
     renderPage();
 
     await waitFor(() => {
-      expect(
-        screen.getByRole("button", { name: "I Accept This Document" }),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "I Accept This Document" })).toBeInTheDocument();
     });
 
     // Button should be disabled initially (empty name)

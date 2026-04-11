@@ -103,7 +103,7 @@ export function CreateDataRequestDialog({ slug }: CreateDataRequestDialogProps) 
           slug,
           selectedCustomer.id,
           requestType,
-          description.trim(),
+          description.trim()
         );
         if (result.success) {
           setOpen(false);
@@ -137,23 +137,21 @@ export function CreateDataRequestDialog({ slug }: CreateDataRequestDialogProps) 
           <div className="space-y-1.5">
             <Label>Customer</Label>
             {fetchError ? (
-              <p className="text-sm text-destructive">{fetchError}</p>
+              <p className="text-destructive text-sm">{fetchError}</p>
             ) : (
               <div className="relative">
                 <button
                   type="button"
                   onClick={() => setCustomerSearchOpen((prev) => !prev)}
                   className={cn(
-                    "flex w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background",
-                    "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-                    "disabled:cursor-not-allowed disabled:opacity-50",
+                    "border-input bg-background ring-offset-background flex w-full items-center justify-between rounded-md border px-3 py-2 text-sm",
+                    "focus:ring-ring focus:ring-2 focus:ring-offset-2 focus:outline-none",
+                    "disabled:cursor-not-allowed disabled:opacity-50"
                   )}
                   disabled={isLoadingCustomers || isPending}
                 >
                   <span
-                    className={cn(
-                      selectedCustomer ? "text-foreground" : "text-muted-foreground",
-                    )}
+                    className={cn(selectedCustomer ? "text-foreground" : "text-muted-foreground")}
                   >
                     {isLoadingCustomers
                       ? "Loading customers..."
@@ -163,7 +161,7 @@ export function CreateDataRequestDialog({ slug }: CreateDataRequestDialogProps) 
                   </span>
                 </button>
                 {customerSearchOpen && (
-                  <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-md">
+                  <div className="bg-popover absolute z-50 mt-1 w-full rounded-md border shadow-md">
                     <Command>
                       <CommandInput placeholder="Search customers..." />
                       <CommandList>
@@ -182,9 +180,7 @@ export function CreateDataRequestDialog({ slug }: CreateDataRequestDialogProps) 
                               <Check
                                 className={cn(
                                   "size-4 shrink-0",
-                                  selectedCustomer?.id === customer.id
-                                    ? "opacity-100"
-                                    : "opacity-0",
+                                  selectedCustomer?.id === customer.id ? "opacity-100" : "opacity-0"
                                 )}
                               />
                               <div className="min-w-0 flex-1">
@@ -215,10 +211,10 @@ export function CreateDataRequestDialog({ slug }: CreateDataRequestDialogProps) 
               onChange={(e) => setRequestType(e.target.value as DataRequestType | "")}
               disabled={isPending}
               className={cn(
-                "flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background",
-                "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                "border-input bg-background ring-offset-background flex w-full rounded-md border px-3 py-2 text-sm",
+                "focus:ring-ring focus:ring-2 focus:ring-offset-2 focus:outline-none",
                 "disabled:cursor-not-allowed disabled:opacity-50",
-                requestType === "" ? "text-muted-foreground" : "text-foreground",
+                requestType === "" ? "text-muted-foreground" : "text-foreground"
               )}
             >
               <option value="" disabled>
@@ -246,23 +242,14 @@ export function CreateDataRequestDialog({ slug }: CreateDataRequestDialogProps) 
             />
           </div>
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && <p className="text-destructive text-sm">{error}</p>}
         </div>
 
         <DialogFooter>
-          <Button
-            type="button"
-            variant="plain"
-            onClick={() => setOpen(false)}
-            disabled={isPending}
-          >
+          <Button type="button" variant="plain" onClick={() => setOpen(false)} disabled={isPending}>
             Cancel
           </Button>
-          <Button
-            type="button"
-            onClick={handleSubmit}
-            disabled={isPending || !canSubmit}
-          >
+          <Button type="button" onClick={handleSubmit} disabled={isPending || !canSubmit}>
             {isPending ? "Creating..." : "Create Request"}
           </Button>
         </DialogFooter>

@@ -22,9 +22,7 @@ interface ReportResultsProps {
 }
 
 function formatLabel(key: string): string {
-  return key
-    .replace(/([a-z])([A-Z])/g, "$1 $2")
-    .replace(/^./, (c) => c.toUpperCase());
+  return key.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/^./, (c) => c.toUpperCase());
 }
 
 function formatCellValue(value: unknown, column: ColumnDefinition): string {
@@ -49,11 +47,7 @@ function isNumericType(type: string): boolean {
   return type === "decimal" || type === "currency" || type === "integer";
 }
 
-export function ReportResults({
-  response,
-  isLoading,
-  onPageChange,
-}: ReportResultsProps) {
+export function ReportResults({ response, isLoading, onPageChange }: ReportResultsProps) {
   if (isLoading && !response) {
     return (
       <div className="space-y-4">
@@ -87,10 +81,8 @@ export function ReportResults({
           {summaryEntries.map(([key, value]) => (
             <Card key={key}>
               <CardContent className="pt-6">
-                <p className="text-sm text-slate-600 dark:text-slate-400">
-                  {formatLabel(key)}
-                </p>
-                <p className="mt-1 font-mono text-2xl tabular-nums text-slate-900 dark:text-slate-100">
+                <p className="text-sm text-slate-600 dark:text-slate-400">{formatLabel(key)}</p>
+                <p className="mt-1 font-mono text-2xl text-slate-900 tabular-nums dark:text-slate-100">
                   {value != null ? String(value) : "\u2014"}
                 </p>
               </CardContent>

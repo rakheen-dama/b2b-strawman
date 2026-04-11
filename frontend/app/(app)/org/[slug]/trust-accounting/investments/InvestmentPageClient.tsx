@@ -49,18 +49,10 @@ export function InvestmentPageClient({
 
   return (
     <div className="flex gap-2">
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => setInterestOpen(true)}
-      >
+      <Button variant="outline" size="sm" onClick={() => setInterestOpen(true)}>
         Record Interest
       </Button>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => setWithdrawOpen(true)}
-      >
+      <Button variant="outline" size="sm" onClick={() => setWithdrawOpen(true)}>
         Withdraw
       </Button>
       {investmentId && (

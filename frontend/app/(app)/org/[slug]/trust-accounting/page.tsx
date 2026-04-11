@@ -12,13 +12,7 @@ import {
   ArrowDownLeft,
 } from "lucide-react";
 import { getOrgSettings } from "@/lib/api/settings";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AddTrustAccountButton } from "@/components/trust/AddTrustAccountButton";
 import { fetchTrustAccounts, fetchDashboardData } from "./actions";
@@ -47,7 +41,7 @@ function formatDate(dateStr: string): string {
 }
 
 function statusBadgeVariant(
-  status: TrustTransactionStatus,
+  status: TrustTransactionStatus
 ): "success" | "warning" | "destructive" | "neutral" {
   switch (status) {
     case "APPROVED":
@@ -71,9 +65,7 @@ function transactionTypeLabel(type: TrustTransactionType): string {
 }
 
 function isInflowType(type: TrustTransactionType): boolean {
-  return ["DEPOSIT", "TRANSFER_IN", "REFUND", "INTEREST_CREDIT"].includes(
-    type,
-  );
+  return ["DEPOSIT", "TRANSFER_IN", "REFUND", "INTEREST_CREDIT"].includes(type);
 }
 
 function alertSeverityColor(severity: TrustAlertSeverity): string {
@@ -93,9 +85,7 @@ function AlertIcon({ severity }: { severity: TrustAlertSeverity }) {
     case "error":
       return <XCircle className="size-4 text-red-600 dark:text-red-400" />;
     case "warning":
-      return (
-        <AlertTriangle className="size-4 text-amber-600 dark:text-amber-400" />
-      );
+      return <AlertTriangle className="size-4 text-amber-600 dark:text-amber-400" />;
     case "info":
     default:
       return <Info className="size-4 text-teal-600 dark:text-teal-400" />;
@@ -168,12 +158,12 @@ export default async function TrustAccountingPage({
         <Card>
           <CardContent className="py-10 text-center">
             <Scale className="mx-auto size-8 text-slate-400" />
-            <h3 className="mt-3 font-display text-lg font-semibold text-slate-950 dark:text-slate-50">
+            <h3 className="font-display mt-3 text-lg font-semibold text-slate-950 dark:text-slate-50">
               No Trust Accounts
             </h3>
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              No trust accounts have been set up yet. Create your first trust
-              account to get started.
+              No trust accounts have been set up yet. Create your first trust account to get
+              started.
             </p>
             <div className="mt-4 flex justify-center">
               <AddTrustAccountButton />
@@ -198,7 +188,7 @@ export default async function TrustAccountingPage({
                 <Wallet className="size-4 text-slate-400" />
               </CardHeader>
               <CardContent>
-                <div className="font-mono text-2xl font-semibold tabular-nums text-slate-950 dark:text-slate-50">
+                <div className="font-mono text-2xl font-semibold text-slate-950 tabular-nums dark:text-slate-50">
                   {formatCurrency(dashboardData.totalBalance, settings.defaultCurrency)}
                 </div>
                 <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
@@ -216,7 +206,7 @@ export default async function TrustAccountingPage({
                 <Users className="size-4 text-slate-400" />
               </CardHeader>
               <CardContent>
-                <div className="font-mono text-2xl font-semibold tabular-nums text-slate-950 dark:text-slate-50">
+                <div className="font-mono text-2xl font-semibold text-slate-950 tabular-nums dark:text-slate-50">
                   {dashboardData.activeClients}
                 </div>
                 <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
@@ -235,7 +225,7 @@ export default async function TrustAccountingPage({
               </CardHeader>
               <CardContent>
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-2xl font-semibold tabular-nums text-slate-950 dark:text-slate-50">
+                  <span className="font-mono text-2xl font-semibold text-slate-950 tabular-nums dark:text-slate-50">
                     {dashboardData.pendingApprovals}
                   </span>
                   {dashboardData.pendingApprovals > 0 && (
@@ -272,14 +262,11 @@ export default async function TrustAccountingPage({
                         <span className="inline-flex size-2 rounded-full bg-red-500" />
                       )}
                       <span className="text-sm font-medium text-slate-950 dark:text-slate-50">
-                        {dashboardData.lastReconciliationBalanced
-                          ? "Balanced"
-                          : "Unbalanced"}
+                        {dashboardData.lastReconciliationBalanced ? "Balanced" : "Unbalanced"}
                       </span>
                     </div>
                     <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                      Last reconciled{" "}
-                      {formatDate(dashboardData.lastReconciliationDate)}
+                      Last reconciled {formatDate(dashboardData.lastReconciliationDate)}
                     </p>
                   </>
                 ) : (
@@ -315,9 +302,7 @@ export default async function TrustAccountingPage({
           <Card>
             <CardHeader>
               <CardTitle>Recent Transactions</CardTitle>
-              <CardDescription>
-                Last 10 transactions across all client ledgers
-              </CardDescription>
+              <CardDescription>Last 10 transactions across all client ledgers</CardDescription>
             </CardHeader>
             <CardContent>
               {dashboardData.recentTransactions.length === 0 ? (
@@ -331,16 +316,16 @@ export default async function TrustAccountingPage({
                   <table className="w-full text-sm" data-testid="transactions-table">
                     <thead>
                       <tr className="border-b border-slate-200 dark:border-slate-700">
-                        <th className="pb-3 pr-4 text-left font-medium text-slate-500 dark:text-slate-400">
+                        <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
                           Date
                         </th>
-                        <th className="pb-3 pr-4 text-left font-medium text-slate-500 dark:text-slate-400">
+                        <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
                           Reference
                         </th>
-                        <th className="pb-3 pr-4 text-left font-medium text-slate-500 dark:text-slate-400">
+                        <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
                           Type
                         </th>
-                        <th className="pb-3 pr-4 text-right font-medium text-slate-500 dark:text-slate-400">
+                        <th className="pr-4 pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
                           Amount
                         </th>
                         <th className="pb-3 text-left font-medium text-slate-500 dark:text-slate-400">

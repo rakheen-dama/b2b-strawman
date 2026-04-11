@@ -39,13 +39,7 @@ vi.mock("recharts", () => ({
   XAxis: () => <div data-testid="x-axis" />,
   YAxis: () => <div data-testid="y-axis" />,
   Tooltip: () => <div data-testid="tooltip" />,
-  Legend: ({
-    children,
-    ...props
-  }: {
-    children?: React.ReactNode;
-    [key: string]: unknown;
-  }) => (
+  Legend: ({ children, ...props }: { children?: React.ReactNode; [key: string]: unknown }) => (
     <div data-testid="legend" {...(props as Record<string, unknown>)}>
       {children}
     </div>
@@ -149,9 +143,7 @@ describe("UtilizationTable", () => {
 
   it("shows empty state when no utilization data", () => {
     render(<UtilizationTable data={EMPTY_DATA} slug="test-org" />);
-    expect(
-      screen.getByText("No utilization data available"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("No utilization data available")).toBeInTheDocument();
   });
 });
 

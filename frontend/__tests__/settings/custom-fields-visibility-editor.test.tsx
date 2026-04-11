@@ -7,17 +7,11 @@ import type { FieldDefinitionResponse } from "@/lib/types";
 const mockCreateFieldDefinition = vi.fn();
 const mockUpdateFieldDefinition = vi.fn();
 
-vi.mock(
-  "@/app/(app)/org/[slug]/settings/custom-fields/actions",
-  () => ({
-    createFieldDefinitionAction: (...args: unknown[]) =>
-      mockCreateFieldDefinition(...args),
-    updateFieldDefinitionAction: (...args: unknown[]) =>
-      mockUpdateFieldDefinition(...args),
-    fetchFieldUsageAction: () =>
-      Promise.resolve({ templates: [], clauses: [] }),
-  }),
-);
+vi.mock("@/app/(app)/org/[slug]/settings/custom-fields/actions", () => ({
+  createFieldDefinitionAction: (...args: unknown[]) => mockCreateFieldDefinition(...args),
+  updateFieldDefinitionAction: (...args: unknown[]) => mockUpdateFieldDefinition(...args),
+  fetchFieldUsageAction: () => Promise.resolve({ templates: [], clauses: [] }),
+}));
 
 function makeFields(): FieldDefinitionResponse[] {
   return [
@@ -107,7 +101,7 @@ describe("Visibility Condition Editor", () => {
         allFieldsForType={allFields}
       >
         <button>Open Vis Editor Dialog</button>
-      </FieldDefinitionDialog>,
+      </FieldDefinitionDialog>
     );
 
     await user.click(screen.getByText("Open Vis Editor Dialog"));
@@ -137,13 +131,9 @@ describe("Visibility Condition Editor", () => {
     const allFields = makeFields();
 
     render(
-      <FieldDefinitionDialog
-        slug="acme"
-        entityType="PROJECT"
-        allFieldsForType={allFields}
-      >
+      <FieldDefinitionDialog slug="acme" entityType="PROJECT" allFieldsForType={allFields}>
         <button>Open Create Vis Dialog</button>
-      </FieldDefinitionDialog>,
+      </FieldDefinitionDialog>
     );
 
     await user.click(screen.getByText("Open Create Vis Dialog"));
@@ -178,7 +168,7 @@ describe("Visibility Condition Editor", () => {
             operator: "eq",
             value: "US",
           },
-        }),
+        })
       );
     });
   });
@@ -204,7 +194,7 @@ describe("Visibility Condition Editor", () => {
         allFieldsForType={allFields}
       >
         <button>Open Clear Vis Dialog</button>
-      </FieldDefinitionDialog>,
+      </FieldDefinitionDialog>
     );
 
     await user.click(screen.getByText("Open Clear Vis Dialog"));
@@ -228,7 +218,7 @@ describe("Visibility Condition Editor", () => {
         "fd-vis-3",
         expect.objectContaining({
           visibilityCondition: null,
-        }),
+        })
       );
     });
   });

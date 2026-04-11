@@ -80,6 +80,7 @@ Before declaring done:
 ## Epic-Specific Builder Instructions
 
 ### Epic A1: Remove Clerk Auth Provider & Auth Pages
+
 ```
 Scope:
 - Delete `lib/auth/providers/clerk.ts`
@@ -95,6 +96,7 @@ Scope:
 ```
 
 ### Epic A2: Delete Clerk Webhook Infrastructure & Dead Code
+
 ```
 Scope (depends on A1 being merged):
 - Delete `app/api/webhooks/clerk/route.ts` and `app/api/webhooks/clerk/route.test.ts`
@@ -114,6 +116,7 @@ Scope (depends on A1 being merged):
 ```
 
 ### Epic A3: Documentation & Config Cleanup
+
 ```
 Scope (depends on A2 being merged):
 - Edit `CLAUDE.md` (project root) — remove Clerk references from: Tech Stack table, Environment Variables, Webhook Handler section, any Clerk-specific instructions
@@ -124,6 +127,7 @@ Scope (depends on A2 being merged):
 ```
 
 ### Epic B1: Split `lib/types.ts` into Domain Modules
+
 ```
 Scope:
 - Read `lib/types.ts` fully to understand all type groupings
@@ -137,6 +141,7 @@ Scope:
 ```
 
 ### Epic B2: Split `lib/api.ts` into Domain Modules
+
 ```
 Scope:
 - Read `lib/api.ts` fully
@@ -150,6 +155,7 @@ Scope:
 ```
 
 ### Epic B3: Split Oversized Components
+
 ```
 Scope:
 - Target the top 7 files over 600 lines:
@@ -169,6 +175,7 @@ Scope:
 ```
 
 ### Epic C1: Form Validation with Zod + React Hook Form
+
 ```
 Scope:
 - Run `pnpm add react-hook-form @hookform/resolvers zod`
@@ -183,6 +190,7 @@ Scope:
 ```
 
 ### Epic C2: Client-Side Data Caching (SWR)
+
 ```
 Scope:
 - Run `pnpm add swr`
@@ -195,6 +203,7 @@ Scope:
 ```
 
 ### Epic C3: Dynamic Imports for Heavy Components
+
 ```
 Scope:
 - Add `next/dynamic` lazy loading for:
@@ -208,6 +217,7 @@ Scope:
 ```
 
 ### Epic D1: Accessibility Improvements
+
 ```
 Scope:
 - Add `<a href="#main-content" className="sr-only focus:not-sr-only ...">Skip to content</a>` in root layout, with matching `id="main-content"` on the main content wrapper
@@ -218,6 +228,7 @@ Scope:
 ```
 
 ### Epic D2: Split Large Server Action Files
+
 ```
 Scope:
 - Split these action files (> 300 lines) into logical sub-files:
@@ -244,11 +255,13 @@ Scope:
 ## Parallelism Strategy
 
 Maximum concurrency plan (if resources allow):
+
 - **Wave 1**: A1 + B1 + B2 + D1 + D2 (5 parallel — all independent)
 - **Wave 2**: A2 (after A1) + B3 (after B1+B2)
 - **Wave 3**: A3 (after A2) + C1 + C2 + C3 (after B1+B2)
 
 Conservative plan (safer):
+
 - **Wave 1**: A1 + B1 + B2 (3 parallel)
 - **Wave 2**: A2 + B3 (2 parallel)
 - **Wave 3**: A3 + C1 + C2 + C3 (4 parallel)
@@ -259,6 +272,7 @@ Use the conservative plan unless the user requests maximum parallelism.
 ## Completion Criteria
 
 All epics done when:
+
 - `grep -r "@clerk\|@clerk/nextjs\|svix" frontend/ --include="*.ts" --include="*.tsx"` returns nothing
 - `pnpm run build` passes
 - `pnpm test` passes

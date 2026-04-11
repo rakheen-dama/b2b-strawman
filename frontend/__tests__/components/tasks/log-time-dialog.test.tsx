@@ -26,7 +26,7 @@ describe("LogTimeDialog", () => {
     render(
       <LogTimeDialog slug="acme" projectId="p1" taskId="t1">
         <button>Open Log Time Dialog</button>
-      </LogTimeDialog>,
+      </LogTimeDialog>
     );
 
     await user.click(screen.getByText("Open Log Time Dialog"));
@@ -43,7 +43,7 @@ describe("LogTimeDialog", () => {
     render(
       <LogTimeDialog slug="acme" projectId="p1" taskId="t1">
         <button>Open Log Time Dialog</button>
-      </LogTimeDialog>,
+      </LogTimeDialog>
     );
 
     await user.click(screen.getByText("Open Log Time Dialog"));
@@ -52,9 +52,7 @@ describe("LogTimeDialog", () => {
     await user.click(screen.getByRole("button", { name: "Log Time" }));
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Duration must be greater than 0."),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Duration must be greater than 0.")).toBeInTheDocument();
     });
 
     // Server action should NOT have been called
@@ -68,7 +66,7 @@ describe("LogTimeDialog", () => {
     render(
       <LogTimeDialog slug="acme" projectId="p1" taskId="t1">
         <button>Open Log Time Dialog</button>
-      </LogTimeDialog>,
+      </LogTimeDialog>
     );
 
     await user.click(screen.getByText("Open Log Time Dialog"));
@@ -83,12 +81,7 @@ describe("LogTimeDialog", () => {
     await user.click(screen.getByRole("button", { name: "Log Time" }));
 
     await waitFor(() => {
-      expect(mockCreateTimeEntry).toHaveBeenCalledWith(
-        "acme",
-        "p1",
-        "t1",
-        expect.any(FormData),
-      );
+      expect(mockCreateTimeEntry).toHaveBeenCalledWith("acme", "p1", "t1", expect.any(FormData));
     });
   });
 
@@ -99,7 +92,7 @@ describe("LogTimeDialog", () => {
     render(
       <LogTimeDialog slug="acme" projectId="p1" taskId="t1">
         <button>Open Log Time Dialog</button>
-      </LogTimeDialog>,
+      </LogTimeDialog>
     );
 
     await user.click(screen.getByText("Open Log Time Dialog"));
@@ -128,7 +121,7 @@ describe("LogTimeDialog", () => {
     render(
       <LogTimeDialog slug="acme" projectId="p1" taskId="t1" memberId="m1">
         <button>Open Rate Warning Dialog</button>
-      </LogTimeDialog>,
+      </LogTimeDialog>
     );
 
     await user.click(screen.getByText("Open Rate Warning Dialog"));
@@ -138,9 +131,7 @@ describe("LogTimeDialog", () => {
       expect(screen.getByTestId("rate-warning-banner")).toBeInTheDocument();
     });
 
-    expect(
-      screen.getByText(/No rate card found for this combination/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/No rate card found for this combination/)).toBeInTheDocument();
   });
 
   it("hides rate warning banner when rate exists", async () => {
@@ -154,7 +145,7 @@ describe("LogTimeDialog", () => {
     render(
       <LogTimeDialog slug="acme" projectId="p1" taskId="t1" memberId="m1">
         <button>Open Rate Exists Dialog</button>
-      </LogTimeDialog>,
+      </LogTimeDialog>
     );
 
     await user.click(screen.getByText("Open Rate Exists Dialog"));

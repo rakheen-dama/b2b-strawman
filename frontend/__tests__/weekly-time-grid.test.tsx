@@ -1,10 +1,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import {
-  WeeklyTimeGrid,
-  type GridTaskRow,
-} from "@/components/time-tracking/weekly-time-grid";
+import { WeeklyTimeGrid, type GridTaskRow } from "@/components/time-tracking/weekly-time-grid";
 import type { MyWorkTimeEntryItem } from "@/lib/types";
 
 // Mock server actions
@@ -59,7 +56,7 @@ describe("WeeklyTimeGrid", () => {
         weekStart={weekStart}
         allTasks={sampleTasks}
         slug="test-org"
-      />,
+      />
     );
 
     // Check day columns are present (Mon 9 through Sun 15)
@@ -97,7 +94,7 @@ describe("WeeklyTimeGrid", () => {
         weekStart={weekStart}
         allTasks={singleTask}
         slug="test-org"
-      />,
+      />
     );
 
     // Find the Monday cell input (day 1 = first day)
@@ -151,7 +148,7 @@ describe("WeeklyTimeGrid", () => {
         weekStart={weekStart}
         allTasks={singleTask}
         slug="test-org"
-      />,
+      />
     );
 
     // Set Monday cell to 2 hours
@@ -206,7 +203,7 @@ describe("WeeklyTimeGrid", () => {
         weekStart={weekStart}
         allTasks={singleTask}
         slug="test-org"
-      />,
+      />
     );
 
     // Set Monday cell to 2 hours

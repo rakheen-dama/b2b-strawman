@@ -37,7 +37,7 @@ interface AllocationListResult extends ActionResult {
 
 export async function createAllocationAction(
   slug: string,
-  data: CreateAllocationRequest,
+  data: CreateAllocationRequest
 ): Promise<AllocationActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
@@ -62,7 +62,7 @@ export async function createAllocationAction(
 export async function updateAllocationAction(
   slug: string,
   id: string,
-  data: UpdateAllocationRequest,
+  data: UpdateAllocationRequest
 ): Promise<AllocationActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
@@ -84,10 +84,7 @@ export async function updateAllocationAction(
   }
 }
 
-export async function deleteAllocationAction(
-  slug: string,
-  id: string,
-): Promise<ActionResult> {
+export async function deleteAllocationAction(slug: string, id: string): Promise<ActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
     return {
@@ -110,7 +107,7 @@ export async function deleteAllocationAction(
 
 export async function listAllocationsAction(
   _slug: string,
-  memberId: string,
+  memberId: string
 ): Promise<AllocationListResult> {
   try {
     const allocations = await listAllocations({ memberId });
@@ -125,7 +122,7 @@ export async function listAllocationsAction(
 
 export async function bulkUpsertAction(
   slug: string,
-  data: BulkAllocationRequest,
+  data: BulkAllocationRequest
 ): Promise<BulkActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {

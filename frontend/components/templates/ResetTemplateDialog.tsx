@@ -57,19 +57,14 @@ export function ResetTemplateDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Reset Template</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to reset &quot;{templateName}&quot;? This will
-            delete your customized version and revert to the original platform
-            template.
+            Are you sure you want to reset &quot;{templateName}&quot;? This will delete your
+            customized version and revert to the original platform template.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        {error && <p className="text-sm text-destructive">{error}</p>}
+        {error && <p className="text-destructive text-sm">{error}</p>}
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isResetting}>Cancel</AlertDialogCancel>
-          <AlertDialogAction
-            variant="destructive"
-            onClick={handleReset}
-            disabled={isResetting}
-          >
+          <AlertDialogAction variant="destructive" onClick={handleReset} disabled={isResetting}>
             {isResetting ? "Resetting..." : "Reset to Default"}
           </AlertDialogAction>
         </AlertDialogFooter>

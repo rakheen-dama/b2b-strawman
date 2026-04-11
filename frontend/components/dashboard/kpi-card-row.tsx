@@ -10,10 +10,7 @@ interface KpiCardRowProps {
   orgSlug: string;
 }
 
-function computeChangePercent(
-  current: number,
-  previous: number
-): number | null {
+function computeChangePercent(current: number, previous: number): number | null {
   if (previous === 0) return current > 0 ? 100 : null;
   return Math.round(((current - previous) / previous) * 100);
 }
@@ -58,14 +55,8 @@ export function KpiCardRow({ kpis, isAdmin, orgSlug }: KpiCardRowProps) {
     kpis.activeProjectCount,
     prev.activeProjectCount
   );
-  const hoursChange = computeChangePercent(
-    kpis.totalHoursLogged,
-    prev.totalHoursLogged
-  );
-  const overdueChange = computeChangePercent(
-    kpis.overdueTaskCount,
-    prev.overdueTaskCount
-  );
+  const hoursChange = computeChangePercent(kpis.totalHoursLogged, prev.totalHoursLogged);
+  const overdueChange = computeChangePercent(kpis.overdueTaskCount, prev.overdueTaskCount);
 
   const cards = [
     {
@@ -90,19 +81,14 @@ export function KpiCardRow({ kpis, isAdmin, orgSlug }: KpiCardRowProps) {
     },
     {
       label: "Billable %",
-      value:
-        kpis.billablePercent != null
-          ? `${Math.round(kpis.billablePercent)}%`
-          : 0,
+      value: kpis.billablePercent != null ? `${Math.round(kpis.billablePercent)}%` : 0,
       changePercent:
         kpis.billablePercent != null && prev.billablePercent != null
           ? computeChangePercent(kpis.billablePercent, prev.billablePercent)
           : null,
       changeDirection:
         kpis.billablePercent != null && prev.billablePercent != null
-          ? changeDirection(
-              computeChangePercent(kpis.billablePercent, prev.billablePercent)
-            )
+          ? changeDirection(computeChangePercent(kpis.billablePercent, prev.billablePercent))
           : undefined,
       trend: null,
       href: `/org/${orgSlug}/profitability`,
@@ -121,26 +107,15 @@ export function KpiCardRow({ kpis, isAdmin, orgSlug }: KpiCardRowProps) {
     },
     {
       label: "Avg. Margin",
-      value:
-        kpis.averageMarginPercent != null
-          ? `${Math.round(kpis.averageMarginPercent)}%`
-          : 0,
+      value: kpis.averageMarginPercent != null ? `${Math.round(kpis.averageMarginPercent)}%` : 0,
       changePercent:
-        kpis.averageMarginPercent != null &&
-        prev.averageMarginPercent != null
-          ? computeChangePercent(
-              kpis.averageMarginPercent,
-              prev.averageMarginPercent
-            )
+        kpis.averageMarginPercent != null && prev.averageMarginPercent != null
+          ? computeChangePercent(kpis.averageMarginPercent, prev.averageMarginPercent)
           : null,
       changeDirection:
-        kpis.averageMarginPercent != null &&
-        prev.averageMarginPercent != null
+        kpis.averageMarginPercent != null && prev.averageMarginPercent != null
           ? changeDirection(
-              computeChangePercent(
-                kpis.averageMarginPercent,
-                prev.averageMarginPercent
-              )
+              computeChangePercent(kpis.averageMarginPercent, prev.averageMarginPercent)
             )
           : undefined,
       trend: null,
@@ -153,9 +128,7 @@ export function KpiCardRow({ kpis, isAdmin, orgSlug }: KpiCardRowProps) {
   const visibleCards = cards.filter((card) => !card.adminOnly || isAdmin);
 
   const gridCols =
-    visibleCards.length === 5
-      ? "grid-cols-2 lg:grid-cols-5"
-      : "grid-cols-1 sm:grid-cols-3";
+    visibleCards.length === 5 ? "grid-cols-2 lg:grid-cols-5" : "grid-cols-1 sm:grid-cols-3";
 
   return (
     <div className={`grid auto-rows-fr gap-4 ${gridCols}`}>

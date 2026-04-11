@@ -34,12 +34,8 @@ export async function fetchComments(
   );
 }
 
-export async function fetchProjectComments(
-  projectId: string
-): Promise<Comment[]> {
-  return api.get<Comment[]>(
-    `/api/projects/${projectId}/comments?entityType=PROJECT&size=50`
-  );
+export async function fetchProjectComments(projectId: string): Promise<Comment[]> {
+  return api.get<Comment[]>(`/api/projects/${projectId}/comments?entityType=PROJECT&size=50`);
 }
 
 export async function createProjectComment(

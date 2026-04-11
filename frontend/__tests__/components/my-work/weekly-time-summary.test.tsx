@@ -55,12 +55,7 @@ describe("WeeklyTimeSummary", () => {
   });
 
   it("displays formatted totals for billable and non-billable time", () => {
-    render(
-      <WeeklyTimeSummary
-        initialSummary={populatedSummary}
-        initialFrom="2026-02-09"
-      />
-    );
+    render(<WeeklyTimeSummary initialSummary={populatedSummary} initialFrom="2026-02-09" />);
 
     expect(screen.getByText("This Week")).toBeInTheDocument();
     // Total: 600 min = 10h
@@ -72,12 +67,7 @@ describe("WeeklyTimeSummary", () => {
   });
 
   it("renders by-project breakdown with project names", () => {
-    render(
-      <WeeklyTimeSummary
-        initialSummary={populatedSummary}
-        initialFrom="2026-02-09"
-      />
-    );
+    render(<WeeklyTimeSummary initialSummary={populatedSummary} initialFrom="2026-02-09" />);
 
     expect(screen.getByText("By Project")).toBeInTheDocument();
     expect(screen.getByText("Project Alpha")).toBeInTheDocument();
@@ -99,12 +89,7 @@ describe("WeeklyTimeSummary", () => {
 
     const user = userEvent.setup();
 
-    render(
-      <WeeklyTimeSummary
-        initialSummary={populatedSummary}
-        initialFrom="2026-02-09"
-      />
-    );
+    render(<WeeklyTimeSummary initialSummary={populatedSummary} initialFrom="2026-02-09" />);
 
     // Week navigation buttons should be present
     const prevButton = screen.getByRole("button", { name: /previous week/i });
@@ -123,16 +108,9 @@ describe("WeeklyTimeSummary", () => {
   });
 
   it("shows empty state when no time is tracked", () => {
-    render(
-      <WeeklyTimeSummary
-        initialSummary={null}
-        initialFrom="2026-02-09"
-      />
-    );
+    render(<WeeklyTimeSummary initialSummary={null} initialFrom="2026-02-09" />);
 
-    expect(
-      screen.getByText("No time tracked this week")
-    ).toBeInTheDocument();
+    expect(screen.getByText("No time tracked this week")).toBeInTheDocument();
     expect(screen.queryByText("By Project")).not.toBeInTheDocument();
     expect(screen.queryByText("Total")).not.toBeInTheDocument();
   });

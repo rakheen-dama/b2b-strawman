@@ -1,11 +1,6 @@
 // ---- Proposals (from ProposalController.java) ----
 
-export type ProposalStatus =
-  | "DRAFT"
-  | "SENT"
-  | "ACCEPTED"
-  | "DECLINED"
-  | "EXPIRED";
+export type ProposalStatus = "DRAFT" | "SENT" | "ACCEPTED" | "DECLINED" | "EXPIRED";
 
 export type FeeModel = "FIXED" | "HOURLY" | "RETAINER" | "CONTINGENCY";
 

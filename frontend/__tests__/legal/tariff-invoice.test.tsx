@@ -60,7 +60,7 @@ vi.mock("@/app/(app)/org/[slug]/legal/tariffs/actions", () => ({
       itemNumber: "1(a)",
       description: "Instructions to institute action",
       unit: "PER_ITEM",
-      amount: 850.00,
+      amount: 850.0,
       notes: null,
       createdAt: "2026-01-01T00:00:00Z",
       updatedAt: "2026-01-01T00:00:00Z",
@@ -154,7 +154,7 @@ describe("TariffLineDialog", () => {
         slug="acme"
         customerId="cust-1"
         onSuccess={vi.fn()}
-      />,
+      />
     );
 
     const dialog = screen.getByTestId("tariff-line-dialog");
@@ -178,7 +178,7 @@ describe("TariffLineDialog", () => {
         slug="acme"
         customerId="cust-1"
         onSuccess={vi.fn()}
-      />,
+      />
     );
 
     // Wait for items to load
@@ -195,20 +195,14 @@ describe("TariffLineDialog", () => {
 describe("Add Tariff Items button visibility", () => {
   it("hides 'Add Tariff Items' button when module not enabled", () => {
     render(
-      <OrgProfileProvider
-        verticalProfile={null}
-        enabledModules={[]}
-        terminologyNamespace={null}
-      >
+      <OrgProfileProvider verticalProfile={null} enabledModules={[]} terminologyNamespace={null}>
         <ModuleGate module="lssa_tariff">
           <button>Add Tariff Items</button>
         </ModuleGate>
-      </OrgProfileProvider>,
+      </OrgProfileProvider>
     );
 
-    expect(
-      screen.queryByRole("button", { name: /Add Tariff Items/i }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Add Tariff Items/i })).not.toBeInTheDocument();
   });
 
   it("shows 'Add Tariff Items' button when module is enabled", () => {
@@ -221,12 +215,10 @@ describe("Add Tariff Items button visibility", () => {
         <ModuleGate module="lssa_tariff">
           <button>Add Tariff Items</button>
         </ModuleGate>
-      </OrgProfileProvider>,
+      </OrgProfileProvider>
     );
 
-    expect(
-      screen.getByRole("button", { name: /Add Tariff Items/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Add Tariff Items/i })).toBeInTheDocument();
   });
 });
 
@@ -248,22 +240,14 @@ describe("Invoice line table tariff display", () => {
       }),
     ];
 
-    render(
-      <InvoiceLineTable
-        lines={lines}
-        currency="ZAR"
-        editable={false}
-      />,
-    );
+    render(<InvoiceLineTable lines={lines} currency="ZAR" editable={false} />);
 
     // TARIFF line should have a "Tariff" badge
     expect(screen.getByText("Tariff")).toBeInTheDocument();
 
     // Both descriptions should be visible
     expect(screen.getByText("Development work")).toBeInTheDocument();
-    expect(
-      screen.getByText("1(a) - Instructions to institute action"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("1(a) - Instructions to institute action")).toBeInTheDocument();
 
     // Should show section headers when multiple sections exist
     expect(screen.getByText("Time Entries")).toBeInTheDocument();

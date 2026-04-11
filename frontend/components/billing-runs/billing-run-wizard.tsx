@@ -26,22 +26,14 @@ export function BillingRunWizard({
   slug,
   billingRunId: initialBillingRunId,
 }: BillingRunWizardProps) {
-  const [currentStep, setCurrentStep] = useState(
-    initialBillingRunId ? 2 : 1,
-  );
-  const [billingRunId, setBillingRunId] = useState<string | null>(
-    initialBillingRunId ?? null,
-  );
+  const [currentStep, setCurrentStep] = useState(initialBillingRunId ? 2 : 1);
+  const [billingRunId, setBillingRunId] = useState<string | null>(initialBillingRunId ?? null);
   // TODO: Read org's default currency from org settings when available
   const [currency, setCurrency] = useState("ZAR");
   const [includeRetainers, setIncludeRetainers] = useState(false);
   const [cherryPickItems, setCherryPickItems] = useState<BillingRunItem[]>([]);
 
-  function handleConfigureNext(
-    newBillingRunId: string,
-    runCurrency: string,
-    retainers?: boolean,
-  ) {
+  function handleConfigureNext(newBillingRunId: string, runCurrency: string, retainers?: boolean) {
     setBillingRunId(newBillingRunId);
     setCurrency(runCurrency);
     if (retainers !== undefined) setIncludeRetainers(retainers);
@@ -103,9 +95,7 @@ export function BillingRunWizard({
       </nav>
 
       {/* Step Content */}
-      {currentStep === 1 && (
-        <ConfigureStep slug={slug} onNext={handleConfigureNext} />
-      )}
+      {currentStep === 1 && <ConfigureStep slug={slug} onNext={handleConfigureNext} />}
       {currentStep === 2 && billingRunId && (
         <CustomerSelectionStep
           slug={slug}
@@ -135,14 +125,8 @@ export function BillingRunWizard({
         />
       )}
       {currentStep === 5 && billingRunId && (
-        <SendStep
-          slug={slug}
-          billingRunId={billingRunId}
-          currency={currency}
-          onBack={handleBack}
-        />
+        <SendStep slug={slug} billingRunId={billingRunId} currency={currency} onBack={handleBack} />
       )}
     </div>
   );
 }
-

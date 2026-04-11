@@ -23,13 +23,12 @@ export interface ProfileSummary {
 
 export async function updateVerticalProfile(
   slug: string,
-  verticalProfile: string | null,
+  verticalProfile: string | null
 ): Promise<ActionResult> {
   try {
-    const response = await api.patch<SeedingSummary | null>(
-      "/api/settings/vertical-profile",
-      { verticalProfile },
-    );
+    const response = await api.patch<SeedingSummary | null>("/api/settings/vertical-profile", {
+      verticalProfile,
+    });
     revalidatePath(`/org/${slug}/settings/general`);
     return { success: true, seedingSummary: response ?? undefined };
   } catch (error) {

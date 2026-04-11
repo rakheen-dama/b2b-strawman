@@ -61,17 +61,17 @@ export function TagsContent({ slug, tags, canManage }: TagsContentProps) {
           <table className="w-full">
             <thead>
               <tr className="border-b border-slate-200 dark:border-slate-800">
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Name
                 </th>
-                <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400 sm:table-cell">
+                <th className="hidden px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase sm:table-cell dark:text-slate-400">
                   Slug
                 </th>
-                <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400 md:table-cell">
+                <th className="hidden px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase md:table-cell dark:text-slate-400">
                   Color
                 </th>
                 {canManage && (
-                  <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                  <th className="px-4 py-3 text-right text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                     Actions
                   </th>
                 )}
@@ -101,12 +101,12 @@ export function TagsContent({ slug, tags, canManage }: TagsContentProps) {
                       </Badge>
                     </div>
                   </td>
-                  <td className="hidden px-4 py-3 text-sm text-slate-600 dark:text-slate-400 sm:table-cell">
+                  <td className="hidden px-4 py-3 text-sm text-slate-600 sm:table-cell dark:text-slate-400">
                     <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs dark:bg-slate-800">
                       {tag.slug}
                     </code>
                   </td>
-                  <td className="hidden px-4 py-3 text-sm text-slate-600 dark:text-slate-400 md:table-cell">
+                  <td className="hidden px-4 py-3 text-sm text-slate-600 md:table-cell dark:text-slate-400">
                     {tag.color ? (
                       <div className="flex items-center gap-2">
                         <span
@@ -116,9 +116,7 @@ export function TagsContent({ slug, tags, canManage }: TagsContentProps) {
                         <code className="text-xs">{tag.color}</code>
                       </div>
                     ) : (
-                      <span className="text-slate-400 dark:text-slate-600">
-                        &mdash;
-                      </span>
+                      <span className="text-slate-400 dark:text-slate-600">&mdash;</span>
                     )}
                   </td>
                   {canManage && (
@@ -130,11 +128,7 @@ export function TagsContent({ slug, tags, canManage }: TagsContentProps) {
                             <span className="sr-only">Edit {tag.name}</span>
                           </Button>
                         </TagDialog>
-                        <DeleteTagDialog
-                          slug={slug}
-                          tagId={tag.id}
-                          tagName={tag.name}
-                        >
+                        <DeleteTagDialog slug={slug} tagId={tag.id} tagName={tag.name}>
                           <Button
                             variant="ghost"
                             size="sm"

@@ -23,11 +23,7 @@ function getThisWeekRange(): { from: Date; to: Date } {
   const now = new Date();
   const day = now.getDay(); // 0=Sun, 1=Mon, ...
   const diff = day === 0 ? -6 : 1 - day; // Monday
-  const monday = new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    now.getDate() + diff
-  );
+  const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + diff);
   const sunday = new Date(monday);
   sunday.setDate(monday.getDate() + 6);
   return { from: monday, to: sunday };
@@ -75,11 +71,7 @@ function isSameDay(a: Date, b: Date): boolean {
   );
 }
 
-export function DateRangeSelector({
-  value,
-  onChange,
-  presets,
-}: DateRangeSelectorProps) {
+export function DateRangeSelector({ value, onChange, presets }: DateRangeSelectorProps) {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -144,12 +136,7 @@ export function DateRangeSelector({
         );
       })}
 
-      <Button
-        variant="ghost"
-        size="icon-sm"
-        onClick={handleRefresh}
-        aria-label="Refresh data"
-      >
+      <Button variant="ghost" size="icon-sm" onClick={handleRefresh} aria-label="Refresh data">
         <RefreshCw className="size-4" />
       </Button>
     </div>

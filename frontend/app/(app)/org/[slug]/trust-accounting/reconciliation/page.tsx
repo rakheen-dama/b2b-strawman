@@ -1,21 +1,9 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Plus,
-  CheckCircle2,
-  AlertCircle,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, CheckCircle2, AlertCircle } from "lucide-react";
 import { getOrgSettings } from "@/lib/api/settings";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { fetchTrustAccounts } from "@/app/(app)/org/[slug]/trust-accounting/actions";
@@ -55,17 +43,13 @@ export default async function ReconciliationListPage({
   // Capability check
   const capData = await fetchMyCapabilities();
   const hasViewTrust =
-    capData.isAdmin ||
-    capData.isOwner ||
-    capData.capabilities.includes("VIEW_TRUST");
+    capData.isAdmin || capData.isOwner || capData.capabilities.includes("VIEW_TRUST");
   if (!hasViewTrust) {
     notFound();
   }
 
   const canManageTrust =
-    capData.isAdmin ||
-    capData.isOwner ||
-    capData.capabilities.includes("MANAGE_TRUST");
+    capData.isAdmin || capData.isOwner || capData.capabilities.includes("MANAGE_TRUST");
 
   // Fetch primary trust account
   let accountId: string | null = null;
@@ -86,10 +70,7 @@ export default async function ReconciliationListPage({
 
   if (accountId) {
     try {
-      const requestedPage =
-        search.page && /^\d+$/.test(search.page)
-          ? Number(search.page)
-          : 0;
+      const requestedPage = search.page && /^\d+$/.test(search.page) ? Number(search.page) : 0;
       reconciliationPage = await fetchReconciliations(accountId, {
         page: requestedPage,
         size: 20,
@@ -186,25 +167,22 @@ export default async function ReconciliationListPage({
             ) : (
               <>
                 <div className="overflow-x-auto">
-                  <table
-                    className="w-full text-sm"
-                    data-testid="reconciliations-table"
-                  >
+                  <table className="w-full text-sm" data-testid="reconciliations-table">
                     <thead>
                       <tr className="border-b border-slate-200 dark:border-slate-700">
-                        <th className="pb-3 pr-4 text-left font-medium text-slate-500 dark:text-slate-400">
+                        <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
                           Period
                         </th>
-                        <th className="pb-3 pr-4 text-right font-medium text-slate-500 dark:text-slate-400">
+                        <th className="pr-4 pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
                           Bank Balance
                         </th>
-                        <th className="pb-3 pr-4 text-right font-medium text-slate-500 dark:text-slate-400">
+                        <th className="pr-4 pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
                           Cashbook Balance
                         </th>
-                        <th className="pb-3 pr-4 text-right font-medium text-slate-500 dark:text-slate-400">
+                        <th className="pr-4 pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
                           Client Ledger Total
                         </th>
-                        <th className="pb-3 pr-4 text-left font-medium text-slate-500 dark:text-slate-400">
+                        <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
                           Status
                         </th>
                         <th className="pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
@@ -222,13 +200,13 @@ export default async function ReconciliationListPage({
                           <td className="py-3 pr-4 font-medium text-slate-950 dark:text-slate-50">
                             {formatLocalDate(recon.periodEnd)}
                           </td>
-                          <td className="py-3 pr-4 text-right font-mono tabular-nums text-slate-700 dark:text-slate-300">
+                          <td className="py-3 pr-4 text-right font-mono text-slate-700 tabular-nums dark:text-slate-300">
                             {formatCurrency(recon.bankBalance, currency)}
                           </td>
-                          <td className="py-3 pr-4 text-right font-mono tabular-nums text-slate-700 dark:text-slate-300">
+                          <td className="py-3 pr-4 text-right font-mono text-slate-700 tabular-nums dark:text-slate-300">
                             {formatCurrency(recon.cashbookBalance, currency)}
                           </td>
-                          <td className="py-3 pr-4 text-right font-mono tabular-nums text-slate-700 dark:text-slate-300">
+                          <td className="py-3 pr-4 text-right font-mono text-slate-700 tabular-nums dark:text-slate-300">
                             {formatCurrency(recon.clientLedgerTotal, currency)}
                           </td>
                           <td className="py-3 pr-4">
@@ -246,9 +224,7 @@ export default async function ReconciliationListPage({
                           </td>
                           <td className="py-3 text-slate-700 dark:text-slate-300">
                             {recon.completedAt
-                              ? formatLocalDate(
-                                  recon.completedAt.split("T")[0],
-                                )
+                              ? formatLocalDate(recon.completedAt.split("T")[0])
                               : "---"}
                           </td>
                         </tr>

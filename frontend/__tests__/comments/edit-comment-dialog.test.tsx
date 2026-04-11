@@ -53,9 +53,7 @@ describe("EditCommentDialog", () => {
 
     await user.click(screen.getByRole("button", { name: "Edit comment" }));
 
-    expect(screen.getByLabelText("Comment")).toHaveValue(
-      "Original comment body"
-    );
+    expect(screen.getByLabelText("Comment")).toHaveValue("Original comment body");
   });
 
   it("saves updated body via updateComment", async () => {
@@ -106,9 +104,7 @@ describe("EditCommentDialog", () => {
       </EditCommentDialog>
     );
 
-    await user.click(
-      screen.getByRole("button", { name: "Edit no visibility" })
-    );
+    await user.click(screen.getByRole("button", { name: "Edit no visibility" }));
     expect(screen.queryByLabelText("Visibility")).not.toBeInTheDocument();
 
     unmount();
@@ -126,9 +122,7 @@ describe("EditCommentDialog", () => {
       </EditCommentDialog>
     );
 
-    await user.click(
-      screen.getByRole("button", { name: "Edit with visibility" })
-    );
+    await user.click(screen.getByRole("button", { name: "Edit with visibility" }));
     expect(screen.getByLabelText("Visibility")).toBeInTheDocument();
   });
 });

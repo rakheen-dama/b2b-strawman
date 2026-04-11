@@ -53,14 +53,12 @@ function MockUserButton() {
         {initials}
       </button>
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-48 rounded-lg border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-900">
+        <div className="absolute top-full right-0 mt-2 w-48 rounded-lg border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-900">
           <div className="border-b border-slate-100 px-3 py-2 dark:border-slate-800">
             <p className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">
               {authUser?.firstName} {authUser?.lastName}
             </p>
-            <p className="truncate text-xs text-slate-500 dark:text-slate-400">
-              {authUser?.email}
-            </p>
+            <p className="truncate text-xs text-slate-500 dark:text-slate-400">{authUser?.email}</p>
           </div>
           <button
             onClick={signOut}

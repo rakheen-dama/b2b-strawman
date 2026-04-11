@@ -24,10 +24,7 @@ import {
 } from "@/components/ui/form";
 import { Loader2 } from "lucide-react";
 import { recordDeposit } from "@/app/(app)/org/[slug]/trust-accounting/transactions/actions";
-import {
-  recordDepositSchema,
-  type RecordDepositFormData,
-} from "@/lib/schemas/trust";
+import { recordDepositSchema, type RecordDepositFormData } from "@/lib/schemas/trust";
 
 interface RecordDepositDialogProps {
   accountId: string;
@@ -103,10 +100,7 @@ export function RecordDepositDialog({
         </DialogHeader>
 
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-4"
-          >
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="customerId"
@@ -114,10 +108,7 @@ export function RecordDepositDialog({
                 <FormItem>
                   <FormLabel>Client ID</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="Client UUID"
-                      {...field}
-                    />
+                    <Input placeholder="Client UUID" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -131,10 +122,7 @@ export function RecordDepositDialog({
                 <FormItem>
                   <FormLabel>Matter (Optional)</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="Matter UUID (optional)"
-                      {...field}
-                    />
+                    <Input placeholder="Matter UUID (optional)" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -154,9 +142,7 @@ export function RecordDepositDialog({
                       min="0.01"
                       placeholder="0.00"
                       {...field}
-                      onChange={(e) =>
-                        field.onChange(parseFloat(e.target.value) || 0)
-                      }
+                      onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                     />
                   </FormControl>
                   <FormMessage />
@@ -171,11 +157,7 @@ export function RecordDepositDialog({
                 <FormItem>
                   <FormLabel>Reference</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="e.g. DEP/2026/001"
-                      maxLength={200}
-                      {...field}
-                    />
+                    <Input placeholder="e.g. DEP/2026/001" maxLength={200} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -214,7 +196,7 @@ export function RecordDepositDialog({
               )}
             />
 
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {error && <p className="text-destructive text-sm">{error}</p>}
 
             <DialogFooter>
               <Button

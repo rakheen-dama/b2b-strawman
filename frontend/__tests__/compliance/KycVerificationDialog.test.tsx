@@ -19,14 +19,11 @@ vi.mock("next/navigation", () => ({
 
 // Mock kyc-actions
 const mockVerifyKycAction = vi.fn();
-vi.mock(
-  "@/app/(app)/org/[slug]/customers/[id]/kyc-actions",
-  () => ({
-    verifyKycAction: (...args: unknown[]) => mockVerifyKycAction(...args),
-    getKycStatusAction: vi.fn().mockResolvedValue({ configured: true, provider: "verifynow" }),
-    getKycResultAction: vi.fn().mockResolvedValue({ success: true, data: null }),
-  }),
-);
+vi.mock("@/app/(app)/org/[slug]/customers/[id]/kyc-actions", () => ({
+  verifyKycAction: (...args: unknown[]) => mockVerifyKycAction(...args),
+  getKycStatusAction: vi.fn().mockResolvedValue({ configured: true, provider: "verifynow" }),
+  getKycResultAction: vi.fn().mockResolvedValue({ success: true, data: null }),
+}));
 
 const baseItem: ChecklistInstanceItemResponse = {
   id: "item-1",
@@ -79,7 +76,7 @@ describe("KycVerificationDialog — ChecklistInstanceItemRow integration", () =>
         customerName="John Doe"
         customerId="cust-1"
         slug="acme"
-      />,
+      />
     );
     expect(screen.getByText("Verify Now")).toBeInTheDocument();
   });
@@ -101,7 +98,7 @@ describe("KycVerificationDialog — ChecklistInstanceItemRow integration", () =>
         customerName="John Doe"
         customerId="cust-1"
         slug="acme"
-      />,
+      />
     );
     expect(screen.queryByText("Verify Now")).not.toBeInTheDocument();
   });
@@ -119,7 +116,7 @@ describe("KycVerificationDialog — ChecklistInstanceItemRow integration", () =>
         customerName="John Doe"
         customerId="cust-1"
         slug="acme"
-      />,
+      />
     );
     expect(screen.queryByText("Verify Now")).not.toBeInTheDocument();
   });
@@ -143,7 +140,7 @@ describe("KycVerificationDialog — ChecklistInstanceItemRow integration", () =>
         customerName="John Doe"
         customerId="cust-1"
         slug="acme"
-      />,
+      />
     );
     expect(screen.queryByText("Verify Now")).not.toBeInTheDocument();
   });
@@ -160,12 +157,12 @@ describe("KycVerificationDialog — ChecklistInstanceItemRow integration", () =>
         customerId="a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d"
         checklistInstanceItemId="b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e"
         customerName="John Doe"
-      />,
+      />
     );
 
     // POPIA consent text should be visible
     expect(
-      screen.getByText(/explicit written consent for identity verification/),
+      screen.getByText(/explicit written consent for identity verification/)
     ).toBeInTheDocument();
 
     // Fill required fields so only consent blocks submission
@@ -204,7 +201,7 @@ describe("KycVerificationDialog — ChecklistInstanceItemRow integration", () =>
         customerId="a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d"
         checklistInstanceItemId="b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e"
         customerName="John Doe"
-      />,
+      />
     );
 
     // Fill required fields
@@ -257,7 +254,7 @@ describe("KycVerificationDialog — ChecklistInstanceItemRow integration", () =>
         customerId="a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d"
         checklistInstanceItemId="b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e"
         customerName="John Doe"
-      />,
+      />
     );
 
     // Fill required fields
@@ -283,8 +280,6 @@ describe("KycVerificationDialog — ChecklistInstanceItemRow integration", () =>
     await waitFor(() => {
       expect(screen.getByText("Identity not verified")).toBeInTheDocument();
     });
-    expect(
-      screen.getByText("The ID number does not match the name provided."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("The ID number does not match the name provided.")).toBeInTheDocument();
   });
 });

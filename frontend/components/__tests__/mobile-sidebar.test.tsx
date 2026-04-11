@@ -10,13 +10,9 @@ vi.mock("next/navigation", () => ({
 // Mock motion/react — avoid animation issues in tests
 vi.mock("motion/react", () => ({
   motion: {
-    div: ({ children, ...props }: React.ComponentProps<"div">) => (
-      <div {...props}>{children}</div>
-    ),
+    div: ({ children, ...props }: React.ComponentProps<"div">) => <div {...props}>{children}</div>,
   },
-  AnimatePresence: ({ children }: { children: React.ReactNode }) => (
-    <>{children}</>
-  ),
+  AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 // Mock SidebarUserFooter — uses auth hooks
@@ -60,7 +56,7 @@ function renderMobileSidebar(props: { groups?: string[] } = {}) {
           <MobileSidebar slug="test-org" {...props} />
         </CapabilityProvider>
       </TerminologyProvider>
-    </OrgProfileProvider>,
+    </OrgProfileProvider>
   );
 }
 

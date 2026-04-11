@@ -62,7 +62,7 @@ describe("Keycloak BFF auth provider", () => {
           cookie: "SESSION=session-abc",
         }),
         cache: "no-store",
-      }),
+      })
     );
   });
 
@@ -82,14 +82,12 @@ describe("Keycloak BFF auth provider", () => {
     });
 
     await expect(getAuthContext()).rejects.toThrow(
-      "No active organization — user is not authenticated via BFF",
+      "No active organization — user is not authenticated via BFF"
     );
   });
 
   it("getAuthToken() throws with BFF mode error", async () => {
-    await expect(getAuthToken()).rejects.toThrow(
-      "getAuthToken() is not available in BFF mode",
-    );
+    await expect(getAuthToken()).rejects.toThrow("getAuthToken() is not available in BFF mode");
   });
 
   it("getCurrentUserEmail() returns email from /bff/me", async () => {
@@ -103,5 +101,4 @@ describe("Keycloak BFF auth provider", () => {
     const email = await getCurrentUserEmail();
     expect(email).toBeNull();
   });
-
 });

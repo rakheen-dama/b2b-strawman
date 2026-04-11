@@ -7,13 +7,7 @@ import { HeartPulse, ArrowUp, ArrowDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/empty-state";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { useTerminology } from "@/lib/terminology";
 import { HealthBadge } from "@/components/dashboard/health-badge";
 import { CompletionProgressBar } from "@/components/dashboard/completion-progress-bar";
@@ -60,10 +54,7 @@ function formatHours(hours: number): string {
   return `${hours.toFixed(1)}h`;
 }
 
-export function ProjectHealthWidget({
-  projects,
-  orgSlug,
-}: ProjectHealthWidgetProps) {
+export function ProjectHealthWidget({ projects, orgSlug }: ProjectHealthWidgetProps) {
   const [activeFilter, setActiveFilter] = useState<FilterTab>("ALL");
   const [sortField, setSortField] = useState<SortField>("health");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
@@ -74,9 +65,7 @@ export function ProjectHealthWidget({
     return (
       <Card data-testid="project-health-panel">
         <CardHeader>
-          <CardTitle className="text-sm font-medium">
-            {t("Project Health")}
-          </CardTitle>
+          <CardTitle className="text-sm font-medium">{t("Project Health")}</CardTitle>
         </CardHeader>
         <CardContent>
           <EmptyState
@@ -93,13 +82,8 @@ export function ProjectHealthWidget({
     activeFilter === "ALL"
       ? projects
       : activeFilter === "AT_RISK"
-        ? projects.filter(
-            (p) => p.healthStatus === "AT_RISK" || p.healthStatus === "CRITICAL",
-          )
-        : projects.filter(
-            (p) =>
-              p.budgetConsumedPercent != null && p.budgetConsumedPercent > 100,
-          );
+        ? projects.filter((p) => p.healthStatus === "AT_RISK" || p.healthStatus === "CRITICAL")
+        : projects.filter((p) => p.budgetConsumedPercent != null && p.budgetConsumedPercent > 100);
 
   const sortedProjects = [...filteredProjects].sort((a, b) => {
     let cmp = 0;
@@ -108,8 +92,7 @@ export function ProjectHealthWidget({
         cmp = getHealthOrder(a.healthStatus) - getHealthOrder(b.healthStatus);
         break;
       case "budget":
-        cmp =
-          (b.budgetConsumedPercent ?? 0) - (a.budgetConsumedPercent ?? 0);
+        cmp = (b.budgetConsumedPercent ?? 0) - (a.budgetConsumedPercent ?? 0);
         break;
       case "name":
         cmp = a.projectName.localeCompare(b.projectName);
@@ -147,8 +130,7 @@ export function ProjectHealthWidget({
               onClick={() => setActiveFilter(tab.value)}
               className={cn(
                 "h-7 text-xs",
-                activeFilter === tab.value &&
-                  "border-slate-400 dark:border-slate-600",
+                activeFilter === tab.value && "border-slate-400 dark:border-slate-600"
               )}
             >
               {tab.label}
@@ -157,14 +139,16 @@ export function ProjectHealthWidget({
         </div>
 
         {/* Column Headers */}
-        <div className="flex items-center gap-2 border-b border-slate-100 px-2 pb-1.5 text-[11px] font-medium uppercase tracking-wider text-slate-400 dark:border-slate-800">
+        <div className="flex items-center gap-2 border-b border-slate-100 px-2 pb-1.5 text-[11px] font-medium tracking-wider text-slate-400 uppercase dark:border-slate-800">
           <button
             type="button"
             role="columnheader"
             onClick={() => handleSort("name")}
             className="flex min-w-0 flex-1 items-center gap-1"
             aria-label="Sort by project name"
-            aria-sort={sortField === "name" ? (sortDirection === "asc" ? "ascending" : "descending") : "none"}
+            aria-sort={
+              sortField === "name" ? (sortDirection === "asc" ? "ascending" : "descending") : "none"
+            }
           >
             Project
             {sortField === "name" && <SortIcon className="size-3" />}
@@ -175,7 +159,13 @@ export function ProjectHealthWidget({
             onClick={() => handleSort("health")}
             className="flex w-12 items-center justify-center gap-1"
             aria-label="Sort by health status"
-            aria-sort={sortField === "health" ? (sortDirection === "asc" ? "ascending" : "descending") : "none"}
+            aria-sort={
+              sortField === "health"
+                ? sortDirection === "asc"
+                  ? "ascending"
+                  : "descending"
+                : "none"
+            }
           >
             Status
             {sortField === "health" && <SortIcon className="size-3" />}
@@ -187,31 +177,21 @@ export function ProjectHealthWidget({
 
         {/* Project Rows */}
         {visibleProjects.length === 0 ? (
-          <p className="py-2 text-center text-xs italic text-slate-500">
-            No matching projects
-          </p>
+          <p className="py-2 text-center text-xs text-slate-500 italic">No matching projects</p>
         ) : (
           <div className="space-y-0">
             {visibleProjects.map((project) => (
               <button
                 key={project.projectId}
                 type="button"
-                onClick={() =>
-                  router.push(
-                    `/org/${orgSlug}/projects/${project.projectId}`,
-                  )
-                }
+                onClick={() => router.push(`/org/${orgSlug}/projects/${project.projectId}`)}
                 className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-900"
               >
                 {/* Name + Customer stacked */}
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">
-                    {project.projectName}
-                  </p>
+                  <p className="truncate text-sm font-medium">{project.projectName}</p>
                   {project.customerName && (
-                    <p className="truncate text-[11px] text-slate-500">
-                      {project.customerName}
-                    </p>
+                    <p className="truncate text-[11px] text-slate-500">{project.customerName}</p>
                   )}
                 </div>
                 {/* Health Badge */}
@@ -220,16 +200,14 @@ export function ProjectHealthWidget({
                 </div>
                 {/* Progress Bar */}
                 <div className="w-20">
-                  <CompletionProgressBar
-                    percent={project.completionPercent}
-                  />
+                  <CompletionProgressBar percent={project.completionPercent} />
                 </div>
                 {/* Hours */}
-                <span className="w-12 text-right font-mono text-xs tabular-nums text-slate-600 dark:text-slate-400">
+                <span className="w-12 text-right font-mono text-xs text-slate-600 tabular-nums dark:text-slate-400">
                   {formatHours(project.hoursLogged)}
                 </span>
                 {/* Task Ratio */}
-                <span className="w-12 text-right font-mono text-xs tabular-nums text-slate-600 dark:text-slate-400">
+                <span className="w-12 text-right font-mono text-xs text-slate-600 tabular-nums dark:text-slate-400">
                   {formatTaskRatio(project.tasksDone, project.tasksTotal)}
                 </span>
               </button>

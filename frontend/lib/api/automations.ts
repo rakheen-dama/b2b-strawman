@@ -39,11 +39,7 @@ export type ActionType =
   | "CREATE_PROJECT"
   | "ASSIGN_MEMBER";
 
-export type ActionExecutionStatus =
-  | "PENDING"
-  | "COMPLETED"
-  | "FAILED"
-  | "SKIPPED";
+export type ActionExecutionStatus = "PENDING" | "COMPLETED" | "FAILED" | "SKIPPED";
 
 export type RuleSource = "MANUAL" | "TEMPLATE";
 
@@ -185,28 +181,23 @@ export async function listRules(params?: {
   triggerType?: TriggerType;
 }): Promise<AutomationRuleResponse[]> {
   const searchParams = new URLSearchParams();
-  if (params?.enabled !== undefined)
-    searchParams.set("enabled", String(params.enabled));
+  if (params?.enabled !== undefined) searchParams.set("enabled", String(params.enabled));
   if (params?.triggerType) searchParams.set("triggerType", params.triggerType);
   const qs = searchParams.toString();
-  return api.get<AutomationRuleResponse[]>(
-    `/api/automation-rules${qs ? `?${qs}` : ""}`,
-  );
+  return api.get<AutomationRuleResponse[]>(`/api/automation-rules${qs ? `?${qs}` : ""}`);
 }
 
 export async function getRule(id: string): Promise<AutomationRuleResponse> {
   return api.get<AutomationRuleResponse>(`/api/automation-rules/${id}`);
 }
 
-export async function createRule(
-  data: CreateRuleRequest,
-): Promise<AutomationRuleResponse> {
+export async function createRule(data: CreateRuleRequest): Promise<AutomationRuleResponse> {
   return api.post<AutomationRuleResponse>("/api/automation-rules", data);
 }
 
 export async function updateRule(
   id: string,
-  data: UpdateRuleRequest,
+  data: UpdateRuleRequest
 ): Promise<AutomationRuleResponse> {
   return api.put<AutomationRuleResponse>(`/api/automation-rules/${id}`, data);
 }
@@ -215,30 +206,16 @@ export async function deleteRule(id: string): Promise<void> {
   return api.delete<void>(`/api/automation-rules/${id}`);
 }
 
-export async function toggleRule(
-  id: string,
-): Promise<AutomationRuleResponse> {
-  return api.post<AutomationRuleResponse>(
-    `/api/automation-rules/${id}/toggle`,
-  );
+export async function toggleRule(id: string): Promise<AutomationRuleResponse> {
+  return api.post<AutomationRuleResponse>(`/api/automation-rules/${id}/toggle`);
 }
 
-export async function duplicateRule(
-  id: string,
-): Promise<AutomationRuleResponse> {
-  return api.post<AutomationRuleResponse>(
-    `/api/automation-rules/${id}/duplicate`,
-  );
+export async function duplicateRule(id: string): Promise<AutomationRuleResponse> {
+  return api.post<AutomationRuleResponse>(`/api/automation-rules/${id}/duplicate`);
 }
 
-export async function testRule(
-  id: string,
-  sampleData: TestRuleRequest,
-): Promise<TestRuleResponse> {
-  return api.post<TestRuleResponse>(
-    `/api/automation-rules/${id}/test`,
-    sampleData,
-  );
+export async function testRule(id: string, sampleData: TestRuleRequest): Promise<TestRuleResponse> {
+  return api.post<TestRuleResponse>(`/api/automation-rules/${id}/test`, sampleData);
 }
 
 // -- Templates --
@@ -247,12 +224,8 @@ export async function listTemplates(): Promise<TemplateDefinitionResponse[]> {
   return api.get<TemplateDefinitionResponse[]>("/api/automation-templates");
 }
 
-export async function activateTemplate(
-  slug: string,
-): Promise<AutomationRuleResponse> {
-  return api.post<AutomationRuleResponse>(
-    `/api/automation-templates/${slug}/activate`,
-  );
+export async function activateTemplate(slug: string): Promise<AutomationRuleResponse> {
+  return api.post<AutomationRuleResponse>(`/api/automation-templates/${slug}/activate`);
 }
 
 // -- Executions --
@@ -266,36 +239,28 @@ export async function listExecutions(params?: {
   const searchParams = new URLSearchParams();
   if (params?.ruleId) searchParams.set("ruleId", params.ruleId);
   if (params?.status) searchParams.set("status", params.status);
-  if (params?.page !== undefined)
-    searchParams.set("page", String(params.page));
-  if (params?.size !== undefined)
-    searchParams.set("size", String(params.size));
+  if (params?.page !== undefined) searchParams.set("page", String(params.page));
+  if (params?.size !== undefined) searchParams.set("size", String(params.size));
   const qs = searchParams.toString();
   return api.get<PaginatedResponse<AutomationExecutionResponse>>(
-    `/api/automation-executions${qs ? `?${qs}` : ""}`,
+    `/api/automation-executions${qs ? `?${qs}` : ""}`
   );
 }
 
-export async function getExecution(
-  id: string,
-): Promise<AutomationExecutionResponse> {
-  return api.get<AutomationExecutionResponse>(
-    `/api/automation-executions/${id}`,
-  );
+export async function getExecution(id: string): Promise<AutomationExecutionResponse> {
+  return api.get<AutomationExecutionResponse>(`/api/automation-executions/${id}`);
 }
 
 export async function getRuleExecutions(
   ruleId: string,
-  params?: { page?: number; size?: number },
+  params?: { page?: number; size?: number }
 ): Promise<PaginatedResponse<AutomationExecutionResponse>> {
   const searchParams = new URLSearchParams();
-  if (params?.page !== undefined)
-    searchParams.set("page", String(params.page));
-  if (params?.size !== undefined)
-    searchParams.set("size", String(params.size));
+  if (params?.page !== undefined) searchParams.set("page", String(params.page));
+  if (params?.size !== undefined) searchParams.set("size", String(params.size));
   const qs = searchParams.toString();
   return api.get<PaginatedResponse<AutomationExecutionResponse>>(
-    `/api/automation-rules/${ruleId}/executions${qs ? `?${qs}` : ""}`,
+    `/api/automation-rules/${ruleId}/executions${qs ? `?${qs}` : ""}`
   );
 }
 
@@ -303,40 +268,26 @@ export async function getRuleExecutions(
 
 export async function addAction(
   ruleId: string,
-  data: Record<string, unknown>,
+  data: Record<string, unknown>
 ): Promise<AutomationActionResponse> {
-  return api.post<AutomationActionResponse>(
-    `/api/automation-rules/${ruleId}/actions`,
-    data,
-  );
+  return api.post<AutomationActionResponse>(`/api/automation-rules/${ruleId}/actions`, data);
 }
 
 export async function updateAction(
   ruleId: string,
   actionId: string,
-  data: Record<string, unknown>,
+  data: Record<string, unknown>
 ): Promise<AutomationActionResponse> {
   return api.put<AutomationActionResponse>(
     `/api/automation-rules/${ruleId}/actions/${actionId}`,
-    data,
+    data
   );
 }
 
-export async function deleteAction(
-  ruleId: string,
-  actionId: string,
-): Promise<void> {
-  return api.delete<void>(
-    `/api/automation-rules/${ruleId}/actions/${actionId}`,
-  );
+export async function deleteAction(ruleId: string, actionId: string): Promise<void> {
+  return api.delete<void>(`/api/automation-rules/${ruleId}/actions/${actionId}`);
 }
 
-export async function reorderActions(
-  ruleId: string,
-  actionIds: string[],
-): Promise<void> {
-  return api.post<void>(
-    `/api/automation-rules/${ruleId}/actions/reorder`,
-    { actionIds },
-  );
+export async function reorderActions(ruleId: string, actionIds: string[]): Promise<void> {
+  return api.post<void>(`/api/automation-rules/${ruleId}/actions/reorder`, { actionIds });
 }

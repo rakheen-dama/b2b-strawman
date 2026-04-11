@@ -11,8 +11,7 @@ export function PortalRequestProgressBar({
   totalItems,
   acceptedItems,
 }: PortalRequestProgressBarProps) {
-  const percentage =
-    totalItems > 0 ? Math.round((acceptedItems / totalItems) * 100) : 0;
+  const percentage = totalItems > 0 ? Math.round((acceptedItems / totalItems) * 100) : 0;
 
   return (
     <div className="flex items-center gap-3">

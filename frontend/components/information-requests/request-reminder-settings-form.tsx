@@ -39,9 +39,7 @@ export function RequestReminderSettingsForm({
 
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-      <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-        Request Reminders
-      </h2>
+      <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">Request Reminders</h2>
       <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
         Configure default reminder settings for information requests.
       </p>
@@ -62,15 +60,12 @@ export function RequestReminderSettingsForm({
             placeholder="7"
             value={reminderDays}
             onChange={(e) =>
-              setReminderDays(
-                Math.max(1, Math.min(90, parseInt(e.target.value) || 1)),
-              )
+              setReminderDays(Math.max(1, Math.min(90, parseInt(e.target.value) || 1)))
             }
             className="mt-1 w-full"
           />
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-            Automated reminders will be sent to clients every N days while items
-            are outstanding.
+            Automated reminders will be sent to clients every N days while items are outstanding.
           </p>
         </div>
       </div>
@@ -83,9 +78,7 @@ export function RequestReminderSettingsForm({
         {message && (
           <p
             className={`text-sm ${
-              isError
-                ? "text-red-600 dark:text-red-400"
-                : "text-green-600 dark:text-green-400"
+              isError ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"
             }`}
           >
             {message}

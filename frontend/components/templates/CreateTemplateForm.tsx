@@ -95,7 +95,7 @@ export function CreateTemplateForm({ slug }: CreateTemplateFormProps) {
                 id="new-template-category"
                 value={category}
                 onChange={(e) => setCategory(e.target.value as TemplateCategory)}
-                className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 dark:border-slate-800"
+                className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none dark:border-slate-800"
               >
                 {CATEGORIES.map((c) => (
                   <option key={c.value} value={c.value}>
@@ -113,7 +113,7 @@ export function CreateTemplateForm({ slug }: CreateTemplateFormProps) {
                 id="new-template-entity-type"
                 value={entityType}
                 onChange={(e) => setEntityType(e.target.value as TemplateEntityType)}
-                className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 dark:border-slate-800"
+                className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none dark:border-slate-800"
               >
                 {ENTITY_TYPES.map((t) => (
                   <option key={t.value} value={t.value}>
@@ -158,20 +158,14 @@ export function CreateTemplateForm({ slug }: CreateTemplateFormProps) {
             />
           </div>
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && <p className="text-destructive text-sm">{error}</p>}
 
           <div className="flex justify-end gap-3">
-            <Button
-              variant="soft"
-              onClick={() => router.push(`/org/${slug}/settings/templates`)}
-            >
+            <Button variant="soft" onClick={() => router.push(`/org/${slug}/settings/templates`)}>
               Cancel
             </Button>
             {/* Only name is required — empty content is valid (user fills it in the editor page) */}
-            <Button
-              onClick={handleCreate}
-              disabled={isCreating || !name.trim()}
-            >
+            <Button onClick={handleCreate} disabled={isCreating || !name.trim()}>
               {isCreating ? "Creating..." : "Create Template"}
             </Button>
           </div>
@@ -183,7 +177,8 @@ export function CreateTemplateForm({ slug }: CreateTemplateFormProps) {
               Template Variables
             </h3>
             <p className="text-sm text-slate-600 dark:text-slate-400">
-              Use the toolbar to insert variables and clauses. Variables are resolved from the selected entity type.
+              Use the toolbar to insert variables and clauses. Variables are resolved from the
+              selected entity type.
             </p>
           </div>
         </div>

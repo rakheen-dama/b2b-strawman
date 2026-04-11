@@ -24,9 +24,7 @@ export function TextValidationSection({
 }: TextValidationProps) {
   return (
     <div className="space-y-3 rounded-md border border-slate-200 p-3 dark:border-slate-700">
-      <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-        Text Validation
-      </p>
+      <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Text Validation</p>
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1">
           <Label htmlFor="fd-min-length">Min Length</Label>
@@ -79,9 +77,7 @@ export function NumberValidationSection({
 }: NumberValidationProps) {
   return (
     <div className="space-y-3 rounded-md border border-slate-200 p-3 dark:border-slate-700">
-      <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-        Number Validation
-      </p>
+      <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Number Validation</p>
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1">
           <Label htmlFor="fd-min-number">Min</Label>
@@ -123,9 +119,7 @@ export function DateValidationSection({
 }: DateValidationProps) {
   return (
     <div className="space-y-3 rounded-md border border-slate-200 p-3 dark:border-slate-700">
-      <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-        Date Validation
-      </p>
+      <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Date Validation</p>
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1">
           <Label htmlFor="fd-min-date">Min Date</Label>

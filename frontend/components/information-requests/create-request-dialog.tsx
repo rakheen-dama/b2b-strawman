@@ -127,11 +127,7 @@ export function CreateRequestDialog({
 
       // If "Send Now", immediately send the created request
       if (sendImmediately && result.data) {
-        const sendResult = await sendRequestAction(
-          slug,
-          customerId,
-          result.data.id,
-        );
+        const sendResult = await sendRequestAction(slug, customerId, result.data.id);
         if (!sendResult.success) {
           // Draft was created but send failed — close dialog with warning
           setError(null);
@@ -186,9 +182,7 @@ export function CreateRequestDialog({
                     <SelectItem key={t.id} value={t.id}>
                       {t.name}
                       {t.items.length > 0 && (
-                        <span className="ml-1 text-slate-400">
-                          ({t.items.length} items)
-                        </span>
+                        <span className="ml-1 text-slate-400">({t.items.length} items)</span>
                       )}
                     </SelectItem>
                   ))}
@@ -201,14 +195,10 @@ export function CreateRequestDialog({
               <Label htmlFor="contact-select">Portal Contact</Label>
               {contacts.length === 0 ? (
                 <p className="text-sm text-slate-500">
-                  No portal contacts found for this customer. Please add a
-                  portal contact first.
+                  No portal contacts found for this customer. Please add a portal contact first.
                 </p>
               ) : (
-                <Select
-                  value={portalContactId}
-                  onValueChange={setPortalContactId}
-                >
+                <Select value={portalContactId} onValueChange={setPortalContactId}>
                   <SelectTrigger id="contact-select" className="w-full">
                     <SelectValue placeholder="Select a contact..." />
                   </SelectTrigger>
@@ -232,14 +222,11 @@ export function CreateRequestDialog({
                 min={1}
                 max={90}
                 value={reminderDays}
-                onChange={(e) =>
-                  setReminderDays(parseInt(e.target.value, 10) || 5)
-                }
+                onChange={(e) => setReminderDays(parseInt(e.target.value, 10) || 5)}
                 className="w-32"
               />
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Automated reminders will be sent at this interval after the
-                request is sent.
+                Automated reminders will be sent at this interval after the request is sent.
               </p>
             </div>
 
@@ -261,16 +248,12 @@ export function CreateRequestDialog({
               )}
             </div>
 
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {error && <p className="text-destructive text-sm">{error}</p>}
           </div>
         )}
 
         <DialogFooter className="gap-2 sm:gap-0">
-          <Button
-            variant="plain"
-            onClick={() => setOpen(false)}
-            disabled={isSubmitting}
-          >
+          <Button variant="plain" onClick={() => setOpen(false)} disabled={isSubmitting}>
             Cancel
           </Button>
           <Button

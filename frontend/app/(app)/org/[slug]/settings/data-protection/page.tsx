@@ -12,10 +12,7 @@ import {
   fetchProcessingActivities,
 } from "@/app/(app)/org/[slug]/settings/data-protection/actions";
 import type { OrgSettings } from "@/lib/types";
-import type {
-  RetentionPolicyExtended,
-  ProcessingActivity,
-} from "@/lib/types/data-protection";
+import type { RetentionPolicyExtended, ProcessingActivity } from "@/lib/types/data-protection";
 
 export default async function DataProtectionSettingsPage({
   params,
@@ -35,12 +32,10 @@ export default async function DataProtectionSettingsPage({
           <ChevronLeft className="size-4" />
           Settings
         </Link>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          Data Protection
-        </h1>
+        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Data Protection</h1>
         <p className="text-slate-600 dark:text-slate-400">
-          You do not have permission to manage data protection settings. Only
-          admins and owners can access this page.
+          You do not have permission to manage data protection settings. Only admins and owners can
+          access this page.
         </p>
       </div>
     );
@@ -50,12 +45,11 @@ export default async function DataProtectionSettingsPage({
   let retentionPolicies: RetentionPolicyExtended[] = [];
   let processingActivities: ProcessingActivity[] = [];
 
-  const [settingsResult, retentionResult, processingResult] =
-    await Promise.allSettled([
-      api.get<OrgSettings>("/api/settings"),
-      fetchRetentionPolicies(slug),
-      fetchProcessingActivities(slug),
-    ]);
+  const [settingsResult, retentionResult, processingResult] = await Promise.allSettled([
+    api.get<OrgSettings>("/api/settings"),
+    fetchRetentionPolicies(slug),
+    fetchProcessingActivities(slug),
+  ]);
 
   if (settingsResult.status === "fulfilled") {
     settings = settingsResult.value;
@@ -78,12 +72,10 @@ export default async function DataProtectionSettingsPage({
       </Link>
 
       <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          Data Protection
-        </h1>
+        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Data Protection</h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Configure data protection jurisdiction, information officer details,
-          and manage compliance settings.
+          Configure data protection jurisdiction, information officer details, and manage compliance
+          settings.
         </p>
       </div>
 
@@ -106,8 +98,8 @@ export default async function DataProtectionSettingsPage({
           Data Subject Access Requests
         </h2>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Track and manage data subject access requests (DSARs) including
-          access, deletion, correction, and portability requests.
+          Track and manage data subject access requests (DSARs) including access, deletion,
+          correction, and portability requests.
         </p>
         <div className="mt-4">
           <Link
@@ -130,10 +122,7 @@ export default async function DataProtectionSettingsPage({
       <ProcessingRegisterTable activities={processingActivities} slug={slug} />
 
       {/* Section 6: PAIA Manual */}
-      <PaiaManualSection
-        slug={slug}
-        jurisdiction={settings.dataProtectionJurisdiction ?? null}
-      />
+      <PaiaManualSection slug={slug} jurisdiction={settings.dataProtectionJurisdiction ?? null} />
     </div>
   );
 }

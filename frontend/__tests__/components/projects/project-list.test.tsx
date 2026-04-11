@@ -25,7 +25,15 @@ vi.mock("next/navigation", () => ({
 
 // Mock next/link as a simple anchor
 vi.mock("next/link", () => ({
-  default: ({ href, children, ...props }: { href: string; children: React.ReactNode; [key: string]: unknown }) => (
+  default: ({
+    href,
+    children,
+    ...props
+  }: {
+    href: string;
+    children: React.ReactNode;
+    [key: string]: unknown;
+  }) => (
     <a href={href} {...props}>
       {children}
     </a>
@@ -106,7 +114,13 @@ describe("CreateProjectDialog", () => {
 
   it("renders due date picker when dialog is opened", async () => {
     const user = userEvent.setup();
-    render(<OrgProfileProvider verticalProfile={null} enabledModules={[]} terminologyNamespace={null}><TerminologyProvider verticalProfile={null}><CreateProjectDialog slug="acme" /></TerminologyProvider></OrgProfileProvider>);
+    render(
+      <OrgProfileProvider verticalProfile={null} enabledModules={[]} terminologyNamespace={null}>
+        <TerminologyProvider verticalProfile={null}>
+          <CreateProjectDialog slug="acme" />
+        </TerminologyProvider>
+      </OrgProfileProvider>
+    );
     await user.click(screen.getByText("New Project"));
     await waitFor(() => {
       expect(screen.getByLabelText(/due date/i)).toBeInTheDocument();
@@ -117,7 +131,13 @@ describe("CreateProjectDialog", () => {
 
   it("renders customer dropdown when dialog is opened", async () => {
     const user = userEvent.setup();
-    render(<OrgProfileProvider verticalProfile={null} enabledModules={[]} terminologyNamespace={null}><TerminologyProvider verticalProfile={null}><CreateProjectDialog slug="acme" /></TerminologyProvider></OrgProfileProvider>);
+    render(
+      <OrgProfileProvider verticalProfile={null} enabledModules={[]} terminologyNamespace={null}>
+        <TerminologyProvider verticalProfile={null}>
+          <CreateProjectDialog slug="acme" />
+        </TerminologyProvider>
+      </OrgProfileProvider>
+    );
     await user.click(screen.getByText("New Project"));
     await waitFor(() => {
       expect(screen.getByLabelText(/customer/i)).toBeInTheDocument();
@@ -132,7 +152,13 @@ describe("CreateProjectDialog", () => {
 
   it("fetches active customers on dialog open", async () => {
     const user = userEvent.setup();
-    render(<OrgProfileProvider verticalProfile={null} enabledModules={[]} terminologyNamespace={null}><TerminologyProvider verticalProfile={null}><CreateProjectDialog slug="acme" /></TerminologyProvider></OrgProfileProvider>);
+    render(
+      <OrgProfileProvider verticalProfile={null} enabledModules={[]} terminologyNamespace={null}>
+        <TerminologyProvider verticalProfile={null}>
+          <CreateProjectDialog slug="acme" />
+        </TerminologyProvider>
+      </OrgProfileProvider>
+    );
     await user.click(screen.getByText("New Project"));
     await waitFor(() => {
       expect(mockFetchActiveCustomers).toHaveBeenCalledOnce();

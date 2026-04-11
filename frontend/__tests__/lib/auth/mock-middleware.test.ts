@@ -19,10 +19,7 @@ const defaultPayload = {
   exp: 1708086400,
 };
 
-function createMockRequest(
-  pathname: string,
-  cookieToken?: string,
-): NextRequest {
+function createMockRequest(pathname: string, cookieToken?: string): NextRequest {
   const url = `http://localhost:3000${pathname}`;
   const request = new NextRequest(url);
   if (cookieToken) {
@@ -47,10 +44,7 @@ describe("Mock auth middleware", () => {
     const middleware = await loadMiddleware("mock");
     const request = createMockRequest("/org/e2e-test-org/dashboard");
 
-    const response = (await middleware(
-      request,
-      {} as never,
-    )) as NextResponse;
+    const response = (await middleware(request, {} as never)) as NextResponse;
 
     expect(response.status).toBe(307);
     const location = response.headers.get("location");
@@ -61,15 +55,9 @@ describe("Mock auth middleware", () => {
   it("passes through when valid cookie on protected route", async () => {
     const middleware = await loadMiddleware("mock");
     const token = buildMockJwt(defaultPayload);
-    const request = createMockRequest(
-      "/org/e2e-test-org/dashboard",
-      token,
-    );
+    const request = createMockRequest("/org/e2e-test-org/dashboard", token);
 
-    const response = (await middleware(
-      request,
-      {} as never,
-    )) as NextResponse;
+    const response = (await middleware(request, {} as never)) as NextResponse;
 
     // NextResponse.next() returns a 200
     expect(response.status).toBe(200);
@@ -81,10 +69,7 @@ describe("Mock auth middleware", () => {
     const publicPaths = ["/", "/sign-in", "/mock-login"];
     for (const path of publicPaths) {
       const request = createMockRequest(path);
-      const response = (await middleware(
-        request,
-        {} as never,
-      )) as NextResponse;
+      const response = (await middleware(request, {} as never)) as NextResponse;
 
       expect(response.status).toBe(200);
     }
@@ -97,10 +82,7 @@ describe("Mock auth middleware", () => {
 
     // Protected route without SESSION cookie should redirect to gateway
     const request = createMockRequest("/org/acme-corp/dashboard");
-    const response = (await middleware(
-      request,
-      {} as never,
-    )) as NextResponse;
+    const response = (await middleware(request, {} as never)) as NextResponse;
 
     expect(response.status).toBe(307);
     const location = response.headers.get("location");
@@ -112,10 +94,7 @@ describe("Mock auth middleware", () => {
     const token = buildMockJwt(defaultPayload);
     const request = createMockRequest("/dashboard", token);
 
-    const response = (await middleware(
-      request,
-      {} as never,
-    )) as NextResponse;
+    const response = (await middleware(request, {} as never)) as NextResponse;
 
     expect(response.status).toBe(307);
     const location = response.headers.get("location");

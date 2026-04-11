@@ -8,13 +8,7 @@ describe("RetainerSummaryCards", () => {
   });
 
   it("renders zero values correctly", () => {
-    render(
-      <RetainerSummaryCards
-        activeCount={0}
-        readyToCloseCount={0}
-        totalOverageHours={0}
-      />,
-    );
+    render(<RetainerSummaryCards activeCount={0} readyToCloseCount={0} totalOverageHours={0} />);
     expect(screen.getByText("Active Retainers")).toBeInTheDocument();
     expect(screen.getByText("Periods Ready to Close")).toBeInTheDocument();
     expect(screen.getByText("Total Overage Hours")).toBeInTheDocument();
@@ -26,11 +20,7 @@ describe("RetainerSummaryCards", () => {
 
   it("highlights 'Periods Ready to Close' card when count > 0", () => {
     const { container } = render(
-      <RetainerSummaryCards
-        activeCount={3}
-        readyToCloseCount={2}
-        totalOverageHours={0}
-      />,
+      <RetainerSummaryCards activeCount={3} readyToCloseCount={2} totalOverageHours={0} />
     );
     // The card with readyToCloseCount > 0 should have amber background
     const amberCards = container.querySelectorAll(".bg-amber-50");
@@ -39,11 +29,7 @@ describe("RetainerSummaryCards", () => {
 
   it("highlights overage hours card when total > 0", () => {
     const { container } = render(
-      <RetainerSummaryCards
-        activeCount={3}
-        readyToCloseCount={0}
-        totalOverageHours={12.5}
-      />,
+      <RetainerSummaryCards activeCount={3} readyToCloseCount={0} totalOverageHours={12.5} />
     );
     expect(screen.getByText("12.5 hrs")).toBeInTheDocument();
     const amberCards = container.querySelectorAll(".bg-amber-50");

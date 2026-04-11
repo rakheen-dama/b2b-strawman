@@ -68,11 +68,7 @@ describe("GenerateDocxDialog", () => {
     await user.click(screen.getByRole("button", { name: /Generate/i }));
 
     await waitFor(() => {
-      expect(mockGenerateDocxAction).toHaveBeenCalledWith(
-        "tpl-docx-1",
-        "proj-1",
-        "DOCX",
-      );
+      expect(mockGenerateDocxAction).toHaveBeenCalledWith("tpl-docx-1", "proj-1", "DOCX");
     });
   });
 
@@ -99,16 +95,11 @@ describe("GenerateDocxDialog", () => {
     await user.click(screen.getByRole("button", { name: /Generate/i }));
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Document generated successfully"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Document generated successfully")).toBeInTheDocument();
     });
 
     const docxLink = screen.getByRole("link", { name: /Download .docx/i });
-    expect(docxLink).toHaveAttribute(
-      "href",
-      "https://s3.example.com/nda-template.docx",
-    );
+    expect(docxLink).toHaveAttribute("href", "https://s3.example.com/nda-template.docx");
     expect(docxLink).toHaveAttribute("target", "_blank");
   });
 
@@ -139,8 +130,8 @@ describe("GenerateDocxDialog", () => {
     await waitFor(() => {
       expect(
         screen.getByText(
-          "PDF conversion is not available. Your document has been generated as .docx",
-        ),
+          "PDF conversion is not available. Your document has been generated as .docx"
+        )
       ).toBeInTheDocument();
     });
   });
@@ -170,21 +161,13 @@ describe("GenerateDocxDialog", () => {
     await user.click(screen.getByRole("button", { name: /Generate/i }));
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Document generated successfully"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Document generated successfully")).toBeInTheDocument();
     });
 
     const docxLink = screen.getByRole("link", { name: /Download .docx/i });
     const pdfLink = screen.getByRole("link", { name: /Download PDF/i });
 
-    expect(docxLink).toHaveAttribute(
-      "href",
-      "https://s3.example.com/nda-template.docx",
-    );
-    expect(pdfLink).toHaveAttribute(
-      "href",
-      "https://s3.example.com/nda-template.pdf",
-    );
+    expect(docxLink).toHaveAttribute("href", "https://s3.example.com/nda-template.docx");
+    expect(pdfLink).toHaveAttribute("href", "https://s3.example.com/nda-template.pdf");
   });
 });

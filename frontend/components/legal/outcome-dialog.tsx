@@ -83,9 +83,7 @@ export function OutcomeDialog({
       <DialogContent data-testid="outcome-dialog">
         <DialogHeader>
           <DialogTitle>Record Outcome</DialogTitle>
-          <DialogDescription>
-            Record the outcome of this court date hearing.
-          </DialogDescription>
+          <DialogDescription>Record the outcome of this court date hearing.</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

@@ -21,15 +21,15 @@ function TimelineStage({ label, date, isComplete, isActive, children }: Timeline
       <div className="flex flex-col items-center">
         <div
           className={cn(
-            "size-3 rounded-full ring-2 ring-offset-2 ring-offset-white dark:ring-offset-slate-950 mt-0.5",
+            "mt-0.5 size-3 rounded-full ring-2 ring-offset-2 ring-offset-white dark:ring-offset-slate-950",
             isComplete
               ? "bg-teal-600 ring-teal-600"
               : isActive
                 ? "bg-slate-400 ring-slate-400"
-                : "bg-slate-200 ring-slate-200 dark:bg-slate-700 dark:ring-slate-700",
+                : "bg-slate-200 ring-slate-200 dark:bg-slate-700 dark:ring-slate-700"
           )}
         />
-        <div className="mt-1 flex-1 w-px bg-slate-200 dark:bg-slate-800 min-h-8" />
+        <div className="mt-1 min-h-8 w-px flex-1 bg-slate-200 dark:bg-slate-800" />
       </div>
 
       {/* Content */}
@@ -39,14 +39,12 @@ function TimelineStage({ label, date, isComplete, isActive, children }: Timeline
             "text-sm font-medium",
             isComplete || isActive
               ? "text-slate-900 dark:text-slate-100"
-              : "text-slate-400 dark:text-slate-600",
+              : "text-slate-400 dark:text-slate-600"
           )}
         >
           {label}
         </p>
-        {date && (
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{date}</p>
-        )}
+        {date && <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{date}</p>}
         {children}
       </div>
     </div>
@@ -100,22 +98,18 @@ export function DataRequestTimeline({ request }: DataRequestTimelineProps) {
         </TimelineStage>
       )}
       {!isCompleted && !isRejected && (
-        <TimelineStage
-          label="Awaiting Completion"
-          isComplete={false}
-          isActive={false}
-        />
+        <TimelineStage label="Awaiting Completion" isComplete={false} isActive={false} />
       )}
 
       {/* Deadline indicator */}
-      <div className="flex gap-4 mt-2">
+      <div className="mt-2 flex gap-4">
         <div className="flex flex-col items-center">
           <div
             className={cn(
-              "size-3 rounded-full ring-2 ring-offset-2 ring-offset-white dark:ring-offset-slate-950 mt-0.5",
+              "mt-0.5 size-3 rounded-full ring-2 ring-offset-2 ring-offset-white dark:ring-offset-slate-950",
               overdue && !isCompleted
                 ? "bg-red-500 ring-red-500"
-                : "bg-slate-200 ring-slate-200 dark:bg-slate-700 dark:ring-slate-700",
+                : "bg-slate-200 ring-slate-200 dark:bg-slate-700 dark:ring-slate-700"
             )}
           />
         </div>
@@ -125,7 +119,7 @@ export function DataRequestTimeline({ request }: DataRequestTimelineProps) {
               "text-sm font-medium",
               overdue && !isCompleted
                 ? "text-red-600 dark:text-red-400"
-                : "text-slate-500 dark:text-slate-400",
+                : "text-slate-500 dark:text-slate-400"
             )}
           >
             Deadline: {formatLocalDate(request.deadline)}

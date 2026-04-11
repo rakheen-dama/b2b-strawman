@@ -141,14 +141,8 @@ export async function apiRequest<T>(endpoint: string, options: ApiRequestOptions
  *
  * Extracted as a pure function for testability (client.ts is server-only).
  */
-export function isSubscriptionError(
-  error: unknown,
-): "required" | "locked" | null {
-  if (
-    error instanceof ApiError &&
-    error.status === 403 &&
-    error.detail?.type
-  ) {
+export function isSubscriptionError(error: unknown): "required" | "locked" | null {
+  if (error instanceof ApiError && error.status === 403 && error.detail?.type) {
     if (error.detail.type === "subscription_required") return "required";
     if (error.detail.type === "subscription_locked") return "locked";
   }
@@ -179,15 +173,11 @@ export function handleApiError(error: unknown): never {
       throw new ApiError(
         403,
         "Your subscription is inactive. Please subscribe to regain access.",
-        error.detail,
+        error.detail
       );
     }
     if (subscriptionKind === "required") {
-      throw new ApiError(
-        403,
-        "A subscription is required to perform this action.",
-        error.detail,
-      );
+      throw new ApiError(403, "A subscription is required to perform this action.", error.detail);
     }
 
     if (error.status === 404) {

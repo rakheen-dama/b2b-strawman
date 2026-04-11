@@ -43,7 +43,7 @@ function buildFieldsByGroup(
   fieldDefinitions: FieldDefinitionResponse[],
   fieldGroups: FieldGroupResponse[],
   groupMembers: Record<string, FieldGroupMemberResponse[]>,
-  appliedFieldGroups: string[],
+  appliedFieldGroups: string[]
 ): Map<string, FieldWithGroup[]> {
   const appliedGroups = new Set(appliedFieldGroups);
   const fieldMap = new Map(fieldDefinitions.map((f) => [f.id, f]));
@@ -79,10 +79,7 @@ function buildFieldsByGroup(
   return result;
 }
 
-function validateField(
-  field: FieldDefinitionResponse,
-  value: unknown,
-): string | null {
+function validateField(field: FieldDefinitionResponse, value: unknown): string | null {
   const strVal = typeof value === "string" ? value : "";
   const validation = field.validation ?? {};
 
@@ -181,7 +178,7 @@ function validateField(
 
 function isFieldVisible(
   field: FieldDefinitionResponse,
-  currentValues: Record<string, unknown>,
+  currentValues: Record<string, unknown>
 ): boolean {
   const condition = field.visibilityCondition;
   if (!condition) return true;
@@ -204,10 +201,7 @@ function isFieldVisible(
   }
 }
 
-function formatDisplayValue(
-  field: FieldDefinitionResponse,
-  value: unknown,
-): string {
+function formatDisplayValue(field: FieldDefinitionResponse, value: unknown): string {
   if (value == null || value === "") return "\u2014";
 
   switch (field.fieldType) {
@@ -307,7 +301,7 @@ function FieldInput({
             onChange={(e) => onChange(e.target.value)}
             disabled={disabled}
             aria-invalid={!!error}
-            className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700"
+            className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-400 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700"
           >
             <option value="">Select...</option>
             {field.options?.map((opt) => (
@@ -352,7 +346,10 @@ function FieldInput({
               placeholder="Amount"
               value={currencyObj.amount ?? ""}
               onChange={(e) =>
-                onChange({ ...currencyObj, amount: e.target.value ? parseFloat(e.target.value) : "" })
+                onChange({
+                  ...currencyObj,
+                  amount: e.target.value ? parseFloat(e.target.value) : "",
+                })
               }
               disabled={disabled}
               aria-invalid={!!error}
@@ -362,7 +359,7 @@ function FieldInput({
               value={currencyObj.currency ?? ""}
               onChange={(e) => onChange({ ...currencyObj, currency: e.target.value })}
               disabled={disabled}
-              className="flex h-9 w-28 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700"
+              className="flex h-9 w-28 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-400 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700"
               aria-label="Currency"
             >
               <option value="">Currency</option>
@@ -457,7 +454,7 @@ export function CustomFieldSection({
     fieldDefinitions,
     fieldGroups,
     groupMembers,
-    appliedFieldGroups,
+    appliedFieldGroups
   );
 
   const groupMap = new Map(fieldGroups.map((g) => [g.id, g]));
@@ -496,12 +493,7 @@ export function CustomFieldSection({
     setSaveSuccess(false);
 
     try {
-      const result = await updateEntityCustomFieldsAction(
-        slug,
-        entityType,
-        entityId,
-        values,
-      );
+      const result = await updateEntityCustomFieldsAction(slug, entityType, entityId, values);
 
       if (result.success) {
         setSaveSuccess(true);
@@ -547,30 +539,30 @@ export function CustomFieldSection({
                 {fields
                   .filter(({ definition }) => isFieldVisible(definition, values))
                   .map(({ definition }) => (
-                  <div key={definition.slug} className="space-y-1.5">
-                    <Label htmlFor={`cf-${definition.slug}`} className="text-sm">
-                      {definition.name}
-                      {definition.required && (
-                        <span className="ml-0.5 text-red-500" aria-label="required">
-                          *
-                        </span>
+                    <div key={definition.slug} className="space-y-1.5">
+                      <Label htmlFor={`cf-${definition.slug}`} className="text-sm">
+                        {definition.name}
+                        {definition.required && (
+                          <span className="ml-0.5 text-red-500" aria-label="required">
+                            *
+                          </span>
+                        )}
+                      </Label>
+                      {editable ? (
+                        <FieldInput
+                          field={definition}
+                          value={values[definition.slug]}
+                          onChange={(v) => handleFieldChange(definition.slug, v)}
+                          error={errors[definition.slug]}
+                          disabled={isSubmitting}
+                        />
+                      ) : (
+                        <p className="text-sm text-slate-700 dark:text-slate-300">
+                          {formatDisplayValue(definition, values[definition.slug])}
+                        </p>
                       )}
-                    </Label>
-                    {editable ? (
-                      <FieldInput
-                        field={definition}
-                        value={values[definition.slug]}
-                        onChange={(v) => handleFieldChange(definition.slug, v)}
-                        error={errors[definition.slug]}
-                        disabled={isSubmitting}
-                      />
-                    ) : (
-                      <p className="text-sm text-slate-700 dark:text-slate-300">
-                        {formatDisplayValue(definition, values[definition.slug])}
-                      </p>
-                    )}
-                  </div>
-                ))}
+                    </div>
+                  ))}
               </div>
             </CardContent>
           </Card>
@@ -579,12 +571,7 @@ export function CustomFieldSection({
 
       {editable && (
         <div className="flex items-center gap-3">
-          <Button
-            type="button"
-            size="sm"
-            onClick={handleSave}
-            disabled={isSubmitting}
-          >
+          <Button type="button" size="sm" onClick={handleSave} disabled={isSubmitting}>
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-1.5 size-4 animate-spin" />
@@ -598,13 +585,9 @@ export function CustomFieldSection({
             )}
           </Button>
           {saveSuccess && (
-            <span className="text-sm text-green-600 dark:text-green-400">
-              Saved successfully
-            </span>
+            <span className="text-sm text-green-600 dark:text-green-400">Saved successfully</span>
           )}
-          {saveError && (
-            <span className="text-sm text-red-600 dark:text-red-400">{saveError}</span>
-          )}
+          {saveError && <span className="text-sm text-red-600 dark:text-red-400">{saveError}</span>}
         </div>
       )}
     </div>

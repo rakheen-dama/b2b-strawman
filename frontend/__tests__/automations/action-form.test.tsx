@@ -1,10 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import {
-  cleanup,
-  render,
-  screen,
-  fireEvent,
-} from "@testing-library/react";
+import { cleanup, render, screen, fireEvent } from "@testing-library/react";
 import { ActionList, type ActionRow } from "@/components/automations/action-list";
 
 // Ensure crypto.randomUUID is available in test environment
@@ -52,8 +47,8 @@ describe("ActionList & ActionForm", () => {
 
     expect(
       screen.getByText(
-        "No actions configured. Add an action to define what happens when this rule triggers.",
-      ),
+        "No actions configured. Add an action to define what happens when this rule triggers."
+      )
     ).toBeInTheDocument();
     expect(screen.getByText("Add Action")).toBeInTheDocument();
   });

@@ -15,10 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  createExpense,
-  updateExpense,
-} from "@/app/(app)/org/[slug]/projects/[id]/expense-actions";
+import { createExpense, updateExpense } from "@/app/(app)/org/[slug]/projects/[id]/expense-actions";
 import {
   initiateUpload,
   confirmUpload,
@@ -59,13 +56,13 @@ export function LogExpenseDialog({
 
   const [billable, setBillable] = useState(expenseToEdit?.billable ?? true);
   const [receiptDocumentId, setReceiptDocumentId] = useState<string | null>(
-    expenseToEdit?.receiptDocumentId ?? null,
+    expenseToEdit?.receiptDocumentId ?? null
   );
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [receiptFileName, setReceiptFileName] = useState<string | null>(
-    expenseToEdit?.receiptDocumentId ? "Receipt attached" : null,
+    expenseToEdit?.receiptDocumentId ? "Receipt attached" : null
   );
 
   const today = new Date().toLocaleDateString("en-CA");
@@ -78,13 +75,7 @@ export function LogExpenseDialog({
       setUploadProgress(0);
 
       try {
-        const initResult = await initiateUpload(
-          slug,
-          projectId,
-          file.name,
-          file.type,
-          file.size,
-        );
+        const initResult = await initiateUpload(slug, projectId, file.name, file.type, file.size);
 
         if (!initResult.success || !initResult.presignedUrl || !initResult.documentId) {
           setUploadError(initResult.error ?? "Failed to initiate upload.");
@@ -117,11 +108,7 @@ export function LogExpenseDialog({
         });
 
         // Confirm upload
-        const confirmResult = await confirmUpload(
-          slug,
-          projectId,
-          initResult.documentId,
-        );
+        const confirmResult = await confirmUpload(slug, projectId, initResult.documentId);
 
         if (!confirmResult.success) {
           await cancelUpload(initResult.documentId);
@@ -138,7 +125,7 @@ export function LogExpenseDialog({
         setIsUploading(false);
       }
     },
-    [slug, projectId],
+    [slug, projectId]
   );
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -162,33 +149,20 @@ export function LogExpenseDialog({
       if (isEditMode && expenseToEdit) {
         const data: UpdateExpenseRequest = {
           date: formData.get("date")?.toString().trim() || undefined,
-          description:
-            formData.get("description")?.toString().trim() || undefined,
-          amount: parseFloat(
-            formData.get("amount")?.toString().trim() ?? "0",
-          ),
-          currency:
-            formData.get("currency")?.toString().trim() || undefined,
-          category:
-            (formData.get("category")?.toString() as ExpenseCategory) ||
-            undefined,
+          description: formData.get("description")?.toString().trim() || undefined,
+          amount: parseFloat(formData.get("amount")?.toString().trim() ?? "0"),
+          currency: formData.get("currency")?.toString().trim() || undefined,
+          category: (formData.get("category")?.toString() as ExpenseCategory) || undefined,
           taskId: formData.get("taskId")?.toString().trim() || null,
           receiptDocumentId: receiptDocumentId,
           markupPercent: formData.get("markupPercent")?.toString().trim()
-            ? parseFloat(
-                formData.get("markupPercent")?.toString().trim() ?? "0",
-              )
+            ? parseFloat(formData.get("markupPercent")?.toString().trim() ?? "0")
             : null,
           billable,
           notes: formData.get("notes")?.toString().trim() || null,
         };
 
-        const result = await updateExpense(
-          slug,
-          projectId,
-          expenseToEdit.id,
-          data,
-        );
+        const result = await updateExpense(slug, projectId, expenseToEdit.id, data);
 
         if (result.success) {
           setOpen(false);
@@ -233,9 +207,7 @@ export function LogExpenseDialog({
       setUploadError(null);
       setBillable(expenseToEdit?.billable ?? true);
       setReceiptDocumentId(expenseToEdit?.receiptDocumentId ?? null);
-      setReceiptFileName(
-        expenseToEdit?.receiptDocumentId ? "Receipt attached" : null,
-      );
+      setReceiptFileName(expenseToEdit?.receiptDocumentId ? "Receipt attached" : null);
     }
     setOpen(newOpen);
   }
@@ -245,9 +217,7 @@ export function LogExpenseDialog({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>
-            {isEditMode ? "Edit Expense" : "Log Expense"}
-          </DialogTitle>
+          <DialogTitle>{isEditMode ? "Edit Expense" : "Log Expense"}</DialogTitle>
           <DialogDescription>
             {isEditMode
               ? "Update the details of this expense."
@@ -313,7 +283,7 @@ export function LogExpenseDialog({
               id="expense-category"
               name="category"
               defaultValue={expenseToEdit?.category ?? "OTHER"}
-              className="flex h-9 w-full rounded-md border border-slate-200 bg-white px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-teal-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-50"
+              className="flex h-9 w-full rounded-md border border-slate-200 bg-white px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-teal-500 focus-visible:outline-none dark:border-slate-800 dark:bg-slate-950 dark:text-slate-50"
             >
               {EXPENSE_CATEGORIES.map((cat) => (
                 <option key={cat.value} value={cat.value}>
@@ -331,7 +301,7 @@ export function LogExpenseDialog({
                 id="expense-task"
                 name="taskId"
                 defaultValue={expenseToEdit?.taskId ?? ""}
-                className="flex h-9 w-full rounded-md border border-slate-200 bg-white px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-teal-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-50"
+                className="flex h-9 w-full rounded-md border border-slate-200 bg-white px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-teal-500 focus-visible:outline-none dark:border-slate-800 dark:bg-slate-950 dark:text-slate-50"
               >
                 <option value="">No task</option>
                 {tasks.map((task) => (
@@ -393,12 +363,7 @@ export function LogExpenseDialog({
                 <span className="flex-1 truncate text-sm text-slate-700 dark:text-slate-300">
                   {receiptFileName}
                 </span>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="xs"
-                  onClick={clearReceipt}
-                >
+                <Button type="button" variant="ghost" size="xs" onClick={clearReceipt}>
                   <X className="size-3" />
                 </Button>
               </div>
@@ -417,14 +382,10 @@ export function LogExpenseDialog({
                 className="text-sm"
               />
             )}
-            {uploadError && (
-              <p className="text-xs text-red-600 dark:text-red-400">
-                {uploadError}
-              </p>
-            )}
+            {uploadError && <p className="text-xs text-red-600 dark:text-red-400">{uploadError}</p>}
           </div>
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && <p className="text-destructive text-sm">{error}</p>}
           <DialogFooter>
             <Button
               type="button"
@@ -435,11 +396,7 @@ export function LogExpenseDialog({
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting || isUploading}>
-              {isSubmitting
-                ? "Saving..."
-                : isEditMode
-                  ? "Update Expense"
-                  : "Log Expense"}
+              {isSubmitting ? "Saving..." : isEditMode ? "Update Expense" : "Log Expense"}
             </Button>
           </DialogFooter>
         </form>

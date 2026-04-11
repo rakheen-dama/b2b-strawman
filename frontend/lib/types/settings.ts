@@ -82,7 +82,13 @@ export interface UpdateTimeTrackingSettingsRequest {
 
 // ---- Integrations (from IntegrationController.java) ----
 
-export type IntegrationDomain = "ACCOUNTING" | "AI" | "DOCUMENT_SIGNING" | "EMAIL" | "KYC_VERIFICATION" | "PAYMENT";
+export type IntegrationDomain =
+  | "ACCOUNTING"
+  | "AI"
+  | "DOCUMENT_SIGNING"
+  | "EMAIL"
+  | "KYC_VERIFICATION"
+  | "PAYMENT";
 
 export interface OrgIntegration {
   domain: IntegrationDomain;

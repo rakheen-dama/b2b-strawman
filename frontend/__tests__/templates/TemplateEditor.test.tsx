@@ -10,16 +10,13 @@ const mockUpdateTemplate = vi.fn();
 const mockUpdateRequiredFields = vi.fn();
 const mockRouterPush = vi.fn();
 
-vi.mock(
-  "@/app/(app)/org/[slug]/settings/project-templates/actions",
-  () => ({
-    deleteTemplateAction: vi.fn(),
-    duplicateTemplateAction: vi.fn(),
-    createProjectTemplateAction: (...args: unknown[]) => mockCreateTemplate(...args),
-    updateProjectTemplateAction: (...args: unknown[]) => mockUpdateTemplate(...args),
-    updateRequiredCustomerFieldsAction: (...args: unknown[]) => mockUpdateRequiredFields(...args),
-  }),
-);
+vi.mock("@/app/(app)/org/[slug]/settings/project-templates/actions", () => ({
+  deleteTemplateAction: vi.fn(),
+  duplicateTemplateAction: vi.fn(),
+  createProjectTemplateAction: (...args: unknown[]) => mockCreateTemplate(...args),
+  updateProjectTemplateAction: (...args: unknown[]) => mockUpdateTemplate(...args),
+  updateRequiredCustomerFieldsAction: (...args: unknown[]) => mockUpdateRequiredFields(...args),
+}));
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
@@ -122,18 +119,18 @@ describe("TemplateEditor", () => {
   });
 
   it("renders empty form for new template", () => {
-    render(
-      <TemplateEditor slug="acme" availableTags={AVAILABLE_TAGS} />,
-    );
+    render(<TemplateEditor slug="acme" availableTags={AVAILABLE_TAGS} />);
     expect(screen.getByRole("button", { name: /create template/i })).toBeInTheDocument();
     const nameInput = screen.getByPlaceholderText("e.g. Monthly Accounting Package");
     expect(nameInput).toHaveValue("");
-    expect(screen.getByText("No tasks yet. Add a task to define the project structure.")).toBeInTheDocument();
+    expect(
+      screen.getByText("No tasks yet. Add a task to define the project structure.")
+    ).toBeInTheDocument();
   });
 
   it("pre-fills form fields when editing existing template", () => {
     render(
-      <TemplateEditor slug="acme" template={SAMPLE_TEMPLATE} availableTags={AVAILABLE_TAGS} />,
+      <TemplateEditor slug="acme" template={SAMPLE_TEMPLATE} availableTags={AVAILABLE_TAGS} />
     );
     expect(screen.getByRole("button", { name: /save changes/i })).toBeInTheDocument();
     const nameInput = screen.getByPlaceholderText("e.g. Monthly Accounting Package");
@@ -144,32 +141,32 @@ describe("TemplateEditor", () => {
 
   it("can add a new task row", async () => {
     const user = userEvent.setup();
-    render(
-      <TemplateEditor slug="acme" availableTags={[]} />,
-    );
-    expect(screen.getByText("No tasks yet. Add a task to define the project structure.")).toBeInTheDocument();
+    render(<TemplateEditor slug="acme" availableTags={[]} />);
+    expect(
+      screen.getByText("No tasks yet. Add a task to define the project structure.")
+    ).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: /add task/i }));
-    expect(screen.queryByText("No tasks yet. Add a task to define the project structure.")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("No tasks yet. Add a task to define the project structure.")
+    ).not.toBeInTheDocument();
     expect(screen.getByPlaceholderText("Task name")).toBeInTheDocument();
   });
 
   it("can remove a task row", async () => {
     const user = userEvent.setup();
-    render(
-      <TemplateEditor slug="acme" template={SAMPLE_TEMPLATE} availableTags={[]} />,
-    );
+    render(<TemplateEditor slug="acme" template={SAMPLE_TEMPLATE} availableTags={[]} />);
     expect(screen.getByDisplayValue("Prepare financials")).toBeInTheDocument();
     await user.click(screen.getByTitle("Remove task"));
     expect(screen.queryByDisplayValue("Prepare financials")).not.toBeInTheDocument();
-    expect(screen.getByText("No tasks yet. Add a task to define the project structure.")).toBeInTheDocument();
+    expect(
+      screen.getByText("No tasks yet. Add a task to define the project structure.")
+    ).toBeInTheDocument();
   });
 
   it("calls createProjectTemplateAction on save for new template", async () => {
     mockCreateTemplate.mockResolvedValue({ success: true });
     const user = userEvent.setup();
-    render(
-      <TemplateEditor slug="acme" availableTags={[]} />,
-    );
+    render(<TemplateEditor slug="acme" availableTags={[]} />);
     const nameInput = screen.getByPlaceholderText("e.g. Monthly Accounting Package");
     const patternInput = screen.getByPlaceholderText("e.g. {customer} — {month} {year}");
     await user.type(nameInput, "Test Template");
@@ -178,28 +175,24 @@ describe("TemplateEditor", () => {
     await user.click(screen.getByRole("button", { name: /create template/i }));
     expect(mockCreateTemplate).toHaveBeenCalledWith(
       "acme",
-      expect.objectContaining({ name: "Test Template", namePattern: "customer-year" }),
+      expect.objectContaining({ name: "Test Template", namePattern: "customer-year" })
     );
   });
 
   it("calls updateProjectTemplateAction on save for existing template", async () => {
     mockUpdateTemplate.mockResolvedValue({ success: true });
     const user = userEvent.setup();
-    render(
-      <TemplateEditor slug="acme" template={SAMPLE_TEMPLATE} availableTags={[]} />,
-    );
+    render(<TemplateEditor slug="acme" template={SAMPLE_TEMPLATE} availableTags={[]} />);
     await user.click(screen.getByRole("button", { name: /save changes/i }));
     expect(mockUpdateTemplate).toHaveBeenCalledWith(
       "acme",
       "pt-1",
-      expect.objectContaining({ name: "Monthly Accounting Package" }),
+      expect.objectContaining({ name: "Monthly Accounting Package" })
     );
   });
 
   it("displays sub-tasks when template is loaded with task items", () => {
-    render(
-      <TemplateEditor slug="acme" template={SAMPLE_TEMPLATE} availableTags={[]} />,
-    );
+    render(<TemplateEditor slug="acme" template={SAMPLE_TEMPLATE} availableTags={[]} />);
     // Items are expanded by default when they exist
     expect(screen.getByText("Sub-tasks (2)")).toBeInTheDocument();
     expect(screen.getByDisplayValue("Gather bank statements")).toBeInTheDocument();
@@ -208,9 +201,7 @@ describe("TemplateEditor", () => {
 
   it("can add a new sub-task item", async () => {
     const user = userEvent.setup();
-    render(
-      <TemplateEditor slug="acme" template={SAMPLE_TEMPLATE} availableTags={[]} />,
-    );
+    render(<TemplateEditor slug="acme" template={SAMPLE_TEMPLATE} availableTags={[]} />);
     expect(screen.getByText("Sub-tasks (2)")).toBeInTheDocument();
     await user.click(screen.getByText("Add sub-task"));
     expect(screen.getByText("Sub-tasks (3)")).toBeInTheDocument();
@@ -220,9 +211,7 @@ describe("TemplateEditor", () => {
 
   it("can delete a sub-task item", async () => {
     const user = userEvent.setup();
-    render(
-      <TemplateEditor slug="acme" template={SAMPLE_TEMPLATE} availableTags={[]} />,
-    );
+    render(<TemplateEditor slug="acme" template={SAMPLE_TEMPLATE} availableTags={[]} />);
     expect(screen.getByDisplayValue("Gather bank statements")).toBeInTheDocument();
     const removeButtons = screen.getAllByTitle("Remove sub-task");
     await user.click(removeButtons[0]);
@@ -233,9 +222,7 @@ describe("TemplateEditor", () => {
   it("includes items in the save payload", async () => {
     mockUpdateTemplate.mockResolvedValue({ success: true });
     const user = userEvent.setup();
-    render(
-      <TemplateEditor slug="acme" template={SAMPLE_TEMPLATE} availableTags={[]} />,
-    );
+    render(<TemplateEditor slug="acme" template={SAMPLE_TEMPLATE} availableTags={[]} />);
     await user.click(screen.getByRole("button", { name: /save changes/i }));
     expect(mockUpdateTemplate).toHaveBeenCalledWith(
       "acme",
@@ -250,7 +237,7 @@ describe("TemplateEditor", () => {
             ],
           }),
         ]),
-      }),
+      })
     );
   });
 
@@ -263,17 +250,13 @@ describe("TemplateEditor", () => {
         template={SAMPLE_TEMPLATE}
         availableTags={[]}
         availableCustomerFields={CUSTOMER_FIELDS}
-      />,
+      />
     );
     const vatCheckbox = screen.getByRole("checkbox", { name: /vat number/i });
     await user.click(vatCheckbox);
     await user.click(screen.getByRole("button", { name: /save fields/i }));
     await waitFor(() => {
-      expect(mockUpdateRequiredFields).toHaveBeenCalledWith(
-        "acme",
-        "pt-1",
-        ["fd-1"],
-      );
+      expect(mockUpdateRequiredFields).toHaveBeenCalledWith("acme", "pt-1", ["fd-1"]);
     });
   });
 
@@ -288,7 +271,7 @@ describe("TemplateEditor", () => {
         template={templateWithFields}
         availableTags={[]}
         availableCustomerFields={CUSTOMER_FIELDS}
-      />,
+      />
     );
     const taxYearCheckbox = screen.getByRole("checkbox", { name: /tax year end/i });
     expect(taxYearCheckbox).toBeChecked();
@@ -302,7 +285,7 @@ describe("TemplateEditor", () => {
         slug="acme"
         availableTags={[]}
         availableRequestTemplates={REQUEST_TEMPLATES}
-      />,
+      />
     );
     expect(screen.getByText("Information Request Template")).toBeInTheDocument();
     expect(screen.getByText("None")).toBeInTheDocument();
@@ -316,7 +299,7 @@ describe("TemplateEditor", () => {
         slug="acme"
         availableTags={[]}
         availableRequestTemplates={REQUEST_TEMPLATES}
-      />,
+      />
     );
     const nameInput = screen.getByPlaceholderText("e.g. Monthly Accounting Package");
     const patternInput = screen.getByPlaceholderText("e.g. {customer} — {month} {year}");
@@ -330,7 +313,7 @@ describe("TemplateEditor", () => {
     await user.click(screen.getByRole("button", { name: /create template/i }));
     expect(mockCreateTemplate).toHaveBeenCalledWith(
       "acme",
-      expect.objectContaining({ requestTemplateId: "rt-1" }),
+      expect.objectContaining({ requestTemplateId: "rt-1" })
     );
   });
 
@@ -347,7 +330,7 @@ describe("TemplateEditor", () => {
         template={templateWithRequestTemplate}
         availableTags={[]}
         availableRequestTemplates={REQUEST_TEMPLATES}
-      />,
+      />
     );
 
     // Open the select and pick "None"
@@ -358,7 +341,7 @@ describe("TemplateEditor", () => {
     expect(mockUpdateTemplate).toHaveBeenCalledWith(
       "acme",
       "pt-1",
-      expect.objectContaining({ requestTemplateId: null }),
+      expect.objectContaining({ requestTemplateId: null })
     );
   });
 
@@ -369,7 +352,7 @@ describe("TemplateEditor", () => {
         slug="acme"
         availableTags={[]}
         availableRequestTemplates={REQUEST_TEMPLATES}
-      />,
+      />
     );
     await user.click(screen.getByRole("combobox", { name: /information request template/i }));
     expect(screen.getByRole("option", { name: "Annual Audit Pack" })).toBeInTheDocument();

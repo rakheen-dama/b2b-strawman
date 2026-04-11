@@ -34,7 +34,7 @@ function SortButton({ field, activeField, onToggle, children }: SortButtonProps)
       onClick={() => onToggle(field)}
       className={cn(
         "inline-flex items-center gap-1 hover:text-slate-900 dark:hover:text-slate-100",
-        activeField === field && "text-slate-900 dark:text-slate-100",
+        activeField === field && "text-slate-900 dark:text-slate-100"
       )}
     >
       {children}
@@ -57,7 +57,7 @@ type SortField =
 function sortMembers(
   members: TeamUtilizationResponse["members"],
   field: SortField,
-  dir: "asc" | "desc",
+  dir: "asc" | "desc"
 ) {
   return [...members].sort((a, b) => {
     let cmp = 0;
@@ -123,31 +123,49 @@ export function UtilizationTable({ data, slug }: UtilizationTableProps) {
       <TableHeader>
         <TableRow>
           <TableHead>
-            <SortButton field="name" activeField={sortField} onToggle={toggleSort}>Member</SortButton>
+            <SortButton field="name" activeField={sortField} onToggle={toggleSort}>
+              Member
+            </SortButton>
           </TableHead>
           <TableHead>
-            <SortButton field="weeklyCapacity" activeField={sortField} onToggle={toggleSort}>Capacity</SortButton>
+            <SortButton field="weeklyCapacity" activeField={sortField} onToggle={toggleSort}>
+              Capacity
+            </SortButton>
           </TableHead>
           <TableHead>
-            <SortButton field="plannedHours" activeField={sortField} onToggle={toggleSort}>Planned</SortButton>
+            <SortButton field="plannedHours" activeField={sortField} onToggle={toggleSort}>
+              Planned
+            </SortButton>
           </TableHead>
           <TableHead>
-            <SortButton field="actualHours" activeField={sortField} onToggle={toggleSort}>Actual</SortButton>
+            <SortButton field="actualHours" activeField={sortField} onToggle={toggleSort}>
+              Actual
+            </SortButton>
           </TableHead>
           <TableHead>
-            <SortButton field="billableHours" activeField={sortField} onToggle={toggleSort}>Billable</SortButton>
+            <SortButton field="billableHours" activeField={sortField} onToggle={toggleSort}>
+              Billable
+            </SortButton>
           </TableHead>
           <TableHead>
-            <SortButton field="plannedUtil" activeField={sortField} onToggle={toggleSort}>Planned %</SortButton>
+            <SortButton field="plannedUtil" activeField={sortField} onToggle={toggleSort}>
+              Planned %
+            </SortButton>
           </TableHead>
           <TableHead>
-            <SortButton field="actualUtil" activeField={sortField} onToggle={toggleSort}>Actual %</SortButton>
+            <SortButton field="actualUtil" activeField={sortField} onToggle={toggleSort}>
+              Actual %
+            </SortButton>
           </TableHead>
           <TableHead>
-            <SortButton field="billableUtil" activeField={sortField} onToggle={toggleSort}>Billable %</SortButton>
+            <SortButton field="billableUtil" activeField={sortField} onToggle={toggleSort}>
+              Billable %
+            </SortButton>
           </TableHead>
           <TableHead>
-            <SortButton field="overAllocated" activeField={sortField} onToggle={toggleSort}>Over-Alloc</SortButton>
+            <SortButton field="overAllocated" activeField={sortField} onToggle={toggleSort}>
+              Over-Alloc
+            </SortButton>
           </TableHead>
         </TableRow>
       </TableHeader>
@@ -156,43 +174,23 @@ export function UtilizationTable({ data, slug }: UtilizationTableProps) {
           <TableRow
             key={member.memberId}
             className="cursor-pointer"
-            onClick={() =>
-              router.push(
-                `/org/${slug}/resources?memberId=${member.memberId}`,
-              )
-            }
+            onClick={() => router.push(`/org/${slug}/resources?memberId=${member.memberId}`)}
           >
             <TableCell className="font-medium">{member.memberName}</TableCell>
-            <TableCell className="font-mono tabular-nums">
-              {member.weeklyCapacity}h
-            </TableCell>
-            <TableCell className="font-mono tabular-nums">
-              {member.totalPlannedHours}h
-            </TableCell>
-            <TableCell className="font-mono tabular-nums">
-              {member.totalActualHours}h
-            </TableCell>
-            <TableCell className="font-mono tabular-nums">
-              {member.totalBillableHours}h
+            <TableCell className="font-mono tabular-nums">{member.weeklyCapacity}h</TableCell>
+            <TableCell className="font-mono tabular-nums">{member.totalPlannedHours}h</TableCell>
+            <TableCell className="font-mono tabular-nums">{member.totalActualHours}h</TableCell>
+            <TableCell className="font-mono tabular-nums">{member.totalBillableHours}h</TableCell>
+            <TableCell>
+              <UtilizationBadge percentage={member.avgPlannedUtilizationPct} />
             </TableCell>
             <TableCell>
-              <UtilizationBadge
-                percentage={member.avgPlannedUtilizationPct}
-              />
+              <UtilizationBadge percentage={member.avgActualUtilizationPct} />
             </TableCell>
             <TableCell>
-              <UtilizationBadge
-                percentage={member.avgActualUtilizationPct}
-              />
+              <UtilizationBadge percentage={member.avgBillableUtilizationPct} />
             </TableCell>
-            <TableCell>
-              <UtilizationBadge
-                percentage={member.avgBillableUtilizationPct}
-              />
-            </TableCell>
-            <TableCell className="font-mono tabular-nums">
-              {member.overAllocatedWeeks}
-            </TableCell>
+            <TableCell className="font-mono tabular-nums">{member.overAllocatedWeeks}</TableCell>
           </TableRow>
         ))}
       </TableBody>

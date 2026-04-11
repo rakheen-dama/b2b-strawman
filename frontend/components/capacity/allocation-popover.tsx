@@ -6,11 +6,7 @@ import { AlertTriangle, Pencil, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -51,9 +47,7 @@ export function AllocationPopover({
 }: AllocationPopoverProps) {
   const [open, setOpen] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [editingAllocationId, setEditingAllocationId] = useState<
-    string | null
-  >(null);
+  const [editingAllocationId, setEditingAllocationId] = useState<string | null>(null);
   const [projectId, setProjectId] = useState("");
   const [hours, setHours] = useState("");
   const [note, setNote] = useState("");
@@ -164,12 +158,8 @@ export function AllocationPopover({
       <PopoverTrigger asChild>{children}</PopoverTrigger>
       <PopoverContent className="w-80 p-0" align="start">
         <div className="border-b border-slate-200 px-4 py-3 dark:border-slate-700">
-          <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
-            {memberName}
-          </p>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            Week of {weekStart}
-          </p>
+          <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{memberName}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Week of {weekStart}</p>
         </div>
 
         {/* Existing allocations */}
@@ -181,10 +171,7 @@ export function AllocationPopover({
           ) : (
             <ul className="space-y-2">
               {cell.allocations.map((slot) => (
-                <li
-                  key={slot.id}
-                  className="flex items-center justify-between text-sm"
-                >
+                <li key={slot.id} className="flex items-center justify-between text-sm">
                   {editingAllocationId === slot.id ? (
                     <div className="flex w-full flex-col gap-2">
                       <div className="flex items-center gap-2">
@@ -234,7 +221,7 @@ export function AllocationPopover({
                       <span className="min-w-0 flex-1 truncate text-slate-700 dark:text-slate-300">
                         {slot.projectName}
                       </span>
-                      <span className="mx-2 font-mono text-xs tabular-nums text-slate-600 dark:text-slate-400">
+                      <span className="mx-2 font-mono text-xs text-slate-600 tabular-nums dark:text-slate-400">
                         {slot.hours}h
                       </span>
                       <div className="flex gap-0.5">
@@ -282,11 +269,7 @@ export function AllocationPopover({
           </div>
         )}
 
-        {error && (
-          <div className="mx-4 mb-2 text-xs text-red-600 dark:text-red-400">
-            {error}
-          </div>
-        )}
+        {error && <div className="mx-4 mb-2 text-xs text-red-600 dark:text-red-400">{error}</div>}
 
         {/* Add allocation form */}
         {showAddForm ? (

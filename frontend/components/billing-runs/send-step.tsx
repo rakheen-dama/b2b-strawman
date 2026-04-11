@@ -22,10 +22,7 @@ import {
   getBillingRunAction,
   batchSendAction,
 } from "@/app/(app)/org/[slug]/invoices/billing-runs/new/billing-step-actions";
-import type {
-  BillingRunItem,
-  BatchOperationResult,
-} from "@/lib/api/billing-runs";
+import type { BillingRunItem, BatchOperationResult } from "@/lib/api/billing-runs";
 
 interface SendStepProps {
   slug: string;
@@ -34,20 +31,13 @@ interface SendStepProps {
   onBack: () => void;
 }
 
-export function SendStep({
-  slug,
-  billingRunId,
-  currency,
-  onBack,
-}: SendStepProps) {
+export function SendStep({ slug, billingRunId, currency, onBack }: SendStepProps) {
   const router = useRouter();
   const [items, setItems] = useState<BillingRunItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSending, setIsSending] = useState(false);
-  const [sendResult, setSendResult] = useState<BatchOperationResult | null>(
-    null,
-  );
+  const [sendResult, setSendResult] = useState<BatchOperationResult | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -65,8 +55,8 @@ export function SendStep({
               (item) =>
                 item.status !== "FAILED" &&
                 item.status !== "EXCLUDED" &&
-                item.status !== "CANCELLED",
-            ),
+                item.status !== "CANCELLED"
+            )
           );
         } else {
           setError(result.error ?? "Failed to load approved invoices.");
@@ -88,10 +78,7 @@ export function SendStep({
     };
   }, [billingRunId]);
 
-  const totalAmount = items.reduce(
-    (sum, item) => sum + item.totalUnbilledAmount,
-    0,
-  );
+  const totalAmount = items.reduce((sum, item) => sum + item.totalUnbilledAmount, 0);
 
   async function handleSendAll() {
     setIsSending(true);
@@ -120,9 +107,7 @@ export function SendStep({
   if (isLoading) {
     return (
       <div className="rounded-lg border border-slate-200 bg-white p-8 text-center dark:border-slate-800 dark:bg-slate-950">
-        <p className="text-slate-500 dark:text-slate-400">
-          Loading approved invoices...
-        </p>
+        <p className="text-slate-500 dark:text-slate-400">Loading approved invoices...</p>
       </div>
     );
   }
@@ -147,27 +132,19 @@ export function SendStep({
           <div className="mt-6 flex justify-center gap-8">
             <div className="text-center">
               <p className="text-2xl font-bold text-teal-600">{totalSent}</p>
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                Sent
-              </p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Sent</p>
             </div>
             {totalFailed > 0 && (
               <div className="text-center">
-                <p className="text-2xl font-bold text-red-600">
-                  {totalFailed}
-                </p>
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                  Failed
-                </p>
+                <p className="text-2xl font-bold text-red-600">{totalFailed}</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Failed</p>
               </div>
             )}
             <div className="text-center">
               <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
                 {formatCurrency(totalAmount, currency)}
               </p>
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                Total Amount
-              </p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Total Amount</p>
             </div>
           </div>
 
@@ -217,9 +194,7 @@ export function SendStep({
 
   return (
     <div className="space-y-6">
-      {error && (
-        <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-      )}
+      {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
 
       {/* Approved Invoices Table */}
       <div className="rounded-lg border border-slate-200 dark:border-slate-800">
@@ -248,9 +223,7 @@ export function SendStep({
               >
                 <td className="px-4 py-3">{item.customerName}</td>
                 <td className="px-4 py-3 text-slate-500 dark:text-slate-400">
-                  {item.invoiceId
-                    ? `INV-${item.invoiceId.slice(0, 8)}`
-                    : "—"}
+                  {item.invoiceId ? `INV-${item.invoiceId.slice(0, 8)}` : "—"}
                 </td>
                 <td className="px-4 py-3 text-right font-medium">
                   {formatCurrency(item.totalUnbilledAmount, currency)}
@@ -301,9 +274,8 @@ export function SendStep({
             <AlertDialogHeader>
               <AlertDialogTitle>Confirm Send</AlertDialogTitle>
               <AlertDialogDescription>
-                Send {items.length} invoices totaling{" "}
-                {formatCurrency(totalAmount, currency)}? This action cannot be
-                undone.
+                Send {items.length} invoices totaling {formatCurrency(totalAmount, currency)}? This
+                action cannot be undone.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

@@ -19,10 +19,7 @@ export function DeadlineCalendarView({
   onDayClick,
 }: DeadlineCalendarViewProps) {
   // Group deadlines by day (within this month)
-  const byDay = new Map<
-    number,
-    { filed: number; overdue: number; pending: number }
-  >();
+  const byDay = new Map<number, { filed: number; overdue: number; pending: number }>();
   for (const d of deadlines) {
     const [dYear, dMonth, dDayStr] = d.dueDate.split("-").map(Number);
     if (dYear !== year || dMonth !== month) continue;
@@ -37,8 +34,7 @@ export function DeadlineCalendarView({
   const firstDayOfMonth = new Date(year, month - 1, 1).getDay(); // 0=Sun
   const daysInMonth = new Date(year, month, 0).getDate();
   const today = new Date();
-  const isCurrentMonth =
-    today.getFullYear() === year && today.getMonth() + 1 === month;
+  const isCurrentMonth = today.getFullYear() === year && today.getMonth() + 1 === month;
   const todayDate = today.getDate();
 
   return (
@@ -61,7 +57,7 @@ export function DeadlineCalendarView({
         {Array.from({ length: firstDayOfMonth }).map((_, i) => (
           <div
             key={`empty-${i}`}
-            className="min-h-[80px] border-b border-r border-slate-100 dark:border-slate-800"
+            className="min-h-[80px] border-r border-b border-slate-100 dark:border-slate-800"
           />
         ))}
 
@@ -70,9 +66,7 @@ export function DeadlineCalendarView({
           const day = i + 1;
           const counts = byDay.get(day);
           const isToday = isCurrentMonth && day === todayDate;
-          const total = counts
-            ? counts.filed + counts.overdue + counts.pending
-            : 0;
+          const total = counts ? counts.filed + counts.overdue + counts.pending : 0;
           const isoDate = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
           return (
@@ -82,9 +76,8 @@ export function DeadlineCalendarView({
               onClick={() => total > 0 && onDayClick?.(isoDate)}
               disabled={total === 0}
               className={cn(
-                "min-h-[80px] border-b border-r border-slate-100 p-1.5 text-left transition-colors dark:border-slate-800",
-                total > 0 &&
-                  "cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                "min-h-[80px] border-r border-b border-slate-100 p-1.5 text-left transition-colors dark:border-slate-800",
+                total > 0 && "cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50"
               )}
             >
               <span
@@ -118,9 +111,7 @@ export function DeadlineCalendarView({
                   {counts.filed > 0 && (
                     <div className="flex items-center gap-1">
                       <span className="size-2 shrink-0 rounded-full bg-teal-500" />
-                      <span className="text-[10px] leading-none text-teal-600">
-                        {counts.filed}
-                      </span>
+                      <span className="text-[10px] leading-none text-teal-600">{counts.filed}</span>
                     </div>
                   )}
                 </div>

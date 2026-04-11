@@ -42,10 +42,10 @@ import Link from "next/link";
  * Resolves date range from search params, defaulting to current week
  * (Monday to Sunday) instead of current month.
  */
-function resolveMyWorkDateRange(searchParams: {
-  from?: string;
-  to?: string;
-}): { from: string; to: string } {
+function resolveMyWorkDateRange(searchParams: { from?: string; to?: string }): {
+  from: string;
+  to: string;
+} {
   if (searchParams.from && searchParams.to) {
     return { from: searchParams.from, to: searchParams.to };
   }
@@ -54,11 +54,7 @@ function resolveMyWorkDateRange(searchParams: {
   const now = new Date();
   const day = now.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
   const diffToMonday = day === 0 ? -6 : 1 - day;
-  const monday = new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    now.getDate() + diffToMonday,
-  );
+  const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + diffToMonday);
   const sunday = new Date(monday);
   sunday.setDate(monday.getDate() + 6);
 
@@ -92,10 +88,7 @@ export default async function MyWorkPage({
   try {
     tasksData = await api.get<MyWorkTasksResponse>("/api/my-work/tasks");
   } catch (error) {
-    if (
-      error instanceof ApiError &&
-      (error.status === 401 || error.status === 404)
-    ) {
+    if (error instanceof ApiError && (error.status === 401 || error.status === 404)) {
       handleApiError(error);
     }
     // Non-fatal for other errors: show empty state
@@ -108,7 +101,7 @@ export default async function MyWorkPage({
   let timeSummary: MyWorkTimeSummary | null = null;
   try {
     timeSummary = await api.get<MyWorkTimeSummary>(
-      `/api/my-work/time-summary?from=${from}&to=${to}`,
+      `/api/my-work/time-summary?from=${from}&to=${to}`
     );
   } catch {
     // Non-fatal: show empty time summary
@@ -119,7 +112,7 @@ export default async function MyWorkPage({
   let todayEntries: MyWorkTimeEntryItem[] = [];
   try {
     todayEntries = await api.get<MyWorkTimeEntryItem[]>(
-      `/api/my-work/time-entries?from=${today}&to=${today}`,
+      `/api/my-work/time-entries?from=${today}&to=${today}`
     );
   } catch {
     // Non-fatal: show empty today entries
@@ -129,7 +122,7 @@ export default async function MyWorkPage({
   let weekEntries: MyWorkTimeEntryItem[] = [];
   try {
     weekEntries = await api.get<MyWorkTimeEntryItem[]>(
-      `/api/my-work/time-entries?from=${from}&to=${to}`,
+      `/api/my-work/time-entries?from=${from}&to=${to}`
     );
   } catch {
     // Non-fatal
@@ -191,7 +184,7 @@ export default async function MyWorkPage({
     const activeGroupIds = groups.filter((g) => g.active).map((g) => g.id);
     if (activeGroupIds.length > 0) {
       const memberResults = await Promise.allSettled(
-        activeGroupIds.map((gId) => getGroupMembers(gId)),
+        activeGroupIds.map((gId) => getGroupMembers(gId))
       );
       memberResults.forEach((result, i) => {
         if (result.status === "fulfilled") {
@@ -208,16 +201,13 @@ export default async function MyWorkPage({
   const canCreateShared = isAdmin;
 
   // Inline server action for creating task views
-  async function handleCreateTaskView(
-    req: import("@/lib/types").CreateSavedViewRequest,
-  ) {
+  async function handleCreateTaskView(req: import("@/lib/types").CreateSavedViewRequest) {
     "use server";
     return createMyWorkViewAction(slug, req);
   }
 
   const { t } = createMessages("empty-states");
-  const hasNoTasks =
-    tasksData.assigned.length === 0 && tasksData.unassigned.length === 0;
+  const hasNoTasks = tasksData.assigned.length === 0 && tasksData.unassigned.length === 0;
 
   return (
     <div className="space-y-6">
@@ -277,22 +267,14 @@ export default async function MyWorkPage({
 
         {/* Right: Time/Activity (col-span-2) */}
         <div className="space-y-4 lg:col-span-2">
-          <TimeBreakdown
-            data={personalDashboard?.projectBreakdown ?? null}
-          />
+          <TimeBreakdown data={personalDashboard?.projectBreakdown ?? null} />
           <TodayTimeEntries entries={todayEntries} />
         </div>
       </div>
 
       {/* Extended widgets */}
-      <div
-        data-testid="extended-widgets"
-        className="grid grid-cols-1 gap-4 md:grid-cols-2"
-      >
-        <WeeklyTimeSummary
-          initialSummary={timeSummary}
-          initialFrom={from}
-        />
+      <div data-testid="extended-widgets" className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <WeeklyTimeSummary initialSummary={timeSummary} initialFrom={from} />
         <MyExpenses expenses={myExpenses} />
       </div>
     </div>

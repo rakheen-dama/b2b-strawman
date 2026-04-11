@@ -59,11 +59,7 @@ function daysRemaining(prescriptionDate: string): number {
   return Math.ceil(diff / (1000 * 60 * 60 * 24));
 }
 
-export function PrescriptionTab({
-  trackers,
-  slug,
-  onRefresh,
-}: PrescriptionTabProps) {
+export function PrescriptionTab({ trackers, slug, onRefresh }: PrescriptionTabProps) {
   const [interruptTarget, setInterruptTarget] = useState<string | null>(null);
 
   return (
@@ -86,28 +82,28 @@ export function PrescriptionTab({
           <table className="w-full">
             <thead>
               <tr className="border-b border-slate-200 dark:border-slate-800">
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Matter
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Client
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Type
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Cause of Action
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Prescription Date
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Status
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-right text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Days Left
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-right text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Actions
                 </th>
               </tr>
@@ -115,8 +111,7 @@ export function PrescriptionTab({
             <tbody>
               {trackers.map((tracker) => {
                 const remaining = daysRemaining(tracker.prescriptionDate);
-                const canInterrupt =
-                  tracker.status === "RUNNING" || tracker.status === "WARNED";
+                const canInterrupt = tracker.status === "RUNNING" || tracker.status === "WARNED";
 
                 return (
                   <tr
@@ -140,9 +135,7 @@ export function PrescriptionTab({
                     <td className="px-4 py-3 font-mono text-sm text-slate-600 dark:text-slate-400">
                       {tracker.prescriptionDate}
                     </td>
-                    <td className="px-4 py-3">
-                      {statusBadge(tracker.status)}
-                    </td>
+                    <td className="px-4 py-3">{statusBadge(tracker.status)}</td>
                     <td className="px-4 py-3 text-right">
                       <span
                         className={cn(

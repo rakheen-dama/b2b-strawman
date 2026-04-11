@@ -34,7 +34,7 @@ interface EditViewDialogProps {
   canEdit: boolean;
   onSave: (
     viewId: string,
-    req: UpdateSavedViewRequest,
+    req: UpdateSavedViewRequest
   ) => Promise<{ success: boolean; error?: string }>;
   children: React.ReactNode;
 }
@@ -56,23 +56,16 @@ export function EditViewDialog({
 
   // Initialize from existing view data
   const initFilters = view.filters ?? {};
-  const [filterTags, setFilterTags] = useState<string[]>(
-    (initFilters.tags as string[]) ?? [],
-  );
+  const [filterTags, setFilterTags] = useState<string[]>((initFilters.tags as string[]) ?? []);
   const [filterCustomFields, setFilterCustomFields] = useState<
     Record<string, { op: string; value: unknown }>
-  >(
-    (initFilters.customFields as Record<string, { op: string; value: unknown }>) ?? {},
-  );
+  >((initFilters.customFields as Record<string, { op: string; value: unknown }>) ?? {});
   const [filterDateRange, setFilterDateRange] = useState<DateRangeValue>({
-    field:
-      (initFilters.dateRange as { field?: string })?.field ?? "created_at",
+    field: (initFilters.dateRange as { field?: string })?.field ?? "created_at",
     from: (initFilters.dateRange as { from?: string })?.from,
     to: (initFilters.dateRange as { to?: string })?.to,
   });
-  const [filterSearch, setFilterSearch] = useState(
-    (initFilters.search as string) ?? "",
-  );
+  const [filterSearch, setFilterSearch] = useState((initFilters.search as string) ?? "");
 
   const standardCols = STANDARD_COLUMNS[entityType];
   const allColumns = [
@@ -83,7 +76,7 @@ export function EditViewDialog({
     })),
   ];
   const [selectedColumns, setSelectedColumns] = useState<string[]>(
-    view.columns ?? standardCols.map((c) => c.value),
+    view.columns ?? standardCols.map((c) => c.value)
   );
 
   const [viewName, setViewName] = useState(view.name);
@@ -94,9 +87,7 @@ export function EditViewDialog({
     // Re-initialize from view data
     const f = view.filters ?? {};
     setFilterTags((f.tags as string[]) ?? []);
-    setFilterCustomFields(
-      (f.customFields as Record<string, { op: string; value: unknown }>) ?? {},
-    );
+    setFilterCustomFields((f.customFields as Record<string, { op: string; value: unknown }>) ?? {});
     setFilterDateRange({
       field: (f.dateRange as { field?: string })?.field ?? "created_at",
       from: (f.dateRange as { from?: string })?.from,
@@ -110,10 +101,8 @@ export function EditViewDialog({
   function buildFilters(): Record<string, unknown> {
     const filters: Record<string, unknown> = {};
     if (filterTags.length > 0) filters.tags = filterTags;
-    if (Object.keys(filterCustomFields).length > 0)
-      filters.customFields = filterCustomFields;
-    if (filterDateRange.from || filterDateRange.to)
-      filters.dateRange = filterDateRange;
+    if (Object.keys(filterCustomFields).length > 0) filters.customFields = filterCustomFields;
+    if (filterDateRange.from || filterDateRange.to) filters.dateRange = filterDateRange;
     if (filterSearch.trim()) filters.search = filterSearch.trim();
     return filters;
   }
@@ -150,7 +139,7 @@ export function EditViewDialog({
 
   function toggleColumn(col: string) {
     setSelectedColumns((prev) =>
-      prev.includes(col) ? prev.filter((c) => c !== col) : [...prev, col],
+      prev.includes(col) ? prev.filter((c) => c !== col) : [...prev, col]
     );
   }
 
@@ -181,20 +170,13 @@ export function EditViewDialog({
           {/* Step 1: Filters */}
           {step === 1 && (
             <div className="space-y-4">
-              <TagFilter
-                value={filterTags}
-                onChange={setFilterTags}
-                allTags={allTags}
-              />
+              <TagFilter value={filterTags} onChange={setFilterTags} allTags={allTags} />
               <CustomFieldFilter
                 value={filterCustomFields}
                 onChange={setFilterCustomFields}
                 fieldDefinitions={fieldDefinitions}
               />
-              <DateRangeFilter
-                value={filterDateRange}
-                onChange={setFilterDateRange}
-              />
+              <DateRangeFilter value={filterDateRange} onChange={setFilterDateRange} />
               <div className="space-y-2">
                 <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">
                   Search
@@ -226,9 +208,7 @@ export function EditViewDialog({
                       onChange={() => toggleColumn(col.value)}
                       className="rounded border-slate-300"
                     />
-                    <span className="text-sm text-slate-700 dark:text-slate-300">
-                      {col.label}
-                    </span>
+                    <span className="text-sm text-slate-700 dark:text-slate-300">{col.label}</span>
                     {col.value.startsWith("cf:") && (
                       <span className="text-xs text-slate-400">(custom)</span>
                     )}
@@ -254,18 +234,12 @@ export function EditViewDialog({
             </div>
           )}
 
-          {error && (
-            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-          )}
+          {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
         </div>
 
         <DialogFooter>
           {step > 1 && (
-            <Button
-              variant="outline"
-              onClick={() => setStep((s) => s - 1)}
-              disabled={saving}
-            >
+            <Button variant="outline" onClick={() => setStep((s) => s - 1)} disabled={saving}>
               Previous
             </Button>
           )}

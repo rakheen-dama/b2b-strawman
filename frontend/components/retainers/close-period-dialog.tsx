@@ -46,9 +46,7 @@ export function ClosePeriodDialog({
   // Preview estimate — backend recalculates at close time
   const remainingHours = period.remainingHours ?? 0;
   const rolloverOut =
-    !isHourBank ||
-    retainer.rolloverPolicy === "FORFEIT" ||
-    !retainer.rolloverPolicy
+    !isHourBank || retainer.rolloverPolicy === "FORFEIT" || !retainer.rolloverPolicy
       ? 0
       : retainer.rolloverPolicy === "CARRY_CAPPED"
         ? Math.min(remainingHours, retainer.rolloverCapHours ?? 0)
@@ -97,24 +95,19 @@ export function ClosePeriodDialog({
               <div className="flex justify-between">
                 <dt className="text-slate-500 dark:text-slate-400">Period:</dt>
                 <dd className="font-medium text-slate-900 dark:text-slate-100">
-                  {formatLocalDate(period.periodStart)} &ndash;{" "}
-                  {formatLocalDate(period.periodEnd)}
+                  {formatLocalDate(period.periodStart)} &ndash; {formatLocalDate(period.periodEnd)}
                 </dd>
               </div>
               {period.allocatedHours != null && (
                 <div className="flex justify-between">
-                  <dt className="text-slate-500 dark:text-slate-400">
-                    Allocated Hours:
-                  </dt>
+                  <dt className="text-slate-500 dark:text-slate-400">Allocated Hours:</dt>
                   <dd className="font-medium text-slate-900 dark:text-slate-100">
                     {period.allocatedHours.toFixed(1)}h
                   </dd>
                 </div>
               )}
               <div className="flex justify-between">
-                <dt className="text-slate-500 dark:text-slate-400">
-                  Consumed Hours:
-                </dt>
+                <dt className="text-slate-500 dark:text-slate-400">Consumed Hours:</dt>
                 <dd className="font-medium text-slate-900 dark:text-slate-100">
                   {period.consumedHours.toFixed(1)}h
                 </dd>
@@ -125,8 +118,8 @@ export function ClosePeriodDialog({
           {/* Overage warning */}
           {hasOverage && (
             <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
-              {(period.overageHours ?? 0).toFixed(1)} overage hours recorded.
-              Overage charges will apply.
+              {(period.overageHours ?? 0).toFixed(1)} overage hours recorded. Overage charges will
+              apply.
             </div>
           )}
 
@@ -145,9 +138,7 @@ export function ClosePeriodDialog({
             <div className="rounded-md border border-slate-200 p-3 dark:border-slate-800">
               <div className="space-y-1 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-slate-600 dark:text-slate-400">
-                    Base fee
-                  </span>
+                  <span className="text-slate-600 dark:text-slate-400">Base fee</span>
                   <span className="font-medium text-slate-900 dark:text-slate-100">
                     {formatCurrency(baseFeeAmount, currency)}
                   </span>
@@ -164,9 +155,7 @@ export function ClosePeriodDialog({
                 )}
                 <div className="border-t border-slate-100 pt-1 dark:border-slate-800">
                   <div className="flex justify-between font-medium">
-                    <span className="text-slate-900 dark:text-slate-100">
-                      Estimated Total
-                    </span>
+                    <span className="text-slate-900 dark:text-slate-100">Estimated Total</span>
                     <span className="text-slate-900 dark:text-slate-100">
                       {hasOverage
                         ? `${formatCurrency(baseFeeAmount, currency)}+`
@@ -178,12 +167,18 @@ export function ClosePeriodDialog({
             </div>
           </div>
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && <p className="text-destructive text-sm">{error}</p>}
         </div>
 
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isSubmitting}>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={(e) => { e.preventDefault(); handleClose(); }} disabled={isSubmitting}>
+          <AlertDialogAction
+            onClick={(e) => {
+              e.preventDefault();
+              handleClose();
+            }}
+            disabled={isSubmitting}
+          >
             {isSubmitting ? "Closing..." : "Close Period & Generate Invoice"}
           </AlertDialogAction>
         </AlertDialogFooter>

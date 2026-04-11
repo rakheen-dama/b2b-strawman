@@ -10,10 +10,7 @@ interface RadialGaugeProps {
   className?: string;
 }
 
-function gaugeColor(
-  value: number,
-  thresholds: { low: number; high: number }
-): string {
+function gaugeColor(value: number, thresholds: { low: number; high: number }): string {
   if (value < thresholds.low) return "var(--color-slate-400)";
   if (value > thresholds.high) return "var(--color-amber-500, #f59e0b)";
   return "var(--color-teal-500)";
@@ -53,9 +50,7 @@ export function RadialGauge({
   thresholds = { low: 60, high: 90 },
   className,
 }: RadialGaugeProps) {
-  const clampedValue = Number.isFinite(value)
-    ? Math.max(0, Math.min(100, value))
-    : 0;
+  const clampedValue = Number.isFinite(value) ? Math.max(0, Math.min(100, value)) : 0;
 
   const center = size / 2;
   const radius = (size - strokeWidth) / 2;
@@ -71,9 +66,7 @@ export function RadialGauge({
   // Foreground arc — proportional to value
   const valueSweep = (clampedValue / 100) * totalSweep;
   const fgPath =
-    valueSweep > 0
-      ? describeArc(center, center, radius, startAngle, startAngle + valueSweep)
-      : "";
+    valueSweep > 0 ? describeArc(center, center, radius, startAngle, startAngle + valueSweep) : "";
 
   const color = gaugeColor(clampedValue, thresholds);
 

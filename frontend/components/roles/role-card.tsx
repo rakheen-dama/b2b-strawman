@@ -16,13 +16,9 @@ export function RoleCard({ role, onEdit, onDelete }: RoleCardProps) {
     <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
-          <h3 className="font-semibold text-slate-950 dark:text-slate-50">
-            {role.name}
-          </h3>
+          <h3 className="font-semibold text-slate-950 dark:text-slate-50">{role.name}</h3>
           {role.description && (
-            <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-              {role.description}
-            </p>
+            <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{role.description}</p>
           )}
         </div>
         <div className="flex shrink-0 items-center gap-1">

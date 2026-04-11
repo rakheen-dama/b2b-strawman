@@ -19,7 +19,7 @@ export async function verifyKycAction(
     fullName: string;
     idDocumentType?: string;
     consentAcknowledged: boolean;
-  },
+  }
 ): Promise<ActionResult<KycVerifyResponse>> {
   try {
     const result = await api.post<KycVerifyResponse>("/api/kyc/verify", data);
@@ -42,11 +42,11 @@ export async function getKycStatusAction(): Promise<KycIntegrationStatus> {
 }
 
 export async function getKycResultAction(
-  reference: string,
+  reference: string
 ): Promise<ActionResult<KycVerifyResponse>> {
   try {
     const result = await api.get<KycVerifyResponse>(
-      `/api/kyc/result/${encodeURIComponent(reference)}`,
+      `/api/kyc/result/${encodeURIComponent(reference)}`
     );
     return { success: true, data: result };
   } catch (error) {

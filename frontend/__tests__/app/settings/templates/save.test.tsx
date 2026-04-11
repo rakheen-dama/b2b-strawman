@@ -20,21 +20,15 @@ vi.mock("@/lib/api", () => ({
   },
 }));
 
-vi.mock(
-  "@/app/(app)/org/[slug]/settings/templates/template-crud-actions",
-  () => ({
-    updateTemplateAction: (...args: unknown[]) => mockUpdateTemplateAction(...args),
-    createTemplateAction: (...args: unknown[]) => mockCreateTemplateAction(...args),
-  }),
-);
+vi.mock("@/app/(app)/org/[slug]/settings/templates/template-crud-actions", () => ({
+  updateTemplateAction: (...args: unknown[]) => mockUpdateTemplateAction(...args),
+  createTemplateAction: (...args: unknown[]) => mockCreateTemplateAction(...args),
+}));
 
-vi.mock(
-  "@/app/(app)/org/[slug]/settings/templates/template-support-actions",
-  () => ({
-    fetchVariableMetadataAction: vi.fn(),
-    fetchRequiredFieldPacksAction: vi.fn().mockResolvedValue({ success: true, data: [] }),
-  }),
-);
+vi.mock("@/app/(app)/org/[slug]/settings/templates/template-support-actions", () => ({
+  fetchVariableMetadataAction: vi.fn(),
+  fetchRequiredFieldPacksAction: vi.fn().mockResolvedValue({ success: true, data: [] }),
+}));
 
 // DocumentEditor mock — supports onUpdate simulation for both variable and clause insertions
 vi.mock("@/components/editor/DocumentEditor", () => ({
@@ -159,9 +153,7 @@ describe("Template save integration", () => {
     const template = makeTemplate();
     mockUpdateTemplateAction.mockResolvedValue({ success: true });
 
-    render(
-      <TemplateEditorClient slug="acme" template={template} readOnly={false} />,
-    );
+    render(<TemplateEditorClient slug="acme" template={template} readOnly={false} />);
 
     await user.click(screen.getByText("Simulate text edit"));
     await user.click(screen.getByText("Save"));
@@ -175,7 +167,7 @@ describe("Template save integration", () => {
             type: "doc",
             content: [{ type: "paragraph", content: [{ type: "text", text: "Hello" }] }],
           },
-        }),
+        })
       );
     });
   });
@@ -185,9 +177,7 @@ describe("Template save integration", () => {
     const template = makeTemplate();
     mockUpdateTemplateAction.mockResolvedValue({ success: true });
 
-    render(
-      <TemplateEditorClient slug="acme" template={template} readOnly={false} />,
-    );
+    render(<TemplateEditorClient slug="acme" template={template} readOnly={false} />);
 
     await user.click(screen.getByText("Simulate variable insert"));
     await user.click(screen.getByText("Save"));
@@ -201,7 +191,7 @@ describe("Template save integration", () => {
             type: "doc",
             content: [{ type: "variable", attrs: { key: "project.name" } }],
           },
-        }),
+        })
       );
     });
   });
@@ -211,9 +201,7 @@ describe("Template save integration", () => {
     const template = makeTemplate();
     mockUpdateTemplateAction.mockResolvedValue({ success: true });
 
-    render(
-      <TemplateEditorClient slug="acme" template={template} readOnly={false} />,
-    );
+    render(<TemplateEditorClient slug="acme" template={template} readOnly={false} />);
 
     await user.click(screen.getByText("Simulate clause insert"));
     await user.click(screen.getByText("Save"));
@@ -237,7 +225,7 @@ describe("Template save integration", () => {
               },
             ],
           },
-        }),
+        })
       );
     });
   });
@@ -269,7 +257,7 @@ describe("Template save integration", () => {
             type: "doc",
             content: [{ type: "paragraph", content: [{ type: "text", text: "Hello" }] }],
           },
-        }),
+        })
       );
     });
   });

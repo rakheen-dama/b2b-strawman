@@ -9,19 +9,15 @@ const mockInstantiateTemplate = vi.fn();
 const mockCheckEngagement = vi.fn();
 const mockRouterPush = vi.fn();
 
-vi.mock(
-  "@/app/(app)/org/[slug]/settings/project-templates/actions",
-  () => ({
-    saveAsTemplateAction: vi.fn(),
-    deleteTemplateAction: vi.fn(),
-    duplicateTemplateAction: vi.fn(),
-    createProjectTemplateAction: vi.fn(),
-    updateProjectTemplateAction: vi.fn(),
-    updateRequiredCustomerFieldsAction: vi.fn(),
-    instantiateTemplateAction: (...args: unknown[]) =>
-      mockInstantiateTemplate(...args),
-  }),
-);
+vi.mock("@/app/(app)/org/[slug]/settings/project-templates/actions", () => ({
+  saveAsTemplateAction: vi.fn(),
+  deleteTemplateAction: vi.fn(),
+  duplicateTemplateAction: vi.fn(),
+  createProjectTemplateAction: vi.fn(),
+  updateProjectTemplateAction: vi.fn(),
+  updateRequiredCustomerFieldsAction: vi.fn(),
+  instantiateTemplateAction: (...args: unknown[]) => mockInstantiateTemplate(...args),
+}));
 
 vi.mock("@/lib/actions/prerequisite-actions", () => ({
   checkEngagementPrerequisitesAction: (...args: unknown[]) => mockCheckEngagement(...args),
@@ -103,7 +99,7 @@ describe("NewFromTemplateDialog", () => {
         customers={CUSTOMERS}
       >
         <button>New from Template trigger</button>
-      </NewFromTemplateDialog>,
+      </NewFromTemplateDialog>
     );
     await user.click(screen.getByText("New from Template trigger"));
     expect(screen.getByText("Monthly Bookkeeping")).toBeInTheDocument();
@@ -119,7 +115,7 @@ describe("NewFromTemplateDialog", () => {
         customers={CUSTOMERS}
       >
         <button>Open NewFromDialog</button>
-      </NewFromTemplateDialog>,
+      </NewFromTemplateDialog>
     );
     await user.click(screen.getByText("Open NewFromDialog"));
     expect(screen.getByRole("button", { name: "Next" })).toBeDisabled();
@@ -137,7 +133,7 @@ describe("NewFromTemplateDialog", () => {
         customers={CUSTOMERS}
       >
         <button>Open NewFromDialog</button>
-      </NewFromTemplateDialog>,
+      </NewFromTemplateDialog>
     );
     await user.click(screen.getByText("Open NewFromDialog"));
     await user.click(screen.getByText("Monthly Bookkeeping"));
@@ -155,7 +151,7 @@ describe("NewFromTemplateDialog", () => {
         customers={CUSTOMERS}
       >
         <button>Open NewFromDialog</button>
-      </NewFromTemplateDialog>,
+      </NewFromTemplateDialog>
     );
     await user.click(screen.getByText("Open NewFromDialog"));
     await user.click(screen.getByText("Monthly Bookkeeping"));
@@ -178,25 +174,21 @@ describe("NewFromTemplateDialog", () => {
         customers={CUSTOMERS}
       >
         <button>Open NewFromDialog</button>
-      </NewFromTemplateDialog>,
+      </NewFromTemplateDialog>
     );
     await user.click(screen.getByText("Open NewFromDialog"));
     await user.click(screen.getByText("Monthly Bookkeeping"));
     await user.click(screen.getByRole("button", { name: "Next" }));
-    await user.click(
-      screen.getByRole("button", { name: "Create Project" }),
-    );
+    await user.click(screen.getByRole("button", { name: "Create Project" }));
     await waitFor(() => {
       expect(mockInstantiateTemplate).toHaveBeenCalledWith(
         "acme",
         "pt-1",
-        expect.objectContaining({}),
+        expect.objectContaining({})
       );
     });
     await waitFor(() => {
-      expect(mockRouterPush).toHaveBeenCalledWith(
-        "/org/acme/projects/proj-new",
-      );
+      expect(mockRouterPush).toHaveBeenCalledWith("/org/acme/projects/proj-new");
     });
   });
 
@@ -214,14 +206,12 @@ describe("NewFromTemplateDialog", () => {
         customers={CUSTOMERS}
       >
         <button>Open NewFromDialog</button>
-      </NewFromTemplateDialog>,
+      </NewFromTemplateDialog>
     );
     await user.click(screen.getByText("Open NewFromDialog"));
     await user.click(screen.getByText("Monthly Bookkeeping"));
     await user.click(screen.getByRole("button", { name: "Next" }));
-    await user.click(
-      screen.getByRole("button", { name: "Create Project" }),
-    );
+    await user.click(screen.getByRole("button", { name: "Create Project" }));
     await waitFor(() => {
       expect(screen.getByText("Template is inactive")).toBeInTheDocument();
     });
@@ -252,7 +242,7 @@ describe("NewFromTemplateDialog", () => {
         customers={CUSTOMERS}
       >
         <button>Open Dialog prereq test</button>
-      </NewFromTemplateDialog>,
+      </NewFromTemplateDialog>
     );
     await user.click(screen.getByText("Open Dialog prereq test"));
     await user.click(screen.getByText("Monthly Bookkeeping"));
@@ -279,7 +269,7 @@ describe("NewFromTemplateDialog", () => {
         customers={CUSTOMERS}
       >
         <button>Open Dialog no customer</button>
-      </NewFromTemplateDialog>,
+      </NewFromTemplateDialog>
     );
     await user.click(screen.getByText("Open Dialog no customer"));
     await user.click(screen.getByText("Monthly Bookkeeping"));

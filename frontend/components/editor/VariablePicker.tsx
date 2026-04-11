@@ -30,15 +30,8 @@ interface VariablePickerProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function VariablePicker({
-  entityType,
-  onSelect,
-  open,
-  onOpenChange,
-}: VariablePickerProps) {
-  const [metadata, setMetadata] = useState<VariableMetadataResponse | null>(
-    null,
-  );
+export function VariablePicker({ entityType, onSelect, open, onOpenChange }: VariablePickerProps) {
+  const [metadata, setMetadata] = useState<VariableMetadataResponse | null>(null);
 
   useEffect(() => {
     if (open) {
@@ -56,9 +49,7 @@ export function VariablePicker({
       <DialogContent className="max-h-[500px] overflow-hidden p-0 sm:max-w-md">
         <DialogHeader className="px-4 pt-4">
           <DialogTitle>Insert Variable</DialogTitle>
-          <DialogDescription>
-            Select a variable to insert into the template.
-          </DialogDescription>
+          <DialogDescription>Select a variable to insert into the template.</DialogDescription>
         </DialogHeader>
         <Command>
           <CommandInput placeholder="Search variables..." />
@@ -79,9 +70,7 @@ export function VariablePicker({
                       <span className="font-mono text-xs text-teal-700 dark:text-teal-300">
                         {variable.key}
                       </span>
-                      <span className="text-xs text-muted-foreground">
-                        {variable.label}
-                      </span>
+                      <span className="text-muted-foreground text-xs">{variable.label}</span>
                     </div>
                   </CommandItem>
                 ))}

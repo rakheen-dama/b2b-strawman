@@ -4,10 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { UtilizationTable } from "@/components/profitability/utilization-table";
 import { ProjectProfitabilityTable } from "@/components/profitability/project-profitability-table";
 import { TerminologyProvider } from "@/lib/terminology";
-import type {
-  UtilizationResponse,
-  OrgProfitabilityResponse,
-} from "@/lib/types";
+import type { UtilizationResponse, OrgProfitabilityResponse } from "@/lib/types";
 
 // Mock server actions
 const mockGetUtilization = vi.fn();
@@ -18,9 +15,7 @@ vi.mock("@/app/(app)/org/[slug]/profitability/actions", () => ({
   getOrgProfitability: (...args: unknown[]) => mockGetOrgProfitability(...args),
 }));
 
-function makeUtilization(
-  overrides: Partial<UtilizationResponse> = {},
-): UtilizationResponse {
+function makeUtilization(overrides: Partial<UtilizationResponse> = {}): UtilizationResponse {
   return {
     from: "2026-02-01",
     to: "2026-02-14",
@@ -32,9 +27,7 @@ function makeUtilization(
         billableHours: 32,
         nonBillableHours: 8,
         utilizationPercent: 80,
-        currencies: [
-          { currency: "USD", billableValue: 4800, costValue: 3200 },
-        ],
+        currencies: [{ currency: "USD", billableValue: 4800, costValue: 3200 }],
       },
       {
         memberId: "m2",
@@ -51,7 +44,7 @@ function makeUtilization(
 }
 
 function makeProfitability(
-  overrides: Partial<OrgProfitabilityResponse> = {},
+  overrides: Partial<OrgProfitabilityResponse> = {}
 ): OrgProfitabilityResponse {
   return {
     projects: [
@@ -95,11 +88,7 @@ describe("Profitability Page", () => {
     it("renders utilization table with member data", () => {
       const data = makeUtilization();
       render(
-        <UtilizationTable
-          initialData={data}
-          initialFrom="2026-02-01"
-          initialTo="2026-02-14"
-        />,
+        <UtilizationTable initialData={data} initialFrom="2026-02-01" initialTo="2026-02-14" />
       );
 
       expect(screen.getByText("Team Utilization")).toBeInTheDocument();
@@ -113,27 +102,17 @@ describe("Profitability Page", () => {
     it("renders empty state when no utilization data", () => {
       const data = makeUtilization({ members: [] });
       render(
-        <UtilizationTable
-          initialData={data}
-          initialFrom="2026-02-01"
-          initialTo="2026-02-14"
-        />,
+        <UtilizationTable initialData={data} initialFrom="2026-02-01" initialTo="2026-02-14" />
       );
 
-      expect(
-        screen.getByText("No utilization data for this period"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("No utilization data for this period")).toBeInTheDocument();
     });
 
     it("sorts by utilization when clicking column header", async () => {
       const user = userEvent.setup();
       const data = makeUtilization();
       render(
-        <UtilizationTable
-          initialData={data}
-          initialFrom="2026-02-01"
-          initialTo="2026-02-14"
-        />,
+        <UtilizationTable initialData={data} initialFrom="2026-02-01" initialTo="2026-02-14" />
       );
 
       // Default sort is utilization desc, so Alice (80%) comes first
@@ -172,11 +151,7 @@ describe("Profitability Page", () => {
       mockGetUtilization.mockResolvedValue({ data: newData });
 
       render(
-        <UtilizationTable
-          initialData={data}
-          initialFrom="2026-02-01"
-          initialTo="2026-02-14"
-        />,
+        <UtilizationTable initialData={data} initialFrom="2026-02-01" initialTo="2026-02-14" />
       );
 
       // Change the "from" date
@@ -198,7 +173,7 @@ describe("Profitability Page", () => {
             initialFrom="2026-02-01"
             initialTo="2026-02-14"
           />
-        </TerminologyProvider>,
+        </TerminologyProvider>
       );
 
       expect(screen.getByText("Project Profitability")).toBeInTheDocument();
@@ -217,7 +192,7 @@ describe("Profitability Page", () => {
             initialFrom="2026-02-01"
             initialTo="2026-02-14"
           />
-        </TerminologyProvider>,
+        </TerminologyProvider>
       );
 
       // Beta Project has null margin/marginPercent
@@ -234,12 +209,10 @@ describe("Profitability Page", () => {
             initialFrom="2026-02-01"
             initialTo="2026-02-14"
           />
-        </TerminologyProvider>,
+        </TerminologyProvider>
       );
 
-      expect(
-        screen.getByText("No project profitability data for this period"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("No project profitability data for this period")).toBeInTheDocument();
     });
 
     it("shows dash for projects without a customer", () => {
@@ -251,7 +224,7 @@ describe("Profitability Page", () => {
             initialFrom="2026-02-01"
             initialTo="2026-02-14"
           />
-        </TerminologyProvider>,
+        </TerminologyProvider>
       );
 
       // Beta Project has no customer

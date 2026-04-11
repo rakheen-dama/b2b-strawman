@@ -5,7 +5,13 @@ import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { Check, Circle, Ban, Lock, XCircle, FileText, ShieldCheck } from "lucide-react";
 import { formatDate } from "@/lib/format";
@@ -85,7 +91,7 @@ export function ChecklistInstanceItemRow({
   const isSkipped = item.status === "SKIPPED";
 
   const dependencyName = item.dependsOnItemId
-    ? instanceItems.find((i) => i.id === item.dependsOnItemId)?.name ?? "Unknown item"
+    ? (instanceItems.find((i) => i.id === item.dependsOnItemId)?.name ?? "Unknown item")
     : null;
 
   async function handleComplete() {
@@ -133,7 +139,7 @@ export function ChecklistInstanceItemRow({
     <div
       className={cn(
         "rounded-lg border border-slate-200 p-3 dark:border-slate-800",
-        isCancelled && "opacity-50",
+        isCancelled && "opacity-50"
       )}
     >
       <div className="flex items-start gap-3">
@@ -154,9 +160,7 @@ export function ChecklistInstanceItemRow({
           {item.verificationStatus && (
             <div className="mt-1 flex items-center gap-2">
               {item.verificationStatus === "VERIFIED" && (
-                <Badge variant="success">
-                  Verified via {item.verificationProvider}
-                </Badge>
+                <Badge variant="success">Verified via {item.verificationProvider}</Badge>
               )}
               {item.verificationStatus === "NOT_VERIFIED" && (
                 <Badge variant="destructive">Not Verified</Badge>
@@ -173,9 +177,7 @@ export function ChecklistInstanceItemRow({
           )}
 
           {item.description && (
-            <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
-              {item.description}
-            </p>
+            <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">{item.description}</p>
           )}
 
           {item.requiresDocument && (
@@ -200,9 +202,7 @@ export function ChecklistInstanceItemRow({
           )}
 
           {/* Error message */}
-          {error && (
-            <p className="mt-1 text-xs text-red-600 dark:text-red-400">{error}</p>
-          )}
+          {error && <p className="mt-1 text-xs text-red-600 dark:text-red-400">{error}</p>}
 
           {/* Complete form */}
           {showCompleteForm && (
@@ -214,10 +214,10 @@ export function ChecklistInstanceItemRow({
                 className="resize-none"
                 rows={2}
               />
-              {item.requiresDocument && (
+              {item.requiresDocument &&
                 (() => {
                   const uploadedDocs = (customerDocuments ?? []).filter(
-                    (d) => d.status === "UPLOADED",
+                    (d) => d.status === "UPLOADED"
                   );
                   return (
                     <Select value={documentId} onValueChange={setDocumentId}>
@@ -239,8 +239,7 @@ export function ChecklistInstanceItemRow({
                       </SelectContent>
                     </Select>
                   );
-                })()
-              )}
+                })()}
               <div className="flex gap-2">
                 <Button size="sm" onClick={handleComplete} disabled={isPending}>
                   {isPending ? "Saving..." : "Confirm"}
@@ -272,11 +271,7 @@ export function ChecklistInstanceItemRow({
                 rows={2}
               />
               <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  onClick={handleSkip}
-                  disabled={isPending || !skipReason.trim()}
-                >
+                <Button size="sm" onClick={handleSkip} disabled={isPending || !skipReason.trim()}>
                   {isPending ? "Saving..." : "Confirm Skip"}
                 </Button>
                 <Button
@@ -332,12 +327,7 @@ export function ChecklistInstanceItemRow({
               </>
             )}
             {(isCompleted || isSkipped) && isAdmin && (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={handleReopen}
-                disabled={isPending}
-              >
+              <Button size="sm" variant="outline" onClick={handleReopen} disabled={isPending}>
                 {isPending ? "Reopening..." : "Reopen"}
               </Button>
             )}

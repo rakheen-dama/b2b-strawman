@@ -5,12 +5,7 @@ import { ExpenseList } from "@/components/expenses/expense-list";
 import { LogExpenseDialog } from "@/components/expenses/log-expense-dialog";
 import { Button } from "@/components/ui/button";
 import { Receipt } from "lucide-react";
-import type {
-  PaginatedExpenseResponse,
-  ProjectMember,
-  Task,
-  OrgMember,
-} from "@/lib/types";
+import type { PaginatedExpenseResponse, ProjectMember, Task, OrgMember } from "@/lib/types";
 
 export default async function ProjectExpensesPage({
   params,
@@ -27,7 +22,7 @@ export default async function ProjectExpensesPage({
   };
   try {
     expenses = await api.get<PaginatedExpenseResponse>(
-      `/api/projects/${id}/expenses?sort=date,desc`,
+      `/api/projects/${id}/expenses?sort=date,desc`
     );
   } catch {
     // Non-fatal: show empty list
@@ -65,9 +60,7 @@ export default async function ProjectExpensesPage({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="font-display text-xl text-slate-950 dark:text-slate-50">
-          Expenses
-        </h2>
+        <h2 className="font-display text-xl text-slate-950 dark:text-slate-50">Expenses</h2>
         <LogExpenseDialog
           slug={slug}
           projectId={id}

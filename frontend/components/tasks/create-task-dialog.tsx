@@ -46,7 +46,9 @@ export function CreateTaskDialog({
   const [error, setError] = useState<string | null>(null);
   const [selectedAssigneeId, setSelectedAssigneeId] = useState<string | null>(null);
   const [priority, setPriority] = useState("MEDIUM");
-  const [recurrenceFrequency, setRecurrenceFrequency] = useState<RecurrenceFrequency | "NONE">("NONE");
+  const [recurrenceFrequency, setRecurrenceFrequency] = useState<RecurrenceFrequency | "NONE">(
+    "NONE"
+  );
   const [recurrenceInterval, setRecurrenceInterval] = useState(1);
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -113,7 +115,7 @@ export function CreateTaskDialog({
           </div>
           <div className="space-y-2">
             <Label htmlFor="task-description">
-              Description <span className="font-normal text-muted-foreground">(optional)</span>
+              Description <span className="text-muted-foreground font-normal">(optional)</span>
             </Label>
             <Textarea
               id="task-description"
@@ -139,27 +141,22 @@ export function CreateTaskDialog({
             </div>
             <div className="space-y-2">
               <Label htmlFor="task-type">
-                Type <span className="font-normal text-muted-foreground">(optional)</span>
+                Type <span className="text-muted-foreground font-normal">(optional)</span>
               </Label>
-              <Input
-                id="task-type"
-                name="type"
-                placeholder="e.g. Bug, Feature"
-                maxLength={100}
-              />
+              <Input id="task-type" name="type" placeholder="e.g. Bug, Feature" maxLength={100} />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="task-due-date">
-                Due Date <span className="font-normal text-muted-foreground">(optional)</span>
+                Due Date <span className="text-muted-foreground font-normal">(optional)</span>
               </Label>
               <Input id="task-due-date" name="dueDate" type="date" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="task-estimated-hours">
                 Estimated Hours{" "}
-                <span className="font-normal text-muted-foreground">(optional)</span>
+                <span className="text-muted-foreground font-normal">(optional)</span>
               </Label>
               <Input
                 id="task-estimated-hours"
@@ -174,9 +171,12 @@ export function CreateTaskDialog({
           {/* Recurrence section */}
           <div className="space-y-2">
             <Label htmlFor="task-recurrence-frequency">
-              Recurrence <span className="font-normal text-muted-foreground">(optional)</span>
+              Recurrence <span className="text-muted-foreground font-normal">(optional)</span>
             </Label>
-            <Select value={recurrenceFrequency} onValueChange={(v) => setRecurrenceFrequency(v as RecurrenceFrequency | "NONE")}>
+            <Select
+              value={recurrenceFrequency}
+              onValueChange={(v) => setRecurrenceFrequency(v as RecurrenceFrequency | "NONE")}
+            >
               <SelectTrigger>
                 <SelectValue placeholder="None" />
               </SelectTrigger>
@@ -198,12 +198,14 @@ export function CreateTaskDialog({
                   type="number"
                   min={1}
                   value={recurrenceInterval}
-                  onChange={(e) => setRecurrenceInterval(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                  onChange={(e) =>
+                    setRecurrenceInterval(Math.max(1, parseInt(e.target.value, 10) || 1))
+                  }
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="task-recurrence-end-date">
-                  End Date <span className="font-normal text-muted-foreground">(optional)</span>
+                  End Date <span className="text-muted-foreground font-normal">(optional)</span>
                 </Label>
                 <Input id="task-recurrence-end-date" name="recurrenceEndDate" type="date" />
               </div>
@@ -212,7 +214,7 @@ export function CreateTaskDialog({
           {canManage && (
             <div className="space-y-2">
               <Label>
-                Assign to <span className="font-normal text-muted-foreground">(optional)</span>
+                Assign to <span className="text-muted-foreground font-normal">(optional)</span>
               </Label>
               <AssigneeSelector
                 members={members}
@@ -222,7 +224,7 @@ export function CreateTaskDialog({
               />
             </div>
           )}
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && <p className="text-destructive text-sm">{error}</p>}
           <DialogFooter>
             <Button
               type="button"

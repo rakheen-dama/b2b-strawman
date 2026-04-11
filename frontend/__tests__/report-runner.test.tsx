@@ -2,10 +2,7 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ReportRunner } from "@/components/reports/report-runner";
-import type {
-  ReportDefinitionDetail,
-  ReportExecutionResponse,
-} from "@/lib/api/reports";
+import type { ReportDefinitionDetail, ReportExecutionResponse } from "@/lib/api/reports";
 
 vi.mock("server-only", () => ({}));
 
@@ -14,12 +11,9 @@ const mockExportCsvAction = vi.fn();
 const mockExportPdfAction = vi.fn();
 
 vi.mock("@/app/(app)/org/[slug]/reports/[reportSlug]/actions", () => ({
-  executeReportAction: (...args: unknown[]) =>
-    mockExecuteReportAction(...args),
-  exportReportCsvAction: (...args: unknown[]) =>
-    mockExportCsvAction(...args),
-  exportReportPdfAction: (...args: unknown[]) =>
-    mockExportPdfAction(...args),
+  executeReportAction: (...args: unknown[]) => mockExecuteReportAction(...args),
+  exportReportCsvAction: (...args: unknown[]) => mockExportCsvAction(...args),
+  exportReportPdfAction: (...args: unknown[]) => mockExportPdfAction(...args),
 }));
 
 function makeDefinition(): ReportDefinitionDetail {
@@ -139,7 +133,7 @@ describe("ReportRunner", () => {
         "timesheet",
         expect.objectContaining({ dateFrom: "2026-02-15" }),
         0,
-        25,
+        25
       );
     });
   });
@@ -158,9 +152,7 @@ describe("ReportRunner", () => {
     await user.click(screen.getByRole("button", { name: /run report/i }));
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Report execution failed"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Report execution failed")).toBeInTheDocument();
     });
   });
 });

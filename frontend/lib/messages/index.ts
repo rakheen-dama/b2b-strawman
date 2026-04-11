@@ -4,12 +4,7 @@ import errors from "./en/errors.json";
 import gettingStarted from "./en/getting-started.json";
 import common from "./en/common.json";
 
-export type MessageNamespace =
-  | "empty-states"
-  | "help"
-  | "errors"
-  | "getting-started"
-  | "common";
+export type MessageNamespace = "empty-states" | "help" | "errors" | "getting-started" | "common";
 
 export interface MessagesReturn {
   t: (code: string, interpolations?: Record<string, string>) => string;
@@ -23,16 +18,9 @@ const namespaces: Record<MessageNamespace, Record<string, unknown>> = {
   common: common,
 };
 
-function resolve(
-  obj: Record<string, unknown>,
-  path: string,
-): string | undefined {
+function resolve(obj: Record<string, unknown>, path: string): string | undefined {
   const result = path.split(".").reduce<unknown>((acc, key) => {
-    if (
-      acc &&
-      typeof acc === "object" &&
-      key in (acc as Record<string, unknown>)
-    ) {
+    if (acc && typeof acc === "object" && key in (acc as Record<string, unknown>)) {
       return (acc as Record<string, unknown>)[key];
     }
     return undefined;
@@ -42,15 +30,10 @@ function resolve(
 }
 
 // TODO: add locale parameter when multi-locale support is needed
-export function createMessages(
-  namespace: MessageNamespace,
-): MessagesReturn {
+export function createMessages(namespace: MessageNamespace): MessagesReturn {
   const messages = namespaces[namespace];
 
-  const t = (
-    code: string,
-    interpolations?: Record<string, string>,
-  ): string => {
+  const t = (code: string, interpolations?: Record<string, string>): string => {
     const value = resolve(messages, code);
 
     if (value === undefined) {

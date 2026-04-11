@@ -71,20 +71,13 @@ export function BatchFilingActions({
           <Button size="sm" onClick={() => setDialogOpen(true)}>
             Mark as Filed
           </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handleMarkNA}
-            disabled={isMarkingNA}
-          >
+          <Button size="sm" variant="outline" onClick={handleMarkNA} disabled={isMarkingNA}>
             {isMarkingNA ? "Updating..." : "Mark as N/A"}
           </Button>
           <Button size="sm" variant="ghost" onClick={onClearSelection}>
             Clear
           </Button>
-          {error && (
-            <p className="text-sm text-destructive">{error}</p>
-          )}
+          {error && <p className="text-destructive text-sm">{error}</p>}
         </div>
       </div>
       <FilingStatusDialog

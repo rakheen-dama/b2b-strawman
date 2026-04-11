@@ -7,13 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/empty-state";
 import { docsLink } from "@/lib/docs";
-import {
-  Table,
-  TableBody,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { CreateTaskDialog } from "@/components/tasks/create-task-dialog";
 import { TaskDetailSheet } from "@/components/tasks/task-detail-sheet";
 import { TaskListTableRow } from "@/components/tasks/task-list-table-row";
@@ -27,9 +21,7 @@ import {
 import { cn } from "@/lib/utils";
 import { ViewSelectorClient } from "@/components/views/ViewSelectorClient";
 import { toast } from "sonner";
-import {
-  TooltipProvider,
-} from "@/components/ui/tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import type {
   Task,
   TaskStatus,
@@ -95,7 +87,7 @@ export function TaskListPanel({
   const [myTasksActive, setMyTasksActive] = useState(false);
   const [recurringActive, setRecurringActive] = useState(false);
   const [tasks, setTasks] = useState<Task[]>(
-    initialTasks.filter((t) => DEFAULT_STATUSES.includes(t.status)),
+    initialTasks.filter((t) => DEFAULT_STATUSES.includes(t.status))
   );
   const [isPending, startTransition] = useTransition();
   const [actionTaskId, setActionTaskId] = useState<string | null>(null);
@@ -122,8 +114,14 @@ export function TaskListPanel({
     router.push(`?${params.toString()}`, { scroll: false });
   }
 
-  function buildCurrentFilters(): { status?: string; assigneeId?: string; viewId?: string; recurring?: boolean } {
-    const filters: { status?: string; assigneeId?: string; viewId?: string; recurring?: boolean } = {};
+  function buildCurrentFilters(): {
+    status?: string;
+    assigneeId?: string;
+    viewId?: string;
+    recurring?: boolean;
+  } {
+    const filters: { status?: string; assigneeId?: string; viewId?: string; recurring?: boolean } =
+      {};
     if (myTasksActive && currentMemberId) filters.assigneeId = currentMemberId;
     else filters.status = Array.from(activeStatuses).join(",");
     const currentViewId = searchParams.get("view");
@@ -136,9 +134,17 @@ export function TaskListPanel({
     const currentViewId = searchParams.get("view");
     startTransition(async () => {
       try {
-        const filters: { status?: string; assigneeId?: string; viewId?: string; recurring?: boolean } = {};
+        const filters: {
+          status?: string;
+          assigneeId?: string;
+          viewId?: string;
+          recurring?: boolean;
+        } = {};
         if (myTasks) {
-          if (!currentMemberId) { setTasks([]); return; }
+          if (!currentMemberId) {
+            setTasks([]);
+            return;
+          }
           filters.assigneeId = currentMemberId;
         } else {
           filters.status = Array.from(statuses).join(",");
@@ -156,43 +162,55 @@ export function TaskListPanel({
   function handleChipClick(key: TaskStatus | "all" | "my" | "recurring") {
     setError(null);
     if (key === "all") {
-      setMyTasksActive(false); setRecurringActive(false);
+      setMyTasksActive(false);
+      setRecurringActive(false);
       setActiveStatuses(new Set(ALL_STATUSES));
       fetchWithFilters(new Set(ALL_STATUSES), false, false);
     } else if (key === "my") {
       const next = !myTasksActive;
-      setMyTasksActive(next); setRecurringActive(false);
+      setMyTasksActive(next);
+      setRecurringActive(false);
       fetchWithFilters(activeStatuses, next, false);
     } else if (key === "recurring") {
       const next = !recurringActive;
-      setRecurringActive(next); setMyTasksActive(false);
+      setRecurringActive(next);
+      setMyTasksActive(false);
       fetchWithFilters(activeStatuses, false, next);
     } else {
-      setMyTasksActive(false); setRecurringActive(false);
+      setMyTasksActive(false);
+      setRecurringActive(false);
       const next = new Set(activeStatuses);
-      if (next.has(key)) { if (next.size > 1) next.delete(key); }
-      else next.add(key);
+      if (next.has(key)) {
+        if (next.size > 1) next.delete(key);
+      } else next.add(key);
       setActiveStatuses(next);
       fetchWithFilters(next, false, false);
     }
   }
 
   function isChipActive(key: TaskStatus | "all" | "my" | "recurring"): boolean {
-    if (key === "all") return activeStatuses.size === ALL_STATUSES.length && !myTasksActive && !recurringActive;
+    if (key === "all")
+      return activeStatuses.size === ALL_STATUSES.length && !myTasksActive && !recurringActive;
     if (key === "my") return myTasksActive;
     if (key === "recurring") return recurringActive;
     return activeStatuses.has(key) && !myTasksActive && !recurringActive;
   }
 
-  const isDefaultFilter = !myTasksActive && activeStatuses.size === DEFAULT_STATUSES.length &&
+  const isDefaultFilter =
+    !myTasksActive &&
+    activeStatuses.size === DEFAULT_STATUSES.length &&
     DEFAULT_STATUSES.every((s) => activeStatuses.has(s));
 
   // --- Action handlers ---
 
   function handleTaskAction(
     taskId: string,
-    action: (s: string, t: string, p: string) => Promise<{ success: boolean; error?: string; nextInstance?: Task | null }>,
-    actionName: string,
+    action: (
+      s: string,
+      t: string,
+      p: string
+    ) => Promise<{ success: boolean; error?: string; nextInstance?: Task | null }>,
+    actionName: string
   ) {
     setError(null);
     setActionTaskId(taskId);
@@ -205,12 +223,17 @@ export function TaskListPanel({
         } else {
           if (actionName === "complete" && result.nextInstance) {
             const dueLabel = result.nextInstance.dueDate
-              ? new Date(result.nextInstance.dueDate).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })
+              ? new Date(result.nextInstance.dueDate).toLocaleDateString(undefined, {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                })
               : "no due date";
             toast.success("Task completed", { description: `Next instance due ${dueLabel}` });
           } else if (actionName === "complete" && result.nextInstance === null) {
             const completedTask = tasks.find((t) => t.id === taskId);
-            if (completedTask?.isRecurring) toast.success("Task completed", { description: "Recurrence has ended" });
+            if (completedTask?.isRecurring)
+              toast.success("Task completed", { description: "Recurrence has ended" });
           }
           const fetched = await fetchTasks(projectId, buildCurrentFilters());
           setTasks(fetched);
@@ -256,7 +279,7 @@ export function TaskListPanel({
             isChipActive(chip.key)
               ? "bg-slate-900 text-slate-50 dark:bg-slate-100 dark:text-slate-900"
               : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700",
-            isPending && "opacity-50",
+            isPending && "opacity-50"
           )}
         >
           {chip.label}
@@ -300,21 +323,41 @@ export function TaskListPanel({
       {header}
       {viewSelector}
       {filterBar}
-      {error && <p className="text-sm text-red-600 dark:text-red-400" role="alert">{error}</p>}
+      {error && (
+        <p className="text-sm text-red-600 dark:text-red-400" role="alert">
+          {error}
+        </p>
+      )}
       {tasks.length === 0 ? (
-        <EmptyState icon={ClipboardList} title="No tasks match this filter" description="Try a different filter or clear the selection." />
+        <EmptyState
+          icon={ClipboardList}
+          title="No tasks match this filter"
+          description="Try a different filter or clear the selection."
+        />
       ) : (
         <TooltipProvider>
           <div className="rounded-lg border border-slate-200 dark:border-slate-800">
             <Table>
               <TableHeader>
                 <TableRow className="border-slate-200 hover:bg-transparent dark:border-slate-800">
-                  <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">Priority</TableHead>
-                  <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">Title</TableHead>
-                  <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">Status</TableHead>
-                  <TableHead className="hidden text-xs uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">Assignee</TableHead>
-                  <TableHead className="hidden text-xs uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">Due Date</TableHead>
-                  <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">Actions</TableHead>
+                  <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
+                    Priority
+                  </TableHead>
+                  <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
+                    Title
+                  </TableHead>
+                  <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
+                    Status
+                  </TableHead>
+                  <TableHead className="hidden text-xs tracking-wide text-slate-600 uppercase sm:table-cell dark:text-slate-400">
+                    Assignee
+                  </TableHead>
+                  <TableHead className="hidden text-xs tracking-wide text-slate-600 uppercase sm:table-cell dark:text-slate-400">
+                    Due Date
+                  </TableHead>
+                  <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
+                    Actions
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

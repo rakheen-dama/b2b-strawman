@@ -1,10 +1,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { TimeBreakdown } from "@/components/my-work/time-breakdown";
-import {
-  UrgencyTaskList,
-  groupByUrgency,
-} from "@/components/my-work/urgency-task-list";
+import { UrgencyTaskList, groupByUrgency } from "@/components/my-work/urgency-task-list";
 import { TodaysAgenda } from "@/components/dashboard/todays-agenda";
 import { WeeklyRhythmStrip } from "@/components/dashboard/weekly-rhythm-strip";
 import type { PersonalDashboardResponse } from "@/lib/dashboard-types";
@@ -12,11 +9,9 @@ import type { MyWorkTaskItem } from "@/lib/types";
 
 // Mock recharts to avoid rendering issues in happy-dom
 vi.mock("recharts", () => ({
-  ResponsiveContainer: ({
-    children,
-  }: {
-    children: React.ReactNode;
-  }) => <div data-testid="responsive-container">{children}</div>,
+  ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="responsive-container">{children}</div>
+  ),
   BarChart: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="bar-chart">{children}</div>
   ),
@@ -94,9 +89,7 @@ function daysFromNow(days: number): string {
   return `${y}-${m}-${dd}`;
 }
 
-function makeTask(
-  overrides: Partial<MyWorkTaskItem> & { id: string }
-): MyWorkTaskItem {
+function makeTask(overrides: Partial<MyWorkTaskItem> & { id: string }): MyWorkTaskItem {
   return {
     projectId: "p1",
     projectName: "Test Project",
@@ -226,7 +219,7 @@ describe("My Work page renders new layout components", () => {
           selectedDayIndex={null}
           onDaySelect={() => {}}
         />
-      </>,
+      </>
     );
 
     // New components present

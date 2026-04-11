@@ -1,11 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import {
-  cleanup,
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-} from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { RequestAccessForm } from "@/components/access-request/request-access-form";
 
@@ -13,10 +7,8 @@ const mockSubmitAccessRequest = vi.fn();
 const mockVerifyAccessRequestOtp = vi.fn();
 
 vi.mock("@/app/request-access/actions", () => ({
-  submitAccessRequest: (...args: unknown[]) =>
-    mockSubmitAccessRequest(...args),
-  verifyAccessRequestOtp: (...args: unknown[]) =>
-    mockVerifyAccessRequestOtp(...args),
+  submitAccessRequest: (...args: unknown[]) => mockSubmitAccessRequest(...args),
+  verifyAccessRequestOtp: (...args: unknown[]) => mockVerifyAccessRequestOtp(...args),
 }));
 
 /**
@@ -24,9 +16,7 @@ vi.mock("@/app/request-access/actions", () => ({
  * Select dropdowns don't reliably render in happy-dom). The form handler
  * still fires; the server action mock controls the response.
  */
-async function fillTextFieldsAndSubmit(
-  user: ReturnType<typeof userEvent.setup>,
-) {
+async function fillTextFieldsAndSubmit(user: ReturnType<typeof userEvent.setup>) {
   await user.type(screen.getByLabelText("Work Email"), "jane@company.com");
   await user.type(screen.getByLabelText("Full Name"), "Jane Smith");
   await user.type(screen.getByLabelText("Organisation Name"), "Acme Corp");
@@ -53,15 +43,9 @@ describe("RequestAccessForm", () => {
     expect(screen.getByLabelText("Work Email")).toBeInTheDocument();
     expect(screen.getByLabelText("Full Name")).toBeInTheDocument();
     expect(screen.getByLabelText("Organisation Name")).toBeInTheDocument();
-    expect(
-      screen.getByRole("combobox", { name: "Country" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("combobox", { name: "Industry" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "Request Access" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Country" })).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Industry" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Request Access" })).toBeInTheDocument();
   });
 
   it("shows blocked domain error for gmail.com email", async () => {
@@ -70,9 +54,7 @@ describe("RequestAccessForm", () => {
 
     await user.type(screen.getByLabelText("Work Email"), "test@gmail.com");
 
-    expect(
-      screen.getByText("Please use a company email address."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Please use a company email address.")).toBeInTheDocument();
   });
 
   it("shows OTP input after successful Step 1 submission", async () => {
@@ -123,9 +105,7 @@ describe("RequestAccessForm", () => {
     });
 
     expect(
-      screen.getByText(
-        /Your access request has been submitted for review/,
-      ),
+      screen.getByText(/Your access request has been submitted for review/)
     ).toBeInTheDocument();
     expect(screen.getByText("Back to home")).toBeInTheDocument();
   });
@@ -154,9 +134,7 @@ describe("RequestAccessForm", () => {
     await user.click(screen.getByRole("button", { name: "Verify" }));
 
     await waitFor(() => {
-      expect(
-        screen.getByText("The verification code is incorrect"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("The verification code is incorrect")).toBeInTheDocument();
     });
   });
 

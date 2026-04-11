@@ -54,9 +54,7 @@ export function ActivityItem({ item }: ActivityItemProps) {
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
           <Icon className="size-3.5 shrink-0 text-slate-400 dark:text-slate-500" />
-          <p className="text-sm text-slate-700 dark:text-slate-300">
-            {item.message}
-          </p>
+          <p className="text-sm text-slate-700 dark:text-slate-300">{item.message}</p>
         </div>
         <RelativeDate
           iso={item.occurredAt}

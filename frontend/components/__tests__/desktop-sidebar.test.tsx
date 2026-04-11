@@ -11,13 +11,9 @@ vi.mock("next/navigation", () => ({
 // Mock motion/react — avoid animation issues in tests
 vi.mock("motion/react", () => ({
   motion: {
-    div: ({ children, ...props }: React.ComponentProps<"div">) => (
-      <div {...props}>{children}</div>
-    ),
+    div: ({ children, ...props }: React.ComponentProps<"div">) => <div {...props}>{children}</div>,
   },
-  AnimatePresence: ({ children }: { children: React.ReactNode }) => (
-    <>{children}</>
-  ),
+  AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 // Mock recent-items-provider — CommandPaletteDialog uses useRecentItems
@@ -69,7 +65,7 @@ function renderSidebar() {
           </CommandPaletteProvider>
         </CapabilityProvider>
       </TerminologyProvider>
-    </OrgProfileProvider>,
+    </OrgProfileProvider>
   );
 }
 

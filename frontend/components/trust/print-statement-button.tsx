@@ -11,10 +11,7 @@ interface PrintStatementButtonProps {
   customerId: string;
 }
 
-export function PrintStatementButton({
-  accountId,
-  customerId,
-}: PrintStatementButtonProps) {
+export function PrintStatementButton({ accountId, customerId }: PrintStatementButtonProps) {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [loading, setLoading] = useState(false);
@@ -30,12 +27,7 @@ export function PrintStatementButton({
     setError(null);
 
     try {
-      const base64Pdf = await generateStatementPdf(
-        accountId,
-        customerId,
-        dateFrom,
-        dateTo,
-      );
+      const base64Pdf = await generateStatementPdf(accountId, customerId, dateFrom, dateTo);
 
       // Convert base64 to blob and trigger download
       const byteChars = atob(base64Pdf);
@@ -62,10 +54,7 @@ export function PrintStatementButton({
   }
 
   return (
-    <div
-      className="flex flex-wrap items-end gap-3"
-      data-testid="print-statement"
-    >
+    <div className="flex flex-wrap items-end gap-3" data-testid="print-statement">
       <div className="flex flex-col gap-1">
         <label
           htmlFor="statement-from"
@@ -111,9 +100,7 @@ export function PrintStatementButton({
         {loading ? "Generating..." : "Print Statement"}
       </Button>
 
-      {error && (
-        <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-      )}
+      {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
     </div>
   );
 }

@@ -35,7 +35,7 @@ interface CreateProposalRequest {
 
 export async function createProposalAction(
   slug: string,
-  data: CreateProposalRequest,
+  data: CreateProposalRequest
 ): Promise<ActionResult> {
   try {
     const created = await api.post<ProposalResponse>("/api/proposals", data);
@@ -55,22 +55,17 @@ export async function createProposalAction(
   }
 }
 
-export async function fetchProposalAction(
-  id: string,
-): Promise<ProposalResponse> {
+export async function fetchProposalAction(id: string): Promise<ProposalResponse> {
   return api.get<ProposalResponse>(`/api/proposals/${id}`);
 }
 
 export async function sendProposalAction(
   slug: string,
   id: string,
-  portalContactId: string,
+  portalContactId: string
 ): Promise<ActionResult> {
   try {
-    const data = await api.post<ProposalResponse>(
-      `/api/proposals/${id}/send`,
-      { portalContactId },
-    );
+    const data = await api.post<ProposalResponse>(`/api/proposals/${id}/send`, { portalContactId });
     revalidatePath(`/org/${slug}/proposals`);
     revalidatePath(`/org/${slug}/proposals/${id}`);
     return { success: true, data };
@@ -88,14 +83,9 @@ export async function sendProposalAction(
   }
 }
 
-export async function withdrawProposalAction(
-  slug: string,
-  id: string,
-): Promise<ActionResult> {
+export async function withdrawProposalAction(slug: string, id: string): Promise<ActionResult> {
   try {
-    const data = await api.post<ProposalResponse>(
-      `/api/proposals/${id}/withdraw`,
-    );
+    const data = await api.post<ProposalResponse>(`/api/proposals/${id}/withdraw`);
     revalidatePath(`/org/${slug}/proposals`);
     revalidatePath(`/org/${slug}/proposals/${id}`);
     return { success: true, data };
@@ -121,13 +111,9 @@ export async function fetchCustomersAction(): Promise<
     // The endpoint may return paginated or flat array
     const customers = Array.isArray(result)
       ? result
-      : (result as unknown as { content: Customer[] }).content ?? [];
+      : ((result as unknown as { content: Customer[] }).content ?? []);
     return customers
-      .filter(
-        (c) =>
-          c.lifecycleStatus !== "OFFBOARDED" &&
-          c.lifecycleStatus !== "PROSPECT",
-      )
+      .filter((c) => c.lifecycleStatus !== "OFFBOARDED" && c.lifecycleStatus !== "PROSPECT")
       .map((c) => ({ id: c.id, name: c.name, email: c.email }));
   } catch {
     return [];
@@ -135,12 +121,10 @@ export async function fetchCustomersAction(): Promise<
 }
 
 export async function fetchPortalContactsAction(
-  customerId: string,
+  customerId: string
 ): Promise<PortalContactSummary[]> {
   try {
-    return await api.get<PortalContactSummary[]>(
-      `/api/customers/${customerId}/portal-contacts`,
-    );
+    return await api.get<PortalContactSummary[]>(`/api/customers/${customerId}/portal-contacts`);
   } catch (error) {
     if (error instanceof ApiError && error.status === 404) {
       return [];

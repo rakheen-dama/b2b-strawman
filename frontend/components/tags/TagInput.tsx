@@ -3,11 +3,7 @@
 import { useState, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Command,
   CommandEmpty,
@@ -16,10 +12,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Plus, X, Loader2 } from "lucide-react";
-import {
-  createTagAction,
-  setEntityTagsAction,
-} from "@/app/(app)/org/[slug]/settings/tags/actions";
+import { createTagAction, setEntityTagsAction } from "@/app/(app)/org/[slug]/settings/tags/actions";
 import type { EntityType, TagResponse } from "@/lib/types";
 
 function getContrastColor(hexColor: string): string {
@@ -69,7 +62,7 @@ export function TagInput({
           slug,
           entityType,
           entityId,
-          newTags.map((t) => t.id),
+          newTags.map((t) => t.id)
         );
         if (!result.success) {
           setError(result.error ?? "Failed to update tags.");
@@ -80,7 +73,7 @@ export function TagInput({
         setIsUpdating(false);
       }
     },
-    [slug, entityType, entityId],
+    [slug, entityType, entityId]
   );
 
   const handleAddTag = useCallback(
@@ -91,7 +84,7 @@ export function TagInput({
       setSearchValue("");
       await saveEntityTags(newTags);
     },
-    [localTags, saveEntityTags],
+    [localTags, saveEntityTags]
   );
 
   const handleRemoveTag = useCallback(
@@ -100,7 +93,7 @@ export function TagInput({
       setLocalTags(newTags);
       await saveEntityTags(newTags);
     },
-    [localTags, saveEntityTags],
+    [localTags, saveEntityTags]
   );
 
   const handleInlineCreate = useCallback(
@@ -130,7 +123,7 @@ export function TagInput({
         setIsUpdating(false);
       }
     },
-    [canInlineCreate, slug, localTags, saveEntityTags],
+    [canInlineCreate, slug, localTags, saveEntityTags]
   );
 
   // Read-only: just render badges
@@ -138,9 +131,7 @@ export function TagInput({
     if (localTags.length === 0) {
       return (
         <div data-testid="tag-input">
-          <span className="text-sm text-slate-400 dark:text-slate-600">
-            No tags
-          </span>
+          <span className="text-sm text-slate-400 dark:text-slate-600">No tags</span>
         </div>
       );
     }
@@ -169,11 +160,8 @@ export function TagInput({
   }
 
   const searchTrimmed = searchValue.trim().toLowerCase();
-  const hasExactMatch = allTags.some(
-    (t) => t.name.toLowerCase() === searchTrimmed,
-  );
-  const showCreateOption =
-    canInlineCreate && searchTrimmed.length > 0 && !hasExactMatch;
+  const hasExactMatch = allTags.some((t) => t.name.toLowerCase() === searchTrimmed);
+  const showCreateOption = canInlineCreate && searchTrimmed.length > 0 && !hasExactMatch;
 
   return (
     <div className="space-y-2" data-testid="tag-input">
@@ -208,12 +196,7 @@ export function TagInput({
 
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-7 gap-1 text-xs"
-              disabled={isUpdating}
-            >
+            <Button variant="outline" size="sm" className="h-7 gap-1 text-xs" disabled={isUpdating}>
               {isUpdating ? (
                 <Loader2 className="size-3 animate-spin" />
               ) : (
@@ -230,9 +213,7 @@ export function TagInput({
                 onValueChange={setSearchValue}
               />
               <CommandList>
-                <CommandEmpty>
-                  {showCreateOption ? null : "No tags found."}
-                </CommandEmpty>
+                <CommandEmpty>{showCreateOption ? null : "No tags found."}</CommandEmpty>
                 {unappliedTags.map((tag) => (
                   <CommandItem
                     key={tag.id}
@@ -262,9 +243,7 @@ export function TagInput({
           </PopoverContent>
         </Popover>
       </div>
-      {error && (
-        <p className="text-xs text-red-600 dark:text-red-400">{error}</p>
-      )}
+      {error && <p className="text-xs text-red-600 dark:text-red-400">{error}</p>}
     </div>
   );
 }

@@ -50,16 +50,12 @@ export function MemberDetailPanel({
   slug,
   projects = [],
 }: MemberDetailPanelProps) {
-  const [capacityRecords, setCapacityRecords] = useState<
-    MemberCapacityResponse[]
-  >([]);
+  const [capacityRecords, setCapacityRecords] = useState<MemberCapacityResponse[]>([]);
   const [leaveBlocks, setLeaveBlocks] = useState<LeaveBlockResponse[]>([]);
   const [allocations, setAllocations] = useState<AllocationResponse[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
-  const [editingLeave, setEditingLeave] = useState<LeaveBlockResponse | null>(
-    null,
-  );
+  const [editingLeave, setEditingLeave] = useState<LeaveBlockResponse | null>(null);
   const [showCapacityForm, setShowCapacityForm] = useState(false);
   const [newWeeklyHours, setNewWeeklyHours] = useState("");
   const [newEffectiveFrom, setNewEffectiveFrom] = useState("");
@@ -136,11 +132,7 @@ export function MemberDetailPanel({
     setIsSubmitting(true);
     setError(null);
     try {
-      const result = await deleteCapacityRecordAction(
-        slug,
-        member.memberId,
-        id,
-      );
+      const result = await deleteCapacityRecordAction(slug, member.memberId, id);
       if (result.success) {
         await loadData();
       } else {
@@ -192,16 +184,14 @@ export function MemberDetailPanel({
       acc[key].push(a);
       return acc;
     },
-    {} as Record<string, AllocationResponse[]>,
+    {} as Record<string, AllocationResponse[]>
   );
 
   // Current capacity (latest record)
   const currentCapacity =
     capacityRecords.length > 0
       ? [...capacityRecords].sort(
-          (a, b) =>
-            new Date(b.effectiveFrom).getTime() -
-            new Date(a.effectiveFrom).getTime(),
+          (a, b) => new Date(b.effectiveFrom).getTime() - new Date(a.effectiveFrom).getTime()
         )[0]
       : null;
 
@@ -227,7 +217,7 @@ export function MemberDetailPanel({
           {/* Header */}
           <div className="flex items-start justify-between gap-4 border-b border-slate-200 px-6 py-4 dark:border-slate-800">
             <div className="min-w-0 flex-1">
-              <h2 className="text-base font-semibold leading-snug text-slate-950 dark:text-slate-50">
+              <h2 className="text-base leading-snug font-semibold text-slate-950 dark:text-slate-50">
                 {member.memberName}
               </h2>
               <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
@@ -262,13 +252,13 @@ export function MemberDetailPanel({
                 </h3>
                 <div className="flex items-center gap-4">
                   <div className="text-center">
-                    <p className="font-mono text-lg font-semibold tabular-nums text-slate-900 dark:text-slate-100">
+                    <p className="font-mono text-lg font-semibold text-slate-900 tabular-nums dark:text-slate-100">
                       {member.totalAllocated}h
                     </p>
                     <p className="text-xs text-slate-500">Allocated</p>
                   </div>
                   <div className="text-center">
-                    <p className="font-mono text-lg font-semibold tabular-nums text-slate-900 dark:text-slate-100">
+                    <p className="font-mono text-lg font-semibold text-slate-900 tabular-nums dark:text-slate-100">
                       {member.totalCapacity}h
                     </p>
                     <p className="text-xs text-slate-500">Capacity</p>
@@ -346,9 +336,7 @@ export function MemberDetailPanel({
                         size="sm"
                         className="h-6 text-xs"
                         onClick={handleAddCapacity}
-                        disabled={
-                          isSubmitting || !newWeeklyHours || !newEffectiveFrom
-                        }
+                        disabled={isSubmitting || !newWeeklyHours || !newEffectiveFrom}
                       >
                         Save
                       </Button>
@@ -357,16 +345,13 @@ export function MemberDetailPanel({
                 )}
 
                 {capacityRecords.length === 0 ? (
-                  <p className="text-sm text-slate-500">
-                    No capacity records found.
-                  </p>
+                  <p className="text-sm text-slate-500">No capacity records found.</p>
                 ) : (
                   <ul className="space-y-1.5">
                     {[...capacityRecords]
                       .sort(
                         (a, b) =>
-                          new Date(b.effectiveFrom).getTime() -
-                          new Date(a.effectiveFrom).getTime(),
+                          new Date(b.effectiveFrom).getTime() - new Date(a.effectiveFrom).getTime()
                       )
                       .map((cap) => (
                         <li
@@ -374,7 +359,7 @@ export function MemberDetailPanel({
                           className="flex items-center justify-between rounded px-2 py-1.5 text-sm hover:bg-slate-50 dark:hover:bg-slate-800/50"
                         >
                           <div>
-                            <span className="font-mono font-medium tabular-nums text-slate-900 dark:text-slate-100">
+                            <span className="font-mono font-medium text-slate-900 tabular-nums dark:text-slate-100">
                               {cap.weeklyHours}h/wk
                             </span>
                             <span className="ml-2 text-xs text-slate-500">
@@ -404,46 +389,39 @@ export function MemberDetailPanel({
                   Allocation Timeline
                 </h3>
                 {Object.keys(allocationsByProject).length === 0 ? (
-                  <p className="text-sm text-slate-500">
-                    No allocations found.
-                  </p>
+                  <p className="text-sm text-slate-500">No allocations found.</p>
                 ) : (
                   <ul className="space-y-2">
-                    {Object.entries(allocationsByProject).map(
-                      ([, allocs]) => {
-                        const totalHours = allocs.reduce(
-                          (s, a) => s + a.allocatedHours,
-                          0,
-                        );
-                        return (
-                          <li
-                            key={allocs[0].projectId}
-                            className="rounded border border-slate-100 px-3 py-2 dark:border-slate-700"
-                          >
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                                {projectNameMap.get(allocs[0].projectId) ??
-                                  `Project ${allocs[0].projectId.slice(0, 8)}`}
+                    {Object.entries(allocationsByProject).map(([, allocs]) => {
+                      const totalHours = allocs.reduce((s, a) => s + a.allocatedHours, 0);
+                      return (
+                        <li
+                          key={allocs[0].projectId}
+                          className="rounded border border-slate-100 px-3 py-2 dark:border-slate-700"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                              {projectNameMap.get(allocs[0].projectId) ??
+                                `Project ${allocs[0].projectId.slice(0, 8)}`}
+                            </span>
+                            <span className="font-mono text-xs text-slate-600 tabular-nums dark:text-slate-400">
+                              {totalHours}h total
+                            </span>
+                          </div>
+                          <div className="mt-1 flex gap-1">
+                            {allocs.map((a) => (
+                              <span
+                                key={a.id}
+                                className="text-xs text-slate-500"
+                                title={`${a.weekStart}: ${a.allocatedHours}h`}
+                              >
+                                {a.weekStart.slice(5)}: {a.allocatedHours}h
                               </span>
-                              <span className="font-mono text-xs tabular-nums text-slate-600 dark:text-slate-400">
-                                {totalHours}h total
-                              </span>
-                            </div>
-                            <div className="mt-1 flex gap-1">
-                              {allocs.map((a) => (
-                                <span
-                                  key={a.id}
-                                  className="text-xs text-slate-500"
-                                  title={`${a.weekStart}: ${a.allocatedHours}h`}
-                                >
-                                  {a.weekStart.slice(5)}: {a.allocatedHours}h
-                                </span>
-                              ))}
-                            </div>
-                          </li>
-                        );
-                      },
-                    )}
+                            ))}
+                          </div>
+                        </li>
+                      );
+                    })}
                   </ul>
                 )}
               </div>
@@ -483,9 +461,7 @@ export function MemberDetailPanel({
                             {leave.startDate} — {leave.endDate}
                           </span>
                           {leave.note && (
-                            <span className="ml-2 text-xs text-slate-500">
-                              {leave.note}
-                            </span>
+                            <span className="ml-2 text-xs text-slate-500">{leave.note}</span>
                           )}
                         </div>
                         <div className="flex gap-0.5">

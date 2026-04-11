@@ -54,9 +54,7 @@ describe("GenerateDocumentDialog", () => {
   it("renders dialog with template name in header", async () => {
     render(<GenerateDocumentDialog {...baseProps} />);
 
-    expect(
-      screen.getByText("Generate: Engagement Letter"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Generate: Engagement Letter")).toBeInTheDocument();
   });
 
   it("loads preview on mount and displays iframe", async () => {
@@ -69,10 +67,7 @@ describe("GenerateDocumentDialog", () => {
     await waitFor(() => {
       const iframe = screen.getByTitle("Document Preview");
       expect(iframe).toBeInTheDocument();
-      expect(iframe).toHaveAttribute(
-        "srcdoc",
-        "<h1>Preview Content</h1>",
-      );
+      expect(iframe).toHaveAttribute("srcdoc", "<h1>Preview Content</h1>");
     });
   });
 
@@ -93,13 +88,7 @@ describe("GenerateDocumentDialog", () => {
     await user.click(screen.getByRole("button", { name: /Download PDF/i }));
 
     await waitFor(() => {
-      expect(mockGenerateDocument).toHaveBeenCalledWith(
-        "tpl-1",
-        "proj-1",
-        false,
-        false,
-        undefined,
-      );
+      expect(mockGenerateDocument).toHaveBeenCalledWith("tpl-1", "proj-1", false, false, undefined);
     });
   });
 
@@ -123,24 +112,14 @@ describe("GenerateDocumentDialog", () => {
       expect(screen.getByTitle("Document Preview")).toBeInTheDocument();
     });
 
-    await user.click(
-      screen.getByRole("button", { name: /Save to Documents/i }),
-    );
+    await user.click(screen.getByRole("button", { name: /Save to Documents/i }));
 
     await waitFor(() => {
-      expect(mockGenerateDocument).toHaveBeenCalledWith(
-        "tpl-1",
-        "proj-1",
-        true,
-        false,
-        undefined,
-      );
+      expect(mockGenerateDocument).toHaveBeenCalledWith("tpl-1", "proj-1", true, false, undefined);
     });
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Document saved successfully"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Document saved successfully")).toBeInTheDocument();
     });
 
     expect(baseProps.onSaved).toHaveBeenCalled();
@@ -167,7 +146,12 @@ describe("GenerateDocumentDialog", () => {
         allPresent: false,
         fields: [
           { entity: "project", field: "name", present: true, reason: null },
-          { entity: "project", field: "missing_field", present: false, reason: "Field not populated" },
+          {
+            entity: "project",
+            field: "missing_field",
+            present: false,
+            reason: "Field not populated",
+          },
         ],
       },
     });
@@ -193,34 +177,22 @@ describe("GenerateDocumentDialog", () => {
     });
 
     const user = userEvent.setup();
-    render(
-      <GenerateDocumentDialog
-        {...baseProps}
-        customerId="cust-1"
-        isAdmin
-      />,
-    );
+    render(<GenerateDocumentDialog {...baseProps} customerId="cust-1" isAdmin />);
 
     // Wait for preview to load
     await waitFor(() => {
       expect(screen.getByTitle("Document Preview")).toBeInTheDocument();
     });
 
-    await user.click(
-      screen.getByRole("button", { name: /Save to Documents/i }),
-    );
+    await user.click(screen.getByRole("button", { name: /Save to Documents/i }));
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Document saved successfully"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Document saved successfully")).toBeInTheDocument();
     });
 
     // "Send for Acceptance" button should appear
     await waitFor(() => {
-      expect(
-        screen.getByRole("button", { name: /Send for Acceptance/i }),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Send for Acceptance/i })).toBeInTheDocument();
     });
   });
 
@@ -231,7 +203,12 @@ describe("GenerateDocumentDialog", () => {
       validationResult: {
         allPresent: false,
         fields: [
-          { entity: "project", field: "missing_field", present: false, reason: "Field not populated" },
+          {
+            entity: "project",
+            field: "missing_field",
+            present: false,
+            reason: "Field not populated",
+          },
         ],
       },
     });

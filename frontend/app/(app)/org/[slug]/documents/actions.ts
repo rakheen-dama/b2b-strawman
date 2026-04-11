@@ -25,10 +25,7 @@ export async function initiateOrgUpload(
   const body: UploadInitRequest = { fileName, contentType, size };
 
   try {
-    const result = await api.post<UploadInitResponse>(
-      "/api/documents/upload-init",
-      body
-    );
+    const result = await api.post<UploadInitResponse>("/api/documents/upload-init", body);
     return {
       success: true,
       documentId: result.documentId,
@@ -42,10 +39,7 @@ export async function initiateOrgUpload(
   }
 }
 
-export async function confirmOrgUpload(
-  slug: string,
-  documentId: string
-): Promise<ActionResult> {
+export async function confirmOrgUpload(slug: string, documentId: string): Promise<ActionResult> {
   try {
     await api.post(`/api/documents/${documentId}/confirm`);
   } catch (error) {

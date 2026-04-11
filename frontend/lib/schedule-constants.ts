@@ -18,5 +18,5 @@ export const FREQUENCY_LABELS: Record<RecurrenceFrequency, string> = {
 };
 
 export const FREQUENCY_OPTIONS: { value: RecurrenceFrequency; label: string }[] = Object.entries(
-  FREQUENCY_LABELS,
+  FREQUENCY_LABELS
 ).map(([value, label]) => ({ value: value as RecurrenceFrequency, label }));

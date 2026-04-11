@@ -3,11 +3,7 @@
 import { useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Command,
   CommandEmpty,
@@ -80,12 +76,10 @@ export function EntityPicker({
             className={cn(
               "w-full justify-between font-normal",
               !value && "text-muted-foreground",
-              hasError && "border-red-500",
+              hasError && "border-red-500"
             )}
           >
-            {selectedOption
-              ? selectedOption.label
-              : `Select a ${entityLabel.toLowerCase()}...`}
+            {selectedOption ? selectedOption.label : `Select a ${entityLabel.toLowerCase()}...`}
             <ChevronsUpDown className="ml-auto size-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
@@ -95,13 +89,11 @@ export function EntityPicker({
             <CommandList>
               {isLoading && (
                 <div className="flex items-center justify-center py-6">
-                  <Loader2 className="size-4 animate-spin text-muted-foreground" />
+                  <Loader2 className="text-muted-foreground size-4 animate-spin" />
                 </div>
               )}
               {fetchError && (
-                <div className="px-3 py-6 text-center text-sm text-red-600">
-                  {fetchError}
-                </div>
+                <div className="px-3 py-6 text-center text-sm text-red-600">{fetchError}</div>
               )}
               {!isLoading && !fetchError && (
                 <>
@@ -119,13 +111,13 @@ export function EntityPicker({
                         <Check
                           className={cn(
                             "mr-2 size-4",
-                            value === option.id ? "opacity-100" : "opacity-0",
+                            value === option.id ? "opacity-100" : "opacity-0"
                           )}
                         />
                         <div className="flex flex-col">
                           <span>{option.label}</span>
                           {option.secondaryLabel && (
-                            <span className="text-xs text-muted-foreground">
+                            <span className="text-muted-foreground text-xs">
                               {option.secondaryLabel}
                             </span>
                           )}

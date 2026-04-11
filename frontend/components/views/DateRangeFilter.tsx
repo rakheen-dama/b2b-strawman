@@ -22,9 +22,7 @@ const DATE_FIELDS = [
 export function DateRangeFilter({ value, onChange }: DateRangeFilterProps) {
   return (
     <div className="space-y-3">
-      <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-        Date Range
-      </Label>
+      <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Date Range</Label>
       <div className="space-y-2">
         <select
           value={value.field}
@@ -42,9 +40,7 @@ export function DateRangeFilter({ value, onChange }: DateRangeFilterProps) {
             <Input
               type="date"
               value={value.from ?? ""}
-              onChange={(e) =>
-                onChange({ ...value, from: e.target.value || undefined })
-              }
+              onChange={(e) => onChange({ ...value, from: e.target.value || undefined })}
               placeholder="From"
             />
           </div>
@@ -53,9 +49,7 @@ export function DateRangeFilter({ value, onChange }: DateRangeFilterProps) {
             <Input
               type="date"
               value={value.to ?? ""}
-              onChange={(e) =>
-                onChange({ ...value, to: e.target.value || undefined })
-              }
+              onChange={(e) => onChange({ ...value, to: e.target.value || undefined })}
               placeholder="To"
             />
           </div>

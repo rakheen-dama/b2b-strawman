@@ -11,12 +11,7 @@ import {
   ShieldAlert,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import type { SetupProgressCardProps, ContextGroup } from "./types";
@@ -31,7 +26,7 @@ function ContextGroupRow({ group }: { group: ContextGroup }) {
       <button
         type="button"
         onClick={() => setExpanded((prev) => !prev)}
-        className="flex w-full items-center gap-2 text-sm text-left"
+        className="flex w-full items-center gap-2 text-left text-sm"
         aria-label={`Toggle ${group.contextLabel} details`}
       >
         {isComplete ? (
@@ -39,19 +34,14 @@ function ContextGroupRow({ group }: { group: ContextGroup }) {
         ) : (
           <AlertCircle className="h-4 w-4 shrink-0 text-amber-500 dark:text-amber-400" />
         )}
-        <span
-          className={cn(
-            "flex-1",
-            isComplete && "text-muted-foreground line-through",
-          )}
-        >
+        <span className={cn("flex-1", isComplete && "text-muted-foreground line-through")}>
           {group.contextLabel}: {group.filled}/{group.total} fields
         </span>
         {missingFields.length > 0 && (
           <ChevronRight
             className={cn(
               "h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform",
-              expanded && "rotate-90",
+              expanded && "rotate-90"
             )}
           />
         )}
@@ -85,9 +75,7 @@ export function SetupProgressCard({
   activationBlockers,
   contextGroups,
 }: SetupProgressCardProps) {
-  const [collapsed, setCollapsed] = useState(
-    defaultCollapsed ?? overallComplete,
-  );
+  const [collapsed, setCollapsed] = useState(defaultCollapsed ?? overallComplete);
 
   const hasBlockers = activationBlockers && activationBlockers.length > 0;
   const hasContextGroups = contextGroups && contextGroups.length > 0;
@@ -103,11 +91,7 @@ export function SetupProgressCard({
             onClick={() => setCollapsed((prev) => !prev)}
             aria-label={collapsed ? "Expand setup steps" : "Collapse setup steps"}
           >
-            {collapsed ? (
-              <ChevronDown className="h-4 w-4" />
-            ) : (
-              <ChevronUp className="h-4 w-4" />
-            )}
+            {collapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
           </Button>
         </div>
         {overallComplete && collapsed && (
@@ -121,7 +105,7 @@ export function SetupProgressCard({
       {!collapsed && (
         <CardContent className="space-y-4">
           <div className="space-y-1.5">
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <div className="text-muted-foreground flex items-center justify-between text-xs">
               <span>Progress</span>
               <span>{completionPercentage}%</span>
             </div>
@@ -136,29 +120,24 @@ export function SetupProgressCard({
                 ) : (
                   <AlertCircle className="h-4 w-4 shrink-0 text-amber-500 dark:text-amber-400" />
                 )}
-                <span
-                  className={cn(
-                    step.complete && "text-muted-foreground line-through",
-                  )}
-                >
+                <span className={cn(step.complete && "text-muted-foreground line-through")}>
                   {step.label}
                 </span>
-                {step.actionHref &&
-                  (!step.permissionRequired || canManage) && (
-                    <Link
-                      href={step.actionHref}
-                      className="ml-auto text-xs text-teal-600 hover:underline dark:text-teal-400"
-                    >
-                      {step.complete ? "View" : "Set up"}
-                    </Link>
-                  )}
+                {step.actionHref && (!step.permissionRequired || canManage) && (
+                  <Link
+                    href={step.actionHref}
+                    className="ml-auto text-xs text-teal-600 hover:underline dark:text-teal-400"
+                  >
+                    {step.complete ? "View" : "Set up"}
+                  </Link>
+                )}
               </li>
             ))}
           </ul>
 
           {hasContextGroups && (
             <div className="space-y-2">
-              <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+              <p className="text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
                 Field Completeness
               </p>
               <ul className="space-y-1.5">
@@ -177,10 +156,7 @@ export function SetupProgressCard({
               </div>
               <ul className="space-y-1 pl-6">
                 {activationBlockers.map((message) => (
-                  <li
-                    key={message}
-                    className="text-sm text-red-600 dark:text-red-400"
-                  >
+                  <li key={message} className="text-sm text-red-600 dark:text-red-400">
                     {message}
                   </li>
                 ))}

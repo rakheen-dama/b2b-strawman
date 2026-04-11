@@ -63,9 +63,7 @@ vi.mock("@/app/(app)/org/[slug]/invoices/invoice-payment-actions", () => ({
   refreshPaymentLink: (...args: unknown[]) => mockRefreshPaymentLink(...args),
 }));
 
-function makeInvoice(
-  overrides: Partial<InvoiceResponse> = {},
-): InvoiceResponse {
+function makeInvoice(overrides: Partial<InvoiceResponse> = {}): InvoiceResponse {
   return {
     id: "inv-1",
     customerId: "cust-1",
@@ -99,9 +97,7 @@ function makeInvoice(
   };
 }
 
-function makePaymentEvent(
-  overrides: Partial<PaymentEvent> = {},
-): PaymentEvent {
+function makePaymentEvent(overrides: Partial<PaymentEvent> = {}): PaymentEvent {
   return {
     id: "pe-1",
     providerSlug: "stripe",
@@ -158,18 +154,16 @@ describe("InvoiceDetailClient — Payment Link Section", () => {
   // Lazy import to allow mocks to settle
   async function renderDetailClient(
     invoiceOverrides: Partial<InvoiceResponse> = {},
-    paymentEvents: PaymentEvent[] = [],
+    paymentEvents: PaymentEvent[] = []
   ) {
-    const { InvoiceDetailClient } = await import(
-      "@/components/invoices/invoice-detail-client"
-    );
+    const { InvoiceDetailClient } = await import("@/components/invoices/invoice-detail-client");
     return render(
       <InvoiceDetailClient
         invoice={makeInvoice(invoiceOverrides)}
         slug="test-org"
         isAdmin={true}
         paymentEvents={paymentEvents}
-      />,
+      />
     );
   }
 
@@ -181,9 +175,7 @@ describe("InvoiceDetailClient — Payment Link Section", () => {
 
     expect(screen.getByText("Online Payment Link")).toBeInTheDocument();
     expect(
-      screen.getByDisplayValue(
-        "https://checkout.stripe.com/pay/cs_test_123",
-      ),
+      screen.getByDisplayValue("https://checkout.stripe.com/pay/cs_test_123")
     ).toBeInTheDocument();
     expect(screen.getByText("Copy Link")).toBeInTheDocument();
     expect(screen.getByText("Regenerate")).toBeInTheDocument();
@@ -196,9 +188,7 @@ describe("InvoiceDetailClient — Payment Link Section", () => {
       paymentSessionId: null,
     });
 
-    expect(
-      screen.queryByText("Online Payment Link"),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText("Online Payment Link")).not.toBeInTheDocument();
   });
 
   it("copy link button changes text to Copied after click", async () => {
@@ -235,11 +225,7 @@ describe("InvoiceDetailClient — Payment Link Section", () => {
     const user = userEvent.setup();
     await user.click(screen.getByText("Regenerate"));
 
-    expect(mockRefreshPaymentLink).toHaveBeenCalledWith(
-      "test-org",
-      "inv-1",
-      "cust-1",
-    );
+    expect(mockRefreshPaymentLink).toHaveBeenCalledWith("test-org", "inv-1", "cust-1");
   });
 });
 
@@ -258,10 +244,8 @@ describe("Invoice list — payment indicator", () => {
           {/* CreditCard icon would render here */}
           <svg data-testid="payment-indicator" />
         </span>
-      </div>,
+      </div>
     );
-    expect(
-      container.querySelector("[title='Online payment enabled']"),
-    ).toBeInTheDocument();
+    expect(container.querySelector("[title='Online payment enabled']")).toBeInTheDocument();
   });
 });

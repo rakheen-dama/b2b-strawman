@@ -49,10 +49,7 @@ export function LoopTableNodeView({ node, updateAttributes }: NodeViewProps) {
               {[0, 1].map((rowIdx) => (
                 <TableRow key={rowIdx}>
                   {columns.map((col, colIdx) => (
-                    <TableCell
-                      key={colIdx}
-                      className="text-slate-400"
-                    >
+                    <TableCell key={colIdx} className="text-slate-400">
                       <span className="font-mono text-xs">
                         {"{"}
                         {col.key}
@@ -71,9 +68,7 @@ export function LoopTableNodeView({ node, updateAttributes }: NodeViewProps) {
         )}
 
         {dataSource && (
-          <div className="mt-2 text-xs text-muted-foreground">
-            Data source: {dataSource}
-          </div>
+          <div className="text-muted-foreground mt-2 text-xs">Data source: {dataSource}</div>
         )}
       </div>
 

@@ -48,9 +48,7 @@ function makeWeekCell(overrides: Partial<WeekCell> = {}): WeekCell {
   };
 }
 
-function makeGrid(
-  overrides: Partial<TeamCapacityGrid> = {},
-): TeamCapacityGrid {
+function makeGrid(overrides: Partial<TeamCapacityGrid> = {}): TeamCapacityGrid {
   return {
     members: [
       {
@@ -63,9 +61,7 @@ function makeGrid(
             totalAllocated: 30,
             remainingCapacity: 10,
             utilizationPct: 75,
-            allocations: [
-              { id: "a1", projectId: "p1", projectName: "Project Alpha", hours: 30 },
-            ],
+            allocations: [{ id: "a1", projectId: "p1", projectName: "Project Alpha", hours: 30 }],
           }),
           makeWeekCell({ weekStart: "2026-03-16" }),
         ],
@@ -129,7 +125,7 @@ describe("AllocationGrid", () => {
 
   it("shows empty state when no members", () => {
     render(
-      <AllocationGrid grid={{ members: [], weekSummaries: [] }} projects={[]} slug="test-org" />,
+      <AllocationGrid grid={{ members: [], weekSummaries: [] }} projects={[]} slug="test-org" />
     );
 
     expect(screen.getByText(/No team members found/)).toBeInTheDocument();
@@ -146,9 +142,7 @@ describe("CapacityCell", () => {
       totalAllocated: 20,
       effectiveCapacity: 40,
       utilizationPct: 50,
-      allocations: [
-        { id: "a2", projectId: "p1", projectName: "Alpha", hours: 20 },
-      ],
+      allocations: [{ id: "a2", projectId: "p1", projectName: "Alpha", hours: 20 }],
     });
 
     render(<CapacityCell cell={cell} />);
@@ -163,9 +157,7 @@ describe("CapacityCell", () => {
       totalAllocated: 36,
       effectiveCapacity: 40,
       utilizationPct: 90,
-      allocations: [
-        { id: "a3", projectId: "p1", projectName: "Alpha", hours: 36 },
-      ],
+      allocations: [{ id: "a3", projectId: "p1", projectName: "Alpha", hours: 36 }],
     });
 
     render(<CapacityCell cell={cell} />);
@@ -180,9 +172,7 @@ describe("CapacityCell", () => {
       effectiveCapacity: 40,
       utilizationPct: 120,
       overAllocated: true,
-      allocations: [
-        { id: "a4", projectId: "p1", projectName: "Alpha", hours: 48 },
-      ],
+      allocations: [{ id: "a4", projectId: "p1", projectName: "Alpha", hours: 48 }],
     });
 
     render(<CapacityCell cell={cell} />);
@@ -197,9 +187,7 @@ describe("CapacityCell", () => {
       effectiveCapacity: 32,
       utilizationPct: 62.5,
       leaveDays: 1,
-      allocations: [
-        { id: "a2", projectId: "p1", projectName: "Alpha", hours: 20 },
-      ],
+      allocations: [{ id: "a2", projectId: "p1", projectName: "Alpha", hours: 20 }],
     });
 
     render(<CapacityCell cell={cell} />);
@@ -215,9 +203,7 @@ describe("CapacityCell", () => {
 
     render(<CapacityCell cell={cell} />);
 
-    expect(
-      screen.getByRole("button", { name: "Add allocation" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Add allocation" })).toBeInTheDocument();
   });
 });
 

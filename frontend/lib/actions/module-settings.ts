@@ -39,13 +39,11 @@ export async function getModuleSettings(): Promise<ModuleSettingsResponse> {
  * Returns the canonical updated module list on success.
  */
 export async function updateModuleSettings(
-  enabledModules: string[],
+  enabledModules: string[]
 ): Promise<ActionResult<ModuleSettingsResponse>> {
   try {
     await api.put("/api/settings/modules", { enabledModules });
-    const updated = await api.get<ModuleSettingsResponse>(
-      "/api/settings/modules",
-    );
+    const updated = await api.get<ModuleSettingsResponse>("/api/settings/modules");
     return { success: true, data: updated };
   } catch (error) {
     if (error instanceof ApiError) {

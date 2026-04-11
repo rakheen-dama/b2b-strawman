@@ -13,8 +13,7 @@ const mockDeleteBillingRate = vi.fn();
 const mockDeleteCostRate = vi.fn();
 
 vi.mock("@/app/(app)/org/[slug]/settings/rates/actions", () => ({
-  updateDefaultCurrency: (...args: unknown[]) =>
-    mockUpdateDefaultCurrency(...args),
+  updateDefaultCurrency: (...args: unknown[]) => mockUpdateDefaultCurrency(...args),
   createBillingRate: (...args: unknown[]) => mockCreateBillingRate(...args),
   updateBillingRate: (...args: unknown[]) => mockUpdateBillingRate(...args),
   deleteBillingRate: (...args: unknown[]) => mockDeleteBillingRate(...args),
@@ -98,7 +97,7 @@ describe("RatesSettings", () => {
         billingRates={makeBillingRates()}
         costRates={makeCostRates()}
         defaultCurrency="USD"
-      />,
+      />
     );
 
     expect(screen.getByText("Default Currency")).toBeInTheDocument();
@@ -113,7 +112,7 @@ describe("RatesSettings", () => {
         billingRates={makeBillingRates()}
         costRates={makeCostRates()}
         defaultCurrency="USD"
-      />,
+      />
     );
 
     expect(screen.getByText("Alice Johnson")).toBeInTheDocument();
@@ -132,7 +131,7 @@ describe("RatesSettings", () => {
         billingRates={makeBillingRates()}
         costRates={makeCostRates()}
         defaultCurrency="USD"
-      />,
+      />
     );
 
     const combobox = screen.getByRole("combobox");
@@ -157,7 +156,7 @@ describe("RatesSettings", () => {
         billingRates={[]}
         costRates={[]}
         defaultCurrency="USD"
-      />,
+      />
     );
 
     // Find the first "Add Rate" button (for Alice)
@@ -166,17 +165,13 @@ describe("RatesSettings", () => {
 
     // Dialog should open with form fields
     await waitFor(() => {
-      expect(
-        screen.getByRole("heading", { name: "Add Rate" }),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Add Rate" })).toBeInTheDocument();
     });
 
     expect(screen.getByText("Rate Type")).toBeInTheDocument();
     expect(screen.getByLabelText("Hourly Rate")).toBeInTheDocument();
     expect(screen.getByLabelText("Effective From")).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "Create Rate" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Create Rate" })).toBeInTheDocument();
   });
 
   it("edit rate dialog opens with pre-filled values", async () => {
@@ -189,7 +184,7 @@ describe("RatesSettings", () => {
         billingRates={makeBillingRates()}
         costRates={makeCostRates()}
         defaultCurrency="USD"
-      />,
+      />
     );
 
     // Click the edit button for Alice's billing rate
@@ -198,9 +193,7 @@ describe("RatesSettings", () => {
 
     // Dialog should open with pre-filled values
     await waitFor(() => {
-      expect(
-        screen.getByText("Edit Billing Rate", { selector: "h2" }),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Edit Billing Rate", { selector: "h2" })).toBeInTheDocument();
     });
 
     const rateInput = screen.getByLabelText("Hourly Rate");
@@ -218,13 +211,11 @@ describe("RatesSettings", () => {
         billingRates={makeBillingRates()}
         costRates={makeCostRates()}
         defaultCurrency="USD"
-      />,
+      />
     );
 
     // Click the delete button for Alice's billing rate
-    const deleteButton = screen.getByLabelText(
-      "Delete billing rate for Alice Johnson",
-    );
+    const deleteButton = screen.getByLabelText("Delete billing rate for Alice Johnson");
     await user.click(deleteButton);
 
     // Confirmation dialog should appear

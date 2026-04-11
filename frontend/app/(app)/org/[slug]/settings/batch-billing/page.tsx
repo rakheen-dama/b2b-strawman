@@ -23,12 +23,10 @@ export default async function BatchBillingSettingsPage({
           <ChevronLeft className="size-4" />
           Settings
         </Link>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          Batch Billing
-        </h1>
+        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Batch Billing</h1>
         <p className="text-slate-600 dark:text-slate-400">
-          You do not have permission to manage batch billing settings. Only
-          admins and owners can access this page.
+          You do not have permission to manage batch billing settings. Only admins and owners can
+          access this page.
         </p>
       </div>
     );
@@ -36,9 +34,7 @@ export default async function BatchBillingSettingsPage({
 
   let settings: OrgSettings = { defaultCurrency: "USD" };
 
-  const settingsResult = await api
-    .get<OrgSettings>("/api/settings")
-    .catch(() => null);
+  const settingsResult = await api.get<OrgSettings>("/api/settings").catch(() => null);
   if (settingsResult) {
     settings = settingsResult;
   }
@@ -54,24 +50,18 @@ export default async function BatchBillingSettingsPage({
       </Link>
 
       <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          Batch Billing
-        </h1>
+        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Batch Billing</h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Configure async thresholds, email rate limits, and default billing
-          currency for batch billing runs.
+          Configure async thresholds, email rate limits, and default billing currency for batch
+          billing runs.
         </p>
       </div>
 
       <BatchBillingSettings
         slug={slug}
-        billingBatchAsyncThreshold={
-          settings.billingBatchAsyncThreshold ?? 50
-        }
+        billingBatchAsyncThreshold={settings.billingBatchAsyncThreshold ?? 50}
         billingEmailRateLimit={settings.billingEmailRateLimit ?? 5}
-        defaultBillingRunCurrency={
-          settings.defaultBillingRunCurrency ?? null
-        }
+        defaultBillingRunCurrency={settings.defaultBillingRunCurrency ?? null}
       />
     </div>
   );

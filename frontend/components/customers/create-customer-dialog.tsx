@@ -28,24 +28,13 @@ import { createMessages } from "@/lib/messages";
 import { scrollToFirstError } from "@/lib/error-handler";
 import { useTerminology } from "@/lib/terminology";
 import { useSubscription } from "@/lib/subscription-context";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { fetchIntakeFields } from "@/app/(app)/org/[slug]/customers/intake-actions";
-import {
-  IntakeFieldsSection,
-  isFieldVisible,
-} from "@/components/customers/intake-fields-section";
+import { IntakeFieldsSection, isFieldVisible } from "@/components/customers/intake-fields-section";
 import type { FieldValue } from "@/components/prerequisite/inline-field-editor";
 import type { IntakeFieldGroup } from "@/components/prerequisite/types";
 import type { CustomerType } from "@/lib/types";
-import {
-  createCustomerSchema,
-  type CreateCustomerFormData,
-} from "@/lib/schemas/customer";
+import { createCustomerSchema, type CreateCustomerFormData } from "@/lib/schemas/customer";
 import { COUNTRIES } from "@/lib/constants/countries";
 import { ENTITY_TYPES } from "@/lib/constants/entity-types";
 import { nativeSelectClassName } from "@/lib/styles/native-select";
@@ -235,7 +224,7 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
       .every((f) => {
         const v = fieldValues[f.slug];
         return v !== null && v !== undefined && v !== "";
-      }),
+      })
   );
 
   return (
@@ -250,16 +239,12 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
               </Button>
             </span>
           </TooltipTrigger>
-          {!isWriteEnabled && (
-            <TooltipContent>Subscribe to enable this action</TooltipContent>
-          )}
+          {!isWriteEnabled && <TooltipContent>Subscribe to enable this action</TooltipContent>}
         </Tooltip>
       </TooltipProvider>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>
-            {step === 1 ? t("Create Customer") : "Additional Information"}
-          </DialogTitle>
+          <DialogTitle>{step === 1 ? t("Create Customer") : "Additional Information"}</DialogTitle>
           <DialogDescription>
             {step === 1
               ? `Step 1 of 2 — Add a new ${t("customer")} to your organization.`
@@ -337,8 +322,7 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        Phone{" "}
-                        <span className="font-normal text-muted-foreground">(optional)</span>
+                        Phone <span className="text-muted-foreground font-normal">(optional)</span>
                       </FormLabel>
                       <FormControl>
                         <Input
@@ -359,14 +343,10 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
                     <FormItem>
                       <FormLabel>
                         ID Number{" "}
-                        <span className="font-normal text-muted-foreground">(optional)</span>
+                        <span className="text-muted-foreground font-normal">(optional)</span>
                       </FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder="e.g. CUS-001"
-                          maxLength={100}
-                          {...field}
-                        />
+                        <Input placeholder="e.g. CUS-001" maxLength={100} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -378,8 +358,7 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
-                        Notes{" "}
-                        <span className="font-normal text-muted-foreground">(optional)</span>
+                        Notes <span className="text-muted-foreground font-normal">(optional)</span>
                       </FormLabel>
                       <FormControl>
                         <Textarea
@@ -396,7 +375,7 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
 
                 {/* Address Section */}
                 <div className="border-t pt-4">
-                  <h3 className="mb-3 text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                  <h3 className="mb-3 text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
                     Address
                   </h3>
                   <div className="space-y-4">
@@ -407,7 +386,7 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
                         <FormItem>
                           <FormLabel>
                             Address Line 1{" "}
-                            <span className="font-normal text-muted-foreground">(optional)</span>
+                            <span className="text-muted-foreground font-normal">(optional)</span>
                           </FormLabel>
                           <FormControl>
                             <Input maxLength={255} {...field} />
@@ -423,7 +402,7 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
                         <FormItem>
                           <FormLabel>
                             Address Line 2{" "}
-                            <span className="font-normal text-muted-foreground">(optional)</span>
+                            <span className="text-muted-foreground font-normal">(optional)</span>
                           </FormLabel>
                           <FormControl>
                             <Input maxLength={255} {...field} />
@@ -504,7 +483,7 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
 
                 {/* Contact Section */}
                 <div className="border-t pt-4">
-                  <h3 className="mb-3 text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                  <h3 className="mb-3 text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
                     Contact
                   </h3>
                   <div className="space-y-4">
@@ -552,7 +531,7 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
 
                 {/* Business Details Section */}
                 <div className="border-t pt-4">
-                  <h3 className="mb-3 text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                  <h3 className="mb-3 text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
                     Business Details
                   </h3>
                   <div className="space-y-4">
@@ -634,11 +613,9 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
                   Loading fields...
                 </div>
               ) : fetchError ? (
-                <p className="text-sm text-destructive">{fetchError}</p>
+                <p className="text-destructive text-sm">{fetchError}</p>
               ) : intakeGroups.length === 0 ? (
-                <p className="text-sm text-slate-500">
-                  No additional fields required.
-                </p>
+                <p className="text-sm text-slate-500">No additional fields required.</p>
               ) : (
                 <IntakeFieldsSection
                   groups={intakeGroups}
@@ -662,7 +639,7 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
             </div>
           )}
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && <p className="text-destructive text-sm">{error}</p>}
         </div>
 
         <DialogFooter>
@@ -676,11 +653,7 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
               >
                 Cancel
               </Button>
-              <Button
-                type="button"
-                onClick={handleNext}
-                disabled={isLoadingFields}
-              >
+              <Button type="button" onClick={handleNext} disabled={isLoadingFields}>
                 {isLoadingFields ? (
                   <>
                     <Loader2 className="mr-1.5 size-4 animate-spin" />
@@ -693,12 +666,7 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
             </>
           ) : (
             <>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleBack}
-                disabled={isSubmitting}
-              >
+              <Button type="button" variant="outline" onClick={handleBack} disabled={isSubmitting}>
                 Back
               </Button>
               <Button

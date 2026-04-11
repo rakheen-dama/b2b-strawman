@@ -83,10 +83,7 @@ export interface ParseCsvResult {
   warnings: string[];
 }
 
-export function parseCsv(
-  content: string,
-  availableTasks: GridTaskRow[],
-): ParseCsvResult {
+export function parseCsv(content: string, availableTasks: GridTaskRow[]): ParseCsvResult {
   const lines = content
     .split(/\r?\n/)
     .map((l) => l.trim())
@@ -100,24 +97,16 @@ export function parseCsv(
 
   // Determine start index (skip header if present)
   const datePattern = /^\d{4}-\d{2}-\d{2}$/;
-  const startIndex =
-    headers.length >= 4 && !datePattern.test(headers[0]) ? 1 : 0;
+  const startIndex = headers.length >= 4 && !datePattern.test(headers[0]) ? 1 : 0;
 
   // Validate expected headers when a header row is present
-  const expectedHeaders = [
-    "date",
-    "task_name",
-    "project_name",
-    "hours",
-    "description",
-    "billable",
-  ];
+  const expectedHeaders = ["date", "task_name", "project_name", "hours", "description", "billable"];
   const headerWarnings: string[] = [];
   if (startIndex === 1) {
     const unrecognized = headers.filter((h) => !expectedHeaders.includes(h));
     if (unrecognized.length > 0) {
       headerWarnings.push(
-        `Unrecognized CSV headers: ${unrecognized.join(", ")}. Expected: ${expectedHeaders.join(", ")}`,
+        `Unrecognized CSV headers: ${unrecognized.join(", ")}. Expected: ${expectedHeaders.join(", ")}`
       );
     }
   }
@@ -180,9 +169,7 @@ export function parseCsv(
     const allKnownValues = [...falsyValues, ...truthyValues];
     const billable = !falsyValues.includes(billableStr);
     if (!allKnownValues.includes(billableStr)) {
-      errors.push(
-        `Unrecognized billable value "${fields[5]?.trim() ?? ""}" — defaulting to true`,
-      );
+      errors.push(`Unrecognized billable value "${fields[5]?.trim() ?? ""}" — defaulting to true`);
     }
 
     // Match task by name + project (case-insensitive)
@@ -192,7 +179,7 @@ export function parseCsv(
       const found = availableTasks.find(
         (t) =>
           t.title.toLowerCase() === taskName.toLowerCase() &&
-          t.projectName.toLowerCase() === projectName.toLowerCase(),
+          t.projectName.toLowerCase() === projectName.toLowerCase()
       );
       if (found) {
         matchedTask = found;
@@ -231,16 +218,12 @@ interface CsvImportDialogProps {
       hours: number;
       description: string;
       billable: boolean;
-    }>,
+    }>
   ) => void;
   children: React.ReactNode;
 }
 
-export function CsvImportDialog({
-  availableTasks,
-  onImport,
-  children,
-}: CsvImportDialogProps) {
+export function CsvImportDialog({ availableTasks, onImport, children }: CsvImportDialogProps) {
   const [open, setOpen] = useState(false);
   const [parsedRows, setParsedRows] = useState<ParsedCsvRow[]>([]);
   const [parseWarnings, setParseWarnings] = useState<string[]>([]);
@@ -261,7 +244,7 @@ export function CsvImportDialog({
       };
       reader.readAsText(file);
     },
-    [availableTasks],
+    [availableTasks]
   );
 
   const handleInputChange = useCallback(
@@ -273,7 +256,7 @@ export function CsvImportDialog({
       // Reset so the same file can be re-selected
       e.target.value = "";
     },
-    [handleFileSelect],
+    [handleFileSelect]
   );
 
   function handleDownloadTemplate() {
@@ -322,20 +305,14 @@ export function CsvImportDialog({
         <DialogHeader>
           <DialogTitle>Import Time Entries from CSV</DialogTitle>
           <DialogDescription>
-            Upload a CSV file with your time entries. Download the template for
-            the expected format.
+            Upload a CSV file with your time entries. Download the template for the expected format.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           {/* Template download + file upload */}
           <div className="flex items-center gap-3">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleDownloadTemplate}
-            >
+            <Button type="button" variant="outline" size="sm" onClick={handleDownloadTemplate}>
               <Download className="mr-1.5 size-3.5" />
               Download Template
             </Button>
@@ -373,18 +350,13 @@ export function CsvImportDialog({
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-sm">
                 <span className="text-slate-600 dark:text-slate-400">
-                  {parsedRows.length} row{parsedRows.length !== 1 ? "s" : ""}{" "}
-                  parsed:
+                  {parsedRows.length} row{parsedRows.length !== 1 ? "s" : ""} parsed:
                 </span>
                 {validCount > 0 && (
-                  <span className="text-emerald-600 dark:text-emerald-400">
-                    {validCount} valid
-                  </span>
+                  <span className="text-emerald-600 dark:text-emerald-400">{validCount} valid</span>
                 )}
                 {invalidCount > 0 && (
-                  <span className="text-red-600 dark:text-red-400">
-                    {invalidCount} invalid
-                  </span>
+                  <span className="text-red-600 dark:text-red-400">{invalidCount} invalid</span>
                 )}
               </div>
 
@@ -407,26 +379,20 @@ export function CsvImportDialog({
                         className={cn(
                           row.valid
                             ? "bg-emerald-50/50 dark:bg-emerald-950/20"
-                            : "bg-red-50/50 dark:bg-red-950/20",
+                            : "bg-red-50/50 dark:bg-red-950/20"
                         )}
                       >
                         <TableCell className="py-1.5">
                           <span
                             className={cn(
                               "inline-block size-2 rounded-full",
-                              row.valid ? "bg-emerald-500" : "bg-red-500",
+                              row.valid ? "bg-emerald-500" : "bg-red-500"
                             )}
                           />
                         </TableCell>
-                        <TableCell className="py-1.5 text-xs">
-                          {row.date}
-                        </TableCell>
-                        <TableCell className="py-1.5 text-xs">
-                          {row.taskName}
-                        </TableCell>
-                        <TableCell className="py-1.5 text-xs">
-                          {row.projectName}
-                        </TableCell>
+                        <TableCell className="py-1.5 text-xs">{row.date}</TableCell>
+                        <TableCell className="py-1.5 text-xs">{row.taskName}</TableCell>
+                        <TableCell className="py-1.5 text-xs">{row.projectName}</TableCell>
                         <TableCell className="py-1.5 text-xs">
                           {row.hours > 0 ? row.hours : "-"}
                         </TableCell>
@@ -443,18 +409,10 @@ export function CsvImportDialog({
         </div>
 
         <DialogFooter>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setOpen(false)}
-          >
+          <Button type="button" variant="outline" onClick={() => setOpen(false)}>
             Cancel
           </Button>
-          <Button
-            type="button"
-            onClick={handleImport}
-            disabled={validCount === 0}
-          >
+          <Button type="button" onClick={handleImport} disabled={validCount === 0}>
             Import {validCount > 0 ? `${validCount} entries` : ""}
           </Button>
         </DialogFooter>

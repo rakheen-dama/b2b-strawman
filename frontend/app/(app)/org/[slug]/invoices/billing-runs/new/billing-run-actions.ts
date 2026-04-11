@@ -37,7 +37,7 @@ interface LoadPreviewResult extends ActionResult {
 
 export async function createBillingRunAction(
   slug: string,
-  data: CreateBillingRunRequest,
+  data: CreateBillingRunRequest
 ): Promise<CreateBillingRunResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
@@ -58,7 +58,7 @@ export async function createBillingRunAction(
 
 export async function loadPreviewAction(
   slug: string,
-  billingRunId: string,
+  billingRunId: string
 ): Promise<LoadPreviewResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
@@ -99,7 +99,7 @@ interface RetainerPreviewResult extends ActionResult {
 
 export async function getUnbilledTimeAction(
   billingRunId: string,
-  itemId: string,
+  itemId: string
 ): Promise<UnbilledTimeResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
@@ -119,7 +119,7 @@ export async function getUnbilledTimeAction(
 
 export async function getUnbilledExpensesAction(
   billingRunId: string,
-  itemId: string,
+  itemId: string
 ): Promise<UnbilledExpenseResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
@@ -140,7 +140,7 @@ export async function getUnbilledExpensesAction(
 export async function updateSelectionsAction(
   billingRunId: string,
   itemId: string,
-  selections: UpdateEntrySelectionsRequest,
+  selections: UpdateEntrySelectionsRequest
 ): Promise<UpdateSelectionsResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
@@ -160,7 +160,7 @@ export async function updateSelectionsAction(
 
 export async function excludeCustomerAction(
   billingRunId: string,
-  itemId: string,
+  itemId: string
 ): Promise<UpdateSelectionsResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
@@ -180,7 +180,7 @@ export async function excludeCustomerAction(
 
 export async function includeCustomerAction(
   billingRunId: string,
-  itemId: string,
+  itemId: string
 ): Promise<UpdateSelectionsResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
@@ -199,7 +199,7 @@ export async function includeCustomerAction(
 }
 
 export async function getRetainerPreviewAction(
-  billingRunId: string,
+  billingRunId: string
 ): Promise<RetainerPreviewResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {

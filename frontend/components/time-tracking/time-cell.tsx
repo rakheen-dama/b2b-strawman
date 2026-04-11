@@ -2,12 +2,7 @@
 
 import { useCallback, useRef } from "react";
 import { cn } from "@/lib/utils";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface TimeCellProps {
   taskId: string;
@@ -17,13 +12,7 @@ interface TimeCellProps {
   onChange: (taskId: string, dayIndex: number, hours: number) => void;
 }
 
-export function TimeCell({
-  taskId,
-  dayIndex,
-  value,
-  error,
-  onChange,
-}: TimeCellProps) {
+export function TimeCell({ taskId, dayIndex, value, error, onChange }: TimeCellProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleBlur = useCallback(
@@ -34,7 +23,7 @@ export function TimeCell({
       // Normalize the displayed value after blur
       e.target.value = hours === 0 ? "" : String(hours);
     },
-    [taskId, dayIndex, onChange],
+    [taskId, dayIndex, onChange]
   );
 
   // Use defaultValue with a key from the parent to reset on week navigation.
@@ -55,11 +44,9 @@ export function TimeCell({
       aria-label={`Hours for day ${dayIndex + 1}`}
       className={cn(
         "w-14 rounded border px-1 py-0.5 text-center text-sm",
-        "focus:outline-none focus:ring-1 focus:ring-slate-400",
+        "focus:ring-1 focus:ring-slate-400 focus:outline-none",
         "dark:bg-slate-900 dark:text-slate-100",
-        error
-          ? "border-red-500 focus:ring-red-400"
-          : "border-slate-200 dark:border-slate-700",
+        error ? "border-red-500 focus:ring-red-400" : "border-slate-200 dark:border-slate-700"
       )}
     />
   );

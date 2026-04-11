@@ -13,9 +13,7 @@ vi.mock("@/app/(app)/org/[slug]/projects/[id]/budget-actions", () => ({
   deleteBudget: (...args: unknown[]) => mockDeleteBudget(...args),
 }));
 
-function makeBudget(
-  overrides: Partial<BudgetStatusResponse> = {}
-): BudgetStatusResponse {
+function makeBudget(overrides: Partial<BudgetStatusResponse> = {}): BudgetStatusResponse {
   return {
     projectId: "p1",
     budgetHours: 200,
@@ -62,9 +60,7 @@ describe("BudgetPanel", () => {
         "Set a budget to track spending against your project plan. Choose between fixed-price or time-and-materials."
       )
     ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "Configure budget" })
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Configure budget" })).toBeInTheDocument();
   });
 
   it("hides Set Budget button for non-managers in empty state", () => {
@@ -79,9 +75,7 @@ describe("BudgetPanel", () => {
     );
 
     expect(screen.getByText("No budget configured")).toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: "Configure budget" })
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Configure budget" })).not.toBeInTheDocument();
   });
 
   it("renders ON_TRACK status with progress bars", () => {
@@ -223,9 +217,7 @@ describe("BudgetPanel", () => {
     await user.click(screen.getByRole("button", { name: /edit/i }));
 
     await waitFor(() => {
-      expect(
-        screen.getByRole("heading", { name: "Edit Budget" })
-      ).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Edit Budget" })).toBeInTheDocument();
     });
   });
 
@@ -243,12 +235,8 @@ describe("BudgetPanel", () => {
     );
 
     expect(screen.getByText("Budget Status")).toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: /edit/i })
-    ).not.toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: /delete/i })
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /delete/i })).not.toBeInTheDocument();
   });
 
   it("displays alert threshold and notes", () => {

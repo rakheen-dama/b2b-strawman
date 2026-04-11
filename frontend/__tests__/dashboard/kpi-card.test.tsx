@@ -33,12 +33,7 @@ describe("KpiCard", () => {
 
   it("renders change indicator with green up arrow for positive change", () => {
     render(
-      <KpiCard
-        label="Revenue"
-        value="$50,000"
-        changePercent={12}
-        changeDirection="positive"
-      />
+      <KpiCard label="Revenue" value="$50,000" changePercent={12} changeDirection="positive" />
     );
 
     expect(screen.getByText("12%")).toBeInTheDocument();
@@ -47,26 +42,14 @@ describe("KpiCard", () => {
   });
 
   it("renders empty state when emptyState is set and value is 0", () => {
-    render(
-      <KpiCard
-        label="Revenue"
-        value={0}
-        emptyState="No data available"
-      />
-    );
+    render(<KpiCard label="Revenue" value={0} emptyState="No data available" />);
 
     expect(screen.getByText("No data available")).toBeInTheDocument();
     expect(screen.queryByText("0")).not.toBeInTheDocument();
   });
 
   it("renders as a link when href is provided", () => {
-    render(
-      <KpiCard
-        label="Projects"
-        value={12}
-        href="/org/acme/projects"
-      />
-    );
+    render(<KpiCard label="Projects" value={12} href="/org/acme/projects" />);
 
     const link = screen.getByRole("link");
     expect(link).toHaveAttribute("href", "/org/acme/projects");

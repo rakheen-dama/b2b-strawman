@@ -117,7 +117,7 @@ describe("BillingDetailSheet", () => {
         open={true}
         onOpenChange={vi.fn()}
         onSuccess={vi.fn()}
-      />,
+      />
     );
 
     expect(screen.getByTestId("sheet-org-name")).toHaveTextContent("Acme Corp");
@@ -137,7 +137,7 @@ describe("BillingDetailSheet", () => {
         open={true}
         onOpenChange={vi.fn()}
         onSuccess={vi.fn()}
-      />,
+      />
     );
 
     // Clear the pre-filled admin note
@@ -150,9 +150,7 @@ describe("BillingDetailSheet", () => {
 
     // Should show validation error
     await waitFor(() => {
-      expect(screen.getByTestId("note-error")).toHaveTextContent(
-        "Admin note is required",
-      );
+      expect(screen.getByTestId("note-error")).toHaveTextContent("Admin note is required");
     });
 
     // Should NOT have called the API
@@ -162,17 +160,10 @@ describe("BillingDetailSheet", () => {
 
   it("renders nothing when tenant is null", () => {
     const { container } = render(
-      <BillingDetailSheet
-        tenant={null}
-        open={true}
-        onOpenChange={vi.fn()}
-        onSuccess={vi.fn()}
-      />,
+      <BillingDetailSheet tenant={null} open={true} onOpenChange={vi.fn()} onSuccess={vi.fn()} />
     );
 
     // Sheet should not render any content
-    expect(
-      container.querySelector('[data-testid="sheet-org-name"]'),
-    ).toBeNull();
+    expect(container.querySelector('[data-testid="sheet-org-name"]')).toBeNull();
   });
 });

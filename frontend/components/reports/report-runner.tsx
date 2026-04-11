@@ -10,10 +10,7 @@ import {
   exportReportCsvAction,
   exportReportPdfAction,
 } from "@/app/(app)/org/[slug]/reports/[reportSlug]/actions";
-import type {
-  ReportDefinitionDetail,
-  ReportExecutionResponse,
-} from "@/lib/api/reports";
+import type { ReportDefinitionDetail, ReportExecutionResponse } from "@/lib/api/reports";
 
 interface ReportRunnerProps {
   definition: ReportDefinitionDetail;
@@ -22,14 +19,9 @@ interface ReportRunnerProps {
 const PAGE_SIZE = 25;
 
 export function ReportRunner({ definition }: ReportRunnerProps) {
-  const [response, setResponse] = useState<ReportExecutionResponse | null>(
-    null,
-  );
+  const [response, setResponse] = useState<ReportExecutionResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [currentParams, setCurrentParams] = useState<Record<
-    string,
-    unknown
-  > | null>(null);
+  const [currentParams, setCurrentParams] = useState<Record<string, unknown> | null>(null);
   const [hasRun, setHasRun] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,12 +30,7 @@ export function ReportRunner({ definition }: ReportRunnerProps) {
       setIsLoading(true);
       setError(null);
 
-      const result = await executeReportAction(
-        definition.slug,
-        parameters,
-        page,
-        PAGE_SIZE,
-      );
+      const result = await executeReportAction(definition.slug, parameters, page, PAGE_SIZE);
 
       if (result.data) {
         setResponse(result.data);
@@ -54,7 +41,7 @@ export function ReportRunner({ definition }: ReportRunnerProps) {
 
       setIsLoading(false);
     },
-    [definition.slug],
+    [definition.slug]
   );
 
   async function handleSubmit(parameters: Record<string, unknown>) {
@@ -146,11 +133,7 @@ export function ReportRunner({ definition }: ReportRunnerProps) {
       )}
 
       {/* Results */}
-      <ReportResults
-        response={response}
-        isLoading={isLoading}
-        onPageChange={handlePageChange}
-      />
+      <ReportResults response={response} isLoading={isLoading} onPageChange={handlePageChange} />
     </div>
   );
 }

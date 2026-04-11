@@ -16,10 +16,7 @@ import type {
   InlineFieldEditorField,
   FieldValue,
 } from "@/components/prerequisite/inline-field-editor";
-import type {
-  PrerequisiteContext,
-  PrerequisiteViolation,
-} from "@/components/prerequisite/types";
+import type { PrerequisiteContext, PrerequisiteViolation } from "@/components/prerequisite/types";
 import { PREREQUISITE_CONTEXT_LABELS } from "@/components/prerequisite/types";
 import type { EntityType } from "@/lib/types";
 import {
@@ -66,10 +63,8 @@ export function PrerequisiteModal({
   onCancel,
   onRecheck,
 }: PrerequisiteModalProps) {
-  const [violations, setViolations] =
-    useState<PrerequisiteViolation[]>(initialViolations);
-  const [fieldValues, setFieldValues] =
-    useState<Record<string, FieldValue>>(initialFieldValues);
+  const [violations, setViolations] = useState<PrerequisiteViolation[]>(initialViolations);
+  const [fieldValues, setFieldValues] = useState<Record<string, FieldValue>>(initialFieldValues);
   const [isDirty, setIsDirty] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -86,7 +81,7 @@ export function PrerequisiteModal({
       }
       onOpenChange(nextOpen);
     },
-    [onOpenChange, onCancel],
+    [onOpenChange, onCancel]
   );
 
   const handleCheckAndContinue = useCallback(async () => {
@@ -100,7 +95,7 @@ export function PrerequisiteModal({
           slug,
           entityType,
           entityId,
-          fieldValues as Record<string, unknown>,
+          fieldValues as Record<string, unknown>
         );
         if (!saveResult.success) {
           setError(saveResult.error ?? "Failed to save field values.");
@@ -125,7 +120,17 @@ export function PrerequisiteModal({
     } finally {
       setLoading(false);
     }
-  }, [isDirty, fieldValues, slug, entityType, entityId, context, onResolved, onOpenChange, onRecheck]);
+  }, [
+    isDirty,
+    fieldValues,
+    slug,
+    entityType,
+    entityId,
+    context,
+    onResolved,
+    onOpenChange,
+    onRecheck,
+  ]);
 
   const contextLabel = PREREQUISITE_CONTEXT_LABELS[context] ?? context;
 
@@ -149,21 +154,16 @@ export function PrerequisiteModal({
         </div>
 
         {error && (
-          <p className="text-sm text-destructive" role="alert">{error}</p>
+          <p className="text-destructive text-sm" role="alert">
+            {error}
+          </p>
         )}
 
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => handleOpenChange(false)}
-            disabled={loading}
-          >
+          <Button variant="outline" onClick={() => handleOpenChange(false)} disabled={loading}>
             Cancel
           </Button>
-          <Button
-            onClick={handleCheckAndContinue}
-            disabled={loading}
-          >
+          <Button onClick={handleCheckAndContinue} disabled={loading}>
             {loading ? (
               <>
                 <Loader2 className="mr-2 size-4 animate-spin" />

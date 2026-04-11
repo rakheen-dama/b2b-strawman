@@ -1,11 +1,6 @@
 // Email delivery types (from EmailAdminController.java)
 
-export type EmailDeliveryStatus =
-  | "SENT"
-  | "DELIVERED"
-  | "BOUNCED"
-  | "FAILED"
-  | "RATE_LIMITED";
+export type EmailDeliveryStatus = "SENT" | "DELIVERED" | "BOUNCED" | "FAILED" | "RATE_LIMITED";
 
 export interface EmailDeliveryLogEntry {
   id: string;

@@ -18,9 +18,7 @@ export function PeriodHistoryTable({ periods, slug }: PeriodHistoryTableProps) {
   const [page, setPage] = useState(0);
 
   // Sort newest-first by periodStart
-  const sorted = [...periods].sort(
-    (a, b) => b.periodStart.localeCompare(a.periodStart),
-  );
+  const sorted = [...periods].sort((a, b) => b.periodStart.localeCompare(a.periodStart));
 
   const totalPages = Math.ceil(sorted.length / PAGE_SIZE);
   const pageItems = sorted.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
@@ -35,32 +33,30 @@ export function PeriodHistoryTable({ periods, slug }: PeriodHistoryTableProps) {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-        Period History
-      </h3>
+      <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">Period History</h3>
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="border-b border-slate-200 dark:border-slate-800">
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+              <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                 Period Dates
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+              <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                 Status
               </th>
-              <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+              <th className="px-4 py-3 text-right text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                 Allocated Hours
               </th>
-              <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+              <th className="px-4 py-3 text-right text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                 Consumed Hours
               </th>
-              <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+              <th className="px-4 py-3 text-right text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                 Overage Hours
               </th>
-              <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+              <th className="px-4 py-3 text-right text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                 Rollover Out
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+              <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                 Invoice
               </th>
             </tr>
@@ -72,8 +68,7 @@ export function PeriodHistoryTable({ periods, slug }: PeriodHistoryTableProps) {
                 className="group border-b border-slate-100 transition-colors last:border-0 hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900/50"
               >
                 <td className="px-4 py-3 text-sm text-slate-900 dark:text-slate-100">
-                  {formatLocalDate(period.periodStart)} &ndash;{" "}
-                  {formatLocalDate(period.periodEnd)}
+                  {formatLocalDate(period.periodStart)} &ndash; {formatLocalDate(period.periodEnd)}
                 </td>
                 <td className="px-4 py-3">
                   {period.status === "OPEN" ? (
@@ -82,12 +77,12 @@ export function PeriodHistoryTable({ periods, slug }: PeriodHistoryTableProps) {
                     <Badge variant="neutral">Closed</Badge>
                   )}
                 </td>
-                <td className="px-4 py-3 text-right font-mono text-sm tabular-nums text-slate-700 dark:text-slate-300">
+                <td className="px-4 py-3 text-right font-mono text-sm text-slate-700 tabular-nums dark:text-slate-300">
                   {period.allocatedHours != null
                     ? `${period.allocatedHours.toFixed(1)}h`
                     : "\u2014"}
                 </td>
-                <td className="px-4 py-3 text-right font-mono text-sm tabular-nums text-slate-700 dark:text-slate-300">
+                <td className="px-4 py-3 text-right font-mono text-sm text-slate-700 tabular-nums dark:text-slate-300">
                   {period.consumedHours.toFixed(1)}h
                 </td>
                 <td className="px-4 py-3 text-right font-mono text-sm tabular-nums">
@@ -96,12 +91,10 @@ export function PeriodHistoryTable({ periods, slug }: PeriodHistoryTableProps) {
                       {(period.overageHours ?? 0).toFixed(1)}h
                     </span>
                   ) : (
-                    <span className="text-slate-400 dark:text-slate-600">
-                      &mdash;
-                    </span>
+                    <span className="text-slate-400 dark:text-slate-600">&mdash;</span>
                   )}
                 </td>
-                <td className="px-4 py-3 text-right font-mono text-sm tabular-nums text-slate-700 dark:text-slate-300">
+                <td className="px-4 py-3 text-right font-mono text-sm text-slate-700 tabular-nums dark:text-slate-300">
                   {period.rolloverHoursOut > 0
                     ? `${period.rolloverHoursOut.toFixed(1)}h`
                     : "\u2014"}
@@ -115,9 +108,7 @@ export function PeriodHistoryTable({ periods, slug }: PeriodHistoryTableProps) {
                       View Invoice
                     </Link>
                   ) : period.status === "CLOSED" ? (
-                    <span className="text-slate-400 dark:text-slate-600">
-                      &mdash;
-                    </span>
+                    <span className="text-slate-400 dark:text-slate-600">&mdash;</span>
                   ) : null}
                 </td>
               </tr>

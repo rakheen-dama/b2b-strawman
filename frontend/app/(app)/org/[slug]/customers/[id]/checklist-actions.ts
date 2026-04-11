@@ -18,7 +18,7 @@ interface ActionResult {
 }
 
 export async function fetchCustomerChecklists(
-  customerId: string,
+  customerId: string
 ): Promise<ChecklistInstanceResponse[]> {
   // Authentication is handled by the API client; no role guard needed for reads.
   // The backend enforces tenant scoping.
@@ -34,7 +34,7 @@ export async function completeChecklistItem(
   customerId: string,
   itemId: string,
   notes: string,
-  documentId?: string,
+  documentId?: string
 ): Promise<ActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
@@ -58,7 +58,7 @@ export async function skipChecklistItem(
   slug: string,
   customerId: string,
   itemId: string,
-  reason: string,
+  reason: string
 ): Promise<ActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
@@ -81,7 +81,7 @@ export async function skipChecklistItem(
 export async function reopenChecklistItem(
   slug: string,
   customerId: string,
-  itemId: string,
+  itemId: string
 ): Promise<ActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
@@ -104,7 +104,7 @@ export async function reopenChecklistItem(
 export async function instantiateChecklist(
   customerId: string,
   templateId: string,
-  slug: string,
+  slug: string
 ): Promise<ActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {

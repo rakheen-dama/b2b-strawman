@@ -3,9 +3,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { TemplateReadinessCard } from "@/components/setup/template-readiness-card";
 import type { TemplateReadinessItem } from "@/components/setup/types";
 
-function makeTemplates(
-  overrides: Partial<TemplateReadinessItem>[] = [],
-): TemplateReadinessItem[] {
+function makeTemplates(overrides: Partial<TemplateReadinessItem>[] = []): TemplateReadinessItem[] {
   const defaults: TemplateReadinessItem[] = [
     {
       templateId: "t1",
@@ -37,12 +35,7 @@ describe("TemplateReadinessCard", () => {
   });
 
   it("renders ready template with check icon and enabled generate link", () => {
-    render(
-      <TemplateReadinessCard
-        templates={makeTemplates()}
-        baseHref={baseHref}
-      />,
-    );
+    render(<TemplateReadinessCard templates={makeTemplates()} baseHref={baseHref} />);
 
     expect(screen.getByText("Engagement Letter")).toBeInTheDocument();
     const link = screen.getByRole("link", { name: "Generate" });
@@ -50,12 +43,7 @@ describe("TemplateReadinessCard", () => {
   });
 
   it("renders not-ready template with warning icon and disabled button", () => {
-    render(
-      <TemplateReadinessCard
-        templates={makeTemplates()}
-        baseHref={baseHref}
-      />,
-    );
+    render(<TemplateReadinessCard templates={makeTemplates()} baseHref={baseHref} />);
 
     expect(screen.getByText("Statement of Work")).toBeInTheDocument();
 
@@ -78,7 +66,7 @@ describe("TemplateReadinessCard", () => {
           },
         ]}
         baseHref={baseHref}
-      />,
+      />
     );
 
     const button = screen.getByRole("button", { name: "Generate" });
@@ -110,12 +98,7 @@ describe("TemplateReadinessCard", () => {
       },
     ];
 
-    render(
-      <TemplateReadinessCard
-        templates={templates}
-        baseHref="/org/acme/customers/c1"
-      />,
-    );
+    render(<TemplateReadinessCard templates={templates} baseHref="/org/acme/customers/c1" />);
 
     expect(screen.getByText("Engagement Letter")).toBeInTheDocument();
     expect(screen.getByText("Statement of Work")).toBeInTheDocument();

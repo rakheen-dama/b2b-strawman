@@ -73,9 +73,7 @@ describe("GenerationClauseStep", () => {
   });
 
   it("renders clause list with titles and badges", async () => {
-    render(
-      <GenerationClauseStep templateId="tpl-1" onNext={mockOnNext} />,
-    );
+    render(<GenerationClauseStep templateId="tpl-1" onNext={mockOnNext} />);
 
     await waitFor(() => {
       expect(screen.getByText("Standard NDA")).toBeInTheDocument();
@@ -87,9 +85,7 @@ describe("GenerationClauseStep", () => {
   });
 
   it("required clauses cannot be unchecked", async () => {
-    render(
-      <GenerationClauseStep templateId="tpl-1" onNext={mockOnNext} />,
-    );
+    render(<GenerationClauseStep templateId="tpl-1" onNext={mockOnNext} />);
 
     await waitFor(() => {
       expect(screen.getByText("Standard NDA")).toBeInTheDocument();
@@ -102,9 +98,7 @@ describe("GenerationClauseStep", () => {
 
   it("optional clauses are checked by default and toggleable", async () => {
     const user = userEvent.setup();
-    render(
-      <GenerationClauseStep templateId="tpl-1" onNext={mockOnNext} />,
-    );
+    render(<GenerationClauseStep templateId="tpl-1" onNext={mockOnNext} />);
 
     await waitFor(() => {
       expect(screen.getByText("Liability Limitation")).toBeInTheDocument();
@@ -144,9 +138,7 @@ describe("GenerationClauseStep", () => {
       },
     ]);
 
-    render(
-      <GenerationClauseStep templateId="tpl-1" onNext={mockOnNext} />,
-    );
+    render(<GenerationClauseStep templateId="tpl-1" onNext={mockOnNext} />);
 
     await waitFor(() => {
       expect(screen.getByText("Standard NDA")).toBeInTheDocument();
@@ -178,9 +170,7 @@ describe("GenerationClauseStep", () => {
 
   it("next button passes selected clauses to parent", async () => {
     const user = userEvent.setup();
-    render(
-      <GenerationClauseStep templateId="tpl-1" onNext={mockOnNext} />,
-    );
+    render(<GenerationClauseStep templateId="tpl-1" onNext={mockOnNext} />);
 
     await waitFor(() => {
       expect(screen.getByText("Standard NDA")).toBeInTheDocument();
@@ -195,27 +185,19 @@ describe("GenerationClauseStep", () => {
   });
 
   it("renders expand toggle buttons for each clause", async () => {
-    render(
-      <GenerationClauseStep templateId="tpl-1" onNext={mockOnNext} />,
-    );
+    render(<GenerationClauseStep templateId="tpl-1" onNext={mockOnNext} />);
 
     await waitFor(() => {
       expect(screen.getByText("Standard NDA")).toBeInTheDocument();
     });
 
-    expect(
-      screen.getByRole("button", { name: "Expand Standard NDA" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "Expand Liability Limitation" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Expand Standard NDA" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Expand Liability Limitation" })).toBeInTheDocument();
   });
 
   it("expanding a clause shows its body preview", async () => {
     const user = userEvent.setup();
-    render(
-      <GenerationClauseStep templateId="tpl-1" onNext={mockOnNext} />,
-    );
+    render(<GenerationClauseStep templateId="tpl-1" onNext={mockOnNext} />);
 
     await waitFor(() => {
       expect(screen.getByText("Standard NDA")).toBeInTheDocument();
@@ -225,24 +207,18 @@ describe("GenerationClauseStep", () => {
     expect(screen.queryByText("NDA body")).not.toBeInTheDocument();
 
     // Click expand for first clause
-    await user.click(
-      screen.getByRole("button", { name: "Expand Standard NDA" }),
-    );
+    await user.click(screen.getByRole("button", { name: "Expand Standard NDA" }));
 
     // Body preview now visible (HTML rendered, not raw tags)
     expect(screen.getByText("NDA body")).toBeInTheDocument();
 
     // Toggle label should change to Collapse
-    expect(
-      screen.getByRole("button", { name: "Collapse Standard NDA" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Collapse Standard NDA" })).toBeInTheDocument();
   });
 
   it("unchecked optional clauses are excluded from next callback", async () => {
     const user = userEvent.setup();
-    render(
-      <GenerationClauseStep templateId="tpl-1" onNext={mockOnNext} />,
-    );
+    render(<GenerationClauseStep templateId="tpl-1" onNext={mockOnNext} />);
 
     await waitFor(() => {
       expect(screen.getByText("Liability Limitation")).toBeInTheDocument();
@@ -361,7 +337,7 @@ describe("GenerateDocumentDialog with clauses", () => {
         expect.arrayContaining([
           expect.objectContaining({ clauseId: "c-1", sortOrder: 0 }),
           expect.objectContaining({ clauseId: "c-2", sortOrder: 1 }),
-        ]),
+        ])
       );
     });
   });
@@ -370,7 +346,13 @@ describe("GenerateDocumentDialog with clauses", () => {
     mockGetTemplateClauses.mockResolvedValue(TEMPLATE_CLAUSES);
     mockGenerateDocument.mockResolvedValue({
       success: true,
-      data: { id: "gen-1", fileName: "test.pdf", fileSize: 1024, documentId: "doc-1", generatedAt: "2026-01-01T00:00:00Z" },
+      data: {
+        id: "gen-1",
+        fileName: "test.pdf",
+        fileSize: 1024,
+        documentId: "doc-1",
+        generatedAt: "2026-01-01T00:00:00Z",
+      },
     });
 
     const user = userEvent.setup();
@@ -400,7 +382,7 @@ describe("GenerateDocumentDialog with clauses", () => {
         expect.arrayContaining([
           expect.objectContaining({ clauseId: "c-1", sortOrder: 0 }),
           expect.objectContaining({ clauseId: "c-2", sortOrder: 1 }),
-        ]),
+        ])
       );
     });
   });
@@ -425,13 +407,7 @@ describe("GenerateDocumentDialog with clauses", () => {
     await user.click(screen.getByRole("button", { name: /Download PDF/i }));
 
     await waitFor(() => {
-      expect(mockGenerateDocument).toHaveBeenCalledWith(
-        "tpl-1",
-        "proj-1",
-        false,
-        false,
-        undefined,
-      );
+      expect(mockGenerateDocument).toHaveBeenCalledWith("tpl-1", "proj-1", false, false, undefined);
     });
   });
 });

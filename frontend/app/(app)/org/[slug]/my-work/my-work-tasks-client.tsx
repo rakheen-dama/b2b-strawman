@@ -30,9 +30,7 @@ interface MyWorkTasksClientProps {
   fieldGroups: FieldGroupResponse[];
   groupMembers: Record<string, FieldGroupMemberResponse[]>;
   savedViews: SavedViewResponse[];
-  onSave: (
-    req: CreateSavedViewRequest,
-  ) => Promise<{ success: boolean; error?: string }>;
+  onSave: (req: CreateSavedViewRequest) => Promise<{ success: boolean; error?: string }>;
 }
 
 export function MyWorkTasksClient({
@@ -84,16 +82,8 @@ export function MyWorkTasksClient({
       </Suspense>
 
       {/* Task Lists */}
-      <UrgencyTaskList
-        tasks={assigned}
-        slug={slug}
-        onTaskClick={openTask}
-      />
-      <AvailableTaskList
-        tasks={unassigned}
-        slug={slug}
-        onTaskClick={openTask}
-      />
+      <UrgencyTaskList tasks={assigned} slug={slug} onTaskClick={openTask} />
+      <AvailableTaskList tasks={unassigned} slug={slug} onTaskClick={openTask} />
 
       {/* Task Detail Sheet — cross-project (projectId=null skips guard) */}
       <TaskDetailSheet

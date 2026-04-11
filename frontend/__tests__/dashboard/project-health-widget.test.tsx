@@ -51,9 +51,7 @@ const mockProjects: ProjectHealth[] = [
 ];
 
 function renderWidget(ui: React.ReactElement) {
-  return render(
-    <TerminologyProvider verticalProfile={null}>{ui}</TerminologyProvider>,
-  );
+  return render(<TerminologyProvider verticalProfile={null}>{ui}</TerminologyProvider>);
 }
 
 describe("ProjectHealthWidget", () => {
@@ -73,9 +71,7 @@ describe("ProjectHealthWidget", () => {
   });
 
   it("renders all projects by default", () => {
-    renderWidget(
-      <ProjectHealthWidget projects={mockProjects} orgSlug="acme" />
-    );
+    renderWidget(<ProjectHealthWidget projects={mockProjects} orgSlug="acme" />);
 
     expect(screen.getByText("Website Redesign")).toBeInTheDocument();
     expect(screen.getByText("Mobile App")).toBeInTheDocument();
@@ -83,18 +79,14 @@ describe("ProjectHealthWidget", () => {
   });
 
   it("shows customer names when available", () => {
-    renderWidget(
-      <ProjectHealthWidget projects={mockProjects} orgSlug="acme" />
-    );
+    renderWidget(<ProjectHealthWidget projects={mockProjects} orgSlug="acme" />);
 
     expect(screen.getByText("Acme Corp")).toBeInTheDocument();
     expect(screen.getByText("Beta Inc")).toBeInTheDocument();
   });
 
   it("shows task ratio and hours in dense row", () => {
-    renderWidget(
-      <ProjectHealthWidget projects={mockProjects} orgSlug="acme" />
-    );
+    renderWidget(<ProjectHealthWidget projects={mockProjects} orgSlug="acme" />);
 
     // Task ratios shown as X/Y
     expect(screen.getByText("20/40")).toBeInTheDocument();
@@ -103,9 +95,7 @@ describe("ProjectHealthWidget", () => {
   });
 
   it("filters to at-risk and critical projects when At Risk tab clicked", () => {
-    renderWidget(
-      <ProjectHealthWidget projects={mockProjects} orgSlug="acme" />
-    );
+    renderWidget(<ProjectHealthWidget projects={mockProjects} orgSlug="acme" />);
 
     fireEvent.click(screen.getByRole("button", { name: "At Risk" }));
 
@@ -116,9 +106,7 @@ describe("ProjectHealthWidget", () => {
   });
 
   it("filters to over-budget projects when Over Budget tab clicked", () => {
-    renderWidget(
-      <ProjectHealthWidget projects={mockProjects} orgSlug="acme" />
-    );
+    renderWidget(<ProjectHealthWidget projects={mockProjects} orgSlug="acme" />);
 
     fireEvent.click(screen.getByRole("button", { name: "Over Budget" }));
 
@@ -129,21 +117,15 @@ describe("ProjectHealthWidget", () => {
   });
 
   it("navigates to project detail on row click", () => {
-    renderWidget(
-      <ProjectHealthWidget projects={mockProjects} orgSlug="acme" />
-    );
+    renderWidget(<ProjectHealthWidget projects={mockProjects} orgSlug="acme" />);
 
     fireEvent.click(screen.getByText("Website Redesign"));
 
-    expect(mockPush).toHaveBeenCalledWith(
-      "/org/acme/projects/proj-1"
-    );
+    expect(mockPush).toHaveBeenCalledWith("/org/acme/projects/proj-1");
   });
 
   it("navigates to projects page when 'View all projects' clicked", () => {
-    renderWidget(
-      <ProjectHealthWidget projects={mockProjects} orgSlug="acme" />
-    );
+    renderWidget(<ProjectHealthWidget projects={mockProjects} orgSlug="acme" />);
 
     fireEvent.click(screen.getByText(/View all projects/));
 
@@ -151,17 +133,11 @@ describe("ProjectHealthWidget", () => {
   });
 
   it("renders filter tabs", () => {
-    renderWidget(
-      <ProjectHealthWidget projects={mockProjects} orgSlug="acme" />
-    );
+    renderWidget(<ProjectHealthWidget projects={mockProjects} orgSlug="acme" />);
 
     expect(screen.getByRole("button", { name: "All" })).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "At Risk" })
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "Over Budget" })
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "At Risk" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Over Budget" })).toBeInTheDocument();
   });
 
   it("shows empty filter message when no projects match filter", () => {
@@ -180,9 +156,7 @@ describe("ProjectHealthWidget", () => {
       },
     ];
 
-    renderWidget(
-      <ProjectHealthWidget projects={healthyOnly} orgSlug="acme" />
-    );
+    renderWidget(<ProjectHealthWidget projects={healthyOnly} orgSlug="acme" />);
 
     fireEvent.click(screen.getByRole("button", { name: "Over Budget" }));
 
@@ -190,9 +164,7 @@ describe("ProjectHealthWidget", () => {
   });
 
   it("renders project-health-panel data-testid", () => {
-    renderWidget(
-      <ProjectHealthWidget projects={mockProjects} orgSlug="acme" />
-    );
+    renderWidget(<ProjectHealthWidget projects={mockProjects} orgSlug="acme" />);
 
     expect(screen.getByTestId("project-health-panel")).toBeInTheDocument();
   });

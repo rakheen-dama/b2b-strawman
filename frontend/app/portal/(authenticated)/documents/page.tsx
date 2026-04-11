@@ -43,7 +43,10 @@ export default function PortalDocumentsPage() {
 
   if (error) {
     return (
-      <div className="flex items-center gap-2 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-300" role="alert">
+      <div
+        className="flex items-center gap-2 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-300"
+        role="alert"
+      >
         <AlertCircle className="size-4 shrink-0" />
         {error}
       </div>
@@ -54,18 +57,12 @@ export default function PortalDocumentsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <h1 className="font-display text-2xl text-slate-950 dark:text-slate-50">
-          Documents
-        </h1>
+        <h1 className="font-display text-2xl text-slate-950 dark:text-slate-50">Documents</h1>
         <Badge variant="neutral">{documents.length}</Badge>
       </div>
 
       {/* Document table */}
-      <PortalDocumentTable
-        documents={documents}
-        title="All Shared Documents"
-        showProject
-      />
+      <PortalDocumentTable documents={documents} title="All Shared Documents" showProject />
     </div>
   );
 }

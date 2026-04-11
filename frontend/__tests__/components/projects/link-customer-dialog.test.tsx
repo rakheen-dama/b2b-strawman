@@ -71,14 +71,10 @@ describe("LinkCustomerDialog", () => {
 
     render(
       <SWRTestProvider>
-        <LinkCustomerDialog
-          slug="acme"
-          projectId="p1"
-          existingCustomers={existingCustomers}
-        >
+        <LinkCustomerDialog slug="acme" projectId="p1" existingCustomers={existingCustomers}>
           <button>Open Link Customer Dialog</button>
         </LinkCustomerDialog>
-      </SWRTestProvider>,
+      </SWRTestProvider>
     );
 
     await user.click(screen.getByText("Open Link Customer Dialog"));
@@ -102,14 +98,10 @@ describe("LinkCustomerDialog", () => {
 
     render(
       <SWRTestProvider>
-        <LinkCustomerDialog
-          slug="acme"
-          projectId="p1"
-          existingCustomers={existingCustomers}
-        >
+        <LinkCustomerDialog slug="acme" projectId="p1" existingCustomers={existingCustomers}>
           <button>Open Link Customer Dialog</button>
         </LinkCustomerDialog>
-      </SWRTestProvider>,
+      </SWRTestProvider>
     );
 
     await user.click(screen.getByText("Open Link Customer Dialog"));
@@ -127,14 +119,10 @@ describe("LinkCustomerDialog", () => {
 
     render(
       <SWRTestProvider>
-        <LinkCustomerDialog
-          slug="acme"
-          projectId="p1"
-          existingCustomers={existingCustomers}
-        >
+        <LinkCustomerDialog slug="acme" projectId="p1" existingCustomers={existingCustomers}>
           <button>Open Link Customer Dialog</button>
         </LinkCustomerDialog>
-      </SWRTestProvider>,
+      </SWRTestProvider>
     );
 
     await user.click(screen.getByText("Open Link Customer Dialog"));

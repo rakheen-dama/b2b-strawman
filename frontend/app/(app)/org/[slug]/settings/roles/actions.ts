@@ -1,11 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import {
-  createOrgRole,
-  updateOrgRole,
-  deleteOrgRole,
-} from "@/lib/api/org-roles";
+import { createOrgRole, updateOrgRole, deleteOrgRole } from "@/lib/api/org-roles";
 import { ApiError } from "@/lib/api";
 import type { CreateOrgRoleRequest, UpdateOrgRoleRequest } from "@/lib/api/org-roles";
 
@@ -16,7 +12,7 @@ interface ActionResult {
 
 export async function createRoleAction(
   slug: string,
-  data: CreateOrgRoleRequest,
+  data: CreateOrgRoleRequest
 ): Promise<ActionResult> {
   try {
     await createOrgRole(data);
@@ -46,7 +42,7 @@ export async function createRoleAction(
 export async function updateRoleAction(
   slug: string,
   id: string,
-  data: UpdateOrgRoleRequest,
+  data: UpdateOrgRoleRequest
 ): Promise<ActionResult> {
   try {
     await updateOrgRole(id, data);
@@ -73,10 +69,7 @@ export async function updateRoleAction(
   return { success: true };
 }
 
-export async function deleteRoleAction(
-  slug: string,
-  id: string,
-): Promise<ActionResult> {
+export async function deleteRoleAction(slug: string, id: string): Promise<ActionResult> {
   try {
     await deleteOrgRole(id);
   } catch (error) {

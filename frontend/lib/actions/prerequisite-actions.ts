@@ -15,20 +15,20 @@ import {
 export async function checkPrerequisitesAction(
   context: PrerequisiteContext,
   entityType: EntityType,
-  entityId: string,
+  entityId: string
 ): Promise<PrerequisiteCheck> {
   return checkPrerequisites(context, entityType, entityId);
 }
 
 export async function fetchIntakeFieldsAction(
-  entityType: EntityType,
+  entityType: EntityType
 ): Promise<IntakeFieldGroupsResponse> {
   return fetchIntakeFields(entityType);
 }
 
 export async function checkEngagementPrerequisitesAction(
   templateId: string,
-  customerId: string,
+  customerId: string
 ): Promise<PrerequisiteCheck> {
   return checkEngagementPrerequisites(templateId, customerId);
 }
@@ -41,7 +41,7 @@ export async function updateEntityCustomFieldsAction(
   slug: string,
   entityType: EntityType,
   entityId: string,
-  customFields: Record<string, unknown>,
+  customFields: Record<string, unknown>
 ) {
   return _updateEntityCustomFields(slug, entityType, entityId, customFields);
 }

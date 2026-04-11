@@ -10,7 +10,7 @@ import type { EntityType } from "@/lib/types";
 import type { IntakeFieldGroupsResponse } from "@/components/prerequisite/types";
 
 export async function fetchIntakeFields(
-  entityType: EntityType,
+  entityType: EntityType
 ): Promise<IntakeFieldGroupsResponse> {
   return fetchIntakeFieldsAction(entityType);
 }

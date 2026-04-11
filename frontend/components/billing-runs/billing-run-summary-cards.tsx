@@ -10,20 +10,14 @@ function StatCard({ label, value }: { label: string; value: string }) {
   return (
     <Card>
       <div className="flex flex-col gap-1 px-4 py-3">
-        <span className="text-xs uppercase tracking-wider text-muted-foreground">
-          {label}
-        </span>
-        <span className="text-2xl font-bold font-mono tabular-nums tracking-tight">
-          {value}
-        </span>
+        <span className="text-muted-foreground text-xs tracking-wider uppercase">{label}</span>
+        <span className="font-mono text-2xl font-bold tracking-tight tabular-nums">{value}</span>
       </div>
     </Card>
   );
 }
 
-export function BillingRunSummaryCards({
-  billingRun,
-}: BillingRunSummaryCardsProps) {
+export function BillingRunSummaryCards({ billingRun }: BillingRunSummaryCardsProps) {
   const totalCustomers = billingRun.totalCustomers ?? 0;
   const totalInvoices = billingRun.totalInvoices ?? 0;
   const totalSent = billingRun.totalSent ?? 0;
@@ -36,10 +30,7 @@ export function BillingRunSummaryCards({
       <StatCard label="Invoices Generated" value={String(totalInvoices)} />
       <StatCard label="Sent" value={String(totalSent)} />
       <StatCard label="Failed" value={String(totalFailed)} />
-      <StatCard
-        label="Total Amount"
-        value={formatCurrency(totalAmount, billingRun.currency)}
-      />
+      <StatCard label="Total Amount" value={formatCurrency(totalAmount, billingRun.currency)} />
     </div>
   );
 }

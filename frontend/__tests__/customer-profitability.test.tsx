@@ -8,13 +8,10 @@ import type { OrgProfitabilityResponse } from "@/lib/types";
 const mockGetOrgProfitability = vi.fn();
 
 vi.mock("@/app/(app)/org/[slug]/profitability/actions", () => ({
-  getOrgProfitability: (...args: unknown[]) =>
-    mockGetOrgProfitability(...args),
+  getOrgProfitability: (...args: unknown[]) => mockGetOrgProfitability(...args),
 }));
 
-function makeData(
-  overrides: Partial<OrgProfitabilityResponse> = {},
-): OrgProfitabilityResponse {
+function makeData(overrides: Partial<OrgProfitabilityResponse> = {}): OrgProfitabilityResponse {
   return {
     projects: [
       {
@@ -60,9 +57,7 @@ describe("CustomerProfitabilitySection", () => {
 
   it("renders customer rows with aggregated revenue, cost, and margin", () => {
     const data = makeData();
-    render(
-      <CustomerProfitabilitySection initialData={data} {...defaultProps} />,
-    );
+    render(<CustomerProfitabilitySection initialData={data} {...defaultProps} />);
 
     expect(screen.getByText("Customer Profitability")).toBeInTheDocument();
     // Acme Corp aggregate: revenue = 15000 + 7500 = 22500
@@ -92,9 +87,7 @@ describe("CustomerProfitabilitySection", () => {
         },
       ],
     });
-    render(
-      <CustomerProfitabilitySection initialData={data} {...defaultProps} />,
-    );
+    render(<CustomerProfitabilitySection initialData={data} {...defaultProps} />);
 
     expect(screen.getByText("Widget Inc")).toBeInTheDocument();
     // Cost column shows N/A from formatCurrencySafe
@@ -106,21 +99,15 @@ describe("CustomerProfitabilitySection", () => {
 
   it("renders empty state when no project data", () => {
     const data = makeData({ projects: [] });
-    render(
-      <CustomerProfitabilitySection initialData={data} {...defaultProps} />,
-    );
+    render(<CustomerProfitabilitySection initialData={data} {...defaultProps} />);
 
-    expect(
-      screen.getByText("No customer profitability data for this period"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("No customer profitability data for this period")).toBeInTheDocument();
   });
 
   it("expand/collapse shows project breakdown rows", async () => {
     const user = userEvent.setup();
     const data = makeData();
-    render(
-      <CustomerProfitabilitySection initialData={data} {...defaultProps} />,
-    );
+    render(<CustomerProfitabilitySection initialData={data} {...defaultProps} />);
 
     // Initially, project names should not be visible (only customer aggregate row)
     expect(screen.queryByText("Alpha Project")).not.toBeInTheDocument();
@@ -161,9 +148,7 @@ describe("CustomerProfitabilitySection", () => {
         },
       ],
     });
-    render(
-      <CustomerProfitabilitySection initialData={data} {...defaultProps} />,
-    );
+    render(<CustomerProfitabilitySection initialData={data} {...defaultProps} />);
 
     expect(screen.getByText("Unassigned")).toBeInTheDocument();
     expect(screen.getByText("$3,000.00")).toBeInTheDocument();

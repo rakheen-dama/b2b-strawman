@@ -27,16 +27,15 @@ export function CommandPaletteDialog({ slug, open, onOpenChange }: CommandPalett
   const { isModuleEnabled } = useOrgProfile();
   const { items: recentItems } = useRecentItems();
 
-  const pages = [
-    ...NAV_GROUPS.flatMap((g) => g.items),
-    ...UTILITY_ITEMS,
-  ].filter((item) => !item.requiredCapability || hasCapability(item.requiredCapability));
+  const pages = [...NAV_GROUPS.flatMap((g) => g.items), ...UTILITY_ITEMS].filter(
+    (item) => !item.requiredCapability || hasCapability(item.requiredCapability)
+  );
 
   const settings = SETTINGS_ITEMS.filter(
     (item) =>
       !item.comingSoon &&
       (!item.adminOnly || isAdmin) &&
-      (!item.requiredModule || isModuleEnabled(item.requiredModule)),
+      (!item.requiredModule || isModuleEnabled(item.requiredModule))
   );
 
   const navigate = (href: string) => {
@@ -82,10 +81,7 @@ export function CommandPaletteDialog({ slug, open, onOpenChange }: CommandPalett
         </CommandGroup>
         <CommandGroup heading="Settings">
           {settings.map((item) => (
-            <CommandItem
-              key={item.title}
-              onSelect={() => navigate(item.href(slug))}
-            >
+            <CommandItem key={item.title} onSelect={() => navigate(item.href(slug))}>
               <Settings className="h-4 w-4" />
               {item.title}
             </CommandItem>

@@ -80,7 +80,7 @@ describe("Mock client auth hooks", () => {
     render(
       <MockAuthContextProvider>
         <TestComp />
-      </MockAuthContextProvider>,
+      </MockAuthContextProvider>
     );
 
     // Initially not loaded (before useEffect runs)
@@ -118,19 +118,17 @@ describe("Mock client auth hooks", () => {
     render(
       <MockAuthContextProvider>
         <TestComp />
-      </MockAuthContextProvider>,
+      </MockAuthContextProvider>
     );
 
     await waitFor(() => {
       expect(screen.getByTestId("loaded").textContent).toBe("true");
     });
 
-    expect(screen.getByTestId("email").textContent).toBe(
-      "alice@e2e-test.local",
-    );
+    expect(screen.getByTestId("email").textContent).toBe("alice@e2e-test.local");
     expect(mockFetch).toHaveBeenCalledWith(
       expect.stringContaining("/userinfo/user_e2e_alice"),
-      expect.any(Object),
+      expect.any(Object)
     );
   });
 
@@ -155,7 +153,7 @@ describe("Mock client auth hooks", () => {
     render(
       <MockAuthContextProvider>
         <TestComp />
-      </MockAuthContextProvider>,
+      </MockAuthContextProvider>
     );
 
     await waitFor(() => {
@@ -228,7 +226,7 @@ describe("Mock client auth hooks", () => {
     render(
       <MockAuthContextProvider>
         <TestComp />
-      </MockAuthContextProvider>,
+      </MockAuthContextProvider>
     );
 
     await waitFor(() => {
@@ -236,12 +234,12 @@ describe("Mock client auth hooks", () => {
     });
 
     expect(screen.getByTestId("count").textContent).toBe("2");
-    expect(
-      screen.getAllByTestId("member-email").map((el) => el.textContent),
-    ).toContain("alice@e2e-test.local");
+    expect(screen.getAllByTestId("member-email").map((el) => el.textContent)).toContain(
+      "alice@e2e-test.local"
+    );
 
     const membersCall = mockFetch.mock.calls.find((call) =>
-      (call[0] as string).includes("/api/members"),
+      (call[0] as string).includes("/api/members")
     );
     expect(membersCall).toBeDefined();
     expect(membersCall?.[1]).toMatchObject({
@@ -281,7 +279,7 @@ describe("Mock client auth hooks", () => {
     render(
       <MockAuthContextProvider>
         <TestComp />
-      </MockAuthContextProvider>,
+      </MockAuthContextProvider>
     );
 
     await user.click(screen.getByTestId("sign-out"));

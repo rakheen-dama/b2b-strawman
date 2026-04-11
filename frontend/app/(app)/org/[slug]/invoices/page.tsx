@@ -78,9 +78,7 @@ export default async function InvoicesPage({
     if (search.status) queryParams.set("status", search.status);
     if (search.customerId) queryParams.set("customerId", search.customerId);
     const qs = queryParams.toString();
-    invoices = await api.get<InvoiceResponse[]>(
-      `/api/invoices${qs ? `?${qs}` : ""}`,
-    );
+    invoices = await api.get<InvoiceResponse[]>(`/api/invoices${qs ? `?${qs}` : ""}`);
   } catch {
     // Non-fatal: show empty state
   }
@@ -101,20 +99,14 @@ export default async function InvoicesPage({
 
   const { t } = createMessages("empty-states");
 
-  const statusOptions: InvoiceStatus[] = [
-    "DRAFT",
-    "APPROVED",
-    "SENT",
-    "PAID",
-    "VOID",
-  ];
+  const statusOptions: InvoiceStatus[] = ["DRAFT", "APPROVED", "SENT", "PAID", "VOID"];
 
   return (
     <div className="space-y-8">
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h1 className="flex items-center gap-2 font-display text-3xl text-slate-950 dark:text-slate-50">
+          <h1 className="font-display flex items-center gap-2 text-3xl text-slate-950 dark:text-slate-50">
             <TerminologyHeading term="Invoices" />
             <HelpTip code="invoices.lifecycle" />
           </h1>
@@ -154,17 +146,13 @@ export default async function InvoicesPage({
           </p>
         </div>
         <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950">
-          <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
-            Total Overdue
-          </p>
+          <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Total Overdue</p>
           <p className="mt-1 text-2xl font-semibold text-red-600 dark:text-red-400">
             {formatCurrency(summary.overdue, summary.overdueCurrency)}
           </p>
         </div>
         <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950">
-          <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
-            Paid This Month
-          </p>
+          <p className="text-sm font-medium text-slate-600 dark:text-slate-400">Paid This Month</p>
           <p className="mt-1 text-2xl font-semibold text-green-600 dark:text-green-400">
             {formatCurrency(summary.paidThisMonth, summary.paidCurrency)}
           </p>
@@ -173,9 +161,7 @@ export default async function InvoicesPage({
 
       {/* Filter Bar */}
       <div className="flex flex-wrap items-center gap-3">
-        <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
-          Filter:
-        </span>
+        <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Filter:</span>
         <Link
           href={`/org/${slug}/invoices`}
           className={`rounded-full px-3 py-1 text-sm transition-colors ${
@@ -218,25 +204,25 @@ export default async function InvoicesPage({
           <table className="w-full">
             <thead>
               <tr className="border-b border-slate-200 dark:border-slate-800">
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Invoice
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Customer
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Status
                 </th>
-                <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">
+                <th className="hidden px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase sm:table-cell dark:text-slate-400">
                   Issue Date
                 </th>
-                <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 lg:table-cell dark:text-slate-400">
+                <th className="hidden px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase lg:table-cell dark:text-slate-400">
                   Due Date
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-right text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Total
                 </th>
-                <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 xl:table-cell dark:text-slate-400">
+                <th className="hidden px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase xl:table-cell dark:text-slate-400">
                   Currency
                 </th>
               </tr>
@@ -272,9 +258,7 @@ export default async function InvoicesPage({
                     </div>
                   </td>
                   <td className="hidden px-4 py-3 text-sm text-slate-600 sm:table-cell dark:text-slate-400">
-                    {invoice.issueDate
-                      ? formatDate(invoice.issueDate)
-                      : "\u2014"}
+                    {invoice.issueDate ? formatDate(invoice.issueDate) : "\u2014"}
                   </td>
                   <td className="hidden px-4 py-3 text-sm text-slate-600 lg:table-cell dark:text-slate-400">
                     {invoice.dueDate ? formatDate(invoice.dueDate) : "\u2014"}

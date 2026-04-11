@@ -4,13 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { CreditCard, KeyRound, Copy, Check, Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -27,11 +21,7 @@ import {
   toggleIntegrationAction,
   deleteApiKeyAction,
 } from "@/app/(app)/org/[slug]/settings/integrations/actions";
-import type {
-  OrgIntegration,
-  StripePaymentConfig,
-  PayFastPaymentConfig,
-} from "@/lib/types";
+import type { OrgIntegration, StripePaymentConfig, PayFastPaymentConfig } from "@/lib/types";
 
 const PROVIDER_LABELS: Record<string, string> = {
   stripe: "Stripe",
@@ -236,9 +226,7 @@ export function PaymentIntegrationCard({
             <div className="flex size-10 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800">
               <CreditCard className="size-5 text-slate-600 dark:text-slate-400" />
             </div>
-            <CardTitle className="font-display text-lg">
-              Payment Gateway
-            </CardTitle>
+            <CardTitle className="font-display text-lg">Payment Gateway</CardTitle>
           </div>
           {getStatusBadge()}
         </div>
@@ -250,7 +238,7 @@ export function PaymentIntegrationCard({
       </CardHeader>
       <CardContent className="space-y-4">
         {error && (
-          <p className="text-sm text-destructive" role="alert">
+          <p className="text-destructive text-sm" role="alert">
             {error}
           </p>
         )}
@@ -352,11 +340,7 @@ export function PaymentIntegrationCard({
                   onClick={() => handleCopyUrl(webhookUrl)}
                   className="shrink-0"
                 >
-                  {copied ? (
-                    <Check className="size-4" />
-                  ) : (
-                    <Copy className="size-4" />
-                  )}
+                  {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
                 </Button>
               </div>
             </div>
@@ -456,11 +440,7 @@ export function PaymentIntegrationCard({
               >
                 Use PayFast Sandbox for testing
               </label>
-              <Switch
-                id="payfast-sandbox"
-                checked={sandbox}
-                onCheckedChange={setSandbox}
-              />
+              <Switch id="payfast-sandbox" checked={sandbox} onCheckedChange={setSandbox} />
             </div>
 
             {/* ITN Callback URL (read-only) */}
@@ -476,11 +456,7 @@ export function PaymentIntegrationCard({
                   onClick={() => handleCopyUrl(webhookUrl)}
                   className="shrink-0"
                 >
-                  {copied ? (
-                    <Check className="size-4" />
-                  ) : (
-                    <Copy className="size-4" />
-                  )}
+                  {copied ? <Check className="size-4" /> : <Copy className="size-4" />}
                 </Button>
               </div>
             </div>
@@ -517,11 +493,7 @@ export function PaymentIntegrationCard({
 
         {/* Connection test / advisory */}
         {hasProvider && isEnabled && provider === "stripe" && (
-          <ConnectionTestButton
-            slug={slug}
-            domain="PAYMENT"
-            disabled={!hasKey}
-          />
+          <ConnectionTestButton slug={slug} domain="PAYMENT" disabled={!hasKey} />
         )}
         {hasProvider && isEnabled && provider === "payfast" && (
           <p className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">

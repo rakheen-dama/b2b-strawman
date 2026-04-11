@@ -24,7 +24,7 @@ function ChangeIndicator({
 }) {
   if (changeDirection === "neutral") {
     return (
-      <span className="text-xs text-muted-foreground">
+      <span className="text-muted-foreground text-xs">
         {changePercent > 0 ? "+" : ""}
         {changePercent}%
       </span>
@@ -40,11 +40,7 @@ function ChangeIndicator({
         isPositive ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
       )}
     >
-      {isPositive ? (
-        <ArrowUp className="size-3" />
-      ) : (
-        <ArrowDown className="size-3" />
-      )}
+      {isPositive ? <ArrowUp className="size-3" /> : <ArrowDown className="size-3" />}
       {Math.abs(changePercent)}%
     </span>
   );
@@ -58,31 +54,25 @@ function KpiCardContent({
   trend,
   emptyState,
 }: KpiCardProps) {
-  const isEmpty =
-    emptyState != null && (value === null || value === 0 || value === "0");
+  const isEmpty = emptyState != null && (value === null || value === 0 || value === "0");
 
   return (
     <div className="flex flex-col gap-1 px-4 py-3">
-      <span className="text-xs uppercase tracking-wider text-muted-foreground">{label}</span>
+      <span className="text-muted-foreground text-xs tracking-wider uppercase">{label}</span>
       <div className="flex items-end justify-between gap-2">
         <div className="flex flex-col gap-1">
           {isEmpty ? (
-            <span className="text-sm text-muted-foreground italic">
-              {emptyState}
-            </span>
+            <span className="text-muted-foreground text-sm italic">{emptyState}</span>
           ) : (
-            <span className="text-2xl font-bold font-mono tabular-nums tracking-tight">{value}</span>
+            <span className="font-mono text-2xl font-bold tracking-tight tabular-nums">
+              {value}
+            </span>
           )}
           {changePercent != null && changeDirection && !isEmpty && (
-            <ChangeIndicator
-              changePercent={changePercent}
-              changeDirection={changeDirection}
-            />
+            <ChangeIndicator changePercent={changePercent} changeDirection={changeDirection} />
           )}
         </div>
-        {trend && trend.length > 0 && !isEmpty && (
-          <SparklineChart data={trend} />
-        )}
+        {trend && trend.length > 0 && !isEmpty && <SparklineChart data={trend} />}
       </div>
     </div>
   );

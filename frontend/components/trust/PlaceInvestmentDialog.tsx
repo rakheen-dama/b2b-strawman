@@ -27,16 +27,12 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Section866Advisory } from "@/components/trust/Section866Advisory";
-import {
-  placeInvestmentSchema,
-  type PlaceInvestmentFormData,
-} from "@/lib/schemas/trust";
+import { placeInvestmentSchema, type PlaceInvestmentFormData } from "@/lib/schemas/trust";
 import { placeInvestment } from "@/app/(app)/org/[slug]/trust-accounting/investments/actions";
 
 const INVESTMENT_BASIS_HELP: Record<string, string> = {
   FIRM_DISCRETION: "Interest follows your firm\u2019s LPFF arrangement rate.",
-  CLIENT_INSTRUCTION:
-    "Interest paid to client, with 5% to the LPFF (Section 86(5)).",
+  CLIENT_INSTRUCTION: "Interest paid to client, with 5% to the LPFF (Section 86(5)).",
 };
 
 interface PlaceInvestmentDialogProps {
@@ -107,10 +103,7 @@ export function PlaceInvestmentDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent
-        className="sm:max-w-lg"
-        data-testid="place-investment-dialog"
-      >
+      <DialogContent className="sm:max-w-lg" data-testid="place-investment-dialog">
         <DialogHeader>
           <DialogTitle>Place Investment</DialogTitle>
           <DialogDescription>
@@ -119,10 +112,7 @@ export function PlaceInvestmentDialog({
         </DialogHeader>
 
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-4"
-          >
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="customerId"
@@ -144,11 +134,7 @@ export function PlaceInvestmentDialog({
                 <FormItem>
                   <FormLabel>Institution</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="e.g. FNB Money Market"
-                      maxLength={200}
-                      {...field}
-                    />
+                    <Input placeholder="e.g. FNB Money Market" maxLength={200} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -162,11 +148,7 @@ export function PlaceInvestmentDialog({
                 <FormItem>
                   <FormLabel>Account Number</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="Investment account number"
-                      maxLength={50}
-                      {...field}
-                    />
+                    <Input placeholder="Investment account number" maxLength={50} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -186,9 +168,7 @@ export function PlaceInvestmentDialog({
                       min="0.01"
                       placeholder="0.00"
                       {...field}
-                      onChange={(e) =>
-                        field.onChange(parseFloat(e.target.value) || 0)
-                      }
+                      onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                     />
                   </FormControl>
                   <FormMessage />
@@ -210,9 +190,7 @@ export function PlaceInvestmentDialog({
                       max="100"
                       placeholder="e.g. 7.5"
                       {...field}
-                      onChange={(e) =>
-                        field.onChange(parseFloat(e.target.value) || 0)
-                      }
+                      onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                     />
                   </FormControl>
                   <FormMessage />
@@ -279,19 +257,13 @@ export function PlaceInvestmentDialog({
                       data-testid="investment-basis-radio"
                     >
                       <div className="flex items-center gap-2">
-                        <RadioGroupItem
-                          value="FIRM_DISCRETION"
-                          id="basis-firm"
-                        />
+                        <RadioGroupItem value="FIRM_DISCRETION" id="basis-firm" />
                         <Label htmlFor="basis-firm" className="font-normal">
                           Firm (surplus trust funds)
                         </Label>
                       </div>
                       <div className="flex items-center gap-2">
-                        <RadioGroupItem
-                          value="CLIENT_INSTRUCTION"
-                          id="basis-client"
-                        />
+                        <RadioGroupItem value="CLIENT_INSTRUCTION" id="basis-client" />
                         <Label htmlFor="basis-client" className="font-normal">
                           Client instruction
                         </Label>
@@ -311,7 +283,7 @@ export function PlaceInvestmentDialog({
 
             <Section866Advisory />
 
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {error && <p className="text-destructive text-sm">{error}</p>}
 
             <DialogFooter>
               <Button

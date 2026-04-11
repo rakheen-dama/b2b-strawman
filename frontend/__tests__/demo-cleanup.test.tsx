@@ -69,12 +69,10 @@ describe("DeleteTenantDialog", () => {
         open={true}
         onOpenChange={vi.fn()}
         onSuccess={vi.fn()}
-      />,
+      />
     );
 
-    expect(
-      screen.getByText(/permanently delete the organization/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/permanently delete the organization/)).toBeInTheDocument();
     expect(screen.getByText("Demo Legal Firm")).toBeInTheDocument();
     expect(screen.getByText(/3 members/)).toBeInTheDocument();
   });
@@ -88,7 +86,7 @@ describe("DeleteTenantDialog", () => {
         open={true}
         onOpenChange={vi.fn()}
         onSuccess={vi.fn()}
-      />,
+      />
     );
 
     const deleteButton = screen.getByRole("button", {
@@ -96,9 +94,7 @@ describe("DeleteTenantDialog", () => {
     });
     expect(deleteButton).toBeDisabled();
 
-    const input = screen.getByLabelText(
-      "Type the organization name to confirm",
-    );
+    const input = screen.getByLabelText("Type the organization name to confirm");
     await user.type(input, "Demo Legal");
 
     expect(deleteButton).toBeDisabled();
@@ -113,15 +109,13 @@ describe("DeleteTenantDialog", () => {
         open={true}
         onOpenChange={vi.fn()}
         onSuccess={vi.fn()}
-      />,
+      />
     );
 
     const deleteButton = screen.getByRole("button", {
       name: "Delete Tenant",
     });
-    const input = screen.getByLabelText(
-      "Type the organization name to confirm",
-    );
+    const input = screen.getByLabelText("Type the organization name to confirm");
 
     await user.type(input, "Demo Legal Firm");
 
@@ -137,9 +131,7 @@ describe("Billing page admin-managed adaptation", () => {
     // is a server component. SubscribeButton renders when canSubscribe=true.
     render(<SubscribeButton />);
 
-    expect(
-      screen.getByRole("button", { name: "Subscribe" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Subscribe" })).toBeInTheDocument();
   });
 
   it("hides PayFast UI when adminManaged=true by not rendering SubscribeButton", () => {
@@ -150,9 +142,7 @@ describe("Billing page admin-managed adaptation", () => {
 
     expect(screen.getByText("Pilot")).toBeInTheDocument();
     // SubscribeButton is NOT rendered — no Subscribe button in DOM
-    expect(
-      screen.queryByRole("button", { name: "Subscribe" }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Subscribe" })).not.toBeInTheDocument();
   });
 
   it("shows 'managed by administrator' for PILOT billing method", () => {
@@ -161,15 +151,11 @@ describe("Billing page admin-managed adaptation", () => {
     render(
       <Card>
         <CardContent>
-          <p className="text-sm text-slate-600">
-            Your account is managed by your administrator.
-          </p>
+          <p className="text-sm text-slate-600">Your account is managed by your administrator.</p>
         </CardContent>
-      </Card>,
+      </Card>
     );
 
-    expect(
-      screen.getByText(/managed by your administrator/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/managed by your administrator/)).toBeInTheDocument();
   });
 });

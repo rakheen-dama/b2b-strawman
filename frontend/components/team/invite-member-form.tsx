@@ -18,21 +18,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { CAPABILITY_META } from "@/lib/capabilities";
-import {
-  inviteMember,
-  listInvitations,
-} from "@/app/(app)/org/[slug]/team/invitation-actions";
+import { inviteMember, listInvitations } from "@/app/(app)/org/[slug]/team/invitation-actions";
 import type { OrgRole } from "@/lib/api/org-roles";
-import {
-  inviteMemberSchema,
-  type InviteMemberFormData,
-} from "@/lib/schemas/invite-member";
+import { inviteMemberSchema, type InviteMemberFormData } from "@/lib/schemas/invite-member";
 
 const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "keycloak";
 
@@ -121,9 +111,7 @@ function InviteFormUI({
   });
 
   const [role, setRole] = useState<"org:member" | "org:admin">("org:member");
-  const [selectedRoleId, setSelectedRoleId] = useState<string | undefined>(
-    undefined,
-  );
+  const [selectedRoleId, setSelectedRoleId] = useState<string | undefined>(undefined);
   const [overrides, setOverrides] = useState<string[]>([]);
   const [customizeOpen, setCustomizeOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -133,16 +121,13 @@ function InviteFormUI({
   if (!ready) return null;
 
   const customRoles = roles.filter((r) => !r.isSystem);
-  const selectedRole = selectedRoleId
-    ? roles.find((r) => r.id === selectedRoleId)
-    : undefined;
+  const selectedRole = selectedRoleId ? roles.find((r) => r.id === selectedRoleId) : undefined;
   const isCustomRole = selectedRole && !selectedRole.isSystem;
   const roleCapabilities = new Set(selectedRole?.capabilities ?? []);
 
   const totalUsed = currentMembers + pendingInvitations;
   const isAtLimit = maxMembers > 0 && totalUsed >= maxMembers;
-  const fillPercent =
-    maxMembers > 0 ? Math.min((totalUsed / maxMembers) * 100, 100) : 0;
+  const fillPercent = maxMembers > 0 ? Math.min((totalUsed / maxMembers) * 100, 100) : 0;
 
   function handleRoleSelectChange(value: string) {
     // Reset overrides and close customize section when role changes
@@ -166,9 +151,7 @@ function InviteFormUI({
     return roleCapabilities.has(cap);
   }
 
-  function getOverrideStatus(
-    cap: string,
-  ): "added" | "removed" | "default" {
+  function getOverrideStatus(cap: string): "added" | "removed" | "default" {
     if (overrides.includes(`+${cap}`)) return "added";
     if (overrides.includes(`-${cap}`)) return "removed";
     return "default";
@@ -216,7 +199,7 @@ function InviteFormUI({
         values.emailAddress.trim(),
         role,
         selectedRoleId,
-        overrides.length > 0 ? overrides : undefined,
+        overrides.length > 0 ? overrides : undefined
       );
       if (!result.success) {
         setError(result.error ?? "Failed to send invitation.");
@@ -226,8 +209,7 @@ function InviteFormUI({
       form.reset();
       setSuccess(`Invitation sent to ${values.emailAddress.trim()}.`);
     } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : "Failed to send invitation.";
+      const message = err instanceof Error ? err.message : "Failed to send invitation.";
       setError(message);
     } finally {
       setIsSubmitting(false);
@@ -269,11 +251,12 @@ function InviteFormUI({
             <label htmlFor="invite-role" className="text-sm font-medium">
               Role
             </label>
-            <Select
-              value={getSelectValue()}
-              onValueChange={handleRoleSelectChange}
-            >
-              <SelectTrigger className="h-9 w-full min-w-[140px]" id="invite-role" data-testid="role-select">
+            <Select value={getSelectValue()} onValueChange={handleRoleSelectChange}>
+              <SelectTrigger
+                className="h-9 w-full min-w-[140px]"
+                id="invite-role"
+                data-testid="role-select"
+              >
                 <SelectValue placeholder="Select a role..." />
               </SelectTrigger>
               <SelectContent>
@@ -304,13 +287,13 @@ function InviteFormUI({
       {/* Capability summary pills — only for custom roles */}
       {isCustomRole && selectedRole && (
         <div className="flex flex-wrap gap-1.5">
-          {CAPABILITY_META.filter((cap) =>
-            selectedRole.capabilities.includes(cap.value),
-          ).map((cap) => (
-            <Badge key={cap.value} variant="secondary">
-              {cap.label}
-            </Badge>
-          ))}
+          {CAPABILITY_META.filter((cap) => selectedRole.capabilities.includes(cap.value)).map(
+            (cap) => (
+              <Badge key={cap.value} variant="secondary">
+                {cap.label}
+              </Badge>
+            )
+          )}
         </div>
       )}
 
@@ -330,10 +313,7 @@ function InviteFormUI({
                 const status = getOverrideStatus(cap.value);
 
                 return (
-                  <label
-                    key={cap.value}
-                    className="flex cursor-pointer items-start gap-3"
-                  >
+                  <label key={cap.value} className="flex cursor-pointer items-start gap-3">
                     <Checkbox
                       checked={enabled}
                       onCheckedChange={() => toggleCapability(cap.value)}
@@ -341,18 +321,12 @@ function InviteFormUI({
                     />
                     <div className="flex-1 space-y-0.5">
                       <div className="flex items-center gap-1.5">
-                        <span className="text-sm font-medium leading-none">
-                          {cap.label}
-                        </span>
+                        <span className="text-sm leading-none font-medium">{cap.label}</span>
                         {status === "added" && (
-                          <span className="text-xs font-medium text-teal-600">
-                            +
-                          </span>
+                          <span className="text-xs font-medium text-teal-600">+</span>
                         )}
                         {status === "removed" && (
-                          <span className="text-destructive text-xs font-medium">
-                            &minus;
-                          </span>
+                          <span className="text-destructive text-xs font-medium">&minus;</span>
                         )}
                       </div>
                       <p className="text-xs text-slate-500 dark:text-slate-400">

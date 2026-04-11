@@ -32,7 +32,7 @@ export default async function NotificationPreferencesPage({
 
       {/* Page header */}
       <div>
-        <h1 className="flex items-center gap-2 font-display text-3xl text-slate-950 dark:text-slate-50">
+        <h1 className="font-display flex items-center gap-2 text-3xl text-slate-950 dark:text-slate-50">
           Notification Preferences
           <HelpTip code="notifications.preferences" />
         </h1>
@@ -41,9 +41,7 @@ export default async function NotificationPreferencesPage({
         </p>
       </div>
 
-      <NotificationPreferencesForm
-        initialPreferences={initialPreferences.preferences}
-      />
+      <NotificationPreferencesForm initialPreferences={initialPreferences.preferences} />
     </div>
   );
 }

@@ -10,7 +10,7 @@ interface ActionResult {
 
 export async function updateRequestReminderSettings(
   slug: string,
-  defaultRequestReminderDays: number,
+  defaultRequestReminderDays: number
 ): Promise<ActionResult> {
   try {
     await api.patch("/api/settings/request-reminders", {

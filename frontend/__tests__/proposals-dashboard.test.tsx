@@ -141,9 +141,7 @@ describe("ProposalSummaryCards", () => {
   });
 
   it("highlights pending card amber when count > 0", () => {
-    const { container } = render(
-      <ProposalSummaryCards summary={mockSummary} />,
-    );
+    const { container } = render(<ProposalSummaryCards summary={mockSummary} />);
     const amberCards = container.querySelectorAll(".bg-amber-50");
     expect(amberCards.length).toBeGreaterThanOrEqual(1);
   });
@@ -201,14 +199,12 @@ describe("ProposalTable", () => {
 
     expect(screen.getByText("Annual Audit Proposal")).toBeInTheDocument();
     expect(screen.getByText("Tax Advisory Proposal")).toBeInTheDocument();
-    expect(
-      screen.getByText("Bookkeeping Retainer Proposal"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Bookkeeping Retainer Proposal")).toBeInTheDocument();
 
     // Check status badges via data-slot="badge" to distinguish from filter tab buttons
-    const badges = screen.getAllByText(/Draft|Sent|Accepted/).filter(
-      (el) => el.getAttribute("data-slot") === "badge",
-    );
+    const badges = screen
+      .getAllByText(/Draft|Sent|Accepted/)
+      .filter((el) => el.getAttribute("data-slot") === "badge");
     expect(badges).toHaveLength(3);
 
     const draftBadge = badges.find((b) => b.textContent === "Draft");
@@ -226,14 +222,8 @@ describe("ProposalTable", () => {
     expect(screen.getByRole("button", { name: "All" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Draft" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Sent" })).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "Accepted" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "Declined" }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "Expired" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Accepted" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Declined" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Expired" })).toBeInTheDocument();
   });
 });

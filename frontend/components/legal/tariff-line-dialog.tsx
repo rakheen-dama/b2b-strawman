@@ -1,12 +1,7 @@
 "use client";
 
 import { useState, useEffect, useTransition, useCallback } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -115,7 +110,7 @@ export function TariffLineDialog({
 
   const totalAmount = Array.from(selectedItems.values()).reduce(
     (sum, { item, quantity }) => sum + item.amount * quantity,
-    0,
+    0
   );
 
   async function handleSubmit() {
@@ -137,7 +132,9 @@ export function TariffLineDialog({
           return;
         }
       }
-      toast.success(`Added ${entries.length} tariff line${entries.length !== 1 ? "s" : ""} to invoice`);
+      toast.success(
+        `Added ${entries.length} tariff line${entries.length !== 1 ? "s" : ""} to invoice`
+      );
       onSuccess();
     } catch {
       toast.error("An unexpected error occurred while adding tariff lines.");
@@ -173,8 +170,7 @@ export function TariffLineDialog({
               >
                 {schedules.map((s) => (
                   <option key={s.id} value={s.id}>
-                    {s.name} ({s.code})
-                    {s.active ? " - Active" : ""}
+                    {s.name} ({s.code}){s.active ? " - Active" : ""}
                   </option>
                 ))}
               </select>

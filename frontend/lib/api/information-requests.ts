@@ -53,28 +53,24 @@ export interface UpdateRequestTemplateRequest {
 
 // ---- API Functions ----
 
-export async function listRequestTemplates(
-  active?: boolean,
-): Promise<RequestTemplateResponse[]> {
+export async function listRequestTemplates(active?: boolean): Promise<RequestTemplateResponse[]> {
   const query = active !== undefined ? `?active=${active}` : "";
   return api.get<RequestTemplateResponse[]>(`/api/request-templates${query}`);
 }
 
-export async function getRequestTemplate(
-  id: string,
-): Promise<RequestTemplateResponse> {
+export async function getRequestTemplate(id: string): Promise<RequestTemplateResponse> {
   return api.get<RequestTemplateResponse>(`/api/request-templates/${id}`);
 }
 
 export async function createRequestTemplate(
-  data: CreateRequestTemplateRequest,
+  data: CreateRequestTemplateRequest
 ): Promise<RequestTemplateResponse> {
   return api.post<RequestTemplateResponse>("/api/request-templates", data);
 }
 
 export async function updateRequestTemplate(
   id: string,
-  data: UpdateRequestTemplateRequest,
+  data: UpdateRequestTemplateRequest
 ): Promise<RequestTemplateResponse> {
   return api.put<RequestTemplateResponse>(`/api/request-templates/${id}`, data);
 }
@@ -83,28 +79,15 @@ export async function deactivateRequestTemplate(id: string): Promise<void> {
   return api.delete<void>(`/api/request-templates/${id}`);
 }
 
-export async function duplicateRequestTemplate(
-  id: string,
-): Promise<RequestTemplateResponse> {
-  return api.post<RequestTemplateResponse>(
-    `/api/request-templates/${id}/duplicate`,
-  );
+export async function duplicateRequestTemplate(id: string): Promise<RequestTemplateResponse> {
+  return api.post<RequestTemplateResponse>(`/api/request-templates/${id}/duplicate`);
 }
 
 // ---- Information Request Types ----
 
-export type InformationRequestStatus =
-  | "DRAFT"
-  | "SENT"
-  | "IN_PROGRESS"
-  | "COMPLETED"
-  | "CANCELLED";
+export type InformationRequestStatus = "DRAFT" | "SENT" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
 
-export type RequestItemStatus =
-  | "PENDING"
-  | "SUBMITTED"
-  | "ACCEPTED"
-  | "REJECTED";
+export type RequestItemStatus = "PENDING" | "SUBMITTED" | "ACCEPTED" | "REJECTED";
 
 export interface InformationRequestItemResponse {
   id: string;
@@ -187,110 +170,75 @@ export async function listRequests(filters?: {
   if (filters?.projectId) params.set("projectId", filters.projectId);
   if (filters?.status) params.set("status", filters.status);
   const qs = params.toString();
-  return api.get<InformationRequestResponse[]>(
-    `/api/information-requests${qs ? `?${qs}` : ""}`,
-  );
+  return api.get<InformationRequestResponse[]>(`/api/information-requests${qs ? `?${qs}` : ""}`);
 }
 
 export async function createRequest(
-  data: CreateInformationRequestRequest,
+  data: CreateInformationRequestRequest
 ): Promise<InformationRequestResponse> {
-  return api.post<InformationRequestResponse>(
-    "/api/information-requests",
-    data,
-  );
+  return api.post<InformationRequestResponse>("/api/information-requests", data);
 }
 
-export async function getRequest(
-  id: string,
-): Promise<InformationRequestResponse> {
-  return api.get<InformationRequestResponse>(
-    `/api/information-requests/${id}`,
-  );
+export async function getRequest(id: string): Promise<InformationRequestResponse> {
+  return api.get<InformationRequestResponse>(`/api/information-requests/${id}`);
 }
 
 export async function updateRequest(
   id: string,
-  data: Partial<CreateInformationRequestRequest>,
+  data: Partial<CreateInformationRequestRequest>
 ): Promise<InformationRequestResponse> {
-  return api.put<InformationRequestResponse>(
-    `/api/information-requests/${id}`,
-    data,
-  );
+  return api.put<InformationRequestResponse>(`/api/information-requests/${id}`, data);
 }
 
-export async function sendRequest(
-  id: string,
-): Promise<InformationRequestResponse> {
-  return api.post<InformationRequestResponse>(
-    `/api/information-requests/${id}/send`,
-  );
+export async function sendRequest(id: string): Promise<InformationRequestResponse> {
+  return api.post<InformationRequestResponse>(`/api/information-requests/${id}/send`);
 }
 
-export async function cancelRequest(
-  id: string,
-): Promise<InformationRequestResponse> {
-  return api.post<InformationRequestResponse>(
-    `/api/information-requests/${id}/cancel`,
-  );
+export async function cancelRequest(id: string): Promise<InformationRequestResponse> {
+  return api.post<InformationRequestResponse>(`/api/information-requests/${id}/cancel`);
 }
 
 export async function addItem(
   requestId: string,
-  data: CreateInformationRequestItem,
+  data: CreateInformationRequestItem
 ): Promise<InformationRequestResponse> {
-  return api.post<InformationRequestResponse>(
-    `/api/information-requests/${requestId}/items`,
-    data,
-  );
+  return api.post<InformationRequestResponse>(`/api/information-requests/${requestId}/items`, data);
 }
 
 export async function acceptItem(
   requestId: string,
-  itemId: string,
+  itemId: string
 ): Promise<InformationRequestResponse> {
   return api.post<InformationRequestResponse>(
-    `/api/information-requests/${requestId}/items/${itemId}/accept`,
+    `/api/information-requests/${requestId}/items/${itemId}/accept`
   );
 }
 
 export async function rejectItem(
   requestId: string,
   itemId: string,
-  reason: string,
+  reason: string
 ): Promise<InformationRequestResponse> {
   return api.post<InformationRequestResponse>(
     `/api/information-requests/${requestId}/items/${itemId}/reject`,
-    { reason },
+    { reason }
   );
 }
 
-export async function resendNotification(
-  requestId: string,
-): Promise<void> {
-  return api.post<void>(
-    `/api/information-requests/${requestId}/resend-notification`,
-  );
+export async function resendNotification(requestId: string): Promise<void> {
+  return api.post<void>(`/api/information-requests/${requestId}/resend-notification`);
 }
 
 export async function getRequestSummary(): Promise<InformationRequestSummary> {
-  return api.get<InformationRequestSummary>(
-    "/api/information-requests/summary",
-  );
+  return api.get<InformationRequestSummary>("/api/information-requests/summary");
 }
 
 export async function getCustomerRequests(
-  customerId: string,
+  customerId: string
 ): Promise<InformationRequestResponse[]> {
-  return api.get<InformationRequestResponse[]>(
-    `/api/customers/${customerId}/information-requests`,
-  );
+  return api.get<InformationRequestResponse[]>(`/api/customers/${customerId}/information-requests`);
 }
 
-export async function getProjectRequests(
-  projectId: string,
-): Promise<InformationRequestResponse[]> {
-  return api.get<InformationRequestResponse[]>(
-    `/api/projects/${projectId}/information-requests`,
-  );
+export async function getProjectRequests(projectId: string): Promise<InformationRequestResponse[]> {
+  return api.get<InformationRequestResponse[]>(`/api/projects/${projectId}/information-requests`);
 }

@@ -8,10 +8,7 @@ interface CustomFieldBadgesProps {
   maxFields?: number;
 }
 
-function formatBadgeValue(
-  field: FieldDefinitionResponse,
-  value: unknown,
-): string | null {
+function formatBadgeValue(field: FieldDefinitionResponse, value: unknown): string | null {
   if (value == null || value === "") return null;
 
   switch (field.fieldType) {
@@ -67,13 +64,8 @@ export function CustomFieldBadges({
   return (
     <div className="mt-3 flex flex-wrap gap-1.5" data-testid="custom-field-badges">
       {badges.map((badge) => (
-        <Badge
-          key={badge.name}
-          variant="secondary"
-          className="text-xs font-normal"
-        >
-          <span className="font-medium">{badge.name}:</span>{" "}
-          {badge.value}
+        <Badge key={badge.name} variant="secondary" className="text-xs font-normal">
+          <span className="font-medium">{badge.name}:</span> {badge.value}
         </Badge>
       ))}
     </div>

@@ -20,7 +20,7 @@ interface ActionResult {
 
 export async function createTemplateAction(
   slug: string,
-  input: CreateRequestTemplateRequest,
+  input: CreateRequestTemplateRequest
 ): Promise<ActionResult> {
   try {
     const data = await createRequestTemplate(input);
@@ -49,7 +49,7 @@ export async function createTemplateAction(
 export async function updateTemplateAction(
   slug: string,
   id: string,
-  input: UpdateRequestTemplateRequest,
+  input: UpdateRequestTemplateRequest
 ): Promise<ActionResult> {
   try {
     const data = await updateRequestTemplate(id, input);
@@ -76,10 +76,7 @@ export async function updateTemplateAction(
   }
 }
 
-export async function deactivateTemplateAction(
-  slug: string,
-  id: string,
-): Promise<ActionResult> {
+export async function deactivateTemplateAction(slug: string, id: string): Promise<ActionResult> {
   try {
     await deactivateRequestTemplate(id);
   } catch (error) {
@@ -99,10 +96,7 @@ export async function deactivateTemplateAction(
   return { success: true };
 }
 
-export async function duplicateTemplateAction(
-  slug: string,
-  id: string,
-): Promise<ActionResult> {
+export async function duplicateTemplateAction(slug: string, id: string): Promise<ActionResult> {
   try {
     const data = await duplicateRequestTemplate(id);
     revalidatePath(`/org/${slug}/settings/request-templates`);

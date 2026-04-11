@@ -88,11 +88,11 @@ The frontend uses a "Signal Deck" design language — precise, information-forwa
 
 ### Fonts
 
-| Role | Font | CSS Variable | Usage |
-|------|------|-------------|-------|
-| Display | **Sora** | `--font-display` | h1, hero text, headings — geometric, sharp, tight tracking. Use `font-display` class |
-| Body / UI | **IBM Plex Sans** | `--font-sans` | Paragraphs, buttons, labels, table text — engineered precision |
-| Code / Stats | **JetBrains Mono** | `--font-mono` | Code blocks, KPI numbers, inline stats. Use `font-mono tabular-nums` for data |
+| Role         | Font               | CSS Variable     | Usage                                                                                |
+| ------------ | ------------------ | ---------------- | ------------------------------------------------------------------------------------ |
+| Display      | **Sora**           | `--font-display` | h1, hero text, headings — geometric, sharp, tight tracking. Use `font-display` class |
+| Body / UI    | **IBM Plex Sans**  | `--font-sans`    | Paragraphs, buttons, labels, table text — engineered precision                       |
+| Code / Stats | **JetBrains Mono** | `--font-mono`    | Code blocks, KPI numbers, inline stats. Use `font-mono tabular-nums` for data        |
 
 All loaded via `next/font/google` in `app/layout.tsx`.
 
@@ -108,6 +108,7 @@ teal-500, teal-600       (accent for interactive elements)
 "Concrete Studio" palette (light mode): gray background (`oklch(94%)`) with lifted white cards (`shadow-sm`).
 
 Semantic token mappings (light mode):
+
 - `--background` → `oklch(94% 0.008 260)` (concrete gray), `--foreground` → slate-900
 - `--card` → `oklch(99.5% 0.002 260)` (near-white, lifted)
 - `--primary` → slate-950, `--muted` → slate-100, `--border` → slate-200
@@ -211,11 +212,13 @@ The `components/ui/` directory started from Shadcn scaffolding but **base compon
 Next.js 16 strictly enforces that only plain serializable values (strings, numbers, booleans, plain objects, arrays) can be passed as props from Server Components to Client Components (`"use client"`).
 
 **Never pass these from Server → Client Components:**
+
 - Functions/callbacks (e.g., `onClick`, `generateHref`)
 - React component references (e.g., `icon={Activity}` where `Activity` is a Lucide icon)
 - Class instances
 
 **Fix patterns:**
+
 - **Icon props**: Remove `"use client"` if the component doesn't actually need client interactivity (no hooks, no event handlers, no browser APIs). `LucideIcon` components render fine in Server Components.
 - **Callback props**: Replace function props with serializable data. E.g., instead of `generateHref={(id) => \`/path/${id}\`}`, pass `baseHref="/path"` and build the URL inside the client component.
 - **Component props**: Pass pre-rendered `ReactNode` (JSX) instead of component references, or restructure so the icon renders in the Server Component parent.
@@ -244,10 +247,10 @@ import { Slot } from "radix-ui";
 
 Auth is provider-agnostic via the `lib/auth/` abstraction layer. The active provider is selected by `NEXT_PUBLIC_AUTH_MODE`:
 
-| Mode | Provider | Usage |
-|------|----------|-------|
-| `keycloak` | Keycloak BFF via API Gateway | Production, local dev |
-| `mock` | Mock IDP (cookie-based) | E2E testing, agent navigation |
+| Mode       | Provider                     | Usage                         |
+| ---------- | ---------------------------- | ----------------------------- |
+| `keycloak` | Keycloak BFF via API Gateway | Production, local dev         |
+| `mock`     | Mock IDP (cookie-based)      | E2E testing, agent navigation |
 
 ### Auth Architecture
 
@@ -275,18 +278,19 @@ Auth is provider-agnostic via the `lib/auth/` abstraction layer. The active prov
 For client components that need to fetch data (dialogs, sheets, polling), use [SWR](https://swr.vercel.app/) instead of manual `useEffect` + `useState` patterns. SWR provides caching, deduplication, revalidation on focus, and error retry out of the box.
 
 **When to use SWR vs Server Components:**
+
 - **Server Components** (default): Page-level data, initial renders, SEO-critical content. Data fetched on the server via `lib/api.ts`.
 - **SWR**: Client-side data needs — dialogs that fetch on open, polling (notifications), data that refreshes without page navigation, sheets/panels that load data lazily.
 
 **Pattern — wrapping server actions with SWR:**
+
 ```tsx
 import useSWR from "swr";
 import { fetchSomeData } from "@/lib/actions/some-action";
 
 // Conditional fetch (dialog): pass null key when closed to pause fetching
-const { data, error, isLoading, mutate } = useSWR(
-  open ? "unique-cache-key" : null,
-  () => fetchSomeData()
+const { data, error, isLoading, mutate } = useSWR(open ? "unique-cache-key" : null, () =>
+  fetchSomeData()
 );
 
 // Polling: use refreshInterval
@@ -299,6 +303,7 @@ await mutate();
 ```
 
 **Key conventions:**
+
 - SWR fetcher functions call server actions (not direct API/fetch calls) — this preserves the server-side auth boundary
 - Use `null` key to pause fetching (e.g., when a dialog is closed)
 - Use unique, descriptive cache keys (e.g., `"comments-TASK-{id}"`, `"notification-unread-count"`)
@@ -307,11 +312,13 @@ await mutate();
 ### Paginated Responses (Spring Data VIA_DTO)
 
 Backend paginated endpoints return this shape (not flat):
+
 ```json
 { "content": [...], "page": { "totalElements": 42, "totalPages": 3, "size": 20, "number": 0 } }
 ```
 
 Frontend interfaces must nest pagination fields under `page`:
+
 ```typescript
 interface PaginatedResponse<T> {
   content: T[];
@@ -321,13 +328,13 @@ interface PaginatedResponse<T> {
 
 ## Environment Variables
 
-| Variable                    | Side   | Description                                          |
-| --------------------------- | ------ | ---------------------------------------------------- |
-| `NEXT_PUBLIC_AUTH_MODE`     | Client | Auth provider: `keycloak` (production) or `mock` (E2E) |
-| `NEXT_PUBLIC_GATEWAY_URL`  | Client | API Gateway URL (Keycloak mode)                      |
-| `GATEWAY_URL`              | Server | API Gateway URL for server-side BFF calls            |
-| `BACKEND_URL`              | Server | Spring Boot internal ALB URL                         |
-| `INTERNAL_API_KEY`         | Server | API key for `/internal/*` calls                      |
+| Variable                  | Side   | Description                                            |
+| ------------------------- | ------ | ------------------------------------------------------ |
+| `NEXT_PUBLIC_AUTH_MODE`   | Client | Auth provider: `keycloak` (production) or `mock` (E2E) |
+| `NEXT_PUBLIC_GATEWAY_URL` | Client | API Gateway URL (Keycloak mode)                        |
+| `GATEWAY_URL`             | Server | API Gateway URL for server-side BFF calls              |
+| `BACKEND_URL`             | Server | Spring Boot internal ALB URL                           |
+| `INTERNAL_API_KEY`        | Server | API key for `/internal/*` calls                        |
 
 Variables prefixed `NEXT_PUBLIC_` are exposed to the browser. All others are server-only.
 
@@ -356,7 +363,14 @@ export type CreateFooFormData = z.infer<typeof createFooSchema>;
 // 2. Use in component
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
 
 const form = useForm<CreateFooFormData>({
   resolver: zodResolver(createFooSchema),
@@ -366,15 +380,21 @@ const form = useForm<CreateFooFormData>({
 // 3. Wrap form in <Form {...form}> and use FormField/FormItem/FormControl/FormMessage
 <Form {...form}>
   <form onSubmit={form.handleSubmit(onSubmit)}>
-    <FormField control={form.control} name="name" render={({ field }) => (
-      <FormItem>
-        <FormLabel>Name</FormLabel>
-        <FormControl><Input {...field} /></FormControl>
-        <FormMessage />
-      </FormItem>
-    )} />
+    <FormField
+      control={form.control}
+      name="name"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>Name</FormLabel>
+          <FormControl>
+            <Input {...field} />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
   </form>
-</Form>
+</Form>;
 ```
 
 ### Key rules

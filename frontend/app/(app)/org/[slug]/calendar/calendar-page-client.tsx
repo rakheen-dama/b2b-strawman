@@ -13,11 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { CalendarMonthView } from "./calendar-month-view";
 import { CalendarListView } from "./calendar-list-view";
-import {
-  getCalendarItems,
-  getCalendarProjects,
-  getCalendarMembers,
-} from "./calendar-actions";
+import { getCalendarItems, getCalendarProjects, getCalendarMembers } from "./calendar-actions";
 import type { CalendarItem } from "./calendar-types";
 import { formatDate } from "./calendar-types";
 
@@ -57,11 +53,7 @@ export function CalendarPageClient({
   }, []);
 
   const refetch = useCallback(
-    (
-      newProjectId?: string,
-      newType?: "TASK" | "PROJECT",
-      newAssigneeId?: string
-    ) => {
+    (newProjectId?: string, newType?: "TASK" | "PROJECT", newAssigneeId?: string) => {
       const firstDay = new Date(year, month - 1, 1);
       const lastDay = new Date(year, month, 0);
       const from = formatDate(firstDay);
@@ -139,16 +131,14 @@ export function CalendarPageClient({
         {/* Type toggle chips */}
         <div className="flex items-center gap-1">
           {(["ALL", "TASK", "PROJECT"] as const).map((t) => {
-            const isActive =
-              (t === "ALL" && !type) || (t !== "ALL" && type === t);
+            const isActive = (t === "ALL" && !type) || (t !== "ALL" && type === t);
             return (
               <button
                 key={t}
                 type="button"
                 aria-pressed={isActive}
                 onClick={() => {
-                  const newType =
-                    t === "ALL" ? undefined : (t as "TASK" | "PROJECT");
+                  const newType = t === "ALL" ? undefined : (t as "TASK" | "PROJECT");
                   setType(newType);
                   refetch(projectId, newType, assigneeId);
                 }}
@@ -189,10 +179,7 @@ export function CalendarPageClient({
 
       {/* View Toggle + Overdue Badge */}
       <div className="flex items-center justify-between">
-        <Tabs
-          value={view}
-          onValueChange={(v) => setView(v as "month" | "list")}
-        >
+        <Tabs value={view} onValueChange={(v) => setView(v as "month" | "list")}>
           <TabsList>
             <TabsTrigger value="month">Month</TabsTrigger>
             <TabsTrigger value="list">List</TabsTrigger>
@@ -216,11 +203,7 @@ export function CalendarPageClient({
           slug={slug}
         />
       ) : (
-        <CalendarListView
-          items={regularItems}
-          overdueItems={overdueItems}
-          slug={slug}
-        />
+        <CalendarListView items={regularItems} overdueItems={overdueItems} slug={slug} />
       )}
     </div>
   );

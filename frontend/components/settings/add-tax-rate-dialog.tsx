@@ -96,9 +96,7 @@ export function AddTaxRateDialog({ slug, children }: AddTaxRateDialogProps) {
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Add Tax Rate</DialogTitle>
-            <DialogDescription>
-              Create a new tax rate for your organization.
-            </DialogDescription>
+            <DialogDescription>Create a new tax rate for your organization.</DialogDescription>
           </DialogHeader>
 
           <div className="mt-4 space-y-4">
@@ -131,11 +129,7 @@ export function AddTaxRateDialog({ slug, children }: AddTaxRateDialogProps) {
             </div>
 
             <div className="flex items-center gap-3">
-              <Switch
-                id="tax-rate-default"
-                checked={isDefault}
-                onCheckedChange={setIsDefault}
-              />
+              <Switch id="tax-rate-default" checked={isDefault} onCheckedChange={setIsDefault} />
               <Label htmlFor="tax-rate-default">Set as default tax rate</Label>
             </div>
             {isDefault && (
@@ -158,9 +152,7 @@ export function AddTaxRateDialog({ slug, children }: AddTaxRateDialogProps) {
               <Label htmlFor="tax-rate-exempt">Tax exempt (0% rate)</Label>
             </div>
 
-            {error && (
-              <p className="text-sm text-destructive">{error}</p>
-            )}
+            {error && <p className="text-destructive text-sm">{error}</p>}
           </div>
 
           <DialogFooter className="mt-6">

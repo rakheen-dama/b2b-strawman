@@ -29,8 +29,7 @@ const STATUS_TEXT_COLORS: Record<HealthBadgeProps["status"], string> = {
 
 export function HealthBadge({ status, reasons, size = "md" }: HealthBadgeProps) {
   const label = STATUS_LABELS[status];
-  const tooltipText =
-    reasons && reasons.length > 0 ? reasons.join("; ") : undefined;
+  const tooltipText = reasons && reasons.length > 0 ? reasons.join("; ") : undefined;
 
   if (size === "sm") {
     return (
@@ -44,22 +43,12 @@ export function HealthBadge({ status, reasons, size = "md" }: HealthBadgeProps) 
 
   if (size === "md") {
     return (
-      <span
-        className="inline-flex items-center gap-1.5"
-        title={tooltipText}
-      >
+      <span className="inline-flex items-center gap-1.5" title={tooltipText}>
         <span
-          className={cn(
-            "inline-block size-2 rounded-full",
-            STATUS_COLORS[status]
-          )}
+          className={cn("inline-block size-2 rounded-full", STATUS_COLORS[status])}
           aria-hidden="true"
         />
-        <span
-          className={cn("text-sm font-medium", STATUS_TEXT_COLORS[status])}
-        >
-          {label}
-        </span>
+        <span className={cn("text-sm font-medium", STATUS_TEXT_COLORS[status])}>{label}</span>
       </span>
     );
   }
@@ -69,25 +58,15 @@ export function HealthBadge({ status, reasons, size = "md" }: HealthBadgeProps) 
     <div className="flex flex-col gap-1">
       <span className="inline-flex items-center gap-1.5">
         <span
-          className={cn(
-            "inline-block size-2 rounded-full",
-            STATUS_COLORS[status]
-          )}
+          className={cn("inline-block size-2 rounded-full", STATUS_COLORS[status])}
           aria-hidden="true"
         />
-        <span
-          className={cn("text-sm font-medium", STATUS_TEXT_COLORS[status])}
-        >
-          {label}
-        </span>
+        <span className={cn("text-sm font-medium", STATUS_TEXT_COLORS[status])}>{label}</span>
       </span>
       {reasons && reasons.length > 0 && (
         <ul className="ml-3.5 space-y-0.5">
           {reasons.map((reason, i) => (
-            <li
-              key={i}
-              className="text-xs text-muted-foreground"
-            >
+            <li key={i} className="text-muted-foreground text-xs">
               {reason}
             </li>
           ))}

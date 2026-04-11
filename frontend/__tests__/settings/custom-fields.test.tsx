@@ -2,11 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { CustomFieldsContent } from "@/app/(app)/org/[slug]/settings/custom-fields/custom-fields-content";
-import type {
-  EntityType,
-  FieldDefinitionResponse,
-  FieldGroupResponse,
-} from "@/lib/types";
+import type { EntityType, FieldDefinitionResponse, FieldGroupResponse } from "@/lib/types";
 
 const mockCreateFieldDefinition = vi.fn();
 const mockUpdateFieldDefinition = vi.fn();
@@ -15,27 +11,16 @@ const mockCreateFieldGroup = vi.fn();
 const mockUpdateFieldGroup = vi.fn();
 const mockDeleteFieldGroup = vi.fn();
 
-vi.mock(
-  "@/app/(app)/org/[slug]/settings/custom-fields/actions",
-  () => ({
-    createFieldDefinitionAction: (...args: unknown[]) =>
-      mockCreateFieldDefinition(...args),
-    updateFieldDefinitionAction: (...args: unknown[]) =>
-      mockUpdateFieldDefinition(...args),
-    deleteFieldDefinitionAction: (...args: unknown[]) =>
-      mockDeleteFieldDefinition(...args),
-    createFieldGroupAction: (...args: unknown[]) =>
-      mockCreateFieldGroup(...args),
-    updateFieldGroupAction: (...args: unknown[]) =>
-      mockUpdateFieldGroup(...args),
-    deleteFieldGroupAction: (...args: unknown[]) =>
-      mockDeleteFieldGroup(...args),
-  }),
-);
+vi.mock("@/app/(app)/org/[slug]/settings/custom-fields/actions", () => ({
+  createFieldDefinitionAction: (...args: unknown[]) => mockCreateFieldDefinition(...args),
+  updateFieldDefinitionAction: (...args: unknown[]) => mockUpdateFieldDefinition(...args),
+  deleteFieldDefinitionAction: (...args: unknown[]) => mockDeleteFieldDefinition(...args),
+  createFieldGroupAction: (...args: unknown[]) => mockCreateFieldGroup(...args),
+  updateFieldGroupAction: (...args: unknown[]) => mockUpdateFieldGroup(...args),
+  deleteFieldGroupAction: (...args: unknown[]) => mockDeleteFieldGroup(...args),
+}));
 
-function makeFieldDefinitions(
-  entityType: EntityType,
-): FieldDefinitionResponse[] {
+function makeFieldDefinitions(entityType: EntityType): FieldDefinitionResponse[] {
   if (entityType === "PROJECT") {
     return [
       {
@@ -157,12 +142,8 @@ describe("CustomFieldsContent", () => {
   it("admin sees Add Field and Add Group buttons", () => {
     render(<CustomFieldsContent {...makeProps(true)} />);
 
-    expect(
-      screen.getByRole("button", { name: /Add Field/ }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /Add Group/ }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Add Field/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Add Group/ })).toBeInTheDocument();
   });
 
   it("member does not see Add Field or Add Group buttons", () => {
@@ -179,12 +160,8 @@ describe("CustomFieldsContent", () => {
     // Click Tasks tab
     await user.click(screen.getByRole("tab", { name: "Tasks" }));
 
-    expect(
-      screen.getByText("No custom fields yet"),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("No field groups for tasks yet."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("No custom fields yet")).toBeInTheDocument();
+    expect(screen.getByText("No field groups for tasks yet.")).toBeInTheDocument();
   });
 
   it("shows pack badge for pack-sourced fields", () => {

@@ -76,10 +76,8 @@ describe("KycIntegrationCard", () => {
     await user.click(screen.getByText("Remove"));
 
     expect(mockDeleteApiKeyAction).toHaveBeenCalledWith("acme", "KYC_VERIFICATION");
-    expect(mockUpsertIntegrationAction).toHaveBeenCalledWith(
-      "acme",
-      "KYC_VERIFICATION",
-      { providerSlug: "" },
-    );
+    expect(mockUpsertIntegrationAction).toHaveBeenCalledWith("acme", "KYC_VERIFICATION", {
+      providerSlug: "",
+    });
   });
 });

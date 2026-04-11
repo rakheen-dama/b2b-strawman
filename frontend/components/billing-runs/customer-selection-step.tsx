@@ -39,9 +39,7 @@ export function CustomerSelectionStep({
         if (result.success && result.preview) {
           setItems(result.preview.items);
           // Select all customers by default
-          setSelectedIds(
-            new Set(result.preview.items.map((item) => item.id)),
-          );
+          setSelectedIds(new Set(result.preview.items.map((item) => item.id)));
         } else {
           setError(result.error ?? "Failed to load customer data.");
         }
@@ -102,7 +100,7 @@ export function CustomerSelectionStep({
   if (error) {
     return (
       <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="text-destructive text-sm">
           {error}
         </p>
         <div className="mt-4">
@@ -130,20 +128,20 @@ export function CustomerSelectionStep({
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-200 text-left dark:border-slate-700">
-                  <th className="pb-3 pr-4">
+                  <th className="pr-4 pb-3">
                     <Checkbox
                       checked={selectedIds.size === items.length}
                       onCheckedChange={toggleAll}
                       aria-label="Select all customers"
                     />
                   </th>
-                  <th className="pb-3 pr-4 font-medium text-slate-500 dark:text-slate-400">
+                  <th className="pr-4 pb-3 font-medium text-slate-500 dark:text-slate-400">
                     Customer
                   </th>
-                  <th className="pb-3 pr-4 text-right font-medium text-slate-500 dark:text-slate-400">
+                  <th className="pr-4 pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
                     Unbilled Time
                   </th>
-                  <th className="pb-3 pr-4 text-right font-medium text-slate-500 dark:text-slate-400">
+                  <th className="pr-4 pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
                     Unbilled Expenses
                   </th>
                   <th className="pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
@@ -153,10 +151,7 @@ export function CustomerSelectionStep({
               </thead>
               <tbody>
                 {items.map((item) => (
-                  <tr
-                    key={item.id}
-                    className="border-b border-slate-100 dark:border-slate-800"
-                  >
+                  <tr key={item.id} className="border-b border-slate-100 dark:border-slate-800">
                     <td className="py-3 pr-4">
                       <Checkbox
                         checked={selectedIds.has(item.id)}
@@ -187,9 +182,7 @@ export function CustomerSelectionStep({
       {/* Summary Bar */}
       <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-6 py-4 dark:border-slate-700 dark:bg-slate-900">
         <p className="text-sm text-slate-600 dark:text-slate-400">
-          <span className="font-medium text-slate-950 dark:text-slate-50">
-            {selectedIds.size}
-          </span>{" "}
+          <span className="font-medium text-slate-950 dark:text-slate-50">{selectedIds.size}</span>{" "}
           {selectedIds.size === 1 ? "customer" : "customers"} selected,{" "}
           <span className="font-medium text-slate-950 dark:text-slate-50">
             {formatCurrency(selectedTotal, currency)}
@@ -202,9 +195,7 @@ export function CustomerSelectionStep({
           </Button>
           <Button
             variant="default"
-            onClick={() =>
-              onNext(items.filter((item) => selectedIds.has(item.id)))
-            }
+            onClick={() => onNext(items.filter((item) => selectedIds.has(item.id)))}
             disabled={selectedIds.size === 0}
           >
             Next

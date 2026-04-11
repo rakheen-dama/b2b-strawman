@@ -67,7 +67,7 @@ describe("ViewSelectorClient", () => {
         allTags={[]}
         fieldDefinitions={[]}
         onSave={mockOnSave}
-      />,
+      />
     );
 
     expect(screen.getByText("All")).toBeInTheDocument();
@@ -88,7 +88,7 @@ describe("ViewSelectorClient", () => {
         allTags={[]}
         fieldDefinitions={[]}
         onSave={mockOnSave}
-      />,
+      />
     );
 
     await user.click(screen.getByText("Active"));
@@ -112,7 +112,7 @@ describe("ViewSelectorClient", () => {
         allTags={[]}
         fieldDefinitions={[]}
         onSave={mockOnSave}
-      />,
+      />
     );
 
     await user.click(screen.getByText("All"));
@@ -131,7 +131,7 @@ describe("ViewSelectorClient", () => {
         allTags={[]}
         fieldDefinitions={[]}
         onSave={mockOnSave}
-      />,
+      />
     );
 
     expect(screen.getByText("Save View")).toBeInTheDocument();
@@ -148,7 +148,7 @@ describe("ViewSelectorClient", () => {
         allTags={[]}
         fieldDefinitions={[]}
         onSave={mockOnSave}
-      />,
+      />
     );
 
     expect(screen.queryByText("Save View")).not.toBeInTheDocument();
@@ -167,7 +167,7 @@ describe("ViewSelectorClient", () => {
         allTags={[]}
         fieldDefinitions={[]}
         onSave={mockOnSave}
-      />,
+      />
     );
 
     await user.click(screen.getByText("Save View"));

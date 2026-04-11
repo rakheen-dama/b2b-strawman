@@ -34,8 +34,7 @@ export function BillingRunDetailActions({
   const [isApproving, setIsApproving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const canCancel =
-    status === "PREVIEW" || status === "IN_PROGRESS" || status === "COMPLETED";
+  const canCancel = status === "PREVIEW" || status === "IN_PROGRESS" || status === "COMPLETED";
   const canApprove = status === "COMPLETED";
 
   async function handleCancel() {
@@ -75,15 +74,13 @@ export function BillingRunDetailActions({
   return (
     <div className="flex flex-wrap items-center gap-3">
       {error && (
-        <p role="alert" className="w-full text-sm text-destructive">{error}</p>
+        <p role="alert" className="text-destructive w-full text-sm">
+          {error}
+        </p>
       )}
 
       {canApprove && (
-        <Button
-          variant="default"
-          onClick={handleApprove}
-          disabled={isApproving}
-        >
+        <Button variant="default" onClick={handleApprove} disabled={isApproving}>
           <CheckCircle className="mr-1.5 size-4" />
           {isApproving ? "Approving..." : "Approve All Generated"}
         </Button>
@@ -104,24 +101,17 @@ export function BillingRunDetailActions({
                   <AlertTriangle className="size-6 text-red-600 dark:text-red-400" />
                 </div>
               </div>
-              <AlertDialogTitle className="text-center">
-                Cancel Billing Run
-              </AlertDialogTitle>
+              <AlertDialogTitle className="text-center">Cancel Billing Run</AlertDialogTitle>
               <AlertDialogDescription className="text-center">
-                Are you sure you want to cancel this billing run? This action
-                cannot be undone. Any generated invoices will remain but the run
-                will be marked as cancelled.
+                Are you sure you want to cancel this billing run? This action cannot be undone. Any
+                generated invoices will remain but the run will be marked as cancelled.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel variant="plain" disabled={isCancelling}>
                 Keep Run
               </AlertDialogCancel>
-              <Button
-                variant="destructive"
-                onClick={handleCancel}
-                disabled={isCancelling}
-              >
+              <Button variant="destructive" onClick={handleCancel} disabled={isCancelling}>
                 {isCancelling ? "Cancelling..." : "Cancel Run"}
               </Button>
             </AlertDialogFooter>

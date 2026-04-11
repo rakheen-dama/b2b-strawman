@@ -8,11 +8,7 @@ interface ModuleGateProps {
   children: React.ReactNode;
 }
 
-export function ModuleGate({
-  module,
-  fallback = null,
-  children,
-}: ModuleGateProps) {
+export function ModuleGate({ module, fallback = null, children }: ModuleGateProps) {
   const { isModuleEnabled } = useOrgProfile();
 
   if (!isModuleEnabled(module)) {

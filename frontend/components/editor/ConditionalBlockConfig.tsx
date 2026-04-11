@@ -1,11 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,11 +28,7 @@ interface ConditionalBlockConfigProps {
   fieldKey: string;
   operator: string;
   value: string;
-  onUpdate: (attrs: {
-    fieldKey: string;
-    operator: string;
-    value: string;
-  }) => void;
+  onUpdate: (attrs: { fieldKey: string; operator: string; value: string }) => void;
 }
 
 function ConditionalBlockConfigForm({
@@ -55,8 +47,7 @@ function ConditionalBlockConfigForm({
   const [value, setValue] = useState(initialValue);
 
   const showValue = operator !== "isEmpty" && operator !== "isNotEmpty";
-  const operatorLabel =
-    OPERATORS.find((op) => op.value === operator)?.label ?? operator;
+  const operatorLabel = OPERATORS.find((op) => op.value === operator)?.label ?? operator;
 
   const handleApply = () => {
     onUpdate({
@@ -108,11 +99,7 @@ function ConditionalBlockConfigForm({
             id="cond-value"
             value={value}
             onChange={(e) => setValue(e.target.value)}
-            placeholder={
-              operator === "in"
-                ? "e.g. company, trust, cc"
-                : "e.g. company"
-            }
+            placeholder={operator === "in" ? "e.g. company, trust, cc" : "e.g. company"}
             className="text-sm"
           />
         </div>
@@ -122,8 +109,7 @@ function ConditionalBlockConfigForm({
       <div className="rounded border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
         {fieldKey.trim() ? (
           <>
-            Show this content if{" "}
-            <span className="font-mono font-medium">{fieldKey.trim()}</span>{" "}
+            Show this content if <span className="font-mono font-medium">{fieldKey.trim()}</span>{" "}
             {operatorLabel}
             {showValue && value.trim() && (
               <>
@@ -137,13 +123,7 @@ function ConditionalBlockConfigForm({
         )}
       </div>
 
-      <Button
-        variant="default"
-        size="sm"
-        type="button"
-        onClick={handleApply}
-        className="w-full"
-      >
+      <Button variant="default" size="sm" type="button" onClick={handleApply} className="w-full">
         Apply
       </Button>
     </div>

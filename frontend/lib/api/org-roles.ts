@@ -38,16 +38,11 @@ export async function fetchOrgRole(id: string): Promise<OrgRole> {
   return api.get<OrgRole>(`/api/org-roles/${id}`);
 }
 
-export async function createOrgRole(
-  data: CreateOrgRoleRequest,
-): Promise<OrgRole> {
+export async function createOrgRole(data: CreateOrgRoleRequest): Promise<OrgRole> {
   return api.post<OrgRole>("/api/org-roles", data);
 }
 
-export async function updateOrgRole(
-  id: string,
-  data: UpdateOrgRoleRequest,
-): Promise<OrgRole> {
+export async function updateOrgRole(id: string, data: UpdateOrgRoleRequest): Promise<OrgRole> {
   return api.put<OrgRole>(`/api/org-roles/${id}`, data);
 }
 

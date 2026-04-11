@@ -1,9 +1,5 @@
 import { describe, it, expect } from "vitest";
-import type {
-  IntegrationDomain,
-  OrgIntegration,
-  ConnectionTestResult,
-} from "@/lib/types";
+import type { IntegrationDomain, OrgIntegration, ConnectionTestResult } from "@/lib/types";
 
 describe("Integration types -- compile-time type assertions", () => {
   it("IntegrationDomain accepts all valid domain values", () => {

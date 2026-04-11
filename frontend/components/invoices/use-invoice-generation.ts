@@ -7,11 +7,7 @@ import {
   validateInvoiceGeneration,
 } from "@/app/(app)/org/[slug]/customers/[id]/invoice-actions";
 import { checkPrerequisitesAction } from "@/lib/actions/prerequisite-actions";
-import type {
-  UnbilledTimeResponse,
-  UnbilledProjectGroup,
-  ValidationCheck,
-} from "@/lib/types";
+import type { UnbilledTimeResponse, UnbilledProjectGroup, ValidationCheck } from "@/lib/types";
 import type { PrerequisiteViolation } from "@/components/prerequisite/types";
 
 interface UseInvoiceGenerationOptions {
@@ -70,11 +66,7 @@ export function useInvoiceGeneration({
   async function handleNewInvoiceClick() {
     setCheckingPrereqs(true);
     try {
-      const check = await checkPrerequisitesAction(
-        "INVOICE_GENERATION",
-        "CUSTOMER",
-        customerId,
-      );
+      const check = await checkPrerequisitesAction("INVOICE_GENERATION", "CUSTOMER", customerId);
       if (check.passed) {
         handleOpenChange(true);
       } else {
@@ -95,7 +87,7 @@ export function useInvoiceGeneration({
         const result = await fetchUnbilledTime(
           customerId,
           fromDate || undefined,
-          toDate || undefined,
+          toDate || undefined
         );
         if (result.success && result.data) {
           setUnbilledData(result.data);
@@ -131,9 +123,7 @@ export function useInvoiceGeneration({
   }
 
   function handleToggleProject(project: UnbilledProjectGroup) {
-    const selectableEntries = project.entries.filter(
-      (e) => e.billingRateCurrency === currency,
-    );
+    const selectableEntries = project.entries.filter((e) => e.billingRateCurrency === currency);
     const allSelected = selectableEntries.every((e) => selectedEntryIds.has(e.id));
 
     setSelectedEntryIds((prev) => {
@@ -158,9 +148,7 @@ export function useInvoiceGeneration({
 
   function handleToggleAllExpenses() {
     if (!unbilledData) return;
-    const selectableExpenses = unbilledData.unbilledExpenses.filter(
-      (e) => e.currency === currency,
-    );
+    const selectableExpenses = unbilledData.unbilledExpenses.filter((e) => e.currency === currency);
     const allSelected =
       selectableExpenses.length > 0 &&
       selectableExpenses.every((e) => selectedExpenseIds.has(e.id));
@@ -183,10 +171,7 @@ export function useInvoiceGeneration({
 
     startTransition(async () => {
       try {
-        const result = await validateInvoiceGeneration(
-          customerId,
-          Array.from(selectedEntryIds),
-        );
+        const result = await validateInvoiceGeneration(customerId, Array.from(selectedEntryIds));
         if (result.success && result.checks) {
           setValidationChecks(result.checks);
         } else {
@@ -210,8 +195,7 @@ export function useInvoiceGeneration({
           customerId,
           currency,
           timeEntryIds: Array.from(selectedEntryIds),
-          expenseIds:
-            selectedExpenseIds.size > 0 ? Array.from(selectedExpenseIds) : undefined,
+          expenseIds: selectedExpenseIds.size > 0 ? Array.from(selectedExpenseIds) : undefined,
         });
         if (result.success) {
           setOpen(false);
@@ -232,7 +216,7 @@ export function useInvoiceGeneration({
           project.entries
             .filter((e) => selectedEntryIds.has(e.id))
             .reduce((s, e) => s + e.billableValue, 0),
-        0,
+        0
       )
     : 0;
 
@@ -249,7 +233,7 @@ export function useInvoiceGeneration({
     ? unbilledData.projects.flatMap((p) =>
         p.entries
           .filter((e) => e.billingRateSnapshot == null)
-          .map((e) => ({ ...e, projectName: p.projectName })),
+          .map((e) => ({ ...e, projectName: p.projectName }))
       )
     : [];
 

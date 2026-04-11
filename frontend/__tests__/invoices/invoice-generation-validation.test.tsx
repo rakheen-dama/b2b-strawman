@@ -9,19 +9,17 @@ const mockValidateInvoiceGeneration = vi.fn();
 const mockFetchUnbilledTime = vi.fn();
 const mockCreateInvoiceDraft = vi.fn();
 
-vi.mock(
-  "@/app/(app)/org/[slug]/customers/[id]/invoice-actions",
-  () => ({
-    fetchUnbilledTime: (...args: unknown[]) => mockFetchUnbilledTime(...args),
-    createInvoiceDraft: (...args: unknown[]) => mockCreateInvoiceDraft(...args),
-    validateInvoiceGeneration: (...args: unknown[]) =>
-      mockValidateInvoiceGeneration(...args),
-  }),
-);
+vi.mock("@/app/(app)/org/[slug]/customers/[id]/invoice-actions", () => ({
+  fetchUnbilledTime: (...args: unknown[]) => mockFetchUnbilledTime(...args),
+  createInvoiceDraft: (...args: unknown[]) => mockCreateInvoiceDraft(...args),
+  validateInvoiceGeneration: (...args: unknown[]) => mockValidateInvoiceGeneration(...args),
+}));
 
 // Mock prerequisite actions (needed because InvoiceGenerationDialog now imports them)
 vi.mock("@/lib/actions/prerequisite-actions", () => ({
-  checkPrerequisitesAction: vi.fn().mockResolvedValue({ passed: true, context: "INVOICE_GENERATION", violations: [] }),
+  checkPrerequisitesAction: vi
+    .fn()
+    .mockResolvedValue({ passed: true, context: "INVOICE_GENERATION", violations: [] }),
   updateEntityCustomFieldsAction: vi.fn(),
 }));
 
@@ -154,7 +152,7 @@ describe("Invoice Generation Validation", () => {
         customerName="Test Customer"
         slug="test-org"
         defaultCurrency="ZAR"
-      />,
+      />
     );
 
     // Open dialog
@@ -177,13 +175,9 @@ describe("Invoice Generation Validation", () => {
     });
 
     // Verify check items rendered
-    expect(
-      screen.getByText("All customer required fields are filled"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("All customer required fields are filled")).toBeInTheDocument();
     expect(screen.getByText("Organization name is set")).toBeInTheDocument();
-    expect(
-      screen.getByText("2 time entries without billing rates"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("2 time entries without billing rates")).toBeInTheDocument();
 
     // After validation, button should say "Create Draft (1 issues)"
     expect(screen.getByText("Create Draft (1 issues)")).toBeInTheDocument();
@@ -245,13 +239,7 @@ describe("Invoice Generation Validation", () => {
       hasPerLineTax: false,
     };
 
-    render(
-      <InvoiceDetailClient
-        invoice={mockInvoice}
-        slug="test-org"
-        isAdmin={true}
-      />,
-    );
+    render(<InvoiceDetailClient invoice={mockInvoice} slug="test-org" isAdmin={true} />);
 
     // Click Send Invoice
     await user.click(screen.getByText("Send Invoice"));
@@ -262,9 +250,7 @@ describe("Invoice Generation Validation", () => {
     });
 
     // Verify override content
-    expect(
-      screen.getByText("Validation issues found"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Validation issues found")).toBeInTheDocument();
     expect(screen.getByText("Send Anyway")).toBeInTheDocument();
 
     // Click Send Anyway
@@ -277,12 +263,7 @@ describe("Invoice Generation Validation", () => {
 
     // Verify override call was made with overrideWarnings=true
     await waitFor(() => {
-      expect(mockSendInvoice).toHaveBeenCalledWith(
-        "test-org",
-        "inv-1",
-        "cust-1",
-        true,
-      );
+      expect(mockSendInvoice).toHaveBeenCalledWith("test-org", "inv-1", "cust-1", true);
     });
   });
 });

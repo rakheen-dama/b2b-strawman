@@ -19,10 +19,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { HelpTip } from "@/components/help-tip";
-import {
-  fetchPortalContacts,
-  sendForAcceptance,
-} from "@/lib/actions/acceptance-actions";
+import { fetchPortalContacts, sendForAcceptance } from "@/lib/actions/acceptance-actions";
 import type { PortalContactSummary } from "@/lib/actions/acceptance-actions";
 
 interface SendForAcceptanceDialogProps {
@@ -68,7 +65,9 @@ export function SendForAcceptanceDialog({
         const result = await fetchPortalContacts(customerId);
         setContacts(result);
       } catch {
-        setError("Could not load portal contacts. Please configure them in the customer's portal settings.");
+        setError(
+          "Could not load portal contacts. Please configure them in the customer's portal settings."
+        );
       } finally {
         setIsLoadingContacts(false);
       }
@@ -89,11 +88,7 @@ export function SendForAcceptanceDialog({
       setIsSending(false);
       return;
     }
-    const result = await sendForAcceptance(
-      generatedDocumentId,
-      selectedContactId,
-      parsedExpiry,
-    );
+    const result = await sendForAcceptance(generatedDocumentId, selectedContactId, parsedExpiry);
 
     if (result.success) {
       setSuccessMessage("Acceptance request sent.");
@@ -135,10 +130,7 @@ export function SendForAcceptanceDialog({
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="recipient">Recipient</Label>
-              <Select
-                value={selectedContactId}
-                onValueChange={setSelectedContactId}
-              >
+              <Select value={selectedContactId} onValueChange={setSelectedContactId}>
                 <SelectTrigger id="recipient">
                   <SelectValue placeholder="Select a contact" />
                 </SelectTrigger>
@@ -167,23 +159,16 @@ export function SendForAcceptanceDialog({
           </div>
         )}
 
-        {error && <p className="text-sm text-destructive">{error}</p>}
+        {error && <p className="text-destructive text-sm">{error}</p>}
         {successMessage && (
-          <p className="text-sm text-green-600 dark:text-green-400">
-            {successMessage}
-          </p>
+          <p className="text-sm text-green-600 dark:text-green-400">{successMessage}</p>
         )}
 
         <DialogFooter>
           <Button
             variant="accent"
             onClick={handleSend}
-            disabled={
-              isLoadingContacts ||
-              isSending ||
-              !selectedContactId ||
-              noContacts
-            }
+            disabled={isLoadingContacts || isSending || !selectedContactId || noContacts}
           >
             {isSending ? "Sending..." : "Send"}
           </Button>

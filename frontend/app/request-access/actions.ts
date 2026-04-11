@@ -22,9 +22,7 @@ interface AccessRequestResult {
   error?: string;
 }
 
-export async function submitAccessRequest(
-  data: AccessRequestData,
-): Promise<AccessRequestResult> {
+export async function submitAccessRequest(data: AccessRequestData): Promise<AccessRequestResult> {
   const { email, fullName, organizationName, country, industry } = data;
 
   if (!email?.trim()) {
@@ -71,8 +69,7 @@ export async function submitAccessRequest(
     }
 
     const errorBody = await response.json().catch(() => null);
-    const errorMessage =
-      errorBody?.error || errorBody?.message || "Something went wrong.";
+    const errorMessage = errorBody?.error || errorBody?.message || "Something went wrong.";
     return { success: false, error: errorMessage };
   } catch {
     return {
@@ -88,10 +85,7 @@ interface VerifyOtpResult {
   error?: string;
 }
 
-export async function verifyAccessRequestOtp(
-  email: string,
-  otp: string,
-): Promise<VerifyOtpResult> {
+export async function verifyAccessRequestOtp(email: string, otp: string): Promise<VerifyOtpResult> {
   if (!email?.trim()) {
     return { success: false, error: "Email is required." };
   }
@@ -119,10 +113,7 @@ export async function verifyAccessRequestOtp(
 
     const errorBody = await response.json().catch(() => null);
     const errorMessage =
-      errorBody?.detail ||
-      errorBody?.error ||
-      errorBody?.message ||
-      "Something went wrong.";
+      errorBody?.detail || errorBody?.error || errorBody?.message || "Something went wrong.";
     return { success: false, error: errorMessage };
   } catch {
     return {

@@ -7,10 +7,7 @@ import { CheckCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { NotificationItem } from "@/components/notifications/notification-item";
-import {
-  fetchNotifications,
-  markAllNotificationsRead,
-} from "@/lib/actions/notifications";
+import { fetchNotifications, markAllNotificationsRead } from "@/lib/actions/notifications";
 import type { Notification } from "@/lib/actions/notifications";
 
 interface NotificationDropdownProps {
@@ -46,10 +43,7 @@ export function NotificationDropdown({
       const result = await markAllNotificationsRead();
       if (result.success) {
         // Optimistically update local cache to mark all as read
-        mutate(
-          (prev) => prev?.map((n) => ({ ...n, isRead: true })),
-          { revalidate: false }
-        );
+        mutate((prev) => prev?.map((n) => ({ ...n, isRead: true })), { revalidate: false });
         onCountChange();
       }
     } finally {
@@ -68,16 +62,9 @@ export function NotificationDropdown({
     <div className="w-80">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-slate-200 px-3 py-2 dark:border-slate-800">
-        <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-          Notifications
-        </h3>
+        <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">Notifications</h3>
         {hasUnread && (
-          <Button
-            variant="ghost"
-            size="xs"
-            onClick={handleMarkAllRead}
-            disabled={isMarkingAll}
-          >
+          <Button variant="ghost" size="xs" onClick={handleMarkAllRead} disabled={isMarkingAll}>
             <CheckCheck className="size-3" />
             {isMarkingAll ? "Marking..." : "Mark all read"}
           </Button>
@@ -95,7 +82,9 @@ export function NotificationDropdown({
         )}
 
         {error && (
-          <p className="px-3 py-4 text-center text-sm text-red-600">Failed to load notifications.</p>
+          <p className="px-3 py-4 text-center text-sm text-red-600">
+            Failed to load notifications.
+          </p>
         )}
 
         {!isLoading && !error && notifications && notifications.length === 0 && (

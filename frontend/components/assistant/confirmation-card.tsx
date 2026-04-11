@@ -13,10 +13,7 @@ interface ConfirmationCardProps {
   onConfirm: (toolCallId: string, approved: boolean) => Promise<void>;
 }
 
-export function ConfirmationCard({
-  message,
-  onConfirm,
-}: ConfirmationCardProps) {
+export function ConfirmationCard({ message, onConfirm }: ConfirmationCardProps) {
   const [isPending, setIsPending] = useState(false);
 
   const toolCallId = message.toolCallId ?? "";
@@ -56,43 +53,27 @@ export function ConfirmationCard({
     <div
       className={cn(
         "rounded-lg border-l-4 border-teal-600 bg-white p-4 shadow-sm",
-        "dark:bg-slate-800",
+        "dark:bg-slate-800"
       )}
     >
-      <p className="mb-3 text-sm font-semibold text-slate-900 dark:text-slate-100">
-        {actionTitle}
-      </p>
+      <p className="mb-3 text-sm font-semibold text-slate-900 dark:text-slate-100">{actionTitle}</p>
 
       {Object.keys(inputData).length > 0 && (
         <dl className="mb-4 space-y-1">
           {Object.entries(inputData).map(([key, value]) => (
             <div key={key} className="flex gap-2 text-xs">
-              <dt className="min-w-[80px] font-medium text-slate-500 dark:text-slate-400">
-                {key}
-              </dt>
-              <dd className="text-slate-700 dark:text-slate-300">
-                {String(value ?? "")}
-              </dd>
+              <dt className="min-w-[80px] font-medium text-slate-500 dark:text-slate-400">{key}</dt>
+              <dd className="text-slate-700 dark:text-slate-300">{String(value ?? "")}</dd>
             </div>
           ))}
         </dl>
       )}
 
       <div className="flex gap-2">
-        <Button
-          size="sm"
-          variant="accent"
-          onClick={handleConfirm}
-          disabled={isPending}
-        >
+        <Button size="sm" variant="accent" onClick={handleConfirm} disabled={isPending}>
           Confirm
         </Button>
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={handleCancel}
-          disabled={isPending}
-        >
+        <Button size="sm" variant="ghost" onClick={handleCancel} disabled={isPending}>
           Cancel
         </Button>
       </div>

@@ -23,12 +23,7 @@ const SubscriptionContext = createContext<SubscriptionContextValue>({
 
 // ---- Status Sets ----
 
-const WRITE_ENABLED_STATUSES = new Set([
-  "TRIALING",
-  "ACTIVE",
-  "PENDING_CANCELLATION",
-  "PAST_DUE",
-]);
+const WRITE_ENABLED_STATUSES = new Set(["TRIALING", "ACTIVE", "PENDING_CANCELLATION", "PAST_DUE"]);
 
 // ---- Provider ----
 
@@ -37,10 +32,7 @@ interface SubscriptionProviderProps {
   children: React.ReactNode;
 }
 
-export function SubscriptionProvider({
-  billingResponse,
-  children,
-}: SubscriptionProviderProps) {
+export function SubscriptionProvider({ billingResponse, children }: SubscriptionProviderProps) {
   const { status, canSubscribe, canCancel } = billingResponse;
 
   const value = useMemo<SubscriptionContextValue>(
@@ -50,14 +42,10 @@ export function SubscriptionProvider({
       canSubscribe,
       canCancel,
     }),
-    [status, canSubscribe, canCancel],
+    [status, canSubscribe, canCancel]
   );
 
-  return (
-    <SubscriptionContext.Provider value={value}>
-      {children}
-    </SubscriptionContext.Provider>
-  );
+  return <SubscriptionContext.Provider value={value}>{children}</SubscriptionContext.Provider>;
 }
 
 // ---- Hook ----

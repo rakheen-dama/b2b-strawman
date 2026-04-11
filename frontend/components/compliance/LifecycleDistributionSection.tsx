@@ -36,7 +36,7 @@ export function LifecycleDistributionSection({
               <div className="flex items-center gap-3">
                 <Icon className={cn("h-5 w-5", color)} />
                 <div>
-                  <p className="font-mono text-2xl font-semibold tabular-nums text-slate-950 dark:text-slate-50">
+                  <p className="font-mono text-2xl font-semibold text-slate-950 tabular-nums dark:text-slate-50">
                     {counts[key] ?? 0}
                   </p>
                   <p className="text-sm text-slate-500 dark:text-slate-400">{label}</p>

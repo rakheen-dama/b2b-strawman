@@ -25,17 +25,11 @@ afterEach(() => {
 describe("CancelConfirmDialog", () => {
   it("shows confirmation text including the formatted currentPeriodEnd date", async () => {
     const user = userEvent.setup();
-    render(
-      <CancelConfirmDialog currentPeriodEnd="2026-05-01T00:00:00Z" />
-    );
+    render(<CancelConfirmDialog currentPeriodEnd="2026-05-01T00:00:00Z" />);
 
-    await user.click(
-      screen.getByRole("button", { name: /cancel subscription/i })
-    );
+    await user.click(screen.getByRole("button", { name: /cancel subscription/i }));
 
-    expect(
-      screen.getByText(/will remain active until/)
-    ).toBeInTheDocument();
+    expect(screen.getByText(/will remain active until/)).toBeInTheDocument();
     // The date is formatted as en-ZA long format: "01 May 2026"
     expect(screen.getByText(/May 2026/)).toBeInTheDocument();
   });
@@ -55,16 +49,10 @@ describe("CancelConfirmDialog", () => {
     });
 
     const user = userEvent.setup();
-    render(
-      <CancelConfirmDialog currentPeriodEnd="2026-05-01T00:00:00Z" />
-    );
+    render(<CancelConfirmDialog currentPeriodEnd="2026-05-01T00:00:00Z" />);
 
-    await user.click(
-      screen.getByRole("button", { name: /cancel subscription/i })
-    );
-    await user.click(
-      screen.getByRole("button", { name: /confirm cancellation/i })
-    );
+    await user.click(screen.getByRole("button", { name: /cancel subscription/i }));
+    await user.click(screen.getByRole("button", { name: /confirm cancellation/i }));
 
     await waitFor(() => {
       expect(mockCancelSubscription).toHaveBeenCalledOnce();
@@ -74,26 +62,16 @@ describe("CancelConfirmDialog", () => {
   it("shows loading state during async call", async () => {
     mockCancelSubscription.mockImplementation(
       () =>
-        new Promise((resolve) =>
-          setTimeout(() => resolve({ status: "PENDING_CANCELLATION" }), 500)
-        )
+        new Promise((resolve) => setTimeout(() => resolve({ status: "PENDING_CANCELLATION" }), 500))
     );
 
     const user = userEvent.setup();
-    render(
-      <CancelConfirmDialog currentPeriodEnd="2026-05-01T00:00:00Z" />
-    );
+    render(<CancelConfirmDialog currentPeriodEnd="2026-05-01T00:00:00Z" />);
 
-    await user.click(
-      screen.getByRole("button", { name: /cancel subscription/i })
-    );
-    await user.click(
-      screen.getByRole("button", { name: /confirm cancellation/i })
-    );
+    await user.click(screen.getByRole("button", { name: /cancel subscription/i }));
+    await user.click(screen.getByRole("button", { name: /confirm cancellation/i }));
 
     expect(screen.getByText("Cancelling...")).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /keep subscription/i })
-    ).toBeDisabled();
+    expect(screen.getByRole("button", { name: /keep subscription/i })).toBeDisabled();
   });
 });

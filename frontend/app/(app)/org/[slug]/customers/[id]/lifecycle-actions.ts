@@ -17,7 +17,7 @@ export async function transitionCustomerLifecycle(
   slug: string,
   customerId: string,
   targetStatus: string,
-  notes?: string,
+  notes?: string
 ): Promise<ActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
@@ -30,13 +30,9 @@ export async function transitionCustomerLifecycle(
     if (error instanceof ApiError) {
       // 422 with prerequisite violations — return payload so caller can open PrerequisiteModal
       if (error.status === 422 && error.detail) {
-        const violations = Array.isArray(error.detail.violations)
-          ? error.detail.violations
-          : [];
+        const violations = Array.isArray(error.detail.violations) ? error.detail.violations : [];
         const context =
-          typeof error.detail.context === "string"
-            ? error.detail.context
-            : "LIFECYCLE_ACTIVATION";
+          typeof error.detail.context === "string" ? error.detail.context : "LIFECYCLE_ACTIVATION";
         return {
           success: false,
           error: error.message,

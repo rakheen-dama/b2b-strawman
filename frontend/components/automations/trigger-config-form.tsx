@@ -72,7 +72,8 @@ export function TriggerConfigForm({
 
   if (STATUS_CHANGE_TRIGGERS.has(triggerType)) {
     const options = STATUS_OPTIONS[triggerType] ?? [];
-    const fromStatus = triggerConfig.fromStatus == null ? "ANY" : (triggerConfig.fromStatus as string);
+    const fromStatus =
+      triggerConfig.fromStatus == null ? "ANY" : (triggerConfig.fromStatus as string);
     const toStatus = triggerConfig.toStatus == null ? "ANY" : (triggerConfig.toStatus as string);
 
     return (
@@ -130,8 +131,7 @@ export function TriggerConfigForm({
   }
 
   if (triggerType === "BUDGET_THRESHOLD_REACHED") {
-    const thresholdPercent =
-      (triggerConfig.thresholdPercent as number) ?? 80;
+    const thresholdPercent = (triggerConfig.thresholdPercent as number) ?? 80;
 
     return (
       <div className="space-y-2">
@@ -154,9 +154,7 @@ export function TriggerConfigForm({
             }}
             className="w-24"
           />
-          <span className="text-sm text-slate-600 dark:text-slate-400">
-            %
-          </span>
+          <span className="text-sm text-slate-600 dark:text-slate-400">%</span>
         </div>
         <p className="text-xs text-slate-500 dark:text-slate-400">
           Trigger when budget consumption reaches this percentage.

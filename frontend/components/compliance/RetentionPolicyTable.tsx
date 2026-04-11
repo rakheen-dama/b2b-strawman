@@ -178,7 +178,10 @@ export function RetentionPolicyTable({ policies, slug }: RetentionPolicyTablePro
           <TableBody>
             {rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="py-8 text-center text-slate-500 dark:text-slate-400">
+                <TableCell
+                  colSpan={6}
+                  className="py-8 text-center text-slate-500 dark:text-slate-400"
+                >
                   No retention policies configured. Click &ldquo;Add Row&rdquo; to create one.
                 </TableCell>
               </TableRow>
@@ -219,7 +222,9 @@ export function RetentionPolicyTable({ policies, slug }: RetentionPolicyTablePro
                       min={1}
                       value={row.retentionDays}
                       onChange={(e) =>
-                        updateRow(index, { retentionDays: Math.max(1, parseInt(e.target.value) || 1) })
+                        updateRow(index, {
+                          retentionDays: Math.max(1, parseInt(e.target.value) || 1),
+                        })
                       }
                       className="w-24"
                     />
@@ -290,9 +295,7 @@ export function RetentionPolicyTable({ policies, slug }: RetentionPolicyTablePro
           )}
           Run Retention Check
         </Button>
-        {checkError && (
-          <p className="text-sm text-red-600 dark:text-red-400">{checkError}</p>
-        )}
+        {checkError && <p className="text-sm text-red-600 dark:text-red-400">{checkError}</p>}
       </div>
 
       {checkResult && <RetentionCheckResults result={checkResult} onPurge={handlePurge} />}

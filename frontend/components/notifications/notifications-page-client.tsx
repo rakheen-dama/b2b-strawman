@@ -6,10 +6,7 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/empty-state";
 import { createMessages } from "@/lib/messages";
 import { NotificationItem } from "@/components/notifications/notification-item";
-import {
-  fetchNotifications,
-  markAllNotificationsRead,
-} from "@/lib/actions/notifications";
+import { fetchNotifications, markAllNotificationsRead } from "@/lib/actions/notifications";
 import type { Notification } from "@/lib/actions/notifications";
 
 interface NotificationsPageClientProps {
@@ -23,8 +20,7 @@ export function NotificationsPageClient({
   initialTotalPages,
   orgSlug,
 }: NotificationsPageClientProps) {
-  const [notifications, setNotifications] =
-    useState<Notification[]>(initialNotifications);
+  const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
   const [filter, setFilter] = useState<"all" | "unread">("all");
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(initialTotalPages);
@@ -33,19 +29,16 @@ export function NotificationsPageClient({
 
   const unreadOnly = filter === "unread";
 
-  const reload = useCallback(
-    async (filterValue: "all" | "unread") => {
-      try {
-        const data = await fetchNotifications(filterValue === "unread", 0);
-        setNotifications(data.content);
-        setTotalPages(data.page.totalPages);
-        setPage(0);
-      } catch {
-        // Keep existing state on error
-      }
-    },
-    []
-  );
+  const reload = useCallback(async (filterValue: "all" | "unread") => {
+    try {
+      const data = await fetchNotifications(filterValue === "unread", 0);
+      setNotifications(data.content);
+      setTotalPages(data.page.totalPages);
+      setPage(0);
+    } catch {
+      // Keep existing state on error
+    }
+  }, []);
 
   async function handleFilterChange(newFilter: "all" | "unread") {
     setFilter(newFilter);
@@ -72,9 +65,7 @@ export function NotificationsPageClient({
     try {
       const result = await markAllNotificationsRead();
       if (result.success) {
-        setNotifications((prev) =>
-          prev.map((n) => ({ ...n, isRead: true }))
-        );
+        setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
       }
     } finally {
       setIsMarkingAll(false);
@@ -121,12 +112,7 @@ export function NotificationsPageClient({
 
         {/* Mark all as read */}
         {hasUnread && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleMarkAllRead}
-            disabled={isMarkingAll}
-          >
+          <Button variant="ghost" size="sm" onClick={handleMarkAllRead} disabled={isMarkingAll}>
             <CheckCheck className="size-4" />
             {isMarkingAll ? "Marking..." : "Mark all as read"}
           </Button>
@@ -156,11 +142,7 @@ export function NotificationsPageClient({
       {/* Load more */}
       {hasMore && (
         <div className="flex justify-center">
-          <Button
-            variant="ghost"
-            onClick={handleLoadMore}
-            disabled={isLoadingMore}
-          >
+          <Button variant="ghost" onClick={handleLoadMore} disabled={isLoadingMore}>
             {isLoadingMore ? "Loading..." : "Load more"}
           </Button>
         </div>

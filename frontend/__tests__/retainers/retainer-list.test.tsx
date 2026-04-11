@@ -102,12 +102,7 @@ describe("RetainerList", () => {
 
   it("shows Paused status badge with warning variant on Paused tab", async () => {
     const user = userEvent.setup();
-    render(
-      <RetainerList
-        slug="acme"
-        retainers={[ACTIVE_RETAINER, PAUSED_RETAINER]}
-      />,
-    );
+    render(<RetainerList slug="acme" retainers={[ACTIVE_RETAINER, PAUSED_RETAINER]} />);
     // Switch to Paused tab to see paused retainer
     const pausedTab = screen.getByRole("button", { name: "Paused" });
     await user.click(pausedTab);
@@ -128,12 +123,7 @@ describe("RetainerList", () => {
 
   it("shows Pause button for ACTIVE retainer but not for TERMINATED", async () => {
     const user = userEvent.setup();
-    render(
-      <RetainerList
-        slug="acme"
-        retainers={[ACTIVE_RETAINER, TERMINATED_RETAINER]}
-      />,
-    );
+    render(<RetainerList slug="acme" retainers={[ACTIVE_RETAINER, TERMINATED_RETAINER]} />);
     // Switch to All tab
     await user.click(screen.getByText("All"));
     expect(screen.getByTitle("Pause retainer")).toBeInTheDocument();
@@ -147,7 +137,7 @@ describe("RetainerList", () => {
       <RetainerList
         slug="acme"
         retainers={[ACTIVE_RETAINER, PAUSED_RETAINER, TERMINATED_RETAINER]}
-      />,
+      />
     );
     expect(screen.getByText("Monthly Bookkeeping Retainer")).toBeInTheDocument();
     expect(screen.queryByText("Quarterly Tax Review Retainer")).not.toBeInTheDocument();

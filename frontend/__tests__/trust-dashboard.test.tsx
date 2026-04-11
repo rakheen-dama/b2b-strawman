@@ -14,15 +14,10 @@ vi.mock("@/lib/api/settings", () => ({
 const mockFetchTrustAccounts = vi.fn();
 const mockFetchDashboardData = vi.fn();
 
-vi.mock(
-  "@/app/(app)/org/[slug]/trust-accounting/actions",
-  () => ({
-    fetchTrustAccounts: (...args: unknown[]) =>
-      mockFetchTrustAccounts(...args),
-    fetchDashboardData: (...args: unknown[]) =>
-      mockFetchDashboardData(...args),
-  }),
-);
+vi.mock("@/app/(app)/org/[slug]/trust-accounting/actions", () => ({
+  fetchTrustAccounts: (...args: unknown[]) => mockFetchTrustAccounts(...args),
+  fetchDashboardData: (...args: unknown[]) => mockFetchDashboardData(...args),
+}));
 
 // Mock next/navigation
 const mockNotFound = vi.fn();
@@ -216,7 +211,7 @@ describe("TrustAccountingPage", () => {
     expect(financeGroup).toBeDefined();
 
     const trustItems = financeGroup!.items.filter(
-      (item) => item.requiredModule === "trust_accounting",
+      (item) => item.requiredModule === "trust_accounting"
     );
 
     // Should have parent + 6 sub-items = 7 total trust items

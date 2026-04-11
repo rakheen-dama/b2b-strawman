@@ -57,8 +57,6 @@ export function RecentItemsProvider({ children }: RecentItemsProviderProps) {
   }, [pathname, addItem]);
 
   return (
-    <RecentItemsContext.Provider value={{ items, addItem }}>
-      {children}
-    </RecentItemsContext.Provider>
+    <RecentItemsContext.Provider value={{ items, addItem }}>{children}</RecentItemsContext.Provider>
   );
 }

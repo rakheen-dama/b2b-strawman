@@ -21,11 +21,7 @@ export const ConditionalBlockExtension = Node.create({
   },
 
   renderHTML({ HTMLAttributes }) {
-    return [
-      "div",
-      mergeAttributes(HTMLAttributes, { "data-conditional-block": "" }),
-      0,
-    ];
+    return ["div", mergeAttributes(HTMLAttributes, { "data-conditional-block": "" }), 0];
   },
 
   addNodeView() {

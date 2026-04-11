@@ -14,19 +14,13 @@ describe("Keycloak login/logout URLs", () => {
   });
 
   it("login URL points to gateway OAuth2 authorization endpoint", async () => {
-    const { getKeycloakLoginUrl } = await import(
-      "@/components/auth/user-menu-bff"
-    );
+    const { getKeycloakLoginUrl } = await import("@/components/auth/user-menu-bff");
 
-    expect(getKeycloakLoginUrl()).toBe(
-      "http://localhost:8443/oauth2/authorization/keycloak",
-    );
+    expect(getKeycloakLoginUrl()).toBe("http://localhost:8443/oauth2/authorization/keycloak");
   });
 
   it("logout URL points to gateway logout endpoint", async () => {
-    const { getKeycloakLogoutUrl } = await import(
-      "@/components/auth/user-menu-bff"
-    );
+    const { getKeycloakLogoutUrl } = await import("@/components/auth/user-menu-bff");
 
     expect(getKeycloakLogoutUrl()).toBe("http://localhost:8443/logout");
   });
@@ -45,8 +39,7 @@ describe("Keycloak login/logout URLs", () => {
 
     // Track form submission and CSRF input
     const mockSubmit = vi.fn();
-    const capturedInputs: Array<{ type: string; name: string; value: string }> =
-      [];
+    const capturedInputs: Array<{ type: string; name: string; value: string }> = [];
 
     // Store original before mocking to avoid infinite recursion
     const originalCreateElement = document.createElement.bind(document);
@@ -75,9 +68,7 @@ describe("Keycloak login/logout URLs", () => {
 
     vi.spyOn(document.body, "appendChild").mockImplementation((node) => node);
 
-    const { performKeycloakLogout } = await import(
-      "@/components/auth/user-menu-bff"
-    );
+    const { performKeycloakLogout } = await import("@/components/auth/user-menu-bff");
 
     await performKeycloakLogout();
 
@@ -112,9 +103,7 @@ describe("Keycloak login/logout URLs", () => {
       href: "",
     } as Location);
 
-    const { performKeycloakLogout } = await import(
-      "@/components/auth/user-menu-bff"
-    );
+    const { performKeycloakLogout } = await import("@/components/auth/user-menu-bff");
 
     await performKeycloakLogout();
 

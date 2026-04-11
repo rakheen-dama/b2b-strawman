@@ -1,12 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi, afterEach } from "vitest";
-import {
-  cleanup,
-  render,
-  screen,
-  fireEvent,
-  waitFor,
-} from "@testing-library/react";
+import { cleanup, render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { GeneralSettingsForm } from "@/components/settings/general-settings-form";
 
 const mockUpdateGeneralSettings = vi.fn();
@@ -15,10 +9,8 @@ const mockUploadLogoAction = vi.fn();
 const mockDeleteLogoAction = vi.fn();
 
 vi.mock("@/app/(app)/org/[slug]/settings/general/actions", () => ({
-  updateGeneralSettings: (...args: unknown[]) =>
-    mockUpdateGeneralSettings(...args),
-  updateGeneralTaxSettings: (...args: unknown[]) =>
-    mockUpdateGeneralTaxSettings(...args),
+  updateGeneralSettings: (...args: unknown[]) => mockUpdateGeneralSettings(...args),
+  updateGeneralTaxSettings: (...args: unknown[]) => mockUpdateGeneralTaxSettings(...args),
   uploadLogoAction: (...args: unknown[]) => mockUploadLogoAction(...args),
   deleteLogoAction: (...args: unknown[]) => mockDeleteLogoAction(...args),
 }));
@@ -31,9 +23,7 @@ afterEach(() => {
   mockDeleteLogoAction.mockReset();
 });
 
-function renderForm(
-  overrides: Partial<React.ComponentProps<typeof GeneralSettingsForm>> = {},
-) {
+function renderForm(overrides: Partial<React.ComponentProps<typeof GeneralSettingsForm>> = {}) {
   const defaultProps: React.ComponentProps<typeof GeneralSettingsForm> = {
     slug: "acme",
     defaultCurrency: "ZAR",
@@ -100,9 +90,6 @@ describe("GeneralSettingsForm", () => {
 
     const logoImage = screen.getByAltText("Organization logo");
     expect(logoImage).toBeInTheDocument();
-    expect(logoImage).toHaveAttribute(
-      "src",
-      "https://example.com/logo.png",
-    );
+    expect(logoImage).toHaveAttribute("src", "https://example.com/logo.png");
   });
 });

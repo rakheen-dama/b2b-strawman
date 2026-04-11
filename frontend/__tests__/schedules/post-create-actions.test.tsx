@@ -37,12 +37,10 @@ describe("PostCreateActionsSection", () => {
         requestTemplates={[]}
         value={null}
         onChange={onChange}
-      />,
+      />
     );
     expect(screen.getByText("After Creation (Optional)")).toBeInTheDocument();
-    expect(
-      screen.getByText(/These actions run automatically/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/These actions run automatically/)).toBeInTheDocument();
   });
 
   it("generate document toggle shows and hides template selector", async () => {
@@ -54,7 +52,7 @@ describe("PostCreateActionsSection", () => {
         requestTemplates={[]}
         value={null}
         onChange={onChange}
-      />,
+      />
     );
 
     // Initially: selector not visible
@@ -83,7 +81,7 @@ describe("PostCreateActionsSection", () => {
         requestTemplates={REQUEST_TEMPLATES}
         value={null}
         onChange={onChange}
-      />,
+      />
     );
 
     // Enable generate document
@@ -99,17 +97,15 @@ describe("PostCreateActionsSection", () => {
     await user.click(infoRequestSwitch);
 
     // Check the last onChange call has both keys
-    const lastCall = onChange.mock.calls[onChange.mock.calls.length - 1][0] as
-      | PostCreateActions
-      | null;
+    const lastCall = onChange.mock.calls[
+      onChange.mock.calls.length - 1
+    ][0] as PostCreateActions | null;
     expect(lastCall).not.toBeNull();
     expect(lastCall?.generateDocument).toBeDefined();
     expect(lastCall?.generateDocument?.templateSlug).toBe("engagement-letter");
     expect(lastCall?.generateDocument?.autoSend).toBe(false);
     expect(lastCall?.sendInfoRequest).toBeDefined();
-    expect(lastCall?.sendInfoRequest?.requestTemplateSlug).toBe(
-      "year-end-info",
-    );
+    expect(lastCall?.sendInfoRequest?.requestTemplateSlug).toBe("year-end-info");
     expect(lastCall?.sendInfoRequest?.dueDays).toBe(14);
   });
 
@@ -122,7 +118,7 @@ describe("PostCreateActionsSection", () => {
         requestTemplates={[]}
         value={null}
         onChange={onChange}
-      />,
+      />
     );
 
     // Enable generate document to reveal auto-send

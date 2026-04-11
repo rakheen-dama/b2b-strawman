@@ -56,7 +56,7 @@ export function FieldDefinitionDialog({
   });
 
   const availableControllingFields = (allFieldsForType ?? []).filter(
-    (f) => f.active && f.id !== field?.id,
+    (f) => f.active && f.id !== field?.id
   );
 
   function handleOpenChange(newOpen: boolean) {
@@ -90,7 +90,9 @@ export function FieldDefinitionDialog({
             {form.isEditing ? (
               <Input
                 id="fd-entity-type"
-                value={ENTITY_TYPES.find((t) => t.value === form.entityType)?.label ?? form.entityType}
+                value={
+                  ENTITY_TYPES.find((t) => t.value === form.entityType)?.label ?? form.entityType
+                }
                 readOnly
                 className="bg-slate-50 dark:bg-slate-900"
               />
@@ -99,10 +101,12 @@ export function FieldDefinitionDialog({
                 id="fd-entity-type"
                 value={form.entityType}
                 onChange={(e) => form.setEntityType(e.target.value as EntityType)}
-                className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400 dark:border-slate-700"
+                className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-400 focus-visible:outline-none dark:border-slate-700"
               >
                 {ENTITY_TYPES.map((t) => (
-                  <option key={t.value} value={t.value}>{t.label}</option>
+                  <option key={t.value} value={t.value}>
+                    {t.label}
+                  </option>
                 ))}
               </select>
             )}
@@ -143,10 +147,12 @@ export function FieldDefinitionDialog({
               id="fd-field-type"
               value={form.fieldType}
               onChange={(e) => form.setFieldType(e.target.value as import("@/lib/types").FieldType)}
-              className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400 dark:border-slate-700"
+              className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-400 focus-visible:outline-none dark:border-slate-700"
             >
               {FIELD_TYPES.map((t) => (
-                <option key={t.value} value={t.value}>{t.label}</option>
+                <option key={t.value} value={t.value}>
+                  {t.label}
+                </option>
               ))}
             </select>
           </div>
@@ -179,30 +185,28 @@ export function FieldDefinitionDialog({
 
           {/* Required For Contexts */}
           <div className="space-y-3 rounded-md border border-slate-200 p-3 dark:border-slate-700">
-            <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-              Required For
-            </p>
+            <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Required For</p>
             <p className="text-xs text-slate-500 dark:text-slate-400">
               Select which actions require this field to be filled.
             </p>
             <div className="space-y-2">
-              {(
-                Object.entries(PREREQUISITE_CONTEXT_LABELS) as [PrerequisiteContext, string][]
-              ).map(([ctx, label]) => (
-                <div key={ctx} className="flex items-center gap-2">
-                  <Checkbox
-                    id={`fd-ctx-${ctx}`}
-                    checked={form.requiredForContexts.includes(ctx)}
-                    onCheckedChange={() => form.toggleContext(ctx)}
-                  />
-                  <Label htmlFor={`fd-ctx-${ctx}`} className="text-sm font-normal">
-                    {label}
-                  </Label>
-                </div>
-              ))}
+              {(Object.entries(PREREQUISITE_CONTEXT_LABELS) as [PrerequisiteContext, string][]).map(
+                ([ctx, label]) => (
+                  <div key={ctx} className="flex items-center gap-2">
+                    <Checkbox
+                      id={`fd-ctx-${ctx}`}
+                      checked={form.requiredForContexts.includes(ctx)}
+                      onCheckedChange={() => form.toggleContext(ctx)}
+                    />
+                    <Label htmlFor={`fd-ctx-${ctx}`} className="text-sm font-normal">
+                      {label}
+                    </Label>
+                  </div>
+                )
+              )}
             </div>
             {form.isEditing && field?.packId && (
-              <p className="text-xs italic text-slate-500 dark:text-slate-400">
+              <p className="text-xs text-slate-500 italic dark:text-slate-400">
                 Set by field pack — override by changing selections.
               </p>
             )}
@@ -313,7 +317,7 @@ export function FieldDefinitionDialog({
             />
           )}
 
-          {form.error && <p className="text-sm text-destructive">{form.error}</p>}
+          {form.error && <p className="text-destructive text-sm">{form.error}</p>}
 
           <DialogFooter>
             <Button

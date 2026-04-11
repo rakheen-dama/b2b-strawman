@@ -1,9 +1,6 @@
 import { formatCurrency, formatDate } from "@/lib/format";
 import { ExpenseCategoryBadge } from "@/components/expenses/expense-category-badge";
-import type {
-  UnbilledTimeResponse,
-  UnbilledExpenseEntry,
-} from "@/lib/types";
+import type { UnbilledTimeResponse, UnbilledExpenseEntry } from "@/lib/types";
 
 /** Wraps formatCurrency in a try-catch to handle invalid currency codes gracefully. */
 function safeFormatCurrency(amount: number, curr: string): string {
@@ -58,7 +55,7 @@ export function UnbilledSummary({ data }: UnbilledSummaryProps) {
       {/* Time Entries Section */}
       {hasTimeEntries && (
         <div>
-          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-400">
+          <h3 className="mb-3 text-sm font-semibold tracking-wide text-slate-600 uppercase dark:text-slate-400">
             Time Entries
           </h3>
           <div className="space-y-3">
@@ -74,8 +71,7 @@ export function UnbilledSummary({ data }: UnbilledSummaryProps) {
                       {project.projectName}
                     </span>
                     <span className="ml-2 text-xs text-slate-500">
-                      {project.entries.length}{" "}
-                      {project.entries.length === 1 ? "entry" : "entries"}
+                      {project.entries.length} {project.entries.length === 1 ? "entry" : "entries"}
                     </span>
                   </div>
                   <div className="divide-y divide-slate-100 dark:divide-slate-800/50">
@@ -89,15 +85,12 @@ export function UnbilledSummary({ data }: UnbilledSummaryProps) {
                             {entry.taskTitle}
                           </span>
                           <div className="text-xs text-slate-500">
-                            {entry.memberName} &middot; {formatDate(entry.date)}{" "}
-                            &middot; {entry.durationMinutes} min
+                            {entry.memberName} &middot; {formatDate(entry.date)} &middot;{" "}
+                            {entry.durationMinutes} min
                           </div>
                         </div>
                         <span className="shrink-0 font-medium text-slate-700 dark:text-slate-300">
-                          {formatCurrency(
-                            entry.billableValue,
-                            entry.billingRateCurrency,
-                          )}
+                          {formatCurrency(entry.billableValue, entry.billingRateCurrency)}
                         </span>
                       </div>
                     ))}
@@ -110,8 +103,7 @@ export function UnbilledSummary({ data }: UnbilledSummaryProps) {
                           key={curr}
                           className="text-sm font-medium text-slate-700 dark:text-slate-300"
                         >
-                          {safeFormatCurrency(total.amount, curr)} (
-                          {total.hours}h)
+                          {safeFormatCurrency(total.amount, curr)} ({total.hours}h)
                         </span>
                       ))}
                     </div>
@@ -141,72 +133,66 @@ export function UnbilledSummary({ data }: UnbilledSummaryProps) {
       {/* Expenses Section */}
       {hasExpenses && (
         <div>
-          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-400">
+          <h3 className="mb-3 text-sm font-semibold tracking-wide text-slate-600 uppercase dark:text-slate-400">
             Expenses
           </h3>
           <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/50">
-                  <th className="px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                  <th className="px-4 py-2.5 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                     Date
                   </th>
-                  <th className="px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                  <th className="px-4 py-2.5 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                     Project
                   </th>
-                  <th className="px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                  <th className="px-4 py-2.5 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                     Description
                   </th>
-                  <th className="px-4 py-2.5 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                  <th className="px-4 py-2.5 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                     Category
                   </th>
-                  <th className="px-4 py-2.5 text-right text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                  <th className="px-4 py-2.5 text-right text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                     Amount
                   </th>
-                  <th className="px-4 py-2.5 text-right text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                  <th className="px-4 py-2.5 text-right text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                     Markup %
                   </th>
-                  <th className="px-4 py-2.5 text-right text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                  <th className="px-4 py-2.5 text-right text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                     Billable
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {Object.entries(expensesByProject).map(
-                  ([_projectId, { projectName, expenses }]) =>
-                    expenses.map((expense, idx) => (
-                      <tr
-                        key={expense.id}
-                        className="border-b border-slate-100 last:border-0 dark:border-slate-800/50"
-                      >
-                        <td className="px-4 py-2.5 text-sm text-slate-900 dark:text-slate-100">
-                          {formatDate(expense.date)}
-                        </td>
-                        <td className="px-4 py-2.5 text-sm text-slate-600 dark:text-slate-400">
-                          {idx === 0 ? projectName : ""}
-                        </td>
-                        <td className="px-4 py-2.5 text-sm text-slate-900 dark:text-slate-100">
-                          {expense.description}
-                        </td>
-                        <td className="px-4 py-2.5">
-                          <ExpenseCategoryBadge category={expense.category} />
-                        </td>
-                        <td className="px-4 py-2.5 text-right text-sm text-slate-900 dark:text-slate-100">
-                          {safeFormatCurrency(expense.amount, expense.currency)}
-                        </td>
-                        <td className="px-4 py-2.5 text-right text-sm text-slate-600 dark:text-slate-400">
-                          {expense.markupPercent != null
-                            ? `${expense.markupPercent}%`
-                            : "\u2014"}
-                        </td>
-                        <td className="px-4 py-2.5 text-right text-sm font-medium text-slate-900 dark:text-slate-100">
-                          {safeFormatCurrency(
-                            expense.billableAmount,
-                            expense.currency,
-                          )}
-                        </td>
-                      </tr>
-                    )),
+                {Object.entries(expensesByProject).map(([_projectId, { projectName, expenses }]) =>
+                  expenses.map((expense, idx) => (
+                    <tr
+                      key={expense.id}
+                      className="border-b border-slate-100 last:border-0 dark:border-slate-800/50"
+                    >
+                      <td className="px-4 py-2.5 text-sm text-slate-900 dark:text-slate-100">
+                        {formatDate(expense.date)}
+                      </td>
+                      <td className="px-4 py-2.5 text-sm text-slate-600 dark:text-slate-400">
+                        {idx === 0 ? projectName : ""}
+                      </td>
+                      <td className="px-4 py-2.5 text-sm text-slate-900 dark:text-slate-100">
+                        {expense.description}
+                      </td>
+                      <td className="px-4 py-2.5">
+                        <ExpenseCategoryBadge category={expense.category} />
+                      </td>
+                      <td className="px-4 py-2.5 text-right text-sm text-slate-900 dark:text-slate-100">
+                        {safeFormatCurrency(expense.amount, expense.currency)}
+                      </td>
+                      <td className="px-4 py-2.5 text-right text-sm text-slate-600 dark:text-slate-400">
+                        {expense.markupPercent != null ? `${expense.markupPercent}%` : "\u2014"}
+                      </td>
+                      <td className="px-4 py-2.5 text-right text-sm font-medium text-slate-900 dark:text-slate-100">
+                        {safeFormatCurrency(expense.billableAmount, expense.currency)}
+                      </td>
+                    </tr>
+                  ))
                 )}
               </tbody>
             </table>
@@ -217,16 +203,14 @@ export function UnbilledSummary({ data }: UnbilledSummaryProps) {
               Expense Subtotal
             </span>
             <div className="flex gap-3">
-              {Object.entries(data.unbilledExpenseTotals).map(
-                ([curr, amount]) => (
-                  <span
-                    key={curr}
-                    className="text-sm font-semibold text-slate-900 dark:text-slate-100"
-                  >
-                    {safeFormatCurrency(amount, curr)}
-                  </span>
-                ),
-              )}
+              {Object.entries(data.unbilledExpenseTotals).map(([curr, amount]) => (
+                <span
+                  key={curr}
+                  className="text-sm font-semibold text-slate-900 dark:text-slate-100"
+                >
+                  {safeFormatCurrency(amount, curr)}
+                </span>
+              ))}
             </div>
           </div>
         </div>
@@ -240,10 +224,7 @@ export function UnbilledSummary({ data }: UnbilledSummaryProps) {
           </span>
           <div className="flex gap-3">
             {Object.entries(combinedTotals).map(([curr, amount]) => (
-              <span
-                key={curr}
-                className="text-base font-bold text-slate-900 dark:text-slate-100"
-              >
+              <span key={curr} className="text-base font-bold text-slate-900 dark:text-slate-100">
                 {safeFormatCurrency(amount, curr)}
               </span>
             ))}

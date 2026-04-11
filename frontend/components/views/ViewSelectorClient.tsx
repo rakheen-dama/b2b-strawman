@@ -50,7 +50,7 @@ export function ViewSelectorClient({
       const qs = params.toString();
       router.push(qs ? `?${qs}` : "?");
     },
-    [router, searchParams],
+    [router, searchParams]
   );
 
   return (

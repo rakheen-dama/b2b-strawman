@@ -1,9 +1,6 @@
 // ---- BillingRate (from BillingRateController.java) ----
 
-export type BillingRateScope =
-  | "MEMBER_DEFAULT"
-  | "PROJECT_OVERRIDE"
-  | "CUSTOMER_OVERRIDE";
+export type BillingRateScope = "MEMBER_DEFAULT" | "PROJECT_OVERRIDE" | "CUSTOMER_OVERRIDE";
 
 export interface BillingRate {
   id: string;

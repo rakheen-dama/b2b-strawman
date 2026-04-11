@@ -22,11 +22,7 @@ interface ReportParameterFormProps {
   isLoading: boolean;
 }
 
-export function ReportParameterForm({
-  schema,
-  onSubmit,
-  isLoading,
-}: ReportParameterFormProps) {
+export function ReportParameterForm({ schema, onSubmit, isLoading }: ReportParameterFormProps) {
   const [values, setValues] = useState<Record<string, unknown>>(() => {
     const initial: Record<string, unknown> = {};
     for (const param of schema.parameters) {
@@ -76,9 +72,7 @@ export function ReportParameterForm({
           <div key={param.name} className="space-y-1.5">
             <Label htmlFor={`param-${param.name}`}>
               {param.label}
-              {param.required && (
-                <span className="ml-0.5 text-red-500">*</span>
-              )}
+              {param.required && <span className="ml-0.5 text-red-500">*</span>}
             </Label>
 
             {param.type === "date" && (
@@ -138,9 +132,7 @@ export function ReportParameterForm({
             )}
 
             {errors[param.name] && (
-              <p className="text-xs text-red-600 dark:text-red-400">
-                {errors[param.name]}
-              </p>
+              <p className="text-xs text-red-600 dark:text-red-400">{errors[param.name]}</p>
             )}
           </div>
         ))}

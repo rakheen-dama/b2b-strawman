@@ -18,26 +18,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import {
-  previewTemplateAction,
-} from "@/app/(app)/org/[slug]/settings/templates/template-crud-actions";
+import { previewTemplateAction } from "@/app/(app)/org/[slug]/settings/templates/template-crud-actions";
 import {
   fetchProjectsForPicker,
   fetchCustomersForPicker,
   fetchInvoicesForPicker,
 } from "@/app/(app)/org/[slug]/settings/templates/template-support-actions";
-import type {
-  TemplateEntityType,
-  Project,
-  Customer,
-  InvoiceResponse,
-} from "@/lib/types";
+import type { TemplateEntityType, Project, Customer, InvoiceResponse } from "@/lib/types";
 import { A4PreviewWrapper } from "@/components/documents/a4-preview-wrapper";
 
 interface TemplatePreviewDialogProps {
@@ -79,10 +68,7 @@ function mapToPickerItems(entityType: TemplateEntityType, data: PickerData[]): P
   }
 }
 
-export function TemplatePreviewDialog({
-  templateId,
-  entityType,
-}: TemplatePreviewDialogProps) {
+export function TemplatePreviewDialog({ templateId, entityType }: TemplatePreviewDialogProps) {
   const [open, setOpen] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [entityId, setEntityId] = useState("");
@@ -93,11 +79,7 @@ export function TemplatePreviewDialog({
   const [error, setError] = useState<string | null>(null);
 
   const entityLabel =
-    entityType === "PROJECT"
-      ? "Project"
-      : entityType === "CUSTOMER"
-        ? "Customer"
-        : "Invoice";
+    entityType === "PROJECT" ? "Project" : entityType === "CUSTOMER" ? "Customer" : "Invoice";
 
   const selectedLabel =
     entities.find((e) => e.id === entityId)?.label ?? `Select a ${entityLabel.toLowerCase()}`;
@@ -238,7 +220,7 @@ export function TemplatePreviewDialog({
             Preview includes all related data (customer, members, org settings, etc.)
           </p>
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && <p className="text-destructive text-sm">{error}</p>}
 
           {html && <A4PreviewWrapper html={html} />}
         </div>

@@ -1,8 +1,4 @@
-import type {
-  RetainerType,
-  RetainerFrequency,
-  RolloverPolicy,
-} from "@/lib/api/retainers";
+import type { RetainerType, RetainerFrequency, RolloverPolicy } from "@/lib/api/retainers";
 
 export const FREQUENCY_LABELS: Record<RetainerFrequency, string> = {
   WEEKLY: "Weekly",

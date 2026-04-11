@@ -67,8 +67,7 @@ export function AcceptanceSettingsForm({
             className="mt-1 w-full"
           />
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-            Number of days before an acceptance request expires. Applies to all
-            new requests.
+            Number of days before an acceptance request expires. Applies to all new requests.
           </p>
         </div>
       </div>
@@ -81,9 +80,7 @@ export function AcceptanceSettingsForm({
         {message && (
           <p
             className={`text-sm ${
-              isError
-                ? "text-red-600 dark:text-red-400"
-                : "text-green-600 dark:text-green-400"
+              isError ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"
             }`}
           >
             {message}

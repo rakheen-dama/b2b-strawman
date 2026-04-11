@@ -10,8 +10,7 @@ const mockResetTemplate = vi.fn();
 
 vi.mock("@/app/(app)/org/[slug]/settings/templates/template-crud-actions", () => ({
   cloneTemplateAction: (...args: unknown[]) => mockCloneTemplate(...args),
-  deactivateTemplateAction: (...args: unknown[]) =>
-    mockDeactivateTemplate(...args),
+  deactivateTemplateAction: (...args: unknown[]) => mockDeactivateTemplate(...args),
   resetTemplateAction: (...args: unknown[]) => mockResetTemplate(...args),
 }));
 
@@ -80,14 +79,12 @@ describe("TemplatesContent", () => {
         templates={[PLATFORM_TEMPLATE, CUSTOM_TEMPLATE]}
         settings={null}
         canManage={true}
-      />,
+      />
     );
 
     expect(screen.getByText("Engagement Letter")).toBeInTheDocument();
     expect(screen.getByText("Statement of Work")).toBeInTheDocument();
-    expect(
-      screen.getByText("Standard Engagement Letter"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Standard Engagement Letter")).toBeInTheDocument();
     expect(screen.getByText("Custom SOW")).toBeInTheDocument();
   });
 
@@ -98,7 +95,7 @@ describe("TemplatesContent", () => {
         templates={[PLATFORM_TEMPLATE]}
         settings={null}
         canManage={true}
-      />,
+      />
     );
 
     expect(screen.getByText("Platform")).toBeInTheDocument();
@@ -111,7 +108,7 @@ describe("TemplatesContent", () => {
         templates={[CUSTOM_TEMPLATE]}
         settings={null}
         canManage={true}
-      />,
+      />
     );
 
     expect(screen.getByText("Custom")).toBeInTheDocument();
@@ -124,12 +121,10 @@ describe("TemplatesContent", () => {
         templates={[PLATFORM_TEMPLATE]}
         settings={null}
         canManage={true}
-      />,
+      />
     );
 
-    expect(
-      screen.getByRole("button", { name: /new template/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /new template/i })).toBeInTheDocument();
   });
 
   it("hides New Template button when canManage is false", () => {
@@ -139,23 +134,14 @@ describe("TemplatesContent", () => {
         templates={[PLATFORM_TEMPLATE]}
         settings={null}
         canManage={false}
-      />,
+      />
     );
 
-    expect(
-      screen.queryByRole("button", { name: /new template/i }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /new template/i })).not.toBeInTheDocument();
   });
 
   it("shows empty state when no templates exist", () => {
-    render(
-      <TemplatesContent
-        slug="acme"
-        templates={[]}
-        settings={null}
-        canManage={true}
-      />,
-    );
+    render(<TemplatesContent slug="acme" templates={[]} settings={null} canManage={true} />);
 
     expect(screen.getByText("No templates yet")).toBeInTheDocument();
   });
@@ -169,13 +155,11 @@ describe("TemplatesContent", () => {
         templates={[PLATFORM_TEMPLATE]}
         settings={null}
         canManage={true}
-      />,
+      />
     );
 
     // Find the actions button in the table row
-    const row = screen
-      .getByText("Standard Engagement Letter")
-      .closest("tr")!;
+    const row = screen.getByText("Standard Engagement Letter").closest("tr")!;
     const actionsBtn = within(row).getByRole("button");
     await user.click(actionsBtn);
 
@@ -191,7 +175,7 @@ describe("TemplatesContent", () => {
         templates={[CUSTOM_TEMPLATE]}
         settings={null}
         canManage={true}
-      />,
+      />
     );
 
     const row = screen.getByText("Custom SOW").closest("tr")!;

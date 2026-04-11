@@ -1,10 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  NAV_GROUPS,
-  NAV_ITEMS,
-  UTILITY_ITEMS,
-  SETTINGS_ITEMS,
-} from "../nav-items";
+import { NAV_GROUPS, NAV_ITEMS, UTILITY_ITEMS, SETTINGS_ITEMS } from "../nav-items";
 
 describe("NAV_GROUPS", () => {
   it("has exactly 5 zones", () => {
@@ -74,10 +69,7 @@ describe("UTILITY_ITEMS", () => {
 
 describe("NAV_ITEMS (backward compat)", () => {
   it("is a flat array of all group items plus utility items", () => {
-    const expected = [
-      ...NAV_GROUPS.flatMap((g) => g.items),
-      ...UTILITY_ITEMS,
-    ];
+    const expected = [...NAV_GROUPS.flatMap((g) => g.items), ...UTILITY_ITEMS];
     expect(NAV_ITEMS).toEqual(expected);
   });
 

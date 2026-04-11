@@ -86,9 +86,7 @@ export function SparklineChart({
           </linearGradient>
         </defs>
       )}
-      {showGradient && (
-        <polygon points={fillPoints} fill={`url(#${gradientId})`} />
-      )}
+      {showGradient && <polygon points={fillPoints} fill={`url(#${gradientId})`} />}
       <polyline
         points={points}
         fill="none"

@@ -23,10 +23,7 @@ import {
 } from "@/components/ui/form";
 import { Loader2 } from "lucide-react";
 import { recordFeeTransfer } from "@/app/(app)/org/[slug]/trust-accounting/transactions/actions";
-import {
-  recordFeeTransferSchema,
-  type RecordFeeTransferFormData,
-} from "@/lib/schemas/trust";
+import { recordFeeTransferSchema, type RecordFeeTransferFormData } from "@/lib/schemas/trust";
 
 interface RecordFeeTransferDialogProps {
   accountId: string;
@@ -87,16 +84,12 @@ export function RecordFeeTransferDialog({
         <DialogHeader>
           <DialogTitle>Record Fee Transfer</DialogTitle>
           <DialogDescription>
-            Transfer fees from trust to the office account against an unpaid
-            invoice.
+            Transfer fees from trust to the office account against an unpaid invoice.
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-4"
-          >
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="customerId"
@@ -138,9 +131,7 @@ export function RecordFeeTransferDialog({
                       min="0.01"
                       placeholder="0.00"
                       {...field}
-                      onChange={(e) =>
-                        field.onChange(parseFloat(e.target.value) || 0)
-                      }
+                      onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                     />
                   </FormControl>
                   <FormMessage />
@@ -155,18 +146,14 @@ export function RecordFeeTransferDialog({
                 <FormItem>
                   <FormLabel>Reference</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="e.g. FEE/2026/001"
-                      maxLength={200}
-                      {...field}
-                    />
+                    <Input placeholder="e.g. FEE/2026/001" maxLength={200} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {error && <p className="text-destructive text-sm">{error}</p>}
 
             <DialogFooter>
               <Button

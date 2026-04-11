@@ -60,8 +60,8 @@ export function DefaultCapacitySettings({
           Default Weekly Capacity
         </h2>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Set the default number of hours per week for team members. Individual
-          members can override this in their capacity settings.
+          Set the default number of hours per week for team members. Individual members can override
+          this in their capacity settings.
         </p>
         <div className="mt-4 max-w-xs space-y-2">
           <Label htmlFor="weekly-capacity-hours">Hours per week</Label>
@@ -88,9 +88,7 @@ export function DefaultCapacitySettings({
         {message && (
           <p
             className={`text-sm ${
-              isError
-                ? "text-red-600 dark:text-red-400"
-                : "text-green-600 dark:text-green-400"
+              isError ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"
             }`}
           >
             {message}

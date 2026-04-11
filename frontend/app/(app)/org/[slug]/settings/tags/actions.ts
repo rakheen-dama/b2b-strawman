@@ -2,12 +2,7 @@
 
 import { api, ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
-import type {
-  CreateTagRequest,
-  UpdateTagRequest,
-  EntityType,
-  TagResponse,
-} from "@/lib/types";
+import type { CreateTagRequest, UpdateTagRequest, EntityType, TagResponse } from "@/lib/types";
 
 interface ActionResult {
   success: boolean;
@@ -22,7 +17,7 @@ interface CreateTagActionResult {
 
 export async function createTagAction(
   slug: string,
-  req: CreateTagRequest,
+  req: CreateTagRequest
 ): Promise<CreateTagActionResult> {
   let tag: TagResponse;
   try {
@@ -53,7 +48,7 @@ export async function createTagAction(
 export async function updateTagAction(
   slug: string,
   id: string,
-  req: UpdateTagRequest,
+  req: UpdateTagRequest
 ): Promise<ActionResult> {
   try {
     await api.put(`/api/tags/${id}`, req);
@@ -80,10 +75,7 @@ export async function updateTagAction(
   return { success: true };
 }
 
-export async function deleteTagAction(
-  slug: string,
-  id: string,
-): Promise<ActionResult> {
+export async function deleteTagAction(slug: string, id: string): Promise<ActionResult> {
   try {
     await api.delete(`/api/tags/${id}`);
   } catch (error) {
@@ -107,7 +99,7 @@ export async function setEntityTagsAction(
   slug: string,
   entityType: EntityType,
   entityId: string,
-  tagIds: string[],
+  tagIds: string[]
 ): Promise<ActionResult> {
   const prefix = entityType.toLowerCase() + "s";
   try {

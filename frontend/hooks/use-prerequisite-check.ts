@@ -2,16 +2,13 @@
 
 import { useState, useCallback } from "react";
 import { checkPrerequisitesAction } from "@/lib/actions/prerequisite-actions";
-import type {
-  PrerequisiteCheck,
-  PrerequisiteContext,
-} from "@/components/prerequisite/types";
+import type { PrerequisiteCheck, PrerequisiteContext } from "@/components/prerequisite/types";
 import type { EntityType } from "@/lib/types";
 
 export function usePrerequisiteCheck(
   context: PrerequisiteContext,
   entityType: EntityType,
-  entityId: string,
+  entityId: string
 ) {
   const [check, setCheck] = useState<PrerequisiteCheck | null>(null);
   const [loading, setLoading] = useState(false);
@@ -21,11 +18,7 @@ export function usePrerequisiteCheck(
     setLoading(true);
     setError(null);
     try {
-      const result = await checkPrerequisitesAction(
-        context,
-        entityType,
-        entityId,
-      );
+      const result = await checkPrerequisitesAction(context, entityType, entityId);
       setCheck(result);
     } catch (e) {
       setError(e instanceof Error ? e : new Error(String(e)));

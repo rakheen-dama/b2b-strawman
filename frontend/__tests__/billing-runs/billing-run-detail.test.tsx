@@ -13,15 +13,11 @@ vi.mock("next/navigation", () => ({
 const mockCancelBillingRun = vi.fn().mockResolvedValue({ success: true });
 const mockBatchApprove = vi.fn().mockResolvedValue({ success: true });
 
-vi.mock(
-  "@/app/(app)/org/[slug]/invoices/billing-runs/[id]/actions",
-  () => ({
-    cancelBillingRunAction: (...args: unknown[]) =>
-      mockCancelBillingRun(...args),
-    batchApproveAction: (...args: unknown[]) => mockBatchApprove(...args),
-    batchSendAction: vi.fn(),
-  }),
-);
+vi.mock("@/app/(app)/org/[slug]/invoices/billing-runs/[id]/actions", () => ({
+  cancelBillingRunAction: (...args: unknown[]) => mockCancelBillingRun(...args),
+  batchApproveAction: (...args: unknown[]) => mockBatchApprove(...args),
+  batchSendAction: vi.fn(),
+}));
 
 import { BillingRunSummaryCards } from "@/components/billing-runs/billing-run-summary-cards";
 import { BillingRunItemsTable } from "@/components/billing-runs/billing-run-items-table";
@@ -103,13 +99,7 @@ describe("BillingRunSummaryCards", () => {
 
 describe("BillingRunItemsTable", () => {
   it("renders customer rows with correct data", () => {
-    render(
-      <BillingRunItemsTable
-        items={mockItems}
-        currency="ZAR"
-        slug="test-org"
-      />,
-    );
+    render(<BillingRunItemsTable items={mockItems} currency="ZAR" slug="test-org" />);
 
     expect(screen.getByText("Acme Corp")).toBeInTheDocument();
     expect(screen.getByText("Beta LLC")).toBeInTheDocument();
@@ -117,66 +107,36 @@ describe("BillingRunItemsTable", () => {
   });
 
   it("shows failure reason for failed items", () => {
-    render(
-      <BillingRunItemsTable
-        items={mockItems}
-        currency="ZAR"
-        slug="test-org"
-      />,
-    );
+    render(<BillingRunItemsTable items={mockItems} currency="ZAR" slug="test-org" />);
 
     expect(screen.getByText("Missing billing address")).toBeInTheDocument();
   });
 
   it("shows empty state when no items", () => {
-    render(
-      <BillingRunItemsTable items={[]} currency="ZAR" slug="test-org" />,
-    );
+    render(<BillingRunItemsTable items={[]} currency="ZAR" slug="test-org" />);
 
-    expect(
-      screen.getByText("No items in this billing run."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("No items in this billing run.")).toBeInTheDocument();
   });
 });
 
 describe("BillingRunDetailActions", () => {
   it("shows cancel and approve buttons for COMPLETED status", () => {
-    render(
-      <BillingRunDetailActions
-        slug="test-org"
-        billingRunId="run-1"
-        status="COMPLETED"
-      />,
-    );
+    render(<BillingRunDetailActions slug="test-org" billingRunId="run-1" status="COMPLETED" />);
 
     expect(screen.getByText("Cancel Run")).toBeInTheDocument();
-    expect(
-      screen.getByText("Approve All Generated"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Approve All Generated")).toBeInTheDocument();
   });
 
   it("shows only cancel button for PREVIEW status", () => {
-    render(
-      <BillingRunDetailActions
-        slug="test-org"
-        billingRunId="run-1"
-        status="PREVIEW"
-      />,
-    );
+    render(<BillingRunDetailActions slug="test-org" billingRunId="run-1" status="PREVIEW" />);
 
     expect(screen.getByText("Cancel Run")).toBeInTheDocument();
-    expect(
-      screen.queryByText("Approve All Generated"),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText("Approve All Generated")).not.toBeInTheDocument();
   });
 
   it("renders nothing for CANCELLED status", () => {
     const { container } = render(
-      <BillingRunDetailActions
-        slug="test-org"
-        billingRunId="run-1"
-        status="CANCELLED"
-      />,
+      <BillingRunDetailActions slug="test-org" billingRunId="run-1" status="CANCELLED" />
     );
 
     expect(container.innerHTML).toBe("");

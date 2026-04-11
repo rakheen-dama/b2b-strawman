@@ -39,7 +39,7 @@ export default function DashboardLoading() {
           <div className="px-6 pt-6 pb-4">
             <Skeleton className="h-5 w-36" />
           </div>
-          <div className="px-6 pb-6 space-y-3">
+          <div className="space-y-3 px-6 pb-6">
             {Array.from({ length: 5 }).map((_, i) => (
               <Skeleton key={i} className="h-10 w-full" />
             ))}

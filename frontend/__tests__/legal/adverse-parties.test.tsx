@@ -27,9 +27,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("@/app/(app)/org/[slug]/legal/adverse-parties/actions", () => ({
-  fetchAdverseParties: vi
-    .fn()
-    .mockResolvedValue({ content: [], page: { totalElements: 0 } }),
+  fetchAdverseParties: vi.fn().mockResolvedValue({ content: [], page: { totalElements: 0 } }),
   fetchAdverseParty: vi.fn().mockResolvedValue({ links: [] }),
   createAdverseParty: vi.fn().mockResolvedValue({ success: true }),
   updateAdverseParty: vi.fn().mockResolvedValue({ success: true }),
@@ -78,9 +76,7 @@ beforeEach(() => vi.clearAllMocks());
 
 // --- Helpers ---
 
-function makeAdverseParty(
-  overrides: Partial<AdverseParty> = {}
-): AdverseParty {
+function makeAdverseParty(overrides: Partial<AdverseParty> = {}): AdverseParty {
   return {
     id: "ap-1",
     name: "Ndlovu Trading (Pty) Ltd",
@@ -114,13 +110,7 @@ describe("AdversePartyRegistryClient", () => {
       }),
     ];
 
-    render(
-      <AdversePartyRegistryClient
-        initialParties={parties}
-        initialTotal={2}
-        slug="acme"
-      />
-    );
+    render(<AdversePartyRegistryClient initialParties={parties} initialTotal={2} slug="acme" />);
 
     const registry = screen.getByTestId("adverse-party-registry");
     expect(registry).toBeInTheDocument();
@@ -145,9 +135,7 @@ describe("AdversePartyDialog", () => {
 
     const dialog = screen.getByTestId("adverse-party-dialog");
     expect(dialog).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", { name: "Add Adverse Party" })
-    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Add Adverse Party" })).toBeInTheDocument();
     expect(screen.getByLabelText("Name *")).toBeInTheDocument();
     expect(screen.getByLabelText("Party Type *")).toBeInTheDocument();
     expect(screen.getByLabelText("ID Number")).toBeInTheDocument();
@@ -159,9 +147,7 @@ describe("AdversePartyDialog", () => {
     await user.type(screen.getByLabelText("Name *"), "Test Company");
 
     // Submit
-    await user.click(
-      screen.getByRole("button", { name: "Create Party" })
-    );
+    await user.click(screen.getByRole("button", { name: "Create Party" }));
   });
 });
 
@@ -169,17 +155,9 @@ describe("Delete button behavior", () => {
   it("delete option disabled when party has active links", () => {
     // Parties with links should not be deletable
     // This is tested via the registry client with linkedMatterCount > 0
-    const parties = [
-      makeAdverseParty({ id: "ap-linked", name: "Linked Party" }),
-    ];
+    const parties = [makeAdverseParty({ id: "ap-linked", name: "Linked Party" })];
 
-    render(
-      <AdversePartyRegistryClient
-        initialParties={parties}
-        initialTotal={1}
-        slug="acme"
-      />
-    );
+    render(<AdversePartyRegistryClient initialParties={parties} initialTotal={1} slug="acme" />);
 
     // Party should be in the table
     expect(screen.getByText("Linked Party")).toBeInTheDocument();
@@ -217,9 +195,7 @@ describe("LinkAdversePartyDialog", () => {
 describe("Nav items - adverse parties", () => {
   it("adverse-parties nav item has requiredModule: conflict_check", () => {
     const clientsGroup = NAV_GROUPS.find((g) => g.id === "clients");
-    const adverseItem = clientsGroup?.items.find(
-      (i) => i.label === "Adverse Parties"
-    );
+    const adverseItem = clientsGroup?.items.find((i) => i.label === "Adverse Parties");
     expect(adverseItem).toBeDefined();
     expect(adverseItem?.requiredModule).toBe("conflict_check");
     expect(adverseItem?.requiredCapability).toBeUndefined();

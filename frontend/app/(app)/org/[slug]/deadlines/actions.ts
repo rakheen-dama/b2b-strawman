@@ -61,9 +61,7 @@ export async function fetchDeadlineSummary(
   if (filters?.category) params.set("category", filters.category);
   if (filters?.status) params.set("status", filters.status);
 
-  return api.get<DeadlineSummaryResponse>(
-    `/api/deadlines/summary?${params.toString()}`
-  );
+  return api.get<DeadlineSummaryResponse>(`/api/deadlines/summary?${params.toString()}`);
 }
 
 export async function fetchCustomerDeadlines(
@@ -74,9 +72,7 @@ export async function fetchCustomerDeadlines(
   const params = new URLSearchParams();
   params.set("from", from);
   params.set("to", to);
-  return api.get<DeadlinesResponse>(
-    `/api/customers/${customerId}/deadlines?${params.toString()}`
-  );
+  return api.get<DeadlinesResponse>(`/api/customers/${customerId}/deadlines?${params.toString()}`);
 }
 
 interface UpdateFilingStatusResult {
@@ -90,17 +86,13 @@ export async function updateFilingStatus(
   items: FilingStatusRequest[]
 ): Promise<UpdateFilingStatusResult> {
   try {
-    const response = await api.put<BatchFilingStatusResponse>(
-      "/api/deadlines/filing-status",
-      { items }
-    );
+    const response = await api.put<BatchFilingStatusResponse>("/api/deadlines/filing-status", {
+      items,
+    });
     revalidatePath(`/org/${slug}/deadlines`);
     return { success: true, results: response.results };
   } catch (error) {
-    const message =
-      error instanceof ApiError
-        ? error.message
-        : "Failed to update filing status";
+    const message = error instanceof ApiError ? error.message : "Failed to update filing status";
     return { success: false, error: message };
   }
 }

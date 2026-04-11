@@ -21,9 +21,7 @@ export interface UpdateDsarStatusData {
   reason?: string;
 }
 
-export async function fetchDsarRequests(
-  _slug: string,
-): Promise<DsarRequest[]> {
+export async function fetchDsarRequests(_slug: string): Promise<DsarRequest[]> {
   try {
     return await api.get<DsarRequest[]>("/api/data-requests");
   } catch (error) {
@@ -36,7 +34,7 @@ export async function fetchDsarRequests(
 
 export async function createDsarRequest(
   slug: string,
-  data: CreateDsarRequestData,
+  data: CreateDsarRequestData
 ): Promise<ActionResult<DsarRequest>> {
   try {
     const result = await api.post<DsarRequest>("/api/data-requests", data);
@@ -60,16 +58,13 @@ export async function updateDsarStatus(
   slug: string,
   id: string,
   action: "START_PROCESSING" | "COMPLETE" | "REJECT",
-  reason?: string,
+  reason?: string
 ): Promise<ActionResult<DsarRequest>> {
   try {
-    const result = await api.put<DsarRequest>(
-      `/api/data-requests/${id}/status`,
-      {
-        action,
-        reason: reason ?? null,
-      },
-    );
+    const result = await api.put<DsarRequest>(`/api/data-requests/${id}/status`, {
+      action,
+      reason: reason ?? null,
+    });
     revalidatePath(`/org/${slug}/settings/data-protection/requests`);
     return { success: true, data: result };
   } catch (error) {

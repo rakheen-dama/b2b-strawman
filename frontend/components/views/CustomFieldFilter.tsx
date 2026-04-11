@@ -20,22 +20,12 @@ interface CustomFieldFilterProps {
   fieldDefinitions: FieldDefinitionResponse[];
 }
 
-export function CustomFieldFilter({
-  value,
-  onChange,
-  fieldDefinitions,
-}: CustomFieldFilterProps) {
+export function CustomFieldFilter({ value, onChange, fieldDefinitions }: CustomFieldFilterProps) {
   if (fieldDefinitions.length === 0) return null;
 
-  function updateField(
-    slug: string,
-    op: string,
-    fieldValue: unknown,
-    fieldType: string,
-  ) {
+  function updateField(slug: string, op: string, fieldValue: unknown, fieldType: string) {
     const isRange = RANGE_FIELD_TYPES.has(fieldType);
-    const isEmpty =
-      fieldValue === "" || fieldValue === null || fieldValue === undefined;
+    const isEmpty = fieldValue === "" || fieldValue === null || fieldValue === undefined;
 
     if (isRange) {
       // For range types, merge both bounds into { op: "range", value: { gte?: X, lte?: Y } }
@@ -78,11 +68,9 @@ export function CustomFieldFilter({
       <div className="space-y-3">
         {fieldDefinitions.map((fd) => (
           <div key={fd.id} className="space-y-1">
-            <label className="text-xs text-slate-600 dark:text-slate-400">
-              {fd.name}
-            </label>
+            <label className="text-xs text-slate-600 dark:text-slate-400">{fd.name}</label>
             {renderFieldInput(fd, value[fd.slug], (op, val) =>
-              updateField(fd.slug, op, val, fd.fieldType),
+              updateField(fd.slug, op, val, fd.fieldType)
             )}
           </div>
         ))}
@@ -94,7 +82,7 @@ export function CustomFieldFilter({
 /** Extract a bound (gte/lte) from a range entry or a legacy single-op entry. */
 function getRangeBound(
   current: { op: string; value: unknown } | undefined,
-  bound: "gte" | "lte",
+  bound: "gte" | "lte"
 ): string {
   if (!current) return "";
   if (current.op === "range" && typeof current.value === "object" && current.value !== null) {
@@ -109,7 +97,7 @@ function getRangeBound(
 function renderFieldInput(
   fd: FieldDefinitionResponse,
   current: { op: string; value: unknown } | undefined,
-  update: (op: string, value: unknown) => void,
+  update: (op: string, value: unknown) => void
 ) {
   switch (fd.fieldType) {
     case "TEXT":
@@ -133,18 +121,14 @@ function renderFieldInput(
           <Input
             type="number"
             value={getRangeBound(current, "gte")}
-            onChange={(e) =>
-              update("gte", e.target.value ? Number(e.target.value) : "")
-            }
+            onChange={(e) => update("gte", e.target.value ? Number(e.target.value) : "")}
             placeholder="Min"
             className="h-8 text-sm"
           />
           <Input
             type="number"
             value={getRangeBound(current, "lte")}
-            onChange={(e) =>
-              update("lte", e.target.value ? Number(e.target.value) : "")
-            }
+            onChange={(e) => update("lte", e.target.value ? Number(e.target.value) : "")}
             placeholder="Max"
             className="h-8 text-sm"
           />
@@ -178,9 +162,7 @@ function renderFieldInput(
             onChange={(e) => update("eq", e.target.checked)}
             className="rounded border-slate-300"
           />
-          <span className="text-sm text-slate-600 dark:text-slate-400">
-            Yes
-          </span>
+          <span className="text-sm text-slate-600 dark:text-slate-400">Yes</span>
         </label>
       );
 
@@ -189,16 +171,9 @@ function renderFieldInput(
       return (
         <select
           multiple
-          value={
-            Array.isArray(current?.value)
-              ? (current.value as string[])
-              : []
-          }
+          value={Array.isArray(current?.value) ? (current.value as string[]) : []}
           onChange={(e) => {
-            const selected = Array.from(
-              e.target.selectedOptions,
-              (opt) => opt.value,
-            );
+            const selected = Array.from(e.target.selectedOptions, (opt) => opt.value);
             update("in", selected.length > 0 ? selected : "");
           }}
           className="h-auto w-full rounded-md border border-slate-200 bg-transparent px-2 py-1 text-sm dark:border-slate-700"

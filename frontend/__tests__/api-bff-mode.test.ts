@@ -20,9 +20,7 @@ vi.mock("next/headers", () => ({
 // Mock AUTH_MODE as keycloak and stub getAuthToken
 vi.mock("@/lib/auth", () => ({
   AUTH_MODE: "keycloak",
-  getAuthToken: vi.fn().mockRejectedValue(
-    new Error("getAuthToken() is not available in BFF mode"),
-  ),
+  getAuthToken: vi.fn().mockRejectedValue(new Error("getAuthToken() is not available in BFF mode")),
 }));
 
 // Mock global fetch

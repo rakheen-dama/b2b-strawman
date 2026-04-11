@@ -14,7 +14,11 @@ export default async function ComplianceDashboardPage({
   const { slug } = await params;
   const capData = await fetchMyCapabilities();
 
-  if (!capData.isAdmin && !capData.isOwner && !capData.capabilities.includes("CUSTOMER_MANAGEMENT")) {
+  if (
+    !capData.isAdmin &&
+    !capData.isOwner &&
+    !capData.capabilities.includes("CUSTOMER_MANAGEMENT")
+  ) {
     notFound();
   }
 

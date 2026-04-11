@@ -22,17 +22,12 @@ export function getPortalProposal(id: string): Promise<PortalProposalDetail> {
 }
 
 export function acceptProposal(id: string): Promise<PortalAcceptResponse> {
-  return portalApi.post<PortalAcceptResponse>(
-    `/portal/api/proposals/${id}/accept`,
-  );
+  return portalApi.post<PortalAcceptResponse>(`/portal/api/proposals/${id}/accept`);
 }
 
-export function declineProposal(
-  id: string,
-  reason?: string,
-): Promise<PortalDeclineResponse> {
+export function declineProposal(id: string, reason?: string): Promise<PortalDeclineResponse> {
   return portalApi.post<PortalDeclineResponse>(
     `/portal/api/proposals/${id}/decline`,
-    reason ? { reason } : undefined,
+    reason ? { reason } : undefined
   );
 }

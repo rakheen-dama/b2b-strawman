@@ -33,15 +33,8 @@ import {
   findMissingVariables,
 } from "@/components/editor";
 import type { TiptapNode } from "@/components/editor";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  updateTemplateAction,
-} from "@/app/(app)/org/[slug]/settings/templates/template-crud-actions";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { updateTemplateAction } from "@/app/(app)/org/[slug]/settings/templates/template-crud-actions";
 import {
   fetchRequiredFieldPacksAction,
   replaceDocxFileAction,
@@ -66,11 +59,7 @@ interface TemplateEditorClientProps {
   readOnly: boolean;
 }
 
-export function TemplateEditorClient({
-  slug,
-  template,
-  readOnly,
-}: TemplateEditorClientProps) {
+export function TemplateEditorClient({ slug, template, readOnly }: TemplateEditorClientProps) {
   const router = useRouter();
   const isDocx = template.format === "DOCX";
 
@@ -212,7 +201,7 @@ export function TemplateEditorClient({
             Templates
           </Link>
           {readOnly ? (
-            <h1 className="flex items-center gap-2 font-display text-lg text-slate-950 dark:text-slate-50">
+            <h1 className="font-display flex items-center gap-2 text-lg text-slate-950 dark:text-slate-50">
               {name}
               <HelpTip code="templates.variables" />
             </h1>
@@ -221,7 +210,7 @@ export function TemplateEditorClient({
               <Input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="h-8 w-64 font-display text-lg"
+                className="font-display h-8 w-64 text-lg"
                 aria-label="Template name"
               />
               <HelpTip code="templates.variables" />
@@ -279,7 +268,7 @@ export function TemplateEditorClient({
             </>
           )}
           {successMsg && <span className="text-sm text-teal-600">{successMsg}</span>}
-          {error && <span className="text-sm text-destructive">{error}</span>}
+          {error && <span className="text-destructive text-sm">{error}</span>}
           {!readOnly && (
             <Button onClick={handleSave} disabled={isSaving}>
               {isSaving ? "Saving..." : "Save"}
@@ -294,7 +283,7 @@ export function TemplateEditorClient({
           className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900"
           data-testid="field-pack-status"
         >
-          <div className="flex items-center gap-2 mb-3">
+          <div className="mb-3 flex items-center gap-2">
             <Package className="size-4 text-slate-500 dark:text-slate-400" />
             <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
               Required Field Packs
@@ -304,14 +293,18 @@ export function TemplateEditorClient({
             {fieldPacks.map((pack) => (
               <div key={pack.packId} className="flex flex-col gap-1">
                 <Badge variant={pack.applied ? "success" : "warning"} className="gap-1.5">
-                  {pack.applied ? <CheckCircle2 className="size-3" /> : <AlertTriangle className="size-3" />}
+                  {pack.applied ? (
+                    <CheckCircle2 className="size-3" />
+                  ) : (
+                    <AlertTriangle className="size-3" />
+                  )}
                   {pack.packId}
                 </Badge>
                 {!pack.applied && (
                   <p className="text-xs text-amber-700 dark:text-amber-300">
                     This template references fields from{" "}
-                    <span className="font-medium">{pack.packId}</span> which
-                    hasn&apos;t been applied to your organisation.
+                    <span className="font-medium">{pack.packId}</span> which hasn&apos;t been
+                    applied to your organisation.
                   </p>
                 )}
                 {pack.missingFields.length > 0 && (
@@ -346,8 +339,8 @@ export function TemplateEditorClient({
                     Migration needed
                   </p>
                   <p className="mt-1 text-sm text-amber-700 dark:text-amber-300">
-                    This template was migrated from legacy HTML content. The
-                    original HTML is preserved below for reference.
+                    This template was migrated from legacy HTML content. The original HTML is
+                    preserved below for reference.
                   </p>
                   <button
                     type="button"
@@ -355,7 +348,11 @@ export function TemplateEditorClient({
                     className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-amber-800 hover:text-amber-900 dark:text-amber-200 dark:hover:text-amber-100"
                   >
                     {legacyExpanded ? "Hide" : "Show"} original HTML
-                    {legacyExpanded ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
+                    {legacyExpanded ? (
+                      <ChevronUp className="size-4" />
+                    ) : (
+                      <ChevronDown className="size-4" />
+                    )}
                   </button>
                   {legacyExpanded && (
                     <pre className="mt-2 max-h-64 overflow-auto rounded border border-amber-200 bg-white p-3 font-mono text-xs text-slate-800 dark:border-amber-800 dark:bg-slate-900 dark:text-slate-200">
@@ -396,8 +393,7 @@ export function TemplateEditorClient({
                 <AlertTriangle className="size-4 text-amber-600 dark:text-amber-400" />
                 <span className="text-sm text-amber-800 dark:text-amber-200">
                   {missingVariables.size} variable{missingVariables.size !== 1 ? "s" : ""}{" "}
-                  {missingVariables.size !== 1 ? "have" : "has"} no value for the
-                  selected entity
+                  {missingVariables.size !== 1 ? "have" : "has"} no value for the selected entity
                 </span>
               </div>
               <button

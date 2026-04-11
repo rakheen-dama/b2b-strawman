@@ -19,7 +19,7 @@ interface UtilizationChartProps {
 export function UtilizationChart({ data }: UtilizationChartProps) {
   if (data.members.length === 0) {
     return (
-      <div className="flex h-48 items-center justify-center text-sm text-muted-foreground">
+      <div className="text-muted-foreground flex h-48 items-center justify-center text-sm">
         No utilization data available
       </div>
     );
@@ -33,17 +33,10 @@ export function UtilizationChart({ data }: UtilizationChartProps) {
 
   const teamAvg = data.teamAverages.avgActualUtilizationPct;
 
-  const maxVal = Math.max(
-    ...chartData.map((d) => Math.max(d.planned, d.actual)),
-    teamAvg,
-    100,
-  );
+  const maxVal = Math.max(...chartData.map((d) => Math.max(d.planned, d.actual)), teamAvg, 100);
 
   const barHeight = 28;
-  const chartHeight = Math.max(
-    chartData.length * (barHeight + 16) + 60,
-    160,
-  );
+  const chartHeight = Math.max(chartData.length * (barHeight + 16) + 60, 160);
 
   return (
     <div>
@@ -79,7 +72,7 @@ export function UtilizationChart({ data }: UtilizationChartProps) {
               borderRadius: 6,
               border: "1px solid var(--color-border, #e5e5e5)",
             }}
-            formatter={(value: number | undefined) => value != null ? `${value}%` : ""}
+            formatter={(value: number | undefined) => (value != null ? `${value}%` : "")}
           />
           <Legend
             verticalAlign="bottom"

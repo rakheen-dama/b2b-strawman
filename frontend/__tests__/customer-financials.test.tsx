@@ -1,13 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { CustomerFinancialsTab } from "@/components/profitability/customer-financials-tab";
-import type {
-  CustomerProfitabilityResponse,
-  OrgProfitabilityResponse,
-} from "@/lib/types";
+import type { CustomerProfitabilityResponse, OrgProfitabilityResponse } from "@/lib/types";
 
 function makeProfitability(
-  overrides: Partial<CustomerProfitabilityResponse> = {},
+  overrides: Partial<CustomerProfitabilityResponse> = {}
 ): CustomerProfitabilityResponse {
   return {
     customerId: "c1",
@@ -29,7 +26,7 @@ function makeProfitability(
 }
 
 function makeProjectBreakdown(
-  overrides: Partial<OrgProfitabilityResponse> = {},
+  overrides: Partial<OrgProfitabilityResponse> = {}
 ): OrgProfitabilityResponse {
   return {
     projects: [
@@ -71,12 +68,7 @@ describe("CustomerFinancialsTab", () => {
 
   it("renders customer profitability data with stat cards", () => {
     const profitability = makeProfitability();
-    render(
-      <CustomerFinancialsTab
-        profitability={profitability}
-        projectBreakdown={null}
-      />,
-    );
+    render(<CustomerFinancialsTab profitability={profitability} projectBreakdown={null} />);
 
     expect(screen.getByText("Customer Profitability")).toBeInTheDocument();
     expect(screen.getByText("200.0h")).toBeInTheDocument();
@@ -89,12 +81,7 @@ describe("CustomerFinancialsTab", () => {
   it("renders per-project breakdown table", () => {
     const profitability = makeProfitability();
     const breakdown = makeProjectBreakdown();
-    render(
-      <CustomerFinancialsTab
-        profitability={profitability}
-        projectBreakdown={breakdown}
-      />,
-    );
+    render(<CustomerFinancialsTab profitability={profitability} projectBreakdown={breakdown} />);
 
     expect(screen.getByText("Per-Project Breakdown")).toBeInTheDocument();
     expect(screen.getByText("Alpha Project")).toBeInTheDocument();
@@ -118,30 +105,20 @@ describe("CustomerFinancialsTab", () => {
         },
       ],
     });
-    render(
-      <CustomerFinancialsTab
-        profitability={profitability}
-        projectBreakdown={null}
-      />,
-    );
+    render(<CustomerFinancialsTab profitability={profitability} projectBreakdown={null} />);
 
     const naElements = screen.getAllByText("N/A");
     expect(naElements.length).toBeGreaterThanOrEqual(3);
   });
 
   it("shows empty state when profitability is null", () => {
-    render(
-      <CustomerFinancialsTab
-        profitability={null}
-        projectBreakdown={null}
-      />,
-    );
+    render(<CustomerFinancialsTab profitability={null} projectBreakdown={null} />);
 
     expect(screen.getByText("No financial data yet")).toBeInTheDocument();
     expect(
       screen.getByText(
-        "Track billable time and set up billing rates to see customer profitability here.",
-      ),
+        "Track billable time and set up billing rates to see customer profitability here."
+      )
     ).toBeInTheDocument();
   });
 });

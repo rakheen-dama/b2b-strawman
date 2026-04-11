@@ -41,7 +41,7 @@ export function CompleteProjectDialog({
       const result = await completeProject(
         slug,
         projectId,
-        acknowledgeUnbilledTime ? true : undefined,
+        acknowledgeUnbilledTime ? true : undefined
       );
       if (result.success) {
         setOpen(false);
@@ -93,27 +93,19 @@ export function CompleteProjectDialog({
           <AlertDialogDescription className="text-center">
             {showUnbilledConfirm ? (
               <>
-                <span className="text-foreground font-semibold">
-                  {projectName}
-                </span>{" "}
-                has unbilled time entries. Completing the project will not affect
-                these entries, but they will remain unbilled.
+                <span className="text-foreground font-semibold">{projectName}</span> has unbilled
+                time entries. Completing the project will not affect these entries, but they will
+                remain unbilled.
               </>
             ) : (
               <>
-                Mark{" "}
-                <span className="text-foreground font-semibold">
-                  {projectName}
-                </span>{" "}
-                as completed? This will prevent new tasks and time entries from
-                being added.
+                Mark <span className="text-foreground font-semibold">{projectName}</span> as
+                completed? This will prevent new tasks and time entries from being added.
               </>
             )}
           </AlertDialogDescription>
         </AlertDialogHeader>
-        {error && (
-          <p className="text-destructive text-center text-sm">{error}</p>
-        )}
+        {error && <p className="text-destructive text-center text-sm">{error}</p>}
         <AlertDialogFooter>
           <AlertDialogCancel variant="plain" disabled={isSubmitting}>
             Cancel

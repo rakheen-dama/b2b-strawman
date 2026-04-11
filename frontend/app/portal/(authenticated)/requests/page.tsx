@@ -34,9 +34,7 @@ export default function PortalRequestListPage() {
           router.replace("/portal");
           return;
         }
-        setError(
-          err instanceof Error ? err.message : "Failed to load requests",
-        );
+        setError(err instanceof Error ? err.message : "Failed to load requests");
       } finally {
         setIsLoading(false);
       }
@@ -44,15 +42,12 @@ export default function PortalRequestListPage() {
     fetchRequests();
   }, [router]);
 
-  const openRequests = requests.filter(
-    (r) => r.status === "SENT" || r.status === "IN_PROGRESS",
-  );
+  const openRequests = requests.filter((r) => r.status === "SENT" || r.status === "IN_PROGRESS");
   const completedRequests = requests.filter(
-    (r) => r.status === "COMPLETED" || r.status === "CANCELLED",
+    (r) => r.status === "COMPLETED" || r.status === "CANCELLED"
   );
 
-  const filteredRequests =
-    activeTab === "open" ? openRequests : completedRequests;
+  const filteredRequests = activeTab === "open" ? openRequests : completedRequests;
 
   // Sort by most recent sentAt descending
   const sortedRequests = [...filteredRequests].sort((a, b) => {
@@ -87,9 +82,7 @@ export default function PortalRequestListPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h1 className="font-display text-2xl text-slate-950 dark:text-slate-50">
-            Requests
-          </h1>
+          <h1 className="font-display text-2xl text-slate-950 dark:text-slate-50">Requests</h1>
           <Badge variant="neutral">{requests.length}</Badge>
         </div>
       </div>
@@ -102,7 +95,7 @@ export default function PortalRequestListPage() {
             "px-4 py-2 text-sm font-medium transition-colors",
             activeTab === "open"
               ? "border-b-2 border-slate-900 text-slate-900 dark:border-slate-100 dark:text-slate-100"
-              : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300",
+              : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
           )}
         >
           Open ({openRequests.length})
@@ -113,7 +106,7 @@ export default function PortalRequestListPage() {
             "px-4 py-2 text-sm font-medium transition-colors",
             activeTab === "completed"
               ? "border-b-2 border-slate-900 text-slate-900 dark:border-slate-100 dark:text-slate-100"
-              : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300",
+              : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
           )}
         >
           Completed ({completedRequests.length})
@@ -124,11 +117,7 @@ export default function PortalRequestListPage() {
       {sortedRequests.length === 0 ? (
         <EmptyState
           icon={Inbox}
-          title={
-            activeTab === "open"
-              ? "No open requests"
-              : "No completed requests"
-          }
+          title={activeTab === "open" ? "No open requests" : "No completed requests"}
           description={
             activeTab === "open"
               ? "You don't have any pending requests at the moment"

@@ -53,9 +53,7 @@ describe("AI IntegrationCard", () => {
   });
 
   it("renders model selector dropdown with models from API", async () => {
-    render(
-      <IntegrationCard {...defaultProps} integration={aiIntegration} />,
-    );
+    render(<IntegrationCard {...defaultProps} integration={aiIntegration} />);
 
     await waitFor(() => {
       expect(screen.getByText("Model")).toBeInTheDocument();
@@ -67,34 +65,22 @@ describe("AI IntegrationCard", () => {
   });
 
   it("shows PRO badge on AI integration card for non-PRO tier", () => {
-    render(
-      <IntegrationCard {...defaultProps} tier="STARTER" integration={null} />,
-    );
+    render(<IntegrationCard {...defaultProps} tier="STARTER" integration={null} />);
 
     expect(screen.getByText("PRO")).toBeInTheDocument();
   });
 
   it("hides PRO badge when org is already on PRO tier", () => {
-    render(
-      <IntegrationCard {...defaultProps} tier="PRO" integration={null} />,
-    );
+    render(<IntegrationCard {...defaultProps} tier="PRO" integration={null} />);
 
     expect(screen.queryByText("PRO")).not.toBeInTheDocument();
   });
 
   it("shows upgrade prompt and disables controls for STARTER tier", () => {
-    render(
-      <IntegrationCard
-        {...defaultProps}
-        tier="STARTER"
-        integration={aiIntegration}
-      />,
-    );
+    render(<IntegrationCard {...defaultProps} tier="STARTER" integration={aiIntegration} />);
 
     // Upgrade prompt text
-    expect(
-      screen.getByText("AI Assistant requires the PRO plan"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("AI Assistant requires the PRO plan")).toBeInTheDocument();
     expect(screen.getByText("Upgrade to Pro")).toBeInTheDocument();
 
     // Provider selector should be disabled
@@ -109,9 +95,7 @@ describe("AI IntegrationCard", () => {
   it("calls upsert action with updated configJson on model change", async () => {
     const user = userEvent.setup();
 
-    render(
-      <IntegrationCard {...defaultProps} integration={aiIntegration} />,
-    );
+    render(<IntegrationCard {...defaultProps} integration={aiIntegration} />);
 
     // Wait for models to load
     await waitFor(() => {
@@ -130,14 +114,10 @@ describe("AI IntegrationCard", () => {
 
     // Verify upsert was called with the new model
     await waitFor(() => {
-      expect(mockUpsertIntegrationAction).toHaveBeenCalledWith(
-        "acme",
-        "AI",
-        {
-          providerSlug: "anthropic",
-          configJson: JSON.stringify({ model: "claude-opus-4-6" }),
-        },
-      );
+      expect(mockUpsertIntegrationAction).toHaveBeenCalledWith("acme", "AI", {
+        providerSlug: "anthropic",
+        configJson: JSON.stringify({ model: "claude-opus-4-6" }),
+      });
     });
   });
 });

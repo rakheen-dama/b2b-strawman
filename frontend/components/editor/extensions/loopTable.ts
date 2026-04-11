@@ -44,10 +44,7 @@ export const LoopTableExtension = Node.create({
   },
 
   renderHTML({ HTMLAttributes }) {
-    return [
-      "div",
-      mergeAttributes(HTMLAttributes, { "data-loop-table": "" }),
-    ];
+    return ["div", mergeAttributes(HTMLAttributes, { "data-loop-table": "" })];
   },
 
   addNodeView() {

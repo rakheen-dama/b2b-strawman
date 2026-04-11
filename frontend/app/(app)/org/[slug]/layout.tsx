@@ -79,15 +79,12 @@ export default async function OrgLayout({
   }
 
   const userInfo =
-    userInfoResult.status === "fulfilled"
-      ? userInfoResult.value
-      : { name: null, email: null };
+    userInfoResult.status === "fulfilled" ? userInfoResult.value : { name: null, email: null };
 
   // TODO: Add PRO tier gate when tier info is available in frontend context
   // Backend already enforces tier-based access control — this is defense-in-depth
   const aiEnabled =
-    settingsResult.status === "fulfilled" &&
-    settingsResult.value.aiEnabled === true;
+    settingsResult.status === "fulfilled" && settingsResult.value.aiEnabled === true;
 
   const FALLBACK_BILLING: BillingResponse = {
     status: "ACTIVE",
@@ -125,39 +122,49 @@ export default async function OrgLayout({
         enabledModules={enabledModules}
         terminologyNamespace={terminologyNamespace}
       >
-      <TerminologyProvider verticalProfile={verticalProfile}>
-      <RecentItemsProvider>
-        <CommandPaletteProvider slug={slug}>
-        <AssistantProvider aiEnabled={aiEnabled}>
-        <div className="flex min-h-screen">
-          <DesktopSidebar slug={slug} groups={groups} userName={userInfo.name} userEmail={userInfo.email} />
-          <div className="flex flex-1 flex-col">
-            <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b border-slate-200/60 bg-slate-100/80 px-4 backdrop-blur-md md:px-6 dark:border-slate-800/60 dark:bg-slate-950/90">
-              <MobileSidebar slug={slug} groups={groups} userName={userInfo.name} userEmail={userInfo.email} />
-              <Breadcrumbs slug={slug} />
-              <div className="ml-auto flex items-center gap-3">
-                <AuthHeaderControls />
-                <NotificationBell orgSlug={slug} />
-              </div>
-            </header>
-            <main id="main-content" className="flex-1 bg-background dark:bg-slate-950">
-              <SubscriptionProvider billingResponse={billingData}>
-              <SubscriptionBanner billingResponse={billingData} slug={slug} />
-              <div className="mx-auto max-w-7xl px-6 py-6 lg:px-10">
-                <ErrorBoundary>
-                  <PageTransition>{children}</PageTransition>
-                </ErrorBoundary>
-              </div>
-              </SubscriptionProvider>
-            </main>
-          </div>
-        </div>
-        <AssistantPanel slug={slug} orgRole={capData.role} />
-        <AssistantTrigger />
-        </AssistantProvider>
-        </CommandPaletteProvider>
-      </RecentItemsProvider>
-      </TerminologyProvider>
+        <TerminologyProvider verticalProfile={verticalProfile}>
+          <RecentItemsProvider>
+            <CommandPaletteProvider slug={slug}>
+              <AssistantProvider aiEnabled={aiEnabled}>
+                <div className="flex min-h-screen">
+                  <DesktopSidebar
+                    slug={slug}
+                    groups={groups}
+                    userName={userInfo.name}
+                    userEmail={userInfo.email}
+                  />
+                  <div className="flex flex-1 flex-col">
+                    <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b border-slate-200/60 bg-slate-100/80 px-4 backdrop-blur-md md:px-6 dark:border-slate-800/60 dark:bg-slate-950/90">
+                      <MobileSidebar
+                        slug={slug}
+                        groups={groups}
+                        userName={userInfo.name}
+                        userEmail={userInfo.email}
+                      />
+                      <Breadcrumbs slug={slug} />
+                      <div className="ml-auto flex items-center gap-3">
+                        <AuthHeaderControls />
+                        <NotificationBell orgSlug={slug} />
+                      </div>
+                    </header>
+                    <main id="main-content" className="bg-background flex-1 dark:bg-slate-950">
+                      <SubscriptionProvider billingResponse={billingData}>
+                        <SubscriptionBanner billingResponse={billingData} slug={slug} />
+                        <div className="mx-auto max-w-7xl px-6 py-6 lg:px-10">
+                          <ErrorBoundary>
+                            <PageTransition>{children}</PageTransition>
+                          </ErrorBoundary>
+                        </div>
+                      </SubscriptionProvider>
+                    </main>
+                  </div>
+                </div>
+                <AssistantPanel slug={slug} orgRole={capData.role} />
+                <AssistantTrigger />
+              </AssistantProvider>
+            </CommandPaletteProvider>
+          </RecentItemsProvider>
+        </TerminologyProvider>
       </OrgProfileProvider>
     </CapabilityProvider>
   );

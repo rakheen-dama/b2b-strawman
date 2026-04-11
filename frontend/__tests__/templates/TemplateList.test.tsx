@@ -7,15 +7,12 @@ import type { ProjectTemplateResponse } from "@/lib/api/templates";
 const mockDeleteTemplate = vi.fn();
 const mockDuplicateTemplate = vi.fn();
 
-vi.mock(
-  "@/app/(app)/org/[slug]/settings/project-templates/actions",
-  () => ({
-    deleteTemplateAction: (...args: unknown[]) => mockDeleteTemplate(...args),
-    duplicateTemplateAction: (...args: unknown[]) => mockDuplicateTemplate(...args),
-    createProjectTemplateAction: vi.fn(),
-    updateProjectTemplateAction: vi.fn(),
-  }),
-);
+vi.mock("@/app/(app)/org/[slug]/settings/project-templates/actions", () => ({
+  deleteTemplateAction: (...args: unknown[]) => mockDeleteTemplate(...args),
+  duplicateTemplateAction: (...args: unknown[]) => mockDuplicateTemplate(...args),
+  createProjectTemplateAction: vi.fn(),
+  updateProjectTemplateAction: vi.fn(),
+}));
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
@@ -68,34 +65,24 @@ describe("TemplateList", () => {
   });
 
   it("renders empty state when no templates", () => {
-    render(
-      <TemplateList slug="acme" templates={[]} canManage={true} />,
-    );
+    render(<TemplateList slug="acme" templates={[]} canManage={true} />);
     expect(screen.getByText("No project templates yet.")).toBeInTheDocument();
-    expect(
-      screen.getByText(/Create your first template/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Create your first template/)).toBeInTheDocument();
   });
 
   it("renders table with template rows", () => {
-    render(
-      <TemplateList slug="acme" templates={[SAMPLE_TEMPLATE]} canManage={true} />,
-    );
+    render(<TemplateList slug="acme" templates={[SAMPLE_TEMPLATE]} canManage={true} />);
     expect(screen.getByText("Monthly Accounting Package")).toBeInTheDocument();
     expect(screen.getByText("Standard monthly accounting workflow")).toBeInTheDocument();
   });
 
   it("shows MANUAL source badge", () => {
-    render(
-      <TemplateList slug="acme" templates={[SAMPLE_TEMPLATE]} canManage={true} />,
-    );
+    render(<TemplateList slug="acme" templates={[SAMPLE_TEMPLATE]} canManage={true} />);
     expect(screen.getByText("Manual")).toBeInTheDocument();
   });
 
   it("shows FROM_PROJECT source badge", () => {
-    render(
-      <TemplateList slug="acme" templates={[FROM_PROJECT_TEMPLATE]} canManage={true} />,
-    );
+    render(<TemplateList slug="acme" templates={[FROM_PROJECT_TEMPLATE]} canManage={true} />);
     expect(screen.getByText("From Project")).toBeInTheDocument();
   });
 
@@ -105,25 +92,21 @@ describe("TemplateList", () => {
         slug="acme"
         templates={[SAMPLE_TEMPLATE, FROM_PROJECT_TEMPLATE]}
         canManage={true}
-      />,
+      />
     );
     expect(screen.getByText("Active")).toBeInTheDocument();
     expect(screen.getByText("Inactive")).toBeInTheDocument();
   });
 
   it("shows action buttons when canManage is true", () => {
-    render(
-      <TemplateList slug="acme" templates={[SAMPLE_TEMPLATE]} canManage={true} />,
-    );
+    render(<TemplateList slug="acme" templates={[SAMPLE_TEMPLATE]} canManage={true} />);
     expect(screen.getByTitle("Edit template")).toBeInTheDocument();
     expect(screen.getByTitle("Duplicate template")).toBeInTheDocument();
     expect(screen.getByTitle("Delete template")).toBeInTheDocument();
   });
 
   it("hides action buttons when canManage is false", () => {
-    render(
-      <TemplateList slug="acme" templates={[SAMPLE_TEMPLATE]} canManage={false} />,
-    );
+    render(<TemplateList slug="acme" templates={[SAMPLE_TEMPLATE]} canManage={false} />);
     expect(screen.queryByTitle("Edit template")).not.toBeInTheDocument();
     expect(screen.queryByTitle("Duplicate template")).not.toBeInTheDocument();
     expect(screen.queryByTitle("Delete template")).not.toBeInTheDocument();
@@ -132,9 +115,7 @@ describe("TemplateList", () => {
   it("calls duplicateTemplateAction when Duplicate is clicked", async () => {
     mockDuplicateTemplate.mockResolvedValue({ success: true });
     const user = userEvent.setup();
-    render(
-      <TemplateList slug="acme" templates={[SAMPLE_TEMPLATE]} canManage={true} />,
-    );
+    render(<TemplateList slug="acme" templates={[SAMPLE_TEMPLATE]} canManage={true} />);
     await user.click(screen.getByTitle("Duplicate template"));
     expect(mockDuplicateTemplate).toHaveBeenCalledWith("acme", "pt-1");
   });

@@ -14,21 +14,17 @@ vi.mock("next/navigation", () => ({
 const mockCreateBillingRun = vi.fn();
 const mockLoadPreview = vi.fn();
 
-vi.mock(
-  "@/app/(app)/org/[slug]/invoices/billing-runs/new/billing-run-actions",
-  () => ({
-    createBillingRunAction: (...args: unknown[]) =>
-      mockCreateBillingRun(...args),
-    loadPreviewAction: (...args: unknown[]) => mockLoadPreview(...args),
-    getUnbilledSummaryAction: vi.fn().mockResolvedValue({ success: true }),
-    getUnbilledTimeAction: vi.fn().mockResolvedValue({ success: true, entries: [] }),
-    getUnbilledExpensesAction: vi.fn().mockResolvedValue({ success: true, entries: [] }),
-    updateSelectionsAction: vi.fn().mockResolvedValue({ success: true }),
-    excludeCustomerAction: vi.fn().mockResolvedValue({ success: true }),
-    includeCustomerAction: vi.fn().mockResolvedValue({ success: true }),
-    getRetainerPreviewAction: vi.fn().mockResolvedValue({ success: true, retainers: [] }),
-  }),
-);
+vi.mock("@/app/(app)/org/[slug]/invoices/billing-runs/new/billing-run-actions", () => ({
+  createBillingRunAction: (...args: unknown[]) => mockCreateBillingRun(...args),
+  loadPreviewAction: (...args: unknown[]) => mockLoadPreview(...args),
+  getUnbilledSummaryAction: vi.fn().mockResolvedValue({ success: true }),
+  getUnbilledTimeAction: vi.fn().mockResolvedValue({ success: true, entries: [] }),
+  getUnbilledExpensesAction: vi.fn().mockResolvedValue({ success: true, entries: [] }),
+  updateSelectionsAction: vi.fn().mockResolvedValue({ success: true }),
+  excludeCustomerAction: vi.fn().mockResolvedValue({ success: true }),
+  includeCustomerAction: vi.fn().mockResolvedValue({ success: true }),
+  getRetainerPreviewAction: vi.fn().mockResolvedValue({ success: true, retainers: [] }),
+}));
 
 import { BillingRunWizard } from "@/components/billing-runs/billing-run-wizard";
 import { ConfigureStep } from "@/components/billing-runs/configure-step";
@@ -108,12 +104,8 @@ describe("ConfigureStep", () => {
 
     await user.click(screen.getByRole("button", { name: "Next" }));
 
-    expect(
-      screen.getByText("Period From is required."),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("Period To is required."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Period From is required.")).toBeInTheDocument();
+    expect(screen.getByText("Period To is required.")).toBeInTheDocument();
     expect(mockCreateBillingRun).not.toHaveBeenCalled();
   });
 });
@@ -132,7 +124,7 @@ describe("CustomerSelectionStep", () => {
         currency="ZAR"
         onBack={vi.fn()}
         onNext={vi.fn()}
-      />,
+      />
     );
 
     // Wait for data to load
@@ -156,7 +148,7 @@ describe("CustomerSelectionStep", () => {
         currency="ZAR"
         onBack={vi.fn()}
         onNext={vi.fn()}
-      />,
+      />
     );
 
     // Wait for data to load
@@ -186,7 +178,7 @@ describe("CustomerSelectionStep", () => {
         currency="ZAR"
         onBack={vi.fn()}
         onNext={vi.fn()}
-      />,
+      />
     );
 
     await waitFor(() => {

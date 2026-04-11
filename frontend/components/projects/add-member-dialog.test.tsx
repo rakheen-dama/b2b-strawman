@@ -55,7 +55,7 @@ describe("AddMemberDialog", () => {
         <AddMemberDialog slug="acme" projectId="proj1" existingMembers={[]}>
           <button>Open Dialog</button>
         </AddMemberDialog>
-      </SWRTestProvider>,
+      </SWRTestProvider>
     );
 
     await user.click(screen.getByText("Open Dialog"));
@@ -74,7 +74,7 @@ describe("AddMemberDialog", () => {
         <AddMemberDialog slug="acme" projectId="proj1" existingMembers={existingMembers}>
           <button>Open Dialog</button>
         </AddMemberDialog>
-      </SWRTestProvider>,
+      </SWRTestProvider>
     );
 
     await user.click(screen.getByText("Open Dialog"));
@@ -98,7 +98,7 @@ describe("AddMemberDialog", () => {
         <AddMemberDialog slug="acme" projectId="proj1" existingMembers={existingMembers}>
           <button>Open Dialog</button>
         </AddMemberDialog>
-      </SWRTestProvider>,
+      </SWRTestProvider>
     );
 
     await user.click(screen.getByText("Open Dialog"));
@@ -122,7 +122,7 @@ describe("AddMemberDialog", () => {
         <AddMemberDialog slug="acme" projectId="proj1" existingMembers={existingMembers}>
           <button>Open Dialog</button>
         </AddMemberDialog>
-      </SWRTestProvider>,
+      </SWRTestProvider>
     );
 
     await user.click(screen.getByText("Open Dialog"));
@@ -143,21 +143,21 @@ describe("AddMemberDialog", () => {
         <AddMemberDialog slug="acme" projectId="proj1" existingMembers={existingMembers}>
           <button>Open Dialog</button>
         </AddMemberDialog>
-      </SWRTestProvider>,
+      </SWRTestProvider>
     );
 
     await user.click(screen.getByText("Open Dialog"));
 
     await waitFor(() => {
       expect(
-        screen.getByText("All organization members are already on this project."),
+        screen.getByText("All organization members are already on this project.")
       ).toBeInTheDocument();
     });
   });
 
   it("shows loading state while fetching members", async () => {
     mockFetchOrgMembers.mockImplementation(
-      () => new Promise((resolve) => setTimeout(() => resolve(mockOrgMembers), 500)),
+      () => new Promise((resolve) => setTimeout(() => resolve(mockOrgMembers), 500))
     );
     const user = userEvent.setup();
 
@@ -166,7 +166,7 @@ describe("AddMemberDialog", () => {
         <AddMemberDialog slug="acme" projectId="proj1" existingMembers={[]}>
           <button>Open Dialog</button>
         </AddMemberDialog>
-      </SWRTestProvider>,
+      </SWRTestProvider>
     );
 
     await user.click(screen.getByText("Open Dialog"));
@@ -183,7 +183,7 @@ describe("AddMemberDialog", () => {
         <AddMemberDialog slug="acme" projectId="proj1" existingMembers={[]}>
           <button>Open Dialog</button>
         </AddMemberDialog>
-      </SWRTestProvider>,
+      </SWRTestProvider>
     );
 
     await user.click(screen.getByText("Open Dialog"));

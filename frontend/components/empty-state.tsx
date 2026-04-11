@@ -24,14 +24,10 @@ export function EmptyState({
   secondaryLink,
 }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center py-24 text-center gap-4">
+    <div className="flex flex-col items-center gap-4 py-24 text-center">
       <Icon className="size-16 text-slate-300 dark:text-slate-700" />
-      <h2 className="font-display text-xl text-slate-900 dark:text-slate-100">
-        {title}
-      </h2>
-      <p className="max-w-md text-sm text-slate-600 dark:text-slate-400">
-        {description}
-      </p>
+      <h2 className="font-display text-xl text-slate-900 dark:text-slate-100">{title}</h2>
+      <p className="max-w-md text-sm text-slate-600 dark:text-slate-400">{description}</p>
       {actionLabel && onAction && (
         <Button size="sm" variant="outline" onClick={onAction}>
           {actionLabel}
@@ -54,10 +50,7 @@ export function EmptyState({
             {secondaryLink.label}
           </a>
         ) : (
-          <Link
-            href={secondaryLink.href}
-            className="text-sm text-teal-600 hover:text-teal-700"
-          >
+          <Link href={secondaryLink.href} className="text-sm text-teal-600 hover:text-teal-700">
             {secondaryLink.label}
           </Link>
         ))}

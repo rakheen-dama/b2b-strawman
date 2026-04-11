@@ -21,10 +21,7 @@ interface CancelConfirmDialogProps {
   onCancel?: () => void;
 }
 
-export function CancelConfirmDialog({
-  currentPeriodEnd,
-  onCancel,
-}: CancelConfirmDialogProps) {
+export function CancelConfirmDialog({ currentPeriodEnd, onCancel }: CancelConfirmDialogProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -44,10 +41,7 @@ export function CancelConfirmDialog({
       onCancel?.();
       router.refresh();
     } catch (err) {
-      const message =
-        err instanceof Error
-          ? err.message
-          : "Failed to cancel subscription.";
+      const message = err instanceof Error ? err.message : "Failed to cancel subscription.";
       setError(message);
     } finally {
       setIsLoading(false);
@@ -71,22 +65,16 @@ export function CancelConfirmDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Cancel Subscription</AlertDialogTitle>
           <AlertDialogDescription>
-            Your subscription will remain active until {formattedDate}. After
-            that, your account enters a read-only grace period.
+            Your subscription will remain active until {formattedDate}. After that, your account
+            enters a read-only grace period.
           </AlertDialogDescription>
         </AlertDialogHeader>
 
-        {error && <p className="text-sm text-destructive">{error}</p>}
+        {error && <p className="text-destructive text-sm">{error}</p>}
 
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isLoading}>
-            Keep Subscription
-          </AlertDialogCancel>
-          <Button
-            variant="destructive"
-            onClick={handleConfirm}
-            disabled={isLoading}
-          >
+          <AlertDialogCancel disabled={isLoading}>Keep Subscription</AlertDialogCancel>
+          <Button variant="destructive" onClick={handleConfirm} disabled={isLoading}>
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

@@ -144,9 +144,7 @@ export interface ListRetainersParams {
 
 // ---- API Functions ----
 
-export async function fetchRetainers(
-  params?: ListRetainersParams,
-): Promise<RetainerResponse[]> {
+export async function fetchRetainers(params?: ListRetainersParams): Promise<RetainerResponse[]> {
   const qs = new URLSearchParams();
   if (params?.status) qs.set("status", params.status);
   if (params?.customerId) qs.set("customerId", params.customerId);
@@ -158,15 +156,13 @@ export async function fetchRetainer(id: string): Promise<RetainerResponse> {
   return api.get<RetainerResponse>(`/api/retainers/${id}`);
 }
 
-export async function createRetainer(
-  data: CreateRetainerRequest,
-): Promise<RetainerResponse> {
+export async function createRetainer(data: CreateRetainerRequest): Promise<RetainerResponse> {
   return api.post<RetainerResponse>("/api/retainers", data);
 }
 
 export async function updateRetainer(
   id: string,
-  data: UpdateRetainerRequest,
+  data: UpdateRetainerRequest
 ): Promise<RetainerResponse> {
   return api.put<RetainerResponse>(`/api/retainers/${id}`, data);
 }
@@ -183,13 +179,8 @@ export async function terminateRetainer(id: string): Promise<RetainerResponse> {
   return api.post<RetainerResponse>(`/api/retainers/${id}/terminate`);
 }
 
-export async function fetchPeriods(
-  retainerId: string,
-  page = 0,
-): Promise<PaginatedPeriods> {
-  return api.get<PaginatedPeriods>(
-    `/api/retainers/${retainerId}/periods?page=${page}&size=20`,
-  );
+export async function fetchPeriods(retainerId: string, page = 0): Promise<PaginatedPeriods> {
+  return api.get<PaginatedPeriods>(`/api/retainers/${retainerId}/periods?page=${page}&size=20`);
 }
 
 export async function fetchCurrentPeriod(retainerId: string): Promise<PeriodSummary> {
@@ -197,15 +188,9 @@ export async function fetchCurrentPeriod(retainerId: string): Promise<PeriodSumm
 }
 
 export async function closePeriod(retainerId: string): Promise<PeriodCloseResult> {
-  return api.post<PeriodCloseResult>(
-    `/api/retainers/${retainerId}/periods/current/close`,
-  );
+  return api.post<PeriodCloseResult>(`/api/retainers/${retainerId}/periods/current/close`);
 }
 
-export async function fetchRetainerSummary(
-  customerId: string,
-): Promise<RetainerSummaryResponse> {
-  return api.get<RetainerSummaryResponse>(
-    `/api/customers/${customerId}/retainer-summary`,
-  );
+export async function fetchRetainerSummary(customerId: string): Promise<RetainerSummaryResponse> {
+  return api.get<RetainerSummaryResponse>(`/api/customers/${customerId}/retainer-summary`);
 }

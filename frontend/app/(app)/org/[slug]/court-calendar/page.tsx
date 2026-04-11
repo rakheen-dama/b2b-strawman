@@ -4,11 +4,7 @@ import { fetchCourtDates, fetchPrescriptionTrackers } from "./actions";
 import { CourtCalendarClient } from "./court-calendar-client";
 import type { CourtDate, PrescriptionTracker } from "@/lib/types";
 
-export default async function CourtCalendarPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function CourtCalendarPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
 
   let settings;
@@ -51,9 +47,7 @@ export default async function CourtCalendarPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          Court Calendar
-        </h1>
+        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Court Calendar</h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           Manage court dates, hearings, and prescription tracking
         </p>

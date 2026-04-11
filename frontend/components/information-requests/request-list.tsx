@@ -12,18 +12,12 @@ interface RequestListProps {
   showCustomer?: boolean;
 }
 
-export function RequestList({
-  requests,
-  slug,
-  showCustomer = true,
-}: RequestListProps) {
+export function RequestList({ requests, slug, showCustomer = true }: RequestListProps) {
   if (requests.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-slate-300 py-12 dark:border-slate-700">
         <FileText className="mb-3 size-8 text-slate-400 dark:text-slate-500" />
-        <p className="text-sm text-slate-500 dark:text-slate-400">
-          No information requests yet
-        </p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">No information requests yet</p>
         <a
           href={docsLink("/features/information-requests")}
           target="_blank"

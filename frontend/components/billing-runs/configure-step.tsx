@@ -51,7 +51,11 @@ export function ConfigureStep({ slug, onNext }: ConfigureStepProps) {
         notes: notes || undefined,
       });
       if (result.success && result.billingRun) {
-        onNext(result.billingRun.id, result.billingRun.currency, result.billingRun.includeRetainers);
+        onNext(
+          result.billingRun.id,
+          result.billingRun.currency,
+          result.billingRun.includeRetainers
+        );
       } else {
         setError(result.error ?? "Failed to create billing run.");
       }
@@ -111,9 +115,7 @@ export function ConfigureStep({ slug, onNext }: ConfigureStepProps) {
           <Checkbox
             id="includeRetainers"
             checked={includeRetainers}
-            onCheckedChange={(checked) =>
-              setIncludeRetainers(checked === true)
-            }
+            onCheckedChange={(checked) => setIncludeRetainers(checked === true)}
           />
           <Label htmlFor="includeRetainers" className="cursor-pointer">
             Include retainers
@@ -146,18 +148,14 @@ export function ConfigureStep({ slug, onNext }: ConfigureStepProps) {
 
       {/* Server Error */}
       {error && (
-        <p role="alert" className="mt-4 text-sm text-destructive">
+        <p role="alert" className="text-destructive mt-4 text-sm">
           {error}
         </p>
       )}
 
       {/* Actions */}
       <div className="mt-6 flex justify-end">
-        <Button
-          variant="default"
-          onClick={handleSubmit}
-          disabled={isSubmitting}
-        >
+        <Button variant="default" onClick={handleSubmit} disabled={isSubmitting}>
           {isSubmitting ? "Creating..." : "Next"}
         </Button>
       </div>

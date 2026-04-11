@@ -4,11 +4,7 @@ import { api } from "./client";
 
 // ---- Enums / Union Types ----
 
-export type BillingRunStatus =
-  | "PREVIEW"
-  | "IN_PROGRESS"
-  | "COMPLETED"
-  | "CANCELLED";
+export type BillingRunStatus = "PREVIEW" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
 
 export type BillingRunItemStatus =
   | "PENDING"
@@ -176,14 +172,12 @@ export interface ListBillingRunsParams {
 
 // ---- API Functions ----
 
-export async function createBillingRun(
-  data: CreateBillingRunRequest,
-): Promise<BillingRun> {
+export async function createBillingRun(data: CreateBillingRunRequest): Promise<BillingRun> {
   return api.post<BillingRun>("/api/billing-runs", data);
 }
 
 export async function listBillingRuns(
-  params?: ListBillingRunsParams,
+  params?: ListBillingRunsParams
 ): Promise<PaginatedBillingRuns> {
   const qs = new URLSearchParams();
   if (params?.status) qs.set("status", params.status);
@@ -191,9 +185,7 @@ export async function listBillingRuns(
   if (params?.size !== undefined) qs.set("size", String(params.size));
   if (params?.sort) qs.set("sort", params.sort);
   const query = qs.toString();
-  return api.get<PaginatedBillingRuns>(
-    `/api/billing-runs${query ? `?${query}` : ""}`,
-  );
+  return api.get<PaginatedBillingRuns>(`/api/billing-runs${query ? `?${query}` : ""}`);
 }
 
 export async function getBillingRun(id: string): Promise<BillingRun> {
@@ -204,10 +196,7 @@ export async function cancelBillingRun(id: string): Promise<void> {
   return api.delete<void>(`/api/billing-runs/${id}`);
 }
 
-export async function loadPreview(
-  id: string,
-  customerIds?: string[],
-): Promise<BillingRunPreview> {
+export async function loadPreview(id: string, customerIds?: string[]): Promise<BillingRunPreview> {
   const body = customerIds ? { customerIds } : undefined;
   return api.post<BillingRunPreview>(`/api/billing-runs/${id}/preview`, body);
 }
@@ -216,97 +205,59 @@ export async function getItems(id: string): Promise<BillingRunItem[]> {
   return api.get<BillingRunItem[]>(`/api/billing-runs/${id}/items`);
 }
 
-export async function getItem(
-  id: string,
-  itemId: string,
-): Promise<BillingRunItem> {
+export async function getItem(id: string, itemId: string): Promise<BillingRunItem> {
   return api.get<BillingRunItem>(`/api/billing-runs/${id}/items/${itemId}`);
 }
 
 export async function updateSelections(
   id: string,
   itemId: string,
-  selections: UpdateEntrySelectionsRequest,
+  selections: UpdateEntrySelectionsRequest
 ): Promise<BillingRunItem> {
-  return api.put<BillingRunItem>(
-    `/api/billing-runs/${id}/items/${itemId}/selections`,
-    selections,
-  );
+  return api.put<BillingRunItem>(`/api/billing-runs/${id}/items/${itemId}/selections`, selections);
 }
 
-export async function excludeCustomer(
-  id: string,
-  itemId: string,
-): Promise<BillingRunItem> {
-  return api.put<BillingRunItem>(
-    `/api/billing-runs/${id}/items/${itemId}/exclude`,
-  );
+export async function excludeCustomer(id: string, itemId: string): Promise<BillingRunItem> {
+  return api.put<BillingRunItem>(`/api/billing-runs/${id}/items/${itemId}/exclude`);
 }
 
-export async function includeCustomer(
-  id: string,
-  itemId: string,
-): Promise<BillingRunItem> {
-  return api.put<BillingRunItem>(
-    `/api/billing-runs/${id}/items/${itemId}/include`,
-  );
+export async function includeCustomer(id: string, itemId: string): Promise<BillingRunItem> {
+  return api.put<BillingRunItem>(`/api/billing-runs/${id}/items/${itemId}/include`);
 }
 
-export async function getUnbilledTime(
-  id: string,
-  itemId: string,
-): Promise<UnbilledTimeEntry[]> {
-  return api.get<UnbilledTimeEntry[]>(
-    `/api/billing-runs/${id}/items/${itemId}/unbilled-time`,
-  );
+export async function getUnbilledTime(id: string, itemId: string): Promise<UnbilledTimeEntry[]> {
+  return api.get<UnbilledTimeEntry[]>(`/api/billing-runs/${id}/items/${itemId}/unbilled-time`);
 }
 
-export async function getUnbilledExpenses(
-  id: string,
-  itemId: string,
-): Promise<UnbilledExpense[]> {
-  return api.get<UnbilledExpense[]>(
-    `/api/billing-runs/${id}/items/${itemId}/unbilled-expenses`,
-  );
+export async function getUnbilledExpenses(id: string, itemId: string): Promise<UnbilledExpense[]> {
+  return api.get<UnbilledExpense[]>(`/api/billing-runs/${id}/items/${itemId}/unbilled-expenses`);
 }
 
 export async function generate(id: string): Promise<BillingRun> {
   return api.post<BillingRun>(`/api/billing-runs/${id}/generate`);
 }
 
-export async function batchApprove(
-  id: string,
-): Promise<BatchOperationResult> {
+export async function batchApprove(id: string): Promise<BatchOperationResult> {
   return api.post<BatchOperationResult>(`/api/billing-runs/${id}/approve`);
 }
 
 export async function batchSend(
   id: string,
-  request: BatchSendRequest,
+  request: BatchSendRequest
 ): Promise<BatchOperationResult> {
-  return api.post<BatchOperationResult>(
-    `/api/billing-runs/${id}/send`,
-    request,
-  );
+  return api.post<BatchOperationResult>(`/api/billing-runs/${id}/send`, request);
 }
 
-export async function getRetainerPreview(
-  id: string,
-): Promise<RetainerPeriodPreview[]> {
-  return api.get<RetainerPeriodPreview[]>(
-    `/api/billing-runs/${id}/retainer-preview`,
-  );
+export async function getRetainerPreview(id: string): Promise<RetainerPeriodPreview[]> {
+  return api.get<RetainerPeriodPreview[]>(`/api/billing-runs/${id}/retainer-preview`);
 }
 
 export async function generateRetainers(
   id: string,
-  agreementIds: string[],
+  agreementIds: string[]
 ): Promise<BillingRunItem[]> {
   const body: RetainerGenerateRequest = {
     retainerAgreementIds: agreementIds,
   };
-  return api.post<BillingRunItem[]>(
-    `/api/billing-runs/${id}/retainer-generate`,
-    body,
-  );
+  return api.post<BillingRunItem[]>(`/api/billing-runs/${id}/retainer-generate`, body);
 }

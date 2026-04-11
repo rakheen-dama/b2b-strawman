@@ -23,9 +23,7 @@ export default async function DataRequestsPage({
   if (!isAdmin) {
     return (
       <div className="space-y-8">
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          Compliance
-        </h1>
+        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Compliance</h1>
         <p className="text-slate-600 dark:text-slate-400">
           You do not have permission to view compliance data. Only admins and owners can access this
           page.
@@ -54,9 +52,7 @@ export default async function DataRequestsPage({
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-            Data Requests
-          </h1>
+          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Data Requests</h1>
           {requests.length > 0 && (
             <span className="rounded-full bg-slate-200 px-2.5 py-0.5 text-sm text-slate-700 dark:bg-slate-800 dark:text-slate-300">
               {requests.length}

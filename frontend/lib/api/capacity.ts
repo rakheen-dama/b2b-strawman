@@ -196,7 +196,7 @@ export interface TeamAverages {
 
 export async function getTeamCapacityGrid(
   weekStart: string,
-  weekEnd: string,
+  weekEnd: string
 ): Promise<TeamCapacityGrid> {
   const qs = new URLSearchParams({ weekStart, weekEnd });
   return api.get<TeamCapacityGrid>(`/api/capacity/team?${qs}`);
@@ -205,7 +205,7 @@ export async function getTeamCapacityGrid(
 export async function getMemberCapacityDetail(
   memberId: string,
   weekStart: string,
-  weekEnd: string,
+  weekEnd: string
 ): Promise<MemberRow> {
   const qs = new URLSearchParams({ weekStart, weekEnd });
   return api.get<MemberRow>(`/api/capacity/members/${memberId}?${qs}`);
@@ -214,17 +214,15 @@ export async function getMemberCapacityDetail(
 export async function getProjectStaffing(
   projectId: string,
   weekStart: string,
-  weekEnd: string,
+  weekEnd: string
 ): Promise<ProjectStaffingResponse> {
   const qs = new URLSearchParams({ weekStart, weekEnd });
-  return api.get<ProjectStaffingResponse>(
-    `/api/capacity/projects/${projectId}?${qs}`,
-  );
+  return api.get<ProjectStaffingResponse>(`/api/capacity/projects/${projectId}?${qs}`);
 }
 
 export async function getTeamUtilization(
   weekStart: string,
-  weekEnd: string,
+  weekEnd: string
 ): Promise<TeamUtilizationResponse> {
   const qs = new URLSearchParams({ weekStart, weekEnd });
   return api.get<TeamUtilizationResponse>(`/api/utilization/team?${qs}`);
@@ -233,47 +231,32 @@ export async function getTeamUtilization(
 export async function getMemberUtilization(
   memberId: string,
   weekStart: string,
-  weekEnd: string,
+  weekEnd: string
 ): Promise<WeekUtilization[]> {
   const qs = new URLSearchParams({ weekStart, weekEnd });
-  return api.get<WeekUtilization[]>(
-    `/api/utilization/members/${memberId}?${qs}`,
-  );
+  return api.get<WeekUtilization[]>(`/api/utilization/members/${memberId}?${qs}`);
 }
 
-export async function listCapacityRecords(
-  memberId: string,
-): Promise<MemberCapacityResponse[]> {
-  return api.get<MemberCapacityResponse[]>(
-    `/api/members/${memberId}/capacity`,
-  );
+export async function listCapacityRecords(memberId: string): Promise<MemberCapacityResponse[]> {
+  return api.get<MemberCapacityResponse[]>(`/api/members/${memberId}/capacity`);
 }
 
 export async function createCapacityRecord(
   memberId: string,
-  data: CreateCapacityRequest,
+  data: CreateCapacityRequest
 ): Promise<MemberCapacityResponse> {
-  return api.post<MemberCapacityResponse>(
-    `/api/members/${memberId}/capacity`,
-    data,
-  );
+  return api.post<MemberCapacityResponse>(`/api/members/${memberId}/capacity`, data);
 }
 
 export async function updateCapacityRecord(
   memberId: string,
   id: string,
-  data: UpdateCapacityRequest,
+  data: UpdateCapacityRequest
 ): Promise<MemberCapacityResponse> {
-  return api.put<MemberCapacityResponse>(
-    `/api/members/${memberId}/capacity/${id}`,
-    data,
-  );
+  return api.put<MemberCapacityResponse>(`/api/members/${memberId}/capacity/${id}`, data);
 }
 
-export async function deleteCapacityRecord(
-  memberId: string,
-  id: string,
-): Promise<void> {
+export async function deleteCapacityRecord(memberId: string, id: string): Promise<void> {
   await api.delete(`/api/members/${memberId}/capacity/${id}`);
 }
 
@@ -289,20 +272,16 @@ export async function listAllocations(params: {
   if (params.weekStart) searchParams.set("weekStart", params.weekStart);
   if (params.weekEnd) searchParams.set("weekEnd", params.weekEnd);
   const qs = searchParams.toString();
-  return api.get<AllocationResponse[]>(
-    `/api/resource-allocations${qs ? `?${qs}` : ""}`,
-  );
+  return api.get<AllocationResponse[]>(`/api/resource-allocations${qs ? `?${qs}` : ""}`);
 }
 
-export async function createAllocation(
-  data: CreateAllocationRequest,
-): Promise<AllocationResponse> {
+export async function createAllocation(data: CreateAllocationRequest): Promise<AllocationResponse> {
   return api.post<AllocationResponse>("/api/resource-allocations", data);
 }
 
 export async function updateAllocation(
   id: string,
-  data: UpdateAllocationRequest,
+  data: UpdateAllocationRequest
 ): Promise<AllocationResponse> {
   return api.put<AllocationResponse>(`/api/resource-allocations/${id}`, data);
 }
@@ -312,23 +291,18 @@ export async function deleteAllocation(id: string): Promise<void> {
 }
 
 export async function bulkUpsertAllocations(
-  data: BulkAllocationRequest,
+  data: BulkAllocationRequest
 ): Promise<BulkAllocationResponse> {
-  return api.post<BulkAllocationResponse>(
-    "/api/resource-allocations/bulk",
-    data,
-  );
+  return api.post<BulkAllocationResponse>("/api/resource-allocations/bulk", data);
 }
 
-export async function listLeaveForMember(
-  memberId: string,
-): Promise<LeaveBlockResponse[]> {
+export async function listLeaveForMember(memberId: string): Promise<LeaveBlockResponse[]> {
   return api.get<LeaveBlockResponse[]>(`/api/members/${memberId}/leave`);
 }
 
 export async function createLeaveBlock(
   memberId: string,
-  data: CreateLeaveRequest,
+  data: CreateLeaveRequest
 ): Promise<LeaveBlockResponse> {
   return api.post<LeaveBlockResponse>(`/api/members/${memberId}/leave`, data);
 }
@@ -336,24 +310,18 @@ export async function createLeaveBlock(
 export async function updateLeaveBlock(
   memberId: string,
   id: string,
-  data: UpdateLeaveRequest,
+  data: UpdateLeaveRequest
 ): Promise<LeaveBlockResponse> {
-  return api.put<LeaveBlockResponse>(
-    `/api/members/${memberId}/leave/${id}`,
-    data,
-  );
+  return api.put<LeaveBlockResponse>(`/api/members/${memberId}/leave/${id}`, data);
 }
 
-export async function deleteLeaveBlock(
-  memberId: string,
-  id: string,
-): Promise<void> {
+export async function deleteLeaveBlock(memberId: string, id: string): Promise<void> {
   await api.delete(`/api/members/${memberId}/leave/${id}`);
 }
 
 export async function listAllLeave(
   startDate: string,
-  endDate: string,
+  endDate: string
 ): Promise<LeaveBlockResponse[]> {
   const qs = new URLSearchParams({ startDate, endDate });
   return api.get<LeaveBlockResponse[]>(`/api/leave?${qs}`);

@@ -35,7 +35,7 @@ export function TeamTabs({ isAdmin, roles, slug }: TeamTabsProps) {
               "relative pb-3 text-sm font-medium transition-colors outline-none",
               "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200",
               "data-[state=active]:text-slate-950 dark:data-[state=active]:text-slate-50",
-              "focus-visible:outline-2 focus-visible:outline-teal-500 focus-visible:outline-offset-2"
+              "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
             )}
           >
             {tab.label}

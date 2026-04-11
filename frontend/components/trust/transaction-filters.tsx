@@ -29,11 +29,9 @@ export function TransactionFilters({ slug, search }: TransactionFiltersProps) {
         if (value && key !== "page") params.set(key, value);
       }
       const qs = params.toString();
-      router.push(
-        `/org/${slug}/trust-accounting/transactions${qs ? `?${qs}` : ""}`,
-      );
+      router.push(`/org/${slug}/trust-accounting/transactions${qs ? `?${qs}` : ""}`);
     },
-    [router, slug, search],
+    [router, slug, search]
   );
 
   function handleDateChange(field: "dateFrom" | "dateTo", value: string) {
@@ -48,10 +46,7 @@ export function TransactionFilters({ slug, search }: TransactionFiltersProps) {
   }
 
   return (
-    <div
-      className="flex flex-wrap items-end gap-4"
-      data-testid="advanced-filters"
-    >
+    <div className="flex flex-wrap items-end gap-4" data-testid="advanced-filters">
       <div className="flex flex-col gap-1">
         <label
           htmlFor="filter-dateFrom"

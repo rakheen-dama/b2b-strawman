@@ -61,9 +61,7 @@ export function AssignedTaskList({ tasks, slug }: AssignedTaskListProps) {
     return (
       <div className="space-y-4">
         <div className="flex items-center gap-2">
-          <h2 className="font-semibold text-slate-900 dark:text-slate-100">
-            My Tasks
-          </h2>
+          <h2 className="font-semibold text-slate-900 dark:text-slate-100">My Tasks</h2>
         </div>
         <EmptyState
           icon={CheckCircle}
@@ -77,9 +75,7 @@ export function AssignedTaskList({ tasks, slug }: AssignedTaskListProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
-        <h2 className="font-semibold text-slate-900 dark:text-slate-100">
-          My Tasks
-        </h2>
+        <h2 className="font-semibold text-slate-900 dark:text-slate-100">My Tasks</h2>
         <Badge variant="neutral">{tasks.length}</Badge>
       </div>
 
@@ -87,22 +83,22 @@ export function AssignedTaskList({ tasks, slug }: AssignedTaskListProps) {
         <Table>
           <TableHeader>
             <TableRow className="border-slate-200 hover:bg-transparent dark:border-slate-800">
-              <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
+              <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
                 Project
               </TableHead>
-              <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
+              <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
                 Title
               </TableHead>
-              <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
+              <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
                 Priority
               </TableHead>
-              <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
+              <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
                 Status
               </TableHead>
-              <TableHead className="hidden text-xs uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">
+              <TableHead className="hidden text-xs tracking-wide text-slate-600 uppercase sm:table-cell dark:text-slate-400">
                 Due Date
               </TableHead>
-              <TableHead className="hidden text-xs uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">
+              <TableHead className="hidden text-xs tracking-wide text-slate-600 uppercase sm:table-cell dark:text-slate-400">
                 Logged
               </TableHead>
             </TableRow>
@@ -110,19 +106,15 @@ export function AssignedTaskList({ tasks, slug }: AssignedTaskListProps) {
           <TableBody>
             {tasks.map((task) => {
               const priorityBadge =
-                PRIORITY_BADGE[task.priority as TaskPriority] ??
-                PRIORITY_BADGE.MEDIUM;
-              const statusBadge =
-                STATUS_BADGE[task.status as TaskStatus] ?? STATUS_BADGE.OPEN;
+                PRIORITY_BADGE[task.priority as TaskPriority] ?? PRIORITY_BADGE.MEDIUM;
+              const statusBadge = STATUS_BADGE[task.status as TaskStatus] ?? STATUS_BADGE.OPEN;
               const overdue = isOverdue(task.dueDate, task.status);
 
               return (
                 <TableRow
                   key={task.id}
                   className="cursor-pointer border-slate-100 transition-colors hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900"
-                  onClick={() =>
-                    router.push(`/org/${slug}/projects/${task.projectId}`)
-                  }
+                  onClick={() => router.push(`/org/${slug}/projects/${task.projectId}`)}
                 >
                   <TableCell>
                     <Badge variant="member">{task.projectName}</Badge>
@@ -133,14 +125,10 @@ export function AssignedTaskList({ tasks, slug }: AssignedTaskListProps) {
                     </p>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={priorityBadge.variant}>
-                      {priorityBadge.label}
-                    </Badge>
+                    <Badge variant={priorityBadge.variant}>{priorityBadge.label}</Badge>
                   </TableCell>
                   <TableCell>
-                    <Badge variant={statusBadge.variant}>
-                      {statusBadge.label}
-                    </Badge>
+                    <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
                   </TableCell>
                   <TableCell className="hidden sm:table-cell">
                     <span
@@ -151,17 +139,13 @@ export function AssignedTaskList({ tasks, slug }: AssignedTaskListProps) {
                           : "text-slate-600 dark:text-slate-400"
                       )}
                     >
-                      {overdue && (
-                        <AlertTriangle className="size-3.5 shrink-0" />
-                      )}
+                      {overdue && <AlertTriangle className="size-3.5 shrink-0" />}
                       {task.dueDate ? formatDate(task.dueDate) : "\u2014"}
                     </span>
                   </TableCell>
                   <TableCell className="hidden sm:table-cell">
                     <span className="text-sm text-slate-600 dark:text-slate-400">
-                      {task.totalTimeMinutes > 0
-                        ? formatDuration(task.totalTimeMinutes)
-                        : "\u2014"}
+                      {task.totalTimeMinutes > 0 ? formatDuration(task.totalTimeMinutes) : "\u2014"}
                     </span>
                   </TableCell>
                 </TableRow>

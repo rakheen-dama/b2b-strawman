@@ -13,18 +13,17 @@ vi.mock("@/lib/api/client", () => ({
     post: (...args: unknown[]) => mockPost(...args),
   },
   ApiError: class ApiError extends Error {
-    constructor(public status: number, message: string) {
+    constructor(
+      public status: number,
+      message: string
+    ) {
       super(message);
       this.name = "ApiError";
     }
   },
 }));
 
-import {
-  getReportDefinitions,
-  getReportDefinition,
-  executeReport,
-} from "@/lib/api/reports";
+import { getReportDefinitions, getReportDefinition, executeReport } from "@/lib/api/reports";
 
 describe("Reports API client", () => {
   beforeEach(() => {
@@ -40,17 +39,16 @@ describe("Reports API client", () => {
 
   it("getReportDefinition calls GET /api/report-definitions/{slug}", async () => {
     await getReportDefinition("revenue-summary");
-    expect(mockGet).toHaveBeenCalledWith(
-      "/api/report-definitions/revenue-summary",
-    );
+    expect(mockGet).toHaveBeenCalledWith("/api/report-definitions/revenue-summary");
   });
 
   it("executeReport calls POST /api/report-definitions/{slug}/execute with body", async () => {
     const params = { from: "2026-01-01", to: "2026-01-31" };
     await executeReport("revenue-summary", params, 0, 20);
-    expect(mockPost).toHaveBeenCalledWith(
-      "/api/report-definitions/revenue-summary/execute",
-      { parameters: params, page: 0, size: 20 },
-    );
+    expect(mockPost).toHaveBeenCalledWith("/api/report-definitions/revenue-summary/execute", {
+      parameters: params,
+      page: 0,
+      size: 20,
+    });
   });
 });

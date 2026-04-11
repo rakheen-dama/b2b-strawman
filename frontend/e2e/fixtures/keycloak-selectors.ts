@@ -4,17 +4,17 @@
  * If theme changes, update selectors here — all fixtures reference this file.
  */
 export const KC_LOGIN = {
-  username: '#username',
-  password: '#password',
+  username: "#username",
+  password: "#password",
   submit: 'input[name="login"], button[type="submit"]',
   error: '[role="alert"]',
-} as const
+} as const;
 
 export const KC_REGISTER = {
-  firstName: '#firstName',
-  lastName: '#lastName',
-  email: '#email',
-  password: '#password',
-  passwordConfirm: '#password-confirm',
+  firstName: "#firstName",
+  lastName: "#lastName",
+  email: "#email",
+  password: "#password",
+  passwordConfirm: "#password-confirm",
   submit: 'button[type="submit"], input[type="submit"]',
-} as const
+} as const;

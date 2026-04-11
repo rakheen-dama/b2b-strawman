@@ -3,13 +3,7 @@
 import Link from "next/link";
 import useSWR from "swr";
 import { Gavel } from "lucide-react";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -42,9 +36,7 @@ function dateTypeLabel(type: string): string {
     .join("-");
 }
 
-export function UpcomingCourtDatesWidget({
-  orgSlug,
-}: UpcomingCourtDatesWidgetProps) {
+export function UpcomingCourtDatesWidget({ orgSlug }: UpcomingCourtDatesWidgetProps) {
   const { data, error, isLoading } = useSWR(
     `upcoming-court-dates-${orgSlug}`,
     () => fetchUpcoming(),
@@ -52,7 +44,7 @@ export function UpcomingCourtDatesWidget({
       refreshInterval: REFRESH_INTERVAL_MS,
       dedupingInterval: 2000,
       revalidateOnFocus: true,
-    },
+    }
   );
 
   if (isLoading) {
@@ -65,7 +57,7 @@ export function UpcomingCourtDatesWidget({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-xs italic text-slate-500">Loading&hellip;</p>
+          <p className="text-xs text-slate-500 italic">Loading&hellip;</p>
         </CardContent>
       </Card>
     );
@@ -81,9 +73,7 @@ export function UpcomingCourtDatesWidget({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-xs italic text-slate-500">
-            Unable to load court dates.
-          </p>
+          <p className="text-xs text-slate-500 italic">Unable to load court dates.</p>
         </CardContent>
       </Card>
     );
@@ -101,9 +91,7 @@ export function UpcomingCourtDatesWidget({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-xs italic text-slate-500">
-            No upcoming court dates.
-          </p>
+          <p className="text-xs text-slate-500 italic">No upcoming court dates.</p>
         </CardContent>
       </Card>
     );
@@ -125,16 +113,11 @@ export function UpcomingCourtDatesWidget({
               key={cd.id}
               className={cn(
                 "flex items-center justify-between rounded-md px-2 py-1.5",
-                days < 3 && "bg-red-50/50 dark:bg-red-950/20",
+                days < 3 && "bg-red-50/50 dark:bg-red-950/20"
               )}
             >
               <div className="flex items-center gap-2 overflow-hidden">
-                <span
-                  className={cn(
-                    "shrink-0 font-mono text-xs tabular-nums",
-                    urgencyClass(days),
-                  )}
-                >
+                <span className={cn("shrink-0 font-mono text-xs tabular-nums", urgencyClass(days))}>
                   {cd.scheduledDate}
                 </span>
                 <Badge variant="outline" className="shrink-0 text-[10px]">
@@ -152,15 +135,8 @@ export function UpcomingCourtDatesWidget({
         })}
       </CardContent>
       <CardFooter className="pt-0">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-7 text-xs text-slate-500"
-          asChild
-        >
-          <Link href={`/org/${orgSlug}/court-calendar`}>
-            View All &rarr;
-          </Link>
+        <Button variant="ghost" size="sm" className="h-7 text-xs text-slate-500" asChild>
+          <Link href={`/org/${orgSlug}/court-calendar`}>View All &rarr;</Link>
         </Button>
       </CardFooter>
     </Card>

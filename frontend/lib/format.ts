@@ -76,7 +76,7 @@ export function formatCurrency(amount: number, currency: string): string {
  */
 export function formatCurrencySafe(
   amount: number | null | undefined,
-  currency: string | null | undefined,
+  currency: string | null | undefined
 ): string {
   if (amount == null || !currency) return "N/A";
   return formatCurrency(amount, currency);
@@ -141,10 +141,7 @@ export function formatComplianceDateWithTime(isoString: string): string {
  * Formats the duration between two ISO timestamps as a human-readable string.
  * Returns "..." if completedAt is null (still running).
  */
-export function computeDuration(
-  startedAt: string,
-  completedAt: string | null,
-): string {
+export function computeDuration(startedAt: string, completedAt: string | null): string {
   if (!completedAt) return "...";
   const ms = new Date(completedAt).getTime() - new Date(startedAt).getTime();
   if (ms < 1000) return `${ms}ms`;

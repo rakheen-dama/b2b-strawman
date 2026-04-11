@@ -16,8 +16,7 @@ function normalizeRole(role: string): string {
 // In production, Keycloak-authenticated requests go through the BFF gateway.
 // Since this module is only loaded when NEXT_PUBLIC_AUTH_PROVIDER=mock,
 // there is no security concern with the browser calling the backend directly.
-const BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
 
 // --- useAuthUser ---
 

@@ -1,20 +1,9 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import {
-  ArrowUpRight,
-  ArrowDownLeft,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { ArrowUpRight, ArrowDownLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import { getOrgSettings } from "@/lib/api/settings";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { fetchTrustAccounts } from "@/app/(app)/org/[slug]/trust-accounting/actions";
@@ -27,15 +16,12 @@ import { ApprovalBadge } from "@/components/trust/approval-badge";
 import { ReversalButton } from "@/components/trust/reversal-button";
 import { TransactionFilters } from "@/components/trust/transaction-filters";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
-import type {
-  TrustTransactionStatus,
-  TrustTransactionType,
-} from "@/lib/types";
+import type { TrustTransactionStatus, TrustTransactionType } from "@/lib/types";
 
 // ── Helpers ───────────────────────────────────────────────────────
 
 function statusBadgeVariant(
-  status: TrustTransactionStatus,
+  status: TrustTransactionStatus
 ): "success" | "warning" | "destructive" | "neutral" {
   switch (status) {
     case "APPROVED":
@@ -59,9 +45,7 @@ function transactionTypeLabel(type: TrustTransactionType): string {
 }
 
 function isInflowType(type: TrustTransactionType): boolean {
-  return ["DEPOSIT", "TRANSFER_IN", "REFUND", "INTEREST_CREDIT"].includes(
-    type,
-  );
+  return ["DEPOSIT", "TRANSFER_IN", "REFUND", "INTEREST_CREDIT"].includes(type);
 }
 
 const STATUS_OPTIONS: TrustTransactionStatus[] = [
@@ -120,21 +104,15 @@ export default async function TransactionsPage({
   // Capability check
   const capData = await fetchMyCapabilities();
   const hasViewTrust =
-    capData.isAdmin ||
-    capData.isOwner ||
-    capData.capabilities.includes("VIEW_TRUST");
+    capData.isAdmin || capData.isOwner || capData.capabilities.includes("VIEW_TRUST");
   if (!hasViewTrust) {
     notFound();
   }
 
   const canManageTrust =
-    capData.isAdmin ||
-    capData.isOwner ||
-    capData.capabilities.includes("MANAGE_TRUST");
+    capData.isAdmin || capData.isOwner || capData.capabilities.includes("MANAGE_TRUST");
   const canApproveTrust =
-    capData.isAdmin ||
-    capData.isOwner ||
-    capData.capabilities.includes("APPROVE_TRUST_PAYMENT");
+    capData.isAdmin || capData.isOwner || capData.capabilities.includes("APPROVE_TRUST_PAYMENT");
 
   // Fetch primary trust account
   let accountId: string | null = null;
@@ -200,26 +178,17 @@ export default async function TransactionsPage({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-            Transactions
-          </h1>
+          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Transactions</h1>
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
             Trust account transaction history
           </p>
         </div>
-        {canManageTrust && accountId && (
-          <TransactionActions
-            accountId={accountId}
-            slug={slug}
-          />
-        )}
+        {canManageTrust && accountId && <TransactionActions accountId={accountId} slug={slug} />}
       </div>
 
       {/* Status Filter Pills */}
       <div className="flex flex-wrap items-center gap-3" data-testid="status-filters">
-        <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
-          Status:
-        </span>
+        <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Status:</span>
         <Link
           href={filterUrl({ status: undefined })}
           className={`rounded-full px-3 py-1 text-sm transition-colors ${
@@ -249,9 +218,7 @@ export default async function TransactionsPage({
 
       {/* Type Filter Pills */}
       <div className="flex flex-wrap items-center gap-3" data-testid="type-filters">
-        <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
-          Type:
-        </span>
+        <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Type:</span>
         <Link
           href={filterUrl({ type: undefined })}
           className={`rounded-full px-3 py-1 text-sm transition-colors ${
@@ -278,10 +245,7 @@ export default async function TransactionsPage({
       </div>
 
       {/* Date Range, Client & Matter Filters */}
-      <TransactionFilters
-        slug={slug}
-        search={search}
-      />
+      <TransactionFilters slug={slug} search={search} />
 
       {/* Error State */}
       {fetchError && (
@@ -336,25 +300,22 @@ export default async function TransactionsPage({
             ) : (
               <>
                 <div className="overflow-x-auto">
-                  <table
-                    className="w-full text-sm"
-                    data-testid="transactions-table"
-                  >
+                  <table className="w-full text-sm" data-testid="transactions-table">
                     <thead>
                       <tr className="border-b border-slate-200 dark:border-slate-700">
-                        <th className="pb-3 pr-4 text-left font-medium text-slate-500 dark:text-slate-400">
+                        <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
                           Date
                         </th>
-                        <th className="pb-3 pr-4 text-left font-medium text-slate-500 dark:text-slate-400">
+                        <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
                           Reference
                         </th>
-                        <th className="pb-3 pr-4 text-left font-medium text-slate-500 dark:text-slate-400">
+                        <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
                           Type
                         </th>
-                        <th className="pb-3 pr-4 text-right font-medium text-slate-500 dark:text-slate-400">
+                        <th className="pr-4 pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
                           Amount
                         </th>
-                        <th className="pb-3 pr-4 text-left font-medium text-slate-500 dark:text-slate-400">
+                        <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
                           Status
                         </th>
                         <th className="pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
@@ -402,20 +363,14 @@ export default async function TransactionsPage({
                             </Badge>
                           </td>
                           <td className="py-3">
-                            {tx.status === "AWAITING_APPROVAL" &&
-                              canApproveTrust && (
-                                <span data-testid={`approval-actions-${tx.id}`}>
-                                  <ApprovalBadge
-                                    transactionId={tx.id}
-                                    status={tx.status}
-                                  />
-                                </span>
-                              )}
+                            {tx.status === "AWAITING_APPROVAL" && canApproveTrust && (
+                              <span data-testid={`approval-actions-${tx.id}`}>
+                                <ApprovalBadge transactionId={tx.id} status={tx.status} />
+                              </span>
+                            )}
                             {tx.status === "APPROVED" && canManageTrust && (
                               <span data-testid={`reversal-action-${tx.id}`}>
-                                <ReversalButton
-                                  transactionId={tx.id}
-                                />
+                                <ReversalButton transactionId={tx.id} />
                               </span>
                             )}
                           </td>
@@ -469,4 +424,3 @@ export default async function TransactionsPage({
     </div>
   );
 }
-

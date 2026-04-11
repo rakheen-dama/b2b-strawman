@@ -30,11 +30,7 @@ export function ArchivedProjectBanner({
   }
 
   return (
-    <div
-      className="space-y-2"
-      data-testid="archived-project-banner"
-      role="alert"
-    >
+    <div className="space-y-2" data-testid="archived-project-banner" role="alert">
       <div className="flex items-center justify-between rounded-lg border border-slate-300 bg-slate-100 px-4 py-3 dark:border-slate-700 dark:bg-slate-900">
         <div className="flex items-center gap-2">
           <Archive className="size-4 text-slate-500 dark:text-slate-400" />
@@ -43,20 +39,13 @@ export function ArchivedProjectBanner({
           </p>
         </div>
         {canRestore && (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handleRestore}
-            disabled={isPending}
-          >
+          <Button size="sm" variant="outline" onClick={handleRestore} disabled={isPending}>
             <RotateCcw className="mr-1.5 size-4" />
             {isPending ? "Restoring..." : "Restore"}
           </Button>
         )}
       </div>
-      {error && (
-        <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-      )}
+      {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
     </div>
   );
 }

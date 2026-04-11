@@ -27,11 +27,7 @@ export function ActivityFeedClient({
   const reload = useCallback(
     async (entityType: string | null) => {
       try {
-        const data = await loadMoreActivity(
-          projectId,
-          entityType ?? undefined,
-          0
-        );
+        const data = await loadMoreActivity(projectId, entityType ?? undefined, 0);
         setItems(data.content);
         setTotalPages(data.page.totalPages);
         setPage(0);
@@ -51,11 +47,7 @@ export function ActivityFeedClient({
     setIsLoadingMore(true);
     try {
       const nextPage = page + 1;
-      const data = await loadMoreActivity(
-        projectId,
-        filter ?? undefined,
-        nextPage
-      );
+      const data = await loadMoreActivity(projectId, filter ?? undefined, nextPage);
       setItems((prev) => [...prev, ...data.content]);
       setTotalPages(data.page.totalPages);
       setPage(nextPage);
@@ -71,10 +63,7 @@ export function ActivityFeedClient({
   return (
     <div className="space-y-4">
       {/* Filter chips */}
-      <ActivityFilter
-        onFilterChange={handleFilterChange}
-        currentFilter={filter}
-      />
+      <ActivityFilter onFilterChange={handleFilterChange} currentFilter={filter} />
 
       {/* Activity list */}
       <div className="divide-y divide-slate-100 rounded-lg border border-slate-200 bg-white dark:divide-slate-800 dark:border-slate-800 dark:bg-slate-950">
@@ -92,11 +81,7 @@ export function ActivityFeedClient({
       {/* Load more */}
       {hasMore && (
         <div className="flex justify-center">
-          <Button
-            variant="ghost"
-            onClick={handleLoadMore}
-            disabled={isLoadingMore}
-          >
+          <Button variant="ghost" onClick={handleLoadMore} disabled={isLoadingMore}>
             {isLoadingMore ? "Loading..." : "Load more"}
           </Button>
         </div>

@@ -30,6 +30,6 @@ export function SWRTestProvider({ children }: { children: React.ReactNode }) {
         dedupingInterval: 0,
       },
     },
-    children,
+    children
   );
 }

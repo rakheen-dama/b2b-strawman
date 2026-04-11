@@ -21,10 +21,7 @@ interface TerminologyProviderProps {
   children: React.ReactNode;
 }
 
-export function TerminologyProvider({
-  verticalProfile,
-  children,
-}: TerminologyProviderProps) {
+export function TerminologyProvider({ verticalProfile, children }: TerminologyProviderProps) {
   const value = useMemo<TerminologyContextValue>(() => {
     const map = verticalProfile ? (TERMINOLOGY[verticalProfile] ?? {}) : {};
     return {
@@ -33,11 +30,7 @@ export function TerminologyProvider({
     };
   }, [verticalProfile]);
 
-  return (
-    <TerminologyContext.Provider value={value}>
-      {children}
-    </TerminologyContext.Provider>
-  );
+  return <TerminologyContext.Provider value={value}>{children}</TerminologyContext.Provider>;
 }
 
 // ---- Hook ----
@@ -45,9 +38,7 @@ export function TerminologyProvider({
 export function useTerminology(): TerminologyContextValue {
   const ctx = useContext(TerminologyContext);
   if (!ctx) {
-    throw new Error(
-      "useTerminology must be used within a TerminologyProvider",
-    );
+    throw new Error("useTerminology must be used within a TerminologyProvider");
   }
   return ctx;
 }

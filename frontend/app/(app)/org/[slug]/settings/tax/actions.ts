@@ -16,7 +16,7 @@ interface ActionResult {
 
 export async function updateTaxSettings(
   slug: string,
-  data: UpdateTaxSettingsRequest,
+  data: UpdateTaxSettingsRequest
 ): Promise<ActionResult> {
   try {
     await api.patch("/api/settings/tax", data);
@@ -49,7 +49,7 @@ interface CreateTaxRateActionResult {
 
 export async function createTaxRate(
   slug: string,
-  req: CreateTaxRateRequest,
+  req: CreateTaxRateRequest
 ): Promise<CreateTaxRateActionResult> {
   let taxRate: TaxRateResponse;
   try {
@@ -80,7 +80,7 @@ export async function createTaxRate(
 export async function updateTaxRate(
   slug: string,
   id: string,
-  req: UpdateTaxRateRequest,
+  req: UpdateTaxRateRequest
 ): Promise<ActionResult> {
   try {
     await api.put(`/api/tax-rates/${id}`, req);
@@ -107,10 +107,7 @@ export async function updateTaxRate(
   return { success: true };
 }
 
-export async function deactivateTaxRate(
-  slug: string,
-  id: string,
-): Promise<ActionResult> {
+export async function deactivateTaxRate(slug: string, id: string): Promise<ActionResult> {
   try {
     await api.delete(`/api/tax-rates/${id}`);
   } catch (error) {
@@ -124,10 +121,7 @@ export async function deactivateTaxRate(
       if (error.status === 400 || error.status === 409) {
         return {
           success: false,
-          error:
-            error.detail?.detail ??
-            error.message ??
-            "Cannot deactivate this tax rate.",
+          error: error.detail?.detail ?? error.message ?? "Cannot deactivate this tax rate.",
         };
       }
       return { success: false, error: error.message };

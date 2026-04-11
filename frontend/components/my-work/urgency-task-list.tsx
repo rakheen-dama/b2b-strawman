@@ -120,22 +120,22 @@ function TaskGroupTable({ tasks, slug, isOverdue, onTaskClick }: TaskGroupTableP
       <Table>
         <TableHeader>
           <TableRow className="border-slate-200 hover:bg-transparent dark:border-slate-800">
-            <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
+            <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
               Project
             </TableHead>
-            <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
+            <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
               Title
             </TableHead>
-            <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
+            <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
               Priority
             </TableHead>
-            <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
+            <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
               Status
             </TableHead>
-            <TableHead className="hidden text-xs uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">
+            <TableHead className="hidden text-xs tracking-wide text-slate-600 uppercase sm:table-cell dark:text-slate-400">
               Due Date
             </TableHead>
-            <TableHead className="hidden text-xs uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">
+            <TableHead className="hidden text-xs tracking-wide text-slate-600 uppercase sm:table-cell dark:text-slate-400">
               Logged
             </TableHead>
           </TableRow>
@@ -143,10 +143,8 @@ function TaskGroupTable({ tasks, slug, isOverdue, onTaskClick }: TaskGroupTableP
         <TableBody>
           {tasks.map((task) => {
             const priorityBadge =
-              PRIORITY_BADGE[task.priority as TaskPriority] ??
-              PRIORITY_BADGE.MEDIUM;
-            const statusBadge =
-              STATUS_BADGE[task.status as TaskStatus] ?? STATUS_BADGE.OPEN;
+              PRIORITY_BADGE[task.priority as TaskPriority] ?? PRIORITY_BADGE.MEDIUM;
+            const statusBadge = STATUS_BADGE[task.status as TaskStatus] ?? STATUS_BADGE.OPEN;
 
             return (
               <TableRow
@@ -179,14 +177,10 @@ function TaskGroupTable({ tasks, slug, isOverdue, onTaskClick }: TaskGroupTableP
                   </div>
                 </TableCell>
                 <TableCell>
-                  <Badge variant={priorityBadge.variant}>
-                    {priorityBadge.label}
-                  </Badge>
+                  <Badge variant={priorityBadge.variant}>{priorityBadge.label}</Badge>
                 </TableCell>
                 <TableCell>
-                  <Badge variant={statusBadge.variant}>
-                    {statusBadge.label}
-                  </Badge>
+                  <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
                 </TableCell>
                 <TableCell className="hidden sm:table-cell">
                   <span
@@ -197,17 +191,13 @@ function TaskGroupTable({ tasks, slug, isOverdue, onTaskClick }: TaskGroupTableP
                         : "text-slate-600 dark:text-slate-400"
                     )}
                   >
-                    {isOverdue && (
-                      <AlertTriangle className="size-3.5 shrink-0" />
-                    )}
+                    {isOverdue && <AlertTriangle className="size-3.5 shrink-0" />}
                     {task.dueDate ? formatDate(task.dueDate) : "\u2014"}
                   </span>
                 </TableCell>
                 <TableCell className="hidden sm:table-cell">
                   <span className="text-sm text-slate-600 dark:text-slate-400">
-                    {task.totalTimeMinutes > 0
-                      ? formatDuration(task.totalTimeMinutes)
-                      : "\u2014"}
+                    {task.totalTimeMinutes > 0 ? formatDuration(task.totalTimeMinutes) : "\u2014"}
                   </span>
                 </TableCell>
               </TableRow>
@@ -238,14 +228,7 @@ function GroupHeader({ icon, label, count, variant }: GroupHeaderProps) {
   return (
     <div className="flex items-center gap-2">
       <span className={colorClasses[variant]}>{icon}</span>
-      <h3
-        className={cn(
-          "text-sm font-semibold",
-          colorClasses[variant]
-        )}
-      >
-        {label}
-      </h3>
+      <h3 className={cn("text-sm font-semibold", colorClasses[variant])}>{label}</h3>
       <Badge variant={variant}>{count}</Badge>
     </div>
   );
@@ -264,9 +247,7 @@ export function UrgencyTaskList({ tasks, slug, onTaskClick }: UrgencyTaskListPro
     return (
       <div className="space-y-4">
         <div className="flex items-center gap-2">
-          <h2 className="font-semibold text-slate-900 dark:text-slate-100">
-            My Tasks
-          </h2>
+          <h2 className="font-semibold text-slate-900 dark:text-slate-100">My Tasks</h2>
         </div>
         <EmptyState
           icon={CheckCircle}
@@ -286,9 +267,7 @@ export function UrgencyTaskList({ tasks, slug, onTaskClick }: UrgencyTaskListPro
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
-        <h2 className="font-semibold text-slate-900 dark:text-slate-100">
-          My Tasks
-        </h2>
+        <h2 className="font-semibold text-slate-900 dark:text-slate-100">My Tasks</h2>
         <Badge variant="neutral">{tasks.length}</Badge>
       </div>
 

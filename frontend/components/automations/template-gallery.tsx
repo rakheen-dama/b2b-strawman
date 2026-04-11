@@ -14,10 +14,7 @@ import { TriggerTypeBadge } from "@/components/automations/trigger-type-badge";
 import { toast } from "sonner";
 import { activateTemplateAction } from "@/app/(app)/org/[slug]/settings/automations/actions";
 import { Zap, Check } from "lucide-react";
-import type {
-  TemplateDefinitionResponse,
-  TriggerType,
-} from "@/lib/api/automations";
+import type { TemplateDefinitionResponse, TriggerType } from "@/lib/api/automations";
 
 interface TemplateGalleryProps {
   slug: string;
@@ -37,14 +34,15 @@ export function TemplateGallery({
   const [isPending, startTransition] = useTransition();
   const [activatingSlug, setActivatingSlug] = useState<string | null>(null);
 
-  const grouped = templates.reduce<
-    Record<string, TemplateDefinitionResponse[]>
-  >((acc, template) => {
-    const category = template.category || "General";
-    if (!acc[category]) acc[category] = [];
-    acc[category].push(template);
-    return acc;
-  }, {});
+  const grouped = templates.reduce<Record<string, TemplateDefinitionResponse[]>>(
+    (acc, template) => {
+      const category = template.category || "General";
+      if (!acc[category]) acc[category] = [];
+      acc[category].push(template);
+      return acc;
+    },
+    {}
+  );
 
   const categories = Object.keys(grouped).sort();
 
@@ -67,9 +65,7 @@ export function TemplateGallery({
       <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-lg">
         <SheetHeader>
           <SheetTitle>Automation Templates</SheetTitle>
-          <SheetDescription>
-            Browse and activate pre-built automation templates.
-          </SheetDescription>
+          <SheetDescription>Browse and activate pre-built automation templates.</SheetDescription>
         </SheetHeader>
 
         <div className="mt-6 space-y-8">
@@ -83,14 +79,13 @@ export function TemplateGallery({
           ) : (
             categories.map((category) => (
               <div key={category}>
-                <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                <h3 className="mb-3 text-sm font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
                   {category}
                 </h3>
                 <div className="grid gap-3">
                   {grouped[category].map((template) => {
                     const isActivated = activatedSlugs.includes(template.slug);
-                    const isActivating =
-                      isPending && activatingSlug === template.slug;
+                    const isActivating = isPending && activatingSlug === template.slug;
 
                     return (
                       <div
@@ -114,14 +109,10 @@ export function TemplateGallery({
                               {template.description}
                             </p>
                             <div className="mt-2 flex items-center gap-2">
-                              <TriggerTypeBadge
-                                triggerType={template.triggerType as TriggerType}
-                              />
+                              <TriggerTypeBadge triggerType={template.triggerType as TriggerType} />
                               <span className="text-xs text-slate-500 dark:text-slate-400">
                                 {template.actionCount}{" "}
-                                {template.actionCount === 1
-                                  ? "action"
-                                  : "actions"}
+                                {template.actionCount === 1 ? "action" : "actions"}
                               </span>
                             </div>
                           </div>

@@ -4,11 +4,7 @@ import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api } from "@/lib/api";
 import { HelpTip } from "@/components/help-tip";
 import { CustomFieldsContent } from "./custom-fields-content";
-import type {
-  FieldDefinitionResponse,
-  FieldGroupResponse,
-  EntityType,
-} from "@/lib/types";
+import type { FieldDefinitionResponse, FieldGroupResponse, EntityType } from "@/lib/types";
 
 const ENTITY_TYPES: EntityType[] = ["PROJECT", "TASK", "CUSTOMER", "INVOICE"];
 
@@ -32,13 +28,13 @@ export default async function CustomFieldsSettingsPage({
           <ChevronLeft className="size-4" />
           Settings
         </Link>
-        <h1 className="flex items-center gap-2 font-display text-3xl text-slate-950 dark:text-slate-50">
+        <h1 className="font-display flex items-center gap-2 text-3xl text-slate-950 dark:text-slate-50">
           Custom Fields
           <HelpTip code="fields.types" docsPath="/features/custom-fields-tags" />
         </h1>
         <p className="text-slate-600 dark:text-slate-400">
-          You do not have permission to manage custom fields. Only admins and
-          owners can access this page.
+          You do not have permission to manage custom fields. Only admins and owners can access this
+          page.
         </p>
       </div>
     );
@@ -60,11 +56,9 @@ export default async function CustomFieldsSettingsPage({
   try {
     const results = await Promise.all(
       ENTITY_TYPES.flatMap((et) => [
-        api.get<FieldDefinitionResponse[]>(
-          `/api/field-definitions?entityType=${et}`,
-        ),
+        api.get<FieldDefinitionResponse[]>(`/api/field-definitions?entityType=${et}`),
         api.get<FieldGroupResponse[]>(`/api/field-groups?entityType=${et}`),
-      ]),
+      ])
     );
 
     ENTITY_TYPES.forEach((et, i) => {
@@ -86,7 +80,7 @@ export default async function CustomFieldsSettingsPage({
       </Link>
 
       <div>
-        <h1 className="flex items-center gap-2 font-display text-3xl text-slate-950 dark:text-slate-50">
+        <h1 className="font-display flex items-center gap-2 text-3xl text-slate-950 dark:text-slate-50">
           Custom Fields
           <HelpTip code="fields.types" docsPath="/features/custom-fields-tags" />
         </h1>

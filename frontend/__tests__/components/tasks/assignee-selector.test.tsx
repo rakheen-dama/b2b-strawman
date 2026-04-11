@@ -15,11 +15,7 @@ describe("AssigneeSelector", () => {
 
   it("shows Unassigned when currentAssigneeId is null", () => {
     render(
-      <AssigneeSelector
-        members={MEMBERS}
-        currentAssigneeId={null}
-        onAssigneeChange={vi.fn()}
-      />,
+      <AssigneeSelector members={MEMBERS} currentAssigneeId={null} onAssigneeChange={vi.fn()} />
     );
 
     expect(screen.getByRole("combobox")).toHaveTextContent("Unassigned");
@@ -27,11 +23,7 @@ describe("AssigneeSelector", () => {
 
   it("shows the selected member name when currentAssigneeId is set", () => {
     render(
-      <AssigneeSelector
-        members={MEMBERS}
-        currentAssigneeId="m1"
-        onAssigneeChange={vi.fn()}
-      />,
+      <AssigneeSelector members={MEMBERS} currentAssigneeId="m1" onAssigneeChange={vi.fn()} />
     );
 
     expect(screen.getByRole("combobox")).toHaveTextContent("Alice Smith");
@@ -40,11 +32,7 @@ describe("AssigneeSelector", () => {
   it("renders members in the dropdown when opened", async () => {
     const user = userEvent.setup();
     render(
-      <AssigneeSelector
-        members={MEMBERS}
-        currentAssigneeId={null}
-        onAssigneeChange={vi.fn()}
-      />,
+      <AssigneeSelector members={MEMBERS} currentAssigneeId={null} onAssigneeChange={vi.fn()} />
     );
 
     await user.click(screen.getByRole("combobox"));
@@ -61,7 +49,7 @@ describe("AssigneeSelector", () => {
         members={MEMBERS}
         currentAssigneeId={null}
         onAssigneeChange={onAssigneeChange}
-      />,
+      />
     );
 
     await user.click(screen.getByRole("combobox"));
@@ -80,7 +68,7 @@ describe("AssigneeSelector", () => {
         members={MEMBERS}
         currentAssigneeId="m1"
         onAssigneeChange={onAssigneeChange}
-      />,
+      />
     );
 
     await user.click(screen.getByRole("combobox"));

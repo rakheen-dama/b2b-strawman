@@ -65,7 +65,7 @@ vi.mock("@/app/(app)/org/[slug]/legal/tariffs/actions", () => ({
       itemNumber: "1(a)",
       description: "Instructions to institute action",
       unit: "PER_ITEM",
-      amount: 850.00,
+      amount: 850.0,
       notes: null,
       createdAt: "2026-01-01T00:00:00Z",
       updatedAt: "2026-01-01T00:00:00Z",
@@ -76,7 +76,7 @@ vi.mock("@/app/(app)/org/[slug]/legal/tariffs/actions", () => ({
       itemNumber: "1(b)",
       description: "Instructions to oppose action",
       unit: "PER_ITEM",
-      amount: 675.00,
+      amount: 675.0,
       notes: null,
       createdAt: "2026-01-01T00:00:00Z",
       updatedAt: "2026-01-01T00:00:00Z",
@@ -87,7 +87,7 @@ vi.mock("@/app/(app)/org/[slug]/legal/tariffs/actions", () => ({
       itemNumber: "2(a)",
       description: "Perusal of documents, per folio",
       unit: "PER_FOLIO",
-      amount: 25.00,
+      amount: 25.0,
       notes: null,
       createdAt: "2026-01-01T00:00:00Z",
       updatedAt: "2026-01-01T00:00:00Z",
@@ -157,13 +157,7 @@ describe("Tariff schedule list", () => {
       makeSchedule({ id: "ts-2", name: "Magistrate Court PP 2026", code: "MC_PP", active: false }),
     ];
 
-    render(
-      <TariffBrowserClient
-        initialSchedules={schedules}
-        initialTotal={2}
-        slug="acme"
-      />,
-    );
+    render(<TariffBrowserClient initialSchedules={schedules} initialTotal={2} slug="acme" />);
 
     const browser = screen.getByTestId("tariff-browser");
     expect(browser).toBeInTheDocument();
@@ -213,17 +207,9 @@ describe("Tariff item browser", () => {
 
 describe("Schedule clone button", () => {
   it("shows clone button on each schedule", () => {
-    const schedules = [
-      makeSchedule({ id: "ts-1", name: "System Schedule", code: "SYS_1" }),
-    ];
+    const schedules = [makeSchedule({ id: "ts-1", name: "System Schedule", code: "SYS_1" })];
 
-    render(
-      <TariffBrowserClient
-        initialSchedules={schedules}
-        initialTotal={1}
-        slug="acme"
-      />,
-    );
+    render(<TariffBrowserClient initialSchedules={schedules} initialTotal={1} slug="acme" />);
 
     const cloneBtn = screen.getByTestId("clone-btn-ts-1");
     expect(cloneBtn).toBeInTheDocument();
@@ -241,15 +227,11 @@ describe("Tariff nav item", () => {
 
   it("module gate hides tariff content when disabled", () => {
     render(
-      <OrgProfileProvider
-        verticalProfile={null}
-        enabledModules={[]}
-        terminologyNamespace={null}
-      >
+      <OrgProfileProvider verticalProfile={null} enabledModules={[]} terminologyNamespace={null}>
         <ModuleGate module="lssa_tariff">
           <span>Tariff Content</span>
         </ModuleGate>
-      </OrgProfileProvider>,
+      </OrgProfileProvider>
     );
 
     expect(screen.queryByText("Tariff Content")).not.toBeInTheDocument();
@@ -265,7 +247,7 @@ describe("Tariff nav item", () => {
         <ModuleGate module="lssa_tariff">
           <span>Tariff Content</span>
         </ModuleGate>
-      </OrgProfileProvider>,
+      </OrgProfileProvider>
     );
 
     expect(screen.getByText("Tariff Content")).toBeInTheDocument();

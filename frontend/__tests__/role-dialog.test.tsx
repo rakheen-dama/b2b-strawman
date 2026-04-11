@@ -8,10 +8,7 @@ vi.mock("server-only", () => ({}));
 // Mock motion/react (Dialog/AlertDialog use motion internally)
 vi.mock("motion/react", () => ({
   motion: {
-    div: ({
-      children,
-      ...props
-    }: React.PropsWithChildren<Record<string, unknown>>) => {
+    div: ({ children, ...props }: React.PropsWithChildren<Record<string, unknown>>) => {
       const { initial, animate, transition, ...rest } = props;
       return <div {...rest}>{children}</div>;
     },
@@ -59,9 +56,7 @@ describe("RoleDialog", () => {
     mockCreateRoleAction.mockResolvedValue({ success: true });
     const onOpenChange = vi.fn();
 
-    render(
-      <RoleDialog slug="acme" open={true} onOpenChange={onOpenChange} />,
-    );
+    render(<RoleDialog slug="acme" open={true} onOpenChange={onOpenChange} />);
 
     expect(screen.getByText("Create Role")).toBeInTheDocument();
 
@@ -83,27 +78,27 @@ describe("RoleDialog", () => {
   it("pre-fills existing data in edit mode", async () => {
     const role = makeRole();
 
-    render(
-      <RoleDialog
-        slug="acme"
-        role={role}
-        open={true}
-        onOpenChange={() => {}}
-      />,
-    );
+    render(<RoleDialog slug="acme" role={role} open={true} onOpenChange={() => {}} />);
 
     expect(screen.getByText("Edit Role")).toBeInTheDocument();
     expect(screen.getByDisplayValue("Bookkeeper")).toBeInTheDocument();
-    expect(
-      screen.getByDisplayValue("Can manage invoices"),
-    ).toBeInTheDocument();
+    expect(screen.getByDisplayValue("Can manage invoices")).toBeInTheDocument();
 
     // Financial Visibility and Invoicing should be checked
-    expect(screen.getByRole("checkbox", { name: /Financial Visibility/i })).toHaveAttribute("data-state", "checked");
-    expect(screen.getByRole("checkbox", { name: /Invoicing/i })).toHaveAttribute("data-state", "checked");
+    expect(screen.getByRole("checkbox", { name: /Financial Visibility/i })).toHaveAttribute(
+      "data-state",
+      "checked"
+    );
+    expect(screen.getByRole("checkbox", { name: /Invoicing/i })).toHaveAttribute(
+      "data-state",
+      "checked"
+    );
 
     // Project Management should not be checked
-    expect(screen.getByRole("checkbox", { name: /Project Management/i })).toHaveAttribute("data-state", "unchecked");
+    expect(screen.getByRole("checkbox", { name: /Project Management/i })).toHaveAttribute(
+      "data-state",
+      "unchecked"
+    );
   });
 
   it("updates capabilities in edit mode", async () => {
@@ -112,14 +107,7 @@ describe("RoleDialog", () => {
     mockUpdateRoleAction.mockResolvedValue({ success: true });
     const onOpenChange = vi.fn();
 
-    render(
-      <RoleDialog
-        slug="acme"
-        role={role}
-        open={true}
-        onOpenChange={onOpenChange}
-      />,
-    );
+    render(<RoleDialog slug="acme" role={role} open={true} onOpenChange={onOpenChange} />);
 
     // Add Project Management capability
     await user.click(screen.getByLabelText("Project Management"));
@@ -150,14 +138,7 @@ describe("DeleteRoleDialog", () => {
   it("shows member count in the warning", () => {
     const role = makeRole({ memberCount: 5 });
 
-    render(
-      <DeleteRoleDialog
-        slug="acme"
-        role={role}
-        open={true}
-        onOpenChange={() => {}}
-      />,
-    );
+    render(<DeleteRoleDialog slug="acme" role={role} open={true} onOpenChange={() => {}} />);
 
     expect(screen.getByText("Delete Role")).toBeInTheDocument();
     expect(screen.getByText("5 members")).toBeInTheDocument();
@@ -166,14 +147,7 @@ describe("DeleteRoleDialog", () => {
   it("disables delete button when members are assigned", () => {
     const role = makeRole({ memberCount: 3 });
 
-    render(
-      <DeleteRoleDialog
-        slug="acme"
-        role={role}
-        open={true}
-        onOpenChange={() => {}}
-      />,
-    );
+    render(<DeleteRoleDialog slug="acme" role={role} open={true} onOpenChange={() => {}} />);
 
     const deleteButton = screen.getByRole("button", { name: "Delete" });
     expect(deleteButton).toBeDisabled();

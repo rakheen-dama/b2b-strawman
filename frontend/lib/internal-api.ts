@@ -16,12 +16,7 @@ export class InternalApiError extends Error {
 
 // ---- Billing (from BillingController.java — Phase 57 lifecycle model) ----
 
-export type BillingMethod =
-  | "PAYFAST"
-  | "DEBIT_ORDER"
-  | "PILOT"
-  | "COMPLIMENTARY"
-  | "MANUAL";
+export type BillingMethod = "PAYFAST" | "DEBIT_ORDER" | "PILOT" | "COMPLIMENTARY" | "MANUAL";
 
 export interface BillingResponse {
   status: string;

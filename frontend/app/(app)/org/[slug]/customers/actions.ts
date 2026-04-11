@@ -58,7 +58,10 @@ export interface UpdateCustomerData {
   financialYearEnd?: string;
 }
 
-export async function createCustomer(slug: string, data: CreateCustomerData): Promise<ActionResult> {
+export async function createCustomer(
+  slug: string,
+  data: CreateCustomerData
+): Promise<ActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Only admins and owners can manage customers." };

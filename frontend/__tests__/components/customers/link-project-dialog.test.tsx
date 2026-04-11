@@ -63,7 +63,7 @@ describe("LinkProjectDialog", () => {
         <LinkProjectDialog slug="acme" customerId="c1" existingProjects={[]}>
           <button>Link Project Dialog Trigger</button>
         </LinkProjectDialog>
-      </SWRTestProvider>,
+      </SWRTestProvider>
     );
 
     await user.click(screen.getByText("Link Project Dialog Trigger"));
@@ -82,7 +82,7 @@ describe("LinkProjectDialog", () => {
         <LinkProjectDialog slug="acme" customerId="c1" existingProjects={existingProjects}>
           <button>Link Project Dialog Trigger</button>
         </LinkProjectDialog>
-      </SWRTestProvider>,
+      </SWRTestProvider>
     );
 
     await user.click(screen.getByText("Link Project Dialog Trigger"));
@@ -106,7 +106,7 @@ describe("LinkProjectDialog", () => {
         <LinkProjectDialog slug="acme" customerId="c1" existingProjects={existingProjects}>
           <button>Link Project Dialog Trigger</button>
         </LinkProjectDialog>
-      </SWRTestProvider>,
+      </SWRTestProvider>
     );
 
     await user.click(screen.getByText("Link Project Dialog Trigger"));
@@ -129,21 +129,21 @@ describe("LinkProjectDialog", () => {
         <LinkProjectDialog slug="acme" customerId="c1" existingProjects={existingProjects}>
           <button>Link Project Dialog Trigger</button>
         </LinkProjectDialog>
-      </SWRTestProvider>,
+      </SWRTestProvider>
     );
 
     await user.click(screen.getByText("Link Project Dialog Trigger"));
 
     await waitFor(() => {
       expect(
-        screen.getByText("All projects are already linked to this customer."),
+        screen.getByText("All projects are already linked to this customer.")
       ).toBeInTheDocument();
     });
   });
 
   it("shows loading state while fetching projects", async () => {
     mockFetchProjects.mockImplementation(
-      () => new Promise((resolve) => setTimeout(() => resolve(mockAllProjects), 500)),
+      () => new Promise((resolve) => setTimeout(() => resolve(mockAllProjects), 500))
     );
     const user = userEvent.setup();
 
@@ -152,7 +152,7 @@ describe("LinkProjectDialog", () => {
         <LinkProjectDialog slug="acme" customerId="c1" existingProjects={[]}>
           <button>Link Project Dialog Trigger</button>
         </LinkProjectDialog>
-      </SWRTestProvider>,
+      </SWRTestProvider>
     );
 
     await user.click(screen.getByText("Link Project Dialog Trigger"));
@@ -170,7 +170,7 @@ describe("LinkProjectDialog", () => {
         <LinkProjectDialog slug="acme" customerId="c1" existingProjects={[]}>
           <button>Link Project Dialog Trigger</button>
         </LinkProjectDialog>
-      </SWRTestProvider>,
+      </SWRTestProvider>
     );
 
     await user.click(screen.getByText("Link Project Dialog Trigger"));

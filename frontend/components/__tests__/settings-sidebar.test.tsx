@@ -15,11 +15,7 @@ const mockUsePathname = vi.mocked(usePathname);
 
 function renderSidebar(
   props: { slug: string; isAdmin: boolean },
-  enabledModules: string[] = [
-    "automation_builder",
-    "bulk_billing",
-    "resource_planning",
-  ],
+  enabledModules: string[] = ["automation_builder", "bulk_billing", "resource_planning"]
 ) {
   return render(
     <OrgProfileProvider
@@ -28,7 +24,7 @@ function renderSidebar(
       terminologyNamespace={null}
     >
       <SettingsSidebar {...props} />
-    </OrgProfileProvider>,
+    </OrgProfileProvider>
   );
 }
 
@@ -101,7 +97,7 @@ describe("SettingsSidebar", () => {
     const billingLinks = screen.getAllByText("Billing");
     // Find the one that is an <a> tag in desktop nav
     const desktopBillingLink = billingLinks.find(
-      (el) => el.tagName === "A" && el.closest("nav") !== null,
+      (el) => el.tagName === "A" && el.closest("nav") !== null
     );
     expect(desktopBillingLink).toBeDefined();
     expect(desktopBillingLink?.className).toContain("border-teal-600");
@@ -117,7 +113,7 @@ describe("SettingsSidebar", () => {
     const notifLinks = screen.getAllByText("Notifications");
     // At least one should be an <a> in desktop nav
     const desktopNotifLink = notifLinks.find(
-      (el) => el.tagName === "A" && el.closest("nav") !== null,
+      (el) => el.tagName === "A" && el.closest("nav") !== null
     );
     expect(desktopNotifLink).toBeDefined();
     expect(desktopNotifLink?.className).not.toContain("border-teal-600");
@@ -159,7 +155,7 @@ describe("SettingsSidebar", () => {
 
     // The mobile pill should have rounded-full class (desktop uses rounded-r-md)
     const mobilePill = billingElements.find(
-      (el) => el.tagName === "A" && el.className.includes("rounded-full"),
+      (el) => el.tagName === "A" && el.className.includes("rounded-full")
     );
     expect(mobilePill).toBeDefined();
   });

@@ -1,21 +1,9 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  ArrowUpRight,
-  ArrowDownLeft,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { ArrowLeft, ArrowUpRight, ArrowDownLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import { getOrgSettings } from "@/lib/api/settings";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { fetchTrustAccounts } from "@/app/(app)/org/[slug]/trust-accounting/actions";
@@ -27,16 +15,12 @@ import {
 import { PrintStatementButton } from "@/components/trust/print-statement-button";
 import { ClientHistoryFilters } from "@/components/trust/client-history-filters";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
-import type {
-  TrustTransactionStatus,
-  TrustTransactionType,
-  ClientLedgerCard,
-} from "@/lib/types";
+import type { TrustTransactionStatus, TrustTransactionType, ClientLedgerCard } from "@/lib/types";
 
 // ── Helpers ───────────────────────────────────────────────────────
 
 function statusBadgeVariant(
-  status: TrustTransactionStatus,
+  status: TrustTransactionStatus
 ): "success" | "warning" | "destructive" | "neutral" {
   switch (status) {
     case "APPROVED":
@@ -60,9 +44,7 @@ function transactionTypeLabel(type: TrustTransactionType): string {
 }
 
 function isInflowType(type: TrustTransactionType): boolean {
-  return ["DEPOSIT", "TRANSFER_IN", "REFUND", "INTEREST_CREDIT"].includes(
-    type,
-  );
+  return ["DEPOSIT", "TRANSFER_IN", "REFUND", "INTEREST_CREDIT"].includes(type);
 }
 
 const STATUS_OPTIONS: TrustTransactionStatus[] = [
@@ -119,9 +101,7 @@ export default async function ClientDetailPage({
   // Capability check
   const capData = await fetchMyCapabilities();
   const hasViewTrust =
-    capData.isAdmin ||
-    capData.isOwner ||
-    capData.capabilities.includes("VIEW_TRUST");
+    capData.isAdmin || capData.isOwner || capData.capabilities.includes("VIEW_TRUST");
   if (!hasViewTrust) {
     notFound();
   }
@@ -248,15 +228,10 @@ export default async function ClientDetailPage({
       </div>
 
       {/* Summary Cards */}
-      <div
-        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
-        data-testid="client-summary"
-      >
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" data-testid="client-summary">
         <Card>
           <CardContent className="pt-6">
-            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-              Trust Balance
-            </p>
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Trust Balance</p>
             <p className="mt-1 text-2xl font-bold text-slate-950 dark:text-slate-50">
               {formatCurrency(ledgerCard.balance, currency)}
             </p>
@@ -264,9 +239,7 @@ export default async function ClientDetailPage({
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-              Total Deposits
-            </p>
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Total Deposits</p>
             <p className="mt-1 text-2xl font-bold text-green-600 dark:text-green-400">
               {formatCurrency(ledgerCard.totalDeposits, currency)}
             </p>
@@ -274,9 +247,7 @@ export default async function ClientDetailPage({
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
-              Total Payments
-            </p>
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Total Payments</p>
             <p className="mt-1 text-2xl font-bold text-slate-950 dark:text-slate-50">
               {formatCurrency(ledgerCard.totalPayments, currency)}
             </p>
@@ -303,21 +274,13 @@ export default async function ClientDetailPage({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <PrintStatementButton
-            accountId={accountId}
-            customerId={customerId}
-          />
+          <PrintStatementButton accountId={accountId} customerId={customerId} />
         </CardContent>
       </Card>
 
       {/* Status Filter Pills */}
-      <div
-        className="flex flex-wrap items-center gap-3"
-        data-testid="status-filters"
-      >
-        <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
-          Status:
-        </span>
+      <div className="flex flex-wrap items-center gap-3" data-testid="status-filters">
+        <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Status:</span>
         <Link
           href={filterUrl({ status: undefined })}
           className={`rounded-full px-3 py-1 text-sm transition-colors ${
@@ -346,13 +309,8 @@ export default async function ClientDetailPage({
       </div>
 
       {/* Type Filter Pills */}
-      <div
-        className="flex flex-wrap items-center gap-3"
-        data-testid="type-filters"
-      >
-        <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
-          Type:
-        </span>
+      <div className="flex flex-wrap items-center gap-3" data-testid="type-filters">
+        <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Type:</span>
         <Link
           href={filterUrl({ type: undefined })}
           className={`rounded-full px-3 py-1 text-sm transition-colors ${
@@ -379,11 +337,7 @@ export default async function ClientDetailPage({
       </div>
 
       {/* Date Range Filters */}
-      <ClientHistoryFilters
-        slug={slug}
-        customerId={customerId}
-        search={search}
-      />
+      <ClientHistoryFilters slug={slug} customerId={customerId} search={search} />
 
       {/* Error State */}
       {fetchError && (
@@ -416,25 +370,22 @@ export default async function ClientDetailPage({
             ) : (
               <>
                 <div className="overflow-x-auto">
-                  <table
-                    className="w-full text-sm"
-                    data-testid="history-table"
-                  >
+                  <table className="w-full text-sm" data-testid="history-table">
                     <thead>
                       <tr className="border-b border-slate-200 dark:border-slate-700">
-                        <th className="pb-3 pr-4 text-left font-medium text-slate-500 dark:text-slate-400">
+                        <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
                           Date
                         </th>
-                        <th className="pb-3 pr-4 text-left font-medium text-slate-500 dark:text-slate-400">
+                        <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
                           Reference
                         </th>
-                        <th className="pb-3 pr-4 text-left font-medium text-slate-500 dark:text-slate-400">
+                        <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
                           Type
                         </th>
-                        <th className="pb-3 pr-4 text-right font-medium text-slate-500 dark:text-slate-400">
+                        <th className="pr-4 pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
                           Amount
                         </th>
-                        <th className="pb-3 pr-4 text-left font-medium text-slate-500 dark:text-slate-400">
+                        <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
                           Status
                         </th>
                         <th className="pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
@@ -457,24 +408,18 @@ export default async function ClientDetailPage({
                           </td>
                           <td className="py-3 pr-4">
                             <Badge variant="neutral">
-                              {transactionTypeLabel(
-                                tx.transactionType as TrustTransactionType,
-                              )}
+                              {transactionTypeLabel(tx.transactionType as TrustTransactionType)}
                             </Badge>
                           </td>
                           <td className="py-3 pr-4 text-right">
                             <span
                               className={`inline-flex items-center gap-1 font-mono tabular-nums ${
-                                isInflowType(
-                                  tx.transactionType as TrustTransactionType,
-                                )
+                                isInflowType(tx.transactionType as TrustTransactionType)
                                   ? "text-green-600 dark:text-green-400"
                                   : "text-slate-950 dark:text-slate-50"
                               }`}
                             >
-                              {isInflowType(
-                                tx.transactionType as TrustTransactionType,
-                              ) ? (
+                              {isInflowType(tx.transactionType as TrustTransactionType) ? (
                                 <ArrowDownLeft className="size-3" />
                               ) : (
                                 <ArrowUpRight className="size-3" />
@@ -484,14 +429,12 @@ export default async function ClientDetailPage({
                           </td>
                           <td className="py-3 pr-4">
                             <Badge
-                              variant={statusBadgeVariant(
-                                tx.status as TrustTransactionStatus,
-                              )}
+                              variant={statusBadgeVariant(tx.status as TrustTransactionStatus)}
                             >
                               {tx.status.replace(/_/g, " ")}
                             </Badge>
                           </td>
-                          <td className="py-3 text-right font-mono tabular-nums text-slate-950 dark:text-slate-50">
+                          <td className="py-3 text-right font-mono text-slate-950 tabular-nums dark:text-slate-50">
                             {tx.runningBalance !== null
                               ? formatCurrency(tx.runningBalance, currency)
                               : "\u2014"}

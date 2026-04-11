@@ -21,12 +21,7 @@ interface DeleteFieldDialogProps {
   children: React.ReactNode;
 }
 
-export function DeleteFieldDialog({
-  slug,
-  fieldId,
-  fieldName,
-  children,
-}: DeleteFieldDialogProps) {
+export function DeleteFieldDialog({ slug, fieldId, fieldName, children }: DeleteFieldDialogProps) {
   const [open, setOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -57,19 +52,14 @@ export function DeleteFieldDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Delete Field Definition</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete the field &quot;{fieldName}&quot;?
-            This will deactivate the field and it will no longer appear on new
-            records. Existing data will be preserved.
+            Are you sure you want to delete the field &quot;{fieldName}&quot;? This will deactivate
+            the field and it will no longer appear on new records. Existing data will be preserved.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        {error && <p className="text-sm text-destructive">{error}</p>}
+        {error && <p className="text-destructive text-sm">{error}</p>}
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
-          <AlertDialogAction
-            variant="destructive"
-            onClick={handleDelete}
-            disabled={isDeleting}
-          >
+          <AlertDialogAction variant="destructive" onClick={handleDelete} disabled={isDeleting}>
             {isDeleting ? "Deleting..." : "Delete"}
           </AlertDialogAction>
         </AlertDialogFooter>

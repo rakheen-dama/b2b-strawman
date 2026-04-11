@@ -1,10 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen, fireEvent } from "@testing-library/react";
 import { RuleList } from "@/components/automations/rule-list";
-import type {
-  AutomationRuleResponse,
-  TemplateDefinitionResponse,
-} from "@/lib/api/automations";
+import type { AutomationRuleResponse, TemplateDefinitionResponse } from "@/lib/api/automations";
 
 const mockPush = vi.fn();
 vi.mock("next/navigation", () => ({
@@ -106,56 +103,28 @@ describe("RuleList", () => {
 
   it("renders rules in table", () => {
     render(
-      <RuleList
-        slug="acme"
-        rules={sampleRules}
-        templates={sampleTemplates}
-        canManage={true}
-      />,
+      <RuleList slug="acme" rules={sampleRules} templates={sampleTemplates} canManage={true} />
     );
     expect(screen.getByText("Auto-assign tasks")).toBeInTheDocument();
     expect(screen.getByText("Invoice notification")).toBeInTheDocument();
   });
 
   it("shows empty state when no rules", () => {
-    render(
-      <RuleList
-        slug="acme"
-        rules={[]}
-        templates={sampleTemplates}
-        canManage={true}
-      />,
-    );
+    render(<RuleList slug="acme" rules={[]} templates={sampleTemplates} canManage={true} />);
     expect(screen.getByText("No automation rules yet")).toBeInTheDocument();
     expect(
-      screen.getByText(
-        "Create your first automation or browse templates to get started.",
-      ),
+      screen.getByText("Create your first automation or browse templates to get started.")
     ).toBeInTheDocument();
   });
 
   it("shows non-admin empty state message", () => {
-    render(
-      <RuleList
-        slug="acme"
-        rules={[]}
-        templates={sampleTemplates}
-        canManage={false}
-      />,
-    );
-    expect(
-      screen.getByText("No automation rules have been created yet."),
-    ).toBeInTheDocument();
+    render(<RuleList slug="acme" rules={[]} templates={sampleTemplates} canManage={false} />);
+    expect(screen.getByText("No automation rules have been created yet.")).toBeInTheDocument();
   });
 
   it("renders toggle switches for each rule", () => {
     render(
-      <RuleList
-        slug="acme"
-        rules={sampleRules}
-        templates={sampleTemplates}
-        canManage={true}
-      />,
+      <RuleList slug="acme" rules={sampleRules} templates={sampleTemplates} canManage={true} />
     );
     const toggles = screen.getAllByRole("switch");
     expect(toggles).toHaveLength(2);
@@ -165,12 +134,7 @@ describe("RuleList", () => {
 
   it("renders trigger type badges", () => {
     render(
-      <RuleList
-        slug="acme"
-        rules={sampleRules}
-        templates={sampleTemplates}
-        canManage={true}
-      />,
+      <RuleList slug="acme" rules={sampleRules} templates={sampleTemplates} canManage={true} />
     );
     expect(screen.getByText("Task Status")).toBeInTheDocument();
     expect(screen.getByText("Invoice Status")).toBeInTheDocument();
@@ -178,28 +142,15 @@ describe("RuleList", () => {
 
   it("renders rule name as a link to rule detail", () => {
     render(
-      <RuleList
-        slug="acme"
-        rules={sampleRules}
-        templates={sampleTemplates}
-        canManage={true}
-      />,
+      <RuleList slug="acme" rules={sampleRules} templates={sampleTemplates} canManage={true} />
     );
     const ruleLink = screen.getByText("Auto-assign tasks").closest("a");
-    expect(ruleLink).toHaveAttribute(
-      "href",
-      "/org/acme/settings/automations/rule-1",
-    );
+    expect(ruleLink).toHaveAttribute("href", "/org/acme/settings/automations/rule-1");
   });
 
   it("opens template gallery when Browse Templates is clicked", () => {
     render(
-      <RuleList
-        slug="acme"
-        rules={sampleRules}
-        templates={sampleTemplates}
-        canManage={true}
-      />,
+      <RuleList slug="acme" rules={sampleRules} templates={sampleTemplates} canManage={true} />
     );
     fireEvent.click(screen.getByText("Browse Templates"));
     expect(screen.getByText("Automation Templates")).toBeInTheDocument();
@@ -207,12 +158,7 @@ describe("RuleList", () => {
 
   it("shows delete confirmation on first click", () => {
     render(
-      <RuleList
-        slug="acme"
-        rules={sampleRules}
-        templates={sampleTemplates}
-        canManage={true}
-      />,
+      <RuleList slug="acme" rules={sampleRules} templates={sampleTemplates} canManage={true} />
     );
     const deleteButtons = screen.getAllByLabelText(/Delete/);
     expect(deleteButtons.length).toBeGreaterThan(0);

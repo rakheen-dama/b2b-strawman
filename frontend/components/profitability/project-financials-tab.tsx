@@ -20,7 +20,7 @@ function StatCard({
 }) {
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950">
-      <p className="text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+      <p className="text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
         {label}
       </p>
       <p className={valueClassName ?? "text-slate-950 dark:text-slate-50"}>
@@ -30,11 +30,8 @@ function StatCard({
   );
 }
 
-export function ProjectFinancialsTab({
-  profitability,
-}: ProjectFinancialsTabProps) {
-  const hasProfitability =
-    profitability && profitability.currencies.length > 0;
+export function ProjectFinancialsTab({ profitability }: ProjectFinancialsTabProps) {
+  const hasProfitability = profitability && profitability.currencies.length > 0;
 
   if (!hasProfitability) {
     return (
@@ -59,48 +56,31 @@ export function ProjectFinancialsTab({
             </h4>
           )}
           <div className="grid auto-rows-fr grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-            <StatCard
-              label="Billable Hours"
-              value={`${curr.totalBillableHours.toFixed(1)}h`}
-            />
-            <StatCard
-              label="Revenue"
-              value={formatCurrency(curr.billableValue, curr.currency)}
-            />
-            <StatCard
-              label="Cost"
-              value={formatCurrencySafe(curr.costValue, curr.currency)}
-            />
+            <StatCard label="Billable Hours" value={`${curr.totalBillableHours.toFixed(1)}h`} />
+            <StatCard label="Revenue" value={formatCurrency(curr.billableValue, curr.currency)} />
+            <StatCard label="Cost" value={formatCurrencySafe(curr.costValue, curr.currency)} />
             <StatCard
               label="Margin"
-              value={
-                curr.margin != null
-                  ? formatCurrency(curr.margin, curr.currency)
-                  : "N/A"
-              }
+              value={curr.margin != null ? formatCurrency(curr.margin, curr.currency) : "N/A"}
               valueClassName={
                 curr.margin != null
                   ? cn(
                       curr.margin >= 0
                         ? "text-green-600 dark:text-green-400"
-                        : "text-red-600 dark:text-red-400",
+                        : "text-red-600 dark:text-red-400"
                     )
                   : undefined
               }
             />
             <StatCard
               label="Margin %"
-              value={
-                curr.marginPercent != null
-                  ? `${curr.marginPercent.toFixed(1)}%`
-                  : "N/A"
-              }
+              value={curr.marginPercent != null ? `${curr.marginPercent.toFixed(1)}%` : "N/A"}
               valueClassName={
                 curr.marginPercent != null
                   ? cn(
                       curr.marginPercent >= 0
                         ? "text-green-600 dark:text-green-400"
-                        : "text-red-600 dark:text-red-400",
+                        : "text-red-600 dark:text-red-400"
                     )
                   : undefined
               }

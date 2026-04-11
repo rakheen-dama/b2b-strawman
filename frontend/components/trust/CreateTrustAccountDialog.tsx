@@ -32,10 +32,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  createTrustAccountSchema,
-  type CreateTrustAccountFormData,
-} from "@/lib/schemas/trust";
+import { createTrustAccountSchema, type CreateTrustAccountFormData } from "@/lib/schemas/trust";
 import { createTrustAccount } from "@/app/(app)/org/[slug]/trust-accounting/actions";
 
 interface CreateTrustAccountDialogProps {
@@ -100,15 +97,11 @@ export function CreateTrustAccountDialog({
         isPrimary: values.isPrimary ?? false,
         requireDualApproval: values.requireDualApproval,
         paymentApprovalThreshold:
-          values.paymentApprovalThreshold != null &&
-          !Number.isNaN(values.paymentApprovalThreshold)
+          values.paymentApprovalThreshold != null && !Number.isNaN(values.paymentApprovalThreshold)
             ? values.paymentApprovalThreshold
             : null,
         openedDate: values.openedDate,
-        notes:
-          values.notes && values.notes.trim().length > 0
-            ? values.notes
-            : undefined,
+        notes: values.notes && values.notes.trim().length > 0 ? values.notes : undefined,
       });
 
       if (result.success) {
@@ -131,8 +124,8 @@ export function CreateTrustAccountDialog({
         <DialogHeader>
           <DialogTitle>Add Trust Account</DialogTitle>
           <DialogDescription>
-            Register a new trust bank account for the firm. This account will
-            be available for receipts, payments, and reconciliation.
+            Register a new trust bank account for the firm. This account will be available for
+            receipts, payments, and reconciliation.
           </DialogDescription>
         </DialogHeader>
 
@@ -149,11 +142,7 @@ export function CreateTrustAccountDialog({
                 <FormItem>
                   <FormLabel>Account Name</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="e.g. Mathebula Trust Account"
-                      maxLength={200}
-                      {...field}
-                    />
+                    <Input placeholder="e.g. Mathebula Trust Account" maxLength={200} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -168,11 +157,7 @@ export function CreateTrustAccountDialog({
                   <FormItem>
                     <FormLabel>Bank Name</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="e.g. Standard Bank"
-                        maxLength={200}
-                        {...field}
-                      />
+                      <Input placeholder="e.g. Standard Bank" maxLength={200} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -186,11 +171,7 @@ export function CreateTrustAccountDialog({
                   <FormItem>
                     <FormLabel>Branch Code</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="e.g. 051001"
-                        maxLength={20}
-                        {...field}
-                      />
+                      <Input placeholder="e.g. 051001" maxLength={20} {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -205,11 +186,7 @@ export function CreateTrustAccountDialog({
                 <FormItem>
                   <FormLabel>Account Number</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="e.g. 1234567890"
-                      maxLength={30}
-                      {...field}
-                    />
+                    <Input placeholder="e.g. 1234567890" maxLength={30} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -223,10 +200,7 @@ export function CreateTrustAccountDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Account Type</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value}
-                    >
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger data-testid="trust-account-type-select">
                           <SelectValue placeholder="Select account type" />
@@ -272,9 +246,8 @@ export function CreateTrustAccountDialog({
                     <FormLabel className="text-sm font-medium">
                       Set as primary trust account
                     </FormLabel>
-                    <p className="text-xs text-muted-foreground">
-                      The primary account is used by default for dashboards
-                      and reporting.
+                    <p className="text-muted-foreground text-xs">
+                      The primary account is used by default for dashboards and reporting.
                     </p>
                   </div>
                 </FormItem>
@@ -293,12 +266,9 @@ export function CreateTrustAccountDialog({
                     />
                   </FormControl>
                   <div className="space-y-0.5">
-                    <FormLabel className="text-sm font-medium">
-                      Require dual approval
-                    </FormLabel>
-                    <p className="text-xs text-muted-foreground">
-                      When enabled, trust payments need two approvers before
-                      release.
+                    <FormLabel className="text-sm font-medium">Require dual approval</FormLabel>
+                    <p className="text-muted-foreground text-xs">
+                      When enabled, trust payments need two approvers before release.
                     </p>
                   </div>
                 </FormItem>
@@ -320,9 +290,7 @@ export function CreateTrustAccountDialog({
                       value={field.value ?? ""}
                       onChange={(e) => {
                         const raw = e.target.value;
-                        field.onChange(
-                          raw === "" ? undefined : parseFloat(raw),
-                        );
+                        field.onChange(raw === "" ? undefined : parseFloat(raw));
                       }}
                     />
                   </FormControl>
@@ -350,7 +318,7 @@ export function CreateTrustAccountDialog({
             />
 
             {error && (
-              <p className="text-sm text-destructive" role="alert">
+              <p className="text-destructive text-sm" role="alert">
                 {error}
               </p>
             )}

@@ -9,9 +9,7 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
 }));
 
-const mockUpdateFilingStatus = vi
-  .fn()
-  .mockResolvedValue({ success: true, results: [] });
+const mockUpdateFilingStatus = vi.fn().mockResolvedValue({ success: true, results: [] });
 
 vi.mock("@/app/(app)/org/[slug]/deadlines/actions", () => ({
   updateFilingStatus: (...args: unknown[]) => mockUpdateFilingStatus(...args),
@@ -29,9 +27,7 @@ import type { CalculatedDeadline, DeadlineSummary } from "@/lib/types";
 afterEach(() => cleanup());
 beforeEach(() => vi.clearAllMocks());
 
-function makeDeadline(
-  overrides: Partial<CalculatedDeadline> = {}
-): CalculatedDeadline {
+function makeDeadline(overrides: Partial<CalculatedDeadline> = {}): CalculatedDeadline {
   return {
     customerId: "cust-1",
     customerName: "Acme Pty Ltd",
@@ -65,9 +61,7 @@ describe("FilingStatusDialog", () => {
     expect(markAsFiledElements.length).toBeGreaterThanOrEqual(1);
     expect(screen.getByLabelText(/reference number/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/notes/i)).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /mark as filed/i })
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /mark as filed/i })).toBeInTheDocument();
   });
 
   it("submit calls updateFilingStatus with correct payload", async () => {
@@ -120,15 +114,9 @@ describe("BatchFilingActions", () => {
       />
     );
     expect(screen.getByText("1 selected")).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /mark as filed/i })
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /mark as n\/a/i })
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /clear/i })
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /mark as filed/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /mark as n\/a/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /clear/i })).toBeInTheDocument();
   });
 });
 
@@ -162,8 +150,7 @@ describe("DeadlineSummaryCards", () => {
       const labelEl = cardScope.getByText(label);
       // The label and value share a parent div.text-center; value is the first <p>
       const statContainer = labelEl.closest(".text-center")!;
-      return within(statContainer as HTMLElement).getAllByText(/\d+/)[0]
-        .textContent!;
+      return within(statContainer as HTMLElement).getAllByText(/\d+/)[0].textContent!;
     }
 
     const taxCard = screen.getByText("Tax").closest("[data-slot='card']")!;

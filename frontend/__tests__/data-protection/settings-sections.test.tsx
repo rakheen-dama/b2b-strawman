@@ -18,27 +18,17 @@ const mockCreateProcessingActivity = vi.fn();
 const mockUpdateProcessingActivity = vi.fn();
 const mockDeleteProcessingActivity = vi.fn();
 const mockGeneratePaiaManual = vi.fn();
-vi.mock(
-  "@/app/(app)/org/[slug]/settings/data-protection/actions",
-  () => ({
-    updateRetentionPolicy: (...args: unknown[]) =>
-      mockUpdateRetentionPolicy(...args),
-    evaluateRetentionPolicies: (...args: unknown[]) =>
-      mockEvaluateRetentionPolicies(...args),
-    executeRetentionPurge: (...args: unknown[]) =>
-      mockExecuteRetentionPurge(...args),
-    createProcessingActivity: (...args: unknown[]) =>
-      mockCreateProcessingActivity(...args),
-    updateProcessingActivity: (...args: unknown[]) =>
-      mockUpdateProcessingActivity(...args),
-    deleteProcessingActivity: (...args: unknown[]) =>
-      mockDeleteProcessingActivity(...args),
-    generatePaiaManual: (...args: unknown[]) =>
-      mockGeneratePaiaManual(...args),
-    fetchRetentionPolicies: vi.fn().mockResolvedValue([]),
-    fetchProcessingActivities: vi.fn().mockResolvedValue([]),
-  }),
-);
+vi.mock("@/app/(app)/org/[slug]/settings/data-protection/actions", () => ({
+  updateRetentionPolicy: (...args: unknown[]) => mockUpdateRetentionPolicy(...args),
+  evaluateRetentionPolicies: (...args: unknown[]) => mockEvaluateRetentionPolicies(...args),
+  executeRetentionPurge: (...args: unknown[]) => mockExecuteRetentionPurge(...args),
+  createProcessingActivity: (...args: unknown[]) => mockCreateProcessingActivity(...args),
+  updateProcessingActivity: (...args: unknown[]) => mockUpdateProcessingActivity(...args),
+  deleteProcessingActivity: (...args: unknown[]) => mockDeleteProcessingActivity(...args),
+  generatePaiaManual: (...args: unknown[]) => mockGeneratePaiaManual(...args),
+  fetchRetentionPolicies: vi.fn().mockResolvedValue([]),
+  fetchProcessingActivities: vi.fn().mockResolvedValue([]),
+}));
 
 // Mock sonner
 vi.mock("sonner", () => ({
@@ -52,10 +42,7 @@ vi.mock("sonner", () => ({
 import { RetentionPoliciesTable } from "@/components/data-protection/retention-policies-table";
 import { ProcessingRegisterTable } from "@/components/data-protection/processing-register-table";
 import { PaiaManualSection } from "@/components/data-protection/paia-manual-section";
-import type {
-  RetentionPolicyExtended,
-  ProcessingActivity,
-} from "@/lib/types/data-protection";
+import type { RetentionPolicyExtended, ProcessingActivity } from "@/lib/types/data-protection";
 
 // --- Test data ---
 
@@ -111,7 +98,7 @@ describe("RetentionPoliciesTable", () => {
         policies={[basePolicy, financialPolicy]}
         slug="acme"
         financialRetentionMonths={60}
-      />,
+      />
     );
 
     // Check header columns
@@ -130,21 +117,14 @@ describe("RetentionPoliciesTable", () => {
     const user = userEvent.setup();
     mockUpdateRetentionPolicy.mockResolvedValue({ success: true });
 
-    render(
-      <RetentionPoliciesTable
-        policies={[basePolicy]}
-        slug="acme"
-      />,
-    );
+    render(<RetentionPoliciesTable policies={[basePolicy]} slug="acme" />);
 
     // Change retention days using fireEvent for reliable number input updates
     const input = screen.getByLabelText(/retention days for CUSTOMER/i);
     fireEvent.change(input, { target: { value: "730" } });
 
     // Click save
-    await user.click(
-      screen.getByRole("button", { name: /save CUSTOMER policy/i }),
-    );
+    await user.click(screen.getByRole("button", { name: /save CUSTOMER policy/i }));
 
     await waitFor(() => {
       expect(mockUpdateRetentionPolicy).toHaveBeenCalledWith(
@@ -153,7 +133,7 @@ describe("RetentionPoliciesTable", () => {
         expect.objectContaining({
           retentionDays: 730,
           enabled: true,
-        }),
+        })
       );
     });
   });
@@ -166,7 +146,7 @@ describe("RetentionPoliciesTable", () => {
         policies={[financialPolicy]}
         slug="acme"
         financialRetentionMonths={60}
-      />,
+      />
     );
 
     // Set retention days below 60 months * 30 = 1800 days
@@ -174,15 +154,11 @@ describe("RetentionPoliciesTable", () => {
     fireEvent.change(input, { target: { value: "100" } });
 
     // Click save
-    await user.click(
-      screen.getByRole("button", { name: /save DOCUMENT policy/i }),
-    );
+    await user.click(screen.getByRole("button", { name: /save DOCUMENT policy/i }));
 
     // Should show validation error, not call the server action
     await waitFor(() => {
-      expect(
-        screen.getByText(/financial records require at least 1800 days/i),
-      ).toBeInTheDocument();
+      expect(screen.getByText(/financial records require at least 1800 days/i)).toBeInTheDocument();
     });
     expect(mockUpdateRetentionPolicy).not.toHaveBeenCalled();
   });
@@ -192,12 +168,7 @@ describe("RetentionPoliciesTable", () => {
 
 describe("ProcessingRegisterTable", () => {
   it("renders processing register table with seeded entries", () => {
-    render(
-      <ProcessingRegisterTable
-        activities={[baseActivity]}
-        slug="acme"
-      />,
-    );
+    render(<ProcessingRegisterTable activities={[baseActivity]} slug="acme" />);
 
     // Check header columns
     expect(screen.getByText("Category")).toBeInTheDocument();
@@ -210,9 +181,7 @@ describe("ProcessingRegisterTable", () => {
     expect(screen.getByText("Client Management")).toBeInTheDocument();
     expect(screen.getByText("Legitimate interest")).toBeInTheDocument();
     expect(screen.getByText("Clients")).toBeInTheDocument();
-    expect(
-      screen.getByText("5 years after contract end"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("5 years after contract end")).toBeInTheDocument();
   });
 });
 
@@ -222,23 +191,15 @@ describe("PaiaManualSection", () => {
   it("shows Generate button and jurisdiction warning when no jurisdiction set", () => {
     render(<PaiaManualSection slug="acme" jurisdiction={null} />);
 
-    expect(
-      screen.getByRole("button", { name: /generate paia manual/i }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /generate paia manual/i }),
-    ).toBeDisabled();
+    expect(screen.getByRole("button", { name: /generate paia manual/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /generate paia manual/i })).toBeDisabled();
     expect(screen.getByText(/jurisdiction required/i)).toBeInTheDocument();
   });
 
   it("enables Generate button when jurisdiction is set", () => {
     render(<PaiaManualSection slug="acme" jurisdiction="ZA" />);
 
-    expect(
-      screen.getByRole("button", { name: /generate paia manual/i }),
-    ).toBeEnabled();
-    expect(
-      screen.queryByText(/jurisdiction required/i),
-    ).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /generate paia manual/i })).toBeEnabled();
+    expect(screen.queryByText(/jurisdiction required/i)).not.toBeInTheDocument();
   });
 });

@@ -24,10 +24,7 @@ import {
 } from "@/components/ui/form";
 import { Loader2 } from "lucide-react";
 import { recordPayment } from "@/app/(app)/org/[slug]/trust-accounting/transactions/actions";
-import {
-  recordPaymentSchema,
-  type RecordPaymentFormData,
-} from "@/lib/schemas/trust";
+import { recordPaymentSchema, type RecordPaymentFormData } from "@/lib/schemas/trust";
 
 interface RecordPaymentDialogProps {
   accountId: string;
@@ -96,16 +93,13 @@ export function RecordPaymentDialog({
         <DialogHeader>
           <DialogTitle>Record Payment</DialogTitle>
           <DialogDescription>
-            Record a trust payment on behalf of a client. Payments above the
-            approval threshold will require approval.
+            Record a trust payment on behalf of a client. Payments above the approval threshold will
+            require approval.
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-4"
-          >
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="customerId"
@@ -127,10 +121,7 @@ export function RecordPaymentDialog({
                 <FormItem>
                   <FormLabel>Matter (Optional)</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="Matter UUID (optional)"
-                      {...field}
-                    />
+                    <Input placeholder="Matter UUID (optional)" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -150,9 +141,7 @@ export function RecordPaymentDialog({
                       min="0.01"
                       placeholder="0.00"
                       {...field}
-                      onChange={(e) =>
-                        field.onChange(parseFloat(e.target.value) || 0)
-                      }
+                      onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                     />
                   </FormControl>
                   <FormMessage />
@@ -167,11 +156,7 @@ export function RecordPaymentDialog({
                 <FormItem>
                   <FormLabel>Reference</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="e.g. PAY/2026/001"
-                      maxLength={200}
-                      {...field}
-                    />
+                    <Input placeholder="e.g. PAY/2026/001" maxLength={200} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -210,7 +195,7 @@ export function RecordPaymentDialog({
               )}
             />
 
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {error && <p className="text-destructive text-sm">{error}</p>}
 
             <DialogFooter>
               <Button

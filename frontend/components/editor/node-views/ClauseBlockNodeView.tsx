@@ -2,13 +2,7 @@
 
 import { useState } from "react";
 import { NodeViewWrapper, type NodeViewProps } from "@tiptap/react";
-import {
-  GripVertical,
-  MoreVertical,
-  ChevronDown,
-  ChevronRight,
-  Trash2,
-} from "lucide-react";
+import { GripVertical, MoreVertical, ChevronDown, ChevronRight, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,13 +23,11 @@ export function ClauseBlockNodeView({ node, deleteNode }: NodeViewProps) {
   const { body, isLoading } = useClauseContent(clauseId);
 
   // Extract text from Tiptap JSON for preview
-  const textPreview = body
-    ? extractTextFromBody(body)
-    : null;
+  const textPreview = body ? extractTextFromBody(body) : null;
 
   return (
     <NodeViewWrapper className="my-4">
-      <div className="rounded-lg border border-slate-200 border-l-4 border-l-teal-500 bg-white dark:border-slate-800 dark:border-l-teal-500 dark:bg-slate-950">
+      <div className="rounded-lg border border-l-4 border-slate-200 border-l-teal-500 bg-white dark:border-slate-800 dark:border-l-teal-500 dark:bg-slate-950">
         {/* Title bar */}
         <div className="flex items-center gap-2 border-b border-slate-200 px-3 py-2 dark:border-slate-800">
           <div

@@ -25,12 +25,10 @@ export default async function ComplianceSettingsPage({
           <ChevronLeft className="size-4" />
           Settings
         </Link>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          Compliance
-        </h1>
+        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Compliance</h1>
         <p className="text-slate-600 dark:text-slate-400">
-          You do not have permission to manage compliance settings. Only admins and
-          owners can access this page.
+          You do not have permission to manage compliance settings. Only admins and owners can
+          access this page.
         </p>
       </div>
     );
@@ -61,9 +59,7 @@ export default async function ComplianceSettingsPage({
       </Link>
 
       <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          Compliance
-        </h1>
+        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Compliance</h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           Manage retention policies, dormancy thresholds, and data request deadlines.
         </p>
@@ -85,12 +81,9 @@ export default async function ComplianceSettingsPage({
           Compliance Packs
         </h2>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Applied compliance packs and their versions. Click a pack to view its
-          full contents.
+          Applied compliance packs and their versions. Click a pack to view its full contents.
         </p>
-        <CompliancePackList
-          packs={settings.compliancePackStatus ?? []}
-        />
+        <CompliancePackList packs={settings.compliancePackStatus ?? []} />
       </div>
     </div>
   );

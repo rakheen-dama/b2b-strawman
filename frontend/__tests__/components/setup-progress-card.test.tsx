@@ -35,7 +35,7 @@ describe("SetupProgressCard", () => {
         completionPercentage={25}
         overallComplete={false}
         steps={makeSteps()}
-      />,
+      />
     );
 
     expect(screen.getByText("Project Setup")).toBeInTheDocument();
@@ -57,7 +57,7 @@ describe("SetupProgressCard", () => {
           { complete: true },
           { complete: true },
         ])}
-      />,
+      />
     );
 
     expect(screen.getByText("Setup complete")).toBeInTheDocument();
@@ -79,16 +79,14 @@ describe("SetupProgressCard", () => {
           { complete: true },
           { complete: true },
         ])}
-      />,
+      />
     );
 
     // Collapsed — no progress bar
     expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
 
     // Click expand
-    await user.click(
-      screen.getByRole("button", { name: "Expand setup steps" }),
-    );
+    await user.click(screen.getByRole("button", { name: "Expand setup steps" }));
 
     // Now should show progress bar and steps
     expect(screen.getByRole("progressbar")).toBeInTheDocument();
@@ -103,7 +101,7 @@ describe("SetupProgressCard", () => {
         overallComplete={false}
         steps={makeSteps()}
         canManage={true}
-      />,
+      />
     );
 
     // Steps with actionHref should have links
@@ -123,7 +121,7 @@ describe("SetupProgressCard", () => {
         overallComplete={false}
         steps={makeSteps()}
         canManage={false}
-      />,
+      />
     );
 
     // "Set budget" has permissionRequired=true and canManage=false → no link

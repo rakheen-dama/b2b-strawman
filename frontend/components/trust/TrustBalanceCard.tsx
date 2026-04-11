@@ -3,12 +3,7 @@
 import { useCallback, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
 import { ModuleGate } from "@/components/module-gate";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -60,17 +55,24 @@ export function TrustBalanceCard({
   const accountsCacheKey = !trustAccountId ? `trust-accounts-${slug}` : null;
   const { data: accounts, isLoading: accountsLoading } = useSWR<TrustAccount[]>(
     accountsCacheKey,
-    () => fetchTrustAccounts(),
+    () => fetchTrustAccounts()
   );
 
   const resolvedAccountId =
-    trustAccountId ?? accounts?.find((a) => a.isPrimary && a.status === "ACTIVE")?.id ?? accounts?.[0]?.id;
+    trustAccountId ??
+    accounts?.find((a) => a.isPrimary && a.status === "ACTIVE")?.id ??
+    accounts?.[0]?.id;
 
   // Fetch client ledger for this customer
-  const ledgerCacheKey = resolvedAccountId ? `trust-ledger-${slug}-${resolvedAccountId}-${customerId}` : null;
-  const { data: ledger, isLoading: ledgerLoading, error: ledgerError } = useSWR<ClientLedgerCardType>(
-    ledgerCacheKey,
-    () => fetchClientLedger(resolvedAccountId!, customerId),
+  const ledgerCacheKey = resolvedAccountId
+    ? `trust-ledger-${slug}-${resolvedAccountId}-${customerId}`
+    : null;
+  const {
+    data: ledger,
+    isLoading: ledgerLoading,
+    error: ledgerError,
+  } = useSWR<ClientLedgerCardType>(ledgerCacheKey, () =>
+    fetchClientLedger(resolvedAccountId!, customerId)
   );
 
   const isLoading = accountsLoading || ledgerLoading;
@@ -88,15 +90,9 @@ export function TrustBalanceCard({
           <div className="flex items-center gap-3">
             <Scale className="size-5 text-slate-400" />
             <CardTitle>Trust Balance</CardTitle>
-            {ledger && ledger.balance > 0 && (
-              <Badge variant="success">Funds Held</Badge>
-            )}
-            {ledger && ledger.balance === 0 && (
-              <Badge variant="neutral">No Funds</Badge>
-            )}
-            {ledger && ledger.balance < 0 && (
-              <Badge variant="destructive">Overdrawn</Badge>
-            )}
+            {ledger && ledger.balance > 0 && <Badge variant="success">Funds Held</Badge>}
+            {ledger && ledger.balance === 0 && <Badge variant="neutral">No Funds</Badge>}
+            {ledger && ledger.balance < 0 && <Badge variant="destructive">Overdrawn</Badge>}
           </div>
         </CardHeader>
         <CardContent>
@@ -115,13 +111,13 @@ export function TrustBalanceCard({
           )}
 
           {!isLoading && !ledgerError && !resolvedAccountId && (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               No trust account configured. Set up a trust account in settings to track client funds.
             </p>
           )}
 
           {!isLoading && !ledgerError && resolvedAccountId && !ledger && (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               No trust transactions recorded for this client yet.
             </p>
           )}
@@ -155,33 +151,22 @@ export function TrustBalanceCard({
 
               {ledger.lastTransactionDate && (
                 <p className="text-xs text-slate-400 dark:text-slate-500">
-                  Last transaction: {new Date(ledger.lastTransactionDate).toLocaleDateString("en-ZA")}
+                  Last transaction:{" "}
+                  {new Date(ledger.lastTransactionDate).toLocaleDateString("en-ZA")}
                 </p>
               )}
 
               {showQuickActions && resolvedAccountId && (
-                <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-200 dark:border-slate-800">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setDepositOpen(true)}
-                  >
+                <div className="flex flex-wrap gap-2 border-t border-slate-200 pt-2 dark:border-slate-800">
+                  <Button variant="outline" size="sm" onClick={() => setDepositOpen(true)}>
                     <ArrowDownLeft className="mr-1.5 size-3.5" />
                     Record Deposit
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setPaymentOpen(true)}
-                  >
+                  <Button variant="outline" size="sm" onClick={() => setPaymentOpen(true)}>
                     <ArrowUpRight className="mr-1.5 size-3.5" />
                     Record Payment
                   </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setFeeTransferOpen(true)}
-                  >
+                  <Button variant="outline" size="sm" onClick={() => setFeeTransferOpen(true)}>
                     <ArrowLeftRight className="mr-1.5 size-3.5" />
                     Fee Transfer
                   </Button>

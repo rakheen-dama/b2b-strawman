@@ -48,10 +48,7 @@ export const PROMOTED_PROJECT_SLUGS: ReadonlySet<string> = new Set([
 ]);
 
 /** TASK promoted slugs (Epic 464 / Phase 63). */
-export const PROMOTED_TASK_SLUGS: ReadonlySet<string> = new Set([
-  "priority",
-  "estimated_hours",
-]);
+export const PROMOTED_TASK_SLUGS: ReadonlySet<string> = new Set(["priority", "estimated_hours"]);
 
 /**
  * INVOICE promoted slugs (Epic 464 / Phase 63).

@@ -21,12 +21,7 @@ export default async function AutomationDetailPage({
 
   // Server-side module gate — short-circuit BEFORE invoking backend data fetches.
   if (!(await isModuleEnabledServer("automation_builder"))) {
-    return (
-      <ModuleDisabledFallback
-        moduleName="Automation Rule Builder"
-        slug={slug}
-      />
-    );
+    return <ModuleDisabledFallback moduleName="Automation Rule Builder" slug={slug} />;
   }
 
   const caps = await fetchMyCapabilities();
@@ -89,11 +84,7 @@ export default async function AutomationDetailPage({
         Automations
       </Link>
 
-      <RuleDetailClient
-        slug={slug}
-        rule={rule}
-        initialExecutions={executions}
-      />
+      <RuleDetailClient slug={slug} rule={rule} initialExecutions={executions} />
     </div>
   );
 }

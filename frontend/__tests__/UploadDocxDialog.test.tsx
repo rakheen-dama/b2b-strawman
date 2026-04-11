@@ -1,11 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import {
-  cleanup,
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-} from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { UploadDocxDialog } from "@/app/(app)/org/[slug]/settings/templates/UploadDocxDialog";
 
@@ -22,8 +16,7 @@ vi.mock("@/app/(app)/org/[slug]/settings/templates/template-crud-actions", () =>
 }));
 
 vi.mock("@/app/(app)/org/[slug]/settings/templates/template-support-actions", () => ({
-  uploadDocxTemplateAction: (...args: unknown[]) =>
-    mockUploadDocxTemplate(...args),
+  uploadDocxTemplateAction: (...args: unknown[]) => mockUploadDocxTemplate(...args),
   uploadLogoAction: vi.fn(),
   deleteLogoAction: vi.fn(),
   saveBrandingAction: vi.fn(),
@@ -48,14 +41,13 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: mockPush, refresh: vi.fn() }),
 }));
 
-const DOCX_MIME =
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+const DOCX_MIME = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 
 function renderDialog() {
   return render(
     <UploadDocxDialog slug="test-org">
       <button>Open Upload DOCX 325A</button>
-    </UploadDocxDialog>,
+    </UploadDocxDialog>
   );
 }
 
@@ -102,9 +94,7 @@ describe("UploadDocxDialog", () => {
     fireEvent.change(input, { target: { files: [pdfFile] } });
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Only .docx files are accepted."),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Only .docx files are accepted.")).toBeInTheDocument();
     });
   });
 
@@ -157,17 +147,12 @@ describe("UploadDocxDialog", () => {
     await user.click(screen.getByText("Upload Template"));
 
     await waitFor(() => {
-      expect(mockUploadDocxTemplate).toHaveBeenCalledWith(
-        "test-org",
-        expect.any(FormData),
-      );
+      expect(mockUploadDocxTemplate).toHaveBeenCalledWith("test-org", expect.any(FormData));
     });
 
     // Should redirect to edit page
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith(
-        "/org/test-org/settings/templates/tmpl-123/edit",
-      );
+      expect(mockPush).toHaveBeenCalledWith("/org/test-org/settings/templates/tmpl-123/edit");
     });
   });
 
@@ -199,9 +184,7 @@ describe("UploadDocxDialog", () => {
     await user.click(screen.getByText("Upload Template"));
 
     await waitFor(() => {
-      expect(
-        screen.getByText("A template with this slug already exists."),
-      ).toBeInTheDocument();
+      expect(screen.getByText("A template with this slug already exists.")).toBeInTheDocument();
     });
   });
 });

@@ -21,11 +21,13 @@ import {
   fetchInformationRequestSummary,
   fetchAutomationSummary,
 } from "@/lib/actions/dashboard";
+import { getTeamCapacityGrid, type TeamCapacityGrid } from "@/lib/api/capacity";
 import {
-  getTeamCapacityGrid,
-  type TeamCapacityGrid,
-} from "@/lib/api/capacity";
-import { resolveDateRange, getCurrentMonday, formatDate as formatDateUtil, addWeeks } from "@/lib/date-utils";
+  resolveDateRange,
+  getCurrentMonday,
+  formatDate as formatDateUtil,
+  addWeeks,
+} from "@/lib/date-utils";
 import { GettingStartedCard } from "@/components/dashboard/getting-started-card";
 
 export default async function OrgDashboardPage({
@@ -50,7 +52,15 @@ export default async function OrgDashboardPage({
   let automationSummary;
 
   try {
-    [kpis, projectHealth, teamWorkload, activity, aggregatedCompleteness, requestSummary, automationSummary] = await Promise.all([
+    [
+      kpis,
+      projectHealth,
+      teamWorkload,
+      activity,
+      aggregatedCompleteness,
+      requestSummary,
+      automationSummary,
+    ] = await Promise.all([
       fetchDashboardKpis(from, to),
       fetchProjectHealth(),
       fetchTeamWorkload(from, to),
@@ -66,16 +76,13 @@ export default async function OrgDashboardPage({
     const isProvisioning =
       error instanceof ApiError &&
       (error.status === 403 ||
-        (error.status === 500 &&
-          error.detail?.title === "Member context not available"));
+        (error.status === 500 && error.detail?.title === "Member context not available"));
     if (isProvisioning) {
       return (
         <div className="flex min-h-[40vh] flex-col items-center justify-center gap-4">
           <Loader2 className="text-muted-foreground size-8 animate-spin" />
           <div className="text-center">
-            <h2 className="text-lg font-semibold">
-              Setting up your workspace
-            </h2>
+            <h2 className="text-lg font-semibold">Setting up your workspace</h2>
             <p className="text-muted-foreground mt-1 text-sm">
               This usually takes just a few seconds.
             </p>
@@ -113,10 +120,7 @@ export default async function OrgDashboardPage({
       {/* Hero two-panel layout */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">
         <div className="lg:col-span-3">
-          <ProjectHealthWidget
-            projects={projectHealth ?? null}
-            orgSlug={slug}
-          />
+          <ProjectHealthWidget projects={projectHealth ?? null} orgSlug={slug} />
         </div>
         <div className="lg:col-span-2">
           <TeamWorkloadWidget data={teamWorkload ?? null} isAdmin={isAdmin} />
@@ -137,10 +141,7 @@ export default async function OrgDashboardPage({
             orgSlug={slug}
           />
         ) : (
-          <MyWeekColumn
-            kpis={kpis ?? null}
-            activity={activity ?? null}
-          />
+          <MyWeekColumn kpis={kpis ?? null} activity={activity ?? null} />
         )}
       </div>
 

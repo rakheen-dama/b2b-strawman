@@ -12,23 +12,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle2, Loader2 } from "lucide-react";
-import {
-  submitAccessRequest,
-  verifyAccessRequestOtp,
-} from "@/app/request-access/actions";
-import {
-  BLOCKED_EMAIL_DOMAINS,
-  COUNTRIES,
-  INDUSTRIES,
-} from "@/lib/access-request-data";
+import { submitAccessRequest, verifyAccessRequestOtp } from "@/app/request-access/actions";
+import { BLOCKED_EMAIL_DOMAINS, COUNTRIES, INDUSTRIES } from "@/lib/access-request-data";
 
 interface FormFields {
   email: string;
@@ -198,8 +185,8 @@ export function RequestAccessForm() {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-slate-600 dark:text-slate-400">
-            Your access request has been submitted for review. We&apos;ll notify
-            you by email once it&apos;s been reviewed.
+            Your access request has been submitted for review. We&apos;ll notify you by email once
+            it&apos;s been reviewed.
           </p>
           <Link
             href="/"
@@ -216,19 +203,13 @@ export function RequestAccessForm() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="font-display text-lg">
-            Check Your Email
-          </CardTitle>
-          <CardDescription>
-            {successMessage}
-          </CardDescription>
+          <CardTitle className="font-display text-lg">Check Your Email</CardTitle>
+          <CardDescription>{successMessage}</CardDescription>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-slate-600 dark:text-slate-400">
             Enter the verification code sent to{" "}
-            <span className="font-medium text-slate-900 dark:text-slate-100">
-              {fields.email}
-            </span>{" "}
+            <span className="font-medium text-slate-900 dark:text-slate-100">{fields.email}</span>{" "}
             to continue.
           </p>
           <form onSubmit={handleVerify} className="mt-4 space-y-4">
@@ -244,12 +225,14 @@ export function RequestAccessForm() {
                 placeholder="000000"
                 value={otp}
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-                className="text-center text-2xl tracking-[0.5em] font-mono"
+                className="text-center font-mono text-2xl tracking-[0.5em]"
                 aria-invalid={otpError ? true : undefined}
                 autoFocus
               />
               {otpError && (
-                <p className="text-sm text-red-600" role="alert">{otpError}</p>
+                <p className="text-sm text-red-600" role="alert">
+                  {otpError}
+                </p>
               )}
             </div>
 
@@ -264,7 +247,7 @@ export function RequestAccessForm() {
                   type="button"
                   onClick={handleResend}
                   disabled={isSubmitting}
-                  className="font-medium text-teal-600 hover:text-teal-700 underline disabled:opacity-50"
+                  className="font-medium text-teal-600 underline hover:text-teal-700 disabled:opacity-50"
                 >
                   Resend code
                 </button>
@@ -278,7 +261,7 @@ export function RequestAccessForm() {
                   type="button"
                   onClick={handleResend}
                   disabled={isSubmitting}
-                  className="font-medium text-teal-600 hover:text-teal-700 underline disabled:opacity-50"
+                  className="font-medium text-teal-600 underline hover:text-teal-700 disabled:opacity-50"
                 >
                   Resend code
                 </button>
@@ -321,9 +304,7 @@ export function RequestAccessForm() {
     <Card>
       <CardHeader>
         <CardTitle className="font-display text-lg">Request Access</CardTitle>
-        <CardDescription>
-          Fill in your details to request access to DocTeams.
-        </CardDescription>
+        <CardDescription>Fill in your details to request access to DocTeams.</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} data-testid="request-access-form" className="space-y-4">
@@ -339,9 +320,7 @@ export function RequestAccessForm() {
               aria-invalid={emailError ? true : undefined}
               required
             />
-            {emailError && (
-              <p className="text-sm text-red-600">{emailError}</p>
-            )}
+            {emailError && <p className="text-sm text-red-600">{emailError}</p>}
           </div>
 
           <div className="space-y-2">
@@ -372,10 +351,7 @@ export function RequestAccessForm() {
 
           <div className="space-y-2">
             <Label htmlFor="country">Country</Label>
-            <Select
-              value={fields.country}
-              onValueChange={(value) => updateField("country", value)}
-            >
+            <Select value={fields.country} onValueChange={(value) => updateField("country", value)}>
               <SelectTrigger id="country" data-testid="country-select" className="w-full">
                 <SelectValue placeholder="Select a country" />
               </SelectTrigger>

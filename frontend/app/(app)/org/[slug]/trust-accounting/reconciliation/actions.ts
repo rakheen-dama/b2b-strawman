@@ -40,7 +40,7 @@ export async function fetchReconciliations(
   params: {
     page?: number;
     size?: number;
-  } = {},
+  } = {}
 ): Promise<ReconciliationPage> {
   const queryParams = new URLSearchParams();
   queryParams.set("page", String(params.page ?? 0));
@@ -49,7 +49,7 @@ export async function fetchReconciliations(
 
   const qs = queryParams.toString();
   const result = await api.get<PaginatedResponse<TrustReconciliationResponse>>(
-    `/api/trust-accounts/${accountId}/reconciliations${qs ? `?${qs}` : ""}`,
+    `/api/trust-accounts/${accountId}/reconciliations${qs ? `?${qs}` : ""}`
   );
 
   return {
@@ -62,11 +62,9 @@ export async function fetchReconciliations(
 }
 
 export async function fetchReconciliation(
-  reconciliationId: string,
+  reconciliationId: string
 ): Promise<TrustReconciliationResponse> {
-  return api.get<TrustReconciliationResponse>(
-    `/api/trust-reconciliations/${reconciliationId}`,
-  );
+  return api.get<TrustReconciliationResponse>(`/api/trust-reconciliations/${reconciliationId}`);
 }
 
 // ── Bank statement actions ────────────────────────────────────────
@@ -75,14 +73,10 @@ const MAX_STATEMENT_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
 
 export async function uploadBankStatement(
   accountId: string,
-  file: File,
+  file: File
 ): Promise<{ success: boolean; data?: BankStatementResponse; error?: string }> {
   // Server-side validation — the UI `accept` attribute is not a security boundary
-  if (
-    file.type &&
-    file.type !== "text/csv" &&
-    file.type !== "application/vnd.ms-excel"
-  ) {
+  if (file.type && file.type !== "text/csv" && file.type !== "application/vnd.ms-excel") {
     return { success: false, error: "Only CSV files are accepted" };
   }
   if (!file.name.toLowerCase().endsWith(".csv")) {
@@ -101,18 +95,15 @@ export async function uploadBankStatement(
     const formData = new FormData();
     formData.append("file", file);
 
-    const response = await fetch(
-      `${API_BASE}/api/trust-accounts/${accountId}/bank-statements`,
-      {
-        method: "POST",
-        headers: {
-          ...authOptions.headers,
-          // NOTE: Do NOT set Content-Type -- browser sets multipart boundary automatically
-        },
-        body: formData,
-        credentials: authOptions.credentials,
+    const response = await fetch(`${API_BASE}/api/trust-accounts/${accountId}/bank-statements`, {
+      method: "POST",
+      headers: {
+        ...authOptions.headers,
+        // NOTE: Do NOT set Content-Type -- browser sets multipart boundary automatically
       },
-    );
+      body: formData,
+      credentials: authOptions.credentials,
+    });
 
     if (!response.ok) {
       let message = response.statusText;
@@ -131,53 +122,42 @@ export async function uploadBankStatement(
   } catch (error) {
     return {
       success: false,
-      error:
-        error instanceof Error ? error.message : "Failed to upload statement",
+      error: error instanceof Error ? error.message : "Failed to upload statement",
     };
   }
 }
 
-export async function fetchBankStatements(
-  accountId: string,
-): Promise<BankStatementResponse[]> {
+export async function fetchBankStatements(accountId: string): Promise<BankStatementResponse[]> {
   const result = await api.get<PaginatedResponse<BankStatementResponse>>(
-    `/api/trust-accounts/${accountId}/bank-statements?size=100&sort=createdAt,desc`,
+    `/api/trust-accounts/${accountId}/bank-statements?size=100&sort=createdAt,desc`
   );
   return result.content;
 }
 
-export async function fetchBankStatement(
-  statementId: string,
-): Promise<BankStatementResponse> {
-  return api.get<BankStatementResponse>(
-    `/api/bank-statements/${statementId}`,
-  );
+export async function fetchBankStatement(statementId: string): Promise<BankStatementResponse> {
+  return api.get<BankStatementResponse>(`/api/bank-statements/${statementId}`);
 }
 
 // ── Matching actions ──────────────────────────────────────────────
 
 export async function autoMatch(
-  statementId: string,
+  statementId: string
 ): Promise<{ success: boolean; data?: MatchResultResponse; error?: string }> {
   try {
     const data = await api.post<MatchResultResponse>(
-      `/api/bank-statements/${statementId}/auto-match`,
+      `/api/bank-statements/${statementId}/auto-match`
     );
     revalidatePath("/", "layout");
     return { success: true, data };
   } catch (error) {
     return {
       success: false,
-      error:
-        error instanceof Error ? error.message : "Failed to auto-match",
+      error: error instanceof Error ? error.message : "Failed to auto-match",
     };
   }
 }
 
-export async function manualMatch(
-  lineId: string,
-  transactionId: string,
-): Promise<ActionResult> {
+export async function manualMatch(lineId: string, transactionId: string): Promise<ActionResult> {
   try {
     await api.post(`/api/bank-statement-lines/${lineId}/match`, {
       transactionId,
@@ -187,8 +167,7 @@ export async function manualMatch(
   } catch (error) {
     return {
       success: false,
-      error:
-        error instanceof Error ? error.message : "Failed to match line",
+      error: error instanceof Error ? error.message : "Failed to match line",
     };
   }
 }
@@ -201,16 +180,12 @@ export async function unmatch(lineId: string): Promise<ActionResult> {
   } catch (error) {
     return {
       success: false,
-      error:
-        error instanceof Error ? error.message : "Failed to unmatch line",
+      error: error instanceof Error ? error.message : "Failed to unmatch line",
     };
   }
 }
 
-export async function excludeLine(
-  lineId: string,
-  reason: string,
-): Promise<ActionResult> {
+export async function excludeLine(lineId: string, reason: string): Promise<ActionResult> {
   try {
     await api.post(`/api/bank-statement-lines/${lineId}/exclude`, {
       reason,
@@ -220,8 +195,7 @@ export async function excludeLine(
   } catch (error) {
     return {
       success: false,
-      error:
-        error instanceof Error ? error.message : "Failed to exclude line",
+      error: error instanceof Error ? error.message : "Failed to exclude line",
     };
   }
 }
@@ -230,7 +204,7 @@ export async function excludeLine(
 
 export async function createReconciliation(
   accountId: string,
-  data: { periodEnd: string; bankStatementId: string },
+  data: { periodEnd: string; bankStatementId: string }
 ): Promise<{
   success: boolean;
   data?: TrustReconciliationResponse;
@@ -239,64 +213,51 @@ export async function createReconciliation(
   try {
     const result = await api.post<TrustReconciliationResponse>(
       `/api/trust-accounts/${accountId}/reconciliations`,
-      data,
+      data
     );
     revalidatePath("/", "layout");
     return { success: true, data: result };
   } catch (error) {
     return {
       success: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : "Failed to create reconciliation",
+      error: error instanceof Error ? error.message : "Failed to create reconciliation",
     };
   }
 }
 
-export async function calculateReconciliation(
-  reconciliationId: string,
-): Promise<{
+export async function calculateReconciliation(reconciliationId: string): Promise<{
   success: boolean;
   data?: TrustReconciliationResponse;
   error?: string;
 }> {
   try {
     const result = await api.post<TrustReconciliationResponse>(
-      `/api/trust-reconciliations/${reconciliationId}/calculate`,
+      `/api/trust-reconciliations/${reconciliationId}/calculate`
     );
     return { success: true, data: result };
   } catch (error) {
     return {
       success: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : "Failed to calculate reconciliation",
+      error: error instanceof Error ? error.message : "Failed to calculate reconciliation",
     };
   }
 }
 
-export async function completeReconciliation(
-  reconciliationId: string,
-): Promise<{
+export async function completeReconciliation(reconciliationId: string): Promise<{
   success: boolean;
   data?: TrustReconciliationResponse;
   error?: string;
 }> {
   try {
     const result = await api.post<TrustReconciliationResponse>(
-      `/api/trust-reconciliations/${reconciliationId}/complete`,
+      `/api/trust-reconciliations/${reconciliationId}/complete`
     );
     revalidatePath("/", "layout");
     return { success: true, data: result };
   } catch (error) {
     return {
       success: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : "Failed to complete reconciliation",
+      error: error instanceof Error ? error.message : "Failed to complete reconciliation",
     };
   }
 }

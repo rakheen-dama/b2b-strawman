@@ -14,10 +14,7 @@ import {
 import { HelpTip } from "@/components/help-tip";
 import { formatCurrencySafe } from "@/lib/format";
 import { getUtilization } from "@/app/(app)/org/[slug]/profitability/actions";
-import type {
-  UtilizationResponse,
-  MemberUtilizationRecord,
-} from "@/lib/types";
+import type { UtilizationResponse, MemberUtilizationRecord } from "@/lib/types";
 import { ArrowUpDown, ChevronDown, ChevronRight } from "lucide-react";
 
 interface UtilizationTableProps {
@@ -26,17 +23,12 @@ interface UtilizationTableProps {
   initialTo: string;
 }
 
-type SortField =
-  | "name"
-  | "totalHours"
-  | "billableHours"
-  | "nonBillableHours"
-  | "utilization";
+type SortField = "name" | "totalHours" | "billableHours" | "nonBillableHours" | "utilization";
 
 function sortMembers(
   members: MemberUtilizationRecord[],
   field: SortField,
-  dir: "asc" | "desc",
+  dir: "asc" | "desc"
 ): MemberUtilizationRecord[] {
   return [...members].sort((a, b) => {
     let cmp = 0;
@@ -61,11 +53,7 @@ function sortMembers(
   });
 }
 
-export function UtilizationTable({
-  initialData,
-  initialFrom,
-  initialTo,
-}: UtilizationTableProps) {
+export function UtilizationTable({ initialData, initialFrom, initialTo }: UtilizationTableProps) {
   const [data, setData] = useState<UtilizationResponse>(initialData);
   const [from, setFrom] = useState(initialFrom);
   const [to, setTo] = useState(initialTo);
@@ -145,14 +133,8 @@ export function UtilizationTable({
         </div>
       </CardHeader>
       <CardContent>
-        {isPending && (
-          <div className="mb-4 text-sm text-slate-500">Loading...</div>
-        )}
-        {error && (
-          <div className="mb-4 text-sm text-red-600 dark:text-red-400">
-            {error}
-          </div>
-        )}
+        {isPending && <div className="mb-4 text-sm text-slate-500">Loading...</div>}
+        {error && <div className="mb-4 text-sm text-red-600 dark:text-red-400">{error}</div>}
         {sorted.length === 0 ? (
           <p className="py-8 text-center text-sm text-slate-500">
             No utilization data for this period
@@ -211,8 +193,7 @@ export function UtilizationTable({
             </TableHeader>
             <TableBody>
               {sorted.map((member) => {
-                const hasBreakdown =
-                  member.currencies && member.currencies.length > 0;
+                const hasBreakdown = member.currencies && member.currencies.length > 0;
                 const isExpanded = expandedRows.has(member.memberId);
                 const percent = member.utilizationPercent;
 
@@ -238,12 +219,8 @@ export function UtilizationTable({
                           </button>
                         )}
                       </TableCell>
-                      <TableCell className="font-medium">
-                        {member.memberName}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {member.totalHours.toFixed(1)}h
-                      </TableCell>
+                      <TableCell className="font-medium">{member.memberName}</TableCell>
+                      <TableCell className="text-right">{member.totalHours.toFixed(1)}h</TableCell>
                       <TableCell className="text-right">
                         {member.billableHours.toFixed(1)}h
                       </TableCell>
@@ -260,7 +237,7 @@ export function UtilizationTable({
                                   ? "bg-green-500"
                                   : percent >= 40
                                     ? "bg-amber-500"
-                                    : "bg-slate-400",
+                                    : "bg-slate-400"
                               )}
                               style={{
                                 width: `${Math.min(percent, 100)}%`,
@@ -282,24 +259,16 @@ export function UtilizationTable({
                         <TableCell colSpan={5}>
                           <div className="flex flex-wrap gap-4 py-1 text-sm">
                             {member.currencies.map((c) => (
-                              <div
-                                key={c.currency}
-                                className="flex items-center gap-2"
-                              >
+                              <div key={c.currency} className="flex items-center gap-2">
                                 <span className="font-medium text-slate-700 dark:text-slate-300">
                                   {c.currency}:
                                 </span>
                                 <span className="text-slate-600 dark:text-slate-400">
-                                  Billable{" "}
-                                  {formatCurrencySafe(
-                                    c.billableValue,
-                                    c.currency,
-                                  )}
+                                  Billable {formatCurrencySafe(c.billableValue, c.currency)}
                                 </span>
                                 <span className="text-slate-500">|</span>
                                 <span className="text-slate-600 dark:text-slate-400">
-                                  Cost{" "}
-                                  {formatCurrencySafe(c.costValue, c.currency)}
+                                  Cost {formatCurrencySafe(c.costValue, c.currency)}
                                 </span>
                               </div>
                             ))}

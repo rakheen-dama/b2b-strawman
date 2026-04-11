@@ -20,12 +20,7 @@ interface TaskSubItemsProps {
   canManage: boolean;
 }
 
-export function TaskSubItems({
-  taskId,
-  slug,
-  projectId,
-  canManage,
-}: TaskSubItemsProps) {
+export function TaskSubItems({ taskId, slug, projectId, canManage }: TaskSubItemsProps) {
   const [items, setItems] = useState<TaskItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [newTitle, setNewTitle] = useState("");
@@ -60,20 +55,14 @@ export function TaskSubItems({
 
   function handleToggle(item: TaskItem) {
     // Optimistic update
-    setItems((prev) =>
-      prev.map((i) =>
-        i.id === item.id ? { ...i, completed: !i.completed } : i
-      )
-    );
+    setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, completed: !i.completed } : i)));
 
     startTransition(async () => {
       const result = await toggleTaskItem(slug, projectId, taskId, item.id);
       if (!result.success) {
         // Revert
         setItems((prev) =>
-          prev.map((i) =>
-            i.id === item.id ? { ...i, completed: item.completed } : i
-          )
+          prev.map((i) => (i.id === item.id ? { ...i, completed: item.completed } : i))
         );
       }
     });
@@ -119,9 +108,7 @@ export function TaskSubItems({
       const result = await deleteTaskItem(slug, projectId, taskId, item.id);
       if (!result.success) {
         // Revert
-        setItems((prev) =>
-          [...prev, item].sort((a, b) => a.sortOrder - b.sortOrder)
-        );
+        setItems((prev) => [...prev, item].sort((a, b) => a.sortOrder - b.sortOrder));
       }
     });
   }
@@ -130,7 +117,7 @@ export function TaskSubItems({
     <div className="border-b border-slate-200 px-6 py-4 dark:border-slate-800">
       {/* Section header with progress */}
       <div className="mb-3 flex items-center gap-2">
-        <h3 className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+        <h3 className="text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
           Sub-Items
         </h3>
         {totalCount > 0 && (
@@ -152,26 +139,19 @@ export function TaskSubItems({
 
       {/* Loading state */}
       {loading && (
-        <p className="text-sm text-slate-500 dark:text-slate-400">
-          Loading sub-items...
-        </p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">Loading sub-items...</p>
       )}
 
       {/* Empty state */}
       {!loading && totalCount === 0 && (
-        <p className="text-sm text-slate-400 dark:text-slate-500">
-          No sub-items yet
-        </p>
+        <p className="text-sm text-slate-400 dark:text-slate-500">No sub-items yet</p>
       )}
 
       {/* Items list */}
       {!loading && totalCount > 0 && (
         <div className="space-y-0">
           {items.map((item) => (
-            <div
-              key={item.id}
-              className="group flex items-center gap-2.5 py-1.5"
-            >
+            <div key={item.id} className="group flex items-center gap-2.5 py-1.5">
               <Checkbox
                 checked={item.completed}
                 onCheckedChange={() => handleToggle(item)}
@@ -182,7 +162,7 @@ export function TaskSubItems({
                 data-testid={`item-title-${item.id}`}
                 className={
                   item.completed
-                    ? "flex-1 text-sm line-through text-slate-400 dark:text-slate-500"
+                    ? "flex-1 text-sm text-slate-400 line-through dark:text-slate-500"
                     : "flex-1 text-sm text-slate-700 dark:text-slate-300"
                 }
               >
@@ -192,7 +172,7 @@ export function TaskSubItems({
                 <button
                   type="button"
                   onClick={() => handleDelete(item)}
-                  className="opacity-0 transition-opacity group-hover:opacity-100 text-slate-400 hover:text-red-500 dark:text-slate-500 dark:hover:text-red-400"
+                  className="text-slate-400 opacity-0 transition-opacity group-hover:opacity-100 hover:text-red-500 dark:text-slate-500 dark:hover:text-red-400"
                   aria-label={`Delete ${item.title}`}
                 >
                   <X className="size-3.5" />

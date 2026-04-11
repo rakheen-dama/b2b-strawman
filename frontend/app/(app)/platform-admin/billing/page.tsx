@@ -8,7 +8,7 @@ export default async function BillingPage() {
   return (
     <div className="mx-auto max-w-7xl px-6 py-10">
       <h1 className="text-2xl font-bold tracking-tight">Billing Management</h1>
-      <p className="mt-2 text-sm text-muted-foreground">
+      <p className="text-muted-foreground mt-2 text-sm">
         View and manage tenant billing status, methods, and trial periods.
       </p>
       {!result.success && (

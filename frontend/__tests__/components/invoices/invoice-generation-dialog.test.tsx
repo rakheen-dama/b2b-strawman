@@ -11,13 +11,14 @@ const mockValidateInvoiceGeneration = vi.fn();
 vi.mock("@/app/(app)/org/[slug]/customers/[id]/invoice-actions", () => ({
   fetchUnbilledTime: (...args: unknown[]) => mockFetchUnbilledTime(...args),
   createInvoiceDraft: (...args: unknown[]) => mockCreateInvoiceDraft(...args),
-  validateInvoiceGeneration: (...args: unknown[]) =>
-    mockValidateInvoiceGeneration(...args),
+  validateInvoiceGeneration: (...args: unknown[]) => mockValidateInvoiceGeneration(...args),
 }));
 
 // Mock prerequisite actions (needed because InvoiceGenerationDialog now imports them)
 vi.mock("@/lib/actions/prerequisite-actions", () => ({
-  checkPrerequisitesAction: vi.fn().mockResolvedValue({ passed: true, context: "INVOICE_GENERATION", violations: [] }),
+  checkPrerequisitesAction: vi
+    .fn()
+    .mockResolvedValue({ passed: true, context: "INVOICE_GENERATION", violations: [] }),
   updateEntityCustomFieldsAction: vi.fn(),
 }));
 
@@ -84,9 +85,24 @@ describe("InvoiceGenerationDialog", () => {
     mockValidateInvoiceGeneration.mockResolvedValue({
       success: true,
       checks: [
-        { name: "customer_required_fields", severity: "WARNING", passed: true, message: "All customer required fields are filled" },
-        { name: "org_name", severity: "WARNING", passed: true, message: "Organization name is set" },
-        { name: "time_entry_rates", severity: "WARNING", passed: true, message: "All time entries have billing rates" },
+        {
+          name: "customer_required_fields",
+          severity: "WARNING",
+          passed: true,
+          message: "All customer required fields are filled",
+        },
+        {
+          name: "org_name",
+          severity: "WARNING",
+          passed: true,
+          message: "Organization name is set",
+        },
+        {
+          name: "time_entry_rates",
+          severity: "WARNING",
+          passed: true,
+          message: "All time entries have billing rates",
+        },
       ],
     });
   });
@@ -104,7 +120,7 @@ describe("InvoiceGenerationDialog", () => {
         customerName="Acme Corp"
         slug="acme"
         defaultCurrency="USD"
-      />,
+      />
     );
 
     await user.click(screen.getByText("New Invoice"));
@@ -113,9 +129,7 @@ describe("InvoiceGenerationDialog", () => {
     expect(screen.getByLabelText("From Date")).toBeInTheDocument();
     expect(screen.getByLabelText("To Date")).toBeInTheDocument();
     expect(screen.getByLabelText("Currency")).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "Fetch Unbilled Time" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Fetch Unbilled Time" })).toBeInTheDocument();
   });
 
   it("fetches unbilled time and advances to step 2", async () => {
@@ -131,7 +145,7 @@ describe("InvoiceGenerationDialog", () => {
         customerName="Acme Corp"
         slug="acme"
         defaultCurrency="USD"
-      />,
+      />
     );
 
     await user.click(screen.getByText("New Invoice"));
@@ -162,7 +176,7 @@ describe("InvoiceGenerationDialog", () => {
         customerName="Acme Corp"
         slug="acme"
         defaultCurrency="USD"
-      />,
+      />
     );
 
     await user.click(screen.getByText("New Invoice"));
@@ -178,9 +192,7 @@ describe("InvoiceGenerationDialog", () => {
     // The ZAR entry's checkbox should be disabled
     const checkboxes = screen.getAllByRole("checkbox");
     // Find the checkbox for ZAR entry (the disabled one)
-    const disabledCheckboxes = checkboxes.filter(
-      (cb) => (cb as HTMLInputElement).disabled,
-    );
+    const disabledCheckboxes = checkboxes.filter((cb) => (cb as HTMLInputElement).disabled);
     expect(disabledCheckboxes.length).toBeGreaterThanOrEqual(1);
   });
 
@@ -197,7 +209,7 @@ describe("InvoiceGenerationDialog", () => {
         customerName="Acme Corp"
         slug="acme"
         defaultCurrency="USD"
-      />,
+      />
     );
 
     await user.click(screen.getByText("New Invoice"));
@@ -225,7 +237,7 @@ describe("InvoiceGenerationDialog", () => {
         customerName="Acme Corp"
         slug="acme"
         defaultCurrency="USD"
-      />,
+      />
     );
 
     await user.click(screen.getByText("New Invoice"));

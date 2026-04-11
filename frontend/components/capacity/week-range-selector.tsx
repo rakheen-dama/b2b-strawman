@@ -20,20 +20,14 @@ function parseDate(dateStr: string): Date {
 
 const WEEK_OPTIONS = [4, 8, 12] as const;
 
-export function WeekRangeSelector({
-  weekStart,
-  weekCount,
-}: WeekRangeSelectorProps) {
+export function WeekRangeSelector({ weekStart, weekCount }: WeekRangeSelectorProps) {
   const router = useRouter();
   const pathname = usePathname();
 
   function navigate(newStart: string, newCount: number) {
     const params = new URLSearchParams();
     params.set("weekStart", newStart);
-    params.set(
-      "weekEnd",
-      formatDate(addWeeks(parseDate(newStart), newCount)),
-    );
+    params.set("weekEnd", formatDate(addWeeks(parseDate(newStart), newCount)));
     router.push(`${pathname}?${params.toString()}`);
   }
 
@@ -67,7 +61,7 @@ export function WeekRangeSelector({
               "rounded-full px-3 py-1 text-sm font-medium transition-colors",
               weekCount === count
                 ? "bg-teal-500 text-white"
-                : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white",
+                : "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
             )}
           >
             {count}w

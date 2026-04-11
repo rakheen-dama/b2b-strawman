@@ -7,11 +7,7 @@ import { HelpTip } from "@/components/help-tip";
 import { useOnboardingProgress } from "@/hooks/use-onboarding-progress";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-} from "@/components/ui/popover";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 
 const { t } = createMessages("getting-started");
 
@@ -19,18 +15,9 @@ interface GettingStartedCardProps {
   activeProjectCount?: number;
 }
 
-export function GettingStartedCard({
-  activeProjectCount,
-}: GettingStartedCardProps) {
-  const {
-    completedCount,
-    totalCount,
-    percentComplete,
-    allComplete,
-    dismissed,
-    loading,
-    dismiss,
-  } = useOnboardingProgress();
+export function GettingStartedCard({ activeProjectCount }: GettingStartedCardProps) {
+  const { completedCount, totalCount, percentComplete, allComplete, dismissed, loading, dismiss } =
+    useOnboardingProgress();
   const [dismissOpen, setDismissOpen] = useState(false);
 
   if (
@@ -63,23 +50,14 @@ export function GettingStartedCard({
       </div>
       <Popover open={dismissOpen} onOpenChange={setDismissOpen}>
         <PopoverTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="size-7"
-            aria-label={t("card.dismiss")}
-          >
+          <Button variant="ghost" size="icon" className="size-7" aria-label={t("card.dismiss")}>
             <X className="size-3.5" />
           </Button>
         </PopoverTrigger>
         <PopoverContent align="end" className="w-64">
           <p className="text-sm">{t("card.dismissConfirm")}</p>
           <div className="mt-3 flex justify-end gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setDismissOpen(false)}
-            >
+            <Button variant="ghost" size="sm" onClick={() => setDismissOpen(false)}>
               {t("card.dismissCancel")}
             </Button>
             <Button

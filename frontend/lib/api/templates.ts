@@ -112,14 +112,14 @@ export async function getProjectTemplate(id: string): Promise<ProjectTemplateRes
 }
 
 export async function createProjectTemplate(
-  data: CreateProjectTemplateRequest,
+  data: CreateProjectTemplateRequest
 ): Promise<ProjectTemplateResponse> {
   return api.post<ProjectTemplateResponse>("/api/project-templates", data);
 }
 
 export async function updateProjectTemplate(
   id: string,
-  data: UpdateProjectTemplateRequest,
+  data: UpdateProjectTemplateRequest
 ): Promise<ProjectTemplateResponse> {
   return api.put<ProjectTemplateResponse>(`/api/project-templates/${id}`, data);
 }
@@ -134,11 +134,11 @@ export async function duplicateProjectTemplate(id: string): Promise<ProjectTempl
 
 export async function saveProjectFromTemplate(
   projectId: string,
-  data: SaveFromProjectRequest,
+  data: SaveFromProjectRequest
 ): Promise<ProjectTemplateResponse> {
   return api.post<ProjectTemplateResponse>(
     `/api/project-templates/from-project/${projectId}`,
-    data,
+    data
   );
 }
 
@@ -149,14 +149,17 @@ export interface InstantiateTemplateResponse {
 
 export async function instantiateProjectTemplate(
   templateId: string,
-  data: InstantiateTemplateRequest,
+  data: InstantiateTemplateRequest
 ): Promise<InstantiateTemplateResponse> {
-  return api.post<InstantiateTemplateResponse>(`/api/project-templates/${templateId}/instantiate`, data);
+  return api.post<InstantiateTemplateResponse>(
+    `/api/project-templates/${templateId}/instantiate`,
+    data
+  );
 }
 
 export async function updateTemplateRequiredCustomerFields(
   id: string,
-  fieldDefinitionIds: string[],
+  fieldDefinitionIds: string[]
 ): Promise<void> {
   return api.put<void>(`/api/project-templates/${id}/required-customer-fields`, {
     fieldDefinitionIds,

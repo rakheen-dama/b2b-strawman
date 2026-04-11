@@ -126,7 +126,7 @@ describe("terminology", () => {
     render(
       <TerminologyProvider verticalProfile="accounting-za">
         <TestConsumer />
-      </TerminologyProvider>,
+      </TerminologyProvider>
     );
 
     expect(screen.getByTestId("result").textContent).toBe("Engagement");

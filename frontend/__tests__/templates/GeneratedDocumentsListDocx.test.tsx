@@ -8,12 +8,9 @@ const mockDownloadGeneratedDocument = vi.fn();
 const mockDownloadDocxGeneratedDocument = vi.fn();
 
 vi.mock("@/app/(app)/org/[slug]/settings/templates/template-generation-actions", () => ({
-  fetchGeneratedDocumentsAction: (...args: unknown[]) =>
-    mockFetchGeneratedDocuments(...args),
-  deleteGeneratedDocumentAction: (...args: unknown[]) =>
-    mockDeleteGeneratedDocument(...args),
-  downloadGeneratedDocumentAction: (...args: unknown[]) =>
-    mockDownloadGeneratedDocument(...args),
+  fetchGeneratedDocumentsAction: (...args: unknown[]) => mockFetchGeneratedDocuments(...args),
+  deleteGeneratedDocumentAction: (...args: unknown[]) => mockDeleteGeneratedDocument(...args),
+  downloadGeneratedDocumentAction: (...args: unknown[]) => mockDownloadGeneratedDocument(...args),
   downloadDocxGeneratedDocumentAction: (...args: unknown[]) =>
     mockDownloadDocxGeneratedDocument(...args),
 }));
@@ -27,8 +24,7 @@ vi.mock("server-only", () => ({}));
 const mockGetAcceptanceRequests = vi.fn();
 
 vi.mock("@/lib/actions/acceptance-actions", () => ({
-  getAcceptanceRequests: (...args: unknown[]) =>
-    mockGetAcceptanceRequests(...args),
+  getAcceptanceRequests: (...args: unknown[]) => mockGetAcceptanceRequests(...args),
 }));
 
 vi.mock("@/components/acceptance/AcceptanceStatusBadge", () => ({
@@ -38,9 +34,7 @@ vi.mock("@/components/acceptance/AcceptanceStatusBadge", () => ({
 }));
 
 vi.mock("@/components/acceptance/SendForAcceptanceDialog", () => ({
-  SendForAcceptanceDialog: () => (
-    <div data-testid="send-acceptance-dialog" />
-  ),
+  SendForAcceptanceDialog: () => <div data-testid="send-acceptance-dialog" />,
 }));
 
 vi.mock("@/components/acceptance/AcceptanceDetailPanel", () => ({
@@ -75,12 +69,7 @@ describe("GeneratedDocumentsListDocx", () => {
     });
 
     render(
-      <GeneratedDocumentsList
-        entityType="PROJECT"
-        entityId="proj-1"
-        slug="acme"
-        isAdmin={true}
-      />,
+      <GeneratedDocumentsList entityType="PROJECT" entityId="proj-1" slug="acme" isAdmin={true} />
     );
 
     await waitFor(() => {
@@ -110,12 +99,7 @@ describe("GeneratedDocumentsListDocx", () => {
     });
 
     render(
-      <GeneratedDocumentsList
-        entityType="PROJECT"
-        entityId="proj-2"
-        slug="acme"
-        isAdmin={true}
-      />,
+      <GeneratedDocumentsList entityType="PROJECT" entityId="proj-2" slug="acme" isAdmin={true} />
     );
 
     await waitFor(() => {
@@ -144,12 +128,7 @@ describe("GeneratedDocumentsListDocx", () => {
     });
 
     render(
-      <GeneratedDocumentsList
-        entityType="CUSTOMER"
-        entityId="cust-1"
-        slug="acme"
-        isAdmin={true}
-      />,
+      <GeneratedDocumentsList entityType="CUSTOMER" entityId="cust-1" slug="acme" isAdmin={true} />
     );
 
     await waitFor(() => {
@@ -185,12 +164,7 @@ describe("GeneratedDocumentsListDocx", () => {
     });
 
     render(
-      <GeneratedDocumentsList
-        entityType="INVOICE"
-        entityId="inv-1"
-        slug="acme"
-        isAdmin={true}
-      />,
+      <GeneratedDocumentsList entityType="INVOICE" entityId="inv-1" slug="acme" isAdmin={true} />
     );
 
     await waitFor(() => {
@@ -219,12 +193,7 @@ describe("GeneratedDocumentsListDocx", () => {
     });
 
     render(
-      <GeneratedDocumentsList
-        entityType="PROJECT"
-        entityId="proj-3"
-        slug="acme"
-        isAdmin={true}
-      />,
+      <GeneratedDocumentsList entityType="PROJECT" entityId="proj-3" slug="acme" isAdmin={true} />
     );
 
     await waitFor(() => {

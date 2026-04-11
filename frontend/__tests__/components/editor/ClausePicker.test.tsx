@@ -79,13 +79,7 @@ describe("ClausePicker", () => {
   });
 
   it("renders grouped clauses when open", async () => {
-    render(
-      <ClausePicker
-        onSelect={vi.fn()}
-        open={true}
-        onOpenChange={vi.fn()}
-      />,
-    );
+    render(<ClausePicker onSelect={vi.fn()} open={true} onOpenChange={vi.fn()} />);
 
     await waitFor(() => {
       expect(screen.getByText("Insert Clause")).toBeInTheDocument();
@@ -102,13 +96,7 @@ describe("ClausePicker", () => {
   it("filters clauses with search input", async () => {
     const user = userEvent.setup();
 
-    render(
-      <ClausePicker
-        onSelect={vi.fn()}
-        open={true}
-        onOpenChange={vi.fn()}
-      />,
-    );
+    render(<ClausePicker onSelect={vi.fn()} open={true} onOpenChange={vi.fn()} />);
 
     await waitFor(() => {
       expect(screen.getByText("Payment Terms")).toBeInTheDocument();
@@ -127,13 +115,7 @@ describe("ClausePicker", () => {
     const user = userEvent.setup();
     const onSelect = vi.fn();
 
-    render(
-      <ClausePicker
-        onSelect={onSelect}
-        open={true}
-        onOpenChange={vi.fn()}
-      />,
-    );
+    render(<ClausePicker onSelect={onSelect} open={true} onOpenChange={vi.fn()} />);
 
     await waitFor(() => {
       expect(screen.getByText("Payment Terms")).toBeInTheDocument();

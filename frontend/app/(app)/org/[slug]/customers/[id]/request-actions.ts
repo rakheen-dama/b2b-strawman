@@ -42,7 +42,7 @@ interface ContactListResult {
 export async function createRequestAction(
   slug: string,
   customerId: string,
-  input: CreateInformationRequestRequest,
+  input: CreateInformationRequestRequest
 ): Promise<ActionResult> {
   try {
     const data = await createRequest(input);
@@ -65,7 +65,7 @@ export async function createRequestAction(
 export async function sendRequestAction(
   slug: string,
   customerId: string,
-  requestId: string,
+  requestId: string
 ): Promise<ActionResult> {
   try {
     const data = await sendRequest(requestId);
@@ -79,9 +79,7 @@ export async function sendRequestAction(
   }
 }
 
-export async function fetchCustomerRequestsAction(
-  customerId: string,
-): Promise<RequestListResult> {
+export async function fetchCustomerRequestsAction(customerId: string): Promise<RequestListResult> {
   try {
     const data = await getCustomerRequests(customerId);
     return { success: true, data };
@@ -93,9 +91,7 @@ export async function fetchCustomerRequestsAction(
   }
 }
 
-export async function fetchProjectRequestsAction(
-  projectId: string,
-): Promise<RequestListResult> {
+export async function fetchProjectRequestsAction(projectId: string): Promise<RequestListResult> {
   try {
     const data = await getProjectRequests(projectId);
     return { success: true, data };
@@ -119,9 +115,7 @@ export async function fetchActiveTemplatesAction(): Promise<TemplateListResult> 
   }
 }
 
-export async function fetchPortalContactsAction(
-  customerId: string,
-): Promise<ContactListResult> {
+export async function fetchPortalContactsAction(customerId: string): Promise<ContactListResult> {
   try {
     const data = await fetchPortalContacts(customerId);
     return { success: true, data };

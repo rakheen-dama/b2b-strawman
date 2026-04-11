@@ -16,11 +16,7 @@ export function CompletenessBadge({ score, className }: CompletenessBadgeProps) 
   }
 
   const variant =
-    score.percentage === 100
-      ? "success"
-      : score.percentage >= 50
-        ? "warning"
-        : "destructive";
+    score.percentage === 100 ? "success" : score.percentage >= 50 ? "warning" : "destructive";
 
   return (
     <Badge variant={variant} className={className}>

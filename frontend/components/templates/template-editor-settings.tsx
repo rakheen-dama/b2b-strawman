@@ -95,7 +95,9 @@ export function TemplateEditorSettings({
                 </SelectTrigger>
                 <SelectContent>
                   {CATEGORIES.map((c) => (
-                    <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                    <SelectItem key={c.value} value={c.value}>
+                      {c.label}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -111,7 +113,9 @@ export function TemplateEditorSettings({
                 </SelectTrigger>
                 <SelectContent>
                   {ENTITY_TYPES.map((t) => (
-                    <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                    <SelectItem key={t.value} value={t.value}>
+                      {t.label}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -138,7 +142,11 @@ export function TemplateEditorSettings({
                 onClick={onAdvancedToggle}
                 className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
               >
-                {advancedOpen ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
+                {advancedOpen ? (
+                  <ChevronUp className="size-4" />
+                ) : (
+                  <ChevronDown className="size-4" />
+                )}
                 Advanced
               </button>
 

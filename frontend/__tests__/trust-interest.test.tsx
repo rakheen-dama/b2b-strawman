@@ -1,11 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import {
-  cleanup,
-  render,
-  screen,
-  waitFor,
-  fireEvent,
-} from "@testing-library/react";
+import { cleanup, render, screen, waitFor, fireEvent } from "@testing-library/react";
 
 // ── Mock server-only ─────────────────────────────────────────────
 vi.mock("server-only", () => ({}));
@@ -20,25 +14,16 @@ const mockFetchInterestRunDetail = vi.fn();
 const mockFetchLpffRates = vi.fn();
 const mockAddLpffRate = vi.fn();
 
-vi.mock(
-  "@/app/(app)/org/[slug]/trust-accounting/interest/actions",
-  () => ({
-    fetchInterestRuns: (...args: unknown[]) =>
-      mockFetchInterestRuns(...args),
-    createInterestRun: (...args: unknown[]) =>
-      mockCreateInterestRun(...args),
-    calculateInterest: (...args: unknown[]) =>
-      mockCalculateInterest(...args),
-    approveInterestRun: (...args: unknown[]) =>
-      mockApproveInterestRun(...args),
-    postInterestRun: (...args: unknown[]) =>
-      mockPostInterestRun(...args),
-    fetchInterestRunDetail: (...args: unknown[]) =>
-      mockFetchInterestRunDetail(...args),
-    fetchLpffRates: (...args: unknown[]) => mockFetchLpffRates(...args),
-    addLpffRate: (...args: unknown[]) => mockAddLpffRate(...args),
-  }),
-);
+vi.mock("@/app/(app)/org/[slug]/trust-accounting/interest/actions", () => ({
+  fetchInterestRuns: (...args: unknown[]) => mockFetchInterestRuns(...args),
+  createInterestRun: (...args: unknown[]) => mockCreateInterestRun(...args),
+  calculateInterest: (...args: unknown[]) => mockCalculateInterest(...args),
+  approveInterestRun: (...args: unknown[]) => mockApproveInterestRun(...args),
+  postInterestRun: (...args: unknown[]) => mockPostInterestRun(...args),
+  fetchInterestRunDetail: (...args: unknown[]) => mockFetchInterestRunDetail(...args),
+  fetchLpffRates: (...args: unknown[]) => mockFetchLpffRates(...args),
+  addLpffRate: (...args: unknown[]) => mockAddLpffRate(...args),
+}));
 
 // ── Mock parent trust actions ────────────────────────────────────
 vi.mock("@/app/(app)/org/[slug]/trust-accounting/actions", () => ({
@@ -217,7 +202,7 @@ describe("Trust Interest", () => {
         onSuccess={vi.fn()}
         canApprove={true}
         currency="ZAR"
-      />,
+      />
     );
 
     // Wizard opens at step 1 by default; we need to create first to get to step 2.
@@ -240,9 +225,7 @@ describe("Trust Interest", () => {
 
     // Wait for step 2
     await waitFor(() => {
-      expect(
-        screen.getByRole("button", { name: "Calculate Interest" }),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Calculate Interest" })).toBeInTheDocument();
     });
 
     // Click "Calculate Interest"
@@ -274,12 +257,7 @@ describe("Trust Interest", () => {
     });
 
     render(
-      <LpffRateDialog
-        accountId="acc-1"
-        open={true}
-        onOpenChange={vi.fn()}
-        onSuccess={vi.fn()}
-      />,
+      <LpffRateDialog accountId="acc-1" open={true} onOpenChange={vi.fn()} onSuccess={vi.fn()} />
     );
 
     const effectiveInput = screen.getByLabelText("Effective From");
@@ -301,7 +279,7 @@ describe("Trust Interest", () => {
           effectiveFrom: "2026-04-01",
           ratePercent: 8.5,
           lpffSharePercent: 50,
-        }),
+        })
       );
     });
   });
@@ -354,7 +332,7 @@ describe("Trust Interest", () => {
         onSuccess={onSuccess}
         canApprove={true}
         currency="ZAR"
-      />,
+      />
     );
 
     // Step 1: Create
@@ -368,9 +346,7 @@ describe("Trust Interest", () => {
 
     // Step 2: Calculate
     await waitFor(() => {
-      expect(
-        screen.getByRole("button", { name: "Calculate Interest" }),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Calculate Interest" })).toBeInTheDocument();
     });
     fireEvent.click(screen.getByRole("button", { name: "Calculate Interest" }));
 
@@ -382,17 +358,13 @@ describe("Trust Interest", () => {
 
     // Step 3: Approve
     await waitFor(() => {
-      expect(
-        screen.getByRole("button", { name: "Approve Run" }),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Approve Run" })).toBeInTheDocument();
     });
     fireEvent.click(screen.getByRole("button", { name: "Approve Run" }));
 
     // Step 4: Post
     await waitFor(() => {
-      expect(
-        screen.getByRole("button", { name: "Post to Ledger" }),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Post to Ledger" })).toBeInTheDocument();
     });
     fireEvent.click(screen.getByRole("button", { name: "Post to Ledger" }));
 

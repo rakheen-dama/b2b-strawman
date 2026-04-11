@@ -68,12 +68,8 @@ export default async function ResourcesPage({
   }
 
   try {
-    const raw = await api.get<Project[] | { content: Project[] }>(
-      "/api/projects",
-    );
-    const projects = Array.isArray(raw)
-      ? raw
-      : ((raw as { content: Project[] }).content ?? []);
+    const raw = await api.get<Project[] | { content: Project[] }>("/api/projects");
+    const projects = Array.isArray(raw) ? raw : ((raw as { content: Project[] }).content ?? []);
     projectOptions = projects
       .filter((p) => p.status === "ACTIVE")
       .map((p) => ({ id: p.id, name: p.name }));
@@ -83,31 +79,29 @@ export default async function ResourcesPage({
 
   return (
     <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-              Resources
-            </h1>
-            <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-              Team capacity planning and allocation overview
-            </p>
-            <Link
-              href={`/org/${slug}/resources/utilization`}
-              className="mt-2 inline-block text-sm font-medium text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300"
-            >
-              View Utilization →
-            </Link>
-          </div>
-          <WeekRangeSelector weekStart={weekStart} weekCount={weekCount} />
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Resources</h1>
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+            Team capacity planning and allocation overview
+          </p>
+          <Link
+            href={`/org/${slug}/resources/utilization`}
+            className="mt-2 inline-block text-sm font-medium text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300"
+          >
+            View Utilization →
+          </Link>
         </div>
+        <WeekRangeSelector weekStart={weekStart} weekCount={weekCount} />
+      </div>
 
-        {grid.members.length === 0 ? (
-          <EmptyState
-            icon={Users}
-            title="No resource allocations"
-            description="Allocate team members to projects to plan capacity."
-            secondaryLink={{ label: "Read the guide", href: docsLink("/features/resource-planning") }}
-          />
+      {grid.members.length === 0 ? (
+        <EmptyState
+          icon={Users}
+          title="No resource allocations"
+          description="Allocate team members to projects to plan capacity."
+          secondaryLink={{ label: "Read the guide", href: docsLink("/features/resource-planning") }}
+        />
       ) : (
         <AllocationGrid grid={grid} projects={projectOptions} slug={slug} />
       )}

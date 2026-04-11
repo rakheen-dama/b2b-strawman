@@ -58,11 +58,7 @@ export default async function RetainersPage({
   const customers: Array<{ id: string; name: string; email: string }> =
     customersResult.status === "fulfilled"
       ? customersResult.value
-          .filter(
-            (c) =>
-              c.lifecycleStatus !== "OFFBOARDED" &&
-              c.lifecycleStatus !== "PROSPECT",
-          )
+          .filter((c) => c.lifecycleStatus !== "OFFBOARDED" && c.lifecycleStatus !== "PROSPECT")
           .map((c) => ({ id: c.id, name: c.name, email: c.email }))
       : [];
 
@@ -72,9 +68,7 @@ export default async function RetainersPage({
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-            Retainers
-          </h1>
+          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Retainers</h1>
           {retainers.length > 0 && (
             <span className="rounded-full bg-slate-200 px-2.5 py-0.5 text-sm text-slate-700 dark:bg-slate-800 dark:text-slate-300">
               {retainers.length}

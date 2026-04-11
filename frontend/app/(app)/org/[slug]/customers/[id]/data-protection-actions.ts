@@ -3,7 +3,11 @@
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api, ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
-import type { StandaloneExportResult, StandaloneAnonymizationResult, AnonymizationPreview } from "@/lib/types/data-protection";
+import type {
+  StandaloneExportResult,
+  StandaloneAnonymizationResult,
+  AnonymizationPreview,
+} from "@/lib/types/data-protection";
 
 interface ActionResult<T = undefined> {
   success: boolean;
@@ -12,7 +16,7 @@ interface ActionResult<T = undefined> {
 }
 
 export async function triggerDataExport(
-  customerId: string,
+  customerId: string
 ): Promise<ActionResult<StandaloneExportResult>> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
@@ -21,7 +25,7 @@ export async function triggerDataExport(
 
   try {
     const result = await api.post<StandaloneExportResult>(
-      `/api/customers/${customerId}/data-export`,
+      `/api/customers/${customerId}/data-export`
     );
     return { success: true, data: result };
   } catch (error) {
@@ -33,7 +37,7 @@ export async function triggerDataExport(
 }
 
 export async function fetchAnonymizationPreview(
-  customerId: string,
+  customerId: string
 ): Promise<ActionResult<AnonymizationPreview>> {
   const caps = await fetchMyCapabilities();
   if (!caps.isOwner) {
@@ -42,7 +46,7 @@ export async function fetchAnonymizationPreview(
 
   try {
     const result = await api.get<AnonymizationPreview>(
-      `/api/customers/${customerId}/anonymize/preview`,
+      `/api/customers/${customerId}/anonymize/preview`
     );
     return { success: true, data: result };
   } catch (error) {
@@ -57,7 +61,7 @@ export async function executeAnonymization(
   slug: string,
   customerId: string,
   confirmationName: string,
-  reason: string,
+  reason: string
 ): Promise<ActionResult<StandaloneAnonymizationResult>> {
   const caps = await fetchMyCapabilities();
   if (!caps.isOwner) {
@@ -67,7 +71,7 @@ export async function executeAnonymization(
   try {
     const result = await api.post<StandaloneAnonymizationResult>(
       `/api/customers/${customerId}/anonymize`,
-      { confirmationName, reason },
+      { confirmationName, reason }
     );
 
     revalidatePath(`/org/${slug}/customers`);

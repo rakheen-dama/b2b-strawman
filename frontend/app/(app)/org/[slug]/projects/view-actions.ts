@@ -6,14 +6,11 @@ import {
   deleteSavedViewAction as deleteShared,
   type ViewActionResult,
 } from "@/lib/view-actions";
-import type {
-  CreateSavedViewRequest,
-  UpdateSavedViewRequest,
-} from "@/lib/types";
+import type { CreateSavedViewRequest, UpdateSavedViewRequest } from "@/lib/types";
 
 export async function createSavedViewAction(
   slug: string,
-  req: CreateSavedViewRequest,
+  req: CreateSavedViewRequest
 ): Promise<ViewActionResult> {
   return createShared(slug, "projects", req);
 }
@@ -21,14 +18,14 @@ export async function createSavedViewAction(
 export async function updateSavedViewAction(
   slug: string,
   viewId: string,
-  req: UpdateSavedViewRequest,
+  req: UpdateSavedViewRequest
 ): Promise<ViewActionResult> {
   return updateShared(slug, "projects", viewId, req);
 }
 
 export async function deleteSavedViewAction(
   slug: string,
-  viewId: string,
+  viewId: string
 ): Promise<ViewActionResult> {
   return deleteShared(slug, "projects", viewId);
 }

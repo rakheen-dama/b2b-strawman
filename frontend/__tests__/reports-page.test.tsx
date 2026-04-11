@@ -18,19 +18,14 @@ vi.mock("@/lib/api/capabilities", () => ({
 const mockGetReportDefinitions = vi.fn();
 
 vi.mock("@/lib/api/reports", () => ({
-  getReportDefinitions: (...args: unknown[]) =>
-    mockGetReportDefinitions(...args),
+  getReportDefinitions: (...args: unknown[]) => mockGetReportDefinitions(...args),
 }));
 
 // Mock next/link to render plain <a> tags
 vi.mock("next/link", () => ({
-  default: ({
-    children,
-    href,
-  }: {
-    children: React.ReactNode;
-    href: string;
-  }) => <a href={href}>{children}</a>,
+  default: ({ children, href }: { children: React.ReactNode; href: string }) => (
+    <a href={href}>{children}</a>
+  ),
 }));
 
 // Must import page AFTER vi.mock declarations
@@ -93,9 +88,7 @@ describe("ReportsPage", () => {
     await renderPage();
 
     expect(screen.getByText("Revenue Summary")).toBeInTheDocument();
-    expect(
-      screen.getByText("Overview of revenue by period"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Overview of revenue by period")).toBeInTheDocument();
     expect(screen.getByText("Outstanding Invoices")).toBeInTheDocument();
     expect(screen.getByText("Team Utilization")).toBeInTheDocument();
   });
@@ -104,18 +97,10 @@ describe("ReportsPage", () => {
     await renderPage();
 
     const revenueLink = screen.getByText("Revenue Summary").closest("a");
-    expect(revenueLink).toHaveAttribute(
-      "href",
-      "/org/acme/reports/revenue-summary",
-    );
+    expect(revenueLink).toHaveAttribute("href", "/org/acme/reports/revenue-summary");
 
-    const utilizationLink = screen
-      .getByText("Team Utilization")
-      .closest("a");
-    expect(utilizationLink).toHaveAttribute(
-      "href",
-      "/org/acme/reports/utilization",
-    );
+    const utilizationLink = screen.getByText("Team Utilization").closest("a");
+    expect(utilizationLink).toHaveAttribute("href", "/org/acme/reports/utilization");
   });
 
   it("renders empty state when no categories", async () => {

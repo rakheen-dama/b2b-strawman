@@ -29,13 +29,9 @@ vi.mock("@/app/(app)/org/[slug]/team/invitation-actions", () => ({
 
 // Mock next/link
 vi.mock("next/link", () => ({
-  default: ({
-    children,
-    href,
-  }: {
-    children: React.ReactNode;
-    href: string;
-  }) => <a href={href}>{children}</a>,
+  default: ({ children, href }: { children: React.ReactNode; href: string }) => (
+    <a href={href}>{children}</a>
+  ),
 }));
 
 import { InviteMemberForm } from "@/components/team/invite-member-form";
@@ -76,9 +72,7 @@ describe("Invite Form Role Selection", () => {
     const user = userEvent.setup();
     const bookkeeper = makeCustomRole();
 
-    render(
-      <InviteMemberForm {...defaultProps} roles={[bookkeeper]} />,
-    );
+    render(<InviteMemberForm {...defaultProps} roles={[bookkeeper]} />);
 
     // Click the role dropdown trigger
     const trigger = screen.getByRole("combobox");
@@ -91,18 +85,14 @@ describe("Invite Form Role Selection", () => {
 
     // Should show custom roles grouped under "Custom"
     expect(screen.getByText("Custom")).toBeInTheDocument();
-    expect(
-      screen.getByRole("option", { name: "Bookkeeper" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Bookkeeper" })).toBeInTheDocument();
   });
 
   it("shows capability summary pills when custom role is selected", async () => {
     const user = userEvent.setup();
     const bookkeeper = makeCustomRole();
 
-    render(
-      <InviteMemberForm {...defaultProps} roles={[bookkeeper]} />,
-    );
+    render(<InviteMemberForm {...defaultProps} roles={[bookkeeper]} />);
 
     // Initially no pills shown (system role selected by default)
     expect(screen.queryByText("Financial Visibility")).not.toBeInTheDocument();
@@ -126,9 +116,7 @@ describe("Invite Form Role Selection", () => {
     const user = userEvent.setup();
     const bookkeeper = makeCustomRole();
 
-    render(
-      <InviteMemberForm {...defaultProps} roles={[bookkeeper]} />,
-    );
+    render(<InviteMemberForm {...defaultProps} roles={[bookkeeper]} />);
 
     // Select the custom role first to show customization
     const trigger = screen.getByRole("combobox");
@@ -137,9 +125,7 @@ describe("Invite Form Role Selection", () => {
 
     // "Customize for this user" should be visible
     await waitFor(() => {
-      expect(
-        screen.getByText("Customize for this user"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Customize for this user")).toBeInTheDocument();
     });
 
     // Now switch to Admin
@@ -148,9 +134,7 @@ describe("Invite Form Role Selection", () => {
 
     // "Customize for this user" should be gone
     await waitFor(() => {
-      expect(
-        screen.queryByText("Customize for this user"),
-      ).not.toBeInTheDocument();
+      expect(screen.queryByText("Customize for this user")).not.toBeInTheDocument();
     });
   });
 
@@ -158,15 +142,10 @@ describe("Invite Form Role Selection", () => {
     const user = userEvent.setup();
     const bookkeeper = makeCustomRole();
 
-    render(
-      <InviteMemberForm {...defaultProps} roles={[bookkeeper]} />,
-    );
+    render(<InviteMemberForm {...defaultProps} roles={[bookkeeper]} />);
 
     // Fill in email
-    await user.type(
-      screen.getByPlaceholderText("colleague@company.com"),
-      "test@example.com",
-    );
+    await user.type(screen.getByPlaceholderText("colleague@company.com"), "test@example.com");
 
     // Select custom role
     const trigger = screen.getByRole("combobox");
@@ -181,7 +160,7 @@ describe("Invite Form Role Selection", () => {
         "test@example.com",
         "org:member",
         "custom-bookkeeper",
-        undefined,
+        undefined
       );
     });
   });

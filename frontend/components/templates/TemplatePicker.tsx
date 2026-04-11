@@ -35,7 +35,7 @@ export function TemplatePicker({ templates, selectedId, onSelect }: TemplatePick
               <Check
                 className={cn(
                   "size-4 shrink-0 text-teal-600",
-                  selectedId === template.id ? "opacity-100" : "opacity-0",
+                  selectedId === template.id ? "opacity-100" : "opacity-0"
                 )}
               />
               <div className="min-w-0 flex-1">

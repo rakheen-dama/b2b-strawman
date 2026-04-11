@@ -3,12 +3,7 @@
 import { useCallback, useState } from "react";
 import { CheckCircle2, XCircle, Link2, Unlink } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
 import type {
@@ -82,7 +77,7 @@ export function ReconciliationSplitPane({
     (l) =>
       l.matchStatus === "AUTO_MATCHED" ||
       l.matchStatus === "MANUALLY_MATCHED" ||
-      l.matchStatus === "EXCLUDED",
+      l.matchStatus === "EXCLUDED"
   ).length;
   const progressPercent = totalLines > 0 ? (matchedLines / totalLines) * 100 : 0;
 
@@ -108,7 +103,7 @@ export function ReconciliationSplitPane({
         setActionInProgress(null);
       }
     },
-    [onMatch],
+    [onMatch]
   );
 
   const handleExclude = useCallback(
@@ -121,7 +116,7 @@ export function ReconciliationSplitPane({
         setActionInProgress(null);
       }
     },
-    [onExclude],
+    [onExclude]
   );
 
   const handleUnmatch = useCallback(
@@ -133,7 +128,7 @@ export function ReconciliationSplitPane({
         setActionInProgress(null);
       }
     },
-    [onUnmatch],
+    [onUnmatch]
   );
 
   return (
@@ -141,9 +136,7 @@ export function ReconciliationSplitPane({
       {/* Progress Bar */}
       <div data-testid="match-progress">
         <div className="mb-1 flex items-center justify-between text-sm">
-          <span className="text-slate-600 dark:text-slate-400">
-            Matching Progress
-          </span>
+          <span className="text-slate-600 dark:text-slate-400">Matching Progress</span>
           <span className="font-medium text-slate-950 dark:text-slate-50">
             {matchedLines} / {totalLines} lines resolved
           </span>
@@ -280,9 +273,7 @@ export function ReconciliationSplitPane({
         {/* Right: Unmatched Trust Transactions */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">
-              Unmatched Trust Transactions
-            </CardTitle>
+            <CardTitle className="text-base">Unmatched Trust Transactions</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             {unmatchedTransactions.length === 0 ? (
@@ -319,7 +310,7 @@ export function ReconciliationSplitPane({
                         )}
                       </div>
                       <div className="text-right">
-                        <p className="font-mono text-sm tabular-nums text-slate-950 dark:text-slate-50">
+                        <p className="font-mono text-sm text-slate-950 tabular-nums dark:text-slate-50">
                           {formatCurrency(tx.amount, currency)}
                         </p>
                         {isCandidate && selectedLineId && (
@@ -327,9 +318,7 @@ export function ReconciliationSplitPane({
                             type="button"
                             size="sm"
                             className="mt-1"
-                            onClick={() =>
-                              handleMatch(selectedLineId, tx.id)
-                            }
+                            onClick={() => handleMatch(selectedLineId, tx.id)}
                             disabled={actionInProgress !== null}
                             data-testid={`match-btn-${tx.id}`}
                           >
@@ -351,9 +340,7 @@ export function ReconciliationSplitPane({
       {reconciliation && (
         <Card data-testid="balance-summary">
           <CardHeader>
-            <CardTitle className="text-base">
-              Three-Way Balance Check
-            </CardTitle>
+            <CardTitle className="text-base">Three-Way Balance Check</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
@@ -361,7 +348,7 @@ export function ReconciliationSplitPane({
                 <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                   Bank Balance
                 </p>
-                <p className="mt-1 font-mono text-lg tabular-nums text-slate-950 dark:text-slate-50">
+                <p className="mt-1 font-mono text-lg text-slate-950 tabular-nums dark:text-slate-50">
                   {formatCurrency(reconciliation.bankBalance, currency)}
                 </p>
               </div>
@@ -369,7 +356,7 @@ export function ReconciliationSplitPane({
                 <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                   Cashbook Balance
                 </p>
-                <p className="mt-1 font-mono text-lg tabular-nums text-slate-950 dark:text-slate-50">
+                <p className="mt-1 font-mono text-lg text-slate-950 tabular-nums dark:text-slate-50">
                   {formatCurrency(reconciliation.cashbookBalance, currency)}
                 </p>
               </div>
@@ -377,7 +364,7 @@ export function ReconciliationSplitPane({
                 <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                   Client Ledger Total
                 </p>
-                <p className="mt-1 font-mono text-lg tabular-nums text-slate-950 dark:text-slate-50">
+                <p className="mt-1 font-mono text-lg text-slate-950 tabular-nums dark:text-slate-50">
                   {formatCurrency(reconciliation.clientLedgerTotal, currency)}
                 </p>
               </div>
@@ -385,7 +372,7 @@ export function ReconciliationSplitPane({
                 <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                   Outstanding Deposits
                 </p>
-                <p className="mt-1 font-mono text-sm tabular-nums text-slate-700 dark:text-slate-300">
+                <p className="mt-1 font-mono text-sm text-slate-700 tabular-nums dark:text-slate-300">
                   {formatCurrency(reconciliation.outstandingDeposits, currency)}
                 </p>
               </div>
@@ -393,7 +380,7 @@ export function ReconciliationSplitPane({
                 <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                   Outstanding Payments
                 </p>
-                <p className="mt-1 font-mono text-sm tabular-nums text-slate-700 dark:text-slate-300">
+                <p className="mt-1 font-mono text-sm text-slate-700 tabular-nums dark:text-slate-300">
                   {formatCurrency(reconciliation.outstandingPayments, currency)}
                 </p>
               </div>
@@ -408,10 +395,7 @@ export function ReconciliationSplitPane({
                       : "text-red-600 dark:text-red-400"
                   }`}
                 >
-                  {formatCurrency(
-                    reconciliation.adjustedBankBalance,
-                    currency,
-                  )}
+                  {formatCurrency(reconciliation.adjustedBankBalance, currency)}
                 </p>
               </div>
             </div>

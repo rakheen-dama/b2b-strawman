@@ -26,11 +26,7 @@ import { HelpTip } from "@/components/help-tip";
 import { createMessages } from "@/lib/messages";
 import { UploadDocxDialog } from "./UploadDocxDialog";
 import { BrandingSection } from "./branding-section";
-import {
-  uploadLogoAction,
-  deleteLogoAction,
-  saveBrandingAction,
-} from "./template-support-actions";
+import { uploadLogoAction, deleteLogoAction, saveBrandingAction } from "./template-support-actions";
 import { formatFileSize } from "@/lib/format";
 import type {
   TemplateListResponse,
@@ -54,25 +50,16 @@ interface TemplatesContentProps {
   canManage: boolean;
 }
 
-export function TemplatesContent({
-  slug,
-  templates,
-  settings,
-  canManage,
-}: TemplatesContentProps) {
+export function TemplatesContent({ slug, templates, settings, canManage }: TemplatesContentProps) {
   const [formatFilter, setFormatFilter] = useState<TemplateFormat | "ALL">("ALL");
   const { t } = createMessages("empty-states");
 
   // Filter templates by format
   const filteredTemplates =
-    formatFilter === "ALL"
-      ? templates
-      : templates.filter((t) => t.format === formatFilter);
+    formatFilter === "ALL" ? templates : templates.filter((t) => t.format === formatFilter);
 
   // Group templates by category
-  const grouped = filteredTemplates.reduce<
-    Record<string, TemplateListResponse[]>
-  >((acc, t) => {
+  const grouped = filteredTemplates.reduce<Record<string, TemplateListResponse[]>>((acc, t) => {
     const key = t.category;
     if (!acc[key]) acc[key] = [];
     acc[key].push(t);
@@ -85,20 +72,20 @@ export function TemplatesContent({
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-        <Select
-          value={formatFilter}
-          onValueChange={(v) => setFormatFilter(v as TemplateFormat | "ALL")}
-        >
-          <SelectTrigger className="w-40" data-testid="format-filter">
-            <SelectValue placeholder="All Formats" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="ALL">All Formats</SelectItem>
-            <SelectItem value="TIPTAP">Tiptap</SelectItem>
-            <SelectItem value="DOCX">Word</SelectItem>
-          </SelectContent>
-        </Select>
-        <HelpTip code="templates.packs" />
+          <Select
+            value={formatFilter}
+            onValueChange={(v) => setFormatFilter(v as TemplateFormat | "ALL")}
+          >
+            <SelectTrigger className="w-40" data-testid="format-filter">
+              <SelectValue placeholder="All Formats" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">All Formats</SelectItem>
+              <SelectItem value="TIPTAP">Tiptap</SelectItem>
+              <SelectItem value="DOCX">Word</SelectItem>
+            </SelectContent>
+          </Select>
+          <HelpTip code="templates.packs" />
         </div>
         {canManage && (
           <div className="flex gap-2">
@@ -139,83 +126,76 @@ export function TemplatesContent({
               {CATEGORY_LABELS[cat as TemplateCategory] ?? cat}
             </h2>
             <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Format</TableHead>
-                  <TableHead className="hidden md:table-cell">Entity Type</TableHead>
-                  <TableHead className="hidden lg:table-cell">Source</TableHead>
-                  <TableHead>Status</TableHead>
-                  {canManage && (
-                    <TableHead className="w-12">Actions</TableHead>
-                  )}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {grouped[cat].map((template) => (
-                  <TableRow key={template.id} data-testid="template-list-item">
-                    <TableCell>
-                      <Link
-                        href={`/org/${slug}/settings/templates/${template.id}/edit`}
-                        className="font-medium text-slate-950 hover:text-teal-600 hover:underline dark:text-slate-50 dark:hover:text-teal-400"
-                      >
-                        {template.name}
-                      </Link>
-                      {template.description && (
-                        <p className="text-xs text-slate-500 dark:text-slate-400">
-                          {template.description}
-                        </p>
-                      )}
-                      {template.format === "DOCX" && template.docxFileName && (
-                        <p className="text-xs text-slate-500 dark:text-slate-400">
-                          {template.docxFileName}
-                          {template.docxFileSize != null &&
-                            ` (${formatFileSize(template.docxFileSize)})`}
-                        </p>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {template.format === "DOCX" ? (
-                        <Badge variant="success">
-                          <FileText className="size-3" />
-                          Word
-                        </Badge>
-                      ) : (
-                        <Badge variant="neutral">Tiptap</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      <Badge variant="neutral">
-                        {template.primaryEntityType}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="hidden lg:table-cell">
-                      {template.source === "PLATFORM" ? (
-                        <Badge variant="pro">Platform</Badge>
-                      ) : (
-                        <Badge variant="lead">Custom</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {template.active ? (
-                        <Badge variant="success">Active</Badge>
-                      ) : (
-                        <Badge variant="neutral">Inactive</Badge>
-                      )}
-                    </TableCell>
-                    {canManage && (
-                      <TableCell>
-                        <TemplateActionsMenu
-                          slug={slug}
-                          template={template}
-                        />
-                      </TableCell>
-                    )}
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Format</TableHead>
+                    <TableHead className="hidden md:table-cell">Entity Type</TableHead>
+                    <TableHead className="hidden lg:table-cell">Source</TableHead>
+                    <TableHead>Status</TableHead>
+                    {canManage && <TableHead className="w-12">Actions</TableHead>}
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {grouped[cat].map((template) => (
+                    <TableRow key={template.id} data-testid="template-list-item">
+                      <TableCell>
+                        <Link
+                          href={`/org/${slug}/settings/templates/${template.id}/edit`}
+                          className="font-medium text-slate-950 hover:text-teal-600 hover:underline dark:text-slate-50 dark:hover:text-teal-400"
+                        >
+                          {template.name}
+                        </Link>
+                        {template.description && (
+                          <p className="text-xs text-slate-500 dark:text-slate-400">
+                            {template.description}
+                          </p>
+                        )}
+                        {template.format === "DOCX" && template.docxFileName && (
+                          <p className="text-xs text-slate-500 dark:text-slate-400">
+                            {template.docxFileName}
+                            {template.docxFileSize != null &&
+                              ` (${formatFileSize(template.docxFileSize)})`}
+                          </p>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {template.format === "DOCX" ? (
+                          <Badge variant="success">
+                            <FileText className="size-3" />
+                            Word
+                          </Badge>
+                        ) : (
+                          <Badge variant="neutral">Tiptap</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        <Badge variant="neutral">{template.primaryEntityType}</Badge>
+                      </TableCell>
+                      <TableCell className="hidden lg:table-cell">
+                        {template.source === "PLATFORM" ? (
+                          <Badge variant="pro">Platform</Badge>
+                        ) : (
+                          <Badge variant="lead">Custom</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {template.active ? (
+                          <Badge variant="success">Active</Badge>
+                        ) : (
+                          <Badge variant="neutral">Inactive</Badge>
+                        )}
+                      </TableCell>
+                      {canManage && (
+                        <TableCell>
+                          <TemplateActionsMenu slug={slug} template={template} />
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
           </div>
         ))

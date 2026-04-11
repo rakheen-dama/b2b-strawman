@@ -22,7 +22,7 @@ export function ChecklistProgressBar({
         <div
           className={cn(
             "h-full rounded-full transition-all",
-            allRequiredDone ? "bg-emerald-500" : "bg-teal-500",
+            allRequiredDone ? "bg-emerald-500" : "bg-teal-500"
           )}
           style={{ width: `${percentage}%` }}
         />
@@ -32,7 +32,7 @@ export function ChecklistProgressBar({
           "text-xs",
           allRequiredDone
             ? "text-emerald-600 dark:text-emerald-400"
-            : "text-slate-500 dark:text-slate-400",
+            : "text-slate-500 dark:text-slate-400"
         )}
       >
         {completed}/{total} completed ({requiredCompleted}/{requiredTotal} required)

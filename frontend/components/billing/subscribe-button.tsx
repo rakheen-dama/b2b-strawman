@@ -38,8 +38,7 @@ export function SubscribeButton({ disabled, className }: SubscribeButtonProps) {
       document.body.appendChild(form);
       form.submit();
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to start subscription.";
+      const message = err instanceof Error ? err.message : "Failed to start subscription.";
       setError(message);
       setIsLoading(false);
     }
@@ -62,7 +61,7 @@ export function SubscribeButton({ disabled, className }: SubscribeButtonProps) {
           "Subscribe"
         )}
       </Button>
-      {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
+      {error && <p className="text-destructive mt-2 text-sm">{error}</p>}
     </div>
   );
 }

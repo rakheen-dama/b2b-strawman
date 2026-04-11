@@ -119,15 +119,15 @@ export function CourtDateListView({
                 variant="ghost"
                 size="sm"
                 onClick={() => toggleSort("scheduledDate")}
-                className="h-auto p-0 text-xs font-medium uppercase tracking-wide text-slate-600 hover:text-slate-900 dark:text-slate-400"
+                className="h-auto p-0 text-xs font-medium tracking-wide text-slate-600 uppercase hover:text-slate-900 dark:text-slate-400"
               >
                 Date <ArrowUpDown className="ml-1 size-3" />
               </Button>
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+            <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
               Time
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+            <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
               Type
             </th>
             <th className="px-4 py-3 text-left">
@@ -135,15 +135,15 @@ export function CourtDateListView({
                 variant="ghost"
                 size="sm"
                 onClick={() => toggleSort("courtName")}
-                className="h-auto p-0 text-xs font-medium uppercase tracking-wide text-slate-600 hover:text-slate-900 dark:text-slate-400"
+                className="h-auto p-0 text-xs font-medium tracking-wide text-slate-600 uppercase hover:text-slate-900 dark:text-slate-400"
               >
                 Court <ArrowUpDown className="ml-1 size-3" />
               </Button>
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+            <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
               Matter
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+            <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
               Client
             </th>
             <th className="px-4 py-3 text-left">
@@ -151,12 +151,12 @@ export function CourtDateListView({
                 variant="ghost"
                 size="sm"
                 onClick={() => toggleSort("status")}
-                className="h-auto p-0 text-xs font-medium uppercase tracking-wide text-slate-600 hover:text-slate-900 dark:text-slate-400"
+                className="h-auto p-0 text-xs font-medium tracking-wide text-slate-600 uppercase hover:text-slate-900 dark:text-slate-400"
               >
                 Status <ArrowUpDown className="ml-1 size-3" />
               </Button>
             </th>
-            <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+            <th className="px-4 py-3 text-right text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
               Actions
             </th>
           </tr>

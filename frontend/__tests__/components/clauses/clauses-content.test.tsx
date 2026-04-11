@@ -4,9 +4,7 @@ import userEvent from "@testing-library/user-event";
 
 // Mock Tiptap dependencies (must be before component import)
 const mockSetContent = vi.fn();
-const mockGetJSON = vi.fn(
-  (): Record<string, unknown> => ({ type: "doc", content: [] }),
-);
+const mockGetJSON = vi.fn((): Record<string, unknown> => ({ type: "doc", content: [] }));
 const mockSetEditable = vi.fn();
 const mockOn = vi.fn();
 const mockOff = vi.fn();
@@ -36,9 +34,7 @@ vi.mock("@tiptap/react", () => ({
     return mockEditor;
   }),
   EditorContent: vi.fn(({ editor }: { editor: unknown }) =>
-    editor ? (
-      <div data-testid="editor-content" contentEditable={capturedEditable} />
-    ) : null,
+    editor ? <div data-testid="editor-content" contentEditable={capturedEditable} /> : null
   ),
 }));
 
@@ -133,7 +129,7 @@ describe("ClausesContent", () => {
         clauses={clauses}
         categories={["Legal", "Finance"]}
         canManage={true}
-      />,
+      />
     );
 
     // Both category headers should be visible
@@ -148,9 +144,7 @@ describe("ClausesContent", () => {
 
   it("expands clause body on chevron click", async () => {
     const user = userEvent.setup();
-    const clauses: Clause[] = [
-      makeClause({ id: "1", title: "Test Clause", category: "General" }),
-    ];
+    const clauses: Clause[] = [makeClause({ id: "1", title: "Test Clause", category: "General" })];
 
     render(
       <ClausesContent
@@ -158,7 +152,7 @@ describe("ClausesContent", () => {
         clauses={clauses}
         categories={["General"]}
         canManage={false}
-      />,
+      />
     );
 
     // Editor content should NOT be visible initially
@@ -185,7 +179,7 @@ describe("ClausesContent", () => {
         clauses={clauses}
         categories={["General"]}
         canManage={false}
-      />,
+      />
     );
 
     expect(screen.getByText("System")).toBeInTheDocument();
@@ -194,9 +188,7 @@ describe("ClausesContent", () => {
   });
 
   it("hides actions menu when canManage is false", () => {
-    const clauses: Clause[] = [
-      makeClause({ id: "1", title: "Test Clause", category: "General" }),
-    ];
+    const clauses: Clause[] = [makeClause({ id: "1", title: "Test Clause", category: "General" })];
 
     render(
       <ClausesContent
@@ -204,7 +196,7 @@ describe("ClausesContent", () => {
         clauses={clauses}
         categories={["General"]}
         canManage={false}
-      />,
+      />
     );
 
     expect(screen.queryByLabelText("Clause actions")).not.toBeInTheDocument();
@@ -213,16 +205,17 @@ describe("ClausesContent", () => {
   it("shows 'Clone & Customize' but not 'Edit' or 'Deactivate' for system clauses", async () => {
     const user = userEvent.setup();
     const clauses: Clause[] = [
-      makeClause({ id: "1", title: "System Clause", source: "SYSTEM", category: "General", active: true }),
+      makeClause({
+        id: "1",
+        title: "System Clause",
+        source: "SYSTEM",
+        category: "General",
+        active: true,
+      }),
     ];
 
     render(
-      <ClausesContent
-        slug="test-org"
-        clauses={clauses}
-        categories={["General"]}
-        canManage={true}
-      />,
+      <ClausesContent slug="test-org" clauses={clauses} categories={["General"]} canManage={true} />
     );
 
     const trigger = screen.getByLabelText("Clause actions");
@@ -236,16 +229,17 @@ describe("ClausesContent", () => {
   it("shows 'Edit', 'Clone', and 'Deactivate' for active custom clauses", async () => {
     const user = userEvent.setup();
     const clauses: Clause[] = [
-      makeClause({ id: "1", title: "Custom Clause", source: "CUSTOM", category: "General", active: true }),
+      makeClause({
+        id: "1",
+        title: "Custom Clause",
+        source: "CUSTOM",
+        category: "General",
+        active: true,
+      }),
     ];
 
     render(
-      <ClausesContent
-        slug="test-org"
-        clauses={clauses}
-        categories={["General"]}
-        canManage={true}
-      />,
+      <ClausesContent slug="test-org" clauses={clauses} categories={["General"]} canManage={true} />
     );
 
     const trigger = screen.getByLabelText("Clause actions");
@@ -287,7 +281,7 @@ describe("ClausesContent", () => {
         clauses={[legacyClause, normalClause]}
         categories={["General"]}
         canManage={false}
-      />,
+      />
     );
 
     // The "Migration needed" badge should appear once (for the legacy clause)

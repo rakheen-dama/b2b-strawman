@@ -43,26 +43,29 @@ export function DataRequestTable({ requests, slug }: DataRequestTableProps) {
       <table className="w-full">
         <thead>
           <tr className="border-b border-slate-200 dark:border-slate-800">
-            <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+            <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
               Customer
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+            <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
               Type
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+            <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
               Status
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+            <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
               Deadline
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+            <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
               Requested
             </th>
           </tr>
         </thead>
         <tbody>
           {requests.map((request) => {
-            const overdue = isOverdue(request.deadline) && request.status !== "COMPLETED" && request.status !== "REJECTED";
+            const overdue =
+              isOverdue(request.deadline) &&
+              request.status !== "COMPLETED" &&
+              request.status !== "REJECTED";
             const statusConfig = STATUS_CONFIG[request.status] ?? {
               label: request.status,
               variant: "neutral" as BadgeVariant,
@@ -96,8 +99,8 @@ export function DataRequestTable({ requests, slug }: DataRequestTableProps) {
                     className={cn(
                       "text-sm",
                       overdue
-                        ? "text-red-600 dark:text-red-400 font-medium"
-                        : "text-slate-700 dark:text-slate-300",
+                        ? "font-medium text-red-600 dark:text-red-400"
+                        : "text-slate-700 dark:text-slate-300"
                     )}
                   >
                     {formatLocalDate(request.deadline)}

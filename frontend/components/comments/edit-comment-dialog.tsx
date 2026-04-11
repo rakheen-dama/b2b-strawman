@@ -46,20 +46,12 @@ export function EditCommentDialog({
       return;
     }
 
-    const visibility = canManageVisibility
-      ? formData.get("visibility")?.toString()
-      : undefined;
+    const visibility = canManageVisibility ? formData.get("visibility")?.toString() : undefined;
 
     setIsSubmitting(true);
 
     try {
-      const result = await updateComment(
-        orgSlug,
-        projectId,
-        comment.id,
-        body,
-        visibility
-      );
+      const result = await updateComment(orgSlug, projectId, comment.id, body, visibility);
       if (result.success) {
         setOpen(false);
         onCommentChange?.();
@@ -108,7 +100,7 @@ export function EditCommentDialog({
                 name="visibility"
                 defaultValue={comment.visibility}
                 disabled={isSubmitting}
-                className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-xs transition-colors placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800"
+                className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-xs transition-colors placeholder:text-slate-400 focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800"
               >
                 <option value="INTERNAL">Internal only</option>
                 <option value="SHARED">Customer visible</option>
@@ -116,7 +108,7 @@ export function EditCommentDialog({
             </div>
           )}
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && <p className="text-destructive text-sm">{error}</p>}
 
           <DialogFooter>
             <Button

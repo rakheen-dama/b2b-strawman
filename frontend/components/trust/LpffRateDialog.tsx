@@ -24,10 +24,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  addLpffRateSchema,
-  type AddLpffRateFormData,
-} from "@/lib/schemas/trust";
+import { addLpffRateSchema, type AddLpffRateFormData } from "@/lib/schemas/trust";
 import { addLpffRate } from "@/app/(app)/org/[slug]/trust-accounting/interest/actions";
 
 interface LpffRateDialogProps {
@@ -48,12 +45,7 @@ function getDefaultValues(): AddLpffRateFormData {
   };
 }
 
-export function LpffRateDialog({
-  accountId,
-  open,
-  onOpenChange,
-  onSuccess,
-}: LpffRateDialogProps) {
+export function LpffRateDialog({ accountId, open, onOpenChange, onSuccess }: LpffRateDialogProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -97,16 +89,12 @@ export function LpffRateDialog({
         <DialogHeader>
           <DialogTitle>Add LPFF Rate</DialogTitle>
           <DialogDescription>
-            Set a new Lawyers Professional Fidelity Fund rate for interest
-            calculations.
+            Set a new Lawyers Professional Fidelity Fund rate for interest calculations.
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-4"
-          >
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="effectiveFrom"
@@ -134,9 +122,7 @@ export function LpffRateDialog({
                       min="0.001"
                       placeholder="e.g. 8.5"
                       {...field}
-                      onChange={(e) =>
-                        field.onChange(parseFloat(e.target.value) || 0)
-                      }
+                      onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                     />
                   </FormControl>
                   <FormMessage />
@@ -158,9 +144,7 @@ export function LpffRateDialog({
                       max="100"
                       placeholder="e.g. 50"
                       {...field}
-                      onChange={(e) =>
-                        field.onChange(parseFloat(e.target.value) || 0)
-                      }
+                      onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                     />
                   </FormControl>
                   <FormMessage />
@@ -186,7 +170,7 @@ export function LpffRateDialog({
               )}
             />
 
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {error && <p className="text-destructive text-sm">{error}</p>}
 
             <DialogFooter>
               <Button

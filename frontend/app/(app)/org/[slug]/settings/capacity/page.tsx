@@ -20,9 +20,7 @@ export default async function CapacitySettingsPage({
 
   let settings: OrgSettings = { defaultCurrency: "USD" };
 
-  const settingsResult = await api
-    .get<OrgSettings>("/api/settings")
-    .catch(() => null);
+  const settingsResult = await api.get<OrgSettings>("/api/settings").catch(() => null);
   if (settingsResult) {
     settings = settingsResult;
   }
@@ -38,9 +36,7 @@ export default async function CapacitySettingsPage({
       </Link>
 
       <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          Capacity
-        </h1>
+        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Capacity</h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           Configure default weekly capacity hours for your organization.
         </p>
@@ -48,9 +44,7 @@ export default async function CapacitySettingsPage({
 
       <DefaultCapacitySettings
         slug={slug}
-        defaultWeeklyCapacityHours={
-          settings.defaultWeeklyCapacityHours ?? 40
-        }
+        defaultWeeklyCapacityHours={settings.defaultWeeklyCapacityHours ?? 40}
       />
     </div>
   );

@@ -61,7 +61,9 @@ export function CherryPickCustomerDetail({
       )}
 
       {data?.error && (
-        <p role="alert" className="text-sm text-destructive">{data.error}</p>
+        <p role="alert" className="text-destructive text-sm">
+          {data.error}
+        </p>
       )}
 
       {data?.isLoaded && !isExcluded && (
@@ -76,18 +78,35 @@ export function CherryPickCustomerDetail({
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-slate-200 text-left dark:border-slate-700">
-                      <th className="pb-2 pr-3 font-medium text-slate-500 dark:text-slate-400">Include</th>
-                      <th className="pb-2 pr-3 font-medium text-slate-500 dark:text-slate-400">Date</th>
-                      <th className="pb-2 pr-3 font-medium text-slate-500 dark:text-slate-400">Member</th>
-                      <th className="pb-2 pr-3 font-medium text-slate-500 dark:text-slate-400">Task</th>
-                      <th className="pb-2 pr-3 font-medium text-slate-500 dark:text-slate-400">Hours</th>
-                      <th className="pb-2 pr-3 text-right font-medium text-slate-500 dark:text-slate-400">Rate</th>
-                      <th className="pb-2 text-right font-medium text-slate-500 dark:text-slate-400">Amount</th>
+                      <th className="pr-3 pb-2 font-medium text-slate-500 dark:text-slate-400">
+                        Include
+                      </th>
+                      <th className="pr-3 pb-2 font-medium text-slate-500 dark:text-slate-400">
+                        Date
+                      </th>
+                      <th className="pr-3 pb-2 font-medium text-slate-500 dark:text-slate-400">
+                        Member
+                      </th>
+                      <th className="pr-3 pb-2 font-medium text-slate-500 dark:text-slate-400">
+                        Task
+                      </th>
+                      <th className="pr-3 pb-2 font-medium text-slate-500 dark:text-slate-400">
+                        Hours
+                      </th>
+                      <th className="pr-3 pb-2 text-right font-medium text-slate-500 dark:text-slate-400">
+                        Rate
+                      </th>
+                      <th className="pb-2 text-right font-medium text-slate-500 dark:text-slate-400">
+                        Amount
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {data.timeEntries.map((entry) => (
-                      <tr key={entry.id} className="border-b border-slate-100 dark:border-slate-800">
+                      <tr
+                        key={entry.id}
+                        className="border-b border-slate-100 dark:border-slate-800"
+                      >
                         <td className="py-2 pr-3">
                           <Checkbox
                             checked={data.includedTimeIds.has(entry.id)}
@@ -95,12 +114,22 @@ export function CherryPickCustomerDetail({
                             aria-label={`Include time entry ${entry.description ?? entry.id}`}
                           />
                         </td>
-                        <td className="py-2 pr-3 text-slate-600 dark:text-slate-400">{formatLocalDate(entry.date)}</td>
+                        <td className="py-2 pr-3 text-slate-600 dark:text-slate-400">
+                          {formatLocalDate(entry.date)}
+                        </td>
                         <td className="py-2 pr-3 text-slate-600 dark:text-slate-400">Member</td>
-                        <td className="py-2 pr-3 text-slate-600 dark:text-slate-400">{entry.description ?? "Task"}</td>
-                        <td className="py-2 pr-3 text-slate-600 dark:text-slate-400">{(entry.durationMinutes / 60).toFixed(1)}</td>
-                        <td className="py-2 pr-3 text-right text-slate-600 dark:text-slate-400">{formatCurrency(entry.billingRateSnapshot, currency)}</td>
-                        <td className="py-2 text-right font-medium text-slate-950 dark:text-slate-50">{formatCurrency(entry.billableValue, currency)}</td>
+                        <td className="py-2 pr-3 text-slate-600 dark:text-slate-400">
+                          {entry.description ?? "Task"}
+                        </td>
+                        <td className="py-2 pr-3 text-slate-600 dark:text-slate-400">
+                          {(entry.durationMinutes / 60).toFixed(1)}
+                        </td>
+                        <td className="py-2 pr-3 text-right text-slate-600 dark:text-slate-400">
+                          {formatCurrency(entry.billingRateSnapshot, currency)}
+                        </td>
+                        <td className="py-2 text-right font-medium text-slate-950 dark:text-slate-50">
+                          {formatCurrency(entry.billableValue, currency)}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -119,16 +148,29 @@ export function CherryPickCustomerDetail({
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-slate-200 text-left dark:border-slate-700">
-                      <th className="pb-2 pr-3 font-medium text-slate-500 dark:text-slate-400">Include</th>
-                      <th className="pb-2 pr-3 font-medium text-slate-500 dark:text-slate-400">Date</th>
-                      <th className="pb-2 pr-3 font-medium text-slate-500 dark:text-slate-400">Description</th>
-                      <th className="pb-2 pr-3 font-medium text-slate-500 dark:text-slate-400">Category</th>
-                      <th className="pb-2 text-right font-medium text-slate-500 dark:text-slate-400">Amount</th>
+                      <th className="pr-3 pb-2 font-medium text-slate-500 dark:text-slate-400">
+                        Include
+                      </th>
+                      <th className="pr-3 pb-2 font-medium text-slate-500 dark:text-slate-400">
+                        Date
+                      </th>
+                      <th className="pr-3 pb-2 font-medium text-slate-500 dark:text-slate-400">
+                        Description
+                      </th>
+                      <th className="pr-3 pb-2 font-medium text-slate-500 dark:text-slate-400">
+                        Category
+                      </th>
+                      <th className="pb-2 text-right font-medium text-slate-500 dark:text-slate-400">
+                        Amount
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {data.expenses.map((expense) => (
-                      <tr key={expense.id} className="border-b border-slate-100 dark:border-slate-800">
+                      <tr
+                        key={expense.id}
+                        className="border-b border-slate-100 dark:border-slate-800"
+                      >
                         <td className="py-2 pr-3">
                           <Checkbox
                             checked={data.includedExpenseIds.has(expense.id)}
@@ -136,10 +178,18 @@ export function CherryPickCustomerDetail({
                             aria-label={`Include expense ${expense.description ?? expense.id}`}
                           />
                         </td>
-                        <td className="py-2 pr-3 text-slate-600 dark:text-slate-400">{formatLocalDate(expense.date)}</td>
-                        <td className="py-2 pr-3 text-slate-600 dark:text-slate-400">{expense.description ?? "\u2014"}</td>
-                        <td className="py-2 pr-3 text-slate-600 dark:text-slate-400">{expense.category}</td>
-                        <td className="py-2 text-right font-medium text-slate-950 dark:text-slate-50">{formatCurrency(expense.billableAmount, currency)}</td>
+                        <td className="py-2 pr-3 text-slate-600 dark:text-slate-400">
+                          {formatLocalDate(expense.date)}
+                        </td>
+                        <td className="py-2 pr-3 text-slate-600 dark:text-slate-400">
+                          {expense.description ?? "\u2014"}
+                        </td>
+                        <td className="py-2 pr-3 text-slate-600 dark:text-slate-400">
+                          {expense.category}
+                        </td>
+                        <td className="py-2 text-right font-medium text-slate-950 dark:text-slate-50">
+                          {formatCurrency(expense.billableAmount, currency)}
+                        </td>
                       </tr>
                     ))}
                   </tbody>

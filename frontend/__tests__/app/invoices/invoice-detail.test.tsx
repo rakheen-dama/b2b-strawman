@@ -139,9 +139,7 @@ describe("InvoiceDetailClient", () => {
 
   it("renders draft invoice with editable fields", () => {
     const invoice = makeDraftInvoice();
-    render(
-      <InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />,
-    );
+    render(<InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />);
 
     expect(screen.getByText("Draft Invoice")).toBeInTheDocument();
     expect(screen.getByText("Draft")).toBeInTheDocument(); // StatusBadge
@@ -175,9 +173,7 @@ describe("InvoiceDetailClient", () => {
       issueDate: "2026-01-15",
       dueDate: "2026-02-15",
     });
-    render(
-      <InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />,
-    );
+    render(<InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />);
 
     expect(screen.getByText("INV-2026-001")).toBeInTheDocument();
     expect(screen.getByText("Approved")).toBeInTheDocument(); // StatusBadge
@@ -199,9 +195,7 @@ describe("InvoiceDetailClient", () => {
       paidAt: "2026-02-01T00:00:00Z",
       paymentReference: "CHK-12345",
     });
-    render(
-      <InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />,
-    );
+    render(<InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />);
 
     expect(screen.getByText("Paid")).toBeInTheDocument(); // StatusBadge
     expect(screen.getByText("Payment Received")).toBeInTheDocument();
@@ -214,9 +208,7 @@ describe("InvoiceDetailClient", () => {
 
   it("does not render admin buttons for non-admin", () => {
     const invoice = makeDraftInvoice();
-    render(
-      <InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={false} />,
-    );
+    render(<InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={false} />);
 
     expect(screen.getByText("Draft Invoice")).toBeInTheDocument();
 
@@ -236,22 +228,14 @@ describe("InvoiceDetailClient", () => {
       issueDate: "2026-01-15",
       dueDate: "2026-02-15",
     });
-    render(
-      <InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />,
-    );
+    render(<InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />);
 
     expect(screen.getByText("Sent")).toBeInTheDocument(); // StatusBadge
-    expect(
-      screen.getByRole("button", { name: /record payment/i }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /void/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /record payment/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /void/i })).toBeInTheDocument();
 
     // No Approve button for SENT
-    expect(
-      screen.queryByRole("button", { name: /approve/i }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /approve/i })).not.toBeInTheDocument();
   });
 
   it("renders VOID invoice with no action buttons", () => {
@@ -261,28 +245,16 @@ describe("InvoiceDetailClient", () => {
       issueDate: "2026-01-15",
       dueDate: "2026-02-15",
     });
-    render(
-      <InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />,
-    );
+    render(<InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />);
 
     expect(screen.getByText("Void")).toBeInTheDocument(); // StatusBadge
-    expect(
-      screen.getByText("This invoice has been voided."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("This invoice has been voided.")).toBeInTheDocument();
 
     // No action buttons for VOID
-    expect(
-      screen.queryByRole("button", { name: /approve/i }),
-    ).not.toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: /mark as sent/i }),
-    ).not.toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: /record payment/i }),
-    ).not.toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: /delete draft/i }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /approve/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /mark as sent/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /record payment/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /delete draft/i })).not.toBeInTheDocument();
   });
 
   it("calls deleteInvoice on delete confirmation", async () => {
@@ -292,9 +264,7 @@ describe("InvoiceDetailClient", () => {
     // Mock confirm for happy-dom
     window.confirm = vi.fn().mockReturnValue(true);
 
-    render(
-      <InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />,
-    );
+    render(<InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />);
 
     const deleteBtn = screen.getByRole("button", { name: /delete draft/i });
     await user.click(deleteBtn);
@@ -304,13 +274,9 @@ describe("InvoiceDetailClient", () => {
 
   it("renders preview button for DRAFT invoice", () => {
     const invoice = makeDraftInvoice();
-    render(
-      <InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />,
-    );
+    render(<InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />);
 
-    expect(
-      screen.getByRole("button", { name: /preview/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /preview/i })).toBeInTheDocument();
   });
 
   it("renders preview button for APPROVED invoice", () => {
@@ -320,13 +286,9 @@ describe("InvoiceDetailClient", () => {
       issueDate: "2026-01-15",
       dueDate: "2026-02-15",
     });
-    render(
-      <InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />,
-    );
+    render(<InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />);
 
-    expect(
-      screen.getByRole("button", { name: /preview/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /preview/i })).toBeInTheDocument();
   });
 
   it("opens preview in new tab on click", async () => {
@@ -335,16 +297,11 @@ describe("InvoiceDetailClient", () => {
 
     const mockOpen = vi.spyOn(window, "open").mockImplementation(() => null);
 
-    render(
-      <InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />,
-    );
+    render(<InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />);
 
     const previewBtn = screen.getByRole("button", { name: /preview/i });
     await user.click(previewBtn);
 
-    expect(mockOpen).toHaveBeenCalledWith(
-      "/api/invoices/inv-1/preview",
-      "_blank",
-    );
+    expect(mockOpen).toHaveBeenCalledWith("/api/invoices/inv-1/preview", "_blank");
   });
 });

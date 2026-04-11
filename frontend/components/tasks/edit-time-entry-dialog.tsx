@@ -44,8 +44,7 @@ export function EditTimeEntryDialog({
 
     // Inline validation: hours + minutes must sum > 0
     const hours = parseInt(formData.get("hours")?.toString() ?? "0", 10) || 0;
-    const minutes =
-      parseInt(formData.get("minutes")?.toString() ?? "0", 10) || 0;
+    const minutes = parseInt(formData.get("minutes")?.toString() ?? "0", 10) || 0;
     const durationMinutes = hours * 60 + minutes;
     if (durationMinutes <= 0) {
       setError("Duration must be greater than 0.");
@@ -60,8 +59,7 @@ export function EditTimeEntryDialog({
 
     const billableStr = formData.get("billable")?.toString();
     const billable = billableStr === "on" || billableStr === "true";
-    const description =
-      formData.get("description")?.toString().trim() || undefined;
+    const description = formData.get("description")?.toString().trim() || undefined;
 
     setIsSubmitting(true);
 
@@ -91,10 +89,8 @@ export function EditTimeEntryDialog({
     setOpen(newOpen);
   }
 
-  const hasBillingRate =
-    entry.billingRateSnapshot != null && entry.billingRateCurrency != null;
-  const hasCostRate =
-    entry.costRateSnapshot != null && entry.costRateCurrency != null;
+  const hasBillingRate = entry.billingRateSnapshot != null && entry.billingRateCurrency != null;
+  const hasCostRate = entry.costRateSnapshot != null && entry.costRateCurrency != null;
   const hasRateSnapshot = hasBillingRate || hasCostRate;
 
   return (
@@ -121,9 +117,7 @@ export function EditTimeEntryDialog({
                   className="w-20"
                   placeholder="0"
                 />
-                <span className="text-sm text-slate-600 dark:text-slate-400">
-                  h
-                </span>
+                <span className="text-sm text-slate-600 dark:text-slate-400">h</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <Input
@@ -136,9 +130,7 @@ export function EditTimeEntryDialog({
                   className="w-20"
                   placeholder="0"
                 />
-                <span className="text-sm text-slate-600 dark:text-slate-400">
-                  m
-                </span>
+                <span className="text-sm text-slate-600 dark:text-slate-400">m</span>
               </div>
             </div>
           </div>
@@ -146,22 +138,13 @@ export function EditTimeEntryDialog({
           {/* Date */}
           <div className="space-y-2">
             <Label htmlFor="edit-time-date">Date</Label>
-            <Input
-              id="edit-time-date"
-              name="date"
-              type="date"
-              defaultValue={entry.date}
-              required
-            />
+            <Input id="edit-time-date" name="date" type="date" defaultValue={entry.date} required />
           </div>
 
           {/* Description */}
           <div className="space-y-2">
             <Label htmlFor="edit-time-description">
-              Description{" "}
-              <span className="font-normal text-muted-foreground">
-                (optional)
-              </span>
+              Description <span className="text-muted-foreground font-normal">(optional)</span>
             </Label>
             <Textarea
               id="edit-time-description"
@@ -197,20 +180,14 @@ export function EditTimeEntryDialog({
                 <p className="text-sm text-slate-600 dark:text-slate-400">
                   Billing rate:{" "}
                   <span className="font-medium text-slate-700 dark:text-slate-300">
-                    {formatCurrencySafe(
-                      entry.billingRateSnapshot,
-                      entry.billingRateCurrency,
-                    )}
+                    {formatCurrencySafe(entry.billingRateSnapshot, entry.billingRateCurrency)}
                     /hr
                   </span>
                   {entry.billableValue != null && (
                     <span className="ml-2">
                       Value:{" "}
                       <span className="font-medium">
-                        {formatCurrencySafe(
-                          entry.billableValue,
-                          entry.billingRateCurrency,
-                        )}
+                        {formatCurrencySafe(entry.billableValue, entry.billingRateCurrency)}
                       </span>
                     </span>
                   )}
@@ -220,20 +197,14 @@ export function EditTimeEntryDialog({
                 <p className="text-sm text-slate-600 dark:text-slate-400">
                   Cost rate:{" "}
                   <span className="font-medium text-slate-700 dark:text-slate-300">
-                    {formatCurrencySafe(
-                      entry.costRateSnapshot,
-                      entry.costRateCurrency,
-                    )}
+                    {formatCurrencySafe(entry.costRateSnapshot, entry.costRateCurrency)}
                     /hr
                   </span>
                   {entry.costValue != null && (
                     <span className="ml-2">
                       Cost:{" "}
                       <span className="font-medium">
-                        {formatCurrencySafe(
-                          entry.costValue,
-                          entry.costRateCurrency,
-                        )}
+                        {formatCurrencySafe(entry.costValue, entry.costRateCurrency)}
                       </span>
                     </span>
                   )}
@@ -242,7 +213,7 @@ export function EditTimeEntryDialog({
             </div>
           )}
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && <p className="text-destructive text-sm">{error}</p>}
           <DialogFooter>
             <Button
               type="button"

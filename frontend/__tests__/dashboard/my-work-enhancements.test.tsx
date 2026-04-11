@@ -54,9 +54,7 @@ vi.mock("@/app/(app)/org/[slug]/projects/[id]/time-entry-actions", () => ({
   fetchTimeEntries: vi.fn().mockResolvedValue([]),
 }));
 
-function makeTask(
-  overrides: Partial<MyWorkTaskItem> & { id: string },
-): MyWorkTaskItem {
+function makeTask(overrides: Partial<MyWorkTaskItem> & { id: string }): MyWorkTaskItem {
   return {
     projectId: "proj-1",
     projectName: "Test Project",
@@ -82,9 +80,7 @@ describe("UrgencyTaskList — onTaskClick prop", () => {
     const onTaskClick = vi.fn();
     const tasks = [makeTask({ id: "task-1", title: "Click Me Task" })];
 
-    render(
-      <UrgencyTaskList tasks={tasks} slug="acme" onTaskClick={onTaskClick} />,
-    );
+    render(<UrgencyTaskList tasks={tasks} slug="acme" onTaskClick={onTaskClick} />);
 
     const row = screen.getByText("Click Me Task").closest("tr");
     expect(row).not.toBeNull();
@@ -119,13 +115,7 @@ describe("AvailableTaskList — onTaskClick prop", () => {
     const onTaskClick = vi.fn();
     const tasks = [makeTask({ id: "avail-1", title: "Available Task" })];
 
-    render(
-      <AvailableTaskList
-        tasks={tasks}
-        slug="acme"
-        onTaskClick={onTaskClick}
-      />,
-    );
+    render(<AvailableTaskList tasks={tasks} slug="acme" onTaskClick={onTaskClick} />);
 
     const row = screen.getByText("Available Task").closest("tr");
     expect(row).not.toBeNull();

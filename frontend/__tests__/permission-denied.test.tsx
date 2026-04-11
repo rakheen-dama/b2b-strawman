@@ -18,13 +18,9 @@ describe("PermissionDenied", () => {
   it("renders ShieldOff icon and heading", () => {
     render(<PermissionDenied />);
 
+    expect(screen.getByText("You don't have access to this feature")).toBeInTheDocument();
     expect(
-      screen.getByText("You don't have access to this feature"),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(
-        "Contact your organisation admin to update your role.",
-      ),
+      screen.getByText("Contact your organisation admin to update your role.")
     ).toBeInTheDocument();
   });
 
@@ -39,9 +35,7 @@ describe("PermissionDenied", () => {
   it("renders custom feature name in message", () => {
     render(<PermissionDenied featureName="invoices" />);
 
-    expect(
-      screen.getByText("You don't have access to invoices"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("You don't have access to invoices")).toBeInTheDocument();
   });
 
   it("renders custom dashboard href", () => {
@@ -61,7 +55,7 @@ describe("PermissionDenied", () => {
       "items-center",
       "py-24",
       "text-center",
-      "gap-4",
+      "gap-4"
     );
   });
 });
@@ -76,7 +70,7 @@ describe("scrollToFirstError", () => {
       <div>
         <input data-testid="valid-field" />
         <input data-testid="invalid-field" aria-invalid="true" />
-      </div>,
+      </div>
     );
 
     const invalidField = screen.getByTestId("invalid-field");
@@ -97,7 +91,7 @@ describe("scrollToFirstError", () => {
     render(
       <div>
         <input data-testid="valid-field" />
-      </div>,
+      </div>
     );
 
     // Should not throw

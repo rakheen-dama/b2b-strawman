@@ -43,25 +43,10 @@ describe("LifecycleDistributionSection", () => {
     render(<LifecycleDistributionSection counts={counts} orgSlug="test-org" />);
     const links = screen.getAllByRole("link");
     expect(links.length).toBe(5);
-    expect(links[0]).toHaveAttribute(
-      "href",
-      "/org/test-org/customers?lifecycleStatus=PROSPECT",
-    );
-    expect(links[1]).toHaveAttribute(
-      "href",
-      "/org/test-org/customers?lifecycleStatus=ONBOARDING",
-    );
-    expect(links[2]).toHaveAttribute(
-      "href",
-      "/org/test-org/customers?lifecycleStatus=ACTIVE",
-    );
-    expect(links[3]).toHaveAttribute(
-      "href",
-      "/org/test-org/customers?lifecycleStatus=DORMANT",
-    );
-    expect(links[4]).toHaveAttribute(
-      "href",
-      "/org/test-org/customers?lifecycleStatus=OFFBOARDED",
-    );
+    expect(links[0]).toHaveAttribute("href", "/org/test-org/customers?lifecycleStatus=PROSPECT");
+    expect(links[1]).toHaveAttribute("href", "/org/test-org/customers?lifecycleStatus=ONBOARDING");
+    expect(links[2]).toHaveAttribute("href", "/org/test-org/customers?lifecycleStatus=ACTIVE");
+    expect(links[3]).toHaveAttribute("href", "/org/test-org/customers?lifecycleStatus=DORMANT");
+    expect(links[4]).toHaveAttribute("href", "/org/test-org/customers?lifecycleStatus=OFFBOARDED");
   });
 });

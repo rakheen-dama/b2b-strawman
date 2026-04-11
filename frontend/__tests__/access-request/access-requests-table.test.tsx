@@ -73,9 +73,7 @@ describe("AccessRequestsTable", () => {
   });
 
   it("renders table with pending requests by default", () => {
-    render(
-      <AccessRequestsTable requests={[pendingRequest, approvedRequest, rejectedRequest]} />,
-    );
+    render(<AccessRequestsTable requests={[pendingRequest, approvedRequest, rejectedRequest]} />);
 
     // Default tab is PENDING, so only pending request should show
     expect(screen.getByText("Acme Corp")).toBeInTheDocument();
@@ -87,9 +85,7 @@ describe("AccessRequestsTable", () => {
   it("filters by status when clicking tabs", async () => {
     const user = userEvent.setup();
 
-    render(
-      <AccessRequestsTable requests={[pendingRequest, approvedRequest, rejectedRequest]} />,
-    );
+    render(<AccessRequestsTable requests={[pendingRequest, approvedRequest, rejectedRequest]} />);
 
     // Click "All" tab
     await user.click(screen.getByText("All"));

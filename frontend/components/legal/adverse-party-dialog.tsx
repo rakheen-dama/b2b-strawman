@@ -24,10 +24,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Plus } from "lucide-react";
-import {
-  createAdversePartySchema,
-  type CreateAdversePartyFormData,
-} from "@/lib/schemas/legal";
+import { createAdversePartySchema, type CreateAdversePartyFormData } from "@/lib/schemas/legal";
 import {
   createAdverseParty,
   updateAdverseParty,
@@ -50,12 +47,7 @@ interface AdversePartyDialogProps {
   trigger?: React.ReactNode;
 }
 
-export function AdversePartyDialog({
-  slug,
-  party,
-  onSuccess,
-  trigger,
-}: AdversePartyDialogProps) {
+export function AdversePartyDialog({ slug, party, onSuccess, trigger }: AdversePartyDialogProps) {
   const isEdit = !!party;
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -130,16 +122,13 @@ export function AdversePartyDialog({
       <DialogTrigger asChild>
         {trigger ?? (
           <Button size="sm" data-testid="create-adverse-party-trigger">
-            <Plus className="mr-1.5 size-4" />{" "}
-            {isEdit ? "Edit Party" : "Add Party"}
+            <Plus className="mr-1.5 size-4" /> {isEdit ? "Edit Party" : "Add Party"}
           </Button>
         )}
       </DialogTrigger>
       <DialogContent data-testid="adverse-party-dialog">
         <DialogHeader>
-          <DialogTitle>
-            {isEdit ? "Edit Adverse Party" : "Add Adverse Party"}
-          </DialogTitle>
+          <DialogTitle>{isEdit ? "Edit Adverse Party" : "Add Adverse Party"}</DialogTitle>
           <DialogDescription>
             {isEdit
               ? "Update adverse party details."
@@ -172,7 +161,7 @@ export function AdversePartyDialog({
                     <select
                       value={field.value}
                       onChange={field.onChange}
-                      className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950 dark:border-slate-800 dark:focus-visible:ring-slate-300"
+                      className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-950 focus-visible:outline-none dark:border-slate-800 dark:focus-visible:ring-slate-300"
                     >
                       {PARTY_TYPES.map((t) => (
                         <option key={t.value} value={t.value}>
@@ -223,10 +212,7 @@ export function AdversePartyDialog({
                 <FormItem>
                   <FormLabel>Aliases</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="Alternative names, comma separated"
-                      {...field}
-                    />
+                    <Input placeholder="Alternative names, comma separated" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -240,11 +226,7 @@ export function AdversePartyDialog({
                 <FormItem>
                   <FormLabel>Notes</FormLabel>
                   <FormControl>
-                    <Textarea
-                      placeholder="Additional notes..."
-                      rows={3}
-                      {...field}
-                    />
+                    <Textarea placeholder="Additional notes..." rows={3} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

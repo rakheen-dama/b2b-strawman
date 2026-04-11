@@ -3,10 +3,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 vi.mock("@tiptap/react", () => ({
-  NodeViewWrapper: ({
-    children,
-    ...props
-  }: React.PropsWithChildren<Record<string, unknown>>) => (
+  NodeViewWrapper: ({ children, ...props }: React.PropsWithChildren<Record<string, unknown>>) => (
     <div data-testid="node-view-wrapper" {...props}>
       {children}
     </div>
@@ -27,7 +24,15 @@ vi.mock("motion/react", () => ({
 }));
 
 let mockClauseContent = {
-  body: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Payment is due within 30 days of invoice." }] }] },
+  body: {
+    type: "doc",
+    content: [
+      {
+        type: "paragraph",
+        content: [{ type: "text", text: "Payment is due within 30 days of invoice." }],
+      },
+    ],
+  },
   title: "Payment Terms",
   isLoading: false,
 };
@@ -59,7 +64,15 @@ describe("ClauseBlockNodeView", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockClauseContent = {
-      body: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Payment is due within 30 days of invoice." }] }] },
+      body: {
+        type: "doc",
+        content: [
+          {
+            type: "paragraph",
+            content: [{ type: "text", text: "Payment is due within 30 days of invoice." }],
+          },
+        ],
+      },
       title: "Payment Terms",
       isLoading: false,
     };
@@ -105,7 +118,15 @@ describe("ClauseBlockNodeView", () => {
 
     // Simulate loaded state
     mockClauseContent = {
-      body: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "Payment is due within 30 days of invoice." }] }] },
+      body: {
+        type: "doc",
+        content: [
+          {
+            type: "paragraph",
+            content: [{ type: "text", text: "Payment is due within 30 days of invoice." }],
+          },
+        ],
+      },
       title: "Payment Terms",
       isLoading: false,
     };
@@ -130,16 +151,12 @@ describe("ClauseBlockNodeView", () => {
 
     // Initially collapsed
     expect(screen.getByText("Expand preview")).toBeInTheDocument();
-    expect(
-      screen.queryByText("Payment is due within 30 days of invoice."),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText("Payment is due within 30 days of invoice.")).not.toBeInTheDocument();
 
     // Click to expand
     await user.click(screen.getByText("Expand preview"));
 
     expect(screen.getByText("Collapse preview")).toBeInTheDocument();
-    expect(
-      screen.getByText("Payment is due within 30 days of invoice."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Payment is due within 30 days of invoice.")).toBeInTheDocument();
   });
 });

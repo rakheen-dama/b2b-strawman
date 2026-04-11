@@ -1,30 +1,19 @@
 "use client";
 
 import { BarChart3 } from "lucide-react";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { EmptyState } from "@/components/empty-state";
 import dynamic from "next/dynamic";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const HorizontalBarChart = dynamic(
-  () =>
-    import("@/components/dashboard/horizontal-bar-chart").then(
-      (mod) => mod.HorizontalBarChart,
-    ),
-  { loading: () => <Skeleton className="h-48 w-full" />, ssr: false },
+  () => import("@/components/dashboard/horizontal-bar-chart").then((mod) => mod.HorizontalBarChart),
+  { loading: () => <Skeleton className="h-48 w-full" />, ssr: false }
 );
 
 const DonutChart = dynamic(
-  () =>
-    import("@/components/dashboard/donut-chart").then(
-      (mod) => mod.DonutChart,
-    ),
-  { loading: () => <Skeleton className="h-48 w-full" />, ssr: false },
+  () => import("@/components/dashboard/donut-chart").then((mod) => mod.DonutChart),
+  { loading: () => <Skeleton className="h-48 w-full" />, ssr: false }
 );
 
 import type { TeamWorkloadEntry } from "@/lib/dashboard-types";
@@ -59,13 +48,12 @@ function transformUtilizationData(entries: TeamWorkloadEntry[]) {
 }
 
 function aggregateProjectHours(
-  entries: TeamWorkloadEntry[],
+  entries: TeamWorkloadEntry[]
 ): Array<{ name: string; value: number }> {
   const projectMap: Record<string, number> = {};
   for (const entry of entries) {
     for (const project of entry.projects) {
-      projectMap[project.projectName] =
-        (projectMap[project.projectName] ?? 0) + project.hours;
+      projectMap[project.projectName] = (projectMap[project.projectName] ?? 0) + project.hours;
     }
   }
 
@@ -80,10 +68,7 @@ function aggregateProjectHours(
   return [...top5, { name: "Other", value: otherTotal }];
 }
 
-export function TeamWorkloadWidget({
-  data,
-  isAdmin,
-}: TeamWorkloadWidgetProps) {
+export function TeamWorkloadWidget({ data, isAdmin }: TeamWorkloadWidgetProps) {
   if (data === null) {
     return (
       <Card data-testid="team-time-panel">
@@ -91,7 +76,7 @@ export function TeamWorkloadWidget({
           <CardTitle className="text-sm font-medium">Team Time</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm italic text-slate-500">
+          <p className="text-sm text-slate-500 italic">
             Unable to load team workload. Please try again.
           </p>
         </CardContent>
@@ -138,9 +123,7 @@ export function TeamWorkloadWidget({
           height={180}
         />
         {!isAdmin && (
-          <p className="text-xs text-slate-500">
-            Contact an admin to see team-wide data.
-          </p>
+          <p className="text-xs text-slate-500">Contact an admin to see team-wide data.</p>
         )}
       </CardContent>
     </Card>

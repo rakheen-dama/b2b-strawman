@@ -11,29 +11,15 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import {
   fetchProjectsForPicker,
   fetchCustomersForPicker,
   fetchInvoicesForPicker,
 } from "@/app/(app)/org/[slug]/settings/templates/template-support-actions";
-import type {
-  TemplateEntityType,
-  Project,
-  Customer,
-  InvoiceResponse,
-} from "@/lib/types";
+import type { TemplateEntityType, Project, Customer, InvoiceResponse } from "@/lib/types";
 
 interface PickerItem {
   id: string;
@@ -45,10 +31,7 @@ interface PickerItem {
 
 type PickerData = Project | Customer | InvoiceResponse;
 
-function mapToPickerItems(
-  entityType: TemplateEntityType,
-  data: PickerData[],
-): PickerItem[] {
+function mapToPickerItems(entityType: TemplateEntityType, data: PickerData[]): PickerItem[] {
   switch (entityType) {
     case "PROJECT":
       return (data as Project[]).map((p) => ({
@@ -87,12 +70,7 @@ interface EntityPickerProps {
  * Reusable entity picker dialog. Displays a searchable list of entities
  * (projects, customers, or invoices) and calls onSelect when the user picks one.
  */
-export function EntityPicker({
-  entityType,
-  open,
-  onOpenChange,
-  onSelect,
-}: EntityPickerProps) {
+export function EntityPicker({ entityType, open, onOpenChange, onSelect }: EntityPickerProps) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [entityId, setEntityId] = useState("");
   const [entities, setEntities] = useState<PickerItem[]>([]);
@@ -100,15 +78,10 @@ export function EntityPicker({
   const [error, setError] = useState<string | null>(null);
 
   const entityLabel =
-    entityType === "PROJECT"
-      ? "Project"
-      : entityType === "CUSTOMER"
-        ? "Customer"
-        : "Invoice";
+    entityType === "PROJECT" ? "Project" : entityType === "CUSTOMER" ? "Customer" : "Invoice";
 
   const selectedItem = entities.find((e) => e.id === entityId);
-  const selectedLabel =
-    selectedItem?.label ?? `Select a ${entityLabel.toLowerCase()}`;
+  const selectedLabel = selectedItem?.label ?? `Select a ${entityLabel.toLowerCase()}`;
 
   const fetchEntities = useCallback(() => {
     setEntitiesLoading(true);
@@ -142,16 +115,20 @@ export function EntityPicker({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md" onOpenAutoFocus={(e: Event) => { e.preventDefault(); fetchEntities(); }}>
+      <DialogContent
+        className="max-w-md"
+        onOpenAutoFocus={(e: Event) => {
+          e.preventDefault();
+          fetchEntities();
+        }}
+      >
         <DialogHeader>
           <DialogTitle>Select a {entityLabel} for Preview</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <span className="text-sm font-medium">
-              {entityLabel}
-            </span>
+            <span className="text-sm font-medium">{entityLabel}</span>
             <Popover open={pickerOpen} onOpenChange={setPickerOpen}>
               <PopoverTrigger asChild>
                 <Button
@@ -168,13 +145,9 @@ export function EntityPicker({
               </PopoverTrigger>
               <PopoverContent className="w-[400px] p-0" align="start">
                 <Command>
-                  <CommandInput
-                    placeholder={`Search ${entityLabel.toLowerCase()}s...`}
-                  />
+                  <CommandInput placeholder={`Search ${entityLabel.toLowerCase()}s...`} />
                   <CommandList>
-                    <CommandEmpty>
-                      No {entityLabel.toLowerCase()}s found.
-                    </CommandEmpty>
+                    <CommandEmpty>No {entityLabel.toLowerCase()}s found.</CommandEmpty>
                     <CommandGroup>
                       {entities.map((item) => (
                         <CommandItem
@@ -189,17 +162,13 @@ export function EntityPicker({
                           <Check
                             className={cn(
                               "mr-2 size-4",
-                              entityId === item.id
-                                ? "opacity-100"
-                                : "opacity-0",
+                              entityId === item.id ? "opacity-100" : "opacity-0"
                             )}
                           />
                           <div className="min-w-0 flex-1">
                             <span className="font-medium">{item.label}</span>
                             {item.sublabel && (
-                              <p className="truncate text-xs text-slate-500">
-                                {item.sublabel}
-                              </p>
+                              <p className="truncate text-xs text-slate-500">{item.sublabel}</p>
                             )}
                           </div>
                         </CommandItem>
@@ -211,19 +180,13 @@ export function EntityPicker({
             </Popover>
           </div>
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && <p className="text-destructive text-sm">{error}</p>}
 
           <div className="flex justify-end gap-3">
-            <Button
-              variant="plain"
-              onClick={() => onOpenChange(false)}
-            >
+            <Button variant="plain" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button
-              onClick={handleSelect}
-              disabled={!entityId}
-            >
+            <Button onClick={handleSelect} disabled={!entityId}>
               Select
             </Button>
           </div>

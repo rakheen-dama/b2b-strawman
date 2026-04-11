@@ -3,10 +3,7 @@ import { z } from "zod";
 const feeModelEnum = z.enum(["FIXED", "HOURLY", "RETAINER", "CONTINGENCY"]);
 
 export const createProposalSchema = z.object({
-  title: z
-    .string()
-    .min(1, "Title is required")
-    .max(200, "Title must be 200 characters or fewer"),
+  title: z.string().min(1, "Title is required").max(200, "Title must be 200 characters or fewer"),
   customerId: z.string().min(1, "Customer is required"),
   feeModel: feeModelEnum,
   fixedFeeAmount: z.number().positive("Amount must be greater than 0").optional(),

@@ -27,13 +27,10 @@ export interface CreateChecklistTemplateInput {
 
 export async function createChecklistTemplate(
   slug: string,
-  input: CreateChecklistTemplateInput,
+  input: CreateChecklistTemplateInput
 ): Promise<ActionResult> {
   try {
-    const data = await api.post<ChecklistTemplateResponse>(
-      "/api/checklist-templates",
-      input,
-    );
+    const data = await api.post<ChecklistTemplateResponse>("/api/checklist-templates", input);
     revalidatePath(`/org/${slug}/settings/checklists`);
     return { success: true, data };
   } catch (error) {
@@ -56,10 +53,7 @@ export async function createChecklistTemplate(
   }
 }
 
-export async function cloneChecklistTemplate(
-  slug: string,
-  id: string,
-): Promise<ActionResult> {
+export async function cloneChecklistTemplate(slug: string, id: string): Promise<ActionResult> {
   try {
     await api.post<ChecklistTemplateResponse>(`/api/checklist-templates/${id}/clone`);
   } catch (error) {
@@ -84,7 +78,7 @@ export type UpdateChecklistTemplateInput = CreateChecklistTemplateInput;
 export async function updateChecklistTemplate(
   slug: string,
   id: string,
-  data: UpdateChecklistTemplateInput,
+  data: UpdateChecklistTemplateInput
 ): Promise<ActionResult> {
   try {
     await api.put(`/api/checklist-templates/${id}`, data);
@@ -111,10 +105,7 @@ export async function updateChecklistTemplate(
   }
 }
 
-export async function deactivateChecklistTemplate(
-  slug: string,
-  id: string,
-): Promise<ActionResult> {
+export async function deactivateChecklistTemplate(slug: string, id: string): Promise<ActionResult> {
   try {
     await api.delete(`/api/checklist-templates/${id}`);
   } catch (error) {

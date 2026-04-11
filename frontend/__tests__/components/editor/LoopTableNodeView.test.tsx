@@ -2,10 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 
 vi.mock("@tiptap/react", () => ({
-  NodeViewWrapper: ({
-    children,
-    ...props
-  }: React.PropsWithChildren<Record<string, unknown>>) => (
+  NodeViewWrapper: ({ children, ...props }: React.PropsWithChildren<Record<string, unknown>>) => (
     <div data-testid="node-view-wrapper" {...props}>
       {children}
     </div>

@@ -29,34 +29,22 @@ function TestConsumer() {
           </li>
         ))}
       </ul>
-      <button
-        onClick={() => addItem({ href: "/org/test-org/projects/1", label: "Project One" })}
-      >
+      <button onClick={() => addItem({ href: "/org/test-org/projects/1", label: "Project One" })}>
         add project one
       </button>
-      <button
-        onClick={() => addItem({ href: "/org/test-org/projects/2", label: "Project Two" })}
-      >
+      <button onClick={() => addItem({ href: "/org/test-org/projects/2", label: "Project Two" })}>
         add project two
       </button>
-      <button
-        onClick={() => addItem({ href: "/org/test-org/projects/3", label: "Project Three" })}
-      >
+      <button onClick={() => addItem({ href: "/org/test-org/projects/3", label: "Project Three" })}>
         add project three
       </button>
-      <button
-        onClick={() => addItem({ href: "/org/test-org/projects/4", label: "Project Four" })}
-      >
+      <button onClick={() => addItem({ href: "/org/test-org/projects/4", label: "Project Four" })}>
         add project four
       </button>
-      <button
-        onClick={() => addItem({ href: "/org/test-org/projects/5", label: "Project Five" })}
-      >
+      <button onClick={() => addItem({ href: "/org/test-org/projects/5", label: "Project Five" })}>
         add project five
       </button>
-      <button
-        onClick={() => addItem({ href: "/org/test-org/projects/6", label: "Project Six" })}
-      >
+      <button onClick={() => addItem({ href: "/org/test-org/projects/6", label: "Project Six" })}>
         add project six
       </button>
     </div>
@@ -67,7 +55,7 @@ function renderProvider() {
   return render(
     <RecentItemsProvider>
       <TestConsumer />
-    </RecentItemsProvider>,
+    </RecentItemsProvider>
   );
 }
 
@@ -121,12 +109,24 @@ describe("RecentItemsProvider", () => {
     mockUsePathname.mockReturnValue("/org/test-org/dashboard");
     const { getByText, getByTestId } = renderProvider();
 
-    await act(async () => { getByText("add project one").click(); });
-    await act(async () => { getByText("add project two").click(); });
-    await act(async () => { getByText("add project three").click(); });
-    await act(async () => { getByText("add project four").click(); });
-    await act(async () => { getByText("add project five").click(); });
-    await act(async () => { getByText("add project six").click(); });
+    await act(async () => {
+      getByText("add project one").click();
+    });
+    await act(async () => {
+      getByText("add project two").click();
+    });
+    await act(async () => {
+      getByText("add project three").click();
+    });
+    await act(async () => {
+      getByText("add project four").click();
+    });
+    await act(async () => {
+      getByText("add project five").click();
+    });
+    await act(async () => {
+      getByText("add project six").click();
+    });
 
     expect(getByTestId("item-count").textContent).toBe("5");
     // Project Six is at front; Project One was pushed out

@@ -16,10 +16,7 @@ const FILTERS = [
   { label: "Time", value: "TIME_ENTRY" },
 ] as const;
 
-export function ActivityFilter({
-  onFilterChange,
-  currentFilter,
-}: ActivityFilterProps) {
+export function ActivityFilter({ onFilterChange, currentFilter }: ActivityFilterProps) {
   return (
     <div className="flex gap-1 rounded-lg border border-slate-200 p-0.5 dark:border-slate-800">
       {FILTERS.map((filter) => (

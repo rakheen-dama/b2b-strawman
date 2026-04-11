@@ -14,8 +14,8 @@ export function Section866Advisory({
     <Alert className={className} data-testid={testId}>
       <Info className="size-4" />
       <AlertDescription>
-        The bank must have an arrangement with the Legal Practitioners Fidelity
-        Fund (Section 86(6)). Contact the LPFF to verify.
+        The bank must have an arrangement with the Legal Practitioners Fidelity Fund (Section
+        86(6)). Contact the LPFF to verify.
       </AlertDescription>
     </Alert>
   );

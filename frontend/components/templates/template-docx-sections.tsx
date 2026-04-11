@@ -18,8 +18,7 @@ import { FieldDiscoveryResults } from "@/app/(app)/org/[slug]/settings/templates
 import type { TemplateDetailResponse } from "@/lib/types";
 import type { VariableMetadataResponse } from "@/components/editor/actions";
 
-const DOCX_MIME_TYPE =
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+const DOCX_MIME_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 const MAX_DOCX_SIZE = 10 * 1024 * 1024; // 10MB
 const MAX_DOCX_SIZE_LABEL = "10 MB";
 
@@ -41,7 +40,7 @@ export function DocxFileInfoPanel({ template }: { template: TemplateDetailRespon
       className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900"
       data-testid="docx-file-info"
     >
-      <div className="flex items-center gap-2 mb-3">
+      <div className="mb-3 flex items-center gap-2">
         <FileText className="size-4 text-slate-500 dark:text-slate-400" />
         <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
           File Information
@@ -81,10 +80,15 @@ export function VariableReferencePanel({ variableMetadata }: VariableReferencePa
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   function handleCopyVariable(key: string) {
-    navigator.clipboard.writeText(`{{${key}}}`).then(() => {
-      setCopiedKey(key);
-      setTimeout(() => setCopiedKey(null), 2000);
-    }).catch(() => { /* clipboard access denied */ });
+    navigator.clipboard
+      .writeText(`{{${key}}}`)
+      .then(() => {
+        setCopiedKey(key);
+        setTimeout(() => setCopiedKey(null), 2000);
+      })
+      .catch(() => {
+        /* clipboard access denied */
+      });
   }
 
   return (
@@ -92,13 +96,13 @@ export function VariableReferencePanel({ variableMetadata }: VariableReferencePa
       className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900"
       data-testid="variable-reference-panel"
     >
-      <h3 className="text-sm font-medium text-slate-950 dark:text-slate-50 mb-3">
+      <h3 className="mb-3 text-sm font-medium text-slate-950 dark:text-slate-50">
         Available Variables
       </h3>
       <div className="space-y-4">
         {variableMetadata.groups.map((group) => (
           <div key={group.prefix}>
-            <h4 className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">
+            <h4 className="mb-2 text-xs font-medium text-slate-500 dark:text-slate-400">
               {group.label}
             </h4>
             <ul className="space-y-1">
@@ -194,8 +198,7 @@ export function ReplaceFileDialog({
         <DialogHeader>
           <DialogTitle>Replace Template File</DialogTitle>
           <DialogDescription>
-            This will update the template file. Existing generated documents
-            are not affected.
+            This will update the template file. Existing generated documents are not affected.
           </DialogDescription>
         </DialogHeader>
 
@@ -212,9 +215,21 @@ export function ReplaceFileDialog({
                   inputRef.current?.click();
                 }
               }}
-              onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragOver(true); }}
-              onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragOver(true); }}
-              onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setIsDragOver(false); }}
+              onDragEnter={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setIsDragOver(true);
+              }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setIsDragOver(true);
+              }}
+              onDragLeave={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setIsDragOver(false);
+              }}
               onDrop={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -227,7 +242,7 @@ export function ReplaceFileDialog({
                 isDragOver
                   ? "border-primary bg-primary/5"
                   : "border-slate-300 hover:border-slate-400 dark:border-slate-600 dark:hover:border-slate-500",
-                isReplacing && "cursor-not-allowed opacity-50",
+                isReplacing && "cursor-not-allowed opacity-50"
               )}
             >
               <input
@@ -264,14 +279,10 @@ export function ReplaceFileDialog({
                 </>
               )}
             </div>
-            {fileError && (
-              <p className="mt-1 text-sm text-destructive">{fileError}</p>
-            )}
+            {fileError && <p className="text-destructive mt-1 text-sm">{fileError}</p>}
           </div>
 
-          {replaceError && (
-            <p className="text-sm text-destructive">{replaceError}</p>
-          )}
+          {replaceError && <p className="text-destructive text-sm">{replaceError}</p>}
         </div>
 
         <DialogFooter>

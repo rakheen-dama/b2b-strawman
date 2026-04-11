@@ -12,7 +12,7 @@ interface ActionResult {
 
 export async function updateCapacitySettings(
   slug: string,
-  data: { defaultWeeklyCapacityHours: number },
+  data: { defaultWeeklyCapacityHours: number }
 ): Promise<ActionResult> {
   const { orgSlug } = await getAuthContext();
   const caps = await fetchMyCapabilities();

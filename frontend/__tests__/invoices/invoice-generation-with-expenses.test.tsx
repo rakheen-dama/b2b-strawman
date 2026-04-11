@@ -1,18 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import {
-  cleanup,
-  render,
-  screen,
-  waitFor,
-} from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { InvoiceGenerationDialog } from "@/components/invoices/invoice-generation-dialog";
 import { InvoiceLineTable } from "@/components/invoices/invoice-line-table";
-import type {
-  UnbilledTimeResponse,
-  InvoiceLineResponse,
-  ExpenseCategory,
-} from "@/lib/types";
+import type { UnbilledTimeResponse, InvoiceLineResponse, ExpenseCategory } from "@/lib/types";
 
 const mockFetchUnbilledTime = vi.fn();
 const mockCreateInvoiceDraft = vi.fn();
@@ -21,13 +12,14 @@ const mockValidateInvoiceGeneration = vi.fn();
 vi.mock("@/app/(app)/org/[slug]/customers/[id]/invoice-actions", () => ({
   fetchUnbilledTime: (...args: unknown[]) => mockFetchUnbilledTime(...args),
   createInvoiceDraft: (...args: unknown[]) => mockCreateInvoiceDraft(...args),
-  validateInvoiceGeneration: (...args: unknown[]) =>
-    mockValidateInvoiceGeneration(...args),
+  validateInvoiceGeneration: (...args: unknown[]) => mockValidateInvoiceGeneration(...args),
 }));
 
 // Mock prerequisite actions (needed because InvoiceGenerationDialog now imports them)
 vi.mock("@/lib/actions/prerequisite-actions", () => ({
-  checkPrerequisitesAction: vi.fn().mockResolvedValue({ passed: true, context: "INVOICE_GENERATION", violations: [] }),
+  checkPrerequisitesAction: vi
+    .fn()
+    .mockResolvedValue({ passed: true, context: "INVOICE_GENERATION", violations: [] }),
   updateEntityCustomFieldsAction: vi.fn(),
 }));
 
@@ -119,16 +111,14 @@ describe("Invoice Generation — expense selection", () => {
         customerName="Acme Corp"
         slug="acme"
         defaultCurrency="USD"
-      />,
+      />
     );
 
     await user.click(screen.getByText("New Invoice"));
     await user.click(screen.getByText("Fetch Unbilled Time"));
 
     await waitFor(() => {
-      expect(
-        screen.getByTestId("expense-selection-section"),
-      ).toBeInTheDocument();
+      expect(screen.getByTestId("expense-selection-section")).toBeInTheDocument();
     });
 
     // USD expense is visible
@@ -150,16 +140,14 @@ describe("Invoice Generation — expense selection", () => {
         customerName="Acme Corp"
         slug="acme"
         defaultCurrency="USD"
-      />,
+      />
     );
 
     await user.click(screen.getByText("New Invoice"));
     await user.click(screen.getByText("Fetch Unbilled Time"));
 
     await waitFor(() => {
-      expect(
-        screen.getByTestId("expense-selection-section"),
-      ).toBeInTheDocument();
+      expect(screen.getByTestId("expense-selection-section")).toBeInTheDocument();
     });
 
     // Running total should include time (200) + expense (55) = 255
@@ -181,16 +169,14 @@ describe("Invoice Generation — expense selection", () => {
         customerName="Acme Corp"
         slug="acme"
         defaultCurrency="USD"
-      />,
+      />
     );
 
     await user.click(screen.getByText("New Invoice"));
     await user.click(screen.getByText("Fetch Unbilled Time"));
 
     await waitFor(() => {
-      expect(
-        screen.getByTestId("expense-selection-section"),
-      ).toBeInTheDocument();
+      expect(screen.getByTestId("expense-selection-section")).toBeInTheDocument();
     });
 
     // Click validate then create
@@ -276,57 +262,29 @@ describe("Invoice Line Table — lineType grouping", () => {
   ];
 
   it("groups lines by lineType with section headers", () => {
-    render(
-      <InvoiceLineTable
-        lines={mixedLines}
-        currency="USD"
-        editable={false}
-      />,
-    );
+    render(<InvoiceLineTable lines={mixedLines} currency="USD" editable={false} />);
 
-    expect(
-      screen.getByTestId("section-header-Time Entries"),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByTestId("section-header-Expenses"),
-    ).toBeInTheDocument();
+    expect(screen.getByTestId("section-header-Time Entries")).toBeInTheDocument();
+    expect(screen.getByTestId("section-header-Expenses")).toBeInTheDocument();
     expect(screen.getByTestId("section-header-Other")).toBeInTheDocument();
 
     expect(screen.getByText("Development work")).toBeInTheDocument();
-    expect(
-      screen.getByText("Court filing fee (20% markup)"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Court filing fee (20% markup)")).toBeInTheDocument();
     expect(screen.getByText("Flat fee consulting")).toBeInTheDocument();
   });
 
   it("does not show section headers when all lines are same type", () => {
     const timeOnlyLines: InvoiceLineResponse[] = [mixedLines[0]];
 
-    render(
-      <InvoiceLineTable
-        lines={timeOnlyLines}
-        currency="USD"
-        editable={false}
-      />,
-    );
+    render(<InvoiceLineTable lines={timeOnlyLines} currency="USD" editable={false} />);
 
     expect(screen.getByText("Development work")).toBeInTheDocument();
-    expect(
-      screen.queryByTestId("section-header-Time Entries"),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByTestId("section-header-Time Entries")).not.toBeInTheDocument();
   });
 
   it("renders expense lines with description from backend", () => {
-    render(
-      <InvoiceLineTable
-        lines={mixedLines}
-        currency="USD"
-        editable={false}
-      />,
-    );
+    render(<InvoiceLineTable lines={mixedLines} currency="USD" editable={false} />);
 
-    expect(
-      screen.getByText("Court filing fee (20% markup)"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Court filing fee (20% markup)")).toBeInTheDocument();
   });
 });

@@ -2,25 +2,12 @@
 
 import Link from "next/link";
 import { CheckCircle2, AlertCircle } from "lucide-react";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import type { TemplateReadinessCardProps } from "./types";
 
-export function TemplateReadinessCard({
-  templates,
-  baseHref,
-}: TemplateReadinessCardProps) {
+export function TemplateReadinessCard({ templates, baseHref }: TemplateReadinessCardProps) {
   return (
     <Card>
       <CardHeader>
@@ -29,10 +16,7 @@ export function TemplateReadinessCard({
       <CardContent>
         <ul className="space-y-3">
           {templates.map((tpl) => (
-            <li
-              key={tpl.templateId}
-              className="flex items-center justify-between"
-            >
+            <li key={tpl.templateId} className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 {tpl.ready ? (
                   <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
@@ -62,8 +46,7 @@ export function TemplateReadinessCard({
                       </span>
                     </TooltipTrigger>
                     <TooltipContent>
-                      Fill these fields first:{" "}
-                      {tpl.missingFields.join(", ")}
+                      Fill these fields first: {tpl.missingFields.join(", ")}
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>

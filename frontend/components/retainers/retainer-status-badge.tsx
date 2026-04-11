@@ -20,10 +20,7 @@ interface RetainerStatusBadgeProps {
   className?: string;
 }
 
-export function RetainerStatusBadge({
-  status,
-  className,
-}: RetainerStatusBadgeProps) {
+export function RetainerStatusBadge({ status, className }: RetainerStatusBadgeProps) {
   const config = STATUS_CONFIG[status] ?? {
     label: status,
     variant: "neutral" as BadgeVariant,

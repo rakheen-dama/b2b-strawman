@@ -12,14 +12,8 @@ interface ConnectionTestButtonProps {
   disabled?: boolean;
 }
 
-export function ConnectionTestButton({
-  slug,
-  domain,
-  disabled,
-}: ConnectionTestButtonProps) {
-  const [status, setStatus] = useState<
-    "idle" | "testing" | "success" | "error"
-  >("idle");
+export function ConnectionTestButton({ slug, domain, disabled }: ConnectionTestButtonProps) {
+  const [status, setStatus] = useState<"idle" | "testing" | "success" | "error">("idle");
   const [message, setMessage] = useState<string | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -46,9 +40,7 @@ export function ConnectionTestButton({
           }, 3000);
         } else {
           setStatus("error");
-          setMessage(
-            result.data.errorMessage ?? "Connection test failed.",
-          );
+          setMessage(result.data.errorMessage ?? "Connection test failed.");
         }
       } else {
         setStatus("error");
@@ -69,9 +61,7 @@ export function ConnectionTestButton({
         onClick={handleTest}
         disabled={disabled || status === "testing"}
       >
-        {status === "testing" && (
-          <Loader2 className="mr-2 size-4 animate-spin" />
-        )}
+        {status === "testing" && <Loader2 className="mr-2 size-4 animate-spin" />}
         Test Connection
       </Button>
       {status === "success" && message && (
@@ -81,7 +71,7 @@ export function ConnectionTestButton({
         </span>
       )}
       {status === "error" && message && (
-        <span className="flex items-center gap-1 text-sm text-destructive">
+        <span className="text-destructive flex items-center gap-1 text-sm">
           <XCircle className="size-4" />
           {message}
         </span>

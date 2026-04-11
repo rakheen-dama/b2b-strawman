@@ -36,13 +36,12 @@ export default async function TemplatesSettingsPage({
       </Link>
 
       <div>
-        <h1 className="flex items-center gap-2 font-display text-3xl text-slate-950 dark:text-slate-50">
+        <h1 className="font-display flex items-center gap-2 text-3xl text-slate-950 dark:text-slate-50">
           Templates
           <HelpTip code="templates.tiptapVsWord" />
         </h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Manage document templates for engagement letters, statements of work,
-          and more.
+          Manage document templates for engagement letters, statements of work, and more.
         </p>
       </div>
 

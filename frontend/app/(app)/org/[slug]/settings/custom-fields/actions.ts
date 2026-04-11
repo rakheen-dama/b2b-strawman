@@ -17,7 +17,7 @@ interface ActionResult {
 
 export async function createFieldDefinitionAction(
   slug: string,
-  req: CreateFieldDefinitionRequest,
+  req: CreateFieldDefinitionRequest
 ): Promise<ActionResult> {
   try {
     await api.post("/api/field-definitions", req);
@@ -47,7 +47,7 @@ export async function createFieldDefinitionAction(
 export async function updateFieldDefinitionAction(
   slug: string,
   id: string,
-  req: UpdateFieldDefinitionRequest,
+  req: UpdateFieldDefinitionRequest
 ): Promise<ActionResult> {
   try {
     await api.put(`/api/field-definitions/${id}`, req);
@@ -74,10 +74,7 @@ export async function updateFieldDefinitionAction(
   return { success: true };
 }
 
-export async function deleteFieldDefinitionAction(
-  slug: string,
-  id: string,
-): Promise<ActionResult> {
+export async function deleteFieldDefinitionAction(slug: string, id: string): Promise<ActionResult> {
   try {
     await api.delete(`/api/field-definitions/${id}`);
   } catch (error) {
@@ -99,7 +96,7 @@ export async function deleteFieldDefinitionAction(
 
 export async function createFieldGroupAction(
   slug: string,
-  req: CreateFieldGroupRequest,
+  req: CreateFieldGroupRequest
 ): Promise<ActionResult> {
   try {
     await api.post("/api/field-groups", req);
@@ -129,7 +126,7 @@ export async function createFieldGroupAction(
 export async function updateFieldGroupAction(
   slug: string,
   id: string,
-  req: UpdateFieldGroupRequest,
+  req: UpdateFieldGroupRequest
 ): Promise<ActionResult> {
   try {
     await api.put(`/api/field-groups/${id}`, req);
@@ -156,10 +153,7 @@ export async function updateFieldGroupAction(
   return { success: true };
 }
 
-export async function deleteFieldGroupAction(
-  slug: string,
-  id: string,
-): Promise<ActionResult> {
+export async function deleteFieldGroupAction(slug: string, id: string): Promise<ActionResult> {
   try {
     await api.delete(`/api/field-groups/${id}`);
   } catch (error) {
@@ -186,9 +180,7 @@ export interface FieldUsageInfo {
   clauses: Array<{ id: string; title: string }>;
 }
 
-export async function fetchFieldUsageAction(
-  fieldId: string,
-): Promise<FieldUsageInfo | null> {
+export async function fetchFieldUsageAction(fieldId: string): Promise<FieldUsageInfo | null> {
   try {
     return await api.get<FieldUsageInfo>(`/api/field-definitions/${fieldId}/usage`);
   } catch {
@@ -202,7 +194,7 @@ export async function updateEntityCustomFieldsAction(
   slug: string,
   entityType: EntityType,
   entityId: string,
-  customFields: Record<string, unknown>,
+  customFields: Record<string, unknown>
 ): Promise<ActionResult> {
   const prefix = entityType.toLowerCase() + "s";
   try {
@@ -235,7 +227,7 @@ export async function setEntityFieldGroupsAction(
   slug: string,
   entityType: EntityType,
   entityId: string,
-  appliedFieldGroups: string[],
+  appliedFieldGroups: string[]
 ): Promise<ActionResult> {
   const prefix = entityType.toLowerCase() + "s";
   try {

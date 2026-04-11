@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { DeadlineSummary } from "@/lib/types";
 
 interface DeadlineSummaryCardsProps {
@@ -37,20 +32,17 @@ export function DeadlineSummaryCards({ summaries }: DeadlineSummaryCardsProps) {
     );
   }
 
-  const grouped = summaries.reduce<Record<string, CategoryTotals>>(
-    (acc, summary) => {
-      const cat = summary.category;
-      if (!acc[cat]) {
-        acc[cat] = { total: 0, filed: 0, pending: 0, overdue: 0 };
-      }
-      acc[cat].total += summary.total;
-      acc[cat].filed += summary.filed;
-      acc[cat].pending += summary.pending;
-      acc[cat].overdue += summary.overdue;
-      return acc;
-    },
-    {}
-  );
+  const grouped = summaries.reduce<Record<string, CategoryTotals>>((acc, summary) => {
+    const cat = summary.category;
+    if (!acc[cat]) {
+      acc[cat] = { total: 0, filed: 0, pending: 0, overdue: 0 };
+    }
+    acc[cat].total += summary.total;
+    acc[cat].filed += summary.filed;
+    acc[cat].pending += summary.pending;
+    acc[cat].overdue += summary.overdue;
+    return acc;
+  }, {});
 
   const categories = Object.entries(grouped);
 
@@ -64,28 +56,22 @@ export function DeadlineSummaryCards({ summaries }: DeadlineSummaryCardsProps) {
           <CardContent>
             <div className="flex items-baseline gap-4">
               <div className="text-center">
-                <p className="font-mono text-2xl font-semibold tabular-nums text-slate-950 dark:text-slate-50">
+                <p className="font-mono text-2xl font-semibold text-slate-950 tabular-nums dark:text-slate-50">
                   {totals.total}
                 </p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Total
-                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Total</p>
               </div>
               <div className="text-center">
-                <p className="font-mono text-2xl font-semibold tabular-nums text-teal-600 dark:text-teal-400">
+                <p className="font-mono text-2xl font-semibold text-teal-600 tabular-nums dark:text-teal-400">
                   {totals.filed}
                 </p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Filed
-                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Filed</p>
               </div>
               <div className="text-center">
-                <p className="font-mono text-2xl font-semibold tabular-nums text-amber-600 dark:text-amber-400">
+                <p className="font-mono text-2xl font-semibold text-amber-600 tabular-nums dark:text-amber-400">
                   {totals.pending}
                 </p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Pending
-                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Pending</p>
               </div>
               <div className="text-center">
                 <p
@@ -97,9 +83,7 @@ export function DeadlineSummaryCards({ summaries }: DeadlineSummaryCardsProps) {
                 >
                   {totals.overdue}
                 </p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Overdue
-                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Overdue</p>
               </div>
             </div>
           </CardContent>

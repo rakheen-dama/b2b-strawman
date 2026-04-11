@@ -104,9 +104,7 @@ export function LeaveDialog({
         <DialogHeader>
           <DialogTitle>{isEditing ? "Edit Leave" : "Create Leave"}</DialogTitle>
           <DialogDescription>
-            {isEditing
-              ? "Update this leave block."
-              : "Add a leave block for this team member."}
+            {isEditing ? "Update this leave block." : "Add a leave block for this team member."}
           </DialogDescription>
         </DialogHeader>
 
@@ -143,17 +141,11 @@ export function LeaveDialog({
               {validationError}
             </p>
           )}
-          {error && (
-            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-          )}
+          {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
         </div>
 
         <DialogFooter>
-          <Button
-            variant="plain"
-            onClick={() => onOpenChange(false)}
-            disabled={isSubmitting}
-          >
+          <Button variant="plain" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
             Cancel
           </Button>
           <Button onClick={handleSubmit} disabled={isSubmitting}>

@@ -22,15 +22,10 @@ interface RecurrenceEditorProps {
   onUpdate: (task: Task) => void;
 }
 
-export function RecurrenceEditor({
-  task,
-  slug,
-  projectId,
-  onUpdate,
-}: RecurrenceEditorProps) {
+export function RecurrenceEditor({ task, slug, projectId, onUpdate }: RecurrenceEditorProps) {
   const parsed = parseRecurrenceRule(task.recurrenceRule);
   const [frequency, setFrequency] = useState<RecurrenceFrequency | "NONE">(
-    parsed?.frequency ?? "NONE",
+    parsed?.frequency ?? "NONE"
   );
   const [recurrenceInterval, setRecurrenceInterval] = useState(parsed?.interval ?? 1);
   const [endDate, setEndDate] = useState(task.recurrenceEndDate ?? "");
@@ -78,9 +73,7 @@ export function RecurrenceEditor({
     <div className="space-y-3">
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="text-xs text-slate-500 dark:text-slate-400">
-            Frequency
-          </label>
+          <label className="text-xs text-slate-500 dark:text-slate-400">Frequency</label>
           <Select
             value={frequency}
             onValueChange={(v) => setFrequency(v as RecurrenceFrequency | "NONE")}

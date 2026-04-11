@@ -16,10 +16,7 @@ interface ProjectCourtDatesTabProps {
   slug: string;
 }
 
-export function ProjectCourtDatesTab({
-  projectId,
-  slug,
-}: ProjectCourtDatesTabProps) {
+export function ProjectCourtDatesTab({ projectId, slug }: ProjectCourtDatesTabProps) {
   const [editTarget, setEditTarget] = useState<CourtDate | null>(null);
   const [postponeTarget, setPostponeTarget] = useState<CourtDate | null>(null);
   const [cancelTarget, setCancelTarget] = useState<CourtDate | null>(null);
@@ -28,7 +25,7 @@ export function ProjectCourtDatesTab({
   const { data, isLoading, mutate } = useSWR(
     `project-court-dates-${projectId}`,
     () => fetchCourtDates({ projectId }),
-    { dedupingInterval: 2000 },
+    { dedupingInterval: 2000 }
   );
 
   const courtDates = data?.content ?? [];
@@ -36,14 +33,12 @@ export function ProjectCourtDatesTab({
   return (
     <div data-testid="project-court-dates-tab" className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300">
-          Court Dates
-        </h3>
+        <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300">Court Dates</h3>
         <CreateCourtDateDialog slug={slug} onSuccess={() => mutate()} />
       </div>
 
       {isLoading ? (
-        <p className="text-xs italic text-slate-500">Loading court dates&hellip;</p>
+        <p className="text-xs text-slate-500 italic">Loading court dates&hellip;</p>
       ) : (
         <CourtDateListView
           courtDates={courtDates}

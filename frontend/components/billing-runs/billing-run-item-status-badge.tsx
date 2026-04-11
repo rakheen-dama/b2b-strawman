@@ -20,9 +20,7 @@ interface BillingRunItemStatusBadgeProps {
   status: BillingRunItemStatus;
 }
 
-export function BillingRunItemStatusBadge({
-  status,
-}: BillingRunItemStatusBadgeProps) {
+export function BillingRunItemStatusBadge({ status }: BillingRunItemStatusBadgeProps) {
   const badge = STATUS_BADGE[status];
   return <Badge variant={badge.variant}>{badge.label}</Badge>;
 }

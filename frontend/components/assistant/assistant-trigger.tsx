@@ -13,7 +13,7 @@ export function AssistantTrigger() {
     <Button
       variant="accent"
       size="icon"
-      className="fixed bottom-6 right-6 z-50 size-12 rounded-full shadow-lg"
+      className="fixed right-6 bottom-6 z-50 size-12 rounded-full shadow-lg"
       onClick={toggle}
       aria-label="Open assistant"
     >

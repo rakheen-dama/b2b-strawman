@@ -83,9 +83,7 @@ describe("Mock auth provider", () => {
       get: vi.fn().mockReturnValue(undefined),
     } as never);
 
-    await expect(getAuthContext()).rejects.toThrow(
-      "No mock-auth-token cookie",
-    );
+    await expect(getAuthContext()).rejects.toThrow("No mock-auth-token cookie");
   });
 
   it("getAuthToken() returns raw JWT string", async () => {
@@ -128,7 +126,7 @@ describe("Mock auth provider", () => {
     expect(email).toBe("alice@e2e-test.local");
     expect(mockFetch).toHaveBeenCalledWith(
       expect.stringContaining("/userinfo/user_e2e_alice"),
-      expect.objectContaining({ signal: expect.any(AbortSignal) }),
+      expect.objectContaining({ signal: expect.any(AbortSignal) })
     );
   });
 

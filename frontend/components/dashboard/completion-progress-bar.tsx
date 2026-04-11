@@ -21,7 +21,7 @@ export function CompletionProgressBar({ percent }: CompletionProgressBarProps) {
           style={{ width: `${clampedPercent}%` }}
         />
       </div>
-      <span className="text-xs font-medium text-muted-foreground tabular-nums">
+      <span className="text-muted-foreground text-xs font-medium tabular-nums">
         {Math.round(clampedPercent)}%
       </span>
     </div>

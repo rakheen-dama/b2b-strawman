@@ -52,12 +52,9 @@ export function TaxSettingsForm({
 
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-      <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-        Tax Configuration
-      </h2>
+      <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">Tax Configuration</h2>
       <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-        Configure your organization&apos;s tax registration and display
-        settings.
+        Configure your organization&apos;s tax registration and display settings.
       </p>
       <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
@@ -111,16 +108,11 @@ export function TaxSettingsForm({
             className="mt-1 w-full"
           />
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-            Label shown on invoices and documents (e.g. &quot;VAT&quot;,
-            &quot;GST&quot;).
+            Label shown on invoices and documents (e.g. &quot;VAT&quot;, &quot;GST&quot;).
           </p>
         </div>
         <div className="flex items-center gap-3 self-center">
-          <Switch
-            id="tax-inclusive"
-            checked={taxInclusive}
-            onCheckedChange={setTaxInclusive}
-          />
+          <Switch id="tax-inclusive" checked={taxInclusive} onCheckedChange={setTaxInclusive} />
           <label
             htmlFor="tax-inclusive"
             className="text-sm font-medium text-slate-700 dark:text-slate-300"

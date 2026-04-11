@@ -40,10 +40,7 @@ function getStatusCode(error: unknown): number | undefined {
     (error as Record<string, unknown>).response &&
     typeof (error as Record<string, unknown>).response === "object"
   ) {
-    const response = (error as Record<string, unknown>).response as Record<
-      string,
-      unknown
-    >;
+    const response = (error as Record<string, unknown>).response as Record<string, unknown>;
     if (typeof response.status === "number") {
       return response.status;
     }
@@ -60,10 +57,7 @@ function getDetailType(error: unknown): string | undefined {
     (error as Record<string, unknown>).detail &&
     typeof (error as Record<string, unknown>).detail === "object"
   ) {
-    const detail = (error as Record<string, unknown>).detail as Record<
-      string,
-      unknown
-    >;
+    const detail = (error as Record<string, unknown>).detail as Record<string, unknown>;
     if (typeof detail.type === "string") {
       return detail.type;
     }
@@ -178,7 +172,7 @@ export function showToast(
     namespace?: MessageNamespace;
     interpolations?: Record<string, string>;
     onRetry?: () => void;
-  },
+  }
 ): void {
   const { t } = createMessages(options?.namespace ?? "errors");
   const message = t(messageCode, options?.interpolations);
@@ -199,9 +193,7 @@ export function showToast(
 // --- scrollToFirstError ---
 
 export function scrollToFirstError(): void {
-  const invalid = document.querySelector<HTMLElement>(
-    '[aria-invalid="true"], .text-red-600',
-  );
+  const invalid = document.querySelector<HTMLElement>('[aria-invalid="true"], .text-red-600');
   if (invalid) {
     invalid.scrollIntoView({ behavior: "smooth", block: "center" });
     invalid.focus();

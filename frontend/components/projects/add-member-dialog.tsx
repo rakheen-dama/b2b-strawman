@@ -54,10 +54,7 @@ export function AddMemberDialog({
     data: orgMembers,
     error: fetchError,
     isLoading,
-  } = useSWR<OrgMember[]>(
-    open ? "add-member-org-members" : null,
-    () => fetchOrgMembers()
-  );
+  } = useSWR<OrgMember[]>(open ? "add-member-org-members" : null, () => fetchOrgMembers());
 
   const availableMembers = useMemo(() => {
     if (!orgMembers) return [];
@@ -110,7 +107,9 @@ export function AddMemberDialog({
                 Loading members...
               </div>
             ) : fetchError ? (
-              <div className="text-destructive py-6 text-center text-sm">Failed to load organization members.</div>
+              <div className="text-destructive py-6 text-center text-sm">
+                Failed to load organization members.
+              </div>
             ) : availableMembers.length === 0 ? (
               <CommandEmpty>
                 {!orgMembers || orgMembers.length === 0
@@ -130,7 +129,9 @@ export function AddMemberDialog({
                     <MemberAvatar name={member.name} />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-semibold">{member.name ?? "Unknown"}</p>
-                      <p className="truncate text-xs text-slate-600 dark:text-slate-400">{member.email}</p>
+                      <p className="truncate text-xs text-slate-600 dark:text-slate-400">
+                        {member.email}
+                      </p>
                     </div>
                   </CommandItem>
                 ))}
@@ -139,9 +140,7 @@ export function AddMemberDialog({
           </CommandList>
         </Command>
 
-        {addError && (
-          <p className="text-destructive px-4 pb-4 text-sm">{addError}</p>
-        )}
+        {addError && <p className="text-destructive px-4 pb-4 text-sm">{addError}</p>}
       </DialogContent>
     </Dialog>
   );

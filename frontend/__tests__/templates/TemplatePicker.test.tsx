@@ -52,33 +52,19 @@ describe("TemplatePicker", () => {
 
   it("renders template names in the list", () => {
     render(
-      <TemplatePicker
-        templates={[TEMPLATE_1, TEMPLATE_2]}
-        selectedId={null}
-        onSelect={vi.fn()}
-      />,
+      <TemplatePicker templates={[TEMPLATE_1, TEMPLATE_2]} selectedId={null} onSelect={vi.fn()} />
     );
     expect(screen.getByText("Monthly Bookkeeping")).toBeInTheDocument();
     expect(screen.getByText("Annual Audit")).toBeInTheDocument();
   });
 
   it("shows empty state when no templates", () => {
-    render(
-      <TemplatePicker templates={[]} selectedId={null} onSelect={vi.fn()} />,
-    );
-    expect(
-      screen.getByText("No active templates found."),
-    ).toBeInTheDocument();
+    render(<TemplatePicker templates={[]} selectedId={null} onSelect={vi.fn()} />);
+    expect(screen.getByText("No active templates found.")).toBeInTheDocument();
   });
 
   it("shows task count and tags for a template", () => {
-    render(
-      <TemplatePicker
-        templates={[TEMPLATE_1]}
-        selectedId={null}
-        onSelect={vi.fn()}
-      />,
-    );
+    render(<TemplatePicker templates={[TEMPLATE_1]} selectedId={null} onSelect={vi.fn()} />);
     expect(screen.getByText(/3 tasks/)).toBeInTheDocument();
     // Tag names appear in the subtitle text alongside task count
     expect(screen.getByText(/Bookkeeping, Monthly/)).toBeInTheDocument();
@@ -88,11 +74,7 @@ describe("TemplatePicker", () => {
     const onSelect = vi.fn();
     const user = userEvent.setup();
     render(
-      <TemplatePicker
-        templates={[TEMPLATE_1, TEMPLATE_2]}
-        selectedId={null}
-        onSelect={onSelect}
-      />,
+      <TemplatePicker templates={[TEMPLATE_1, TEMPLATE_2]} selectedId={null} onSelect={onSelect} />
     );
     await user.click(screen.getByText("Monthly Bookkeeping"));
     expect(onSelect).toHaveBeenCalledWith("pt-1");

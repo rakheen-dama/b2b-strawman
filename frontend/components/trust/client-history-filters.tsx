@@ -16,11 +16,7 @@ interface ClientHistoryFiltersProps {
   };
 }
 
-export function ClientHistoryFilters({
-  slug,
-  customerId,
-  search,
-}: ClientHistoryFiltersProps) {
+export function ClientHistoryFilters({ slug, customerId, search }: ClientHistoryFiltersProps) {
   const router = useRouter();
 
   const navigate = useCallback(
@@ -32,10 +28,10 @@ export function ClientHistoryFilters({
       }
       const qs = params.toString();
       router.push(
-        `/org/${slug}/trust-accounting/client-ledgers/${customerId}${qs ? `?${qs}` : ""}`,
+        `/org/${slug}/trust-accounting/client-ledgers/${customerId}${qs ? `?${qs}` : ""}`
       );
     },
-    [router, slug, customerId, search],
+    [router, slug, customerId, search]
   );
 
   function handleDateChange(field: "dateFrom" | "dateTo", value: string) {
@@ -43,10 +39,7 @@ export function ClientHistoryFilters({
   }
 
   return (
-    <div
-      className="flex flex-wrap items-end gap-4"
-      data-testid="date-filters"
-    >
+    <div className="flex flex-wrap items-end gap-4" data-testid="date-filters">
       <div className="flex flex-col gap-1">
         <label
           htmlFor="filter-dateFrom"

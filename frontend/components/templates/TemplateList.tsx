@@ -56,7 +56,7 @@ export function TemplateList({ slug, templates, canManage }: TemplateListProps) 
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
         <LayoutTemplate className="size-12 text-slate-300 dark:text-slate-700" />
-        <h2 className="mt-4 font-display text-lg text-slate-900 dark:text-slate-100">
+        <h2 className="font-display mt-4 text-lg text-slate-900 dark:text-slate-100">
           No project templates yet.
         </h2>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
@@ -71,23 +71,23 @@ export function TemplateList({ slug, templates, canManage }: TemplateListProps) 
       <table className="w-full">
         <thead>
           <tr className="border-b border-slate-200 dark:border-slate-800">
-            <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+            <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
               Name
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+            <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
               Source
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+            <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
               Tasks
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+            <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
               Tags
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+            <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
               Status
             </th>
             {canManage && (
-              <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+              <th className="px-4 py-3 text-right text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                 Actions
               </th>
             )}
@@ -166,9 +166,9 @@ export function TemplateList({ slug, templates, canManage }: TemplateListProps) 
                         <AlertDialogHeader>
                           <AlertDialogTitle>Delete Template</AlertDialogTitle>
                           <AlertDialogDescription>
-                            Are you sure you want to delete &quot;{template.name}&quot;? This
-                            action cannot be undone. If this template has active recurring
-                            schedules, deletion will be blocked.
+                            Are you sure you want to delete &quot;{template.name}&quot;? This action
+                            cannot be undone. If this template has active recurring schedules,
+                            deletion will be blocked.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>

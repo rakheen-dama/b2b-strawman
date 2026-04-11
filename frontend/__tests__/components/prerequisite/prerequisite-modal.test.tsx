@@ -78,9 +78,7 @@ describe("PrerequisiteModal — display", () => {
     expect(screen.getByText("Prerequisites: Invoice Generation")).toBeInTheDocument();
     expect(screen.getByText("Customer")).toBeInTheDocument();
     expect(screen.getByText("VAT number is required")).toBeInTheDocument();
-    expect(
-      screen.getByText("Customer must have a portal contact"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Customer must have a portal contact")).toBeInTheDocument();
   });
 
   it("renders inline editor for custom field violations", () => {
@@ -98,12 +96,10 @@ describe("PrerequisiteModal — display", () => {
         {...defaultProps}
         violations={[structuralViolation]}
         fieldDefinitions={{}}
-      />,
+      />
     );
 
-    expect(
-      screen.getByText("Add a portal contact to the customer"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Add a portal contact to the customer")).toBeInTheDocument();
   });
 });
 
@@ -129,20 +125,13 @@ describe("PrerequisiteModal — interaction", () => {
     await user.click(button);
 
     await waitFor(() => {
-      expect(mockSave).toHaveBeenCalledWith(
-        "test-org",
-        "CUSTOMER",
-        "cust-1",
-        { vat_number: "ZA123456" },
-      );
+      expect(mockSave).toHaveBeenCalledWith("test-org", "CUSTOMER", "cust-1", {
+        vat_number: "ZA123456",
+      });
     });
 
     await waitFor(() => {
-      expect(mockCheck).toHaveBeenCalledWith(
-        "INVOICE_GENERATION",
-        "CUSTOMER",
-        "cust-1",
-      );
+      expect(mockCheck).toHaveBeenCalledWith("INVOICE_GENERATION", "CUSTOMER", "cust-1");
     });
   });
 
@@ -157,12 +146,7 @@ describe("PrerequisiteModal — interaction", () => {
     mockCheck.mockResolvedValueOnce(passedResult);
 
     const onResolved = vi.fn();
-    render(
-      <PrerequisiteModal
-        {...defaultProps}
-        onResolved={onResolved}
-      />,
-    );
+    render(<PrerequisiteModal {...defaultProps} onResolved={onResolved} />);
 
     // Type a value to trigger save
     const input = screen.getByRole("textbox");
@@ -205,9 +189,7 @@ describe("PrerequisiteModal — interaction", () => {
     await user.click(button);
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Email address is now required"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Email address is now required")).toBeInTheDocument();
     });
   });
 
@@ -246,9 +228,7 @@ describe("PrerequisiteModal — interaction", () => {
     await user.click(button);
 
     await waitFor(() => {
-      expect(screen.getByRole("alert")).toHaveTextContent(
-        "An unexpected error occurred.",
-      );
+      expect(screen.getByRole("alert")).toHaveTextContent("An unexpected error occurred.");
     });
   });
 });

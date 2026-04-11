@@ -39,7 +39,7 @@ describe("usePrerequisiteCheck", () => {
     mockAction.mockResolvedValueOnce(result);
 
     const { result: hookResult } = renderHook(() =>
-      usePrerequisiteCheck("INVOICE_GENERATION", "CUSTOMER", "cust-1"),
+      usePrerequisiteCheck("INVOICE_GENERATION", "CUSTOMER", "cust-1")
     );
 
     expect(hookResult.current.check).toBeNull();
@@ -64,7 +64,7 @@ describe("usePrerequisiteCheck", () => {
     mockAction.mockResolvedValueOnce(result);
 
     const { result: hookResult } = renderHook(() =>
-      usePrerequisiteCheck("INVOICE_GENERATION", "CUSTOMER", "cust-1"),
+      usePrerequisiteCheck("INVOICE_GENERATION", "CUSTOMER", "cust-1")
     );
 
     await act(async () => {
@@ -94,7 +94,7 @@ describe("usePrerequisiteCheck", () => {
     mockAction.mockResolvedValueOnce(result);
 
     const { result: hookResult } = renderHook(() =>
-      usePrerequisiteCheck("INVOICE_GENERATION", "CUSTOMER", "cust-1"),
+      usePrerequisiteCheck("INVOICE_GENERATION", "CUSTOMER", "cust-1")
     );
 
     await act(async () => {
@@ -114,7 +114,7 @@ describe("usePrerequisiteCheck", () => {
     mockAction.mockRejectedValueOnce(new Error("Network failure"));
 
     const { result: hookResult } = renderHook(() =>
-      usePrerequisiteCheck("INVOICE_GENERATION", "CUSTOMER", "cust-1"),
+      usePrerequisiteCheck("INVOICE_GENERATION", "CUSTOMER", "cust-1")
     );
 
     await act(async () => {
@@ -131,7 +131,7 @@ describe("usePrerequisiteCheck", () => {
     mockAction.mockRejectedValueOnce(new Error("Network failure"));
 
     const { result: hookResult } = renderHook(() =>
-      usePrerequisiteCheck("INVOICE_GENERATION", "CUSTOMER", "cust-1"),
+      usePrerequisiteCheck("INVOICE_GENERATION", "CUSTOMER", "cust-1")
     );
 
     await act(async () => {
@@ -151,7 +151,7 @@ describe("usePrerequisiteCheck", () => {
     mockAction.mockRejectedValueOnce(new Error("Network failure"));
 
     const { result: hookResult } = renderHook(() =>
-      usePrerequisiteCheck("INVOICE_GENERATION", "CUSTOMER", "cust-1"),
+      usePrerequisiteCheck("INVOICE_GENERATION", "CUSTOMER", "cust-1")
     );
 
     await act(async () => {

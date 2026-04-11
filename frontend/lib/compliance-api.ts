@@ -12,7 +12,7 @@ import type {
 export async function transitionLifecycle(
   id: string,
   targetStatus: string,
-  notes?: string,
+  notes?: string
 ): Promise<TransitionResponse> {
   return api.post<TransitionResponse>(`/api/customers/${id}/transition`, {
     targetStatus,
@@ -56,7 +56,7 @@ export async function createDataRequestApi(body: {
 export async function updateDataRequestStatus(
   id: string,
   action: string,
-  reason?: string,
+  reason?: string
 ): Promise<DataRequestResponse> {
   return api.put<DataRequestResponse>(`/api/data-requests/${id}/status`, { action, reason });
 }
@@ -66,16 +66,16 @@ export async function generateDataExport(id: string): Promise<{ exportFileKey: s
 }
 
 export async function getExportDownloadUrl(
-  id: string,
+  id: string
 ): Promise<{ url: string; expiresInSeconds: number }> {
   return api.get<{ url: string; expiresInSeconds: number }>(
-    `/api/data-requests/${id}/export/download`,
+    `/api/data-requests/${id}/export/download`
   );
 }
 
 export async function executeDataDeletion(
   id: string,
-  confirmCustomerName: string,
+  confirmCustomerName: string
 ): Promise<AnonymizationResult> {
   return api.post<AnonymizationResult>(`/api/data-requests/${id}/execute-deletion`, {
     confirmCustomerName,

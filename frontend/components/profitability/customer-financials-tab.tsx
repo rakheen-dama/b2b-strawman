@@ -32,7 +32,7 @@ function StatCard({
 }) {
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950">
-      <p className="text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+      <p className="text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
         {label}
       </p>
       <p className={valueClassName ?? "text-slate-950 dark:text-slate-50"}>
@@ -44,18 +44,10 @@ function StatCard({
 
 function marginClassName(value: number | null): string | undefined {
   if (value == null) return undefined;
-  return cn(
-    value >= 0
-      ? "text-green-600 dark:text-green-400"
-      : "text-red-600 dark:text-red-400",
-  );
+  return cn(value >= 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400");
 }
 
-function ProjectBreakdownTable({
-  projects,
-}: {
-  projects: ProjectProfitabilitySummary[];
-}) {
+function ProjectBreakdownTable({ projects }: { projects: ProjectProfitabilitySummary[] }) {
   if (projects.length === 0) return null;
 
   return (
@@ -81,9 +73,7 @@ function ProjectBreakdownTable({
               <TableCell className="font-medium text-slate-950 dark:text-slate-50">
                 {p.projectName}
               </TableCell>
-              <TableCell className="text-slate-600 dark:text-slate-400">
-                {p.currency}
-              </TableCell>
+              <TableCell className="text-slate-600 dark:text-slate-400">{p.currency}</TableCell>
               <TableCell className="text-right text-slate-600 dark:text-slate-400">
                 {p.billableHours.toFixed(1)}h
               </TableCell>
@@ -96,24 +86,18 @@ function ProjectBreakdownTable({
               <TableCell
                 className={cn(
                   "text-right",
-                  marginClassName(p.margin) ??
-                    "text-slate-600 dark:text-slate-400",
+                  marginClassName(p.margin) ?? "text-slate-600 dark:text-slate-400"
                 )}
               >
-                {p.margin != null
-                  ? formatCurrency(p.margin, p.currency)
-                  : "N/A"}
+                {p.margin != null ? formatCurrency(p.margin, p.currency) : "N/A"}
               </TableCell>
               <TableCell
                 className={cn(
                   "text-right",
-                  marginClassName(p.marginPercent) ??
-                    "text-slate-600 dark:text-slate-400",
+                  marginClassName(p.marginPercent) ?? "text-slate-600 dark:text-slate-400"
                 )}
               >
-                {p.marginPercent != null
-                  ? `${p.marginPercent.toFixed(1)}%`
-                  : "N/A"}
+                {p.marginPercent != null ? `${p.marginPercent.toFixed(1)}%` : "N/A"}
               </TableCell>
             </TableRow>
           ))}
@@ -127,8 +111,7 @@ export function CustomerFinancialsTab({
   profitability,
   projectBreakdown,
 }: CustomerFinancialsTabProps) {
-  const hasProfitability =
-    profitability && profitability.currencies.length > 0;
+  const hasProfitability = profitability && profitability.currencies.length > 0;
 
   if (!hasProfitability) {
     return (
@@ -153,34 +136,17 @@ export function CustomerFinancialsTab({
             </h4>
           )}
           <div className="grid auto-rows-fr grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-            <StatCard
-              label="Billable Hours"
-              value={`${curr.totalBillableHours.toFixed(1)}h`}
-            />
-            <StatCard
-              label="Revenue"
-              value={formatCurrency(curr.billableValue, curr.currency)}
-            />
-            <StatCard
-              label="Cost"
-              value={formatCurrencySafe(curr.costValue, curr.currency)}
-            />
+            <StatCard label="Billable Hours" value={`${curr.totalBillableHours.toFixed(1)}h`} />
+            <StatCard label="Revenue" value={formatCurrency(curr.billableValue, curr.currency)} />
+            <StatCard label="Cost" value={formatCurrencySafe(curr.costValue, curr.currency)} />
             <StatCard
               label="Margin"
-              value={
-                curr.margin != null
-                  ? formatCurrency(curr.margin, curr.currency)
-                  : "N/A"
-              }
+              value={curr.margin != null ? formatCurrency(curr.margin, curr.currency) : "N/A"}
               valueClassName={marginClassName(curr.margin)}
             />
             <StatCard
               label="Margin %"
-              value={
-                curr.marginPercent != null
-                  ? `${curr.marginPercent.toFixed(1)}%`
-                  : "N/A"
-              }
+              value={curr.marginPercent != null ? `${curr.marginPercent.toFixed(1)}%` : "N/A"}
               valueClassName={marginClassName(curr.marginPercent)}
             />
           </div>

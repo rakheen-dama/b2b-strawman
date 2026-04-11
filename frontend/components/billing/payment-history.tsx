@@ -30,11 +30,7 @@ export async function PaymentHistory() {
   const payments = response.content;
 
   if (payments.length === 0) {
-    return (
-      <p className="text-sm text-slate-500 dark:text-slate-400">
-        No payments yet.
-      </p>
-    );
+    return <p className="text-sm text-slate-500 dark:text-slate-400">No payments yet.</p>;
   }
 
   return (
@@ -51,17 +47,11 @@ export async function PaymentHistory() {
         {payments.map((payment) => (
           <TableRow key={payment.id}>
             <TableCell>{formatDate(payment.paymentDate)}</TableCell>
+            <TableCell>{formatAmount(payment.amountCents, payment.currency)}</TableCell>
             <TableCell>
-              {formatAmount(payment.amountCents, payment.currency)}
+              <Badge variant={paymentStatusVariant(payment.status)}>{payment.status}</Badge>
             </TableCell>
-            <TableCell>
-              <Badge variant={paymentStatusVariant(payment.status)}>
-                {payment.status}
-              </Badge>
-            </TableCell>
-            <TableCell className="font-mono text-sm">
-              {payment.payfastPaymentId}
-            </TableCell>
+            <TableCell className="font-mono text-sm">{payment.payfastPaymentId}</TableCell>
           </TableRow>
         ))}
       </TableBody>

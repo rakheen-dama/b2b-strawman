@@ -54,12 +54,10 @@ export function ProjectNamingSettings({
   return (
     <div className="space-y-6">
       <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-        <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-          Naming Pattern
-        </h2>
+        <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">Naming Pattern</h2>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          When set, new projects will be automatically named using this pattern.
-          Leave empty to use freeform project names.
+          When set, new projects will be automatically named using this pattern. Leave empty to use
+          freeform project names.
         </p>
         <div className="mt-4 max-w-lg space-y-2">
           <Label htmlFor="project-naming-pattern">Pattern</Label>
@@ -111,9 +109,7 @@ export function ProjectNamingSettings({
         {message && (
           <p
             className={`text-sm ${
-              isError
-                ? "text-red-600 dark:text-red-400"
-                : "text-green-600 dark:text-green-400"
+              isError ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"
             }`}
           >
             {message}

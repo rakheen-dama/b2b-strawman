@@ -1,11 +1,7 @@
 "use server";
 
 import { api, ApiError } from "@/lib/api";
-import type {
-  ProjectTimeSummary,
-  MemberTimeSummary,
-  TaskTimeSummary,
-} from "@/lib/types";
+import type { ProjectTimeSummary, MemberTimeSummary, TaskTimeSummary } from "@/lib/types";
 
 function buildDateParams(from?: string, to?: string): string {
   const params = new URLSearchParams();

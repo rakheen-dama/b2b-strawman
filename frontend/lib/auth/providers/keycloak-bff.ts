@@ -26,9 +26,7 @@ interface BffUserInfo {
  * Wrapped with React.cache to deduplicate calls within a single
  * server-side request (e.g. getAuthContext + getCurrentUserEmail).
  */
-async function fetchBffMeInternal(
-  cookieHeader: string,
-): Promise<BffUserInfo> {
+async function fetchBffMeInternal(cookieHeader: string): Promise<BffUserInfo> {
   const headers: Record<string, string> = {};
   if (cookieHeader) {
     headers["cookie"] = cookieHeader;
@@ -41,9 +39,7 @@ async function fetchBffMeInternal(
   });
 
   if (!response.ok) {
-    throw new Error(
-      `BFF /bff/me request failed with status ${response.status}`,
-    );
+    throw new Error(`BFF /bff/me request failed with status ${response.status}`);
   }
 
   return response.json() as Promise<BffUserInfo>;
@@ -58,9 +54,7 @@ const fetchBffMeCached = cache(fetchBffMeInternal);
 async function fetchBffMe(): Promise<BffUserInfo> {
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get("SESSION");
-  const cookieHeader = sessionCookie
-    ? `SESSION=${sessionCookie.value}`
-    : "";
+  const cookieHeader = sessionCookie ? `SESSION=${sessionCookie.value}` : "";
   return fetchBffMeCached(cookieHeader);
 }
 
@@ -99,7 +93,7 @@ export async function getAuthContext(): Promise<AuthContext> {
 
 export async function getAuthToken(): Promise<string> {
   throw new Error(
-    "getAuthToken() is not available in BFF mode. API calls should route through the gateway.",
+    "getAuthToken() is not available in BFF mode. API calls should route through the gateway."
   );
 }
 
@@ -123,4 +117,3 @@ export async function getCurrentUserInfo(): Promise<{
     return { name: null, email: null };
   }
 }
-

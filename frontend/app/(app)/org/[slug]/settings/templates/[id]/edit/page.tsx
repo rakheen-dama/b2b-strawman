@@ -27,9 +27,8 @@ export default async function TemplateEditorPage({
           <ChevronLeft className="size-4" />
           Templates
         </Link>
-        <p className="text-sm text-destructive">
-          Failed to load template. It may have been deleted or you don&apos;t
-          have access.
+        <p className="text-destructive text-sm">
+          Failed to load template. It may have been deleted or you don&apos;t have access.
         </p>
       </div>
     );
@@ -37,11 +36,5 @@ export default async function TemplateEditorPage({
 
   const readOnly = !isAdmin || template.source === "PLATFORM";
 
-  return (
-    <TemplateEditorClient
-      slug={slug}
-      template={template}
-      readOnly={readOnly}
-    />
-  );
+  return <TemplateEditorClient slug={slug} template={template} readOnly={readOnly} />;
 }

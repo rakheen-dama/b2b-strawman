@@ -1,21 +1,14 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, render, screen, within } from "@testing-library/react";
 import { TimeSummaryPanel } from "@/components/projects/time-summary-panel";
-import type {
-  ProjectTimeSummary,
-  MemberTimeSummary,
-  TaskTimeSummary,
-} from "@/lib/types";
+import type { ProjectTimeSummary, MemberTimeSummary, TaskTimeSummary } from "@/lib/types";
 
 // Mock the server actions
-vi.mock(
-  "@/app/(app)/org/[slug]/projects/[id]/time-summary-actions",
-  () => ({
-    fetchProjectTimeSummary: vi.fn(),
-    fetchTimeSummaryByMember: vi.fn(),
-    fetchTimeSummaryByTask: vi.fn(),
-  })
-);
+vi.mock("@/app/(app)/org/[slug]/projects/[id]/time-summary-actions", () => ({
+  fetchProjectTimeSummary: vi.fn(),
+  fetchTimeSummaryByMember: vi.fn(),
+  fetchTimeSummaryByTask: vi.fn(),
+}));
 
 // --- Test data ---
 
@@ -202,9 +195,7 @@ describe("TimeSummaryPanel", () => {
 
     // Date inputs should be present
     const dateInputs = screen.getAllByDisplayValue("");
-    const fromInput = dateInputs.find(
-      (el) => el.getAttribute("type") === "date"
-    );
+    const fromInput = dateInputs.find((el) => el.getAttribute("type") === "date");
     expect(fromInput).toBeDefined();
   });
 });

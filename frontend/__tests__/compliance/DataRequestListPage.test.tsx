@@ -78,12 +78,7 @@ describe("DataRequestTable", () => {
   });
 
   it("does not show overdue text when deadline is in the future", () => {
-    render(
-      <DataRequestTable
-        requests={[mockRequests[0]]}
-        slug="acme"
-      />,
-    );
+    render(<DataRequestTable requests={[mockRequests[0]]} slug="acme" />);
     // Acme Corp has a future deadline — should NOT show overdue
     expect(screen.queryByText(/Overdue/)).not.toBeInTheDocument();
   });

@@ -4,8 +4,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import type { AuthUser } from "@/lib/auth/types";
 import { getTokenFromDocumentCookie } from "./cookie-util";
 
-const MOCK_IDP_URL =
-  process.env.NEXT_PUBLIC_MOCK_IDP_URL || "http://localhost:8090";
+const MOCK_IDP_URL = process.env.NEXT_PUBLIC_MOCK_IDP_URL || "http://localhost:8090";
 
 interface MockAuthContextValue {
   authUser: AuthUser | null;
@@ -27,11 +26,7 @@ function decodeJwtPayload(token: string): Record<string, unknown> | null {
   }
 }
 
-export function MockAuthContextProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function MockAuthContextProvider({ children }: { children: React.ReactNode }) {
   // All state starts as null/false — identical on server and client.
   // Cookie is read in useEffect (client-only) to prevent hydration mismatch
   // since document.cookie is unavailable during SSR.
@@ -94,20 +89,16 @@ export function MockAuthContextProvider({
 
   const value = useMemo<MockAuthContextValue>(
     () => ({ authUser, isLoaded, orgSlug, token }),
-    [authUser, isLoaded, orgSlug, token],
+    [authUser, isLoaded, orgSlug, token]
   );
 
-  return (
-    <MockAuthContext.Provider value={value}>{children}</MockAuthContext.Provider>
-  );
+  return <MockAuthContext.Provider value={value}>{children}</MockAuthContext.Provider>;
 }
 
 export function useMockAuthContext(): MockAuthContextValue {
   const ctx = useContext(MockAuthContext);
   if (!ctx) {
-    throw new Error(
-      "useMockAuthContext must be used within MockAuthContextProvider",
-    );
+    throw new Error("useMockAuthContext must be used within MockAuthContextProvider");
   }
   return ctx;
 }

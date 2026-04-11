@@ -36,7 +36,7 @@ describe("CapabilityProvider", () => {
         isOwner={false}
       >
         <TestConsumer />
-      </CapabilityProvider>,
+      </CapabilityProvider>
     );
 
     expect(screen.getByTestId("role")).toHaveTextContent("Accountant");
@@ -49,9 +49,7 @@ describe("CapabilityProvider", () => {
     function HasCapChecker() {
       const { hasCapability } = useCapabilities();
       return (
-        <span data-testid="has-invoicing">
-          {String(hasCapability(CAPABILITIES.INVOICING))}
-        </span>
+        <span data-testid="has-invoicing">{String(hasCapability(CAPABILITIES.INVOICING))}</span>
       );
     }
 
@@ -63,7 +61,7 @@ describe("CapabilityProvider", () => {
         isOwner={false}
       >
         <HasCapChecker />
-      </CapabilityProvider>,
+      </CapabilityProvider>
     );
 
     expect(screen.getByTestId("has-invoicing")).toHaveTextContent("true");
@@ -87,7 +85,7 @@ describe("CapabilityProvider", () => {
         isOwner={false}
       >
         <MissingCapChecker />
-      </CapabilityProvider>,
+      </CapabilityProvider>
     );
 
     expect(screen.getByTestId("has-resource")).toHaveTextContent("false");
@@ -104,14 +102,9 @@ describe("CapabilityProvider", () => {
     }
 
     render(
-      <CapabilityProvider
-        capabilities={[]}
-        role="Admin"
-        isAdmin={true}
-        isOwner={false}
-      >
+      <CapabilityProvider capabilities={[]} role="Admin" isAdmin={true} isOwner={false}>
         <AdminBypassChecker />
-      </CapabilityProvider>,
+      </CapabilityProvider>
     );
 
     expect(screen.getByTestId("admin-has-resource")).toHaveTextContent("true");
@@ -128,14 +121,9 @@ describe("CapabilityProvider", () => {
     }
 
     render(
-      <CapabilityProvider
-        capabilities={[]}
-        role="Owner"
-        isAdmin={false}
-        isOwner={true}
-      >
+      <CapabilityProvider capabilities={[]} role="Owner" isAdmin={false} isOwner={true}>
         <OwnerBypassChecker />
-      </CapabilityProvider>,
+      </CapabilityProvider>
     );
 
     expect(screen.getByTestId("owner-has-resource")).toHaveTextContent("true");
@@ -154,7 +142,7 @@ describe("RequiresCapability", () => {
         <RequiresCapability cap={CAPABILITIES.INVOICING}>
           <span>Invoice Section</span>
         </RequiresCapability>
-      </CapabilityProvider>,
+      </CapabilityProvider>
     );
 
     expect(screen.getByText("Invoice Section")).toBeInTheDocument();
@@ -162,16 +150,11 @@ describe("RequiresCapability", () => {
 
   it("renders nothing when user lacks the required capability", () => {
     render(
-      <CapabilityProvider
-        capabilities={[]}
-        role="Member"
-        isAdmin={false}
-        isOwner={false}
-      >
+      <CapabilityProvider capabilities={[]} role="Member" isAdmin={false} isOwner={false}>
         <RequiresCapability cap={CAPABILITIES.INVOICING}>
           <span>Invoice Section Hidden</span>
         </RequiresCapability>
-      </CapabilityProvider>,
+      </CapabilityProvider>
     );
 
     expect(screen.queryByText("Invoice Section Hidden")).not.toBeInTheDocument();
@@ -188,7 +171,7 @@ describe("useCapabilities outside provider", () => {
     // Suppress React error boundary console noise
     const spy = vi.spyOn(console, "error").mockImplementation(() => {});
     expect(() => render(<Orphan />)).toThrow(
-      "useCapabilities must be used within a CapabilityProvider",
+      "useCapabilities must be used within a CapabilityProvider"
     );
     spy.mockRestore();
   });

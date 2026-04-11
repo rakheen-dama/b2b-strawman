@@ -4,20 +4,18 @@ import { cleanup, render, screen, fireEvent, waitFor } from "@testing-library/re
 import { TimeTrackingSettingsForm } from "@/components/settings/time-tracking-settings-form";
 
 const mockUpdateTimeTrackingSettings = vi.fn();
-vi.mock(
-  "@/app/(app)/org/[slug]/settings/time-tracking/actions",
-  () => ({
-    updateTimeTrackingSettings: (...args: unknown[]) =>
-      mockUpdateTimeTrackingSettings(...args),
-  })
-);
+vi.mock("@/app/(app)/org/[slug]/settings/time-tracking/actions", () => ({
+  updateTimeTrackingSettings: (...args: unknown[]) => mockUpdateTimeTrackingSettings(...args),
+}));
 
 afterEach(() => {
   cleanup();
   mockUpdateTimeTrackingSettings.mockReset();
 });
 
-function renderForm(overrides: Partial<React.ComponentProps<typeof TimeTrackingSettingsForm>> = {}) {
+function renderForm(
+  overrides: Partial<React.ComponentProps<typeof TimeTrackingSettingsForm>> = {}
+) {
   const defaultProps: React.ComponentProps<typeof TimeTrackingSettingsForm> = {
     slug: "acme",
     timeReminderEnabled: false,
@@ -53,14 +51,10 @@ describe("TimeTrackingSettingsForm", () => {
     expect(screen.getByLabelText("Minimum Hours")).toBeInTheDocument();
 
     // Helper text
-    expect(
-      screen.getByText(/Time is interpreted as UTC/)
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Time is interpreted as UTC/)).toBeInTheDocument();
 
     // Expense markup
-    expect(
-      screen.getByLabelText("Default Expense Markup (%)")
-    ).toBeInTheDocument();
+    expect(screen.getByLabelText("Default Expense Markup (%)")).toBeInTheDocument();
   });
 
   it("working day checkboxes default to weekdays (Mon-Fri checked, Sat-Sun unchecked)", () => {

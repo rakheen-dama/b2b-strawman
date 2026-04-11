@@ -43,7 +43,7 @@ describe("DataExportDialog", () => {
     render(
       <DataExportDialog customerId="c1">
         <button>Export Trigger</button>
-      </DataExportDialog>,
+      </DataExportDialog>
     );
 
     await user.click(screen.getByText("Export Trigger"));
@@ -70,7 +70,7 @@ describe("DataExportDialog", () => {
     render(
       <DataExportDialog customerId="c1">
         <button>Export Trigger</button>
-      </DataExportDialog>,
+      </DataExportDialog>
     );
 
     await user.click(screen.getByText("Export Trigger"));
@@ -95,7 +95,7 @@ describe("DataExportDialog", () => {
     render(
       <DataExportDialog customerId="c1">
         <button>Export Trigger</button>
-      </DataExportDialog>,
+      </DataExportDialog>
     );
 
     await user.click(screen.getByText("Export Trigger"));
@@ -143,7 +143,7 @@ describe("AnonymizeCustomerDialog", () => {
     render(
       <AnonymizeCustomerDialog slug="acme" customerId="c1" customerName="Acme Corp">
         <button>Anonymize Trigger</button>
-      </AnonymizeCustomerDialog>,
+      </AnonymizeCustomerDialog>
     );
 
     await user.click(screen.getByText("Anonymize Trigger"));
@@ -164,7 +164,7 @@ describe("AnonymizeCustomerDialog", () => {
     render(
       <AnonymizeCustomerDialog slug="acme" customerId="c1" customerName="Acme Corp">
         <button>Anonymize Trigger</button>
-      </AnonymizeCustomerDialog>,
+      </AnonymizeCustomerDialog>
     );
 
     await user.click(screen.getByText("Anonymize Trigger"));
@@ -203,7 +203,7 @@ describe("AnonymizeCustomerDialog", () => {
     render(
       <AnonymizeCustomerDialog slug="acme" customerId="c1" customerName="Acme Corp">
         <button>Anonymize Trigger</button>
-      </AnonymizeCustomerDialog>,
+      </AnonymizeCustomerDialog>
     );
 
     await user.click(screen.getByText("Anonymize Trigger"));
@@ -239,7 +239,7 @@ describe("AnonymizeCustomerDialog", () => {
       "acme",
       "c1",
       "Acme Corp",
-      "Data subject request",
+      "Data subject request"
     );
   });
 });

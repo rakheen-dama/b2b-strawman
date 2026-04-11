@@ -20,11 +20,7 @@ import { ModuleGate } from "@/components/module-gate";
 import { TariffLineDialog } from "@/components/legal/tariff-line-dialog";
 import { Button } from "@/components/ui/button";
 import { FileSpreadsheet } from "lucide-react";
-import type {
-  InvoiceResponse,
-  PaymentEvent,
-  TaxRateResponse,
-} from "@/lib/types";
+import type { InvoiceResponse, PaymentEvent, TaxRateResponse } from "@/lib/types";
 
 interface InvoiceDetailClientProps {
   invoice: InvoiceResponse;
@@ -104,9 +100,7 @@ export function InvoiceDetailClient({
       )}
 
       {/* Payment Event History */}
-      {(h.isSent || h.isPaid) && (
-        <PaymentHistorySection paymentEvents={paymentEvents ?? []} />
-      )}
+      {(h.isSent || h.isPaid) && <PaymentHistorySection paymentEvents={paymentEvents ?? []} />}
 
       {/* Void indicator */}
       {h.isVoid && <VoidIndicator />}
@@ -154,11 +148,7 @@ export function InvoiceDetailClient({
       {h.isDraft && isAdmin && (
         <ModuleGate module="lssa_tariff">
           <div className="flex">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowTariffDialog(true)}
-            >
+            <Button variant="outline" size="sm" onClick={() => setShowTariffDialog(true)}>
               <FileSpreadsheet className="mr-1.5 size-4" />
               Add Tariff Items
             </Button>

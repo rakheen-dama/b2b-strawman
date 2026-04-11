@@ -10,16 +10,12 @@ describe("RecentActivityWidget", () => {
 
   it("renders null state message when items is null", () => {
     render(<RecentActivityWidget items={null} orgSlug="acme" />);
-    expect(
-      screen.getByText("Unable to load activity. Please try again.")
-    ).toBeInTheDocument();
+    expect(screen.getByText("Unable to load activity. Please try again.")).toBeInTheDocument();
   });
 
   it("renders empty state message when items is empty", () => {
     render(<RecentActivityWidget items={[]} orgSlug="acme" />);
-    expect(
-      screen.getByText("No recent activity")
-    ).toBeInTheDocument();
+    expect(screen.getByText("No recent activity")).toBeInTheDocument();
   });
 
   it("renders activity items with actor names", () => {
@@ -61,9 +57,7 @@ describe("RecentActivityWidget", () => {
     // Should not throw — the getInitials function has a null guard
     render(<RecentActivityWidget items={items} orgSlug="acme" />);
     expect(screen.getByText("?")).toBeInTheDocument(); // fallback for null name
-    expect(
-      screen.getByText("Added a comment on task: Review design")
-    ).toBeInTheDocument();
+    expect(screen.getByText("Added a comment on task: Review design")).toBeInTheDocument();
   });
 
   it("handles undefined actorName without crashing (BUG-010 regression)", () => {

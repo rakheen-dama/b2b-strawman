@@ -39,9 +39,7 @@ export function VerticalProfileSection({
   isOwner,
 }: VerticalProfileSectionProps) {
   const router = useRouter();
-  const [pendingProfile, setPendingProfile] = useState<string | null>(
-    currentProfile,
-  );
+  const [pendingProfile, setPendingProfile] = useState<string | null>(currentProfile);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -50,10 +48,7 @@ export function VerticalProfileSection({
     data: profiles,
     error: fetchError,
     isLoading,
-  } = useSWR<ProfileSummary[]>(
-    isOwner ? "vertical-profiles-list" : null,
-    () => fetchProfiles(),
-  );
+  } = useSWR<ProfileSummary[]>(isOwner ? "vertical-profiles-list" : null, () => fetchProfiles());
 
   async function handleConfirm() {
     setError(null);
@@ -65,19 +60,13 @@ export function VerticalProfileSection({
         setDialogOpen(false);
         // Show seeding feedback toast if available
         if (result.seedingSummary) {
-          const { rateCardsTiersSeeded = 0, scheduleTemplatesSeeded = 0 } =
-            result.seedingSummary;
+          const { rateCardsTiersSeeded = 0, scheduleTemplatesSeeded = 0 } = result.seedingSummary;
           const parts: string[] = [];
-          if (rateCardsTiersSeeded > 0)
-            parts.push(`${rateCardsTiersSeeded} rate card tiers`);
+          if (rateCardsTiersSeeded > 0) parts.push(`${rateCardsTiersSeeded} rate card tiers`);
           if (scheduleTemplatesSeeded > 0)
-            parts.push(
-              `${scheduleTemplatesSeeded} schedule templates (inactive)`,
-            );
+            parts.push(`${scheduleTemplatesSeeded} schedule templates (inactive)`);
           if (parts.length > 0) {
-            toast.success(
-              `Profile applied — seeded ${parts.join(" and ")}`,
-            );
+            toast.success(`Profile applied — seeded ${parts.join(" and ")}`);
           }
         }
         router.refresh();
@@ -116,23 +105,18 @@ export function VerticalProfileSection({
           Vertical Profile
         </h2>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Select an industry profile to enable specialized modules and
-          templates.
+          Select an industry profile to enable specialized modules and templates.
         </p>
 
         <div className="mt-4 flex items-center gap-3">
           {isLoading ? (
             <div className="h-9 w-48 animate-pulse rounded-md bg-slate-100 dark:bg-slate-800" />
           ) : fetchError ? (
-            <p className="text-sm text-destructive">
-              Failed to load profiles.
-            </p>
+            <p className="text-destructive text-sm">Failed to load profiles.</p>
           ) : (
             <Select
               value={pendingProfile ?? ""}
-              onValueChange={(value) =>
-                setPendingProfile(value === "" ? null : value)
-              }
+              onValueChange={(value) => setPendingProfile(value === "" ? null : value)}
             >
               <SelectTrigger className="w-64">
                 <SelectValue placeholder="Select a profile" />
@@ -148,9 +132,7 @@ export function VerticalProfileSection({
           )}
 
           <Button
-            disabled={
-              pendingProfile === currentProfile || isSubmitting || isLoading
-            }
+            disabled={pendingProfile === currentProfile || isSubmitting || isLoading}
             onClick={() => {
               setError(null);
               setDialogOpen(true);
@@ -160,7 +142,7 @@ export function VerticalProfileSection({
           </Button>
         </div>
 
-        {error && <p className="mt-3 text-sm text-destructive">{error}</p>}
+        {error && <p className="text-destructive mt-3 text-sm">{error}</p>}
       </div>
 
       <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -168,15 +150,12 @@ export function VerticalProfileSection({
           <AlertDialogHeader>
             <AlertDialogTitle>Change Vertical Profile</AlertDialogTitle>
             <AlertDialogDescription>
-              Changing your vertical profile will add new field definitions,
-              templates, and enable additional modules. Your existing data will
-              not be affected.
+              Changing your vertical profile will add new field definitions, templates, and enable
+              additional modules. Your existing data will not be affected.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isSubmitting}>
-              Cancel
-            </AlertDialogCancel>
+            <AlertDialogCancel disabled={isSubmitting}>Cancel</AlertDialogCancel>
             <Button onClick={handleConfirm} disabled={isSubmitting}>
               {isSubmitting ? "Applying..." : "Confirm"}
             </Button>

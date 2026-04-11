@@ -4,11 +4,8 @@ import { createContext, useContext, useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 
 const CommandPaletteDialog = dynamic(
-  () =>
-    import("@/components/command-palette-dialog").then(
-      (mod) => mod.CommandPaletteDialog,
-    ),
-  { ssr: false },
+  () => import("@/components/command-palette-dialog").then((mod) => mod.CommandPaletteDialog),
+  { ssr: false }
 );
 
 interface CommandPaletteContextValue {

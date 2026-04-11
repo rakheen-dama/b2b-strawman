@@ -26,13 +26,12 @@ export function WeeklyRhythmStrip({
   return (
     <div
       data-testid="weekly-rhythm-strip"
-      className="flex items-center gap-2 rounded-lg border bg-card p-3"
+      className="bg-card flex items-center gap-2 rounded-lg border p-3"
     >
       <div className="flex h-12 flex-1 items-end gap-1">
         {DAY_LABELS.map((label, i) => {
           const hours = dailyHours[i] ?? 0;
-          const filledPct =
-            dailyCapacity > 0 ? Math.min(1, hours / dailyCapacity) : 0;
+          const filledPct = dailyCapacity > 0 ? Math.min(1, hours / dailyCapacity) : 0;
           const isToday = i === todayIndex;
           const isSelected = selectedDayIndex === i;
 
@@ -44,9 +43,9 @@ export function WeeklyRhythmStrip({
               aria-pressed={isSelected}
               onClick={() => onDaySelect(isSelected ? null : i)}
               className={cn(
-                "flex flex-1 cursor-pointer flex-col items-center gap-0.5 rounded pb-1 pt-1 hover:bg-slate-50",
+                "flex flex-1 cursor-pointer flex-col items-center gap-0.5 rounded pt-1 pb-1 hover:bg-slate-50",
                 isSelected && "bg-teal-50",
-                isToday && "rounded ring-1 ring-teal-500",
+                isToday && "rounded ring-1 ring-teal-500"
               )}
             >
               <div
@@ -69,7 +68,7 @@ export function WeeklyRhythmStrip({
               <span
                 className={cn(
                   "text-[9px] font-medium uppercase",
-                  isToday ? "text-teal-600" : "text-slate-400",
+                  isToday ? "text-teal-600" : "text-slate-400"
                 )}
               >
                 {label}
@@ -80,7 +79,7 @@ export function WeeklyRhythmStrip({
       </div>
       {/* Weekly total */}
       <div className="shrink-0 border-l border-slate-200 pl-2 text-right">
-        <p className="font-mono text-sm font-bold tabular-nums text-slate-900">
+        <p className="font-mono text-sm font-bold text-slate-900 tabular-nums">
           {totalHours.toFixed(1)}h
         </p>
         <p className="text-[10px] text-slate-400">this week</p>

@@ -18,9 +18,7 @@ export function BillingStatusBadge({
   if (invoiceId) {
     const badge = <Badge variant="success">Billed</Badge>;
     if (slug) {
-      return (
-        <Link href={`/org/${slug}/invoices/${invoiceId}`}>{badge}</Link>
-      );
+      return <Link href={`/org/${slug}/invoices/${invoiceId}`}>{badge}</Link>;
     }
     return badge;
   }

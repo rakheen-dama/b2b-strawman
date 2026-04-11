@@ -1,5 +1,13 @@
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
-import { api, handleApiError, getFieldDefinitions, getFieldGroups, getGroupMembers, getTags, getTemplates } from "@/lib/api";
+import {
+  api,
+  handleApiError,
+  getFieldDefinitions,
+  getFieldGroups,
+  getGroupMembers,
+  getTags,
+  getTemplates,
+} from "@/lib/api";
 import type {
   Customer,
   CustomerStatus,
@@ -51,11 +59,7 @@ import { GeneratedDocumentsList } from "@/components/templates/GeneratedDocument
 import { LifecycleStatusBadge } from "@/components/compliance/LifecycleStatusBadge";
 import { LifecycleTransitionDropdown } from "@/components/compliance/LifecycleTransitionDropdown";
 import { ChecklistInstancePanel } from "@/components/compliance/ChecklistInstancePanel";
-import {
-  SetupProgressCard,
-  ActionCard,
-  TemplateReadinessCard,
-} from "@/components/setup";
+import { SetupProgressCard, ActionCard, TemplateReadinessCard } from "@/components/setup";
 import {
   fetchCustomerReadiness,
   fetchCustomerUnbilledSummary,
@@ -64,7 +68,10 @@ import {
 } from "@/lib/api/setup-status";
 import { getCustomerChecklists, getChecklistTemplates } from "@/lib/checklist-api";
 import type { KycIntegrationStatus } from "@/lib/types";
-import { getCustomerRequests, type InformationRequestResponse } from "@/lib/api/information-requests";
+import {
+  getCustomerRequests,
+  type InformationRequestResponse,
+} from "@/lib/api/information-requests";
 import { RequestList } from "@/components/information-requests/request-list";
 import { CreateRequestDialog } from "@/components/information-requests/create-request-dialog";
 import { fetchRetainers, fetchPeriods } from "@/lib/api/retainers";
@@ -74,7 +81,16 @@ import { TrustBalanceCard } from "@/components/trust/TrustBalanceCard";
 import { checkPrerequisites } from "@/lib/prerequisites";
 import type { PrerequisiteCheck } from "@/components/prerequisite/types";
 import { formatDate, formatCurrencySafe } from "@/lib/format";
-import { ArrowLeft, Pencil, Archive, Clock, UserCheck, ArrowRight, Download, ShieldCheck } from "lucide-react";
+import {
+  ArrowLeft,
+  Pencil,
+  Archive,
+  Clock,
+  UserCheck,
+  ArrowRight,
+  Download,
+  ShieldCheck,
+} from "lucide-react";
 import Link from "next/link";
 
 const STATUS_BADGE: Record<CustomerStatus, { label: string; variant: "success" | "neutral" }> = {
@@ -109,9 +125,7 @@ export default async function CustomerDetailPage({
 
   let customerDocuments: Document[] = [];
   try {
-    customerDocuments = await api.get<Document[]>(
-      `/api/documents?scope=CUSTOMER&customerId=${id}`
-    );
+    customerDocuments = await api.get<Document[]>(`/api/documents?scope=CUSTOMER&customerId=${id}`);
   } catch {
     // Non-fatal: show empty documents list if fetch fails
   }
@@ -131,19 +145,13 @@ export default async function CustomerDetailPage({
           api.get<OrgMember[]>("/api/members"),
           api.get<OrgSettings>("/api/settings").catch(() => null),
           api
-            .get<CustomerProfitabilityResponse>(
-              `/api/customers/${id}/profitability`,
-            )
+            .get<CustomerProfitabilityResponse>(`/api/customers/${id}/profitability`)
             .catch(() => null),
           api
-            .get<OrgProfitabilityResponse>(
-              `/api/reports/profitability?customerId=${id}`,
-            )
+            .get<OrgProfitabilityResponse>(`/api/reports/profitability?customerId=${id}`)
             .catch(() => null),
           api
-            .get<InvoiceResponse[]>(
-              `/api/invoices?customerId=${id}`,
-            )
+            .get<InvoiceResponse[]>(`/api/invoices?customerId=${id}`)
             .catch(() => [] as InvoiceResponse[]),
         ]);
       customerBillingRates = ratesRes?.content ?? [];
@@ -177,7 +185,7 @@ export default async function CustomerDetailPage({
     const appliedGroups = customer.appliedFieldGroups ?? [];
     if (appliedGroups.length > 0) {
       const memberResults = await Promise.allSettled(
-        appliedGroups.map((gId) => getGroupMembers(gId)),
+        appliedGroups.map((gId) => getGroupMembers(gId))
       );
       memberResults.forEach((result, i) => {
         if (result.status === "fulfilled") {
@@ -274,8 +282,7 @@ export default async function CustomerDetailPage({
   }
 
   const showRetainerTab =
-    (customer.lifecycleStatus !== "OFFBOARDED" &&
-      customer.lifecycleStatus !== "PROSPECT") ||
+    (customer.lifecycleStatus !== "OFFBOARDED" && customer.lifecycleStatus !== "PROSPECT") ||
     customerRetainers.length > 0;
 
   // Build template name lookup for the onboarding panel
@@ -311,11 +318,7 @@ export default async function CustomerDetailPage({
   let activationPrerequisites: PrerequisiteCheck | null = null;
   if (customer.lifecycleStatus === "ONBOARDING") {
     try {
-      activationPrerequisites = await checkPrerequisites(
-        "LIFECYCLE_ACTIVATION",
-        "CUSTOMER",
-        id,
-      );
+      activationPrerequisites = await checkPrerequisites("LIFECYCLE_ACTIVATION", "CUSTOMER", id);
     } catch {
       // Non-fatal: activation blockers won't show if check fails
     }
@@ -398,8 +401,7 @@ export default async function CustomerDetailPage({
         ? {
             icon: ArrowRight,
             title: "Ready to start onboarding?",
-            description:
-              "Move this customer to Onboarding to begin compliance checklists.",
+            description: "Move this customer to Onboarding to begin compliance checklists.",
             actionLabel: "Start Onboarding",
             targetStatus: "ONBOARDING",
           }
@@ -445,9 +447,7 @@ export default async function CustomerDetailPage({
               <MiniProgressRing value={completenessScore.percentage} size={40} />
             )}
             <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
-            {customer.lifecycleStatus && (
-              <LifecycleStatusBadge status={customer.lifecycleStatus} />
-            )}
+            {customer.lifecycleStatus && <LifecycleStatusBadge status={customer.lifecycleStatus} />}
           </div>
           <p className="mt-1 text-slate-600 dark:text-slate-400">{customer.email}</p>
           {customer.lifecycleStatusChangedAt && (
@@ -456,16 +456,8 @@ export default async function CustomerDetailPage({
             </p>
           )}
           <p className="mt-3 text-sm text-slate-400 dark:text-slate-600">
-            {customer.phone && (
-              <>
-                {customer.phone} &middot;{" "}
-              </>
-            )}
-            {customer.idNumber && (
-              <>
-                {customer.idNumber} &middot;{" "}
-              </>
-            )}
+            {customer.phone && <>{customer.phone} &middot; </>}
+            {customer.idNumber && <>{customer.idNumber} &middot; </>}
             Created {formatDate(customer.createdAt)} &middot; {linkedProjects.length}{" "}
             {linkedProjects.length === 1 ? "project" : "projects"}
           </p>
@@ -476,13 +468,15 @@ export default async function CustomerDetailPage({
 
         {isAdmin && (
           <div id="lifecycle-transition" className="flex shrink-0 gap-2">
-            {customer.status === "ACTIVE" && customer.lifecycleStatus && customer.lifecycleStatus !== "ANONYMIZED" && (
-              <LifecycleTransitionDropdown
-                currentStatus={customer.lifecycleStatus}
-                customerId={id}
-                slug={slug}
-              />
-            )}
+            {customer.status === "ACTIVE" &&
+              customer.lifecycleStatus &&
+              customer.lifecycleStatus !== "ANONYMIZED" && (
+                <LifecycleTransitionDropdown
+                  currentStatus={customer.lifecycleStatus}
+                  customerId={id}
+                  slug={slug}
+                />
+              )}
             {customerTemplates.length > 0 && customer.lifecycleStatus !== "ANONYMIZED" && (
               <GenerateDocumentDropdown
                 templates={customerTemplates}
@@ -525,7 +519,11 @@ export default async function CustomerDetailPage({
                     Edit
                   </Button>
                 </EditCustomerDialog>
-                <ArchiveCustomerDialog slug={slug} customerId={customer.id} customerName={customer.name}>
+                <ArchiveCustomerDialog
+                  slug={slug}
+                  customerId={customer.id}
+                  customerName={customer.name}
+                >
                   <Button
                     variant="ghost"
                     size="sm"
@@ -548,7 +546,8 @@ export default async function CustomerDetailPage({
           <div className="text-sm text-slate-700 dark:text-slate-300">
             <p className="font-medium">Customer data anonymized</p>
             <p className="mt-0.5 text-slate-500 dark:text-slate-400">
-              This customer&apos;s personal data has been anonymized. All identifying information has been removed.
+              This customer&apos;s personal data has been anonymized. All identifying information
+              has been removed.
             </p>
           </div>
         </div>
@@ -574,7 +573,7 @@ export default async function CustomerDetailPage({
             <dl className="grid gap-4 text-sm sm:grid-cols-2">
               {customer.registrationNumber && (
                 <div>
-                  <dt className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                  <dt className="text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
                     Registration Number
                   </dt>
                   <dd className="mt-1 text-slate-700 dark:text-slate-300">
@@ -584,17 +583,15 @@ export default async function CustomerDetailPage({
               )}
               {customer.taxNumber && (
                 <div>
-                  <dt className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                  <dt className="text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
                     Tax Number
                   </dt>
-                  <dd className="mt-1 text-slate-700 dark:text-slate-300">
-                    {customer.taxNumber}
-                  </dd>
+                  <dd className="mt-1 text-slate-700 dark:text-slate-300">{customer.taxNumber}</dd>
                 </div>
               )}
               {customer.entityType && (
                 <div>
-                  <dt className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                  <dt className="text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
                     Entity Type
                   </dt>
                   <dd className="mt-1 text-slate-700 dark:text-slate-300">
@@ -605,7 +602,7 @@ export default async function CustomerDetailPage({
               )}
               {customer.financialYearEnd && (
                 <div>
-                  <dt className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                  <dt className="text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
                     Financial Year End
                   </dt>
                   <dd className="mt-1 text-slate-700 dark:text-slate-300">
@@ -644,7 +641,7 @@ export default async function CustomerDetailPage({
 
       {/* Tags */}
       <div className="space-y-2">
-        <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+        <p className="text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
           Tags
         </p>
         <TagInput
@@ -760,17 +757,9 @@ export default async function CustomerDetailPage({
         requestsPanel={
           <div className="space-y-6">
             <div className="flex items-center justify-end">
-              <CreateRequestDialog
-                slug={slug}
-                customerId={id}
-                customerName={customer.name}
-              />
+              <CreateRequestDialog slug={slug} customerId={id} customerName={customer.name} />
             </div>
-            <RequestList
-              requests={customerRequests}
-              slug={slug}
-              showCustomer={false}
-            />
+            <RequestList requests={customerRequests} slug={slug} showCustomer={false} />
           </div>
         }
         ratesPanel={
@@ -801,13 +790,7 @@ export default async function CustomerDetailPage({
             />
           ) : undefined
         }
-        trustPanel={
-          <TrustBalanceCard
-            customerId={id}
-            slug={slug}
-            showQuickActions={isAdmin}
-          />
-        }
+        trustPanel={<TrustBalanceCard customerId={id} slug={slug} showQuickActions={isAdmin} />}
         onboardingPanel={
           showOnboardingTab ? (
             <ChecklistInstancePanel

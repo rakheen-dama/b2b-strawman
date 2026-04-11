@@ -6,9 +6,7 @@ import type { ReportExecutionResponse } from "@/lib/api/reports";
 
 vi.mock("server-only", () => ({}));
 
-function makeResponse(
-  overrides: Partial<ReportExecutionResponse> = {},
-): ReportExecutionResponse {
+function makeResponse(overrides: Partial<ReportExecutionResponse> = {}): ReportExecutionResponse {
   return {
     reportName: "Test Report",
     parameters: { dateFrom: "2026-01-01" },
@@ -45,19 +43,13 @@ describe("ReportResults", () => {
 
   it("renders nothing when response is null", () => {
     const { container } = render(
-      <ReportResults response={null} isLoading={false} onPageChange={vi.fn()} />,
+      <ReportResults response={null} isLoading={false} onPageChange={vi.fn()} />
     );
     expect(container.innerHTML).toBe("");
   });
 
   it("renders summary stat cards for each summary key", () => {
-    render(
-      <ReportResults
-        response={makeResponse()}
-        isLoading={false}
-        onPageChange={vi.fn()}
-      />,
-    );
+    render(<ReportResults response={makeResponse()} isLoading={false} onPageChange={vi.fn()} />);
 
     // "Total Hours" appears as both summary label and column header
     const totalHoursElements = screen.getAllByText("Total Hours");
@@ -68,13 +60,7 @@ describe("ReportResults", () => {
   });
 
   it("renders column headers matching response.columns", () => {
-    render(
-      <ReportResults
-        response={makeResponse()}
-        isLoading={false}
-        onPageChange={vi.fn()}
-      />,
-    );
+    render(<ReportResults response={makeResponse()} isLoading={false} onPageChange={vi.fn()} />);
 
     expect(screen.getByText("Member")).toBeInTheDocument();
     // "Total Hours" appears in both summary and headers
@@ -84,13 +70,7 @@ describe("ReportResults", () => {
   });
 
   it("renders correct number of data rows", () => {
-    render(
-      <ReportResults
-        response={makeResponse()}
-        isLoading={false}
-        onPageChange={vi.fn()}
-      />,
-    );
+    render(<ReportResults response={makeResponse()} isLoading={false} onPageChange={vi.fn()} />);
 
     expect(screen.getByText("Alice")).toBeInTheDocument();
     expect(screen.getByText("Bob")).toBeInTheDocument();
@@ -98,26 +78,14 @@ describe("ReportResults", () => {
   });
 
   it("formats decimal values to 2 decimal places", () => {
-    render(
-      <ReportResults
-        response={makeResponse()}
-        isLoading={false}
-        onPageChange={vi.fn()}
-      />,
-    );
+    render(<ReportResults response={makeResponse()} isLoading={false} onPageChange={vi.fn()} />);
 
     expect(screen.getByText("40.50")).toBeInTheDocument();
     expect(screen.getByText("4050.00")).toBeInTheDocument();
   });
 
   it("renders null values as em-dash", () => {
-    render(
-      <ReportResults
-        response={makeResponse()}
-        isLoading={false}
-        onPageChange={vi.fn()}
-      />,
-    );
+    render(<ReportResults response={makeResponse()} isLoading={false} onPageChange={vi.fn()} />);
 
     // Bob's billableAmount is null
     const emDashes = screen.getAllByText("\u2014");
@@ -125,13 +93,7 @@ describe("ReportResults", () => {
   });
 
   it("shows pagination as 'Page 1 of 2' for totalPages=2", () => {
-    render(
-      <ReportResults
-        response={makeResponse()}
-        isLoading={false}
-        onPageChange={vi.fn()}
-      />,
-    );
+    render(<ReportResults response={makeResponse()} isLoading={false} onPageChange={vi.fn()} />);
 
     expect(screen.getByText("Page 1 of 2")).toBeInTheDocument();
   });
@@ -141,11 +103,7 @@ describe("ReportResults", () => {
     const user = userEvent.setup();
 
     render(
-      <ReportResults
-        response={makeResponse()}
-        isLoading={false}
-        onPageChange={onPageChange}
-      />,
+      <ReportResults response={makeResponse()} isLoading={false} onPageChange={onPageChange} />
     );
 
     const prevBtn = screen.getByRole("button", { name: /previous/i });

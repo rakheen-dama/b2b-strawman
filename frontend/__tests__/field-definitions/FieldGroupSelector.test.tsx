@@ -6,13 +6,9 @@ import type { FieldGroupResponse } from "@/lib/types";
 
 const mockSetEntityFieldGroups = vi.fn();
 
-vi.mock(
-  "@/app/(app)/org/[slug]/settings/custom-fields/actions",
-  () => ({
-    setEntityFieldGroupsAction: (...args: unknown[]) =>
-      mockSetEntityFieldGroups(...args),
-  }),
-);
+vi.mock("@/app/(app)/org/[slug]/settings/custom-fields/actions", () => ({
+  setEntityFieldGroupsAction: (...args: unknown[]) => mockSetEntityFieldGroups(...args),
+}));
 
 const group1: FieldGroupResponse = {
   id: "grp-1",
@@ -73,7 +69,7 @@ describe("FieldGroupSelector", () => {
         slug="acme"
         canManage={false}
         allGroups={allGroups}
-      />,
+      />
     );
 
     expect(screen.getByText("Litigation Fields")).toBeInTheDocument();
@@ -89,12 +85,10 @@ describe("FieldGroupSelector", () => {
         slug="acme"
         canManage={true}
         allGroups={allGroups}
-      />,
+      />
     );
 
-    expect(
-      screen.getByRole("button", { name: /Add Group/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Add Group/i })).toBeInTheDocument();
   });
 
   it("hides 'Add Group' button when canManage is false", () => {
@@ -106,12 +100,10 @@ describe("FieldGroupSelector", () => {
         slug="acme"
         canManage={false}
         allGroups={allGroups}
-      />,
+      />
     );
 
-    expect(
-      screen.queryByRole("button", { name: /Add Group/i }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Add Group/i })).not.toBeInTheDocument();
   });
 
   it("shows remove button on badges when canManage is true", () => {
@@ -123,12 +115,10 @@ describe("FieldGroupSelector", () => {
         slug="acme"
         canManage={true}
         allGroups={allGroups}
-      />,
+      />
     );
 
-    expect(
-      screen.getByRole("button", { name: /Remove Litigation Fields/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Remove Litigation Fields/i })).toBeInTheDocument();
   });
 
   it("calls setEntityFieldGroupsAction when removing a group", async () => {
@@ -143,20 +133,13 @@ describe("FieldGroupSelector", () => {
         slug="acme"
         canManage={true}
         allGroups={allGroups}
-      />,
+      />
     );
 
-    await user.click(
-      screen.getByRole("button", { name: /Remove Litigation Fields/i }),
-    );
+    await user.click(screen.getByRole("button", { name: /Remove Litigation Fields/i }));
 
     await waitFor(() => {
-      expect(mockSetEntityFieldGroups).toHaveBeenCalledWith(
-        "acme",
-        "PROJECT",
-        "proj-1",
-        ["grp-2"],
-      );
+      expect(mockSetEntityFieldGroups).toHaveBeenCalledWith("acme", "PROJECT", "proj-1", ["grp-2"]);
     });
   });
 
@@ -169,7 +152,7 @@ describe("FieldGroupSelector", () => {
         slug="acme"
         canManage={true}
         allGroups={[]}
-      />,
+      />
     );
 
     expect(container.innerHTML).toBe("");
@@ -184,7 +167,7 @@ describe("FieldGroupSelector", () => {
         slug="acme"
         canManage={false}
         allGroups={allGroups}
-      />,
+      />
     );
 
     expect(screen.getByText("No field groups applied")).toBeInTheDocument();

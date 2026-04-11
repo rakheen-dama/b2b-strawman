@@ -13,9 +13,7 @@ interface CompliancePackListProps {
 
 export function CompliancePackList({ packs }: CompliancePackListProps) {
   const [expandedPackId, setExpandedPackId] = useState<string | null>(null);
-  const [packDetails, setPackDetails] = useState<
-    Record<string, CompliancePackDetail>
-  >({});
+  const [packDetails, setPackDetails] = useState<Record<string, CompliancePackDetail>>({});
   const [loadingPackId, setLoadingPackId] = useState<string | null>(null);
 
   async function handleToggle(packId: string) {
@@ -59,7 +57,7 @@ export function CompliancePackList({ packs }: CompliancePackListProps) {
             <button
               type="button"
               onClick={() => handleToggle(pack.packId)}
-              className="flex w-full items-center justify-between px-4 py-2 text-left hover:bg-slate-50 dark:hover:bg-slate-900 rounded-md transition-colors"
+              className="flex w-full items-center justify-between rounded-md px-4 py-2 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-900"
             >
               <div className="flex items-center gap-2">
                 {isExpanded ? (
@@ -72,9 +70,7 @@ export function CompliancePackList({ packs }: CompliancePackListProps) {
                     {detail?.name ?? pack.packId}
                   </p>
                   {detail?.name && (
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
-                      {pack.packId}
-                    </p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{pack.packId}</p>
                   )}
                 </div>
               </div>
@@ -114,79 +110,68 @@ function PackDetailView({ detail }: { detail: CompliancePackDetail }) {
     <div className="space-y-5">
       {/* Description and metadata */}
       <div>
-        <p className="text-sm text-slate-700 dark:text-slate-300">
-          {detail.description}
-        </p>
+        <p className="text-sm text-slate-700 dark:text-slate-300">{detail.description}</p>
         <div className="mt-2 flex items-center gap-2">
-          {detail.jurisdiction && (
-            <Badge variant="outline">{detail.jurisdiction}</Badge>
-          )}
+          {detail.jurisdiction && <Badge variant="outline">{detail.jurisdiction}</Badge>}
           <Badge variant="outline">{detail.customerType}</Badge>
         </div>
       </div>
 
       {/* Checklist Items */}
-      {detail.checklistTemplate &&
-        detail.checklistTemplate.items.length > 0 && (
-          <div>
-            <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-              Checklist Items
-            </h4>
-            <div className="mt-2 overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-slate-200 dark:border-slate-700">
-                    <th className="pb-2 pr-4 text-left font-medium text-slate-600 dark:text-slate-400">
-                      Name
-                    </th>
-                    <th className="pb-2 pr-4 text-left font-medium text-slate-600 dark:text-slate-400">
-                      Description
-                    </th>
-                    <th className="pb-2 pr-4 text-left font-medium text-slate-600 dark:text-slate-400">
-                      Required
-                    </th>
-                    <th className="pb-2 text-left font-medium text-slate-600 dark:text-slate-400">
-                      Document Required
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {detail.checklistTemplate.items
-                    .sort((a, b) => a.sortOrder - b.sortOrder)
-                    .map((item, idx) => (
-                      <tr
-                        key={idx}
-                        className="border-b border-slate-100 last:border-0 dark:border-slate-800"
-                      >
-                        <td className="py-2 pr-4 text-slate-900 dark:text-slate-100">
-                          {item.name}
-                        </td>
-                        <td className="py-2 pr-4 text-slate-600 dark:text-slate-400">
-                          {item.description}
-                        </td>
-                        <td className="py-2 pr-4">
-                          <Badge
-                            variant={item.required ? "success" : "neutral"}
-                          >
-                            {item.required ? "Yes" : "No"}
-                          </Badge>
-                        </td>
-                        <td className="py-2">
-                          {item.requiresDocument ? (
-                            <Badge variant="warning">
-                              {item.requiredDocumentLabel ?? "Yes"}
-                            </Badge>
-                          ) : (
-                            <Badge variant="neutral">No</Badge>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                </tbody>
-              </table>
-            </div>
+      {detail.checklistTemplate && detail.checklistTemplate.items.length > 0 && (
+        <div>
+          <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+            Checklist Items
+          </h4>
+          <div className="mt-2 overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-200 dark:border-slate-700">
+                  <th className="pr-4 pb-2 text-left font-medium text-slate-600 dark:text-slate-400">
+                    Name
+                  </th>
+                  <th className="pr-4 pb-2 text-left font-medium text-slate-600 dark:text-slate-400">
+                    Description
+                  </th>
+                  <th className="pr-4 pb-2 text-left font-medium text-slate-600 dark:text-slate-400">
+                    Required
+                  </th>
+                  <th className="pb-2 text-left font-medium text-slate-600 dark:text-slate-400">
+                    Document Required
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {detail.checklistTemplate.items
+                  .sort((a, b) => a.sortOrder - b.sortOrder)
+                  .map((item, idx) => (
+                    <tr
+                      key={idx}
+                      className="border-b border-slate-100 last:border-0 dark:border-slate-800"
+                    >
+                      <td className="py-2 pr-4 text-slate-900 dark:text-slate-100">{item.name}</td>
+                      <td className="py-2 pr-4 text-slate-600 dark:text-slate-400">
+                        {item.description}
+                      </td>
+                      <td className="py-2 pr-4">
+                        <Badge variant={item.required ? "success" : "neutral"}>
+                          {item.required ? "Yes" : "No"}
+                        </Badge>
+                      </td>
+                      <td className="py-2">
+                        {item.requiresDocument ? (
+                          <Badge variant="warning">{item.requiredDocumentLabel ?? "Yes"}</Badge>
+                        ) : (
+                          <Badge variant="neutral">No</Badge>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
           </div>
-        )}
+        </div>
+      )}
 
       {/* Field Definitions */}
       {detail.fieldDefinitions && detail.fieldDefinitions.length > 0 && (
@@ -204,9 +189,7 @@ function PackDetailView({ detail }: { detail: CompliancePackDetail }) {
                 <Badge variant="outline">{field.fieldType}</Badge>
                 {field.required && <Badge variant="success">Required</Badge>}
                 {field.groupName && (
-                  <span className="text-xs text-slate-500">
-                    ({field.groupName})
-                  </span>
+                  <span className="text-xs text-slate-500">({field.groupName})</span>
                 )}
               </li>
             ))}
@@ -224,13 +207,13 @@ function PackDetailView({ detail }: { detail: CompliancePackDetail }) {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-200 dark:border-slate-700">
-                  <th className="pb-2 pr-4 text-left font-medium text-slate-600 dark:text-slate-400">
+                  <th className="pr-4 pb-2 text-left font-medium text-slate-600 dark:text-slate-400">
                     Record Type
                   </th>
-                  <th className="pb-2 pr-4 text-left font-medium text-slate-600 dark:text-slate-400">
+                  <th className="pr-4 pb-2 text-left font-medium text-slate-600 dark:text-slate-400">
                     Trigger
                   </th>
-                  <th className="pb-2 pr-4 text-left font-medium text-slate-600 dark:text-slate-400">
+                  <th className="pr-4 pb-2 text-left font-medium text-slate-600 dark:text-slate-400">
                     Days
                   </th>
                   <th className="pb-2 text-left font-medium text-slate-600 dark:text-slate-400">

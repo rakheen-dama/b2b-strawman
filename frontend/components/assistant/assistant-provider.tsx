@@ -21,10 +21,7 @@ interface AssistantProviderProps {
   children: React.ReactNode;
 }
 
-export function AssistantProvider({
-  aiEnabled,
-  children,
-}: AssistantProviderProps) {
+export function AssistantProvider({ aiEnabled, children }: AssistantProviderProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   const toggle = useCallback(() => {
@@ -37,14 +34,10 @@ export function AssistantProvider({
       isAiEnabled: aiEnabled,
       toggle,
     }),
-    [isOpen, aiEnabled, toggle],
+    [isOpen, aiEnabled, toggle]
   );
 
-  return (
-    <AssistantContext.Provider value={value}>
-      {children}
-    </AssistantContext.Provider>
-  );
+  return <AssistantContext.Provider value={value}>{children}</AssistantContext.Provider>;
 }
 
 // ---- Hook ----

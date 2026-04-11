@@ -31,16 +31,8 @@ import { useTerminology } from "@/lib/terminology";
 import { useSubscription } from "@/lib/subscription-context";
 import { ModuleGate } from "@/components/module-gate";
 import { Badge } from "@/components/ui/badge";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
-  createProjectSchema,
-  type CreateProjectFormData,
-} from "@/lib/schemas/project";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { createProjectSchema, type CreateProjectFormData } from "@/lib/schemas/project";
 import { nativeSelectClassName } from "@/lib/styles/native-select";
 
 interface CreateProjectDialogProps {
@@ -127,9 +119,7 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
               </Button>
             </span>
           </TooltipTrigger>
-          {!isWriteEnabled && (
-            <TooltipContent>Subscribe to enable this action</TooltipContent>
-          )}
+          {!isWriteEnabled && <TooltipContent>Subscribe to enable this action</TooltipContent>}
         </Tooltip>
       </TooltipProvider>
       <DialogContent>
@@ -146,12 +136,7 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
                 <FormItem>
                   <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="My Project"
-                      maxLength={255}
-                      autoFocus
-                      {...field}
-                    />
+                    <Input placeholder="My Project" maxLength={255} autoFocus {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -163,7 +148,8 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    Description <span className="text-muted-foreground font-normal">(optional)</span>
+                    Description{" "}
+                    <span className="text-muted-foreground font-normal">(optional)</span>
                   </FormLabel>
                   <FormControl>
                     <Textarea
@@ -204,7 +190,7 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
                     <select
                       value={field.value}
                       onChange={field.onChange}
-                      className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:placeholder:text-slate-400 dark:focus-visible:ring-slate-300"
+                      className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-slate-500 focus-visible:ring-1 focus-visible:ring-slate-950 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:placeholder:text-slate-400 dark:focus-visible:ring-slate-300"
                     >
                       <option value="">-- None --</option>
                       {customers.map((c) => (
@@ -225,14 +211,10 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
                 <FormItem>
                   <FormLabel>
                     Reference Number{" "}
-                    <span className="font-normal text-muted-foreground">(optional)</span>
+                    <span className="text-muted-foreground font-normal">(optional)</span>
                   </FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="e.g. PRJ-2026-001"
-                      maxLength={100}
-                      {...field}
-                    />
+                    <Input placeholder="e.g. PRJ-2026-001" maxLength={100} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -244,8 +226,7 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    Priority{" "}
-                    <span className="font-normal text-muted-foreground">(optional)</span>
+                    Priority <span className="text-muted-foreground font-normal">(optional)</span>
                   </FormLabel>
                   <FormControl>
                     <select
@@ -269,15 +250,10 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    Work Type{" "}
-                    <span className="font-normal text-muted-foreground">(optional)</span>
+                    Work Type <span className="text-muted-foreground font-normal">(optional)</span>
                   </FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="e.g. Consulting, Litigation"
-                      maxLength={50}
-                      {...field}
-                    />
+                    <Input placeholder="e.g. Consulting, Litigation" maxLength={50} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -293,16 +269,10 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
                   </p>
                   <Badge variant="neutral">Coming Soon</Badge>
                 </div>
-                <p className="mt-2 text-sm text-muted-foreground">
+                <p className="text-muted-foreground mt-2 text-sm">
                   Run a conflict of interest check before creating this {t("project")}.
                 </p>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  disabled
-                  className="mt-3"
-                >
+                <Button type="button" variant="outline" size="sm" disabled className="mt-3">
                   Run Conflict Check
                 </Button>
               </div>

@@ -47,7 +47,7 @@ describe("PlatformAdminLayout", () => {
     await expect(
       PlatformAdminLayout({
         children: <div>Admin Content</div>,
-      }),
+      })
     ).rejects.toThrow("NEXT_NOT_FOUND");
 
     expect(mockNotFound).toHaveBeenCalled();
@@ -59,7 +59,7 @@ describe("PlatformAdminLayout", () => {
     await expect(
       PlatformAdminLayout({
         children: <div>Admin Content</div>,
-      }),
+      })
     ).rejects.toThrow("NEXT_NOT_FOUND");
 
     expect(mockNotFound).toHaveBeenCalled();

@@ -178,9 +178,7 @@ export function GeneralSettingsForm({
     <div className="space-y-8">
       {/* Currency */}
       <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-        <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-          Currency
-        </h2>
+        <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">Currency</h2>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           Set the default currency for invoices, rates, and financial reports.
         </p>
@@ -207,8 +205,7 @@ export function GeneralSettingsForm({
           Tax Configuration
         </h2>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Configure your organization&apos;s tax registration and display
-          settings.
+          Configure your organization&apos;s tax registration and display settings.
         </p>
         <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
@@ -235,16 +232,11 @@ export function GeneralSettingsForm({
               className="mt-1 w-full"
             />
             <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-              Label shown on invoices and documents (e.g. &quot;VAT&quot;,
-              &quot;GST&quot;).
+              Label shown on invoices and documents (e.g. &quot;VAT&quot;, &quot;GST&quot;).
             </p>
           </div>
           <div className="flex items-center gap-3 self-center">
-            <Switch
-              id="tax-inclusive"
-              checked={taxInclusive}
-              onCheckedChange={setTaxInclusive}
-            />
+            <Switch id="tax-inclusive" checked={taxInclusive} onCheckedChange={setTaxInclusive} />
             <Label htmlFor="tax-inclusive">Tax-inclusive pricing</Label>
           </div>
         </div>
@@ -252,9 +244,7 @@ export function GeneralSettingsForm({
 
       {/* Branding */}
       <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-        <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-          Branding
-        </h2>
+        <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">Branding</h2>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           Customize your organization&apos;s branding for generated documents.
         </p>
@@ -276,7 +266,7 @@ export function GeneralSettingsForm({
                   aria-label="Remove logo"
                   onClick={handleDeleteLogo}
                   disabled={isUploading}
-                  className="absolute -right-2 -top-2 rounded-full bg-slate-950 p-0.5 text-white hover:bg-slate-700 dark:bg-slate-50 dark:text-slate-950 dark:hover:bg-slate-300"
+                  className="absolute -top-2 -right-2 rounded-full bg-slate-950 p-0.5 text-white hover:bg-slate-700 dark:bg-slate-50 dark:text-slate-950 dark:hover:bg-slate-300"
                 >
                   <X className="size-3" />
                 </button>
@@ -303,9 +293,7 @@ export function GeneralSettingsForm({
               >
                 {isUploading ? "Uploading..." : "Upload Logo"}
               </Button>
-              <p className="mt-1 text-xs text-slate-400">
-                PNG, JPG, or SVG. Max 2 MB.
-              </p>
+              <p className="mt-1 text-xs text-slate-400">PNG, JPG, or SVG. Max 2 MB.</p>
             </div>
           </div>
         </div>
@@ -328,9 +316,7 @@ export function GeneralSettingsForm({
               className="max-w-32 font-mono"
             />
             {!colorValid && brandColor && (
-              <span className="text-xs text-destructive">
-                Must be a valid hex color
-              </span>
+              <span className="text-destructive text-xs">Must be a valid hex color</span>
             )}
           </div>
         </div>
@@ -346,9 +332,7 @@ export function GeneralSettingsForm({
             rows={3}
             maxLength={500}
           />
-          <p className="text-xs text-slate-400">
-            {footerText.length}/500 characters
-          </p>
+          <p className="text-xs text-slate-400">{footerText.length}/500 characters</p>
         </div>
       </div>
 

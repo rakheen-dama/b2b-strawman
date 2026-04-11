@@ -10,29 +10,21 @@ import type {
 
 // ---- Saved Views ----
 
-export async function getViews(
-  entityType: EntityType,
-): Promise<SavedViewResponse[]> {
-  return api.get<SavedViewResponse[]>(
-    `/api/views?entityType=${entityType}`,
-  );
+export async function getViews(entityType: EntityType): Promise<SavedViewResponse[]> {
+  return api.get<SavedViewResponse[]>(`/api/views?entityType=${entityType}`);
 }
 
-export async function getSavedView(
-  id: string,
-): Promise<SavedViewResponse> {
+export async function getSavedView(id: string): Promise<SavedViewResponse> {
   return api.get<SavedViewResponse>(`/api/views/${id}`);
 }
 
-export async function createSavedView(
-  req: CreateSavedViewRequest,
-): Promise<SavedViewResponse> {
+export async function createSavedView(req: CreateSavedViewRequest): Promise<SavedViewResponse> {
   return api.post<SavedViewResponse>("/api/views", req);
 }
 
 export async function updateSavedView(
   id: string,
-  req: UpdateSavedViewRequest,
+  req: UpdateSavedViewRequest
 ): Promise<SavedViewResponse> {
   return api.put<SavedViewResponse>(`/api/views/${id}`, req);
 }

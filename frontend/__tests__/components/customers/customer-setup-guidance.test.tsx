@@ -15,16 +15,12 @@ function makeCustomerSetupSteps(overallComplete = false): SetupStep[] {
       actionHref: "?tab=projects",
     },
     {
-      label: overallComplete
-        ? "Onboarding checklist (2/2)"
-        : "Onboarding checklist (1/2)",
+      label: overallComplete ? "Onboarding checklist (2/2)" : "Onboarding checklist (1/2)",
       complete: overallComplete,
       actionHref: "?tab=onboarding",
     },
     {
-      label: overallComplete
-        ? "No required fields defined"
-        : "Required fields filled (1/3)",
+      label: overallComplete ? "No required fields defined" : "Required fields filled (1/3)",
       complete: overallComplete,
       actionHref: "#custom-fields",
     },
@@ -49,7 +45,7 @@ describe("CustomerDetailPage — Setup Guidance Cards", () => {
         overallComplete={false}
         steps={makeCustomerSetupSteps(false)}
         canManage={true}
-      />,
+      />
     );
 
     expect(screen.getByText("Customer Readiness")).toBeInTheDocument();
@@ -64,14 +60,10 @@ describe("CustomerDetailPage — Setup Guidance Cards", () => {
     render(
       <div>
         {entryCount > 0 && (
-          <ActionCard
-            icon={Clock}
-            title="Unbilled Time"
-            description="$0.00 across 0.0 hours"
-          />
+          <ActionCard icon={Clock} title="Unbilled Time" description="$0.00 across 0.0 hours" />
         )}
         <p>No unbilled time content</p>
-      </div>,
+      </div>
     );
 
     expect(screen.queryByText("Unbilled Time")).not.toBeInTheDocument();
@@ -96,16 +88,12 @@ describe("CustomerDetailPage — Setup Guidance Cards", () => {
             variant="accent"
           />
         )}
-      </div>,
+      </div>
     );
 
     expect(screen.getByText("Unbilled Time")).toBeInTheDocument();
-    expect(
-      screen.getByText("$2,400.00 across 16.0 hours"),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("link", { name: "Create Invoice" }),
-    ).toBeInTheDocument();
+    expect(screen.getByText("$2,400.00 across 16.0 hours")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Create Invoice" })).toBeInTheDocument();
   });
 
   // Test 4: Lifecycle action prompt renders for PROSPECT status (admin)
@@ -128,15 +116,11 @@ describe("CustomerDetailPage — Setup Guidance Cards", () => {
           />
         )}
         <p>Page content</p>
-      </div>,
+      </div>
     );
 
-    expect(
-      screen.getByText("Ready to start onboarding?"),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("link", { name: "Start Onboarding" }),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Ready to start onboarding?")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Start Onboarding" })).toBeInTheDocument();
   });
 
   // Test 5: Lifecycle action prompt NOT rendered for non-PROSPECT statuses
@@ -159,12 +143,10 @@ describe("CustomerDetailPage — Setup Guidance Cards", () => {
           />
         )}
         <p>Active customer content</p>
-      </div>,
+      </div>
     );
 
-    expect(
-      screen.queryByText("Ready to start onboarding?"),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText("Ready to start onboarding?")).not.toBeInTheDocument();
     expect(screen.getByText("Active customer content")).toBeInTheDocument();
   });
 });

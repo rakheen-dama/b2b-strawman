@@ -22,10 +22,8 @@ export function TimeBreakdown({ data }: TimeBreakdownProps) {
     return (
       <Card data-testid="time-activity-panel">
         <div className="px-4 py-3">
-          <h3 className="font-semibold text-slate-900 dark:text-slate-100">
-            Time Breakdown
-          </h3>
-          <p className="mt-4 text-center text-sm text-muted-foreground">
+          <h3 className="font-semibold text-slate-900 dark:text-slate-100">Time Breakdown</h3>
+          <p className="text-muted-foreground mt-4 text-center text-sm">
             Unable to load time breakdown. Please try again.
           </p>
         </div>
@@ -37,10 +35,8 @@ export function TimeBreakdown({ data }: TimeBreakdownProps) {
     return (
       <Card data-testid="time-activity-panel">
         <div className="px-4 py-3">
-          <h3 className="font-semibold text-slate-900 dark:text-slate-100">
-            Time Breakdown
-          </h3>
-          <p className="mt-4 text-center text-sm text-muted-foreground">
+          <h3 className="font-semibold text-slate-900 dark:text-slate-100">Time Breakdown</h3>
+          <p className="text-muted-foreground mt-4 text-center text-sm">
             No time logged this period.
           </p>
         </div>
@@ -78,9 +74,7 @@ export function TimeBreakdown({ data }: TimeBreakdownProps) {
   return (
     <Card data-testid="time-activity-panel">
       <div className="px-4 py-3">
-        <h3 className="font-semibold text-slate-900 dark:text-slate-100">
-          Time Breakdown
-        </h3>
+        <h3 className="font-semibold text-slate-900 dark:text-slate-100">Time Breakdown</h3>
         <div className="mt-2">
           <DonutChart
             data={chartData}
@@ -91,21 +85,15 @@ export function TimeBreakdown({ data }: TimeBreakdownProps) {
         </div>
         <div className="mt-2 space-y-1">
           {items.map((item, idx) => (
-            <div
-              key={item.projectId}
-              className="flex items-center justify-between text-sm"
-            >
+            <div key={item.projectId} className="flex items-center justify-between text-sm">
               <div className="flex items-center gap-2">
                 <span
                   className="inline-block size-2.5 rounded-full"
                   style={{
-                    backgroundColor:
-                      PROJECT_COLORS[idx % PROJECT_COLORS.length],
+                    backgroundColor: PROJECT_COLORS[idx % PROJECT_COLORS.length],
                   }}
                 />
-                <span className="text-slate-700 dark:text-slate-300">
-                  {item.projectName}
-                </span>
+                <span className="text-slate-700 dark:text-slate-300">{item.projectName}</span>
               </div>
               <span className="text-slate-600 dark:text-slate-400">
                 {item.hours.toFixed(1)}h ({Math.round(item.percent)}%)

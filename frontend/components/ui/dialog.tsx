@@ -53,7 +53,7 @@ function DialogContent({
       <DialogOverlay />
       <DialogPrimitive.Content
         data-slot="dialog-content"
-        className="fixed top-[50%] left-[50%] z-50 w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] outline-none sm:max-w-lg data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 duration-150"
+        className="data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 fixed top-[50%] left-[50%] z-50 w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] duration-150 outline-none sm:max-w-lg"
         asChild
         {...props}
       >
@@ -67,10 +67,7 @@ function DialogContent({
           }}
         >
           <div
-            className={cn(
-              "bg-background grid gap-4 rounded-xl border p-6 shadow-lg",
-              className
-            )}
+            className={cn("bg-background grid gap-4 rounded-xl border p-6 shadow-lg", className)}
           >
             {children}
             {showCloseButton && (

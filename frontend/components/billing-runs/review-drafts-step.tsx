@@ -18,11 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { formatCurrency } from "@/lib/format";
 import {
   generateAction,
@@ -143,14 +139,11 @@ export function ReviewDraftsStep({
   }, [billingRunId]);
 
   const generatedItems = items.filter(
-    (item) => item.status === "GENERATED" || item.status === "FAILED",
+    (item) => item.status === "GENERATED" || item.status === "FAILED"
   );
   const draftItems = items.filter((item) => item.status === "GENERATED");
   const failedItems = items.filter((item) => item.status === "FAILED");
-  const totalAmount = draftItems.reduce(
-    (sum, item) => sum + item.totalUnbilledAmount,
-    0,
-  );
+  const totalAmount = draftItems.reduce((sum, item) => sum + item.totalUnbilledAmount, 0);
 
   function handleRowClick(item: BillingRunItem) {
     if (item.status !== "GENERATED" || !item.invoiceId) return;
@@ -181,7 +174,7 @@ export function ReviewDraftsStep({
         slug,
         selectedItem.invoiceId,
         selectedItem.customerId,
-        request,
+        request
       );
       if (!result.success) {
         setError(result.error ?? "Failed to update invoice.");
@@ -206,14 +199,12 @@ export function ReviewDraftsStep({
           .map((item) =>
             updateInvoice(slug, item.invoiceId!, item.customerId, {
               dueDate: batchDueDate,
-            }),
-          ),
+            })
+          )
       );
       const failures = results.filter((r) => r.status === "rejected");
       if (failures.length > 0) {
-        setError(
-          `Failed to set due date on ${failures.length} of ${results.length} invoices.`,
-        );
+        setError(`Failed to set due date on ${failures.length} of ${results.length} invoices.`);
       }
       await refreshItems();
     } catch {
@@ -233,13 +224,13 @@ export function ReviewDraftsStep({
           .map((item) =>
             updateInvoice(slug, item.invoiceId!, item.customerId, {
               paymentTerms: batchPaymentTerms,
-            }),
-          ),
+            })
+          )
       );
       const failures = results.filter((r) => r.status === "rejected");
       if (failures.length > 0) {
         setError(
-          `Failed to set payment terms on ${failures.length} of ${results.length} invoices.`,
+          `Failed to set payment terms on ${failures.length} of ${results.length} invoices.`
         );
       }
       await refreshItems();
@@ -270,9 +261,7 @@ export function ReviewDraftsStep({
   if (isGenerating) {
     return (
       <div className="rounded-lg border border-slate-200 bg-white p-8 text-center dark:border-slate-800 dark:bg-slate-950">
-        <p className="text-slate-500 dark:text-slate-400">
-          Generating invoices...
-        </p>
+        <p className="text-slate-500 dark:text-slate-400">Generating invoices...</p>
       </div>
     );
   }
@@ -280,9 +269,7 @@ export function ReviewDraftsStep({
   if (isLoading) {
     return (
       <div className="rounded-lg border border-slate-200 bg-white p-8 text-center dark:border-slate-800 dark:bg-slate-950">
-        <p className="text-slate-500 dark:text-slate-400">
-          Loading draft invoices...
-        </p>
+        <p className="text-slate-500 dark:text-slate-400">Loading draft invoices...</p>
       </div>
     );
   }
@@ -302,9 +289,7 @@ export function ReviewDraftsStep({
 
   return (
     <div className="space-y-6">
-      {error && (
-        <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-      )}
+      {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
 
       {/* Batch Actions */}
       <div className="flex items-center gap-3">
@@ -344,10 +329,7 @@ export function ReviewDraftsStep({
           <PopoverContent className="w-64">
             <div className="space-y-3">
               <label className="text-sm font-medium">Payment Terms</label>
-              <Select
-                value={batchPaymentTerms}
-                onValueChange={setBatchPaymentTerms}
-              >
+              <Select value={batchPaymentTerms} onValueChange={setBatchPaymentTerms}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select terms" />
                 </SelectTrigger>
@@ -407,11 +389,7 @@ export function ReviewDraftsStep({
               >
                 <td className="px-4 py-3">
                   <span
-                    className={
-                      item.status === "FAILED"
-                        ? "text-red-600 dark:text-red-400"
-                        : ""
-                    }
+                    className={item.status === "FAILED" ? "text-red-600 dark:text-red-400" : ""}
                   >
                     {item.customerName}
                   </span>
@@ -460,8 +438,7 @@ export function ReviewDraftsStep({
           </span>
           {failedItems.length > 0 && (
             <span className="text-red-600 dark:text-red-400">
-              Failed:{" "}
-              <span className="font-medium">{failedItems.length}</span>
+              Failed: <span className="font-medium">{failedItems.length}</span>
             </span>
           )}
           <span className="text-slate-600 dark:text-slate-400">
@@ -476,14 +453,11 @@ export function ReviewDraftsStep({
       {/* Failed Items Detail */}
       {failedItems.length > 0 && (
         <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-900 dark:bg-red-950/20">
-          <p className="mb-2 text-sm font-medium text-red-700 dark:text-red-400">
-            Failed Invoices
-          </p>
+          <p className="mb-2 text-sm font-medium text-red-700 dark:text-red-400">Failed Invoices</p>
           <ul className="space-y-1 text-sm text-red-600 dark:text-red-400">
             {failedItems.map((item) => (
               <li key={item.id}>
-                {item.customerName}:{" "}
-                {item.failureReason ?? "Unknown error"}
+                {item.customerName}: {item.failureReason ?? "Unknown error"}
               </li>
             ))}
           </ul>
@@ -495,10 +469,7 @@ export function ReviewDraftsStep({
         <Button variant="outline" onClick={onBack}>
           Back
         </Button>
-        <Button
-          onClick={handleApproveAll}
-          disabled={isApproving || draftItems.length === 0}
-        >
+        <Button onClick={handleApproveAll} disabled={isApproving || draftItems.length === 0}>
           {isApproving ? "Approving..." : "Approve All & Continue"}
         </Button>
       </div>
@@ -508,9 +479,7 @@ export function ReviewDraftsStep({
         <SheetContent>
           <SheetHeader>
             <SheetTitle>Edit Invoice</SheetTitle>
-            <SheetDescription>
-              {selectedItem?.customerName ?? "Invoice"}
-            </SheetDescription>
+            <SheetDescription>{selectedItem?.customerName ?? "Invoice"}</SheetDescription>
           </SheetHeader>
           <div className="space-y-4 p-4">
             <div className="space-y-2">
@@ -524,10 +493,7 @@ export function ReviewDraftsStep({
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">Payment Terms</label>
-              <Select
-                value={editPaymentTerms}
-                onValueChange={setEditPaymentTerms}
-              >
+              <Select value={editPaymentTerms} onValueChange={setEditPaymentTerms}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select terms" />
                 </SelectTrigger>
@@ -552,11 +518,7 @@ export function ReviewDraftsStep({
             </div>
           </div>
           <SheetFooter>
-            <Button
-              onClick={handleSaveInvoice}
-              disabled={isSaving}
-              className="w-full"
-            >
+            <Button onClick={handleSaveInvoice} disabled={isSaving} className="w-full">
               {isSaving ? "Saving..." : "Save"}
             </Button>
           </SheetFooter>

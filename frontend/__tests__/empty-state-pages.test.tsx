@@ -1,11 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
-import {
-  TrendingUp,
-  Bell,
-  DollarSign,
-  HeartPulse,
-} from "lucide-react";
+import { TrendingUp, Bell, DollarSign, HeartPulse } from "lucide-react";
 
 vi.mock("server-only", () => ({}));
 
@@ -50,20 +45,15 @@ describe("Empty State Page Integrations", () => {
           label: t("profitability.page.link"),
           href: "/org/test-org/settings/rates",
         }}
-      />,
+      />
     );
 
     expect(screen.getByText("No profitability data yet")).toBeInTheDocument();
-    expect(
-      screen.getByText(/Set up rate cards in Settings/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Set up rate cards in Settings/)).toBeInTheDocument();
 
     const link = screen.getByText("Go to rate card settings");
     expect(link).toBeInTheDocument();
-    expect(link.closest("a")).toHaveAttribute(
-      "href",
-      "/org/test-org/settings/rates",
-    );
+    expect(link.closest("a")).toHaveAttribute("href", "/org/test-org/settings/rates");
   });
 
   it("notifications page renders EmptyState when no notifications", () => {
@@ -74,13 +64,11 @@ describe("Empty State Page Integrations", () => {
         icon={Bell}
         title={t("notifications.page.heading")}
         description={t("notifications.page.description")}
-      />,
+      />
     );
 
     expect(screen.getByText("You're all caught up")).toBeInTheDocument();
-    expect(
-      screen.getByText(/new comments, task assignments/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/new comments, task assignments/)).toBeInTheDocument();
   });
 
   it("rate cards settings renders EmptyState with catalog text when no members", () => {
@@ -91,13 +79,11 @@ describe("Empty State Page Integrations", () => {
         icon={DollarSign}
         title={t("rates.settings.heading")}
         description={t("rates.settings.description")}
-      />,
+      />
     );
 
     expect(screen.getByText("No rate cards yet")).toBeInTheDocument();
-    expect(
-      screen.getByText(/define what you charge clients/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/define what you charge clients/)).toBeInTheDocument();
   });
 
   it("dashboard ProjectHealthWidget renders EmptyState when no projects", () => {
@@ -106,12 +92,12 @@ describe("Empty State Page Integrations", () => {
         icon={HeartPulse}
         title="No projects yet"
         description="Create a project to start tracking health status."
-      />,
+      />
     );
 
     expect(screen.getByText("No projects yet")).toBeInTheDocument();
     expect(
-      screen.getByText("Create a project to start tracking health status."),
+      screen.getByText("Create a project to start tracking health status.")
     ).toBeInTheDocument();
   });
 });

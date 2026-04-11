@@ -21,10 +21,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  linkAdversePartySchema,
-  type LinkAdversePartyFormData,
-} from "@/lib/schemas/legal";
+import { linkAdversePartySchema, type LinkAdversePartyFormData } from "@/lib/schemas/legal";
 import {
   linkAdverseParty,
   fetchProjects,
@@ -59,9 +56,7 @@ export function LinkAdversePartyDialog({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
-  const [customers, setCustomers] = useState<{ id: string; name: string }[]>(
-    []
-  );
+  const [customers, setCustomers] = useState<{ id: string; name: string }[]>([]);
 
   const form = useForm<LinkAdversePartyFormData>({
     resolver: zodResolver(linkAdversePartySchema),
@@ -123,9 +118,7 @@ export function LinkAdversePartyDialog({
       <DialogContent data-testid="link-adverse-party-dialog">
         <DialogHeader>
           <DialogTitle>Link Adverse Party</DialogTitle>
-          <DialogDescription>
-            Link &quot;{adversePartyName}&quot; to a matter.
-          </DialogDescription>
+          <DialogDescription>Link &quot;{adversePartyName}&quot; to a matter.</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -139,7 +132,7 @@ export function LinkAdversePartyDialog({
                     <select
                       value={field.value}
                       onChange={field.onChange}
-                      className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950 dark:border-slate-800 dark:focus-visible:ring-slate-300"
+                      className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-950 focus-visible:outline-none dark:border-slate-800 dark:focus-visible:ring-slate-300"
                     >
                       <option value="">-- Select matter --</option>
                       {projects.map((p) => (
@@ -164,7 +157,7 @@ export function LinkAdversePartyDialog({
                     <select
                       value={field.value}
                       onChange={field.onChange}
-                      className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950 dark:border-slate-800 dark:focus-visible:ring-slate-300"
+                      className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-950 focus-visible:outline-none dark:border-slate-800 dark:focus-visible:ring-slate-300"
                     >
                       <option value="">-- Select customer --</option>
                       {customers.map((c) => (
@@ -189,7 +182,7 @@ export function LinkAdversePartyDialog({
                     <select
                       value={field.value}
                       onChange={field.onChange}
-                      className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950 dark:border-slate-800 dark:focus-visible:ring-slate-300"
+                      className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-950 focus-visible:outline-none dark:border-slate-800 dark:focus-visible:ring-slate-300"
                     >
                       {RELATIONSHIPS.map((r) => (
                         <option key={r.value} value={r.value}>

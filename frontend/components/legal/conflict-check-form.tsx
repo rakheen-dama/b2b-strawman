@@ -14,10 +14,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Search } from "lucide-react";
-import {
-  performConflictCheckSchema,
-  type PerformConflictCheckFormData,
-} from "@/lib/schemas/legal";
+import { performConflictCheckSchema, type PerformConflictCheckFormData } from "@/lib/schemas/legal";
 import {
   performConflictCheck,
   fetchProjects,
@@ -37,17 +34,12 @@ interface ConflictCheckFormProps {
   onCheckComplete?: () => void;
 }
 
-export function ConflictCheckForm({
-  slug,
-  onCheckComplete,
-}: ConflictCheckFormProps) {
+export function ConflictCheckForm({ slug, onCheckComplete }: ConflictCheckFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<ConflictCheck | null>(null);
   const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
-  const [customers, setCustomers] = useState<{ id: string; name: string }[]>(
-    []
-  );
+  const [customers, setCustomers] = useState<{ id: string; name: string }[]>([]);
 
   const form = useForm<PerformConflictCheckFormData>({
     resolver: zodResolver(performConflictCheckSchema),
@@ -81,8 +73,7 @@ export function ConflictCheckForm({
       const res = await performConflictCheck({
         checkedName: values.checkedName,
         checkedIdNumber: values.checkedIdNumber || undefined,
-        checkedRegistrationNumber:
-          values.checkedRegistrationNumber || undefined,
+        checkedRegistrationNumber: values.checkedRegistrationNumber || undefined,
         checkType: values.checkType,
         customerId: values.customerId || undefined,
         projectId: values.projectId || undefined,
@@ -111,10 +102,7 @@ export function ConflictCheckForm({
               <FormItem>
                 <FormLabel>Name to Check *</FormLabel>
                 <FormControl>
-                  <Input
-                    placeholder="Enter name to check for conflicts"
-                    {...field}
-                  />
+                  <Input placeholder="Enter name to check for conflicts" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -161,7 +149,7 @@ export function ConflictCheckForm({
                   <select
                     value={field.value}
                     onChange={field.onChange}
-                    className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950 dark:border-slate-800 dark:focus-visible:ring-slate-300"
+                    className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-950 focus-visible:outline-none dark:border-slate-800 dark:focus-visible:ring-slate-300"
                   >
                     {CHECK_TYPES.map((t) => (
                       <option key={t.value} value={t.value}>
@@ -186,7 +174,7 @@ export function ConflictCheckForm({
                     <select
                       value={field.value}
                       onChange={field.onChange}
-                      className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950 dark:border-slate-800 dark:focus-visible:ring-slate-300"
+                      className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-950 focus-visible:outline-none dark:border-slate-800 dark:focus-visible:ring-slate-300"
                     >
                       <option value="">-- None --</option>
                       {customers.map((c) => (
@@ -211,7 +199,7 @@ export function ConflictCheckForm({
                     <select
                       value={field.value}
                       onChange={field.onChange}
-                      className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950 dark:border-slate-800 dark:focus-visible:ring-slate-300"
+                      className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-950 focus-visible:outline-none dark:border-slate-800 dark:focus-visible:ring-slate-300"
                     >
                       <option value="">-- None --</option>
                       {projects.map((p) => (
@@ -236,9 +224,7 @@ export function ConflictCheckForm({
         </form>
       </Form>
 
-      {result && (
-        <ConflictCheckResultDisplay result={result} slug={slug} />
-      )}
+      {result && <ConflictCheckResultDisplay result={result} slug={slug} />}
     </div>
   );
 }

@@ -42,14 +42,10 @@ vi.mock("@/app/(app)/org/[slug]/resources/resource-actions", () => ({
   updateLeaveAction: (...args: unknown[]) => mockUpdateLeave(...args),
   deleteLeaveAction: (...args: unknown[]) => mockDeleteLeave(...args),
   listLeaveAction: (...args: unknown[]) => mockListLeave(...args),
-  createCapacityRecordAction: (...args: unknown[]) =>
-    mockCreateCapacity(...args),
-  updateCapacityRecordAction: (...args: unknown[]) =>
-    mockUpdateCapacity(...args),
-  deleteCapacityRecordAction: (...args: unknown[]) =>
-    mockDeleteCapacity(...args),
-  listCapacityRecordsAction: (...args: unknown[]) =>
-    mockListCapacity(...args),
+  createCapacityRecordAction: (...args: unknown[]) => mockCreateCapacity(...args),
+  updateCapacityRecordAction: (...args: unknown[]) => mockUpdateCapacity(...args),
+  deleteCapacityRecordAction: (...args: unknown[]) => mockDeleteCapacity(...args),
+  listCapacityRecordsAction: (...args: unknown[]) => mockListCapacity(...args),
 }));
 
 const testProjects = [
@@ -71,9 +67,7 @@ function makeWeekCell(overrides: Partial<WeekCell> = {}): WeekCell {
   };
 }
 
-function makeGrid(
-  overrides: Partial<TeamCapacityGrid> = {},
-): TeamCapacityGrid {
+function makeGrid(overrides: Partial<TeamCapacityGrid> = {}): TeamCapacityGrid {
   return {
     members: [
       {
@@ -86,9 +80,7 @@ function makeGrid(
             totalAllocated: 30,
             remainingCapacity: 10,
             utilizationPct: 75,
-            allocations: [
-              { id: "a1", projectId: "p1", projectName: "Project Alpha", hours: 30 },
-            ],
+            allocations: [{ id: "a1", projectId: "p1", projectName: "Project Alpha", hours: 30 }],
           }),
           makeWeekCell({ weekStart: "2026-03-16" }),
         ],
@@ -108,9 +100,7 @@ function makeGrid(
             remainingCapacity: -8,
             utilizationPct: 120,
             overAllocated: true,
-            allocations: [
-              { id: "a3", projectId: "p1", projectName: "Project Alpha", hours: 48 },
-            ],
+            allocations: [{ id: "a3", projectId: "p1", projectName: "Project Alpha", hours: 48 }],
           }),
           makeWeekCell({ weekStart: "2026-03-16" }),
         ],
@@ -149,9 +139,7 @@ describe("AllocationPopover", () => {
   it("opens popover when trigger is clicked", async () => {
     const user = userEvent.setup();
     const cell = makeWeekCell({
-      allocations: [
-        { id: "a4", projectId: "p1", projectName: "Project Alpha", hours: 20 },
-      ],
+      allocations: [{ id: "a4", projectId: "p1", projectName: "Project Alpha", hours: 20 }],
       totalAllocated: 20,
     });
 
@@ -165,7 +153,7 @@ describe("AllocationPopover", () => {
         slug="test-org"
       >
         <button>Open Popover</button>
-      </AllocationPopover>,
+      </AllocationPopover>
     );
 
     await user.click(screen.getByText("Open Popover"));
@@ -194,7 +182,7 @@ describe("AllocationPopover", () => {
         slug="test-org"
       >
         <button>Open Alloc Popover</button>
-      </AllocationPopover>,
+      </AllocationPopover>
     );
 
     await user.click(screen.getByText("Open Alloc Popover"));
@@ -219,7 +207,7 @@ describe("AllocationPopover", () => {
         slug="test-org"
       >
         <button>Open Add Form</button>
-      </AllocationPopover>,
+      </AllocationPopover>
     );
 
     await user.click(screen.getByText("Open Add Form"));
@@ -237,9 +225,7 @@ describe("AllocationPopover", () => {
       totalAllocated: 48,
       effectiveCapacity: 40,
       utilizationPct: 120,
-      allocations: [
-        { id: "a3", projectId: "p1", projectName: "Project Alpha", hours: 48 },
-      ],
+      allocations: [{ id: "a3", projectId: "p1", projectName: "Project Alpha", hours: 48 }],
     });
 
     render(
@@ -252,14 +238,12 @@ describe("AllocationPopover", () => {
         slug="test-org"
       >
         <button>Open Over Popover</button>
-      </AllocationPopover>,
+      </AllocationPopover>
     );
 
     await user.click(screen.getByText("Open Over Popover"));
 
-    expect(
-      screen.getByTestId("over-allocation-warning"),
-    ).toBeInTheDocument();
+    expect(screen.getByTestId("over-allocation-warning")).toBeInTheDocument();
   });
 });
 
@@ -281,13 +265,7 @@ describe("AllocationGrid with popover and panel", () => {
   it("opens member detail panel on member name click", async () => {
     const user = userEvent.setup();
 
-    render(
-      <AllocationGrid
-        grid={makeGrid()}
-        projects={testProjects}
-        slug="test-org"
-      />,
-    );
+    render(<AllocationGrid grid={makeGrid()} projects={testProjects} slug="test-org" />);
 
     await user.click(screen.getByTestId("member-name-m1"));
 
@@ -310,14 +288,7 @@ describe("LeaveDialog", () => {
     const user = userEvent.setup();
     mockCreateLeave.mockResolvedValue({ success: true });
 
-    render(
-      <LeaveDialog
-        open={true}
-        onOpenChange={() => {}}
-        slug="test-org"
-        memberId="m1"
-      />,
-    );
+    render(<LeaveDialog open={true} onOpenChange={() => {}} slug="test-org" memberId="m1" />);
 
     const startDateInput = screen.getByLabelText("Start Date");
     const endDateInput = screen.getByLabelText("End Date");
@@ -330,9 +301,7 @@ describe("LeaveDialog", () => {
     // Click save
     await user.click(screen.getByRole("button", { name: "Save" }));
 
-    expect(
-      screen.getByText("End date must be on or after start date."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("End date must be on or after start date.")).toBeInTheDocument();
     expect(mockCreateLeave).not.toHaveBeenCalled();
   });
 });
@@ -351,18 +320,11 @@ describe("GridFilters", () => {
     const grid = makeGrid();
     const onFilteredGrid = vi.fn();
 
-    render(
-      <GridFilters
-        grid={grid}
-        projects={testProjects}
-        onFilteredGrid={onFilteredGrid}
-      />,
-    );
+    render(<GridFilters grid={grid} projects={testProjects} onFilteredGrid={onFilteredGrid} />);
 
     // Initial call should pass all members
     expect(onFilteredGrid).toHaveBeenCalled();
-    const initialCall =
-      onFilteredGrid.mock.calls[onFilteredGrid.mock.calls.length - 1][0];
+    const initialCall = onFilteredGrid.mock.calls[onFilteredGrid.mock.calls.length - 1][0];
     expect(initialCall.members).toHaveLength(2);
 
     // Type a search term
@@ -370,8 +332,7 @@ describe("GridFilters", () => {
     await user.type(searchInput, "Alice");
 
     // Should filter to just Alice
-    const filteredCall =
-      onFilteredGrid.mock.calls[onFilteredGrid.mock.calls.length - 1][0];
+    const filteredCall = onFilteredGrid.mock.calls[onFilteredGrid.mock.calls.length - 1][0];
     expect(filteredCall.members).toHaveLength(1);
     expect(filteredCall.members[0].memberName).toBe("Alice Smith");
   });
@@ -381,21 +342,14 @@ describe("GridFilters", () => {
     const grid = makeGrid();
     const onFilteredGrid = vi.fn();
 
-    render(
-      <GridFilters
-        grid={grid}
-        projects={testProjects}
-        onFilteredGrid={onFilteredGrid}
-      />,
-    );
+    render(<GridFilters grid={grid} projects={testProjects} onFilteredGrid={onFilteredGrid} />);
 
     // Toggle over-allocated only
     const toggle = screen.getByRole("switch");
     await user.click(toggle);
 
     // Should filter to only Bob (over-allocated)
-    const filteredCall =
-      onFilteredGrid.mock.calls[onFilteredGrid.mock.calls.length - 1][0];
+    const filteredCall = onFilteredGrid.mock.calls[onFilteredGrid.mock.calls.length - 1][0];
     expect(filteredCall.members).toHaveLength(1);
     expect(filteredCall.members[0].memberName).toBe("Bob Jones");
   });

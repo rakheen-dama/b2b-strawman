@@ -5,19 +5,19 @@ import { OverviewMetricsStrip } from "@/components/projects/overview-metrics-str
 import { HealthBadge } from "@/components/dashboard/health-badge";
 import { CompletionProgressBar } from "@/components/dashboard/completion-progress-bar";
 import { cn } from "@/lib/utils";
-import type { ProjectHealthDetail, ProjectHealthMetrics, MemberHoursEntry } from "@/lib/dashboard-types";
+import type {
+  ProjectHealthDetail,
+  ProjectHealthMetrics,
+  MemberHoursEntry,
+} from "@/lib/dashboard-types";
 import type { BudgetStatusResponse } from "@/lib/types";
 
 // Mock recharts to avoid rendering issues in happy-dom
 vi.mock("recharts", () => ({
-  ResponsiveContainer: ({
-    children,
-  }: {
-    children: React.ReactNode;
-  }) => <div data-testid="responsive-container">{children}</div>,
-  PieChart: ({ children }: { children: React.ReactNode }) => (
-    <div>{children}</div>
+  ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="responsive-container">{children}</div>
   ),
+  PieChart: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   Pie: () => <div />,
   Cell: () => <div />,
   Legend: () => <div />,
@@ -101,13 +101,7 @@ describe("OverviewHealthHeader (legacy — still used by other pages)", () => {
   });
 
   it("renders unknown status when health is null", () => {
-    render(
-      <OverviewHealthHeader
-        health={null}
-        projectName="Test Project"
-        customerName={null}
-      />
-    );
+    render(<OverviewHealthHeader health={null} projectName="Test Project" customerName={null} />);
 
     expect(screen.getByText("Unknown")).toBeInTheDocument();
     expect(screen.getByText("Test Project")).toBeInTheDocument();
@@ -199,10 +193,7 @@ describe("Health Header Band (395.1)", () => {
     render(
       <div
         data-testid="project-health-header"
-        className={cn(
-          "rounded-lg border bg-card border-t-4",
-          bandColor,
-        )}
+        className={cn("bg-card rounded-lg border border-t-4", bandColor)}
       >
         <div className="flex items-start gap-4 px-4 pt-4 pb-2">
           <HealthBadge status={status} size="lg" />
@@ -220,7 +211,7 @@ describe("Health Header Band (395.1)", () => {
             ))}
           </div>
         )}
-      </div>,
+      </div>
     );
 
     const header = screen.getByTestId("project-health-header");
@@ -239,7 +230,7 @@ describe("Health Header Band (395.1)", () => {
     render(
       <div
         data-testid="project-health-header"
-        className={cn("rounded-lg border bg-card border-t-4", bandColor)}
+        className={cn("bg-card rounded-lg border border-t-4", bandColor)}
       >
         <div className="flex items-start gap-4 px-4 pt-4 pb-2">
           <HealthBadge status={status} size="lg" />
@@ -247,7 +238,7 @@ describe("Health Header Band (395.1)", () => {
             <h2>All Good Project</h2>
           </div>
         </div>
-      </div>,
+      </div>
     );
 
     const header = screen.getByTestId("project-health-header");
@@ -272,7 +263,7 @@ describe("Two-Panel Layout (395.3)", () => {
           <p>Budget</p>
           <p>Time Breakdown</p>
         </div>
-      </div>,
+      </div>
     );
 
     expect(screen.getByTestId("activity-tasks-panel")).toBeInTheDocument();
@@ -293,7 +284,7 @@ describe("Two-Panel Layout (395.3)", () => {
             <span>85% used</span>
           </div>
         </div>
-      </div>,
+      </div>
     );
 
     expect(screen.getByTestId("financial-team-panel")).toBeInTheDocument();

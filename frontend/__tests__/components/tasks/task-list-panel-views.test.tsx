@@ -115,7 +115,7 @@ describe("TaskListPanel — ViewSelectorClient integration", () => {
         isAdmin={true}
         savedViews={[taskView]}
         onSave={mockOnSave}
-      />,
+      />
     );
 
     // The SavedViewSelector renders the view name tab
@@ -138,16 +138,14 @@ describe("TaskListPanel — ViewSelectorClient integration", () => {
         isAdmin={true}
         savedViews={[taskView]}
         onSave={mockOnSave}
-      />,
+      />
     );
 
     await user.click(screen.getByText("High Priority"));
 
     // URL should include ?view=view-task-1 (and preserve tab=tasks)
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith(
-        expect.stringContaining("view=view-task-1"),
-      );
+      expect(mockPush).toHaveBeenCalledWith(expect.stringContaining("view=view-task-1"));
     });
     // tab param should also be preserved
     const pushUrl = mockPush.mock.calls[0][0] as string;
@@ -171,20 +169,25 @@ describe("TaskListPanel — ViewSelectorClient integration", () => {
         isAdmin={true}
         savedViews={[taskView]}
         onSave={mockOnSave}
-      />,
+      />
     );
 
     // Click the "Done" status filter to add it (default is Open+In Progress)
     const filterGroup = screen.getByRole("group", { name: /task filters/i });
-    const doneButton = Array.from(filterGroup.querySelectorAll("button")).find((btn) => btn.textContent === "Done");
+    const doneButton = Array.from(filterGroup.querySelectorAll("button")).find(
+      (btn) => btn.textContent === "Done"
+    );
     expect(doneButton).toBeDefined();
     await user.click(doneButton!);
 
     await waitFor(() => {
-      expect(mockFetchTasks).toHaveBeenCalledWith("p1", expect.objectContaining({
-        status: "OPEN,IN_PROGRESS,DONE",
-        viewId: "view-task-1",
-      }));
+      expect(mockFetchTasks).toHaveBeenCalledWith(
+        "p1",
+        expect.objectContaining({
+          status: "OPEN,IN_PROGRESS,DONE",
+          viewId: "view-task-1",
+        })
+      );
     });
   });
 });

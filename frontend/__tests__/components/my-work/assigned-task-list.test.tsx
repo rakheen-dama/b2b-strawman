@@ -56,9 +56,7 @@ describe("AssignedTaskList", () => {
     render(<AssignedTaskList tasks={[]} slug="acme" />);
 
     expect(screen.getByText("No tasks assigned")).toBeInTheDocument();
-    expect(
-      screen.getByText("Tasks assigned to you will appear here")
-    ).toBeInTheDocument();
+    expect(screen.getByText("Tasks assigned to you will appear here")).toBeInTheDocument();
   });
 
   it("renders priority badge with correct variant", () => {
@@ -86,9 +84,7 @@ describe("AssignedTaskList", () => {
       }),
     ];
 
-    const { container } = render(
-      <AssignedTaskList tasks={tasks} slug="acme" />
-    );
+    const { container } = render(<AssignedTaskList tasks={tasks} slug="acme" />);
 
     const dateSpan = container.querySelector("[class*='text-red']");
     expect(dateSpan).toBeInTheDocument();

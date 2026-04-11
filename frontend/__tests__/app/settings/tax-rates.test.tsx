@@ -77,7 +77,7 @@ describe("TaxRateTable", () => {
 
     expect(screen.getByText("No tax rates yet")).toBeInTheDocument();
     expect(
-      screen.getByText("Create your first tax rate to apply taxes to invoices."),
+      screen.getByText("Create your first tax rate to apply taxes to invoices.")
     ).toBeInTheDocument();
   });
 
@@ -99,27 +99,23 @@ describe("TaxRateTable", () => {
   it("shows Add Tax Rate button", () => {
     render(<TaxRateTable slug="acme" taxRates={sampleRates} />);
 
-    expect(
-      screen.getAllByRole("button", { name: /Add Tax Rate/i }).length,
-    ).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByRole("button", { name: /Add Tax Rate/i }).length).toBeGreaterThanOrEqual(
+      1
+    );
   });
 
   it("shows deactivate button only for active non-default rates", () => {
     render(<TaxRateTable slug="acme" taxRates={sampleRates} />);
 
     // GST is active + non-default → should have deactivate button
-    expect(
-      screen.getByRole("button", { name: /Deactivate GST/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Deactivate GST/i })).toBeInTheDocument();
 
     // VAT is default → no deactivate button
-    expect(
-      screen.queryByRole("button", { name: /Deactivate VAT/i }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Deactivate VAT/i })).not.toBeInTheDocument();
 
     // Zero Rated is inactive → no deactivate button
     expect(
-      screen.queryByRole("button", { name: /Deactivate Zero Rated/i }),
+      screen.queryByRole("button", { name: /Deactivate Zero Rated/i })
     ).not.toBeInTheDocument();
   });
 
@@ -139,9 +135,7 @@ describe("TaxRateTable", () => {
 
     // Confirmation dialog should appear
     expect(screen.getByText("Deactivate Tax Rate")).toBeInTheDocument();
-    expect(
-      screen.getByText(/Are you sure you want to deactivate/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Are you sure you want to deactivate/)).toBeInTheDocument();
 
     // Click deactivate in dialog
     const confirmBtn = screen.getByRole("button", { name: /^Deactivate$/i });
@@ -149,9 +143,7 @@ describe("TaxRateTable", () => {
 
     // Error should be shown
     expect(
-      await screen.findByText(
-        "Tax rate is referenced by 3 draft invoice line(s)",
-      ),
+      await screen.findByText("Tax rate is referenced by 3 draft invoice line(s)")
     ).toBeInTheDocument();
   });
 });

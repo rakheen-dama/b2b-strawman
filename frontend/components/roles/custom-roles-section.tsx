@@ -13,10 +13,7 @@ interface CustomRolesSectionProps {
   customRoles: OrgRole[];
 }
 
-export function CustomRolesSection({
-  slug,
-  customRoles,
-}: CustomRolesSectionProps) {
+export function CustomRolesSection({ slug, customRoles }: CustomRolesSectionProps) {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingRole, setEditingRole] = useState<OrgRole | null>(null);
   const [deletingRole, setDeletingRole] = useState<OrgRole | null>(null);
@@ -25,9 +22,7 @@ export function CustomRolesSection({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-            Custom Roles
-          </h2>
+          <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">Custom Roles</h2>
           <p className="mt-0.5 text-sm text-slate-600 dark:text-slate-400">
             Create roles with specific capabilities for your team.
           </p>
@@ -41,8 +36,7 @@ export function CustomRolesSection({
       {customRoles.length === 0 ? (
         <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-8 text-center dark:border-slate-700 dark:bg-slate-900">
           <p className="text-sm text-slate-600 dark:text-slate-400">
-            No custom roles yet. Create one to assign granular permissions to
-            team members.
+            No custom roles yet. Create one to assign granular permissions to team members.
           </p>
         </div>
       ) : (
@@ -59,11 +53,7 @@ export function CustomRolesSection({
       )}
 
       {/* Create Role Dialog */}
-      <RoleDialog
-        slug={slug}
-        open={isCreateOpen}
-        onOpenChange={setIsCreateOpen}
-      />
+      <RoleDialog slug={slug} open={isCreateOpen} onOpenChange={setIsCreateOpen} />
 
       {/* Edit Role Dialog */}
       {editingRole && (

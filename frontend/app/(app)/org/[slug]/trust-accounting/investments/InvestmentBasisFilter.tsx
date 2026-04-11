@@ -13,9 +13,7 @@ interface InvestmentBasisFilterProps {
   currentValue?: string;
 }
 
-export function InvestmentBasisFilter({
-  currentValue,
-}: InvestmentBasisFilterProps) {
+export function InvestmentBasisFilter({ currentValue }: InvestmentBasisFilterProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -32,10 +30,7 @@ export function InvestmentBasisFilter({
   }
 
   return (
-    <Select
-      value={currentValue ?? "ALL"}
-      onValueChange={handleValueChange}
-    >
+    <Select value={currentValue ?? "ALL"} onValueChange={handleValueChange}>
       <SelectTrigger data-testid="investment-basis-filter">
         <SelectValue placeholder="Filter by basis" />
       </SelectTrigger>

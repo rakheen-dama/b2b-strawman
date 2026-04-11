@@ -137,10 +137,7 @@ function ProcessingActivityDialog({
         </DialogHeader>
 
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-4 py-2"
-          >
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 py-2">
             <FormField
               control={form.control}
               name="category"
@@ -239,10 +236,7 @@ function ProcessingActivityDialog({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    Recipients{" "}
-                    <span className="font-normal text-muted-foreground">
-                      (optional)
-                    </span>
+                    Recipients <span className="text-muted-foreground font-normal">(optional)</span>
                   </FormLabel>
                   <FormControl>
                     <Input
@@ -256,7 +250,7 @@ function ProcessingActivityDialog({
               )}
             />
 
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {error && <p className="text-destructive text-sm">{error}</p>}
 
             <DialogFooter>
               <Button
@@ -294,14 +288,10 @@ interface ProcessingRegisterTableProps {
   slug: string;
 }
 
-export function ProcessingRegisterTable({
-  activities,
-  slug,
-}: ProcessingRegisterTableProps) {
+export function ProcessingRegisterTable({ activities, slug }: ProcessingRegisterTableProps) {
   const router = useRouter();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingActivity, setEditingActivity] =
-    useState<ProcessingActivity | null>(null);
+  const [editingActivity, setEditingActivity] = useState<ProcessingActivity | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   function handleAdd() {
@@ -339,8 +329,8 @@ export function ProcessingRegisterTable({
             Processing Register
           </h2>
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            Maintain a register of all personal data processing activities as
-            required by your jurisdiction.
+            Maintain a register of all personal data processing activities as required by your
+            jurisdiction.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -374,19 +364,14 @@ export function ProcessingRegisterTable({
                   colSpan={6}
                   className="py-8 text-center text-slate-500 dark:text-slate-400"
                 >
-                  No processing activities recorded. Click &ldquo;Add
-                  Activity&rdquo; to create one.
+                  No processing activities recorded. Click &ldquo;Add Activity&rdquo; to create one.
                 </TableCell>
               </TableRow>
             ) : (
               activities.map((activity) => (
                 <TableRow key={activity.id}>
-                  <TableCell className="font-medium">
-                    {activity.category}
-                  </TableCell>
-                  <TableCell className="max-w-xs truncate">
-                    {activity.description}
-                  </TableCell>
+                  <TableCell className="font-medium">{activity.category}</TableCell>
+                  <TableCell className="max-w-xs truncate">{activity.description}</TableCell>
                   <TableCell>{activity.legalBasis}</TableCell>
                   <TableCell>{activity.dataSubjects}</TableCell>
                   <TableCell>{activity.retentionPeriod}</TableCell>

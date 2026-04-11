@@ -13,7 +13,9 @@ vi.mock("@/app/(app)/org/[slug]/customers/[id]/lifecycle-actions", () => ({
 
 // Mock prerequisite actions imported by PrerequisiteModal (via LifecycleTransitionDropdown)
 vi.mock("@/lib/actions/prerequisite-actions", () => ({
-  checkPrerequisitesAction: vi.fn().mockResolvedValue({ passed: true, context: "LIFECYCLE_ACTIVATION", violations: [] }),
+  checkPrerequisitesAction: vi
+    .fn()
+    .mockResolvedValue({ passed: true, context: "LIFECYCLE_ACTIVATION", violations: [] }),
   updateEntityCustomFieldsAction: vi.fn(),
 }));
 
@@ -27,18 +29,12 @@ describe("LifecycleTransitionDropdown", () => {
   });
 
   function renderWithProvider(ui: React.ReactElement) {
-    return render(
-      <TerminologyProvider verticalProfile={null}>{ui}</TerminologyProvider>,
-    );
+    return render(<TerminologyProvider verticalProfile={null}>{ui}</TerminologyProvider>);
   }
 
   it("renders 'Change Status' button for PROSPECT status", () => {
     renderWithProvider(
-      <LifecycleTransitionDropdown
-        currentStatus="PROSPECT"
-        customerId="c1"
-        slug="acme"
-      />,
+      <LifecycleTransitionDropdown currentStatus="PROSPECT" customerId="c1" slug="acme" />
     );
     expect(screen.getByText("Change Status")).toBeInTheDocument();
   });
@@ -47,11 +43,7 @@ describe("LifecycleTransitionDropdown", () => {
     const user = userEvent.setup();
 
     renderWithProvider(
-      <LifecycleTransitionDropdown
-        currentStatus="PROSPECT"
-        customerId="c1"
-        slug="acme"
-      />,
+      <LifecycleTransitionDropdown currentStatus="PROSPECT" customerId="c1" slug="acme" />
     );
 
     await user.click(screen.getByText("Change Status"));
@@ -62,11 +54,7 @@ describe("LifecycleTransitionDropdown", () => {
     const user = userEvent.setup();
 
     renderWithProvider(
-      <LifecycleTransitionDropdown
-        currentStatus="DORMANT"
-        customerId="c1"
-        slug="acme"
-      />,
+      <LifecycleTransitionDropdown currentStatus="DORMANT" customerId="c1" slug="acme" />
     );
 
     await user.click(screen.getByText("Change Status"));
@@ -77,11 +65,7 @@ describe("LifecycleTransitionDropdown", () => {
     const user = userEvent.setup();
 
     renderWithProvider(
-      <LifecycleTransitionDropdown
-        currentStatus="ACTIVE"
-        customerId="c1"
-        slug="acme"
-      />,
+      <LifecycleTransitionDropdown currentStatus="ACTIVE" customerId="c1" slug="acme" />
     );
 
     await user.click(screen.getByText("Change Status"));
@@ -92,11 +76,7 @@ describe("LifecycleTransitionDropdown", () => {
     const user = userEvent.setup();
 
     renderWithProvider(
-      <LifecycleTransitionDropdown
-        currentStatus="OFFBOARDED"
-        customerId="c1"
-        slug="acme"
-      />,
+      <LifecycleTransitionDropdown currentStatus="OFFBOARDED" customerId="c1" slug="acme" />
     );
 
     await user.click(screen.getByText("Change Status"));
@@ -107,11 +87,7 @@ describe("LifecycleTransitionDropdown", () => {
     const user = userEvent.setup();
 
     renderWithProvider(
-      <LifecycleTransitionDropdown
-        currentStatus="PROSPECT"
-        customerId="c1"
-        slug="acme"
-      />,
+      <LifecycleTransitionDropdown currentStatus="PROSPECT" customerId="c1" slug="acme" />
     );
 
     await user.click(screen.getByText("Change Status"));
@@ -130,7 +106,7 @@ describe("LifecycleTransitionDropdown", () => {
         customerId="c1"
         slug="acme"
         onTransition={onTransition}
-      />,
+      />
     );
 
     await user.click(screen.getByText("Change Status"));

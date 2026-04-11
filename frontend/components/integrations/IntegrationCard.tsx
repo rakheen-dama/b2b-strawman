@@ -3,16 +3,18 @@
 import { useState } from "react";
 import Link from "next/link";
 import useSWR from "swr";
-import { Calculator, Sparkles, PenTool, CreditCard, KeyRound, Mail, ShieldCheck } from "lucide-react";
+import {
+  Calculator,
+  Sparkles,
+  PenTool,
+  CreditCard,
+  KeyRound,
+  Mail,
+  ShieldCheck,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -31,10 +33,7 @@ import {
 } from "@/app/(app)/org/[slug]/settings/integrations/actions";
 import type { IntegrationDomain, OrgIntegration } from "@/lib/types";
 
-const DOMAIN_ICONS: Record<
-  IntegrationDomain,
-  React.ComponentType<{ className?: string }>
-> = {
+const DOMAIN_ICONS: Record<IntegrationDomain, React.ComponentType<{ className?: string }>> = {
   ACCOUNTING: Calculator,
   AI: Sparkles,
   DOCUMENT_SIGNING: PenTool,
@@ -88,7 +87,7 @@ export function IntegrationCard({
   const shouldFetchModels = domain === "AI" && hasKey;
   const { data: modelsData, isLoading: isLoadingModels } = useSWR(
     shouldFetchModels ? `ai-models-${slug}` : null,
-    () => fetchAiModels(),
+    () => fetchAiModels()
   );
 
   const currentModel = getCurrentModel(integration);
@@ -188,7 +187,7 @@ export function IntegrationCard({
       </CardHeader>
       <CardContent className="space-y-4">
         {error && (
-          <p className="text-sm text-destructive" role="alert">
+          <p className="text-destructive text-sm" role="alert">
             {error}
           </p>
         )}
@@ -325,11 +324,7 @@ export function IntegrationCard({
 
         {/* Connection test */}
         {hasProvider && isEnabled && (
-          <ConnectionTestButton
-            slug={slug}
-            domain={domain}
-            disabled={!isEnabled || !hasKey}
-          />
+          <ConnectionTestButton slug={slug} domain={domain} disabled={!isEnabled || !hasKey} />
         )}
       </CardContent>
     </Card>

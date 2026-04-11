@@ -35,9 +35,7 @@ interface GetBillingRunResult extends ActionResult {
   billingRun?: BillingRun;
 }
 
-export async function generateAction(
-  billingRunId: string,
-): Promise<GenerateResult> {
+export async function generateAction(billingRunId: string): Promise<GenerateResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Permission denied." };
@@ -53,9 +51,7 @@ export async function generateAction(
   }
 }
 
-export async function getItemsAction(
-  billingRunId: string,
-): Promise<GetItemsResult> {
+export async function getItemsAction(billingRunId: string): Promise<GetItemsResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Permission denied." };
@@ -71,9 +67,7 @@ export async function getItemsAction(
   }
 }
 
-export async function getBillingRunAction(
-  billingRunId: string,
-): Promise<GetBillingRunResult> {
+export async function getBillingRunAction(billingRunId: string): Promise<GetBillingRunResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Permission denied." };
@@ -90,7 +84,7 @@ export async function getBillingRunAction(
 }
 
 export async function batchApproveAction(
-  billingRunId: string,
+  billingRunId: string
 ): Promise<BatchOperationActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
@@ -109,7 +103,7 @@ export async function batchApproveAction(
 
 export async function batchSendAction(
   billingRunId: string,
-  request: BatchSendRequest,
+  request: BatchSendRequest
 ): Promise<BatchOperationActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {

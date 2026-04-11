@@ -37,9 +37,7 @@ describe("HealthBadge", () => {
 
   it("shows tooltip/title on sm size when reasons provided", () => {
     const reasons = ["Low velocity", "Missing milestones"];
-    render(
-      <HealthBadge status="AT_RISK" size="sm" reasons={reasons} />
-    );
+    render(<HealthBadge status="AT_RISK" size="sm" reasons={reasons} />);
 
     const dot = screen.getByLabelText("At Risk");
     expect(dot).toHaveAttribute("title", "Low velocity; Missing milestones");

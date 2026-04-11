@@ -3,15 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  Loader2,
-  AlertCircle,
-  Check,
-  X,
-  Calendar,
-  Clock,
-} from "lucide-react";
+import { ArrowLeft, Loader2, AlertCircle, Check, X, Calendar, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,17 +18,11 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { PortalApiError, clearPortalAuth } from "@/lib/portal-api";
-import {
-  getPortalProposal,
-  acceptProposal,
-  declineProposal,
-} from "@/lib/api/portal-proposals";
+import { getPortalProposal, acceptProposal, declineProposal } from "@/lib/api/portal-proposals";
 import { formatDate, formatCurrencySafe } from "@/lib/format";
 import type { PortalProposalDetail } from "@/lib/types/document";
 
-function statusBadgeVariant(
-  status: string,
-): "warning" | "success" | "destructive" | "neutral" {
+function statusBadgeVariant(status: string): "warning" | "success" | "destructive" | "neutral" {
   switch (status) {
     case "SENT":
       return "warning";
@@ -131,9 +117,7 @@ export default function PortalProposalDetailPage() {
         router.replace("/portal");
         return;
       }
-      setError(
-        err instanceof Error ? err.message : "Failed to load proposal",
-      );
+      setError(err instanceof Error ? err.message : "Failed to load proposal");
     } finally {
       setIsLoading(false);
     }
@@ -158,9 +142,7 @@ export default function PortalProposalDetailPage() {
         router.replace("/portal");
         return;
       }
-      setActionError(
-        err instanceof Error ? err.message : "Failed to accept proposal",
-      );
+      setActionError(err instanceof Error ? err.message : "Failed to accept proposal");
     } finally {
       setIsAccepting(false);
     }
@@ -182,9 +164,7 @@ export default function PortalProposalDetailPage() {
         router.replace("/portal");
         return;
       }
-      setActionError(
-        err instanceof Error ? err.message : "Failed to decline proposal",
-      );
+      setActionError(err instanceof Error ? err.message : "Failed to decline proposal");
     } finally {
       setIsDeclining(false);
     }
@@ -278,10 +258,10 @@ export default function PortalProposalDetailPage() {
         <div className="grid gap-6 sm:grid-cols-2">
           {/* Fee details */}
           <div className="space-y-1">
-            <p className="text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
+            <p className="text-xs font-medium tracking-wider text-slate-500 uppercase dark:text-slate-400">
               Fee
             </p>
-            <p className="font-mono tabular-nums text-2xl font-semibold text-slate-900 dark:text-slate-100">
+            <p className="font-mono text-2xl font-semibold text-slate-900 tabular-nums dark:text-slate-100">
               {formatCurrencySafe(proposal.feeAmount, proposal.feeCurrency)}
             </p>
             <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -312,9 +292,7 @@ export default function PortalProposalDetailPage() {
               </div>
             )}
             {proposal.orgName && (
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                From {proposal.orgName}
-              </p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">From {proposal.orgName}</p>
             )}
           </div>
         </div>
@@ -356,7 +334,7 @@ export default function PortalProposalDetailPage() {
                   )}
                 </div>
                 {milestone.amount != null && (
-                  <span className="font-mono tabular-nums text-sm font-medium text-slate-700 dark:text-slate-300">
+                  <span className="font-mono text-sm font-medium text-slate-700 tabular-nums dark:text-slate-300">
                     {formatCurrencySafe(milestone.amount, proposal.feeCurrency)}
                   </span>
                 )}
@@ -403,8 +381,7 @@ export default function PortalProposalDetailPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Decline Proposal</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to decline this proposal? You can optionally
-              provide a reason.
+              Are you sure you want to decline this proposal? You can optionally provide a reason.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="py-2">

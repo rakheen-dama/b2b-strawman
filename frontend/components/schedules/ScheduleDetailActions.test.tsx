@@ -60,7 +60,11 @@ describe("ScheduleDetailActions", () => {
     await user.click(screen.getByRole("button", { name: "Pause" }));
 
     expect(screen.getByRole("alertdialog")).toBeInTheDocument();
-    expect(screen.getByText("Pausing this schedule will stop automatic project creation. You can resume it at any time.")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Pausing this schedule will stop automatic project creation. You can resume it at any time."
+      )
+    ).toBeInTheDocument();
   });
 
   it("calls pauseScheduleAction with correct args when confirmed", async () => {

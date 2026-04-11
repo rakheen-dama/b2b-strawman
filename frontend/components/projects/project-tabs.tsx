@@ -28,7 +28,25 @@ interface ProjectTabsProps {
   trustPanel?: ReactNode;
 }
 
-type TabId = "overview" | "documents" | "members" | "customers" | "tasks" | "time" | "expenses" | "budget" | "financials" | "staffing" | "activity" | "rates" | "generated" | "requests" | "customer-comments" | "court-dates" | "adverse-parties" | "trust";
+type TabId =
+  | "overview"
+  | "documents"
+  | "members"
+  | "customers"
+  | "tasks"
+  | "time"
+  | "expenses"
+  | "budget"
+  | "financials"
+  | "staffing"
+  | "activity"
+  | "rates"
+  | "generated"
+  | "requests"
+  | "customer-comments"
+  | "court-dates"
+  | "adverse-parties"
+  | "trust";
 
 interface TabDef {
   id: TabId;
@@ -56,9 +74,47 @@ const baseTabs: TabDef[] = [
   { id: "activity", label: "Activity" },
 ];
 
-const validTabIds = new Set<string>(["overview", "documents", "members", "customers", "tasks", "time", "expenses", "budget", "financials", "staffing", "activity", "rates", "generated", "requests", "customer-comments", "court-dates", "adverse-parties", "trust"]);
+const validTabIds = new Set<string>([
+  "overview",
+  "documents",
+  "members",
+  "customers",
+  "tasks",
+  "time",
+  "expenses",
+  "budget",
+  "financials",
+  "staffing",
+  "activity",
+  "rates",
+  "generated",
+  "requests",
+  "customer-comments",
+  "court-dates",
+  "adverse-parties",
+  "trust",
+]);
 
-export function ProjectTabs({ overviewPanel, documentsPanel, membersPanel, customersPanel, tasksPanel, timePanel, activityPanel, ratesPanel, budgetPanel, financialsPanel, expensesPanel, generatedPanel, requestsPanel, customerCommentsPanel, staffingPanel, courtDatesPanel, adversePartiesPanel, trustPanel }: ProjectTabsProps) {
+export function ProjectTabs({
+  overviewPanel,
+  documentsPanel,
+  membersPanel,
+  customersPanel,
+  tasksPanel,
+  timePanel,
+  activityPanel,
+  ratesPanel,
+  budgetPanel,
+  financialsPanel,
+  expensesPanel,
+  generatedPanel,
+  requestsPanel,
+  customerCommentsPanel,
+  staffingPanel,
+  courtDatesPanel,
+  adversePartiesPanel,
+  trustPanel,
+}: ProjectTabsProps) {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab");
   const urlTab = tabParam && validTabIds.has(tabParam) ? (tabParam as TabId) : null;
@@ -85,13 +141,22 @@ export function ProjectTabs({ overviewPanel, documentsPanel, membersPanel, custo
     if (!showAdverseParties) filtered = filtered.filter((t) => t.id !== "adverse-parties");
     if (!showTrust) filtered = filtered.filter((t) => t.id !== "trust");
     return filtered;
-  }, [ratesPanel, financialsPanel, expensesPanel, generatedPanel, requestsPanel, customerCommentsPanel, staffingPanel, showCourtDates, showAdverseParties, showTrust]);
+  }, [
+    ratesPanel,
+    financialsPanel,
+    expensesPanel,
+    generatedPanel,
+    requestsPanel,
+    customerCommentsPanel,
+    staffingPanel,
+    showCourtDates,
+    showAdverseParties,
+    showTrust,
+  ]);
 
   // Validate activeTab is in the rendered tabs; fall back to "overview" if not
   const activeTab: TabId =
-    requestedTab && tabs.some((t) => t.id === requestedTab)
-      ? requestedTab
-      : "overview";
+    requestedTab && tabs.some((t) => t.id === requestedTab) ? requestedTab : "overview";
 
   return (
     <TabsPrimitive.Root value={activeTab} onValueChange={(v) => setUserTab(v as TabId)}>
@@ -105,7 +170,7 @@ export function ProjectTabs({ overviewPanel, documentsPanel, membersPanel, custo
               "relative pb-3 text-sm font-medium transition-colors outline-none",
               "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200",
               "data-[state=active]:text-slate-950 dark:data-[state=active]:text-slate-50",
-              "focus-visible:outline-2 focus-visible:outline-teal-500 focus-visible:outline-offset-2"
+              "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
             )}
           >
             {tab.label}

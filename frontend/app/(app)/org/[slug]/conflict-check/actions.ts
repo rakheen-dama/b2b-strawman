@@ -2,11 +2,7 @@
 
 import { api, ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
-import type {
-  ConflictCheck,
-  ConflictCheckResult,
-  ConflictCheckType,
-} from "@/lib/types";
+import type { ConflictCheck, ConflictCheckResult, ConflictCheckType } from "@/lib/types";
 
 // -- Response types --
 
@@ -59,10 +55,7 @@ export async function performConflictCheck(data: {
     const result = await api.post<ConflictCheck>("/api/conflict-checks", body);
     return { success: true, data: result };
   } catch (error) {
-    const message =
-      error instanceof ApiError
-        ? error.message
-        : "Failed to perform conflict check";
+    const message = error instanceof ApiError ? error.message : "Failed to perform conflict check";
     return { success: false, error: message };
   }
 }
@@ -78,9 +71,7 @@ export async function fetchConflictChecks(
   if (filters?.dateTo) params.set("dateTo", filters.dateTo);
   params.set("size", "100");
 
-  return api.get<PaginatedResponse<ConflictCheck>>(
-    `/api/conflict-checks?${params.toString()}`
-  );
+  return api.get<PaginatedResponse<ConflictCheck>>(`/api/conflict-checks?${params.toString()}`);
 }
 
 export async function fetchConflictCheck(id: string): Promise<ConflictCheck> {
@@ -101,30 +92,21 @@ export async function resolveConflict(
     revalidatePath(`/org/${slug}/conflict-check`);
     return { success: true };
   } catch (error) {
-    const message =
-      error instanceof ApiError
-        ? error.message
-        : "Failed to resolve conflict";
+    const message = error instanceof ApiError ? error.message : "Failed to resolve conflict";
     return { success: false, error: message };
   }
 }
 
 // -- Projects & Customers (for form selectors) --
 
-export async function fetchProjects(): Promise<
-  { id: string; name: string }[]
-> {
-  const result = await api.get<
-    PaginatedResponse<{ id: string; name: string }>
-  >("/api/projects?size=200");
+export async function fetchProjects(): Promise<{ id: string; name: string }[]> {
+  const result =
+    await api.get<PaginatedResponse<{ id: string; name: string }>>("/api/projects?size=200");
   return result?.content ?? [];
 }
 
-export async function fetchCustomers(): Promise<
-  { id: string; name: string }[]
-> {
-  const result = await api.get<
-    PaginatedResponse<{ id: string; name: string }>
-  >("/api/customers?size=200");
+export async function fetchCustomers(): Promise<{ id: string; name: string }[]> {
+  const result =
+    await api.get<PaginatedResponse<{ id: string; name: string }>>("/api/customers?size=200");
   return result?.content ?? [];
 }

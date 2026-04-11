@@ -21,8 +21,7 @@ export const CAPABILITY_META = [
   {
     value: CAPABILITIES.FINANCIAL_VISIBILITY,
     label: "Financial Visibility",
-    description:
-      "View financial data including rates, budgets, and profitability reports",
+    description: "View financial data including rates, budgets, and profitability reports",
   },
   {
     value: CAPABILITIES.INVOICING,
@@ -37,8 +36,7 @@ export const CAPABILITY_META = [
   {
     value: CAPABILITIES.TEAM_OVERSIGHT,
     label: "Team Oversight",
-    description:
-      "View team members' work, time entries, and assignments",
+    description: "View team members' work, time entries, and assignments",
   },
   {
     value: CAPABILITIES.CUSTOMER_MANAGEMENT,
@@ -53,14 +51,12 @@ export const CAPABILITY_META = [
   {
     value: CAPABILITIES.RESOURCE_PLANNING,
     label: "Resource Planning",
-    description:
-      "View and manage resource allocation and capacity planning",
+    description: "View and manage resource allocation and capacity planning",
   },
   {
     value: CAPABILITIES.VIEW_TRUST,
     label: "View Trust",
-    description:
-      "View trust account balances, transactions, and client ledgers",
+    description: "View trust account balances, transactions, and client ledgers",
   },
 ] as const;
 
@@ -115,11 +111,7 @@ export function CapabilityProvider({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [capKey, role, isAdmin, isOwner]);
 
-  return (
-    <CapabilityContext.Provider value={value}>
-      {children}
-    </CapabilityContext.Provider>
-  );
+  return <CapabilityContext.Provider value={value}>{children}</CapabilityContext.Provider>;
 }
 
 // ---- Hook ----
@@ -127,9 +119,7 @@ export function CapabilityProvider({
 export function useCapabilities(): CapabilityContextValue {
   const ctx = useContext(CapabilityContext);
   if (!ctx) {
-    throw new Error(
-      "useCapabilities must be used within a CapabilityProvider",
-    );
+    throw new Error("useCapabilities must be used within a CapabilityProvider");
   }
   return ctx;
 }
@@ -142,11 +132,7 @@ interface RequiresCapabilityProps {
   children: React.ReactNode;
 }
 
-export function RequiresCapability({
-  cap,
-  fallback = null,
-  children,
-}: RequiresCapabilityProps) {
+export function RequiresCapability({ cap, fallback = null, children }: RequiresCapabilityProps) {
   const { hasCapability, isLoading } = useCapabilities();
 
   if (isLoading) {

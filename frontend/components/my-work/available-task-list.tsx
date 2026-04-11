@@ -52,19 +52,13 @@ export function AvailableTaskList({ tasks, slug, onTaskClick }: AvailableTaskLis
 
   return (
     <div className="space-y-4">
-      <button
-        type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2"
-      >
+      <button type="button" onClick={() => setIsOpen(!isOpen)} className="flex items-center gap-2">
         {isOpen ? (
           <ChevronDown className="size-4 text-slate-500" />
         ) : (
           <ChevronRight className="size-4 text-slate-500" />
         )}
-        <h2 className="font-semibold text-slate-900 dark:text-slate-100">
-          Available Tasks
-        </h2>
+        <h2 className="font-semibold text-slate-900 dark:text-slate-100">Available Tasks</h2>
         <Badge variant="neutral">{tasks.length}</Badge>
       </button>
 
@@ -81,16 +75,16 @@ export function AvailableTaskList({ tasks, slug, onTaskClick }: AvailableTaskLis
               <Table>
                 <TableHeader>
                   <TableRow className="border-slate-200 hover:bg-transparent dark:border-slate-800">
-                    <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                    <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
                       Project
                     </TableHead>
-                    <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                    <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
                       Title
                     </TableHead>
-                    <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                    <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
                       Priority
                     </TableHead>
-                    <TableHead className="hidden text-xs uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">
+                    <TableHead className="hidden text-xs tracking-wide text-slate-600 uppercase sm:table-cell dark:text-slate-400">
                       Due Date
                     </TableHead>
                   </TableRow>
@@ -98,8 +92,7 @@ export function AvailableTaskList({ tasks, slug, onTaskClick }: AvailableTaskLis
                 <TableBody>
                   {tasks.map((task) => {
                     const priorityBadge =
-                      PRIORITY_BADGE[task.priority as TaskPriority] ??
-                      PRIORITY_BADGE.MEDIUM;
+                      PRIORITY_BADGE[task.priority as TaskPriority] ?? PRIORITY_BADGE.MEDIUM;
                     const overdue = isOverdue(task.dueDate, task.status);
 
                     return (
@@ -123,9 +116,7 @@ export function AvailableTaskList({ tasks, slug, onTaskClick }: AvailableTaskLis
                           </p>
                         </TableCell>
                         <TableCell>
-                          <Badge variant={priorityBadge.variant}>
-                            {priorityBadge.label}
-                          </Badge>
+                          <Badge variant={priorityBadge.variant}>{priorityBadge.label}</Badge>
                         </TableCell>
                         <TableCell className="hidden sm:table-cell">
                           <span
@@ -136,12 +127,8 @@ export function AvailableTaskList({ tasks, slug, onTaskClick }: AvailableTaskLis
                                 : "text-slate-600 dark:text-slate-400"
                             )}
                           >
-                            {overdue && (
-                              <AlertTriangle className="size-3.5 shrink-0" />
-                            )}
-                            {task.dueDate
-                              ? formatDate(task.dueDate)
-                              : "\u2014"}
+                            {overdue && <AlertTriangle className="size-3.5 shrink-0" />}
+                            {task.dueDate ? formatDate(task.dueDate) : "\u2014"}
                           </span>
                         </TableCell>
                       </TableRow>

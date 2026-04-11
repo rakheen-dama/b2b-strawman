@@ -15,15 +15,11 @@ vi.mock("@/app/(app)/org/[slug]/projects/actions", () => ({
 
 function renderDialog() {
   return render(
-    <OrgProfileProvider
-      verticalProfile={null}
-      enabledModules={[]}
-      terminologyNamespace={null}
-    >
+    <OrgProfileProvider verticalProfile={null} enabledModules={[]} terminologyNamespace={null}>
       <TerminologyProvider verticalProfile={null}>
         <CreateProjectDialog slug="acme" />
       </TerminologyProvider>
-    </OrgProfileProvider>,
+    </OrgProfileProvider>
   );
 }
 

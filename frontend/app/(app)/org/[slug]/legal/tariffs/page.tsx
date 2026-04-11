@@ -4,11 +4,7 @@ import { fetchTariffSchedules } from "./actions";
 import { TariffBrowserClient } from "./tariff-browser-client";
 import type { TariffSchedule } from "@/lib/types";
 
-export default async function TariffsPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function TariffsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
 
   let settings;

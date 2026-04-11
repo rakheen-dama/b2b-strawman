@@ -8,9 +8,7 @@ describe("SparklineChart", () => {
   });
 
   it("renders SVG polyline with data points", () => {
-    const { container } = render(
-      <SparklineChart data={[10, 20, 15, 30, 25]} />
-    );
+    const { container } = render(<SparklineChart data={[10, 20, 15, 30, 25]} />);
 
     const svg = container.querySelector("svg");
     expect(svg).toBeInTheDocument();

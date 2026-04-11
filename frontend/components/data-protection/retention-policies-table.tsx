@@ -87,20 +87,13 @@ export function RetentionPoliciesTable({
   const [evaluateMessage, setEvaluateMessage] = useState<string | null>(null);
   const [evaluateError, setEvaluateError] = useState<string | null>(null);
 
-  const financialMinDays = financialRetentionMonths
-    ? financialRetentionMonths * 30
-    : 0;
+  const financialMinDays = financialRetentionMonths ? financialRetentionMonths * 30 : 0;
 
   function updateRow(index: number, updates: Partial<EditableRow>) {
-    setRows((prev) =>
-      prev.map((row, i) => (i === index ? { ...row, ...updates } : row)),
-    );
+    setRows((prev) => prev.map((row, i) => (i === index ? { ...row, ...updates } : row)));
   }
 
-  function validateRetentionDays(
-    recordType: string,
-    retentionDays: number,
-  ): string | null {
+  function validateRetentionDays(recordType: string, retentionDays: number): string | null {
     if (
       financialMinDays > 0 &&
       FINANCIAL_RECORD_TYPES.includes(recordType) &&
@@ -114,10 +107,7 @@ export function RetentionPoliciesTable({
   async function saveRow(index: number) {
     const row = rows[index];
 
-    const validationError = validateRetentionDays(
-      row.recordType,
-      row.retentionDays,
-    );
+    const validationError = validateRetentionDays(row.recordType, row.retentionDays);
     if (validationError) {
       updateRow(index, { error: validationError });
       return;
@@ -145,10 +135,9 @@ export function RetentionPoliciesTable({
 
     const response = await evaluateRetentionPolicies(slug);
     if (response.success && response.data) {
-      const { totalPoliciesEvaluated, entitiesEligibleForPurge } =
-        response.data;
+      const { totalPoliciesEvaluated, entitiesEligibleForPurge } = response.data;
       setEvaluateMessage(
-        `Evaluated ${totalPoliciesEvaluated} policies. ${entitiesEligibleForPurge} entities eligible for purge.`,
+        `Evaluated ${totalPoliciesEvaluated} policies. ${entitiesEligibleForPurge} entities eligible for purge.`
       );
     } else {
       setEvaluateError(response.error ?? "Evaluation failed.");
@@ -159,7 +148,7 @@ export function RetentionPoliciesTable({
   async function handleExecutePurge() {
     if (
       !window.confirm(
-        "Are you sure you want to execute the retention purge? This action cannot be undone.",
+        "Are you sure you want to execute the retention purge? This action cannot be undone."
       )
     ) {
       return;
@@ -173,7 +162,7 @@ export function RetentionPoliciesTable({
     if (response.success && response.data) {
       const { totalPurged, totalFailed } = response.data;
       setEvaluateMessage(
-        `Purge complete. ${totalPurged} records purged${totalFailed > 0 ? `, ${totalFailed} failed` : ""}.`,
+        `Purge complete. ${totalPurged} records purged${totalFailed > 0 ? `, ${totalFailed} failed` : ""}.`
       );
     } else {
       setEvaluateError(response.error ?? "Purge failed.");
@@ -191,8 +180,8 @@ export function RetentionPoliciesTable({
           Retention Policies
         </h2>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Configure how long different types of data are retained before
-          automatic anonymisation or deletion.
+          Configure how long different types of data are retained before automatic anonymisation or
+          deletion.
         </p>
       </div>
 
@@ -221,9 +210,7 @@ export function RetentionPoliciesTable({
             ) : (
               rows.map((row, index) => (
                 <TableRow key={row.id}>
-                  <TableCell className="font-medium">
-                    {formatRecordType(row.recordType)}
-                  </TableCell>
+                  <TableCell className="font-medium">{formatRecordType(row.recordType)}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <Input
@@ -232,27 +219,20 @@ export function RetentionPoliciesTable({
                         value={row.retentionDays}
                         onChange={(e) =>
                           updateRow(index, {
-                            retentionDays: Math.max(
-                              1,
-                              parseInt(e.target.value) || 1,
-                            ),
+                            retentionDays: Math.max(1, parseInt(e.target.value) || 1),
                             error: null,
                           })
                         }
                         className="w-24"
                         aria-label={`Retention days for ${row.recordType}`}
                       />
-                      <span className="text-sm text-slate-500 dark:text-slate-400">
-                        days
-                      </span>
+                      <span className="text-sm text-slate-500 dark:text-slate-400">days</span>
                     </div>
                   </TableCell>
                   <TableCell>
                     <select
                       value={row.action}
-                      onChange={(e) =>
-                        updateRow(index, { action: e.target.value })
-                      }
+                      onChange={(e) => updateRow(index, { action: e.target.value })}
                       className={selectClasses}
                       aria-label={`Action for ${row.recordType}`}
                     >
@@ -266,9 +246,7 @@ export function RetentionPoliciesTable({
                   <TableCell>
                     <Switch
                       checked={row.active}
-                      onCheckedChange={(checked) =>
-                        updateRow(index, { active: checked })
-                      }
+                      onCheckedChange={(checked) => updateRow(index, { active: checked })}
                       aria-label={`Toggle ${row.recordType} policy`}
                     />
                   </TableCell>
@@ -309,12 +287,7 @@ export function RetentionPoliciesTable({
       </div>
 
       <div className="mt-4 flex items-center gap-3">
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={isEvaluating}
-          onClick={handleEvaluate}
-        >
+        <Button variant="outline" size="sm" disabled={isEvaluating} onClick={handleEvaluate}>
           {isEvaluating ? (
             <Loader2 className="mr-1.5 size-4 animate-spin" />
           ) : (
@@ -322,25 +295,16 @@ export function RetentionPoliciesTable({
           )}
           Run Retention Check
         </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={isEvaluating}
-          onClick={handleExecutePurge}
-        >
+        <Button variant="outline" size="sm" disabled={isEvaluating} onClick={handleExecutePurge}>
           Execute Purge
         </Button>
       </div>
 
       {evaluateMessage && (
-        <p className="mt-3 text-sm text-teal-600 dark:text-teal-400">
-          {evaluateMessage}
-        </p>
+        <p className="mt-3 text-sm text-teal-600 dark:text-teal-400">{evaluateMessage}</p>
       )}
       {evaluateError && (
-        <p className="mt-3 text-sm text-red-600 dark:text-red-400">
-          {evaluateError}
-        </p>
+        <p className="mt-3 text-sm text-red-600 dark:text-red-400">{evaluateError}</p>
       )}
     </div>
   );

@@ -29,7 +29,7 @@ export function useFieldDefinitionForm({
   const [error, setError] = useState<string | null>(null);
 
   const [entityType, setEntityType] = useState<EntityType>(
-    field?.entityType ?? initialEntityType ?? "PROJECT",
+    field?.entityType ?? initialEntityType ?? "PROJECT"
   );
   const [name, setName] = useState(field?.name ?? "");
   const [slugField, setSlugField] = useState(field?.slug ?? "");
@@ -37,7 +37,7 @@ export function useFieldDefinitionForm({
   const [description, setDescription] = useState(field?.description ?? "");
   const [required, setRequired] = useState(field?.required ?? false);
   const [requiredForContexts, setRequiredForContexts] = useState<PrerequisiteContext[]>(
-    (field?.requiredForContexts as PrerequisiteContext[]) ?? [],
+    (field?.requiredForContexts as PrerequisiteContext[]) ?? []
   );
   const [sortOrder, setSortOrder] = useState(field?.sortOrder ?? 0);
 
@@ -52,16 +52,16 @@ export function useFieldDefinitionForm({
 
   // Dropdown options
   const [options, setOptions] = useState<Array<{ value: string; label: string }>>(
-    field?.options ?? [{ value: "", label: "" }],
+    field?.options ?? [{ value: "", label: "" }]
   );
 
   // Visibility condition state
   const [showConditionally, setShowConditionally] = useState(!!field?.visibilityCondition);
   const [conditionFieldSlug, setConditionFieldSlug] = useState(
-    field?.visibilityCondition?.dependsOnSlug ?? "",
+    field?.visibilityCondition?.dependsOnSlug ?? ""
   );
   const [conditionOperator, setConditionOperator] = useState<ConditionOperator>(
-    (field?.visibilityCondition?.operator as ConditionOperator) ?? "eq",
+    (field?.visibilityCondition?.operator as ConditionOperator) ?? "eq"
   );
   const [conditionValue, setConditionValue] = useState<string>(() => {
     const v = field?.visibilityCondition?.value;
@@ -84,12 +84,11 @@ export function useFieldDefinitionForm({
     }
   }, [open, isEditing, field?.id]);
 
-  const totalUsageCount =
-    (fieldUsage?.templates.length ?? 0) + (fieldUsage?.clauses.length ?? 0);
+  const totalUsageCount = (fieldUsage?.templates.length ?? 0) + (fieldUsage?.clauses.length ?? 0);
 
   function toggleContext(ctx: PrerequisiteContext) {
     setRequiredForContexts((prev) =>
-      prev.includes(ctx) ? prev.filter((c) => c !== ctx) : [...prev, ctx],
+      prev.includes(ctx) ? prev.filter((c) => c !== ctx) : [...prev, ctx]
     );
   }
 
@@ -138,9 +137,7 @@ export function useFieldDefinitionForm({
     setOptions(f.options ?? [{ value: "", label: "" }]);
     setShowConditionally(!!f.visibilityCondition);
     setConditionFieldSlug(f.visibilityCondition?.dependsOnSlug ?? "");
-    setConditionOperator(
-      (f.visibilityCondition?.operator as ConditionOperator) ?? "eq",
-    );
+    setConditionOperator((f.visibilityCondition?.operator as ConditionOperator) ?? "eq");
     const v = f.visibilityCondition?.value;
     setConditionValue(Array.isArray(v) ? v.join(", ") : typeof v === "string" ? v : "");
     setError(null);
@@ -214,10 +211,7 @@ export function useFieldDefinitionForm({
     setOptions(updated);
   }
 
-  async function handleSubmit(
-    e: React.FormEvent,
-    onClose: () => void,
-  ) {
+  async function handleSubmit(e: React.FormEvent, onClose: () => void) {
     e.preventDefault();
     setError(null);
 
@@ -290,33 +284,60 @@ export function useFieldDefinitionForm({
     isSubmitting,
     error,
     // Core fields
-    entityType, setEntityType,
-    name, setName,
-    slugField, setSlugField,
-    fieldType, setFieldType,
-    description, setDescription,
-    required, setRequired,
-    requiredForContexts, toggleContext,
-    sortOrder, setSortOrder,
+    entityType,
+    setEntityType,
+    name,
+    setName,
+    slugField,
+    setSlugField,
+    fieldType,
+    setFieldType,
+    description,
+    setDescription,
+    required,
+    setRequired,
+    requiredForContexts,
+    toggleContext,
+    sortOrder,
+    setSortOrder,
     // Validation fields
-    minLength, setMinLength,
-    maxLength, setMaxLength,
-    pattern, setPattern,
-    minNumber, setMinNumber,
-    maxNumber, setMaxNumber,
-    minDate, setMinDate,
-    maxDate, setMaxDate,
+    minLength,
+    setMinLength,
+    maxLength,
+    setMaxLength,
+    pattern,
+    setPattern,
+    minNumber,
+    setMinNumber,
+    maxNumber,
+    setMaxNumber,
+    minDate,
+    setMinDate,
+    maxDate,
+    setMaxDate,
     // Dropdown options
-    options, addOption, removeOption, updateOption,
+    options,
+    addOption,
+    removeOption,
+    updateOption,
     // Visibility condition
-    showConditionally, setShowConditionally,
-    conditionFieldSlug, setConditionFieldSlug,
-    conditionOperator, setConditionOperator,
-    conditionValue, setConditionValue,
+    showConditionally,
+    setShowConditionally,
+    conditionFieldSlug,
+    setConditionFieldSlug,
+    conditionOperator,
+    setConditionOperator,
+    conditionValue,
+    setConditionValue,
     clearCondition,
     // Field usage
-    fieldUsage, usageOpen, setUsageOpen, totalUsageCount,
+    fieldUsage,
+    usageOpen,
+    setUsageOpen,
+    totalUsageCount,
     // Form lifecycle
-    resetForm, populateFromField, handleSubmit,
+    resetForm,
+    populateFromField,
+    handleSubmit,
   };
 }

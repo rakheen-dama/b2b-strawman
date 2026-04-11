@@ -1,7 +1,39 @@
 import { getAuthContext, getCurrentUserEmail } from "@/lib/auth";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
-import { api, handleApiError, getFieldDefinitions, getFieldGroups, getGroupMembers, getTags, getTemplates, getViews } from "@/lib/api";
-import type { OrgMember, Project, ProjectStatus, Customer, Document, ProjectMember, ProjectRole, Task, ProjectTimeSummary, MemberTimeSummary, TaskTimeSummary, BillingRate, OrgSettings, BudgetStatusResponse, ProjectProfitabilityResponse, FieldDefinitionResponse, FieldGroupResponse, FieldGroupMemberResponse, TagResponse, TemplateListResponse, SavedViewResponse, PaginatedExpenseResponse } from "@/lib/types";
+import {
+  api,
+  handleApiError,
+  getFieldDefinitions,
+  getFieldGroups,
+  getGroupMembers,
+  getTags,
+  getTemplates,
+  getViews,
+} from "@/lib/api";
+import type {
+  OrgMember,
+  Project,
+  ProjectStatus,
+  Customer,
+  Document,
+  ProjectMember,
+  ProjectRole,
+  Task,
+  ProjectTimeSummary,
+  MemberTimeSummary,
+  TaskTimeSummary,
+  BillingRate,
+  OrgSettings,
+  BudgetStatusResponse,
+  ProjectProfitabilityResponse,
+  FieldDefinitionResponse,
+  FieldGroupResponse,
+  FieldGroupMemberResponse,
+  TagResponse,
+  TemplateListResponse,
+  SavedViewResponse,
+  PaginatedExpenseResponse,
+} from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EditProjectDialog } from "@/components/projects/edit-project-dialog";
@@ -25,7 +57,10 @@ import { GeneratedDocumentsList } from "@/components/templates/GeneratedDocument
 import { ProjectCommentsSection } from "@/components/projects/project-comments-section";
 import { ExpenseList } from "@/components/expenses/expense-list";
 import { LogExpenseDialog } from "@/components/expenses/log-expense-dialog";
-import { getProjectRequests, type InformationRequestResponse } from "@/lib/api/information-requests";
+import {
+  getProjectRequests,
+  type InformationRequestResponse,
+} from "@/lib/api/information-requests";
 import { RequestList } from "@/components/information-requests/request-list";
 import { CreateRequestDialog } from "@/components/information-requests/create-request-dialog";
 import {
@@ -33,11 +68,7 @@ import {
   fetchProjectUnbilledSummary,
   fetchTemplateReadiness,
 } from "@/lib/api/setup-status";
-import type {
-  ProjectSetupStatus,
-  UnbilledTimeSummary,
-  TemplateReadiness,
-} from "@/lib/types";
+import type { ProjectSetupStatus, UnbilledTimeSummary, TemplateReadiness } from "@/lib/types";
 import type { SetupStep } from "@/components/setup/types";
 import { formatDate, formatLocalDate, isOverdue } from "@/lib/format";
 import { SaveAsTemplateDialog } from "@/components/templates/SaveAsTemplateDialog";
@@ -51,12 +82,17 @@ import { TerminologyText } from "@/components/terminology-text";
 import { getProjectStaffing, type ProjectStaffingResponse } from "@/lib/api/capacity";
 import { getCurrentMonday, formatDate as formatDateUtil, addWeeks } from "@/lib/date-utils";
 import { createSavedViewAction } from "./view-actions";
-import {
-  PROMOTED_PROJECT_SLUGS,
-  PROMOTED_TASK_SLUGS,
-} from "@/lib/constants/promoted-field-slugs";
+import { PROMOTED_PROJECT_SLUGS, PROMOTED_TASK_SLUGS } from "@/lib/constants/promoted-field-slugs";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, AlertTriangle, Calendar, LayoutTemplate, Pencil, Receipt, Trash2 } from "lucide-react";
+import {
+  ArrowLeft,
+  AlertTriangle,
+  Calendar,
+  LayoutTemplate,
+  Pencil,
+  Receipt,
+  Trash2,
+} from "lucide-react";
 import Link from "next/link";
 
 const ROLE_BADGE: Record<ProjectRole, { label: string; variant: "lead" | "member" }> = {
@@ -215,9 +251,7 @@ export default async function ProjectDetailPage({
     const [summaryRes, byTaskRes, byMemberRes] = await Promise.all([
       api.get<ProjectTimeSummary>(`/api/projects/${id}/time-summary`),
       api.get<TaskTimeSummary[]>(`/api/projects/${id}/time-summary/by-task`),
-      api
-        .get<MemberTimeSummary[]>(`/api/projects/${id}/time-summary/by-member`)
-        .catch(() => null),
+      api.get<MemberTimeSummary[]>(`/api/projects/${id}/time-summary/by-member`).catch(() => null),
     ]);
     timeSummary = summaryRes;
     timeSummaryByTask = byTaskRes;
@@ -233,7 +267,7 @@ export default async function ProjectDetailPage({
   };
   try {
     expenseData = await api.get<PaginatedExpenseResponse>(
-      `/api/projects/${id}/expenses?sort=date,desc`,
+      `/api/projects/${id}/expenses?sort=date,desc`
     );
   } catch {
     // Non-fatal: show empty expenses tab
@@ -260,9 +294,7 @@ export default async function ProjectDetailPage({
   // Budget status for the "Budget" tab
   let budgetStatus: BudgetStatusResponse | null = null;
   try {
-    budgetStatus = await api.get<BudgetStatusResponse>(
-      `/api/projects/${id}/budget`
-    );
+    budgetStatus = await api.get<BudgetStatusResponse>(`/api/projects/${id}/budget`);
   } catch {
     // Non-fatal: 404 means no budget set, other errors show empty state
   }
@@ -272,11 +304,7 @@ export default async function ProjectDetailPage({
   try {
     const monday = getCurrentMonday();
     const weekEnd = addWeeks(monday, 4);
-    projectStaffing = await getProjectStaffing(
-      id,
-      formatDateUtil(monday),
-      formatDateUtil(weekEnd),
-    );
+    projectStaffing = await getProjectStaffing(id, formatDateUtil(monday), formatDateUtil(weekEnd));
   } catch {
     // Non-fatal: staffing tab will show empty state
   }
@@ -325,7 +353,7 @@ export default async function ProjectDetailPage({
     const appliedGroups = project.appliedFieldGroups ?? [];
     if (appliedGroups.length > 0) {
       const memberResults = await Promise.allSettled(
-        appliedGroups.map((gId) => getGroupMembers(gId)),
+        appliedGroups.map((gId) => getGroupMembers(gId))
       );
       memberResults.forEach((result, i) => {
         if (result.status === "fulfilled") {
@@ -342,10 +370,7 @@ export default async function ProjectDetailPage({
   let taskFieldGroups: FieldGroupResponse[] = [];
   const taskGroupMembers: Record<string, FieldGroupMemberResponse[]> = {};
   try {
-    const [defs, groups] = await Promise.all([
-      getFieldDefinitions("TASK"),
-      getFieldGroups("TASK"),
-    ]);
+    const [defs, groups] = await Promise.all([getFieldDefinitions("TASK"), getFieldGroups("TASK")]);
     taskFieldDefs = defs.filter((d) => !PROMOTED_TASK_SLUGS.has(d.slug));
     taskFieldGroups = groups;
 
@@ -353,7 +378,7 @@ export default async function ProjectDetailPage({
     const activeGroupIds = groups.filter((g) => g.active).map((g) => g.id);
     if (activeGroupIds.length > 0) {
       const memberResults = await Promise.allSettled(
-        activeGroupIds.map((gId) => getGroupMembers(gId)),
+        activeGroupIds.map((gId) => getGroupMembers(gId))
       );
       memberResults.forEach((result, i) => {
         if (result.status === "fulfilled") {
@@ -431,16 +456,17 @@ export default async function ProjectDetailPage({
               {project.name}
             </h1>
             {roleBadge && <Badge variant={roleBadge.variant}>{roleBadge.label}</Badge>}
-            <Badge variant={PROJECT_STATUS_BADGE[project.status].variant} data-testid="project-status-badge">
+            <Badge
+              variant={PROJECT_STATUS_BADGE[project.status].variant}
+              data-testid="project-status-badge"
+            >
               {PROJECT_STATUS_BADGE[project.status].label}
             </Badge>
           </div>
           {project.description ? (
             <p className="mt-2 text-slate-600 dark:text-slate-400">{project.description}</p>
           ) : (
-            <p className="mt-2 text-sm italic text-slate-400 dark:text-slate-600">
-              No description
-            </p>
+            <p className="mt-2 text-sm text-slate-400 italic dark:text-slate-600">No description</p>
           )}
           {/* Due date with overdue warning (208.8) */}
           {project.dueDate && (
@@ -449,7 +475,7 @@ export default async function ProjectDetailPage({
                 "mt-2 inline-flex items-center gap-1 text-sm",
                 project.status === "ACTIVE" && isOverdue(project.dueDate)
                   ? "font-medium text-red-600 dark:text-red-400"
-                  : "text-slate-500 dark:text-slate-400",
+                  : "text-slate-500 dark:text-slate-400"
               )}
               data-testid="project-due-date"
             >
@@ -463,7 +489,10 @@ export default async function ProjectDetailPage({
           )}
           {/* Customer display (208.12) */}
           {customers.length > 0 ? (
-            <p className="mt-2 text-sm text-slate-600 dark:text-slate-400" data-testid="project-customer-link">
+            <p
+              className="mt-2 text-sm text-slate-600 dark:text-slate-400"
+              data-testid="project-customer-link"
+            >
               <TerminologyText template="{Customer}:" />{" "}
               <Link
                 href={`/org/${slug}/customers/${customers[0].id}`}
@@ -473,7 +502,10 @@ export default async function ProjectDetailPage({
               </Link>
             </p>
           ) : (
-            <p className="mt-2 text-sm text-slate-400 dark:text-slate-600" data-testid="project-internal-label">
+            <p
+              className="mt-2 text-sm text-slate-400 dark:text-slate-600"
+              data-testid="project-internal-label"
+            >
               Internal Project
             </p>
           )}
@@ -488,7 +520,7 @@ export default async function ProjectDetailPage({
                   className="inline-flex items-center gap-1"
                   data-testid="project-reference-number"
                 >
-                  <span className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-500">
+                  <span className="text-xs tracking-wide text-slate-500 uppercase dark:text-slate-500">
                     Ref
                   </span>
                   <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs text-slate-700 dark:bg-slate-800 dark:text-slate-300">
@@ -512,12 +544,10 @@ export default async function ProjectDetailPage({
               )}
               {project.workType && (
                 <span data-testid="project-work-type">
-                  <span className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-500">
+                  <span className="text-xs tracking-wide text-slate-500 uppercase dark:text-slate-500">
                     Type
                   </span>{" "}
-                  <span className="text-slate-700 dark:text-slate-300">
-                    {project.workType}
-                  </span>
+                  <span className="text-slate-700 dark:text-slate-300">{project.workType}</span>
                 </span>
               )}
             </div>
@@ -574,7 +604,11 @@ export default async function ProjectDetailPage({
             )}
             {isOwner && (
               <DeleteProjectDialog slug={slug} projectId={project.id} projectName={project.name}>
-                <Button variant="ghost" size="sm" className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950 dark:hover:text-red-300">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950 dark:hover:text-red-300"
+                >
                   <Trash2 className="mr-1.5 size-4" />
                   Delete
                 </Button>
@@ -618,7 +652,7 @@ export default async function ProjectDetailPage({
 
       {/* Tags */}
       <div className="space-y-2">
-        <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+        <p className="text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
           Tags
         </p>
         <TagInput
@@ -713,11 +747,7 @@ export default async function ProjectDetailPage({
           />
         }
         financialsPanel={
-          canManage ? (
-            <ProjectFinancialsTab
-              profitability={projectProfitability}
-            />
-          ) : undefined
+          canManage ? <ProjectFinancialsTab profitability={projectProfitability} /> : undefined
         }
         ratesPanel={
           canManage ? (
@@ -776,11 +806,7 @@ export default async function ProjectDetailPage({
                   projectName={project.name}
                 />
               </div>
-              <RequestList
-                requests={projectRequests}
-                slug={slug}
-                showCustomer={false}
-              />
+              <RequestList requests={projectRequests} slug={slug} showCustomer={false} />
             </div>
           ) : undefined
         }
@@ -789,15 +815,9 @@ export default async function ProjectDetailPage({
             <ProjectCommentsSection projectId={id} orgSlug={slug} />
           ) : undefined
         }
-        staffingPanel={
-          <ProjectStaffingTab staffing={projectStaffing} />
-        }
-        courtDatesPanel={
-          <ProjectCourtDatesTab projectId={id} slug={slug} />
-        }
-        adversePartiesPanel={
-          <ProjectAdversePartiesTab projectId={id} slug={slug} />
-        }
+        staffingPanel={<ProjectStaffingTab staffing={projectStaffing} />}
+        courtDatesPanel={<ProjectCourtDatesTab projectId={id} slug={slug} />}
+        adversePartiesPanel={<ProjectAdversePartiesTab projectId={id} slug={slug} />}
         trustPanel={
           customers.length > 0 ? (
             <TrustBalanceCard
@@ -808,9 +828,7 @@ export default async function ProjectDetailPage({
             />
           ) : undefined
         }
-        activityPanel={
-          <ActivityFeed projectId={id} orgSlug={slug} />
-        }
+        activityPanel={<ActivityFeed projectId={id} orgSlug={slug} />}
       />
     </div>
   );

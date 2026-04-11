@@ -11,13 +11,7 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/empty-state";
 import { RelativeDate } from "@/components/ui/relative-date";
@@ -52,10 +46,7 @@ function getInitials(name: string | null | undefined): string {
     .toUpperCase();
 }
 
-export function RecentActivityWidget({
-  items,
-  orgSlug: _orgSlug,
-}: RecentActivityWidgetProps) {
+export function RecentActivityWidget({ items, orgSlug: _orgSlug }: RecentActivityWidgetProps) {
   if (items === null) {
     return (
       <Card>
@@ -63,7 +54,7 @@ export function RecentActivityWidget({
           <CardTitle>Recent Activity</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground italic">
+          <p className="text-muted-foreground text-sm italic">
             Unable to load activity. Please try again.
           </p>
         </CardContent>
@@ -101,7 +92,7 @@ export function RecentActivityWidget({
               key={item.eventId}
               className={cn(
                 "flex items-center gap-2 rounded-md px-2 py-1.5",
-                idx % 2 === 1 && "bg-slate-50/50 dark:bg-slate-900/50",
+                idx % 2 === 1 && "bg-slate-50/50 dark:bg-slate-900/50"
               )}
             >
               <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-slate-200 text-[10px] font-medium text-slate-700 dark:bg-slate-700 dark:text-slate-200">

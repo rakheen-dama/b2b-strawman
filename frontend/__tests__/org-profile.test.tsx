@@ -22,7 +22,7 @@ describe("OrgProfileProvider and ModuleGate", () => {
         terminologyNamespace="en-ZA-legal"
       >
         <TestConsumer />
-      </OrgProfileProvider>,
+      </OrgProfileProvider>
     );
 
     expect(screen.getByTestId("profile").textContent).toBe("legal-za");
@@ -33,9 +33,7 @@ describe("OrgProfileProvider and ModuleGate", () => {
     function TestConsumer() {
       const { isModuleEnabled } = useOrgProfile();
       return (
-        <span data-testid="result">
-          {isModuleEnabled("trust_accounting") ? "true" : "false"}
-        </span>
+        <span data-testid="result">{isModuleEnabled("trust_accounting") ? "true" : "false"}</span>
       );
     }
 
@@ -46,7 +44,7 @@ describe("OrgProfileProvider and ModuleGate", () => {
         terminologyNamespace={null}
       >
         <TestConsumer />
-      </OrgProfileProvider>,
+      </OrgProfileProvider>
     );
 
     expect(screen.getByTestId("result").textContent).toBe("true");
@@ -57,9 +55,7 @@ describe("OrgProfileProvider and ModuleGate", () => {
     function TestConsumer() {
       const { isModuleEnabled } = useOrgProfile();
       return (
-        <span data-testid="result">
-          {isModuleEnabled("trust_accounting") ? "true" : "false"}
-        </span>
+        <span data-testid="result">{isModuleEnabled("trust_accounting") ? "true" : "false"}</span>
       );
     }
 
@@ -70,7 +66,7 @@ describe("OrgProfileProvider and ModuleGate", () => {
         terminologyNamespace={null}
       >
         <TestConsumer />
-      </OrgProfileProvider>,
+      </OrgProfileProvider>
     );
 
     expect(screen.getByTestId("result").textContent).toBe("false");
@@ -87,7 +83,7 @@ describe("OrgProfileProvider and ModuleGate", () => {
         <ModuleGate module="trust_accounting" fallback={<span>No Access</span>}>
           <span>Trust Accounting Content</span>
         </ModuleGate>
-      </OrgProfileProvider>,
+      </OrgProfileProvider>
     );
 
     // Module enabled — children visible
@@ -104,7 +100,7 @@ describe("OrgProfileProvider and ModuleGate", () => {
         <ModuleGate module="trust_accounting" fallback={<span>No Access</span>}>
           <span>Trust Accounting Content</span>
         </ModuleGate>
-      </OrgProfileProvider>,
+      </OrgProfileProvider>
     );
 
     // Module disabled — fallback visible

@@ -6,8 +6,7 @@ import { Button } from "@/components/ui/button";
 const mockCheckPrerequisitesAction = vi.fn();
 
 vi.mock("@/lib/actions/prerequisite-actions", () => ({
-  checkPrerequisitesAction: (...args: unknown[]) =>
-    mockCheckPrerequisitesAction(...args),
+  checkPrerequisitesAction: (...args: unknown[]) => mockCheckPrerequisitesAction(...args),
   updateEntityCustomFieldsAction: vi.fn(),
 }));
 
@@ -41,7 +40,7 @@ describe("PrerequisiteGatedAction", () => {
         onAction={onAction}
       >
         <Button>Generate Document</Button>
-      </PrerequisiteGatedAction>,
+      </PrerequisiteGatedAction>
     );
 
     await user.click(screen.getByRole("button", { name: "Generate Document" }));
@@ -49,9 +48,7 @@ describe("PrerequisiteGatedAction", () => {
     await waitFor(() => {
       expect(onAction).toHaveBeenCalled();
     });
-    expect(
-      screen.queryByText("Prerequisites: Document Generation"),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText("Prerequisites: Document Generation")).not.toBeInTheDocument();
   });
 
   it("calls onAction after modal resolves", async () => {
@@ -90,7 +87,7 @@ describe("PrerequisiteGatedAction", () => {
         onAction={onAction}
       >
         <Button>Generate Document</Button>
-      </PrerequisiteGatedAction>,
+      </PrerequisiteGatedAction>
     );
 
     // Click trigger — prereq check fails
@@ -98,15 +95,11 @@ describe("PrerequisiteGatedAction", () => {
 
     // Modal appears
     await waitFor(() => {
-      expect(
-        screen.getByText("Prerequisites: Document Generation"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Prerequisites: Document Generation")).toBeInTheDocument();
     });
 
     // Click "Check & Continue" in modal
-    await user.click(
-      screen.getByRole("button", { name: /check & continue/i }),
-    );
+    await user.click(screen.getByRole("button", { name: /check & continue/i }));
 
     await waitFor(() => {
       expect(onAction).toHaveBeenCalled();
@@ -140,15 +133,13 @@ describe("PrerequisiteGatedAction", () => {
         onAction={vi.fn()}
       >
         <Button>Generate Document</Button>
-      </PrerequisiteGatedAction>,
+      </PrerequisiteGatedAction>
     );
 
     await user.click(screen.getByRole("button", { name: "Generate Document" }));
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Prerequisites: Document Generation"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Prerequisites: Document Generation")).toBeInTheDocument();
       expect(screen.getByText("Country is required")).toBeInTheDocument();
     });
   });

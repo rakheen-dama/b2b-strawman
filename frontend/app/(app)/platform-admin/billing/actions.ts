@@ -36,7 +36,7 @@ export async function listBillingTenants(
   status?: string,
   billingMethod?: string,
   profile?: string,
-  search?: string,
+  search?: string
 ): Promise<ActionResult<AdminTenantBilling[]>> {
   try {
     const params = new URLSearchParams();
@@ -60,15 +60,13 @@ function isValidOrgId(orgId: string): boolean {
   return /^[\w-]+$/.test(orgId);
 }
 
-export async function getBillingTenant(
-  orgId: string,
-): Promise<ActionResult<AdminTenantBilling>> {
+export async function getBillingTenant(orgId: string): Promise<ActionResult<AdminTenantBilling>> {
   if (!isValidOrgId(orgId)) {
     return { success: false, error: "Invalid organization ID" };
   }
   try {
     const response = await api.get<AdminTenantBilling>(
-      `/api/platform-admin/billing/tenants/${orgId}`,
+      `/api/platform-admin/billing/tenants/${orgId}`
     );
     return { success: true, data: response };
   } catch (error) {
@@ -81,7 +79,7 @@ export async function getBillingTenant(
 
 export async function overrideBilling(
   orgId: string,
-  data: AdminBillingOverride,
+  data: AdminBillingOverride
 ): Promise<ActionResult<AdminTenantBilling>> {
   if (!isValidOrgId(orgId)) {
     return { success: false, error: "Invalid organization ID" };
@@ -89,7 +87,7 @@ export async function overrideBilling(
   try {
     const response = await api.put<AdminTenantBilling>(
       `/api/platform-admin/billing/tenants/${orgId}/status`,
-      data,
+      data
     );
     revalidatePath("/platform-admin/billing");
     return { success: true, data: response };
@@ -103,7 +101,7 @@ export async function overrideBilling(
 
 export async function extendTrial(
   orgId: string,
-  days: number,
+  days: number
 ): Promise<ActionResult<AdminTenantBilling>> {
   if (!isValidOrgId(orgId)) {
     return { success: false, error: "Invalid organization ID" };
@@ -111,7 +109,7 @@ export async function extendTrial(
   try {
     const response = await api.post<AdminTenantBilling>(
       `/api/platform-admin/billing/tenants/${orgId}/extend-trial`,
-      { days },
+      { days }
     );
     revalidatePath("/platform-admin/billing");
     return { success: true, data: response };

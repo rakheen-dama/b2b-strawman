@@ -2,13 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { Users, AlertTriangle } from "lucide-react";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import type { AggregatedCompletenessResponse } from "@/lib/types";
 
@@ -17,10 +11,7 @@ interface IncompleteProfilesWidgetProps {
   orgSlug: string;
 }
 
-export function IncompleteProfilesWidget({
-  data,
-  orgSlug,
-}: IncompleteProfilesWidgetProps) {
+export function IncompleteProfilesWidget({ data, orgSlug }: IncompleteProfilesWidgetProps) {
   const router = useRouter();
 
   if (data === null) {
@@ -33,7 +24,7 @@ export function IncompleteProfilesWidget({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground italic">
+          <p className="text-muted-foreground text-sm italic">
             Unable to load profile completeness data.
           </p>
         </CardContent>
@@ -71,18 +62,15 @@ export function IncompleteProfilesWidget({
         <div className="flex items-center gap-2">
           <AlertTriangle className="h-4 w-4 shrink-0 text-amber-500" />
           <p className="text-sm">
-            <span className="font-mono font-semibold tabular-nums">
-              {data.incompleteCount}
-            </span>{" "}
-            of{" "}
-            <span className="font-mono tabular-nums">{data.totalCount}</span>{" "}
-            customers have incomplete profiles
+            <span className="font-mono font-semibold tabular-nums">{data.incompleteCount}</span> of{" "}
+            <span className="font-mono tabular-nums">{data.totalCount}</span> customers have
+            incomplete profiles
           </p>
         </div>
 
         {data.topMissingFields.length > 0 && (
           <div className="space-y-1.5">
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            <p className="text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
               Top Missing Fields
             </p>
             <ul className="space-y-1">
@@ -90,19 +78,14 @@ export function IncompleteProfilesWidget({
                 <li key={field.fieldSlug}>
                   <button
                     type="button"
-                    onClick={() =>
-                      router.push(
-                        `/org/${orgSlug}/customers?showIncomplete=true`,
-                      )
-                    }
+                    onClick={() => router.push(`/org/${orgSlug}/customers?showIncomplete=true`)}
                     className="flex w-full items-center justify-between rounded-md px-2 py-1 text-sm transition-colors hover:bg-slate-50 dark:hover:bg-slate-900"
                   >
                     <span className="truncate text-slate-700 dark:text-slate-300">
                       {field.fieldName}
                     </span>
-                    <span className="ml-2 shrink-0 font-mono text-xs tabular-nums text-slate-500">
-                      {field.customerCount}{" "}
-                      {field.customerCount === 1 ? "customer" : "customers"}
+                    <span className="ml-2 shrink-0 font-mono text-xs text-slate-500 tabular-nums">
+                      {field.customerCount} {field.customerCount === 1 ? "customer" : "customers"}
                     </span>
                   </button>
                 </li>

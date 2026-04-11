@@ -39,12 +39,12 @@ interface ActionResult<T = void> {
 }
 
 export async function provisionDemo(
-  data: DemoProvisionFormData,
+  data: DemoProvisionFormData
 ): Promise<ActionResult<DemoProvisionResponse>> {
   try {
     const response = await api.post<DemoProvisionResponse>(
       "/api/platform-admin/demo/provision",
-      data,
+      data
     );
     revalidatePath("/platform-admin/demo");
     return { success: true, data: response };
@@ -56,19 +56,15 @@ export async function provisionDemo(
   }
 }
 
-export async function listDemoTenants(): Promise<
-  ActionResult<AdminTenantBilling[]>
-> {
+export async function listDemoTenants(): Promise<ActionResult<AdminTenantBilling[]>> {
   try {
     // TODO: The backend billingMethod filter accepts a single value. Fetch PILOT
     // and COMPLIMENTARY separately to avoid pulling the full tenant list.
     // Tracked as a backend enhancement for multi-value billingMethod filtering.
     const [pilotResult, compResult] = await Promise.all([
+      api.get<AdminTenantBilling[]>("/api/platform-admin/billing/tenants?billingMethod=PILOT"),
       api.get<AdminTenantBilling[]>(
-        "/api/platform-admin/billing/tenants?billingMethod=PILOT",
-      ),
-      api.get<AdminTenantBilling[]>(
-        "/api/platform-admin/billing/tenants?billingMethod=COMPLIMENTARY",
+        "/api/platform-admin/billing/tenants?billingMethod=COMPLIMENTARY"
       ),
     ]);
     const demoTenants = [...pilotResult, ...compResult];
@@ -83,16 +79,13 @@ export async function listDemoTenants(): Promise<
 
 export async function deleteDemoTenant(
   orgId: string,
-  confirmName: string,
+  confirmName: string
 ): Promise<ActionResult<DemoCleanupResponse>> {
   try {
-    const response = await apiRequest<DemoCleanupResponse>(
-      `/api/platform-admin/demo/${orgId}`,
-      {
-        method: "DELETE",
-        body: { confirmOrganizationName: confirmName },
-      },
-    );
+    const response = await apiRequest<DemoCleanupResponse>(`/api/platform-admin/demo/${orgId}`, {
+      method: "DELETE",
+      body: { confirmOrganizationName: confirmName },
+    });
     revalidatePath("/platform-admin/demo");
     return { success: true, data: response };
   } catch (error) {
@@ -103,13 +96,9 @@ export async function deleteDemoTenant(
   }
 }
 
-export async function reseedDemoTenant(
-  orgId: string,
-): Promise<ActionResult<DemoReseedResponse>> {
+export async function reseedDemoTenant(orgId: string): Promise<ActionResult<DemoReseedResponse>> {
   try {
-    const response = await api.post<DemoReseedResponse>(
-      `/api/platform-admin/demo/${orgId}/reseed`,
-    );
+    const response = await api.post<DemoReseedResponse>(`/api/platform-admin/demo/${orgId}/reseed`);
     revalidatePath("/platform-admin/demo");
     return { success: true, data: response };
   } catch (error) {

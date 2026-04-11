@@ -1,11 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Variable } from "lucide-react";
 import { useState } from "react";
 import type { TriggerType } from "@/lib/api/automations";
@@ -63,15 +59,10 @@ const TRIGGER_VARIABLES: Record<string, { value: string; label: string }[]> = {
     { value: "project.name", label: "Project Name" },
     { value: "customer.name", label: "Customer Name" },
   ],
-  INFORMATION_REQUEST_COMPLETED: [
-    { value: "customer.name", label: "Customer Name" },
-  ],
+  INFORMATION_REQUEST_COMPLETED: [{ value: "customer.name", label: "Customer Name" }],
 };
 
-export function VariableInserter({
-  triggerType,
-  onInsert,
-}: VariableInserterProps) {
+export function VariableInserter({ triggerType, onInsert }: VariableInserterProps) {
   const [open, setOpen] = useState(false);
 
   const triggerVars = triggerType ? (TRIGGER_VARIABLES[triggerType] ?? []) : [];
@@ -110,9 +101,7 @@ export function VariableInserter({
               <code className="mr-2 text-xs text-teal-600 dark:text-teal-400">
                 {`{{${v.value}}}`}
               </code>
-              <span className="text-xs text-slate-500 dark:text-slate-400">
-                {v.label}
-              </span>
+              <span className="text-xs text-slate-500 dark:text-slate-400">{v.label}</span>
             </button>
           ))}
         </div>

@@ -26,17 +26,13 @@ export function InvoiceTotalsSection({ invoice }: InvoiceTotalsSectionProps) {
               <span>
                 {entry.taxRateName} ({entry.taxRatePercent}%)
               </span>
-              <span>
-                {formatCurrency(entry.taxAmount, invoice.currency)}
-              </span>
+              <span>{formatCurrency(entry.taxAmount, invoice.currency)}</span>
             </div>
           ))
         ) : (
           <div className="flex justify-between text-sm text-slate-600 dark:text-slate-400">
             <span>{invoice.taxLabel ?? "Tax"}</span>
-            <span>
-              {formatCurrency(invoice.taxAmount, invoice.currency)}
-            </span>
+            <span>{formatCurrency(invoice.taxAmount, invoice.currency)}</span>
           </div>
         )}
 

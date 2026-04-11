@@ -4,11 +4,7 @@ import { getSessionIdentity } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
-export default async function PlatformAdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function PlatformAdminLayout({ children }: { children: React.ReactNode }) {
   let groups: string[] = [];
   try {
     const identity = await getSessionIdentity();
@@ -23,7 +19,7 @@ export default async function PlatformAdminLayout({
 
   return (
     <div>
-      <nav className="border-b border-slate-200 bg-white px-6 py-3 flex gap-6">
+      <nav className="flex gap-6 border-b border-slate-200 bg-white px-6 py-3">
         <Link
           href="/platform-admin/access-requests"
           className="text-sm font-medium text-slate-700 hover:text-slate-950"

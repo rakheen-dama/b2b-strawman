@@ -32,7 +32,7 @@ export interface BatchSaveResult {
 
 export async function saveWeeklyEntries(
   slug: string,
-  entries: BatchTimeEntryItem[],
+  entries: BatchTimeEntryItem[]
 ): Promise<{ success: boolean; result?: BatchSaveResult; error?: string }> {
   try {
     const result = await api.post<BatchSaveResult>("/api/time-entries/batch", {
@@ -51,7 +51,7 @@ export async function saveWeeklyEntries(
 
 export async function fetchWeekEntries(
   from: string,
-  to: string,
+  to: string
 ): Promise<import("@/lib/types").MyWorkTimeEntryItem[]> {
   try {
     return await api.get(`/api/my-work/time-entries?from=${from}&to=${to}`);
@@ -66,7 +66,7 @@ export async function fetchWeekEntries(
  * Used by Copy Previous Week feature to pre-fill the current week's grid.
  */
 export async function fetchPreviousWeekEntries(
-  weekStart: string,
+  weekStart: string
 ): Promise<import("@/lib/types").MyWorkTimeEntryItem[]> {
   // weekStart is a Monday (YYYY-MM-DD). Previous week = weekStart-7 to weekStart-1
   const [y, m, d] = weekStart.split("-").map(Number);

@@ -2,10 +2,7 @@ import "server-only";
 
 import { redirect } from "next/navigation";
 import { api, ApiError, API_BASE, getAuthFetchOptions } from "./client";
-import type {
-  OrgSettings,
-  UpdateOrgSettingsRequest,
-} from "@/lib/types";
+import type { OrgSettings, UpdateOrgSettingsRequest } from "@/lib/types";
 
 // ---- Org Settings (Branding) ----
 
@@ -21,24 +18,17 @@ export async function getOrgSettings(): Promise<OrgSettings> {
  * Falls back to `false` (treat as disabled) on any fetch error so we render
  * the disabled fallback rather than leaking data on transient failures.
  */
-export async function isModuleEnabledServer(
-  moduleId: string,
-): Promise<boolean> {
+export async function isModuleEnabledServer(moduleId: string): Promise<boolean> {
   try {
     const settings = await getOrgSettings();
     return (settings.enabledModules ?? []).includes(moduleId);
   } catch (error) {
-    console.error(
-      `Failed to fetch org settings for module check (${moduleId}):`,
-      error,
-    );
+    console.error(`Failed to fetch org settings for module check (${moduleId}):`, error);
     return false;
   }
 }
 
-export async function updateOrgSettings(
-  req: UpdateOrgSettingsRequest,
-): Promise<OrgSettings> {
+export async function updateOrgSettings(req: UpdateOrgSettingsRequest): Promise<OrgSettings> {
   return api.put<OrgSettings>("/api/settings", req);
 }
 

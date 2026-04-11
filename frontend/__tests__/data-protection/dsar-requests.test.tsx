@@ -13,14 +13,11 @@ vi.mock("next/navigation", () => ({
 // Mock server actions
 const mockUpdateDsarStatus = vi.fn();
 const mockCreateDsarRequest = vi.fn();
-vi.mock(
-  "@/app/(app)/org/[slug]/settings/data-protection/requests/actions",
-  () => ({
-    updateDsarStatus: (...args: unknown[]) => mockUpdateDsarStatus(...args),
-    createDsarRequest: (...args: unknown[]) => mockCreateDsarRequest(...args),
-    fetchDsarRequests: vi.fn().mockResolvedValue([]),
-  }),
-);
+vi.mock("@/app/(app)/org/[slug]/settings/data-protection/requests/actions", () => ({
+  updateDsarStatus: (...args: unknown[]) => mockUpdateDsarStatus(...args),
+  createDsarRequest: (...args: unknown[]) => mockCreateDsarRequest(...args),
+  fetchDsarRequests: vi.fn().mockResolvedValue([]),
+}));
 
 import { DsarRequestsTable } from "@/components/data-protection/dsar-requests-table";
 import { LogDsarRequestDialog } from "@/components/data-protection/log-dsar-dialog";
@@ -30,8 +27,7 @@ import type { DsarRequest } from "@/lib/types/data-protection";
 const today = new Date().toLocaleDateString("en-CA"); // "YYYY-MM-DD"
 const [y, m, d] = today.split("-").map(Number);
 const pastDate = `${y - 1}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-const soonDate = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)
-  .toLocaleDateString("en-CA");
+const soonDate = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toLocaleDateString("en-CA");
 const futureDate = `${y + 1}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
 
 const baseRequest: DsarRequest = {
@@ -84,13 +80,11 @@ describe("DsarRequestsTable", () => {
     // "Overdue" appears in both the DeadlineCell span (text-red-600) and the Badge
     // Find the DeadlineCell span by its class
     const overdueElements = screen.getAllByText("Overdue");
-    const overdueSpan = overdueElements.find((el) =>
-      el.classList.contains("text-red-600"),
-    );
+    const overdueSpan = overdueElements.find((el) => el.classList.contains("text-red-600"));
     expect(overdueSpan).toBeDefined();
     // Also verify the destructive badge exists
     const overdueBadge = overdueElements.find(
-      (el) => el.getAttribute("data-variant") === "destructive",
+      (el) => el.getAttribute("data-variant") === "destructive"
     );
     expect(overdueBadge).toBeDefined();
   });
@@ -114,15 +108,9 @@ describe("DsarRequestsTable", () => {
     const user = userEvent.setup();
     mockUpdateDsarStatus.mockResolvedValue({ success: true });
     render(<DsarRequestsTable requests={[baseRequest]} slug="acme" />);
-    await user.click(
-      screen.getByRole("button", { name: /mark as processing/i }),
-    );
+    await user.click(screen.getByRole("button", { name: /mark as processing/i }));
     await waitFor(() => {
-      expect(mockUpdateDsarStatus).toHaveBeenCalledWith(
-        "acme",
-        "req-1",
-        "START_PROCESSING",
-      );
+      expect(mockUpdateDsarStatus).toHaveBeenCalledWith("acme", "req-1", "START_PROCESSING");
     });
   });
 
@@ -134,14 +122,10 @@ describe("DsarRequestsTable", () => {
       id: "req-ip",
       status: "IN_PROGRESS",
     };
-    render(
-      <DsarRequestsTable requests={[inProgressRequest]} slug="acme" />,
-    );
+    render(<DsarRequestsTable requests={[inProgressRequest]} slug="acme" />);
 
     // Click Complete button — opens resolution dialog
-    await user.click(
-      screen.getByRole("button", { name: /complete request/i }),
-    );
+    await user.click(screen.getByRole("button", { name: /complete request/i }));
     expect(screen.getByText("Complete Request")).toBeInTheDocument();
 
     // Fill in resolution notes
@@ -154,7 +138,7 @@ describe("DsarRequestsTable", () => {
         "acme",
         "req-ip",
         "COMPLETE",
-        "Request fulfilled successfully.",
+        "Request fulfilled successfully."
       );
     });
   });
@@ -168,25 +152,15 @@ describe("LogDsarRequestDialog", () => {
     render(<LogDsarRequestDialog slug="acme" />);
 
     // Open dialog
-    await user.click(
-      screen.getByRole("button", { name: /log new request/i }),
-    );
+    await user.click(screen.getByRole("button", { name: /log new request/i }));
     expect(screen.getByText("Log DSAR Request")).toBeInTheDocument();
 
     // Fill form
-    await user.clear(
-      screen.getByPlaceholderText(/full name of the data subject/i),
-    );
-    await user.type(
-      screen.getByPlaceholderText(/full name of the data subject/i),
-      "John Smith",
-    );
+    await user.clear(screen.getByPlaceholderText(/full name of the data subject/i));
+    await user.type(screen.getByPlaceholderText(/full name of the data subject/i), "John Smith");
 
     await user.clear(screen.getByPlaceholderText(/subject@example.com/i));
-    await user.type(
-      screen.getByPlaceholderText(/subject@example.com/i),
-      "john@example.com",
-    );
+    await user.type(screen.getByPlaceholderText(/subject@example.com/i), "john@example.com");
 
     // Select request type — change to DELETION
     await user.selectOptions(screen.getByRole("combobox"), "Deletion");
@@ -195,7 +169,7 @@ describe("LogDsarRequestDialog", () => {
     await user.clear(screen.getByPlaceholderText(/customer uuid/i));
     await user.type(
       screen.getByPlaceholderText(/customer uuid/i),
-      "550e8400-e29b-41d4-a716-446655440000",
+      "550e8400-e29b-41d4-a716-446655440000"
     );
 
     // Submit
@@ -207,7 +181,7 @@ describe("LogDsarRequestDialog", () => {
         expect.objectContaining({
           customerId: "550e8400-e29b-41d4-a716-446655440000",
           requestType: "DELETION",
-        }),
+        })
       );
     });
   });

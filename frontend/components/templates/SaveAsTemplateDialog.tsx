@@ -217,7 +217,7 @@ export function SaveAsTemplateDialog({
             {/* Description */}
             <div className="space-y-2">
               <Label htmlFor="tpl-desc">
-                Description <span className="font-normal text-muted-foreground">(optional)</span>
+                Description <span className="text-muted-foreground font-normal">(optional)</span>
               </Label>
               <Textarea
                 id="tpl-desc"
@@ -254,10 +254,8 @@ export function SaveAsTemplateDialog({
                         {isChecked && (
                           <select
                             value={taskRoles[task.id] ?? "UNASSIGNED"}
-                            onChange={(e) =>
-                              setTaskRole(task.id, e.target.value as AssigneeRole)
-                            }
-                            className="flex h-7 rounded border border-slate-200 bg-transparent px-2 py-0.5 text-xs shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 dark:border-slate-800"
+                            onChange={(e) => setTaskRole(task.id, e.target.value as AssigneeRole)}
+                            className="flex h-7 rounded border border-slate-200 bg-transparent px-2 py-0.5 text-xs shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none dark:border-slate-800"
                           >
                             <option value="UNASSIGNED">Unassigned</option>
                             <option value="PROJECT_LEAD">Project Lead</option>
@@ -300,7 +298,7 @@ export function SaveAsTemplateDialog({
               </div>
             )}
 
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {error && <p className="text-destructive text-sm">{error}</p>}
           </div>
         )}
 

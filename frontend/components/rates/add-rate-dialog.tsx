@@ -14,10 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CurrencySelector } from "@/components/rates/currency-selector";
-import {
-  createBillingRate,
-  createCostRate,
-} from "@/app/(app)/org/[slug]/settings/rates/actions";
+import { createBillingRate, createCostRate } from "@/app/(app)/org/[slug]/settings/rates/actions";
 import type { OrgMember } from "@/lib/types";
 
 interface AddRateDialogProps {
@@ -27,21 +24,14 @@ interface AddRateDialogProps {
   children: React.ReactNode;
 }
 
-export function AddRateDialog({
-  slug,
-  member,
-  defaultCurrency,
-  children,
-}: AddRateDialogProps) {
+export function AddRateDialog({ slug, member, defaultCurrency, children }: AddRateDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [rateType, setRateType] = useState<"billing" | "cost">("billing");
   const [hourlyRate, setHourlyRate] = useState("");
   const [currency, setCurrency] = useState(defaultCurrency);
-  const [effectiveFrom, setEffectiveFrom] = useState(
-    new Date().toLocaleDateString("en-CA"),
-  );
+  const [effectiveFrom, setEffectiveFrom] = useState(new Date().toLocaleDateString("en-CA"));
   const [effectiveTo, setEffectiveTo] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
@@ -119,9 +109,7 @@ export function AddRateDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Add Rate</DialogTitle>
-          <DialogDescription>
-            Create a new rate for {member.name}.
-          </DialogDescription>
+          <DialogDescription>Create a new rate for {member.name}.</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -164,11 +152,7 @@ export function AddRateDialog({
 
           <div className="space-y-2">
             <Label>Currency</Label>
-            <CurrencySelector
-              value={currency}
-              onChange={setCurrency}
-              className="w-full"
-            />
+            <CurrencySelector value={currency} onChange={setCurrency} className="w-full" />
           </div>
 
           <div className="space-y-2">
@@ -184,8 +168,7 @@ export function AddRateDialog({
 
           <div className="space-y-2">
             <Label htmlFor="add-effective-to">
-              Effective To{" "}
-              <span className="font-normal text-slate-500">(optional)</span>
+              Effective To <span className="font-normal text-slate-500">(optional)</span>
             </Label>
             <Input
               id="add-effective-to"
@@ -195,7 +178,7 @@ export function AddRateDialog({
             />
           </div>
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && <p className="text-destructive text-sm">{error}</p>}
 
           <DialogFooter>
             <Button

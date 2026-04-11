@@ -44,9 +44,7 @@ interface CreateChecklistTemplateFormProps {
   slug: string;
 }
 
-export function CreateChecklistTemplateForm({
-  slug,
-}: CreateChecklistTemplateFormProps) {
+export function CreateChecklistTemplateForm({ slug }: CreateChecklistTemplateFormProps) {
   const router = useRouter();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -65,11 +63,7 @@ export function CreateChecklistTemplateForm({
   }
 
   function updateItem(key: string, updates: Partial<ChecklistItem>) {
-    setItems((prev) =>
-      prev.map((item) =>
-        item.key === key ? { ...item, ...updates } : item,
-      ),
-    );
+    setItems((prev) => prev.map((item) => (item.key === key ? { ...item, ...updates } : item)));
   }
 
   async function handleCreate() {
@@ -132,10 +126,8 @@ export function CreateChecklistTemplateForm({
           <select
             id="checklist-customer-type"
             value={customerType}
-            onChange={(e) =>
-              setCustomerType(e.target.value as CustomerType)
-            }
-            className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 dark:border-slate-800"
+            onChange={(e) => setCustomerType(e.target.value as CustomerType)}
+            className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none dark:border-slate-800"
           >
             {CUSTOMER_TYPES.map((ct) => (
               <option key={ct.value} value={ct.value}>
@@ -198,14 +190,10 @@ export function CreateChecklistTemplateForm({
                 <GripVertical className="mt-2.5 size-4 shrink-0 text-slate-400" />
                 <div className="flex-1 space-y-3">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-medium text-slate-400">
-                      {index + 1}
-                    </span>
+                    <span className="text-xs font-medium text-slate-400">{index + 1}</span>
                     <Input
                       value={item.name}
-                      onChange={(e) =>
-                        updateItem(item.key, { name: e.target.value })
-                      }
+                      onChange={(e) => updateItem(item.key, { name: e.target.value })}
                       placeholder="Item name"
                       className="flex-1"
                     />
@@ -279,19 +267,13 @@ export function CreateChecklistTemplateForm({
         </div>
       </div>
 
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && <p className="text-destructive text-sm">{error}</p>}
 
       <div className="flex justify-end gap-3">
-        <Button
-          variant="soft"
-          onClick={() => router.push(`/org/${slug}/settings/checklists`)}
-        >
+        <Button variant="soft" onClick={() => router.push(`/org/${slug}/settings/checklists`)}>
           Cancel
         </Button>
-        <Button
-          onClick={handleCreate}
-          disabled={isCreating || !name.trim()}
-        >
+        <Button onClick={handleCreate} disabled={isCreating || !name.trim()}>
           {isCreating ? "Creating..." : "Create Template"}
         </Button>
       </div>

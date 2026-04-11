@@ -3,12 +3,7 @@ import { ChevronLeft, Pencil } from "lucide-react";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { getChecklistTemplateDetail } from "../queries";
 import type { ChecklistTemplateResponse } from "@/lib/types";
 
@@ -53,9 +48,7 @@ export default async function ChecklistTemplateDetailPage({
     );
   }
 
-  const sortedItems = [...template.items].sort(
-    (a, b) => a.sortOrder - b.sortOrder,
-  );
+  const sortedItems = [...template.items].sort((a, b) => a.sortOrder - b.sortOrder);
 
   return (
     <div className="space-y-8">
@@ -98,12 +91,8 @@ export default async function ChecklistTemplateDetailPage({
         <Badge variant={template.active ? "success" : "destructive"}>
           {template.active ? "Active" : "Inactive"}
         </Badge>
-        {template.autoInstantiate && (
-          <Badge variant="neutral">Auto-instantiate</Badge>
-        )}
-        {template.packId && (
-          <Badge variant="neutral">Pack: {template.packId}</Badge>
-        )}
+        {template.autoInstantiate && <Badge variant="neutral">Auto-instantiate</Badge>}
+        {template.packId && <Badge variant="neutral">Pack: {template.packId}</Badge>}
       </div>
 
       {template.source === "PLATFORM" && (
@@ -115,9 +104,7 @@ export default async function ChecklistTemplateDetailPage({
       {/* Items table */}
       <Card>
         <CardHeader>
-          <CardTitle>
-            Checklist Items ({sortedItems.length})
-          </CardTitle>
+          <CardTitle>Checklist Items ({sortedItems.length})</CardTitle>
         </CardHeader>
         <CardContent>
           {sortedItems.length === 0 ? (
@@ -129,19 +116,19 @@ export default async function ChecklistTemplateDetailPage({
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-slate-200 dark:border-slate-800">
-                    <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                    <th className="px-3 py-2 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                       #
                     </th>
-                    <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                    <th className="px-3 py-2 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                       Name
                     </th>
-                    <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                    <th className="px-3 py-2 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                       Description
                     </th>
-                    <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                    <th className="px-3 py-2 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                       Required
                     </th>
-                    <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                    <th className="px-3 py-2 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                       Document Required
                     </th>
                   </tr>
@@ -164,16 +151,16 @@ export default async function ChecklistTemplateDetailPage({
                       </td>
                       <td className="px-3 py-2">
                         {item.required ? (
-                          <Badge variant="destructive" data-testid="checklist-item-required">Required</Badge>
+                          <Badge variant="destructive" data-testid="checklist-item-required">
+                            Required
+                          </Badge>
                         ) : (
                           <span className="text-sm text-slate-400">Optional</span>
                         )}
                       </td>
                       <td className="px-3 py-2">
                         {item.requiresDocument ? (
-                          <Badge variant="neutral">
-                            {item.requiredDocumentLabel || "Yes"}
-                          </Badge>
+                          <Badge variant="neutral">{item.requiredDocumentLabel || "Yes"}</Badge>
                         ) : (
                           <span className="text-sm text-slate-400">No</span>
                         )}

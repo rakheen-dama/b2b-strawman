@@ -9,13 +9,10 @@ import type {
 } from "@/lib/types";
 
 // Mock server actions (both components import from this module)
-vi.mock(
-  "@/app/(app)/org/[slug]/settings/custom-fields/actions",
-  () => ({
-    updateEntityCustomFieldsAction: vi.fn().mockResolvedValue({ success: true }),
-    setEntityFieldGroupsAction: vi.fn().mockResolvedValue({ success: true }),
-  }),
-);
+vi.mock("@/app/(app)/org/[slug]/settings/custom-fields/actions", () => ({
+  updateEntityCustomFieldsAction: vi.fn().mockResolvedValue({ success: true }),
+  setEntityFieldGroupsAction: vi.fn().mockResolvedValue({ success: true }),
+}));
 
 // --- Test data ---
 
@@ -82,7 +79,7 @@ describe("Invoice Custom Fields", () => {
         fieldDefinitions={[invoiceFieldDef]}
         fieldGroups={[invoiceFieldGroup]}
         groupMembers={{ "grp-invoice-1": [invoiceGroupMember] }}
-      />,
+      />
     );
 
     expect(screen.getByTestId("custom-field-section")).toBeInTheDocument();
@@ -99,7 +96,7 @@ describe("Invoice Custom Fields", () => {
         slug="acme"
         canManage={true}
         allGroups={[invoiceFieldGroup]}
-      />,
+      />
     );
 
     expect(screen.getByTestId("field-group-selector")).toBeInTheDocument();

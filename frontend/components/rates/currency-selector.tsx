@@ -12,11 +12,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface Currency {
   code: string;
@@ -82,7 +78,7 @@ export function CurrencySelector({
           disabled={disabled}
           className={cn(
             "w-[240px] justify-between border border-slate-200 bg-white px-3 font-normal dark:border-slate-800 dark:bg-slate-950",
-            className,
+            className
           )}
         >
           {selectedCurrency
@@ -109,7 +105,7 @@ export function CurrencySelector({
                   <Check
                     className={cn(
                       "mr-2 size-4",
-                      value === currency.code ? "opacity-100" : "opacity-0",
+                      value === currency.code ? "opacity-100" : "opacity-0"
                     )}
                   />
                   {currency.code} — {currency.name}
@@ -129,7 +125,7 @@ export function CurrencySelector({
                   <Check
                     className={cn(
                       "mr-2 size-4",
-                      value === currency.code ? "opacity-100" : "opacity-0",
+                      value === currency.code ? "opacity-100" : "opacity-0"
                     )}
                   />
                   {currency.code} — {currency.name}

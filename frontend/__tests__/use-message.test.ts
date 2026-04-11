@@ -55,7 +55,7 @@ describe("createMessages", () => {
     const { t } = createMessages("errors");
     t("nonexistent.key.here");
     expect(warnSpy).toHaveBeenCalledWith(
-      "[createMessages] Missing key: errors.nonexistent.key.here",
+      "[createMessages] Missing key: errors.nonexistent.key.here"
     );
   });
 

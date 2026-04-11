@@ -53,7 +53,11 @@ describe("CreateCustomerDialog", () => {
   it("showsStep2AfterStep1Next", async () => {
     const user = userEvent.setup();
 
-    render(<TerminologyProvider verticalProfile={null}><CreateCustomerDialog slug="acme" /></TerminologyProvider>);
+    render(
+      <TerminologyProvider verticalProfile={null}>
+        <CreateCustomerDialog slug="acme" />
+      </TerminologyProvider>
+    );
 
     await user.click(screen.getByText("New Customer"));
     await waitFor(() => {
@@ -77,7 +81,11 @@ describe("CreateCustomerDialog", () => {
     mockFetchIntakeFields.mockResolvedValue({ groups: [makeGroup()] });
     const user = userEvent.setup();
 
-    render(<TerminologyProvider verticalProfile={null}><CreateCustomerDialog slug="acme" /></TerminologyProvider>);
+    render(
+      <TerminologyProvider verticalProfile={null}>
+        <CreateCustomerDialog slug="acme" />
+      </TerminologyProvider>
+    );
 
     await user.click(screen.getByText("New Customer"));
     await waitFor(() => {
@@ -103,7 +111,11 @@ describe("CreateCustomerDialog", () => {
     mockFetchIntakeFields.mockResolvedValue({ groups: [makeGroup()] });
     const user = userEvent.setup();
 
-    render(<TerminologyProvider verticalProfile={null}><CreateCustomerDialog slug="acme" /></TerminologyProvider>);
+    render(
+      <TerminologyProvider verticalProfile={null}>
+        <CreateCustomerDialog slug="acme" />
+      </TerminologyProvider>
+    );
 
     await user.click(screen.getByText("New Customer"));
     await waitFor(() => expect(screen.getByLabelText("Name")).toBeInTheDocument());
@@ -133,7 +145,7 @@ describe("CreateCustomerDialog", () => {
           name: "Test Corp",
           email: "test@corp.com",
           customFields: expect.objectContaining({ vat_number: "GB123456789" }),
-        }),
+        })
       );
     });
   });
@@ -141,7 +153,11 @@ describe("CreateCustomerDialog", () => {
   it("backButtonReturnsToStep1", async () => {
     const user = userEvent.setup();
 
-    render(<TerminologyProvider verticalProfile={null}><CreateCustomerDialog slug="acme" /></TerminologyProvider>);
+    render(
+      <TerminologyProvider verticalProfile={null}>
+        <CreateCustomerDialog slug="acme" />
+      </TerminologyProvider>
+    );
 
     await user.click(screen.getByText("New Customer"));
     await waitFor(() => expect(screen.getByText("Create Customer")).toBeInTheDocument());
@@ -166,7 +182,11 @@ describe("CreateCustomerDialog", () => {
   it("renders Address section with all 6 fields", async () => {
     const user = userEvent.setup();
 
-    render(<TerminologyProvider verticalProfile={null}><CreateCustomerDialog slug="acme" /></TerminologyProvider>);
+    render(
+      <TerminologyProvider verticalProfile={null}>
+        <CreateCustomerDialog slug="acme" />
+      </TerminologyProvider>
+    );
 
     await user.click(screen.getByText("New Customer"));
     await waitFor(() => expect(screen.getByLabelText("Name")).toBeInTheDocument());
@@ -182,7 +202,11 @@ describe("CreateCustomerDialog", () => {
   it("country dropdown contains ZA and US options", async () => {
     const user = userEvent.setup();
 
-    render(<TerminologyProvider verticalProfile={null}><CreateCustomerDialog slug="acme" /></TerminologyProvider>);
+    render(
+      <TerminologyProvider verticalProfile={null}>
+        <CreateCustomerDialog slug="acme" />
+      </TerminologyProvider>
+    );
 
     await user.click(screen.getByText("New Customer"));
     const countrySelect = await screen.findByLabelText(/^country$/i);
@@ -194,7 +218,11 @@ describe("CreateCustomerDialog", () => {
   it("validates contactEmail format on Next", async () => {
     const user = userEvent.setup();
 
-    render(<TerminologyProvider verticalProfile={null}><CreateCustomerDialog slug="acme" /></TerminologyProvider>);
+    render(
+      <TerminologyProvider verticalProfile={null}>
+        <CreateCustomerDialog slug="acme" />
+      </TerminologyProvider>
+    );
 
     await user.click(screen.getByText("New Customer"));
     await user.type(screen.getByLabelText("Name"), "Test Corp");
@@ -213,7 +241,11 @@ describe("CreateCustomerDialog", () => {
   it("entity type select includes PTY_LTD option", async () => {
     const user = userEvent.setup();
 
-    render(<TerminologyProvider verticalProfile={null}><CreateCustomerDialog slug="acme" /></TerminologyProvider>);
+    render(
+      <TerminologyProvider verticalProfile={null}>
+        <CreateCustomerDialog slug="acme" />
+      </TerminologyProvider>
+    );
 
     await user.click(screen.getByText("New Customer"));
     const entityTypeSelect = await screen.findByLabelText(/entity type/i);
@@ -224,7 +256,11 @@ describe("CreateCustomerDialog", () => {
   it("submits with promoted fields populated", async () => {
     const user = userEvent.setup();
 
-    render(<TerminologyProvider verticalProfile={null}><CreateCustomerDialog slug="acme" /></TerminologyProvider>);
+    render(
+      <TerminologyProvider verticalProfile={null}>
+        <CreateCustomerDialog slug="acme" />
+      </TerminologyProvider>
+    );
 
     await user.click(screen.getByText("New Customer"));
     await user.type(screen.getByLabelText("Name"), "Acme Pty Ltd");
@@ -254,7 +290,7 @@ describe("CreateCustomerDialog", () => {
           contactEmail: "jane@acme.com",
           registrationNumber: "2024/123456/07",
           entityType: "PTY_LTD",
-        }),
+        })
       );
     });
   });
@@ -262,7 +298,11 @@ describe("CreateCustomerDialog", () => {
   it("submits with only required fields (backward compat)", async () => {
     const user = userEvent.setup();
 
-    render(<TerminologyProvider verticalProfile={null}><CreateCustomerDialog slug="acme" /></TerminologyProvider>);
+    render(
+      <TerminologyProvider verticalProfile={null}>
+        <CreateCustomerDialog slug="acme" />
+      </TerminologyProvider>
+    );
 
     await user.click(screen.getByText("New Customer"));
     await user.type(screen.getByLabelText("Name"), "Plain Corp");
@@ -278,7 +318,7 @@ describe("CreateCustomerDialog", () => {
         expect.objectContaining({
           name: "Plain Corp",
           email: "plain@corp.com",
-        }),
+        })
       );
     });
     // Promoted fields should be undefined (empty-string → undefined mapping)
@@ -312,7 +352,11 @@ describe("CreateCustomerDialog", () => {
     });
     const user = userEvent.setup();
 
-    render(<TerminologyProvider verticalProfile={null}><CreateCustomerDialog slug="acme" /></TerminologyProvider>);
+    render(
+      <TerminologyProvider verticalProfile={null}>
+        <CreateCustomerDialog slug="acme" />
+      </TerminologyProvider>
+    );
 
     await user.click(screen.getByText("New Customer"));
     await waitFor(() => expect(screen.getByLabelText("Name")).toBeInTheDocument());
@@ -334,7 +378,7 @@ describe("CreateCustomerDialog", () => {
         expect.objectContaining({
           name: "Skip Corp",
           email: "skip@corp.com",
-        }),
+        })
       );
     });
   });

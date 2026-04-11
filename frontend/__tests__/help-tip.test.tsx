@@ -35,9 +35,7 @@ describe("HelpTip", () => {
     await user.click(screen.getByRole("button", { name: /help/i }));
 
     expect(screen.getByText("Rate card hierarchy")).toBeInTheDocument();
-    expect(
-      screen.getByText(/Rates follow a three-level hierarchy/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Rates follow a three-level hierarchy/)).toBeInTheDocument();
   });
 
   it("closes on click outside", async () => {
@@ -46,7 +44,7 @@ describe("HelpTip", () => {
       <div>
         <HelpTip code="rates.hierarchy" />
         <span data-testid="outside">Outside</span>
-      </div>,
+      </div>
     );
 
     // Open popover

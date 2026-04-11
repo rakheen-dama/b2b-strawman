@@ -12,13 +12,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { ExpenseCategoryBadge, CATEGORY_LABELS } from "@/components/expenses/expense-category-badge";
+  ExpenseCategoryBadge,
+  CATEGORY_LABELS,
+} from "@/components/expenses/expense-category-badge";
 import { LogExpenseDialog } from "@/components/expenses/log-expense-dialog";
 import { formatCurrencySafe, formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -27,11 +25,7 @@ import {
   writeOffExpense,
   restoreExpense,
 } from "@/app/(app)/org/[slug]/projects/[id]/expense-actions";
-import type {
-  ExpenseResponse,
-  ExpenseCategory,
-  ExpenseBillingStatus,
-} from "@/lib/types";
+import type { ExpenseResponse, ExpenseCategory, ExpenseBillingStatus } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import {
   AlertDialog,
@@ -78,11 +72,7 @@ interface ExpenseListProps {
   isAdmin?: boolean;
 }
 
-function ExpenseBillingBadge({
-  billingStatus,
-}: {
-  billingStatus: ExpenseBillingStatus;
-}) {
+function ExpenseBillingBadge({ billingStatus }: { billingStatus: ExpenseBillingStatus }) {
   switch (billingStatus) {
     case "BILLED":
       return <Badge variant="success">Billed</Badge>;
@@ -102,11 +92,8 @@ export function ExpenseList({
   currentMemberId,
   isAdmin = false,
 }: ExpenseListProps) {
-  const [billingFilter, setBillingFilter] =
-    useState<BillingStatusFilter>("all");
-  const [categoryFilter, setCategoryFilter] = useState<
-    ExpenseCategory | "all"
-  >("all");
+  const [billingFilter, setBillingFilter] = useState<BillingStatusFilter>("all");
+  const [categoryFilter, setCategoryFilter] = useState<ExpenseCategory | "all">("all");
   const [memberFilter, setMemberFilter] = useState<string>("all");
   const [isPending, startTransition] = useTransition();
 
@@ -115,8 +102,7 @@ export function ExpenseList({
 
   // Apply client-side filters
   const filteredExpenses = expenses.filter((e) => {
-    if (billingFilter !== "all" && e.billingStatus !== billingFilter)
-      return false;
+    if (billingFilter !== "all" && e.billingStatus !== billingFilter) return false;
     if (categoryFilter !== "all" && e.category !== categoryFilter) return false;
     if (memberFilter !== "all" && e.memberId !== memberFilter) return false;
     return true;
@@ -163,25 +149,21 @@ export function ExpenseList({
     );
   }
 
-  const showActionsColumn =
-    filteredExpenses.some(
-      (e) =>
-        canEditExpense(e) ||
-        canDeleteExpense(e) ||
-        (isAdminOrOwner && e.billingStatus === "UNBILLED") ||
-        (isAdminOrOwner && e.billingStatus === "NON_BILLABLE"),
-    );
+  const showActionsColumn = filteredExpenses.some(
+    (e) =>
+      canEditExpense(e) ||
+      canDeleteExpense(e) ||
+      (isAdminOrOwner && e.billingStatus === "UNBILLED") ||
+      (isAdminOrOwner && e.billingStatus === "NON_BILLABLE")
+  );
 
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-            Expenses
-          </h3>
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">Expenses</h3>
           <Badge variant="neutral">
-            {filteredExpenses.length}{" "}
-            {filteredExpenses.length === 1 ? "expense" : "expenses"}
+            {filteredExpenses.length} {filteredExpenses.length === 1 ? "expense" : "expenses"}
           </Badge>
         </div>
       </div>
@@ -197,7 +179,7 @@ export function ExpenseList({
               "rounded-full px-3 py-1 text-sm font-medium transition-colors",
               billingFilter === option.key
                 ? "bg-slate-900 text-slate-50 dark:bg-slate-100 dark:text-slate-900"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700",
+                : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
             )}
           >
             {option.label}
@@ -207,7 +189,7 @@ export function ExpenseList({
 
       {/* Category filter */}
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+        <span className="text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
           Category:
         </span>
         <button
@@ -217,7 +199,7 @@ export function ExpenseList({
             "rounded-full px-3 py-1 text-sm font-medium transition-colors",
             categoryFilter === "all"
               ? "bg-slate-900 text-slate-50 dark:bg-slate-100 dark:text-slate-900"
-              : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700",
+              : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
           )}
         >
           All
@@ -231,7 +213,7 @@ export function ExpenseList({
               "rounded-full px-3 py-1 text-sm font-medium transition-colors",
               categoryFilter === cat
                 ? "bg-slate-900 text-slate-50 dark:bg-slate-100 dark:text-slate-900"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700",
+                : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
             )}
           >
             {CATEGORY_LABELS[cat]}
@@ -242,7 +224,7 @@ export function ExpenseList({
       {/* Member filter */}
       {members.length > 0 && (
         <div className="flex items-center gap-2">
-          <span className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          <span className="text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
             Member:
           </span>
           <select
@@ -271,29 +253,29 @@ export function ExpenseList({
           <Table>
             <TableHeader>
               <TableRow className="border-slate-200 hover:bg-transparent dark:border-slate-800">
-                <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Date
                 </TableHead>
-                <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Description
                 </TableHead>
-                <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Category
                 </TableHead>
-                <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Amount
                 </TableHead>
-                <TableHead className="hidden text-xs uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">
+                <TableHead className="hidden text-xs tracking-wide text-slate-600 uppercase sm:table-cell dark:text-slate-400">
                   Billable Amount
                 </TableHead>
-                <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Billing
                 </TableHead>
-                <TableHead className="hidden text-xs uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">
+                <TableHead className="hidden text-xs tracking-wide text-slate-600 uppercase sm:table-cell dark:text-slate-400">
                   Member
                 </TableHead>
                 {showActionsColumn && (
-                  <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                  <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
                     Actions
                   </TableHead>
                 )}
@@ -325,19 +307,14 @@ export function ExpenseList({
                     <TableCell className="hidden text-sm text-slate-600 sm:table-cell dark:text-slate-400">
                       {expense.billable ? (
                         <span className="font-medium text-slate-700 dark:text-slate-300">
-                          {formatCurrencySafe(
-                            expense.billableAmount,
-                            expense.currency,
-                          )}
+                          {formatCurrencySafe(expense.billableAmount, expense.currency)}
                         </span>
                       ) : (
                         "\u2014"
                       )}
                     </TableCell>
                     <TableCell>
-                      <ExpenseBillingBadge
-                        billingStatus={expense.billingStatus}
-                      />
+                      <ExpenseBillingBadge billingStatus={expense.billingStatus} />
                     </TableCell>
                     <TableCell className="hidden text-sm text-slate-600 sm:table-cell dark:text-slate-400">
                       {expense.memberName ?? "\u2014"}
@@ -351,11 +328,7 @@ export function ExpenseList({
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <span>
-                                      <Button
-                                        size="xs"
-                                        variant="ghost"
-                                        disabled
-                                      >
+                                      <Button size="xs" variant="ghost" disabled>
                                         <Pencil className="size-3" />
                                       </Button>
                                     </span>
@@ -367,11 +340,7 @@ export function ExpenseList({
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <span>
-                                      <Button
-                                        size="xs"
-                                        variant="ghost"
-                                        disabled
-                                      >
+                                      <Button size="xs" variant="ghost" disabled>
                                         <Trash2 className="size-3" />
                                       </Button>
                                     </span>
@@ -404,73 +373,59 @@ export function ExpenseList({
                                     </AlertDialogTrigger>
                                     <AlertDialogContent>
                                       <AlertDialogHeader>
-                                        <AlertDialogTitle>
-                                          Delete expense?
-                                        </AlertDialogTitle>
+                                        <AlertDialogTitle>Delete expense?</AlertDialogTitle>
                                         <AlertDialogDescription>
-                                          This will permanently delete the
-                                          expense &quot;{expense.description}
+                                          This will permanently delete the expense &quot;
+                                          {expense.description}
                                           &quot;. This action cannot be undone.
                                         </AlertDialogDescription>
                                       </AlertDialogHeader>
                                       <AlertDialogFooter>
-                                        <AlertDialogCancel>
-                                          Cancel
-                                        </AlertDialogCancel>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
                                         <AlertDialogAction
-                                          onClick={() =>
-                                            handleDelete(expense.id)
-                                          }
+                                          onClick={() => handleDelete(expense.id)}
                                           disabled={isPending}
                                         >
-                                          {isPending
-                                            ? "Deleting..."
-                                            : "Delete"}
+                                          {isPending ? "Deleting..." : "Delete"}
                                         </AlertDialogAction>
                                       </AlertDialogFooter>
                                     </AlertDialogContent>
                                   </AlertDialog>
                                 )}
-                                {isAdminOrOwner &&
-                                  expense.billingStatus === "UNBILLED" && (
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <Button
-                                          size="xs"
-                                          variant="ghost"
-                                          onClick={() =>
-                                            handleWriteOff(expense.id)
-                                          }
-                                          disabled={isPending}
-                                        >
-                                          <XCircle className="size-3" />
-                                        </Button>
-                                      </TooltipTrigger>
-                                      <TooltipContent>
-                                        <p>Write off (mark non-billable)</p>
-                                      </TooltipContent>
-                                    </Tooltip>
-                                  )}
-                                {isAdminOrOwner &&
-                                  expense.billingStatus === "NON_BILLABLE" && (
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <Button
-                                          size="xs"
-                                          variant="ghost"
-                                          onClick={() =>
-                                            handleRestore(expense.id)
-                                          }
-                                          disabled={isPending}
-                                        >
-                                          <RotateCcw className="size-3" />
-                                        </Button>
-                                      </TooltipTrigger>
-                                      <TooltipContent>
-                                        <p>Restore (mark billable)</p>
-                                      </TooltipContent>
-                                    </Tooltip>
-                                  )}
+                                {isAdminOrOwner && expense.billingStatus === "UNBILLED" && (
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        size="xs"
+                                        variant="ghost"
+                                        onClick={() => handleWriteOff(expense.id)}
+                                        disabled={isPending}
+                                      >
+                                        <XCircle className="size-3" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>Write off (mark non-billable)</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                )}
+                                {isAdminOrOwner && expense.billingStatus === "NON_BILLABLE" && (
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        size="xs"
+                                        variant="ghost"
+                                        onClick={() => handleRestore(expense.id)}
+                                        disabled={isPending}
+                                      >
+                                        <RotateCcw className="size-3" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>Restore (mark billable)</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                )}
                               </>
                             )}
                           </div>
@@ -489,8 +444,7 @@ export function ExpenseList({
               Total: {formatCurrencySafe(totalAmount, filteredExpenses[0]?.currency ?? "ZAR")}
             </span>
             <span className="ml-2 text-slate-500 dark:text-slate-400">
-              ({filteredExpenses.length}{" "}
-              {filteredExpenses.length === 1 ? "expense" : "expenses"})
+              ({filteredExpenses.length} {filteredExpenses.length === 1 ? "expense" : "expenses"})
             </span>
           </div>
         </div>

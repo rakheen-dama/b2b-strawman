@@ -47,7 +47,13 @@ interface TaskRow {
   itemsExpanded: boolean;
 }
 
-export function TemplateEditor({ slug, template, availableTags, availableCustomerFields = [], availableRequestTemplates = [] }: TemplateEditorProps) {
+export function TemplateEditor({
+  slug,
+  template,
+  availableTags,
+  availableCustomerFields = [],
+  availableRequestTemplates = [],
+}: TemplateEditorProps) {
   const router = useRouter();
   const nextKeyRef = useRef(0);
 
@@ -100,11 +106,11 @@ export function TemplateEditor({ slug, template, availableTags, availableCustome
     }
     return [];
   });
-  const [selectedTagIds, setSelectedTagIds] = useState<string[]>(() =>
-    template?.tags?.map((t) => t.id) ?? [],
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>(
+    () => template?.tags?.map((t) => t.id) ?? []
   );
   const [selectedRequiredFieldIds, setSelectedRequiredFieldIds] = useState<string[]>(
-    () => template?.requiredCustomerFieldIds ?? [],
+    () => template?.requiredCustomerFieldIds ?? []
   );
   const [isSavingFields, setIsSavingFields] = useState(false);
   const [fieldsError, setFieldsError] = useState<string | null>(null);
@@ -143,23 +149,23 @@ export function TemplateEditor({ slug, template, availableTags, availableCustome
 
   function toggleItemsExpanded(taskKey: string) {
     setTasks((prev) =>
-      prev.map((t) => (t.key === taskKey ? { ...t, itemsExpanded: !t.itemsExpanded } : t)),
+      prev.map((t) => (t.key === taskKey ? { ...t, itemsExpanded: !t.itemsExpanded } : t))
     );
   }
 
   function addItem(taskKey: string) {
     setTasks((prev) =>
       prev.map((t) =>
-        t.key === taskKey ? { ...t, items: [...t.items, newItem()], itemsExpanded: true } : t,
-      ),
+        t.key === taskKey ? { ...t, items: [...t.items, newItem()], itemsExpanded: true } : t
+      )
     );
   }
 
   function removeItem(taskKey: string, itemKey: string) {
     setTasks((prev) =>
       prev.map((t) =>
-        t.key === taskKey ? { ...t, items: t.items.filter((i) => i.key !== itemKey) } : t,
-      ),
+        t.key === taskKey ? { ...t, items: t.items.filter((i) => i.key !== itemKey) } : t
+      )
     );
   }
 
@@ -168,8 +174,8 @@ export function TemplateEditor({ slug, template, availableTags, availableCustome
       prev.map((t) =>
         t.key === taskKey
           ? { ...t, items: t.items.map((i) => (i.key === itemKey ? { ...i, title } : i)) }
-          : t,
-      ),
+          : t
+      )
     );
   }
 
@@ -180,7 +186,7 @@ export function TemplateEditor({ slug, template, availableTags, availableCustome
         const next = [...t.items];
         [next[itemIndex - 1], next[itemIndex]] = [next[itemIndex], next[itemIndex - 1]];
         return { ...t, items: next };
-      }),
+      })
     );
   }
 
@@ -191,7 +197,7 @@ export function TemplateEditor({ slug, template, availableTags, availableCustome
         const next = [...t.items];
         [next[itemIndex], next[itemIndex + 1]] = [next[itemIndex + 1], next[itemIndex]];
         return { ...t, items: next };
-      }),
+      })
     );
   }
 
@@ -200,7 +206,11 @@ export function TemplateEditor({ slug, template, availableTags, availableCustome
     setIsSavingFields(true);
     setFieldsError(null);
     try {
-      const result = await updateRequiredCustomerFieldsAction(slug, template.id, selectedRequiredFieldIds);
+      const result = await updateRequiredCustomerFieldsAction(
+        slug,
+        template.id,
+        selectedRequiredFieldIds
+      );
       if (!result.success) {
         setFieldsError(result.error ?? "Failed to save required fields.");
       }
@@ -369,7 +379,8 @@ export function TemplateEditor({ slug, template, availableTags, availableCustome
               </SelectContent>
             </Select>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              When a project is created from this template, a draft information request will be created for the linked customer.
+              When a project is created from this template, a draft information request will be
+              created for the linked customer.
             </p>
           </div>
         )}
@@ -460,7 +471,7 @@ export function TemplateEditor({ slug, template, availableTags, availableCustome
                           assigneeRole: e.target.value as TaskRow["assigneeRole"],
                         })
                       }
-                      className="flex h-9 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 dark:border-slate-800"
+                      className="flex h-9 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none dark:border-slate-800"
                     >
                       <option value="UNASSIGNED">Unassigned</option>
                       <option value="PROJECT_LEAD">Project Lead</option>
@@ -499,7 +510,7 @@ export function TemplateEditor({ slug, template, availableTags, availableCustome
                     </button>
 
                     {task.itemsExpanded && (
-                      <div className="ml-5 mt-2 space-y-1.5">
+                      <div className="mt-2 ml-5 space-y-1.5">
                         {task.items.map((item, itemIndex) => (
                           <div key={item.key} className="flex items-center gap-1.5">
                             <div className="flex flex-col">
@@ -564,10 +575,7 @@ export function TemplateEditor({ slug, template, availableTags, availableCustome
         ) : (
           <div className="flex flex-wrap gap-2">
             {availableTags.map((tag) => (
-              <label
-                key={tag.id}
-                className="flex cursor-pointer items-center gap-1.5 text-sm"
-              >
+              <label key={tag.id} className="flex cursor-pointer items-center gap-1.5 text-sm">
                 <input
                   type="checkbox"
                   checked={selectedTagIds.includes(tag.id)}
@@ -636,12 +644,14 @@ export function TemplateEditor({ slug, template, availableTags, availableCustome
             ))}
           </div>
           {fieldsError && (
-            <p className="text-sm text-destructive" role="alert">{fieldsError}</p>
+            <p className="text-destructive text-sm" role="alert">
+              {fieldsError}
+            </p>
           )}
         </div>
       )}
 
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && <p className="text-destructive text-sm">{error}</p>}
 
       <div className="flex justify-end gap-3">
         <Button

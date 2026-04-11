@@ -3,10 +3,7 @@
 import { api, ApiError } from "@/lib/api";
 import { uploadOrgLogo, deleteOrgLogo } from "@/lib/api/settings";
 import { revalidatePath } from "next/cache";
-import type {
-  UpdateOrgSettingsRequest,
-  UpdateTaxSettingsRequest,
-} from "@/lib/types";
+import type { UpdateOrgSettingsRequest, UpdateTaxSettingsRequest } from "@/lib/types";
 
 interface ActionResult {
   success: boolean;
@@ -15,7 +12,7 @@ interface ActionResult {
 
 export async function updateGeneralSettings(
   slug: string,
-  data: UpdateOrgSettingsRequest,
+  data: UpdateOrgSettingsRequest
 ): Promise<ActionResult> {
   try {
     await api.put("/api/settings", data);
@@ -37,7 +34,7 @@ export async function updateGeneralSettings(
 
 export async function updateGeneralTaxSettings(
   slug: string,
-  data: UpdateTaxSettingsRequest,
+  data: UpdateTaxSettingsRequest
 ): Promise<ActionResult> {
   try {
     await api.patch("/api/settings/tax", data);
@@ -60,10 +57,7 @@ export async function updateGeneralTaxSettings(
   return { success: true };
 }
 
-export async function uploadLogoAction(
-  slug: string,
-  formData: FormData,
-): Promise<ActionResult> {
+export async function uploadLogoAction(slug: string, formData: FormData): Promise<ActionResult> {
   const file = formData.get("file") as File;
   if (!file) {
     return { success: false, error: "No file provided." };

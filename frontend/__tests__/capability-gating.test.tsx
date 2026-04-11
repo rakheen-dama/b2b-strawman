@@ -10,13 +10,9 @@ vi.mock("next/navigation", () => ({
 // Mock motion/react to avoid animation issues in tests
 vi.mock("motion/react", () => ({
   motion: {
-    div: ({ children, ...props }: React.ComponentProps<"div">) => (
-      <div {...props}>{children}</div>
-    ),
+    div: ({ children, ...props }: React.ComponentProps<"div">) => <div {...props}>{children}</div>,
   },
-  AnimatePresence: ({ children }: { children: React.ReactNode }) => (
-    <>{children}</>
-  ),
+  AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 // Mock server-only
@@ -56,7 +52,7 @@ describe("Sidebar capability gating", () => {
             <DesktopSidebar slug="test-org" />
           </CapabilityProvider>
         </TerminologyProvider>
-      </OrgProfileProvider>,
+      </OrgProfileProvider>
     );
 
     expect(screen.queryByText("Invoices")).not.toBeInTheDocument();
@@ -76,7 +72,7 @@ describe("Sidebar capability gating", () => {
             <DesktopSidebar slug="test-org" />
           </CapabilityProvider>
         </TerminologyProvider>
-      </OrgProfileProvider>,
+      </OrgProfileProvider>
     );
 
     // Finance zone starts collapsed (defaultExpanded: false) — expand it
@@ -95,16 +91,11 @@ describe("Sidebar capability gating", () => {
         terminologyNamespace={null}
       >
         <TerminologyProvider verticalProfile={null}>
-          <CapabilityProvider
-            capabilities={[]}
-            role="Admin"
-            isAdmin={true}
-            isOwner={false}
-          >
+          <CapabilityProvider capabilities={[]} role="Admin" isAdmin={true} isOwner={false}>
             <DesktopSidebar slug="test-org" />
           </CapabilityProvider>
         </TerminologyProvider>
-      </OrgProfileProvider>,
+      </OrgProfileProvider>
     );
 
     // Expand collapsed zones (Clients and Finance have defaultExpanded: false)
@@ -131,16 +122,11 @@ describe("Sidebar capability gating", () => {
 describe("Action button capability gating", () => {
   it("hides create project button when user lacks PROJECT_MANAGEMENT", () => {
     render(
-      <CapabilityProvider
-        capabilities={[]}
-        role="Member"
-        isAdmin={false}
-        isOwner={false}
-      >
+      <CapabilityProvider capabilities={[]} role="Member" isAdmin={false} isOwner={false}>
         <RequiresCapability cap="PROJECT_MANAGEMENT">
           <button>Create Project</button>
         </RequiresCapability>
-      </CapabilityProvider>,
+      </CapabilityProvider>
     );
 
     expect(screen.queryByText("Create Project")).not.toBeInTheDocument();
@@ -157,7 +143,7 @@ describe("Action button capability gating", () => {
         <RequiresCapability cap="PROJECT_MANAGEMENT">
           <button>Create Project</button>
         </RequiresCapability>
-      </CapabilityProvider>,
+      </CapabilityProvider>
     );
 
     expect(screen.getByText("Create Project")).toBeInTheDocument();
@@ -165,16 +151,11 @@ describe("Action button capability gating", () => {
 
   it("hides create customer button when user lacks CUSTOMER_MANAGEMENT", () => {
     render(
-      <CapabilityProvider
-        capabilities={[]}
-        role="Member"
-        isAdmin={false}
-        isOwner={false}
-      >
+      <CapabilityProvider capabilities={[]} role="Member" isAdmin={false} isOwner={false}>
         <RequiresCapability cap="CUSTOMER_MANAGEMENT">
           <button>Create Customer</button>
         </RequiresCapability>
-      </CapabilityProvider>,
+      </CapabilityProvider>
     );
 
     expect(screen.queryByText("Create Customer")).not.toBeInTheDocument();

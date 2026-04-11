@@ -11,15 +11,12 @@ const mockAddTaskItem = vi.fn();
 const mockToggleTaskItem = vi.fn();
 const mockDeleteTaskItem = vi.fn();
 
-vi.mock(
-  "@/app/(app)/org/[slug]/projects/[id]/task-item-actions",
-  () => ({
-    fetchTaskItems: (...args: unknown[]) => mockFetchTaskItems(...args),
-    addTaskItem: (...args: unknown[]) => mockAddTaskItem(...args),
-    toggleTaskItem: (...args: unknown[]) => mockToggleTaskItem(...args),
-    deleteTaskItem: (...args: unknown[]) => mockDeleteTaskItem(...args),
-  })
-);
+vi.mock("@/app/(app)/org/[slug]/projects/[id]/task-item-actions", () => ({
+  fetchTaskItems: (...args: unknown[]) => mockFetchTaskItems(...args),
+  addTaskItem: (...args: unknown[]) => mockAddTaskItem(...args),
+  toggleTaskItem: (...args: unknown[]) => mockToggleTaskItem(...args),
+  deleteTaskItem: (...args: unknown[]) => mockDeleteTaskItem(...args),
+}));
 
 vi.mock("server-only", () => ({}));
 
@@ -87,9 +84,7 @@ describe("TaskSubItems", () => {
 
     // Both should have toggle checkboxes
     expect(screen.getByLabelText("Toggle Collect IRP5s")).toBeInTheDocument();
-    expect(
-      screen.getByLabelText("Toggle Verify tax certificates")
-    ).toBeInTheDocument();
+    expect(screen.getByLabelText("Toggle Verify tax certificates")).toBeInTheDocument();
   });
 
   it("shows progress indicator", async () => {
@@ -114,12 +109,7 @@ describe("TaskSubItems", () => {
     const checkbox = screen.getByLabelText("Toggle Collect IRP5s");
     await userEvent.click(checkbox);
 
-    expect(mockToggleTaskItem).toHaveBeenCalledWith(
-      "test-org",
-      "proj-1",
-      "task-1",
-      "item-1"
-    );
+    expect(mockToggleTaskItem).toHaveBeenCalledWith("test-org", "proj-1", "task-1", "item-1");
   });
 
   it("adds new item via input form", async () => {
@@ -137,13 +127,7 @@ describe("TaskSubItems", () => {
     const addButton = screen.getByRole("button", { name: "Add" });
     await userEvent.click(addButton);
 
-    expect(mockAddTaskItem).toHaveBeenCalledWith(
-      "test-org",
-      "proj-1",
-      "task-1",
-      "New sub-item",
-      0
-    );
+    expect(mockAddTaskItem).toHaveBeenCalledWith("test-org", "proj-1", "task-1", "New sub-item", 0);
   });
 
   it("shows delete button only when canManage is true", async () => {

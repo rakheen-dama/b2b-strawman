@@ -14,7 +14,7 @@ import type {
 
 export async function getTemplates(
   category?: string,
-  primaryEntityType?: string,
+  primaryEntityType?: string
 ): Promise<TemplateListResponse[]> {
   const params = new URLSearchParams();
   if (category) params.set("category", category);
@@ -23,21 +23,17 @@ export async function getTemplates(
   return api.get<TemplateListResponse[]>(`/api/templates${qs ? `?${qs}` : ""}`);
 }
 
-export async function getTemplateDetail(
-  id: string,
-): Promise<TemplateDetailResponse> {
+export async function getTemplateDetail(id: string): Promise<TemplateDetailResponse> {
   return api.get<TemplateDetailResponse>(`/api/templates/${id}`);
 }
 
-export async function createTemplate(
-  req: CreateTemplateRequest,
-): Promise<TemplateDetailResponse> {
+export async function createTemplate(req: CreateTemplateRequest): Promise<TemplateDetailResponse> {
   return api.post<TemplateDetailResponse>("/api/templates", req);
 }
 
 export async function updateTemplate(
   id: string,
-  req: UpdateTemplateRequest,
+  req: UpdateTemplateRequest
 ): Promise<TemplateDetailResponse> {
   return api.put<TemplateDetailResponse>(`/api/templates/${id}`, req);
 }
@@ -46,9 +42,7 @@ export async function deleteTemplate(id: string): Promise<void> {
   return api.delete<void>(`/api/templates/${id}`);
 }
 
-export async function cloneTemplate(
-  id: string,
-): Promise<TemplateDetailResponse> {
+export async function cloneTemplate(id: string): Promise<TemplateDetailResponse> {
   return api.post<TemplateDetailResponse>(`/api/templates/${id}/clone`);
 }
 
@@ -59,7 +53,7 @@ export async function resetTemplate(id: string): Promise<void> {
 export async function previewTemplate(
   id: string,
   entityId: string,
-  clauses?: Array<{ clauseId: string; sortOrder: number }>,
+  clauses?: Array<{ clauseId: string; sortOrder: number }>
 ): Promise<PreviewResponse> {
   let authOptions: { headers: Record<string, string>; credentials?: RequestCredentials };
   try {
@@ -92,7 +86,7 @@ export async function uploadDocxTemplate(
   name: string,
   category: string,
   entityType: string,
-  description?: string,
+  description?: string
 ): Promise<TemplateDetailResponse> {
   let authOptions: { headers: Record<string, string>; credentials?: RequestCredentials };
   try {
@@ -135,7 +129,7 @@ export async function uploadDocxTemplate(
 
 export async function replaceDocxFile(
   templateId: string,
-  file: File,
+  file: File
 ): Promise<TemplateDetailResponse> {
   let authOptions: { headers: Record<string, string>; credentials?: RequestCredentials };
   try {
@@ -171,16 +165,14 @@ export async function replaceDocxFile(
 }
 
 export async function getDocxFields(
-  templateId: string,
+  templateId: string
 ): Promise<import("@/lib/types").DiscoveredField[]> {
   return api.get<import("@/lib/types").DiscoveredField[]>(
-    `/api/templates/${templateId}/docx/fields`,
+    `/api/templates/${templateId}/docx/fields`
   );
 }
 
-export async function downloadDocxTemplate(
-  templateId: string,
-): Promise<string> {
+export async function downloadDocxTemplate(templateId: string): Promise<string> {
   let authOptions: { headers: Record<string, string>; credentials?: RequestCredentials };
   try {
     authOptions = await getAuthFetchOptions("GET");
@@ -188,17 +180,14 @@ export async function downloadDocxTemplate(
     redirect("/sign-in");
   }
 
-  const response = await fetch(
-    `${API_BASE}/api/templates/${templateId}/docx/download`,
-    {
-      method: "GET",
-      headers: {
-        ...authOptions.headers,
-      },
-      redirect: "manual",
-      credentials: authOptions.credentials,
+  const response = await fetch(`${API_BASE}/api/templates/${templateId}/docx/download`, {
+    method: "GET",
+    headers: {
+      ...authOptions.headers,
     },
-  );
+    redirect: "manual",
+    credentials: authOptions.credentials,
+  });
 
   if (response.status === 302) {
     return response.headers.get("Location") || "";

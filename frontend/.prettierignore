@@ -8,3 +8,5 @@ pnpm-lock.yaml
 *.min.js
 *.min.css
 public
+test-results
+playwright-report

@@ -9,12 +9,9 @@ const mockUpdateProjectBillingRate = vi.fn();
 const mockDeleteProjectBillingRate = vi.fn();
 
 vi.mock("@/app/(app)/org/[slug]/projects/[id]/rate-actions", () => ({
-  createProjectBillingRate: (...args: unknown[]) =>
-    mockCreateProjectBillingRate(...args),
-  updateProjectBillingRate: (...args: unknown[]) =>
-    mockUpdateProjectBillingRate(...args),
-  deleteProjectBillingRate: (...args: unknown[]) =>
-    mockDeleteProjectBillingRate(...args),
+  createProjectBillingRate: (...args: unknown[]) => mockCreateProjectBillingRate(...args),
+  updateProjectBillingRate: (...args: unknown[]) => mockUpdateProjectBillingRate(...args),
+  deleteProjectBillingRate: (...args: unknown[]) => mockDeleteProjectBillingRate(...args),
 }));
 
 function makeMembers(): ProjectMember[] {
@@ -78,18 +75,14 @@ describe("ProjectRatesTab", () => {
         projectId="p1"
         slug="acme"
         defaultCurrency="USD"
-      />,
+      />
     );
 
     expect(screen.getByText("No project rate overrides")).toBeInTheDocument();
     expect(
-      screen.getByText(
-        "Add billing rate overrides for specific team members on this project.",
-      ),
+      screen.getByText("Add billing rate overrides for specific team members on this project.")
     ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /Add Override/ }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Add Override/ })).toBeInTheDocument();
   });
 
   it("renders project rate overrides table with member data", () => {
@@ -100,12 +93,10 @@ describe("ProjectRatesTab", () => {
         projectId="p1"
         slug="acme"
         defaultCurrency="USD"
-      />,
+      />
     );
 
-    expect(
-      screen.getByText("Project Rate Overrides"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Project Rate Overrides")).toBeInTheDocument();
     expect(screen.getByText("Alice Johnson")).toBeInTheDocument();
     expect(screen.getByText("$200.00")).toBeInTheDocument();
     expect(screen.getByText("USD")).toBeInTheDocument();
@@ -122,23 +113,21 @@ describe("ProjectRatesTab", () => {
         projectId="p1"
         slug="acme"
         defaultCurrency="USD"
-      />,
+      />
     );
 
     await user.click(screen.getByRole("button", { name: /Add Override/ }));
 
     await waitFor(() => {
       expect(
-        screen.getByRole("heading", { name: "Add Project Rate Override" }),
+        screen.getByRole("heading", { name: "Add Project Rate Override" })
       ).toBeInTheDocument();
     });
 
     expect(screen.getByLabelText("Member")).toBeInTheDocument();
     expect(screen.getByLabelText("Hourly Rate")).toBeInTheDocument();
     expect(screen.getByLabelText("Effective From")).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "Create Override" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Create Override" })).toBeInTheDocument();
   });
 
   it("delete project rate shows confirmation and calls server action", async () => {
@@ -152,28 +141,20 @@ describe("ProjectRatesTab", () => {
         projectId="p1"
         slug="acme"
         defaultCurrency="USD"
-      />,
+      />
     );
 
-    const deleteButton = screen.getByLabelText(
-      "Delete project rate for Alice Johnson",
-    );
+    const deleteButton = screen.getByLabelText("Delete project rate for Alice Johnson");
     await user.click(deleteButton);
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Delete Project Rate Override"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Delete Project Rate Override")).toBeInTheDocument();
     });
 
     await user.click(screen.getByRole("button", { name: "Delete" }));
 
     await waitFor(() => {
-      expect(mockDeleteProjectBillingRate).toHaveBeenCalledWith(
-        "acme",
-        "p1",
-        "pbr1",
-      );
+      expect(mockDeleteProjectBillingRate).toHaveBeenCalledWith("acme", "p1", "pbr1");
     });
   });
 });

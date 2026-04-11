@@ -13,10 +13,7 @@ import type { OrgRole } from "@/lib/api/org-roles";
 
 const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "keycloak";
 
-const ROLE_BADGES: Record<
-  string,
-  { label: string; variant: "owner" | "admin" | "member" }
-> = {
+const ROLE_BADGES: Record<string, { label: string; variant: "owner" | "admin" | "member" }> = {
   "org:owner": { label: "Owner", variant: "owner" },
   "org:admin": { label: "Admin", variant: "admin" },
   "org:member": { label: "Member", variant: "member" },
@@ -43,15 +40,15 @@ interface MemberRowData {
   capabilityOverridesCount?: number;
 }
 
-function MockMemberList({
-  isAdmin,
-  onRowClick,
-}: InnerMemberListProps) {
+function MockMemberList({ isAdmin, onRowClick }: InnerMemberListProps) {
   const { members, isLoaded } = useOrgMembers();
 
   if (!isLoaded) {
     return (
-      <div className="py-8 text-center text-sm text-slate-600 dark:text-slate-400" aria-live="polite">
+      <div
+        className="py-8 text-center text-sm text-slate-600 dark:text-slate-400"
+        aria-live="polite"
+      >
         Loading members...
       </div>
     );
@@ -77,23 +74,13 @@ function MockMemberList({
           role: member.role,
           joinedAt: "\u2014",
         };
-        return (
-          <MemberRow
-            key={member.id}
-            member={row}
-            isAdmin={isAdmin}
-            onRowClick={onRowClick}
-          />
-        );
+        return <MemberRow key={member.id} member={row} isAdmin={isAdmin} onRowClick={onRowClick} />;
       })}
     </MemberTable>
   );
 }
 
-function KeycloakBffMemberList({
-  isAdmin,
-  onRowClick,
-}: InnerMemberListProps) {
+function KeycloakBffMemberList({ isAdmin, onRowClick }: InnerMemberListProps) {
   const [members, setMembers] = useState<BffMember[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
 
@@ -107,7 +94,10 @@ function KeycloakBffMemberList({
 
   if (!isLoaded) {
     return (
-      <div className="py-8 text-center text-sm text-slate-600 dark:text-slate-400" aria-live="polite">
+      <div
+        className="py-8 text-center text-sm text-slate-600 dark:text-slate-400"
+        aria-live="polite"
+      >
         Loading members...
       </div>
     );
@@ -135,14 +125,7 @@ function KeycloakBffMemberList({
           orgRoleName: member.orgRoleName,
           capabilityOverridesCount: member.capabilityOverridesCount,
         };
-        return (
-          <MemberRow
-            key={member.id}
-            member={row}
-            isAdmin={isAdmin}
-            onRowClick={onRowClick}
-          />
-        );
+        return <MemberRow key={member.id} member={row} isAdmin={isAdmin} onRowClick={onRowClick} />;
       })}
     </MemberTable>
   );
@@ -156,13 +139,13 @@ function MemberTable({ children }: { children: React.ReactNode }) {
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-slate-200 dark:border-slate-800">
-            <th className="pb-3 pr-4 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
+            <th className="pr-4 pb-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
               Member
             </th>
-            <th className="w-[200px] pb-3 pr-4 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
+            <th className="w-[200px] pr-4 pb-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
               Email
             </th>
-            <th className="w-[100px] pb-3 pr-4 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
+            <th className="w-[100px] pr-4 pb-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
               Role
             </th>
             <th className="w-[140px] pb-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
@@ -191,7 +174,7 @@ function MemberRow({
   return (
     <tr
       data-testid={`member-row-${member.email}`}
-      className={`border-b border-slate-100 transition-colors hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900/30${isAdmin ? " cursor-pointer" : ""}`}
+      className={`border-b border-slate-100 transition-colors hover:bg-slate-50 dark:border-slate-800/50 dark:hover:bg-slate-900/30${isAdmin ? "cursor-pointer" : ""}`}
       onClick={() => isAdmin && onRowClick?.(member)}
       role={isAdmin ? "button" : undefined}
       tabIndex={isAdmin ? 0 : undefined}
@@ -205,18 +188,16 @@ function MemberRow({
       <td className="py-3 pr-4">
         <div className="flex items-center gap-3">
           <AvatarCircle name={member.name} size={32} />
-          <span className="font-medium text-slate-900 dark:text-slate-100">
-            {member.name}
-          </span>
+          <span className="font-medium text-slate-900 dark:text-slate-100">{member.name}</span>
         </div>
       </td>
-      <td className="py-3 pr-4 text-slate-600 dark:text-slate-400">
-        {member.email}
-      </td>
+      <td className="py-3 pr-4 text-slate-600 dark:text-slate-400">{member.email}</td>
       <td className="py-3 pr-4">
         <div className="flex items-center gap-1.5">
           {isSystemRole ? (
-            <Badge variant={roleInfo.variant} data-testid="member-role-badge">{roleInfo.label}</Badge>
+            <Badge variant={roleInfo.variant} data-testid="member-role-badge">
+              {roleInfo.label}
+            </Badge>
           ) : (
             <Badge variant="neutral" data-testid="member-role-badge">
               {member.orgRoleName ?? member.role}
@@ -229,17 +210,13 @@ function MemberRow({
           )}
         </div>
       </td>
-      <td className="py-3 text-slate-600 dark:text-slate-400">
-        {member.joinedAt}
-      </td>
+      <td className="py-3 text-slate-600 dark:text-slate-400">{member.joinedAt}</td>
     </tr>
   );
 }
 
 export function MemberList({ isAdmin, roles, slug }: MemberListProps) {
-  const [selectedMember, setSelectedMember] = useState<MemberRowData | null>(
-    null,
-  );
+  const [selectedMember, setSelectedMember] = useState<MemberRowData | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
 
   function handleRowClick(member: MemberRowData) {

@@ -13,7 +13,7 @@ interface ActionResult {
 
 export async function updateProjectNamingPattern(
   slug: string,
-  projectNamingPattern: string | null,
+  projectNamingPattern: string | null
 ): Promise<ActionResult> {
   const { orgSlug } = await getAuthContext();
   const caps = await fetchMyCapabilities();

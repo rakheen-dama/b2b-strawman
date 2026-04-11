@@ -20,10 +20,7 @@ interface TransactionActionsProps {
   slug: string;
 }
 
-export function TransactionActions({
-  accountId,
-  slug,
-}: TransactionActionsProps) {
+export function TransactionActions({ accountId, slug }: TransactionActionsProps) {
   const [depositOpen, setDepositOpen] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [transferOpen, setTransferOpen] = useState(false);
@@ -40,21 +37,13 @@ export function TransactionActions({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={() => setDepositOpen(true)}>
-            Record Deposit
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setPaymentOpen(true)}>
-            Record Payment
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setTransferOpen(true)}>
-            Record Transfer
-          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setDepositOpen(true)}>Record Deposit</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setPaymentOpen(true)}>Record Payment</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setTransferOpen(true)}>Record Transfer</DropdownMenuItem>
           <DropdownMenuItem onClick={() => setFeeTransferOpen(true)}>
             Record Fee Transfer
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setRefundOpen(true)}>
-            Record Refund
-          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setRefundOpen(true)}>Record Refund</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -64,11 +53,7 @@ export function TransactionActions({
         open={depositOpen}
         onOpenChange={setDepositOpen}
       />
-      <RecordPaymentDialog
-        accountId={accountId}
-        open={paymentOpen}
-        onOpenChange={setPaymentOpen}
-      />
+      <RecordPaymentDialog accountId={accountId} open={paymentOpen} onOpenChange={setPaymentOpen} />
       <RecordTransferDialog
         accountId={accountId}
         open={transferOpen}
@@ -79,11 +64,7 @@ export function TransactionActions({
         open={feeTransferOpen}
         onOpenChange={setFeeTransferOpen}
       />
-      <RecordRefundDialog
-        accountId={accountId}
-        open={refundOpen}
-        onOpenChange={setRefundOpen}
-      />
+      <RecordRefundDialog accountId={accountId} open={refundOpen} onOpenChange={setRefundOpen} />
     </>
   );
 }

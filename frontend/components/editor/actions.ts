@@ -28,18 +28,16 @@ export interface VariableMetadataResponse {
 }
 
 export async function fetchVariableMetadata(
-  entityType: TemplateEntityType,
+  entityType: TemplateEntityType
 ): Promise<VariableMetadataResponse> {
   return api.get<VariableMetadataResponse>(
-    `/api/templates/variables?entityType=${encodeURIComponent(entityType)}`,
+    `/api/templates/variables?entityType=${encodeURIComponent(entityType)}`
   );
 }
 
 export async function fetchAllVariableMetadata(): Promise<VariableMetadataResponse> {
   const entityTypes: TemplateEntityType[] = ["PROJECT", "CUSTOMER", "INVOICE"];
-  const responses = await Promise.all(
-    entityTypes.map((et) => fetchVariableMetadata(et)),
-  );
+  const responses = await Promise.all(entityTypes.map((et) => fetchVariableMetadata(et)));
 
   // Merge groups, de-duplicating by prefix (keep first occurrence, merge variables)
   const groupMap = new Map<string, VariableGroup>();

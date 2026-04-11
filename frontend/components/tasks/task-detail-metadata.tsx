@@ -25,7 +25,7 @@ export function TaskDetailMetadata({
     <div className="border-b border-slate-200 px-6 py-4 dark:border-slate-800">
       <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
         <div>
-          <dt className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          <dt className="text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
             Assignee
           </dt>
           <dd className="mt-1">
@@ -38,7 +38,7 @@ export function TaskDetailMetadata({
           </dd>
         </div>
         <div>
-          <dt className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          <dt className="text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
             Due Date
           </dt>
           <dd className="mt-1 text-sm text-slate-700 dark:text-slate-300">
@@ -46,7 +46,7 @@ export function TaskDetailMetadata({
           </dd>
         </div>
         <div>
-          <dt className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          <dt className="text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
             Created By
           </dt>
           <dd className="mt-1 text-sm text-slate-700 dark:text-slate-300">
@@ -54,7 +54,7 @@ export function TaskDetailMetadata({
           </dd>
         </div>
         <div>
-          <dt className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          <dt className="text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
             Created
           </dt>
           <dd className="mt-1 text-sm text-slate-700 dark:text-slate-300">
@@ -63,7 +63,7 @@ export function TaskDetailMetadata({
         </div>
         {/* Recurrence info */}
         <div>
-          <dt className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          <dt className="text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
             <span className="inline-flex items-center gap-1">
               <Repeat className="size-3" />
               Recurrence
@@ -80,7 +80,7 @@ export function TaskDetailMetadata({
         </div>
         {task.parentTaskId && (
           <div>
-            <dt className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            <dt className="text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
               Parent Task
             </dt>
             <dd className="mt-1">

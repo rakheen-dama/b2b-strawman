@@ -55,7 +55,7 @@ export async function createDataRequest(
   slug: string,
   customerId: string,
   requestType: string,
-  description: string,
+  description: string
 ): Promise<DataRequestActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
@@ -78,7 +78,7 @@ export async function updateRequestStatus(
   slug: string,
   id: string,
   action: string,
-  reason?: string,
+  reason?: string
 ): Promise<DataRequestActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
@@ -135,7 +135,7 @@ export async function getExportUrl(id: string): Promise<ExportDownloadResult> {
 export async function executeDeletion(
   slug: string,
   id: string,
-  confirmCustomerName: string,
+  confirmCustomerName: string
 ): Promise<DeletionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {

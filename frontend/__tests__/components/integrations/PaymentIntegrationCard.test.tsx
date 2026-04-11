@@ -42,15 +42,9 @@ describe("PaymentIntegrationCard", () => {
       configJson: null,
       updatedAt: "2026-01-01T00:00:00Z",
     };
-    render(
-      <PaymentIntegrationCard {...defaultProps} integration={integration} />,
-    );
-    expect(
-      screen.getByText(/Secret Key \(sk_live_\.\.\. or sk_test_\.\.\.\)/),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(/Webhook Signing Secret \(whsec_\.\.\.\)/),
-    ).toBeInTheDocument();
+    render(<PaymentIntegrationCard {...defaultProps} integration={integration} />);
+    expect(screen.getByText(/Secret Key \(sk_live_\.\.\. or sk_test_\.\.\.\)/)).toBeInTheDocument();
+    expect(screen.getByText(/Webhook Signing Secret \(whsec_\.\.\.\)/)).toBeInTheDocument();
     expect(screen.getByText("Webhook URL")).toBeInTheDocument();
   });
 
@@ -67,14 +61,10 @@ describe("PaymentIntegrationCard", () => {
       }),
       updatedAt: "2026-01-01T00:00:00Z",
     };
-    render(
-      <PaymentIntegrationCard {...defaultProps} integration={integration} />,
-    );
+    render(<PaymentIntegrationCard {...defaultProps} integration={integration} />);
     expect(screen.getByText("Merchant ID")).toBeInTheDocument();
     expect(screen.getByText("Merchant Key")).toBeInTheDocument();
-    expect(
-      screen.getByText(/Use PayFast Sandbox for testing/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Use PayFast Sandbox for testing/)).toBeInTheDocument();
     expect(screen.getByText(/ITN Callback URL/)).toBeInTheDocument();
   });
 
@@ -91,12 +81,8 @@ describe("PaymentIntegrationCard", () => {
       }),
       updatedAt: "2026-01-01T00:00:00Z",
     };
-    render(
-      <PaymentIntegrationCard {...defaultProps} integration={integration} />,
-    );
-    expect(
-      screen.getByText(/Send a test payment to verify/),
-    ).toBeInTheDocument();
+    render(<PaymentIntegrationCard {...defaultProps} integration={integration} />);
+    expect(screen.getByText(/Send a test payment to verify/)).toBeInTheDocument();
     expect(screen.queryByText("Test Connection")).not.toBeInTheDocument();
   });
 
@@ -109,9 +95,7 @@ describe("PaymentIntegrationCard", () => {
       configJson: null,
       updatedAt: "2026-01-01T00:00:00Z",
     };
-    render(
-      <PaymentIntegrationCard {...defaultProps} integration={integration} />,
-    );
+    render(<PaymentIntegrationCard {...defaultProps} integration={integration} />);
     expect(screen.getByText("Test Connection")).toBeInTheDocument();
   });
 
@@ -124,9 +108,7 @@ describe("PaymentIntegrationCard", () => {
       configJson: JSON.stringify({ merchantId: "", merchantKey: "", sandbox: false }),
       updatedAt: "2026-01-01T00:00:00Z",
     };
-    render(
-      <PaymentIntegrationCard {...defaultProps} integration={integration} />,
-    );
+    render(<PaymentIntegrationCard {...defaultProps} integration={integration} />);
     const merchantKeyInput = screen.getByPlaceholderText("Enter your Merchant Key");
     expect(merchantKeyInput).toHaveAttribute("type", "password");
   });
@@ -140,9 +122,7 @@ describe("PaymentIntegrationCard", () => {
       configJson: null,
       updatedAt: "2026-01-01T00:00:00Z",
     };
-    render(
-      <PaymentIntegrationCard {...defaultProps} integration={integration} />,
-    );
+    render(<PaymentIntegrationCard {...defaultProps} integration={integration} />);
     const webhookInput = screen.getByPlaceholderText("whsec_...");
     expect(webhookInput).toHaveAttribute("type", "password");
   });

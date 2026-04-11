@@ -27,11 +27,7 @@ export function RetentionCheckResults({ result, onPurge }: RetentionCheckResults
   }
 
   async function handlePurge(key: string, recordType: string, recordIds: string[]) {
-    if (
-      !window.confirm(
-        `Purge ${recordIds.length} ${recordType} records? This cannot be undone.`,
-      )
-    )
+    if (!window.confirm(`Purge ${recordIds.length} ${recordType} records? This cannot be undone.`))
       return;
     setPurgingKeys((prev) => new Set(prev).add(key));
     try {
@@ -50,9 +46,7 @@ export function RetentionCheckResults({ result, onPurge }: RetentionCheckResults
       <div className="mt-4 rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-900 dark:bg-green-950">
         <div className="flex items-center gap-2">
           <CheckCircle2 className="size-5 text-green-600 dark:text-green-400" />
-          <p className="font-medium text-green-800 dark:text-green-200">
-            All Clear
-          </p>
+          <p className="font-medium text-green-800 dark:text-green-200">All Clear</p>
         </div>
         <p className="mt-1 text-sm text-green-700 dark:text-green-300">
           No records match the current retention policies. Checked at{" "}

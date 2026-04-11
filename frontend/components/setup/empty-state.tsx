@@ -14,13 +14,11 @@ export function EmptyState({
   onAction,
 }: EmptyStateProps) {
   return (
-    <Card className="border-none bg-muted/30">
+    <Card className="bg-muted/30 border-none">
       <CardContent className="flex flex-col items-center py-8 text-center">
-        <Icon className="mb-3 h-10 w-10 text-muted-foreground/60" />
+        <Icon className="text-muted-foreground/60 mb-3 h-10 w-10" />
         <h3 className="mb-1 text-sm font-medium">{title}</h3>
-        <p className="mb-4 max-w-sm text-sm text-muted-foreground">
-          {description}
-        </p>
+        <p className="text-muted-foreground mb-4 max-w-sm text-sm">{description}</p>
         {actionLabel && actionHref && (
           <Button asChild size="sm" variant="outline">
             <Link href={actionHref}>{actionLabel}</Link>

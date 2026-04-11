@@ -29,7 +29,7 @@ export function CustomerContactCard({ customer }: CustomerContactCardProps) {
       </CardHeader>
       <CardContent>
         {!hasAny ? (
-          <p className="text-sm text-muted-foreground">No contact on file.</p>
+          <p className="text-muted-foreground text-sm">No contact on file.</p>
         ) : (
           <div className="space-y-2 text-sm">
             {name && (

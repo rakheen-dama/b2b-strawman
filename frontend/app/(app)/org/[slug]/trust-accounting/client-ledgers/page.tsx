@@ -3,13 +3,7 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight, Users } from "lucide-react";
 import { getOrgSettings } from "@/lib/api/settings";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { fetchTrustAccounts } from "@/app/(app)/org/[slug]/trust-accounting/actions";
 import {
@@ -50,9 +44,7 @@ export default async function ClientLedgersPage({
   // Capability check
   const capData = await fetchMyCapabilities();
   const hasViewTrust =
-    capData.isAdmin ||
-    capData.isOwner ||
-    capData.capabilities.includes("VIEW_TRUST");
+    capData.isAdmin || capData.isOwner || capData.capabilities.includes("VIEW_TRUST");
   if (!hasViewTrust) {
     notFound();
   }
@@ -127,14 +119,10 @@ export default async function ClientLedgersPage({
       </div>
 
       {/* Filters */}
-      <div
-        className="flex flex-wrap items-center gap-4"
-        data-testid="ledger-filters"
-      >
+      <div className="flex flex-wrap items-center gap-4" data-testid="ledger-filters">
         <Link
           href={filterUrl({
-            nonZeroOnly:
-              search.nonZeroOnly === "true" ? undefined : "true",
+            nonZeroOnly: search.nonZeroOnly === "true" ? undefined : "true",
           })}
           className={`rounded-full px-3 py-1 text-sm transition-colors ${
             search.nonZeroOnly === "true"
@@ -151,15 +139,13 @@ export default async function ClientLedgersPage({
           method="GET"
           className="flex items-center gap-2"
         >
-          {search.nonZeroOnly === "true" && (
-            <input type="hidden" name="nonZeroOnly" value="true" />
-          )}
+          {search.nonZeroOnly === "true" && <input type="hidden" name="nonZeroOnly" value="true" />}
           <input
             type="text"
             name="search"
             placeholder="Search clients..."
             defaultValue={search.search ?? ""}
-            className="h-8 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500"
+            className="h-8 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500"
             data-testid="client-search"
           />
           <Button type="submit" variant="outline" size="sm">
@@ -174,8 +160,7 @@ export default async function ClientLedgersPage({
           <CardContent className="py-10 text-center">
             <Users className="mx-auto mb-3 size-10 text-slate-300 dark:text-slate-600" />
             <p className="text-sm text-slate-500 dark:text-slate-400">
-              No trust account configured. Set up a trust account to view
-              client ledgers.
+              No trust account configured. Set up a trust account to view client ledgers.
             </p>
           </CardContent>
         </Card>
@@ -185,10 +170,7 @@ export default async function ClientLedgersPage({
       {(fetchError || accountFetchError) && (
         <Card>
           <CardContent className="py-10 text-center">
-            <p
-              className="text-sm text-slate-500 dark:text-slate-400"
-              data-testid="error-state"
-            >
+            <p className="text-sm text-slate-500 dark:text-slate-400" data-testid="error-state">
               Unable to load client ledgers. Please try again later.
             </p>
           </CardContent>
@@ -216,25 +198,22 @@ export default async function ClientLedgersPage({
             ) : (
               <>
                 <div className="overflow-x-auto">
-                  <table
-                    className="w-full text-sm"
-                    data-testid="client-ledgers-table"
-                  >
+                  <table className="w-full text-sm" data-testid="client-ledgers-table">
                     <thead>
                       <tr className="border-b border-slate-200 dark:border-slate-700">
-                        <th className="pb-3 pr-4 text-left font-medium text-slate-500 dark:text-slate-400">
+                        <th className="pr-4 pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
                           Client Name
                         </th>
-                        <th className="pb-3 pr-4 text-right font-medium text-slate-500 dark:text-slate-400">
+                        <th className="pr-4 pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
                           Trust Balance
                         </th>
-                        <th className="pb-3 pr-4 text-right font-medium text-slate-500 dark:text-slate-400">
+                        <th className="pr-4 pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
                           Total Deposits
                         </th>
-                        <th className="pb-3 pr-4 text-right font-medium text-slate-500 dark:text-slate-400">
+                        <th className="pr-4 pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
                           Total Payments
                         </th>
-                        <th className="pb-3 pr-4 text-right font-medium text-slate-500 dark:text-slate-400">
+                        <th className="pr-4 pb-3 text-right font-medium text-slate-500 dark:text-slate-400">
                           Total Fee Transfers
                         </th>
                         <th className="pb-3 text-left font-medium text-slate-500 dark:text-slate-400">
@@ -257,20 +236,17 @@ export default async function ClientLedgersPage({
                               {ledger.customerName}
                             </Link>
                           </td>
-                          <td className="py-3 pr-4 text-right font-mono tabular-nums text-slate-950 dark:text-slate-50">
+                          <td className="py-3 pr-4 text-right font-mono text-slate-950 tabular-nums dark:text-slate-50">
                             {formatCurrency(ledger.balance, currency)}
                           </td>
-                          <td className="py-3 pr-4 text-right font-mono tabular-nums text-slate-700 dark:text-slate-300">
+                          <td className="py-3 pr-4 text-right font-mono text-slate-700 tabular-nums dark:text-slate-300">
                             {formatCurrency(ledger.totalDeposits, currency)}
                           </td>
-                          <td className="py-3 pr-4 text-right font-mono tabular-nums text-slate-700 dark:text-slate-300">
+                          <td className="py-3 pr-4 text-right font-mono text-slate-700 tabular-nums dark:text-slate-300">
                             {formatCurrency(ledger.totalPayments, currency)}
                           </td>
-                          <td className="py-3 pr-4 text-right font-mono tabular-nums text-slate-700 dark:text-slate-300">
-                            {formatCurrency(
-                              ledger.totalFeeTransfers,
-                              currency,
-                            )}
+                          <td className="py-3 pr-4 text-right font-mono text-slate-700 tabular-nums dark:text-slate-300">
+                            {formatCurrency(ledger.totalFeeTransfers, currency)}
                           </td>
                           <td className="py-3 text-slate-700 dark:text-slate-300">
                             {ledger.lastTransactionDate

@@ -13,13 +13,9 @@ describe("resolveDateRange", () => {
     const expectedYear = now.getFullYear();
     const expectedMonth = String(now.getMonth() + 1).padStart(2, "0");
 
-    expect(result.from).toMatch(
-      new RegExp(`^${expectedYear}-${expectedMonth}-01$`)
-    );
+    expect(result.from).toMatch(new RegExp(`^${expectedYear}-${expectedMonth}-01$`));
     // Last day of month varies, just check it starts with the right year-month
-    expect(result.to).toMatch(
-      new RegExp(`^${expectedYear}-${expectedMonth}-\\d{2}$`)
-    );
+    expect(result.to).toMatch(new RegExp(`^${expectedYear}-${expectedMonth}-\\d{2}$`));
   });
 
   it("uses provided from with default to when only from is given", () => {

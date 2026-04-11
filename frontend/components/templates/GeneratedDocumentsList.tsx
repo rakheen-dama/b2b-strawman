@@ -66,9 +66,7 @@ export function GeneratedDocumentsList({
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
 
   // Acceptance state
-  const [acceptanceMap, setAcceptanceMap] = useState<
-    Record<string, AcceptanceRequestResponse>
-  >({});
+  const [acceptanceMap, setAcceptanceMap] = useState<Record<string, AcceptanceRequestResponse>>({});
   const [sendDialogDocId, setSendDialogDocId] = useState<string | null>(null);
   const [sendDialogOpen, setSendDialogOpen] = useState(false);
   const [expandedDocId, setExpandedDocId] = useState<string | null>(null);
@@ -187,7 +185,8 @@ export function GeneratedDocumentsList({
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        const docxFileName = doc.fileName?.replace(/\.pdf$/i, ".docx") || `${doc.templateName}.docx`;
+        const docxFileName =
+          doc.fileName?.replace(/\.pdf$/i, ".docx") || `${doc.templateName}.docx`;
         a.download = docxFileName;
         document.body.appendChild(a);
         a.click();
@@ -238,7 +237,7 @@ export function GeneratedDocumentsList({
 
   return (
     <div className="space-y-4">
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && <p className="text-destructive text-sm">{error}</p>}
 
       <Table>
         <TableHeader>
@@ -285,18 +284,12 @@ export function GeneratedDocumentsList({
                         <button
                           type="button"
                           className="inline-flex cursor-pointer items-center gap-1"
-                          onClick={() =>
-                            setExpandedDocId(isExpanded ? null : doc.id)
-                          }
+                          onClick={() => setExpandedDocId(isExpanded ? null : doc.id)}
                           aria-label={
-                            isExpanded
-                              ? "Collapse acceptance details"
-                              : "Expand acceptance details"
+                            isExpanded ? "Collapse acceptance details" : "Expand acceptance details"
                           }
                         >
-                          <AcceptanceStatusBadge
-                            status={acceptanceRequest.status}
-                          />
+                          <AcceptanceStatusBadge status={acceptanceRequest.status} />
                           {isExpanded ? (
                             <ChevronDown className="size-3.5 text-slate-400" />
                           ) : (
@@ -370,14 +363,12 @@ export function GeneratedDocumentsList({
                             <AlertDialogHeader>
                               <AlertDialogTitle>Delete Generated Document</AlertDialogTitle>
                               <AlertDialogDescription>
-                                Are you sure you want to delete this generated document? This
-                                action cannot be undone.
+                                Are you sure you want to delete this generated document? This action
+                                cannot be undone.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                              <AlertDialogCancel disabled={!!deletingId}>
-                                Cancel
-                              </AlertDialogCancel>
+                              <AlertDialogCancel disabled={!!deletingId}>Cancel</AlertDialogCancel>
                               <Button
                                 variant="destructive"
                                 onClick={handleDelete}
@@ -394,7 +385,10 @@ export function GeneratedDocumentsList({
                 </TableRow>
                 {isExpanded && acceptanceRequest && (
                   <TableRow>
-                    <TableCell colSpan={columnCount} className="bg-slate-50/50 dark:bg-slate-900/30 p-4">
+                    <TableCell
+                      colSpan={columnCount}
+                      className="bg-slate-50/50 p-4 dark:bg-slate-900/30"
+                    >
                       <AcceptanceDetailPanel
                         request={acceptanceRequest}
                         isAdmin={isAdmin}
@@ -413,9 +407,7 @@ export function GeneratedDocumentsList({
         <SendForAcceptanceDialog
           generatedDocumentId={sendDialogDocId}
           customerId={customerId}
-          documentName={
-            documents.find((d) => d.id === sendDialogDocId)?.templateName ?? "Document"
-          }
+          documentName={documents.find((d) => d.id === sendDialogDocId)?.templateName ?? "Document"}
           open={sendDialogOpen}
           onOpenChange={(open) => {
             setSendDialogOpen(open);

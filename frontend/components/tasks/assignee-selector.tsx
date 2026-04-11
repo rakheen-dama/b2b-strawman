@@ -12,11 +12,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface Member {
   id: string;
@@ -72,7 +68,7 @@ export function AssigneeSelector({
                 <Check
                   className={cn(
                     "mr-2 size-4",
-                    currentAssigneeId === null ? "opacity-100" : "opacity-0",
+                    currentAssigneeId === null ? "opacity-100" : "opacity-0"
                   )}
                 />
                 Unassigned
@@ -90,7 +86,7 @@ export function AssigneeSelector({
                   <Check
                     className={cn(
                       "mr-2 size-4",
-                      currentAssigneeId === member.id ? "opacity-100" : "opacity-0",
+                      currentAssigneeId === member.id ? "opacity-100" : "opacity-0"
                     )}
                   />
                   <div className="min-w-0 flex-1">

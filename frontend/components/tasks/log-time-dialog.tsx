@@ -96,7 +96,7 @@ export function LogTimeDialog({
         }
       }, 300);
     },
-    [memberId, projectId, billable],
+    [memberId, projectId, billable]
   );
 
   // Trigger rate resolution when billable, date, or dialog open changes
@@ -196,13 +196,9 @@ export function LogTimeDialog({
                   defaultValue={0}
                   className="w-20"
                   placeholder="0"
-                  onChange={(e) =>
-                    setHours(parseInt(e.target.value, 10) || 0)
-                  }
+                  onChange={(e) => setHours(parseInt(e.target.value, 10) || 0)}
                 />
-                <span className="text-sm text-slate-600 dark:text-slate-400">
-                  h
-                </span>
+                <span className="text-sm text-slate-600 dark:text-slate-400">h</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <Input
@@ -214,22 +210,15 @@ export function LogTimeDialog({
                   defaultValue={0}
                   className="w-20"
                   placeholder="0"
-                  onChange={(e) =>
-                    setMinutes(parseInt(e.target.value, 10) || 0)
-                  }
+                  onChange={(e) => setMinutes(parseInt(e.target.value, 10) || 0)}
                 />
-                <span className="text-sm text-slate-600 dark:text-slate-400">
-                  m
-                </span>
+                <span className="text-sm text-slate-600 dark:text-slate-400">m</span>
               </div>
             </div>
           </div>
 
           {/* Retainer Indicator */}
-          <RetainerIndicator
-            summary={retainerSummary ?? null}
-            selectedDate={date}
-          />
+          <RetainerIndicator summary={retainerSummary ?? null} selectedDate={date} />
 
           {/* Date */}
           <div className="space-y-2">
@@ -247,10 +236,7 @@ export function LogTimeDialog({
           {/* Description */}
           <div className="space-y-2">
             <Label htmlFor="time-description">
-              Description{" "}
-              <span className="font-normal text-muted-foreground">
-                (optional)
-              </span>
+              Description <span className="text-muted-foreground font-normal">(optional)</span>
             </Label>
             <Textarea
               id="time-description"
@@ -284,17 +270,12 @@ export function LogTimeDialog({
               data-testid="rate-preview"
             >
               {rateLoading ? (
-                <p className="text-sm text-slate-500 dark:text-slate-400">
-                  Resolving rate...
-                </p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Resolving rate...</p>
               ) : rateChecked && resolvedRate ? (
                 <div className="space-y-1">
                   <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
                     Billing rate:{" "}
-                    {formatCurrencySafe(
-                      resolvedRate.hourlyRate,
-                      resolvedRate.currency,
-                    )}
+                    {formatCurrencySafe(resolvedRate.hourlyRate, resolvedRate.currency)}
                     /hr
                     <span className="ml-1 font-normal text-slate-500 dark:text-slate-400">
                       ({formatRateSource(resolvedRate.source)})
@@ -303,16 +284,9 @@ export function LogTimeDialog({
                   {computedValue !== null && (
                     <p className="text-sm text-slate-600 dark:text-slate-400">
                       {formatDuration(totalMinutes)} x{" "}
-                      {formatCurrencySafe(
-                        resolvedRate.hourlyRate,
-                        resolvedRate.currency,
-                      )}{" "}
-                      ={" "}
+                      {formatCurrencySafe(resolvedRate.hourlyRate, resolvedRate.currency)} ={" "}
                       <span className="font-medium">
-                        {formatCurrencySafe(
-                          computedValue,
-                          resolvedRate.currency,
-                        )}
+                        {formatCurrencySafe(computedValue, resolvedRate.currency)}
                       </span>
                     </p>
                   )}
@@ -323,16 +297,15 @@ export function LogTimeDialog({
                   data-testid="rate-warning-banner"
                 >
                   <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
-                    No rate card found for this combination. This time entry
-                    will have no billable rate. Set up rates in Project Settings
-                    &gt; Rates.
+                    No rate card found for this combination. This time entry will have no billable
+                    rate. Set up rates in Project Settings &gt; Rates.
                   </p>
                 </div>
               ) : null}
             </div>
           )}
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && <p className="text-destructive text-sm">{error}</p>}
           <DialogFooter>
             <Button
               type="button"

@@ -17,9 +17,20 @@ interface Props {
   templates: ProjectTemplateResponse[];
   orgMembers: OrgMember[];
   customers: Customer[];
+  /** Auto-open the dialog on mount (deep-linked via `/projects?new=1`). */
+  autoOpen?: boolean;
+  /** Pre-select this customer on the form when auto-opening. */
+  initialCustomerId?: string;
 }
 
-export function NewFromTemplateWrapper({ slug, templates, orgMembers, customers }: Props) {
+export function NewFromTemplateWrapper({
+  slug,
+  templates,
+  orgMembers,
+  customers,
+  autoOpen,
+  initialCustomerId,
+}: Props) {
   if (templates.length === 0) return null;
 
   return (
@@ -36,6 +47,8 @@ export function NewFromTemplateWrapper({ slug, templates, orgMembers, customers 
         templates={templates}
         orgMembers={orgMembers}
         customers={customers}
+        autoOpen={autoOpen}
+        initialCustomerId={initialCustomerId}
       >
         <Button variant="outline" size="sm">
           <LayoutTemplate className="mr-1.5 size-4" />

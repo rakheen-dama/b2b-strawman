@@ -62,6 +62,15 @@ export default async function ProjectsPage({
   const currentViewId =
     typeof resolvedSearchParams.view === "string" ? resolvedSearchParams.view : null;
 
+  // Auto-open "New from Template" dialog when landing here via the
+  // `/projects/new?customerId=...` redirect (GAP-S3-05).
+  const autoOpenNew =
+    typeof resolvedSearchParams.new === "string" && resolvedSearchParams.new === "1";
+  const initialCustomerId =
+    typeof resolvedSearchParams.customerId === "string"
+      ? resolvedSearchParams.customerId
+      : undefined;
+
   // Fetch saved views for project entity type
   let views: SavedViewResponse[] = [];
   try {
@@ -200,6 +209,8 @@ export default async function ProjectsPage({
               templates={activeTemplates}
               orgMembers={orgMembers}
               customers={allCustomers}
+              autoOpen={autoOpenNew}
+              initialCustomerId={initialCustomerId}
             />
             <CreateProjectDialog slug={slug} />
           </div>

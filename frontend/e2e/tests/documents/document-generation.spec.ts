@@ -41,7 +41,7 @@ test.describe('DOC-02: Document Generation', () => {
     const jwt = await getAliceJwt()
     const custRes = await fetch(`${BACKEND_URL}/api/customers`, { headers: { Authorization: `Bearer ${jwt}` } })
     const customers = await custRes.json()
-    const activeCustomer = customers.find((c: any) => c.lifecycleStatus === 'ACTIVE')
+    const activeCustomer = customers.find((c: { lifecycleStatus: string; id: string }) => c.lifecycleStatus === 'ACTIVE')
 
     if (!activeCustomer) {
       test.skip(true, 'No active customers available for document generation')
@@ -119,7 +119,7 @@ test.describe('DOC-02: Document Generation', () => {
     const jwt = await getAliceJwt()
     const custRes = await fetch(`${BACKEND_URL}/api/customers`, { headers: { Authorization: `Bearer ${jwt}` } })
     const customers = await custRes.json()
-    const activeCustomer = customers.find((c: any) => c.lifecycleStatus === 'ACTIVE')
+    const activeCustomer = customers.find((c: { lifecycleStatus: string; id: string }) => c.lifecycleStatus === 'ACTIVE')
 
     if (!activeCustomer) {
       test.skip(true, 'No active customers available')

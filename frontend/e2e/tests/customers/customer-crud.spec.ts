@@ -122,7 +122,7 @@ test.describe.serial('CUST-01: Customer CRUD', () => {
       headers: { Authorization: `Bearer ${token}` },
     })
     const customers = await res.json()
-    const created = customers.find((c: any) => c.name === name2)
+    const created = customers.find((c: { name: string }) => c.name === name2)
     expect(created).toBeDefined()
   })
 
@@ -133,7 +133,7 @@ test.describe.serial('CUST-01: Customer CRUD', () => {
       headers: { Authorization: `Bearer ${token}` },
     })
     const customers = await listRes.json()
-    const target = customers.find((c: any) => c.name === CUSTOMER_NAME)
+    const target = customers.find((c: { name: string; id: string }) => c.name === CUSTOMER_NAME)
 
     if (!target) {
       test.skip(true, 'Customer not found in API — creation may have failed')

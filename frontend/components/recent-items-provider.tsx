@@ -51,6 +51,7 @@ export function RecentItemsProvider({ children }: RecentItemsProviderProps) {
         .split("-")
         .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
         .join(" ");
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- route-change tracking requires sync state update; refactor tracked separately
       addItem({ href: pathname, label });
     }
   }, [pathname, addItem]);

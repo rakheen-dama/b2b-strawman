@@ -54,7 +54,7 @@ describe("A4PreviewWrapper", () => {
       unobserve = vi.fn();
       disconnect = disconnectSpy;
       constructor() {}
-    } as any;
+    } as unknown as typeof globalThis.ResizeObserver;
     const { unmount } = render(<A4PreviewWrapper html="<p>Test</p>" />);
     unmount();
     expect(disconnectSpy).toHaveBeenCalled();

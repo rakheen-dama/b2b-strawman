@@ -49,7 +49,7 @@ test.describe('DP-02: Data Protection Settings', () => {
 
   test('Set jurisdiction to South Africa', async ({ page }) => {
     await page.goto(`${base}/settings/data-protection`)
-    let bodyText = await page.locator('body').textContent()
+    const bodyText = await page.locator('body').textContent()
 
     if (bodyText?.includes('Something went wrong') || bodyText?.includes('404')) {
       await page.goto(`${base}/settings`)
@@ -91,7 +91,7 @@ test.describe('DP-02: Data Protection Settings', () => {
 
   test('Set information officer', async ({ page }) => {
     await page.goto(`${base}/settings/data-protection`)
-    let bodyText = await page.locator('body').textContent()
+    const bodyText = await page.locator('body').textContent()
 
     if (bodyText?.includes('Something went wrong') || bodyText?.includes('404')) {
       await page.goto(`${base}/settings`)
@@ -134,7 +134,7 @@ test.describe('DP-02: Data Protection Settings', () => {
 
   test('View retention policies', async ({ page }) => {
     await page.goto(`${base}/settings/data-protection`)
-    let bodyText = await page.locator('body').textContent()
+    const bodyText = await page.locator('body').textContent()
 
     if (bodyText?.includes('Something went wrong') || bodyText?.includes('404')) {
       await page.goto(`${base}/settings`)
@@ -167,7 +167,7 @@ test.describe('DP-02: Data Protection Settings', () => {
 
   test('Edit retention period', async ({ page }) => {
     await page.goto(`${base}/settings/data-protection`)
-    let bodyText = await page.locator('body').textContent()
+    const bodyText = await page.locator('body').textContent()
 
     if (bodyText?.includes('Something went wrong') || bodyText?.includes('404')) {
       await page.goto(`${base}/settings`)
@@ -205,7 +205,7 @@ test.describe('DP-02: Data Protection Settings', () => {
 
   test('View processing register', async ({ page }) => {
     await page.goto(`${base}/settings/data-protection`)
-    let bodyText = await page.locator('body').textContent()
+    const bodyText = await page.locator('body').textContent()
 
     if (bodyText?.includes('Something went wrong') || bodyText?.includes('404')) {
       await page.goto(`${base}/settings`)
@@ -237,7 +237,7 @@ test.describe('DP-02: Data Protection Settings', () => {
 
   test('Generate PAIA manual', async ({ page }) => {
     await page.goto(`${base}/settings/data-protection`)
-    let bodyText = await page.locator('body').textContent()
+    const bodyText = await page.locator('body').textContent()
 
     if (bodyText?.includes('Something went wrong') || bodyText?.includes('404')) {
       await page.goto(`${base}/settings`)
@@ -274,7 +274,7 @@ test.describe('DP-02: Data Protection Settings', () => {
 
   test('View DSAR list', async ({ page }) => {
     await page.goto(`${base}/settings/data-protection`)
-    let bodyText = await page.locator('body').textContent()
+    const bodyText = await page.locator('body').textContent()
 
     if (bodyText?.includes('Something went wrong') || bodyText?.includes('404')) {
       await page.goto(`${base}/settings`)
@@ -306,7 +306,7 @@ test.describe('DP-02: Data Protection Settings', () => {
 
   test('Create DSAR', async ({ page }) => {
     await page.goto(`${base}/settings/data-protection`)
-    let bodyText = await page.locator('body').textContent()
+    const bodyText = await page.locator('body').textContent()
 
     if (bodyText?.includes('Something went wrong') || bodyText?.includes('404')) {
       await page.goto(`${base}/settings`)

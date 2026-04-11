@@ -43,6 +43,7 @@ export function MockAuthContextProvider({
   useEffect(() => {
     const rawToken = getTokenFromDocumentCookie();
     if (!rawToken) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- auth init must mark loaded synchronously to avoid stale UI; refactor tracked separately
       setIsLoaded(true);
       return;
     }

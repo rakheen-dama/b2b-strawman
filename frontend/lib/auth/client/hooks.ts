@@ -42,6 +42,7 @@ export function useOrgMembers(): {
     if (!contextLoaded) return;
     // Context loaded but no token — no members to fetch
     if (!token) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- auth init must mark loaded synchronously to avoid stale UI; refactor tracked separately
       setIsLoaded(true);
       return;
     }

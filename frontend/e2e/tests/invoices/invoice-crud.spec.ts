@@ -45,7 +45,8 @@ async function findActiveCustomer(token: string): Promise<{ id: string; name: st
   })
   const customers = await res.json()
   const active = customers.find(
-    (c: any) => c.lifecycleStatus === 'ACTIVE' && c.status === 'ACTIVE',
+    (c: { lifecycleStatus: string; status: string; id: string; name: string }) =>
+      c.lifecycleStatus === 'ACTIVE' && c.status === 'ACTIVE',
   )
   if (!active) throw new Error('No ACTIVE customer found in seed data')
   return { id: active.id, name: active.name }
@@ -55,7 +56,7 @@ async function findActiveCustomer(token: string): Promise<{ id: string; name: st
 async function createDraftInvoice(
   customerId: string,
   token: string,
-): Promise<any> {
+): Promise<Record<string, unknown>> {
   const res = await fetch(`${BACKEND_URL}/api/invoices`, {
     method: 'POST',
     headers: {
@@ -80,7 +81,7 @@ async function addLineItem(
   quantity: number,
   unitPrice: number,
   token: string,
-): Promise<any> {
+): Promise<Record<string, unknown>> {
   const res = await fetch(`${BACKEND_URL}/api/invoices/${invoiceId}/lines`, {
     method: 'POST',
     headers: {
@@ -185,7 +186,7 @@ test.describe('INV-01: Invoice CRUD', () => {
       headers: { Authorization: `Bearer ${token}` },
     })
     const invoice = await getRes.json()
-    const removeTarget = invoice.lines.find((l: any) => l.description === 'Line to remove')
+    const removeTarget = (invoice.lines as Array<{ description: string; id: string }>).find((l) => l.description === 'Line to remove')
     expect(removeTarget).toBeDefined()
 
     const subtotalBefore = invoice.subtotal

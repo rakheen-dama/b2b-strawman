@@ -60,7 +60,7 @@ test.describe('PROP-01: Proposal CRUD', () => {
     // Get an active customer
     const custRes = await fetch(`${BACKEND_URL}/api/customers`, { headers: { Authorization: `Bearer ${jwt}` } })
     const customers = await custRes.json()
-    const activeCustomer = customers.find((c: any) => c.lifecycleStatus === 'ACTIVE' || c.lifecycleStatus === 'ONBOARDING')
+    const activeCustomer = customers.find((c: { lifecycleStatus: string; id: string }) => c.lifecycleStatus === 'ACTIVE' || c.lifecycleStatus === 'ONBOARDING')
 
     if (!activeCustomer) {
       test.skip(true, 'No active customer available for proposal creation')
@@ -103,7 +103,7 @@ test.describe('PROP-01: Proposal CRUD', () => {
 
     const custRes = await fetch(`${BACKEND_URL}/api/customers`, { headers: { Authorization: `Bearer ${jwt}` } })
     const customers = await custRes.json()
-    const activeCustomer = customers.find((c: any) => c.lifecycleStatus === 'ACTIVE' || c.lifecycleStatus === 'ONBOARDING')
+    const activeCustomer = customers.find((c: { lifecycleStatus: string; id: string }) => c.lifecycleStatus === 'ACTIVE' || c.lifecycleStatus === 'ONBOARDING')
 
     if (!activeCustomer) {
       test.skip(true, 'No active customer available for proposal creation')
@@ -186,7 +186,7 @@ test.describe('PROP-01: Proposal CRUD', () => {
     const proposalsData = await proposalsRes.json()
     const proposals = proposalsData.content || proposalsData
     const draftProposal = Array.isArray(proposals)
-      ? proposals.find((p: any) => p.status === 'DRAFT')
+      ? proposals.find((p: { status: string; id: string; title?: string }) => p.status === 'DRAFT')
       : null
 
     if (!draftProposal) {

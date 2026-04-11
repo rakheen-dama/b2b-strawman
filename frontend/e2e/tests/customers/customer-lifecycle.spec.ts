@@ -41,7 +41,7 @@ async function createCustomerViaApi(
   name: string,
   email: string,
   token: string,
-): Promise<any> {
+): Promise<Record<string, unknown>> {
   const res = await fetch(`${BACKEND_URL}/api/customers`, {
     method: 'POST',
     headers: {

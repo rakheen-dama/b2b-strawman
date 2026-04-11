@@ -24,6 +24,7 @@ export function PortalAuthGuard({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- mount flag to prevent SSR mismatch; safe single-call init pattern
     setMounted(true);
   }, []);
 

@@ -43,13 +43,14 @@ async function findActiveCustomer(token: string): Promise<string> {
   })
   const customers = await res.json()
   const active = customers.find(
-    (c: any) => c.lifecycleStatus === 'ACTIVE' && c.status === 'ACTIVE',
+    (c: { lifecycleStatus: string; status: string; id: string }) =>
+      c.lifecycleStatus === 'ACTIVE' && c.status === 'ACTIVE',
   )
   if (!active) throw new Error('No ACTIVE customer found in seed data')
   return active.id
 }
 
-async function createDraftWithLine(token: string, customerId: string): Promise<any> {
+async function createDraftWithLine(token: string, customerId: string): Promise<Record<string, unknown>> {
   // Create draft
   const draftRes = await fetch(`${BACKEND_URL}/api/invoices`, {
     method: 'POST',
@@ -269,12 +270,12 @@ test.describe.serial('INV-02: Invoice Lifecycle', () => {
       headers: { Authorization: `Bearer ${token}` },
     })
     const invoices = await invoiceRes.json()
-    const voidedInvoice = invoices.find((i: any) => i.status === 'VOID')
+    const voidedInvoice = invoices.find((i: { status: string; lines?: Array<{ lineType: string; timeEntryId?: string }> }) => i.status === 'VOID')
 
     // If a voided invoice exists and had time entries, they should be unbilled
     if (voidedInvoice && voidedInvoice.lines) {
       const timeLines = voidedInvoice.lines?.filter(
-        (l: any) => l.lineType === 'TIME' && l.timeEntryId,
+        (l) => l.lineType === 'TIME' && l.timeEntryId,
       )
       // If there were time-based lines, the entries should now be unbilled
       // This is a structural verification — the time entries are released

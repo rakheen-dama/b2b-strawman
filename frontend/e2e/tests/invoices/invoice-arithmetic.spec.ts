@@ -42,13 +42,14 @@ async function findActiveCustomer(token: string): Promise<string> {
   })
   const customers = await res.json()
   const active = customers.find(
-    (c: any) => c.lifecycleStatus === 'ACTIVE' && c.status === 'ACTIVE',
+    (c: { lifecycleStatus: string; status: string; id: string }) =>
+      c.lifecycleStatus === 'ACTIVE' && c.status === 'ACTIVE',
   )
   if (!active) throw new Error('No ACTIVE customer found in seed data')
   return active.id
 }
 
-async function createDraft(token: string, customerId: string): Promise<any> {
+async function createDraft(token: string, customerId: string): Promise<Record<string, unknown>> {
   const res = await fetch(`${BACKEND_URL}/api/invoices`, {
     method: 'POST',
     headers: {
@@ -72,7 +73,7 @@ async function addLine(
   description: string,
   quantity: number,
   unitPrice: number,
-): Promise<any> {
+): Promise<Record<string, unknown>> {
   const res = await fetch(`${BACKEND_URL}/api/invoices/${invoiceId}/lines`, {
     method: 'POST',
     headers: {
@@ -90,7 +91,7 @@ async function addLine(
   return res.json()
 }
 
-async function getInvoice(token: string, invoiceId: string): Promise<any> {
+async function getInvoice(token: string, invoiceId: string): Promise<Record<string, unknown>> {
   const res = await fetch(`${BACKEND_URL}/api/invoices/${invoiceId}`, {
     headers: { Authorization: `Bearer ${token}` },
   })
@@ -118,7 +119,7 @@ test.describe('INV-03: Invoice Arithmetic', () => {
     expect(invoice.subtotal).toBe(1350)
 
     // Line amount should be 1350
-    const line = invoice.lines.find((l: any) => l.description === '3h consulting')
+    const line = (invoice.lines as Array<{ description: string; amount: number }>).find((l) => l.description === '3h consulting')
     expect(line).toBeDefined()
     expect(line.amount).toBe(1350)
   })
@@ -133,10 +134,10 @@ test.describe('INV-03: Invoice Arithmetic', () => {
     expect(invoice.lines.length).toBe(2)
 
     // Individual line amounts
-    const reviewLine = invoice.lines.find((l: any) => l.description === 'Review work')
+    const reviewLine = (invoice.lines as Array<{ description: string; amount: number }>).find((l) => l.description === 'Review work')
     expect(reviewLine.amount).toBe(1000)
 
-    const advisoryLine = invoice.lines.find((l: any) => l.description === 'Advisory session')
+    const advisoryLine = (invoice.lines as Array<{ description: string; amount: number }>).find((l) => l.description === 'Advisory session')
     expect(advisoryLine.amount).toBe(1500)
   })
 
@@ -145,7 +146,7 @@ test.describe('INV-03: Invoice Arithmetic', () => {
     const invoice = await addLine(token, draft.id, 'Fractional rate', 1.5, 333.33)
 
     // 1.5 * 333.33 = 499.995 — should be rounded
-    const line = invoice.lines.find((l: any) => l.description === 'Fractional rate')
+    const line = (invoice.lines as Array<{ description: string; amount: number }>).find((l) => l.description === 'Fractional rate')
     expect(line).toBeDefined()
     // The amount should be rounded to 2 decimal places
     // Accept either 499.99 or 500.00 depending on rounding strategy
@@ -176,7 +177,7 @@ test.describe('INV-03: Invoice Arithmetic', () => {
     // If zero is accepted, the line total should be 0
     if (res.status === 201) {
       const invoice = await res.json()
-      const zeroLine = invoice.lines.find((l: any) => l.description === 'Zero qty')
+      const zeroLine = (invoice.lines as Array<{ description: string; amount: number }>).find((l) => l.description === 'Zero qty')
       expect(zeroLine.amount).toBe(0)
     } else {
       expect([400, 422].includes(res.status)).toBeTruthy()
@@ -188,7 +189,7 @@ test.describe('INV-03: Invoice Arithmetic', () => {
     const invoice = await addLine(token, draft.id, 'Quarter hour', 0.25, 1200)
 
     // 0.25 * 1200 = 300
-    const line = invoice.lines.find((l: any) => l.description === 'Quarter hour')
+    const line = (invoice.lines as Array<{ description: string; amount: number }>).find((l) => l.description === 'Quarter hour')
     expect(line).toBeDefined()
     expect(line.amount).toBe(300)
     expect(invoice.subtotal).toBe(300)
@@ -202,13 +203,13 @@ test.describe('INV-03: Invoice Arithmetic', () => {
     const invoice = await addLine(token, draft.id, 'Snapshot test', 2, 800)
 
     // Record the line amount
-    const originalLine = invoice.lines.find((l: any) => l.description === 'Snapshot test')
+    const originalLine = (invoice.lines as Array<{ description: string; amount: number; unitPrice: number }>).find((l) => l.description === 'Snapshot test')
     const originalAmount = originalLine.amount
     expect(originalAmount).toBe(1600) // 2 * 800
 
     // Re-fetch the invoice — the amount should remain the same
     const refetched = await getInvoice(token, draft.id)
-    const refetchedLine = refetched.lines.find((l: any) => l.description === 'Snapshot test')
+    const refetchedLine = (refetched.lines as Array<{ description: string; amount: number; unitPrice: number }>).find((l) => l.description === 'Snapshot test')
     expect(refetchedLine.amount).toBe(originalAmount)
     expect(refetchedLine.unitPrice).toBe(800)
   })

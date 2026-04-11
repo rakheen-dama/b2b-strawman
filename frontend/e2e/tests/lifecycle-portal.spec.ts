@@ -152,7 +152,7 @@ test.describe('Portal API Verification', () => {
     expect(invoices.length).toBeGreaterThan(0)
 
     // Check that at least one invoice has Kgosi as customer
-    const kgosiInvoice = invoices.find((inv: any) =>
+    const kgosiInvoice = invoices.find((inv: { customerName?: string; description?: string }) =>
       inv.customerName?.includes('Kgosi') || inv.description?.includes('Kgosi')
     )
     expect(kgosiInvoice).toBeDefined()
@@ -179,7 +179,7 @@ test.describe('Portal API Verification', () => {
     expect(requests.length).toBeGreaterThan(0)
 
     // Verify FICA request exists
-    const ficaReq = requests.find((r: any) => r.subject?.includes('FICA'))
+    const ficaReq = requests.find((r: { subject?: string }) => r.subject?.includes('FICA'))
     expect(ficaReq).toBeDefined()
   })
 
@@ -205,7 +205,7 @@ test.describe('Portal API Verification', () => {
     expect(content.length).toBeGreaterThan(0)
 
     // Verify Kgosi proposal exists
-    const kgosiProp = content.find((p: any) => p.title?.includes('Kgosi'))
+    const kgosiProp = content.find((p: { title?: string }) => p.title?.includes('Kgosi'))
     expect(kgosiProp).toBeDefined()
   })
 })

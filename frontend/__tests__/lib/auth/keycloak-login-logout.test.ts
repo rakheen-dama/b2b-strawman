@@ -52,18 +52,22 @@ describe("Keycloak login/logout URLs", () => {
     const originalCreateElement = document.createElement.bind(document);
     const mockCreateElement = vi.spyOn(document, "createElement");
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- DOM mock requires any for test stub
     let capturedForm: any;
     mockCreateElement.mockImplementation((tag: string) => {
       if (tag === "form") {
         capturedForm = {
           method: "",
           action: "",
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any -- DOM mock requires any for test stub
           appendChild: (input: any) => capturedInputs.push(input),
           submit: mockSubmit,
         };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- DOM mock requires any for test stub
         return capturedForm as any;
       }
       if (tag === "input") {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- DOM mock requires any for test stub
         return { type: "", name: "", value: "" } as any;
       }
       return originalCreateElement(tag);

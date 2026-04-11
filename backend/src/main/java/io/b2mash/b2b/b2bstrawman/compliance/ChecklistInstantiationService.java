@@ -42,8 +42,23 @@ public class ChecklistInstantiationService {
         templateRepository.findByActiveAndAutoInstantiateAndCustomerTypeIn(
             true, true, List.of(customerType, "ANY"));
 
+    // Most-specific-match (GAP-S5-05): if any template matches the exact customer type, skip
+    // the ANY fallback entirely. This enforces PR #996's intent — typed packs
+    // (legal-za-individual-onboarding / legal-za-trust-onboarding) fully replace the legacy
+    // ANY pack (legal-za-client-onboarding), and mixing a typed pack with an ANY pack has no
+    // valid product use case today. Any future universal pack (e.g., sanctions screening)
+    // should be modelled via explicit typed variants rather than an ANY fallback.
+    boolean hasTypedTemplate =
+        matchingTemplates.stream().anyMatch(t -> customerType.equals(t.getCustomerType()));
+    var finalTemplates =
+        hasTypedTemplate
+            ? matchingTemplates.stream()
+                .filter(t -> customerType.equals(t.getCustomerType()))
+                .toList()
+            : matchingTemplates;
+
     List<ChecklistInstance> created = new ArrayList<>();
-    for (var template : matchingTemplates) {
+    for (var template : finalTemplates) {
       if (instanceRepository.existsByCustomerIdAndTemplateId(customerId, template.getId())) {
         log.debug(
             "Skipping template '{}' — instance already exists for customer {}",
@@ -57,10 +72,11 @@ public class ChecklistInstantiationService {
     }
 
     log.info(
-        "Instantiated {} checklist(s) for customer {} (type={})",
+        "Instantiated {} checklist(s) for customer {} (type={}, typedAvailable={})",
         created.size(),
         customerId,
-        customerType);
+        customerType,
+        hasTypedTemplate);
     return created;
   }
 

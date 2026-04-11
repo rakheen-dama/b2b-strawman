@@ -89,17 +89,43 @@ class ChecklistInstantiationServiceTest {
   }
 
   @Test
-  void anyTemplateMatchesAllCustomerTypes() {
+  void anyTemplateMatchesWhenNoTypedTemplateExists() {
+    // GAP-S5-05: ANY templates are used as a fallback when no typed template exists for the
+    // customer's type. We use COMPANY here because no other test in this class creates a
+    // typed COMPANY template, so the fallback path is deterministic regardless of test order.
     runInTenant(
         () -> {
           var anyTemplate = createAutoInstantiateTemplate("ANY");
           createTemplateItem(anyTemplate.getId());
+          var customer = createCustomer(CustomerType.COMPANY, LifecycleStatus.PROSPECT);
+
+          var created = instantiationService.instantiateForCustomer(customer);
+
+          // Should include the ANY template (no COMPANY-typed template exists to override it)
+          assertThat(created).anyMatch(i -> i.getTemplateId().equals(anyTemplate.getId()));
+          return null;
+        });
+  }
+
+  @Test
+  void skipsAnyTemplateWhenTypedTemplateExists() {
+    // GAP-S5-05: when both an ANY template and a typed (INDIVIDUAL) template are active
+    // for a customer's type, only the typed template should be instantiated. This enforces
+    // PR #996's intent that typed packs fully replace legacy ANY packs.
+    runInTenant(
+        () -> {
+          var anyTemplate = createAutoInstantiateTemplate("ANY");
+          createTemplateItem(anyTemplate.getId());
+          var typedTemplate = createAutoInstantiateTemplate("INDIVIDUAL");
+          createTemplateItem(typedTemplate.getId());
           var customer = createCustomer(CustomerType.INDIVIDUAL, LifecycleStatus.PROSPECT);
 
           var created = instantiationService.instantiateForCustomer(customer);
 
-          // Should include the ANY template (plus any others from pack seeder)
-          assertThat(created).anyMatch(i -> i.getTemplateId().equals(anyTemplate.getId()));
+          // Typed template IS instantiated
+          assertThat(created).anyMatch(i -> i.getTemplateId().equals(typedTemplate.getId()));
+          // ANY template is SKIPPED because a typed template exists for this customer type
+          assertThat(created).noneMatch(i -> i.getTemplateId().equals(anyTemplate.getId()));
           return null;
         });
   }

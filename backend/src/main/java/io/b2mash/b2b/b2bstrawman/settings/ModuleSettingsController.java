@@ -2,8 +2,8 @@ package io.b2mash.b2b.b2bstrawman.settings;
 
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
-import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsController.SettingsResponse;
 import io.b2mash.b2b.b2bstrawman.settings.dto.ModuleSettingsResponse;
+import io.b2mash.b2b.b2bstrawman.settings.dto.SettingsResponse;
 import io.b2mash.b2b.b2bstrawman.settings.dto.UpdateModulesRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;

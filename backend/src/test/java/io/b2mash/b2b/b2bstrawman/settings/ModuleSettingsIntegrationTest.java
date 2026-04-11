@@ -135,7 +135,8 @@ class ModuleSettingsIntegrationTest {
                     {"enabledModules": ["bogus_module"]}
                     """))
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.title").value("Unknown module"));
+        .andExpect(jsonPath("$.title").value("Unknown module"))
+        .andExpect(jsonPath("$.detail").value("Unknown module ID: bogus_module"));
   }
 
   // --- Task 470.13 case 5 ---
@@ -268,7 +269,9 @@ class ModuleSettingsIntegrationTest {
                     """
                     {"enabledModules": ["resource_planning"]}
                     """))
-        .andExpect(status().isForbidden());
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.title").value("Access denied"))
+        .andExpect(jsonPath("$.detail").value("Insufficient permissions for this operation"));
   }
 
   // --- Task 470.13 case 9 ---
@@ -375,5 +378,19 @@ class ModuleSettingsIntegrationTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.enabledModules", hasItem("resource_planning")))
         .andExpect(jsonPath("$.enabledModules", not(hasItem("trust_accounting"))));
+  }
+
+  // --- Task 470.13 case 11 — missing enabledModules field is rejected ---
+  @Test
+  @Order(11)
+  void putModules_withMissingEnabledModulesField_returnsBadRequest() throws Exception {
+    mockMvc
+        .perform(
+            put("/api/settings/modules")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_msi_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}"))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.title").value("Validation failed"));
   }
 }

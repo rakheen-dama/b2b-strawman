@@ -1,7 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.verticals;
 
 /**
- * Classification of a vertical module for gating and UI rendering purposes.
+ * Classification of a module for gating and UI rendering purposes.
  *
  * <p>See ADR-239 (Horizontal vs. Vertical Module Gating).
  */

@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.settings.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
 
@@ -13,4 +14,4 @@ import java.util.List;
  * <p>An empty list is valid and disables all horizontal modules. Vertical module IDs or unknown
  * module IDs are rejected with HTTP 400.
  */
-public record UpdateModulesRequest(@NotNull List<String> enabledModules) {}
+public record UpdateModulesRequest(@NotNull List<@NotBlank String> enabledModules) {}

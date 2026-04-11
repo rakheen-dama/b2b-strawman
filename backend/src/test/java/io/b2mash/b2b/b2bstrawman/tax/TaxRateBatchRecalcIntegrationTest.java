@@ -19,6 +19,7 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestIds;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.AfterEach;
@@ -355,10 +356,13 @@ class TaxRateBatchRecalcIntegrationTest {
                 new UpdateTaxRateRequest("VAT", new BigDecimal("15.00"), true, false, true, 5)));
 
     // Verify line was NOT touched (updatedAt unchanged)
+    // Truncate to micros on both sides: Postgres TIMESTAMP has 6-digit precision,
+    // while JDK 25 on Linux provides 9-digit Instant precision via clock_gettime.
     runInTenant(
         () -> {
           var line = invoiceLineRepository.findById(lineId.get()).orElseThrow();
-          assertThat(line.getUpdatedAt()).isEqualTo(originalUpdatedAt.get());
+          assertThat(line.getUpdatedAt().truncatedTo(ChronoUnit.MICROS))
+              .isEqualTo(originalUpdatedAt.get().truncatedTo(ChronoUnit.MICROS));
           assertThat(line.getTaxAmount()).isEqualByComparingTo(new BigDecimal("150.00"));
         });
   }

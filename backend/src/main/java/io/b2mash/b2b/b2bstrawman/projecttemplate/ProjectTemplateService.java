@@ -16,6 +16,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupService;
 import io.b2mash.b2b.b2bstrawman.informationrequest.InformationRequestService;
 import io.b2mash.b2b.b2bstrawman.informationrequest.RequestTemplateRepository;
 import io.b2mash.b2b.b2bstrawman.informationrequest.dto.InformationRequestDtos.CreateInformationRequestRequest;
@@ -86,6 +87,7 @@ public class ProjectTemplateService {
   private final EntityTagRepository entityTagRepository;
   private final NameTokenResolver nameTokenResolver;
   private final FieldDefinitionRepository fieldDefinitionRepository;
+  private final FieldGroupService fieldGroupService;
   private final PrerequisiteService prerequisiteService;
   private final InformationRequestService informationRequestService;
   private final PortalContactRepository portalContactRepository;
@@ -110,6 +112,7 @@ public class ProjectTemplateService {
       EntityTagRepository entityTagRepository,
       NameTokenResolver nameTokenResolver,
       FieldDefinitionRepository fieldDefinitionRepository,
+      FieldGroupService fieldGroupService,
       @Lazy PrerequisiteService prerequisiteService,
       InformationRequestService informationRequestService,
       PortalContactRepository portalContactRepository,
@@ -132,6 +135,7 @@ public class ProjectTemplateService {
     this.entityTagRepository = entityTagRepository;
     this.nameTokenResolver = nameTokenResolver;
     this.fieldDefinitionRepository = fieldDefinitionRepository;
+    this.fieldGroupService = fieldGroupService;
     this.prerequisiteService = prerequisiteService;
     this.informationRequestService = informationRequestService;
     this.portalContactRepository = portalContactRepository;
@@ -525,6 +529,14 @@ public class ProjectTemplateService {
     if (customer != null) {
       project.setCustomerId(customer.getId());
     }
+    // GAP-S3-04: resolve vertical-profile auto-apply field groups (e.g. the
+    // "SA Legal — Matter Details" group for legal-za) so template-created
+    // matters surface the same custom-field surface area as projects created
+    // via ProjectService.createProject. Mirrors ProjectFieldService.prepareForCreate.
+    var autoApplyFieldGroupIds = fieldGroupService.resolveAutoApplyGroupIds(EntityType.PROJECT);
+    if (!autoApplyFieldGroupIds.isEmpty()) {
+      project.setAppliedFieldGroups(autoApplyFieldGroupIds);
+    }
     project = projectRepository.save(project);
 
     // 6. Link to customer
@@ -644,6 +656,13 @@ public class ProjectTemplateService {
     // used by the scheduler for recurring engagements.
     if (customer != null) {
       project.setCustomerId(customer.getId());
+    }
+    // GAP-S3-04: apply vertical-profile auto-apply field groups so scheduler-
+    // instantiated projects pick up custom-field groups the same way
+    // instantiateTemplate() does.
+    var autoApplyFieldGroupIds = fieldGroupService.resolveAutoApplyGroupIds(EntityType.PROJECT);
+    if (!autoApplyFieldGroupIds.isEmpty()) {
+      project.setAppliedFieldGroups(autoApplyFieldGroupIds);
     }
     project = projectRepository.save(project);
 

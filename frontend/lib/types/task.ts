@@ -59,7 +59,7 @@ export interface UpdateTaskRequest {
   status: TaskStatus;
   type?: string;
   dueDate?: string;
-  estimatedHours?: number | null;
+  estimatedHours?: number;
   assigneeId?: string;
   recurrenceRule?: string;
   recurrenceEndDate?: string;

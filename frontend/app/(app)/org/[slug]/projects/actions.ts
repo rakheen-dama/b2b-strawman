@@ -8,6 +8,17 @@ import type { Project, Customer, CreateProjectRequest, UpdateProjectRequest } fr
 import { classifyError } from "@/lib/error-handler";
 import { createMessages } from "@/lib/messages";
 
+const PROJECT_PRIORITIES = ["LOW", "MEDIUM", "HIGH"] as const;
+
+function parseProjectPriority(
+  raw: string | undefined,
+): CreateProjectRequest["priority"] | undefined {
+  if (!raw) return undefined;
+  return (PROJECT_PRIORITIES as readonly string[]).includes(raw)
+    ? (raw as CreateProjectRequest["priority"])
+    : undefined;
+}
+
 interface ActionResult {
   success: boolean;
   error?: string;
@@ -20,7 +31,7 @@ export async function createProject(slug: string, formData: FormData): Promise<A
   const dueDate = formData.get("dueDate")?.toString().trim() || undefined;
   const referenceNumber = formData.get("referenceNumber")?.toString().trim() || undefined;
   const priorityRaw = formData.get("priority")?.toString().trim() || undefined;
-  const priority = priorityRaw as CreateProjectRequest["priority"];
+  const priority = parseProjectPriority(priorityRaw);
   const workType = formData.get("workType")?.toString().trim() || undefined;
 
   if (!name) {
@@ -71,7 +82,7 @@ export async function updateProject(
   const priority =
     priorityRaw === "" || priorityRaw === undefined
       ? null
-      : (priorityRaw as UpdateProjectRequest["priority"]);
+      : (parseProjectPriority(priorityRaw) ?? null);
   const workTypeRaw = formData.get("workType")?.toString().trim();
   const workType = workTypeRaw === "" ? null : workTypeRaw ?? undefined;
 

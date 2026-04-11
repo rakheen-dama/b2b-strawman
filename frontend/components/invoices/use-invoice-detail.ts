@@ -49,7 +49,22 @@ export function useInvoiceDetail({
   const [paymentTerms, setPaymentTerms] = useState(invoice.paymentTerms ?? "");
   const [taxAmount, setTaxAmount] = useState(String(invoice.taxAmount ?? 0));
   const [poNumber, setPoNumber] = useState(invoice.poNumber ?? "");
-  const [taxType, setTaxType] = useState<string>(invoice.taxType ?? "");
+  const [taxType, setTaxType] = useState<
+    NonNullable<UpdateInvoiceRequest["taxType"]> | ""
+  >(invoice.taxType ?? "");
+  const TAX_TYPES: ReadonlyArray<NonNullable<UpdateInvoiceRequest["taxType"]>> = [
+    "VAT",
+    "GST",
+    "SALES_TAX",
+    "NONE",
+  ];
+  const handleTaxTypeChange = (value: string) => {
+    if (value === "") {
+      setTaxType("");
+    } else if ((TAX_TYPES as readonly string[]).includes(value)) {
+      setTaxType(value as NonNullable<UpdateInvoiceRequest["taxType"]>);
+    }
+  };
   const [billingPeriodStart, setBillingPeriodStart] = useState(
     invoice.billingPeriodStart ?? "",
   );
@@ -137,9 +152,7 @@ export function useInvoiceDetail({
         paymentTerms: paymentTerms || undefined,
         taxAmount: invoice.hasPerLineTax ? undefined : (parseFloat(taxAmount) || 0),
         poNumber: poNumber || undefined,
-        taxType: taxType
-          ? (taxType as NonNullable<UpdateInvoiceRequest["taxType"]>)
-          : undefined,
+        taxType: taxType === "" ? undefined : taxType,
         billingPeriodStart: billingPeriodStart || undefined,
         billingPeriodEnd: billingPeriodEnd || undefined,
       });
@@ -359,7 +372,7 @@ export function useInvoiceDetail({
     poNumber,
     setPoNumber,
     taxType,
-    setTaxType,
+    setTaxType: handleTaxTypeChange,
     billingPeriodStart,
     setBillingPeriodStart,
     billingPeriodEnd,

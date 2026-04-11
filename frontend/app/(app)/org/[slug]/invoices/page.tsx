@@ -191,10 +191,10 @@ export default async function InvoicesPage({
       {invoices.length === 0 ? (
         <EmptyState
           icon={Receipt}
-          title={search.status ? "No invoices found" : t("invoices.list.heading")}
+          title={search.status ? "No fee notes found" : t("invoices.list.heading")}
           description={
             search.status
-              ? `No ${search.status.toLowerCase()} invoices found.`
+              ? `No ${search.status.toLowerCase()} fee notes found.`
               : t("invoices.list.description")
           }
           secondaryLink={{ label: "Read the guide", href: docsLink("/features/invoicing") }}

@@ -45,9 +45,9 @@
   },
   "invoices": {
     "list": {
-      "heading": "No invoices yet",
-      "description": "Generate invoices from tracked time or create them manually. You'll need at least one project with logged time.",
-      "cta": "Create invoice"
+      "heading": "No fee notes yet",
+      "description": "Generate fee notes from tracked time or create them manually. You'll need at least one matter with logged time.",
+      "cta": "Create fee note"
     }
   },
   "templates": {

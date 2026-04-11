@@ -3,6 +3,7 @@ import { ChevronLeft, Plus } from "lucide-react";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { Button } from "@/components/ui/button";
 import { TemplateList } from "@/components/templates/TemplateList";
+import { TerminologyText } from "@/components/terminology-text";
 import { getProjectTemplates } from "@/lib/api/templates";
 import type { ProjectTemplateResponse } from "@/lib/api/templates";
 
@@ -36,10 +37,10 @@ export default async function ProjectTemplatesSettingsPage({
 
       <div>
         <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          Project Templates
+          <TerminologyText template="{Project} Templates" />
         </h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Create and manage reusable project blueprints to standardize project structure.
+          <TerminologyText template="Create and manage reusable {project} blueprints to standardize {project} structure." />
         </p>
       </div>
 

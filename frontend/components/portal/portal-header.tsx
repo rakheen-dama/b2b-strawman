@@ -43,7 +43,7 @@ export function PortalHeader() {
             href="/portal/projects"
             className="font-display text-lg text-slate-950 dark:text-slate-50"
           >
-            DocTeams Portal
+            Kazi Portal
           </Link>
 
           <nav className="hidden items-center gap-1 sm:flex">

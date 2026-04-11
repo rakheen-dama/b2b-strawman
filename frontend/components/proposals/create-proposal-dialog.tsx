@@ -25,6 +25,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { TerminologyText } from "@/components/terminology-text";
 import {
   Command,
   CommandEmpty,
@@ -155,8 +156,12 @@ export function CreateProposalDialog({ slug, customers, children }: CreatePropos
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>New Proposal</DialogTitle>
-          <DialogDescription>Create a proposal for a client engagement.</DialogDescription>
+          <DialogTitle>
+            <TerminologyText template="New {Proposal}" />
+          </DialogTitle>
+          <DialogDescription>
+            <TerminologyText template="Create a {proposal} for a client engagement." />
+          </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>

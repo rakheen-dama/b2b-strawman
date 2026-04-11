@@ -5,7 +5,26 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { useOrgProfile } from "@/lib/org-profile";
+import { useTerminology } from "@/lib/terminology";
 import { SETTINGS_NAV_GROUPS } from "./settings-nav-groups";
+
+/**
+ * Translate a settings nav label using the active terminology profile.
+ * Handles multi-word labels that contain a term (e.g. "Project Templates" → "Matter Templates").
+ */
+function translateNavLabel(label: string, t: (term: string) => string): string {
+  // Map known terms that appear as a prefix in nav labels.
+  const prefixTerms = ["Project", "Customer", "Client", "Proposal", "Invoice"];
+  for (const term of prefixTerms) {
+    if (label.startsWith(term + " ")) {
+      const mapped = t(term);
+      if (mapped !== term) {
+        return `${mapped} ${label.slice(term.length + 1)}`;
+      }
+    }
+  }
+  return t(label);
+}
 
 interface SettingsSidebarProps {
   slug: string;
@@ -15,6 +34,7 @@ interface SettingsSidebarProps {
 export function SettingsSidebar({ slug, isAdmin }: SettingsSidebarProps) {
   const pathname = usePathname();
   const { isModuleEnabled } = useOrgProfile();
+  const { t } = useTerminology();
 
   // Flatten all visible items for mobile tab row (exclude comingSoon)
   const allVisibleItems = SETTINGS_NAV_GROUPS.flatMap((group) =>
@@ -44,7 +64,7 @@ export function SettingsSidebar({ slug, isAdmin }: SettingsSidebarProps) {
                     : "bg-muted text-muted-foreground hover:bg-muted/80"
                 )}
               >
-                {item.label}
+                {translateNavLabel(item.label, t)}
               </Link>
             );
           })}
@@ -79,7 +99,7 @@ export function SettingsSidebar({ slug, isAdmin }: SettingsSidebarProps) {
                       aria-disabled="true"
                       className="flex cursor-not-allowed items-center rounded-r-md border-l-2 border-transparent py-1.5 pl-3 text-sm text-slate-600 opacity-50"
                     >
-                      {item.label}
+                      {translateNavLabel(item.label, t)}
                       <Badge variant="neutral" className="ml-auto py-0 text-[10px]">
                         Coming soon
                       </Badge>
@@ -97,7 +117,7 @@ export function SettingsSidebar({ slug, isAdmin }: SettingsSidebarProps) {
                         : "border-l-2 border-transparent text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                     )}
                   >
-                    {item.label}
+                    {translateNavLabel(item.label, t)}
                   </Link>
                 );
               })}

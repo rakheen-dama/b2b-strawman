@@ -26,7 +26,7 @@ export function DesktopSidebar({ slug, groups = [], userName, userEmail }: Deskt
     <aside className="hidden w-60 flex-col bg-slate-950 md:flex">
       {/* Header */}
       <div className="flex h-14 items-center px-4">
-        <span className="text-base font-bold tracking-tight text-white">DocTeams</span>
+        <span className="text-base font-bold tracking-tight text-white">Kazi</span>
       </div>
       <div className="mx-4 border-t border-white/10" />
       <div className="flex items-center gap-2 px-4 py-3">

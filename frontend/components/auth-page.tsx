@@ -16,7 +16,7 @@ export function AuthPage({ heading, subtitle, children }: AuthPageProps) {
       <div className="hidden flex-col bg-slate-100 md:flex md:w-[55%] dark:bg-slate-900">
         <div className="p-8">
           <Link href="/" className="font-display text-xl text-slate-900 dark:text-slate-100">
-            DocTeams
+            Kazi
           </Link>
         </div>
         <div className="flex flex-1 flex-col items-center justify-center px-12">

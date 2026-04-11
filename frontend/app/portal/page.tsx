@@ -142,7 +142,7 @@ function PortalLoginContent() {
             />
           )}
           <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-            {branding?.orgName ? `${branding.orgName} Portal` : "DocTeams Portal"}
+            {branding?.orgName ? `${branding.orgName} Portal` : "Kazi Portal"}
           </h1>
           <p className="mt-2 text-slate-600 dark:text-slate-400">
             Access your shared documents and projects

@@ -4,7 +4,8 @@ package io.b2mash.b2b.b2bstrawman.proposal;
 public enum FeeModel {
   FIXED("Fixed Fee"),
   HOURLY("Hourly"),
-  RETAINER("Retainer");
+  RETAINER("Retainer"),
+  CONTINGENCY("Contingency");
 
   private final String displayLabel;
 

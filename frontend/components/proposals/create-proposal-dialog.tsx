@@ -54,6 +54,7 @@ const FEE_MODEL_LABELS: Record<FeeModel, string> = {
   FIXED: "Fixed Fee",
   HOURLY: "Hourly",
   RETAINER: "Retainer",
+  CONTINGENCY: "Contingency",
 };
 
 interface CreateProposalDialogProps {
@@ -85,6 +86,9 @@ export function CreateProposalDialog({
       retainerAmount: undefined,
       retainerCurrency: "ZAR",
       retainerHoursIncluded: undefined,
+      contingencyPercent: 25,
+      contingencyCapPercent: 25,
+      contingencyDescription: "",
       expiresAt: "",
     },
   });
@@ -124,6 +128,17 @@ export function CreateProposalDialog({
           retainerCurrency: values.retainerCurrency || "ZAR",
           ...(values.retainerHoursIncluded != null && {
             retainerHoursIncluded: values.retainerHoursIncluded,
+          }),
+        }),
+        ...(values.feeModel === "CONTINGENCY" && {
+          ...(values.contingencyPercent != null && {
+            contingencyPercent: values.contingencyPercent,
+          }),
+          ...(values.contingencyCapPercent != null && {
+            contingencyCapPercent: values.contingencyCapPercent,
+          }),
+          ...(values.contingencyDescription && {
+            contingencyDescription: values.contingencyDescription,
           }),
         }),
         ...(values.expiresAt && {
@@ -417,6 +432,95 @@ export function CreateProposalDialog({
                             onBlur={field.onBlur}
                             name={field.name}
                             ref={field.ref}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </>
+              )}
+
+              {/* CONTINGENCY fee fields */}
+              {feeModel === "CONTINGENCY" && (
+                <>
+                  <p
+                    className="rounded-md border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-200"
+                    data-testid="contingency-disclosure"
+                  >
+                    LPC Rule 59 (Contingency Fees Act 66 of 1997) caps
+                    contingency fees at 25% of amounts recovered. Ensure a
+                    written agreement is in place with the client.
+                  </p>
+                  <FormField
+                    control={form.control}
+                    name="contingencyPercent"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Contingency Percent (%)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            min="0"
+                            max="25"
+                            step="0.01"
+                            placeholder="e.g. 25"
+                            value={field.value ?? ""}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              field.onChange(val === "" ? undefined : Number(val));
+                            }}
+                            onBlur={field.onBlur}
+                            name={field.name}
+                            ref={field.ref}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="contingencyCapPercent"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Contingency Cap (%)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            min="0"
+                            max="25"
+                            step="0.01"
+                            placeholder="e.g. 25"
+                            value={field.value ?? ""}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              field.onChange(val === "" ? undefined : Number(val));
+                            }}
+                            onBlur={field.onBlur}
+                            name={field.name}
+                            ref={field.ref}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="contingencyDescription"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Description{" "}
+                          <span className="font-normal text-muted-foreground">
+                            (optional)
+                          </span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="e.g. RAF plaintiff claim — 25% contingency per LPC Rule 59"
+                            {...field}
                           />
                         </FormControl>
                         <FormMessage />

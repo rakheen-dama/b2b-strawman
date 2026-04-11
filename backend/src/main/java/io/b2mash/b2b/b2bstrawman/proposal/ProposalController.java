@@ -58,6 +58,9 @@ public class ProposalController {
             request.retainerAmount(),
             request.retainerCurrency(),
             request.retainerHoursIncluded(),
+            request.contingencyPercent(),
+            request.contingencyCapPercent(),
+            request.contingencyDescription(),
             request.contentJson(),
             request.projectTemplateId(),
             request.expiresAt());
@@ -100,6 +103,9 @@ public class ProposalController {
             request.retainerAmount(),
             request.retainerCurrency(),
             request.retainerHoursIncluded(),
+            request.contingencyPercent(),
+            request.contingencyCapPercent(),
+            request.contingencyDescription(),
             request.contentJson(),
             request.projectTemplateId(),
             request.expiresAt());
@@ -188,6 +194,10 @@ public class ProposalController {
       BigDecimal retainerAmount,
       String retainerCurrency,
       BigDecimal retainerHoursIncluded,
+      BigDecimal contingencyPercent,
+      BigDecimal contingencyCapPercent,
+      @Size(max = 500, message = "contingencyDescription must not exceed 500 characters")
+          String contingencyDescription,
       Map<String, Object> contentJson,
       UUID projectTemplateId,
       Instant expiresAt) {}
@@ -204,6 +214,10 @@ public class ProposalController {
       BigDecimal retainerAmount,
       String retainerCurrency,
       BigDecimal retainerHoursIncluded,
+      BigDecimal contingencyPercent,
+      BigDecimal contingencyCapPercent,
+      @Size(max = 500, message = "contingencyDescription must not exceed 500 characters")
+          String contingencyDescription,
       Map<String, Object> contentJson,
       UUID projectTemplateId,
       Instant expiresAt) {}
@@ -222,6 +236,9 @@ public class ProposalController {
       BigDecimal retainerAmount,
       String retainerCurrency,
       BigDecimal retainerHoursIncluded,
+      BigDecimal contingencyPercent,
+      BigDecimal contingencyCapPercent,
+      String contingencyDescription,
       Map<String, Object> contentJson,
       UUID projectTemplateId,
       Instant sentAt,
@@ -250,6 +267,9 @@ public class ProposalController {
           proposal.getRetainerAmount(),
           proposal.getRetainerCurrency(),
           proposal.getRetainerHoursIncluded(),
+          proposal.getContingencyPercent(),
+          proposal.getContingencyCapPercent(),
+          proposal.getContingencyDescription(),
           proposal.getContentJson(),
           proposal.getProjectTemplateId(),
           proposal.getSentAt(),

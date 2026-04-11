@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const feeModelEnum = z.enum(["FIXED", "HOURLY", "RETAINER"]);
+const feeModelEnum = z.enum(["FIXED", "HOURLY", "RETAINER", "CONTINGENCY"]);
 
 export const createProposalSchema = z.object({
   title: z
@@ -15,6 +15,22 @@ export const createProposalSchema = z.object({
   retainerAmount: z.number().positive("Amount must be greater than 0").optional(),
   retainerCurrency: z.string().optional(),
   retainerHoursIncluded: z.number().min(0).optional(),
+  // Contingency fee fields (LPC Rule 59 — 25% cap on plaintiff recovery).
+  contingencyPercent: z
+    .number()
+    .min(0, "Percent must be 0 or more")
+    .max(100, "Percent must not exceed 100")
+    .optional(),
+  contingencyCapPercent: z
+    .number()
+    .min(0, "Cap must be 0 or more")
+    .max(100, "Cap must not exceed 100")
+    .optional(),
+  contingencyDescription: z
+    .string()
+    .max(500, "Description must be 500 characters or fewer")
+    .optional()
+    .or(z.literal("")),
   expiresAt: z.string().optional().or(z.literal("")),
 });
 

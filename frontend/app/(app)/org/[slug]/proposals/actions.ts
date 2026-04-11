@@ -27,6 +27,9 @@ interface CreateProposalRequest {
   retainerAmount?: number;
   retainerCurrency?: string;
   retainerHoursIncluded?: number;
+  contingencyPercent?: number;
+  contingencyCapPercent?: number;
+  contingencyDescription?: string;
   expiresAt?: string;
 }
 

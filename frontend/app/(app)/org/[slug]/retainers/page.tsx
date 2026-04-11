@@ -55,10 +55,21 @@ export default async function RetainersPage({
   const retainers: RetainerResponse[] =
     retainersResult.status === "fulfilled" ? retainersResult.value : [];
 
+  if (customersResult.status === "rejected") {
+    console.error("Failed to fetch customers for retainer dialog:", customersResult.reason);
+  }
   const customers: Array<{ id: string; name: string; email: string }> =
     customersResult.status === "fulfilled"
       ? customersResult.value
-          .filter((c) => c.lifecycleStatus !== "OFFBOARDED" && c.lifecycleStatus !== "PROSPECT")
+          // Retainers can be established for clients in any lifecycle stage except
+          // terminal (OFFBOARDING / OFFBOARDED / ANONYMIZED). Like engagement letters,
+          // retainers are commonly set up during PROSPECT / ONBOARDING intake.
+          .filter(
+            (c) =>
+              c.lifecycleStatus !== "OFFBOARDED" &&
+              c.lifecycleStatus !== "OFFBOARDING" &&
+              c.lifecycleStatus !== "ANONYMIZED"
+          )
           .map((c) => ({ id: c.id, name: c.name, email: c.email }))
       : [];
 

@@ -281,8 +281,13 @@ export default async function CustomerDetailPage({
     // Non-fatal: requests tab will show empty state
   }
 
+  // Retainers can be established at any non-terminal lifecycle stage (including
+  // PROSPECT / ONBOARDING), so the tab is visible unless the customer is in a
+  // terminal state (OFFBOARDING / OFFBOARDED / ANONYMIZED).
   const showRetainerTab =
-    (customer.lifecycleStatus !== "OFFBOARDED" && customer.lifecycleStatus !== "PROSPECT") ||
+    (customer.lifecycleStatus !== "OFFBOARDED" &&
+      customer.lifecycleStatus !== "OFFBOARDING" &&
+      customer.lifecycleStatus !== "ANONYMIZED") ||
     customerRetainers.length > 0;
 
   // Build template name lookup for the onboarding panel

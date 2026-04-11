@@ -48,13 +48,25 @@ export default async function ProposalsPage({ params }: { params: Promise<{ slug
     proposals = proposalsResult.value.content;
   }
 
+  if (customersResult.status === "rejected") {
+    console.error("Failed to fetch customers for proposal dialog:", customersResult.reason);
+  }
   const customers: Array<{ id: string; name: string; email: string }> =
     customersResult.status === "fulfilled"
       ? (Array.isArray(customersResult.value)
           ? customersResult.value
           : ((customersResult.value as unknown as { content: Customer[] }).content ?? [])
         )
-          .filter((c) => c.lifecycleStatus !== "OFFBOARDED" && c.lifecycleStatus !== "PROSPECT")
+          // Engagement letters can be issued at any lifecycle stage except terminal
+          // (OFFBOARDING / OFFBOARDED / ANONYMIZED). In a legal-za practice, proposals
+          // are typically drafted during PROSPECT / ONBOARDING — the signed engagement
+          // letter is itself a FICA checklist item required to reach ACTIVE.
+          .filter(
+            (c) =>
+              c.lifecycleStatus !== "OFFBOARDED" &&
+              c.lifecycleStatus !== "OFFBOARDING" &&
+              c.lifecycleStatus !== "ANONYMIZED"
+          )
           .map((c) => ({ id: c.id, name: c.name, email: c.email }))
       : [];
 

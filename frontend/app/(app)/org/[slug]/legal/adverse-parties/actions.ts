@@ -138,7 +138,10 @@ export async function fetchProjects(): Promise<{ id: string; name: string }[]> {
 }
 
 export async function fetchCustomers(): Promise<{ id: string; name: string }[]> {
-  const result =
-    await api.get<PaginatedResponse<{ id: string; name: string }>>("/api/customers?size=200");
-  return result.content;
+  const result = await api.get<
+    { id: string; name: string }[] | PaginatedResponse<{ id: string; name: string }>
+  >("/api/customers?size=200");
+  // /api/customers returns a flat List<CustomerResponse> (not a paginated envelope).
+  // Handle both shapes defensively in case the backend is ever paginated.
+  return Array.isArray(result) ? result : (result.content ?? []);
 }

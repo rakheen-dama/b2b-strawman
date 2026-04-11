@@ -89,17 +89,43 @@ class ChecklistInstantiationServiceTest {
   }
 
   @Test
-  void anyTemplateMatchesAllCustomerTypes() {
+  void anyTemplateMatchesWhenNoTypedTemplateExists() {
+    // GAP-S5-05: ANY templates are used as a fallback when no typed template exists for the
+    // customer's type. We use COMPANY here because no other test in this class creates a
+    // typed COMPANY template, so the fallback path is deterministic regardless of test order.
     runInTenant(
         () -> {
           var anyTemplate = createAutoInstantiateTemplate("ANY");
           createTemplateItem(anyTemplate.getId());
+          var customer = createCustomer(CustomerType.COMPANY, LifecycleStatus.PROSPECT);
+
+          var created = instantiationService.instantiateForCustomer(customer);
+
+          // Should include the ANY template (no COMPANY-typed template exists to override it)
+          assertThat(created).anyMatch(i -> i.getTemplateId().equals(anyTemplate.getId()));
+          return null;
+        });
+  }
+
+  @Test
+  void skipsAnyTemplateWhenTypedTemplateExists() {
+    // GAP-S5-05: when both an ANY template and a typed (INDIVIDUAL) template are active
+    // for a customer's type, only the typed template should be instantiated. This enforces
+    // PR #996's intent that typed packs fully replace legacy ANY packs.
+    runInTenant(
+        () -> {
+          var anyTemplate = createAutoInstantiateTemplate("ANY");
+          createTemplateItem(anyTemplate.getId());
+          var typedTemplate = createAutoInstantiateTemplate("INDIVIDUAL");
+          createTemplateItem(typedTemplate.getId());
           var customer = createCustomer(CustomerType.INDIVIDUAL, LifecycleStatus.PROSPECT);
 
           var created = instantiationService.instantiateForCustomer(customer);
 
-          // Should include the ANY template (plus any others from pack seeder)
-          assertThat(created).anyMatch(i -> i.getTemplateId().equals(anyTemplate.getId()));
+          // Typed template IS instantiated
+          assertThat(created).anyMatch(i -> i.getTemplateId().equals(typedTemplate.getId()));
+          // ANY template is SKIPPED because a typed template exists for this customer type
+          assertThat(created).noneMatch(i -> i.getTemplateId().equals(anyTemplate.getId()));
           return null;
         });
   }
@@ -126,7 +152,11 @@ class ChecklistInstantiationServiceTest {
         () -> {
           var tpl = createAutoInstantiateTemplate("ANY");
           createTemplateItem(tpl.getId());
-          var customer = createCustomer(CustomerType.INDIVIDUAL, LifecycleStatus.PROSPECT);
+          // GAP-S5-05: use COMPANY (not INDIVIDUAL) so the ANY-fallback path is deterministic
+          // regardless of test order. Other tests in this class leave active INDIVIDUAL
+          // templates in the shared schema, which would trigger the most-specific-type filter
+          // and cause this test's ANY template to be skipped.
+          var customer = createCustomer(CustomerType.COMPANY, LifecycleStatus.PROSPECT);
 
           // First call — creates instance
           var first = instantiationService.instantiateForCustomer(customer);
@@ -151,7 +181,9 @@ class ChecklistInstantiationServiceTest {
         () -> {
           var tpl = createAutoInstantiateTemplate("ANY");
           createTemplateItem(tpl.getId());
-          var customer = createCustomer(CustomerType.INDIVIDUAL, LifecycleStatus.PROSPECT);
+          // GAP-S5-05: use COMPANY for deterministic ANY-fallback under the new filter
+          // (see comment on idempotentRetransitionDoesNotDuplicate).
+          var customer = createCustomer(CustomerType.COMPANY, LifecycleStatus.PROSPECT);
 
           instantiationService.instantiateForCustomer(customer);
 

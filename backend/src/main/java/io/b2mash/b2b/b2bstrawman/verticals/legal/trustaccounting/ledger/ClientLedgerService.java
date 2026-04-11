@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger;
 
+import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
@@ -87,12 +88,45 @@ public class ClientLedgerService {
   public ClientLedgerCardResponse getClientLedger(UUID customerId, UUID trustAccountId) {
     moduleGuard.requireModule(MODULE_ID);
 
-    var ledgerCard =
-        ledgerCardRepository
-            .findByTrustAccountIdAndCustomerId(trustAccountId, customerId)
-            .orElseThrow(() -> new ResourceNotFoundException("ClientLedgerCard", customerId));
+    return ledgerCardRepository
+        .findByTrustAccountIdAndCustomerId(trustAccountId, customerId)
+        .map(this::toResponse)
+        .orElseGet(
+            () -> {
+              // No ledger card yet is a valid state — card is lazily created on the first
+              // deposit/payment via TrustTransactionService.applyTransaction. But an unknown
+              // customer ID is a genuine 404. Resolve the customer first so we can distinguish
+              // "no card yet" (valid customer, synthetic empty response) from "customer not found"
+              // (throw). See GAP-S4-06 + PR #1004 review finding.
+              Customer customer =
+                  customerRepository
+                      .findById(customerId)
+                      .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+              return emptyLedgerCardResponse(customer, trustAccountId);
+            });
+  }
 
-    return toResponse(ledgerCard);
+  /**
+   * Synthetic zero-balance response for customers who have no ledger card yet (i.e. no trust
+   * transactions have been recorded). The ledger card is lazily created on the first
+   * deposit/payment via {@code TrustTransactionService.applyTransaction}. Returning a synthetic
+   * empty response here lets the "Trust" tab on every new matter render a clean R0.00 state instead
+   * of a 404 error. Caller must ensure the customer exists — see {@link #getClientLedger}.
+   */
+  private ClientLedgerCardResponse emptyLedgerCardResponse(Customer customer, UUID trustAccountId) {
+    return new ClientLedgerCardResponse(
+        null, // no persistent card id yet
+        trustAccountId,
+        customer.getId(),
+        customer.getName(),
+        BigDecimal.ZERO,
+        BigDecimal.ZERO,
+        BigDecimal.ZERO,
+        BigDecimal.ZERO,
+        BigDecimal.ZERO,
+        null, // lastTransactionDate
+        null, // createdAt
+        null); // updatedAt
   }
 
   @Transactional(readOnly = true)

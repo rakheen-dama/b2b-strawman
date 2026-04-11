@@ -2,7 +2,6 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger;
 
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
-import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
@@ -87,12 +86,36 @@ public class ClientLedgerService {
   public ClientLedgerCardResponse getClientLedger(UUID customerId, UUID trustAccountId) {
     moduleGuard.requireModule(MODULE_ID);
 
-    var ledgerCard =
-        ledgerCardRepository
-            .findByTrustAccountIdAndCustomerId(trustAccountId, customerId)
-            .orElseThrow(() -> new ResourceNotFoundException("ClientLedgerCard", customerId));
+    return ledgerCardRepository
+        .findByTrustAccountIdAndCustomerId(trustAccountId, customerId)
+        .map(this::toResponse)
+        .orElseGet(() -> emptyLedgerCardResponse(customerId, trustAccountId));
+  }
 
-    return toResponse(ledgerCard);
+  /**
+   * Synthetic zero-balance response for customers who have no ledger card yet (i.e. no trust
+   * transactions have been recorded). The ledger card is lazily created on the first
+   * deposit/payment via {@code TrustTransactionService.applyTransaction}. Returning a synthetic
+   * empty response here lets the "Trust" tab on every new matter render a clean R0.00 state instead
+   * of a 404 error. See GAP-S4-06.
+   */
+  private ClientLedgerCardResponse emptyLedgerCardResponse(UUID customerId, UUID trustAccountId) {
+    // Best-effort customer name lookup — tolerate missing customers gracefully.
+    String customerName =
+        customerRepository.findById(customerId).map(c -> c.getName()).orElse(null);
+    return new ClientLedgerCardResponse(
+        null, // no persistent card id yet
+        trustAccountId,
+        customerId,
+        customerName,
+        BigDecimal.ZERO,
+        BigDecimal.ZERO,
+        BigDecimal.ZERO,
+        BigDecimal.ZERO,
+        BigDecimal.ZERO,
+        null, // lastTransactionDate
+        null, // createdAt
+        null); // updatedAt
   }
 
   @Transactional(readOnly = true)

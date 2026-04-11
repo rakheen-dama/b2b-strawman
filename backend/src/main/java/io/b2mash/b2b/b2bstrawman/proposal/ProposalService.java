@@ -114,6 +114,9 @@ public class ProposalService {
       BigDecimal retainerAmount,
       String retainerCurrency,
       BigDecimal retainerHoursIncluded,
+      BigDecimal contingencyPercent,
+      BigDecimal contingencyCapPercent,
+      String contingencyDescription,
       Map<String, Object> contentJson,
       UUID projectTemplateId,
       Instant expiresAt) {
@@ -140,6 +143,9 @@ public class ProposalService {
     if (retainerAmount != null) proposal.setRetainerAmount(retainerAmount);
     if (retainerCurrency != null) proposal.setRetainerCurrency(retainerCurrency);
     if (retainerHoursIncluded != null) proposal.setRetainerHoursIncluded(retainerHoursIncluded);
+    if (contingencyPercent != null) proposal.setContingencyPercent(contingencyPercent);
+    if (contingencyCapPercent != null) proposal.setContingencyCapPercent(contingencyCapPercent);
+    if (contingencyDescription != null) proposal.setContingencyDescription(contingencyDescription);
     if (contentJson != null) proposal.setContentJson(contentJson);
     if (projectTemplateId != null) proposal.setProjectTemplateId(projectTemplateId);
     if (expiresAt != null) proposal.setExpiresAt(expiresAt);
@@ -217,6 +223,9 @@ public class ProposalService {
       BigDecimal retainerAmount,
       String retainerCurrency,
       BigDecimal retainerHoursIncluded,
+      BigDecimal contingencyPercent,
+      BigDecimal contingencyCapPercent,
+      String contingencyDescription,
       Map<String, Object> contentJson,
       UUID projectTemplateId,
       Instant expiresAt) {
@@ -257,6 +266,11 @@ public class ProposalService {
           proposal.setRetainerHoursIncluded(null);
         }
         case HOURLY -> proposal.setHourlyRateNote(null);
+        case CONTINGENCY -> {
+          proposal.setContingencyPercent(null);
+          proposal.setContingencyCapPercent(null);
+          proposal.setContingencyDescription(null);
+        }
       }
       proposal.setFeeModel(feeModel);
     }
@@ -271,6 +285,9 @@ public class ProposalService {
     if (retainerAmount != null) proposal.setRetainerAmount(retainerAmount);
     if (retainerCurrency != null) proposal.setRetainerCurrency(retainerCurrency);
     if (retainerHoursIncluded != null) proposal.setRetainerHoursIncluded(retainerHoursIncluded);
+    if (contingencyPercent != null) proposal.setContingencyPercent(contingencyPercent);
+    if (contingencyCapPercent != null) proposal.setContingencyCapPercent(contingencyCapPercent);
+    if (contingencyDescription != null) proposal.setContingencyDescription(contingencyDescription);
     if (contentJson != null) proposal.setContentJson(contentJson);
     if (projectTemplateId != null) proposal.setProjectTemplateId(projectTemplateId);
     if (expiresAt != null) proposal.setExpiresAt(expiresAt);
@@ -778,6 +795,9 @@ public class ProposalService {
       }
       case HOURLY -> {
         // No amount requirement
+      }
+      case CONTINGENCY -> {
+        // Percentage-based; validation of percent ranges happens in the entity/DTO layer.
       }
     }
   }

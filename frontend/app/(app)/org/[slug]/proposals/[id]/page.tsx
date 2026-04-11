@@ -24,6 +24,7 @@ const FEE_MODEL_LABELS: Record<string, string> = {
   FIXED: "Fixed Fee",
   HOURLY: "Hourly",
   RETAINER: "Retainer",
+  CONTINGENCY: "Contingency",
 };
 
 export default async function ProposalDetailPage({
@@ -152,6 +153,41 @@ export default async function ProposalDetailPage({
                     </dt>
                     <dd className="mt-0.5 font-medium text-slate-900 dark:text-slate-100">
                       {proposal.retainerHoursIncluded}h
+                    </dd>
+                  </div>
+                )}
+              </>
+            )}
+
+            {proposal.feeModel === "CONTINGENCY" && (
+              <>
+                {proposal.contingencyPercent != null && (
+                  <div>
+                    <dt className="text-slate-500 dark:text-slate-400">
+                      Contingency Percent
+                    </dt>
+                    <dd className="mt-0.5 font-medium text-slate-900 dark:text-slate-100">
+                      {proposal.contingencyPercent}%
+                    </dd>
+                  </div>
+                )}
+                {proposal.contingencyCapPercent != null && (
+                  <div>
+                    <dt className="text-slate-500 dark:text-slate-400">
+                      Contingency Cap
+                    </dt>
+                    <dd className="mt-0.5 font-medium text-slate-900 dark:text-slate-100">
+                      {proposal.contingencyCapPercent}%
+                    </dd>
+                  </div>
+                )}
+                {proposal.contingencyDescription && (
+                  <div className="col-span-2 sm:col-span-3">
+                    <dt className="text-slate-500 dark:text-slate-400">
+                      Description
+                    </dt>
+                    <dd className="mt-0.5 font-medium text-slate-900 dark:text-slate-100">
+                      {proposal.contingencyDescription}
                     </dd>
                   </div>
                 )}

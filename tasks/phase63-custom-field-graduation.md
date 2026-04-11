@@ -27,7 +27,7 @@ Phase 63 promotes approximately 21 custom fields across Customer, Project, Task,
 | 460 | Project/Task/Invoice Entity/DTO Updates + Enums | Backend | 459A | S | 460A | **Done** (PR #985) |
 | 461 | Service Layer Updates: Conflict Check, Deadline, Prerequisite | Backend | 459, 460 | M | 461A, 461B | **Done** (PR #986) |
 | 462 | Template Context Builders + Variable Metadata + Pack JSON Cleanup | Backend | 459, 460 | M | 462A, 462B | **Done** (PR #987) |
-| 463 | Frontend: Customer Form Restructuring + Detail Page | Frontend | 459B, 461 | M | 463A, 463B | |
+| 463 | Frontend: Customer Form Restructuring + Detail Page | Frontend | 459B, 461 | M | 463A, 463B | **Done** (PR #988) |
 | 464 | Frontend: Project/Task/Invoice Form + Detail Updates | Frontend | 460, 461 | M | 464A, 464B | |
 
 ---
@@ -132,14 +132,14 @@ PHASE 12 (Templates) — all complete
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 4a (parallel) | 463 | 463A | Customer create/edit form restructuring: Address section, Contact section, Business Details section. TypeScript types + Zod schema updates. Server actions. Frontend tests (~6). Frontend only. | |
+| 4a (parallel) | 463 | 463A | Customer create/edit form restructuring: Address section, Contact section, Business Details section. TypeScript types + Zod schema updates. Server actions. Frontend tests (~6). Frontend only. | **Done** (PR #988) |
 | 4b (parallel) | 464 | 464A | Project form (referenceNumber, priority, workType). Task form (estimatedHours). Invoice form (poNumber, taxType, billingPeriodStart, billingPeriodEnd). Types + schemas + actions. Frontend tests (~6). Frontend only. | |
 
 ### Stage 5: Frontend Detail Pages (parallel tracks)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 5a (parallel) | 463 | 463B | Customer detail page: formatted address block, contact card, business details section. CustomFieldSection scope reduction for customer. Frontend tests (~4). Frontend only. | |
+| 5a (parallel) | 463 | 463B | Customer detail page: formatted address block, contact card, business details section. CustomFieldSection scope reduction for customer. Frontend tests (~4). Frontend only. | **Done** (PR #988) |
 | 5b (parallel) | 464 | 464B | Project detail page + invoice detail page updates for promoted fields. CustomFieldSection scope reduction across all entities. Frontend tests (~4). Frontend only. | |
 
 ### Timeline
@@ -435,8 +435,8 @@ Stage 5:  [463B]  //  [464B]                                    <- customer deta
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **463A** | 463.1--463.7 | Customer create/edit form: Address section (addressLine1, addressLine2, city, stateProvince, postalCode, country select). Contact section (contactName, contactEmail, contactPhone). Business Details section (registrationNumber, taxNumber, entityType select, financialYearEnd date picker). Update TypeScript types + Zod schema. Server actions. Frontend tests (~6). Frontend only. | |
-| **463B** | 463.8--463.12 | Customer detail page: formatted address block component, contact card component, business details section. Reduce CustomFieldSection to only render genuinely custom fields (exclude promoted slugs). Frontend tests (~4). Frontend only. | |
+| **463A** | 463.1--463.7 | Customer create/edit form: Address section (addressLine1, addressLine2, city, stateProvince, postalCode, country select). Contact section (contactName, contactEmail, contactPhone). Business Details section (registrationNumber, taxNumber, entityType select, financialYearEnd date picker). Update TypeScript types + Zod schema. Server actions. Frontend tests (~6). Frontend only. | **Done** (PR #988) |
+| **463B** | 463.8--463.12 | Customer detail page: formatted address block component, contact card component, business details section. Reduce CustomFieldSection to only render genuinely custom fields (exclude promoted slugs). Frontend tests (~4). Frontend only. | **Done** (PR #988) |
 
 ### Tasks
 

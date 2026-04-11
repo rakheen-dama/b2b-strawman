@@ -127,7 +127,8 @@ public class ProposalService {
         .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
 
     // Validate fee fields per model
-    validateFeeConfiguration(feeModel, fixedFeeAmount, retainerAmount);
+    validateFeeConfiguration(
+        feeModel, fixedFeeAmount, retainerAmount, contingencyPercent, contingencyCapPercent);
 
     // Allocate proposal number
     String proposalNumber = proposalNumberService.allocateNumber();
@@ -251,7 +252,16 @@ public class ProposalService {
         fixedFeeAmount != null ? fixedFeeAmount : proposal.getFixedFeeAmount();
     BigDecimal effectiveRetainerAmount =
         retainerAmount != null ? retainerAmount : proposal.getRetainerAmount();
-    validateFeeConfiguration(effectiveFeeModel, effectiveFixedAmount, effectiveRetainerAmount);
+    BigDecimal effectiveContingencyPercent =
+        contingencyPercent != null ? contingencyPercent : proposal.getContingencyPercent();
+    BigDecimal effectiveContingencyCapPercent =
+        contingencyCapPercent != null ? contingencyCapPercent : proposal.getContingencyCapPercent();
+    validateFeeConfiguration(
+        effectiveFeeModel,
+        effectiveFixedAmount,
+        effectiveRetainerAmount,
+        effectiveContingencyPercent,
+        effectiveContingencyCapPercent);
 
     // Clear stale fee fields when switching fee models
     if (feeModel != null && feeModel != proposal.getFeeModel()) {
@@ -600,7 +610,11 @@ public class ProposalService {
 
     // 3. Validate fee configuration
     validateFeeConfiguration(
-        proposal.getFeeModel(), proposal.getFixedFeeAmount(), proposal.getRetainerAmount());
+        proposal.getFeeModel(),
+        proposal.getFixedFeeAmount(),
+        proposal.getRetainerAmount(),
+        proposal.getContingencyPercent(),
+        proposal.getContingencyCapPercent());
 
     // 3b. Validate currency is set for fee models that create billing entities (GAP-PE-009)
     if (proposal.getFeeModel() == FeeModel.FIXED) {
@@ -780,6 +794,15 @@ public class ProposalService {
 
   private void validateFeeConfiguration(
       FeeModel feeModel, BigDecimal fixedFeeAmount, BigDecimal retainerAmount) {
+    validateFeeConfiguration(feeModel, fixedFeeAmount, retainerAmount, null, null);
+  }
+
+  private void validateFeeConfiguration(
+      FeeModel feeModel,
+      BigDecimal fixedFeeAmount,
+      BigDecimal retainerAmount,
+      BigDecimal contingencyPercent,
+      BigDecimal contingencyCapPercent) {
     switch (feeModel) {
       case FIXED -> {
         if (fixedFeeAmount == null || fixedFeeAmount.compareTo(BigDecimal.ZERO) <= 0) {
@@ -797,8 +820,24 @@ public class ProposalService {
         // No amount requirement
       }
       case CONTINGENCY -> {
-        // Percentage-based; validation of percent ranges happens in the entity/DTO layer.
+        // Contingency Fees Act 66 of 1997 caps fees at 25% of the recovery.
+        if (contingencyPercent != null
+            && (contingencyPercent.compareTo(BigDecimal.ZERO) < 0
+                || contingencyPercent.compareTo(CONTINGENCY_MAX_PERCENT) > 0)) {
+          throw new InvalidStateException(
+              "Invalid fee configuration",
+              "contingencyPercent must be between 0 and 25 (Contingency Fees Act 66 of 1997)");
+        }
+        if (contingencyCapPercent != null
+            && (contingencyCapPercent.compareTo(BigDecimal.ZERO) < 0
+                || contingencyCapPercent.compareTo(CONTINGENCY_MAX_PERCENT) > 0)) {
+          throw new InvalidStateException(
+              "Invalid fee configuration",
+              "contingencyCapPercent must be between 0 and 25 (Contingency Fees Act 66 of 1997)");
+        }
       }
     }
   }
+
+  private static final BigDecimal CONTINGENCY_MAX_PERCENT = new BigDecimal("25");
 }

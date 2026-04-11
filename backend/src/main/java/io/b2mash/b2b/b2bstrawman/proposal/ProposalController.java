@@ -8,6 +8,8 @@ import io.b2mash.b2b.b2bstrawman.proposal.dto.ProposalStats;
 import io.b2mash.b2b.b2bstrawman.proposal.dto.ProposalSummaryDto;
 import io.b2mash.b2b.b2bstrawman.proposal.dto.TeamMemberRequest;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -194,8 +196,17 @@ public class ProposalController {
       BigDecimal retainerAmount,
       String retainerCurrency,
       BigDecimal retainerHoursIncluded,
-      BigDecimal contingencyPercent,
-      BigDecimal contingencyCapPercent,
+      @DecimalMin(value = "0.00", message = "contingencyPercent must be 0 or greater")
+          @DecimalMax(
+              value = "25.00",
+              message = "contingencyPercent must not exceed 25 (Contingency Fees Act 66 of 1997)")
+          BigDecimal contingencyPercent,
+      @DecimalMin(value = "0.00", message = "contingencyCapPercent must be 0 or greater")
+          @DecimalMax(
+              value = "25.00",
+              message =
+                  "contingencyCapPercent must not exceed 25 (Contingency Fees Act 66 of 1997)")
+          BigDecimal contingencyCapPercent,
       @Size(max = 500, message = "contingencyDescription must not exceed 500 characters")
           String contingencyDescription,
       Map<String, Object> contentJson,
@@ -214,8 +225,17 @@ public class ProposalController {
       BigDecimal retainerAmount,
       String retainerCurrency,
       BigDecimal retainerHoursIncluded,
-      BigDecimal contingencyPercent,
-      BigDecimal contingencyCapPercent,
+      @DecimalMin(value = "0.00", message = "contingencyPercent must be 0 or greater")
+          @DecimalMax(
+              value = "25.00",
+              message = "contingencyPercent must not exceed 25 (Contingency Fees Act 66 of 1997)")
+          BigDecimal contingencyPercent,
+      @DecimalMin(value = "0.00", message = "contingencyCapPercent must be 0 or greater")
+          @DecimalMax(
+              value = "25.00",
+              message =
+                  "contingencyCapPercent must not exceed 25 (Contingency Fees Act 66 of 1997)")
+          BigDecimal contingencyCapPercent,
       @Size(max = 500, message = "contingencyDescription must not exceed 500 characters")
           String contingencyDescription,
       Map<String, Object> contentJson,

@@ -15,16 +15,16 @@ export const createProposalSchema = z.object({
   retainerAmount: z.number().positive("Amount must be greater than 0").optional(),
   retainerCurrency: z.string().optional(),
   retainerHoursIncluded: z.number().min(0).optional(),
-  // Contingency fee fields (LPC Rule 59 — 25% cap on plaintiff recovery).
+  // Contingency fee fields (Contingency Fees Act 66 of 1997 — 25% statutory cap).
   contingencyPercent: z
     .number()
     .min(0, "Percent must be 0 or more")
-    .max(100, "Percent must not exceed 100")
+    .max(25, "Contingency fee capped at 25% per Contingency Fees Act 66 of 1997")
     .optional(),
   contingencyCapPercent: z
     .number()
     .min(0, "Cap must be 0 or more")
-    .max(100, "Cap must not exceed 100")
+    .max(25, "Contingency fee capped at 25% per Contingency Fees Act 66 of 1997")
     .optional(),
   contingencyDescription: z
     .string()

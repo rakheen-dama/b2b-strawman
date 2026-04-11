@@ -16,7 +16,7 @@ This phase extends the Phase 49 vertical module gating infrastructure to cover t
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 470 | Module Registry Extension + Toggle API | Backend | -- | M | 470A, 470B | |
+| 470 | Module Registry Extension + Toggle API | Backend | -- | M | 470A, 470B | **Done** (PR #990) |
 | 471 | Service-Layer Guards for Horizontal Modules | Backend | 470 | M | 471A | |
 | 472 | Settings Features Page + Nav Gating | Frontend | 470 | M | 472A, 472B | |
 
@@ -78,8 +78,8 @@ MODULE REGISTRY + TOGGLE API          SERVICE-LAYER GUARDS
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 0a | 470 | 470A | `ModuleCategory` enum, extended `ModuleDefinition` with `category` field, 3 horizontal module registrations, registry helper methods, unit tests. Backend only. | |
-| 0b | 470 | 470B | `updateHorizontalModules()` + `getHorizontalModuleSettings()` on `OrgSettingsService`, `updateVerticalProfile()` merge fix, `ModuleSettingsController` + DTOs, `ModuleNotEnabledException` message update, `MODULES_UPDATED` audit event, integration tests. Backend only. | |
+| 0a | 470 | 470A | `ModuleCategory` enum, extended `ModuleDefinition` with `category` field, 3 horizontal module registrations, registry helper methods, unit tests. Backend only. | **Done** (PR #990) |
+| 0b | 470 | 470B | `updateHorizontalModules()` + `getHorizontalModuleSettings()` on `OrgSettingsService`, `updateVerticalProfile()` merge fix, `ModuleSettingsController` + DTOs, `ModuleNotEnabledException` message update, `MODULES_UPDATED` audit event, integration tests. Backend only. | **Done** (PR #990) |
 
 ### Stage 1: Guards + Settings Page (2 parallel tracks)
 
@@ -112,8 +112,8 @@ MODULE REGISTRY + TOGGLE API          SERVICE-LAYER GUARDS
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **470A** | 470.1--470.5 | `ModuleCategory` enum, extended `ModuleDefinition` record, 3 horizontal module registrations, `getHorizontalModules()` + `getModulesByCategory()` helpers, updated unit tests. Backend only. ~5 files. | |
-| **470B** | 470.6--470.14 | `ModuleSettingsController`, request/response DTOs, `OrgSettingsService.updateHorizontalModules()` + `getHorizontalModuleSettings()`, `updateVerticalProfile()` merge fix, `ModuleNotEnabledException` message update, `MODULES_UPDATED` audit event, integration tests. Backend only. ~10 files. | |
+| **470A** | 470.1--470.5 | `ModuleCategory` enum, extended `ModuleDefinition` record, 3 horizontal module registrations, `getHorizontalModules()` + `getModulesByCategory()` helpers, updated unit tests. Backend only. ~5 files. | **Done** (PR #990) |
+| **470B** | 470.6--470.14 | `ModuleSettingsController`, request/response DTOs, `OrgSettingsService.updateHorizontalModules()` + `getHorizontalModuleSettings()`, `updateVerticalProfile()` merge fix, `ModuleNotEnabledException` message update, `MODULES_UPDATED` audit event, integration tests. Backend only. ~10 files. | **Done** (PR #990) |
 
 ### Tasks
 

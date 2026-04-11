@@ -294,8 +294,8 @@ describe("TrustBalanceCard", () => {
     );
 
     expect(screen.getByText("Funds Held")).toBeInTheDocument();
-    // Balance is rendered by formatCurrency (ZAR) — "R 50,000.00" or "R\u00a050,000.00"
-    expect(screen.getByText(/R[\s\u00a0]?50[,.]000/)).toBeInTheDocument();
+    // locale-agnostic: accepts en-ZA "R 50 000,00" or en-US "R 50,000.00"
+    expect(screen.getByText(/R[\s\u00a0]50[\s\u00a0,]000[,.]00/)).toBeInTheDocument();
   });
 
   it("renders Overdrawn badge for negative balance", () => {

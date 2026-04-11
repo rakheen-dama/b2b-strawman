@@ -151,8 +151,8 @@ describe("TrustAccountingPage", () => {
 
     // Trust Balance card
     expect(screen.getByText("Trust Balance")).toBeInTheDocument();
-    // en-ZA currency uses non-breaking space (U+00A0) between R and digits
-    expect(screen.getByText(/R[\s\u00A0]125,000\.50/)).toBeInTheDocument();
+    // locale-agnostic: accepts en-ZA "R 125 000,50" or en-US "R 125,000.50"
+    expect(screen.getByText(/R[\s\u00A0]125[\s\u00A0,]000[,.]50/)).toBeInTheDocument();
 
     // Active Clients card
     expect(screen.getByText("Active Clients")).toBeInTheDocument();

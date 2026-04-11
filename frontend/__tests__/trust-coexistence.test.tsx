@@ -257,11 +257,11 @@ describe("Trust smoke tests", () => {
     // Verify the balance card renders with the post-approval balance
     expect(screen.getByText("Trust Balance")).toBeInTheDocument();
     expect(screen.getByText("Funds Held")).toBeInTheDocument();
-    // ZAR formatting: "R 50,000.00" (en-ZA locale with Intl.NumberFormat)
-    expect(screen.getByText(/R[\s\u00a0]50,000\.00/)).toBeInTheDocument();
+    // ZAR formatting: locale-agnostic — accepts en-ZA "R 50 000,00" or en-US "R 50,000.00"
+    expect(screen.getByText(/R[\s\u00a0]50[\s\u00a0,]000[,.]00/)).toBeInTheDocument();
     // Verify deposit and payment breakdowns
-    expect(screen.getByText(/R[\s\u00a0]80,000\.00/)).toBeInTheDocument();
-    expect(screen.getByText(/R[\s\u00a0]25,000\.00/)).toBeInTheDocument();
+    expect(screen.getByText(/R[\s\u00a0]80[\s\u00a0,]000[,.]00/)).toBeInTheDocument();
+    expect(screen.getByText(/R[\s\u00a0]25[\s\u00a0,]000[,.]00/)).toBeInTheDocument();
   });
 
   it("trust dashboard summary cards render with mock data", () => {
@@ -338,12 +338,12 @@ describe("Trust smoke tests", () => {
     // Verify summary data renders
     expect(screen.getByText("Trust Balance")).toBeInTheDocument();
     expect(screen.getByText("Funds Held")).toBeInTheDocument();
-    // Total balance: R 125,750.50 (en-ZA locale)
-    expect(screen.getByText(/R[\s\u00a0]125,750\.50/)).toBeInTheDocument();
-    // Deposits: R 200,000.00
-    expect(screen.getByText(/R[\s\u00a0]200,000\.00/)).toBeInTheDocument();
-    // Payments: R 70,000.00
-    expect(screen.getByText(/R[\s\u00a0]70,000\.00/)).toBeInTheDocument();
+    // Total balance: locale-agnostic — accepts en-ZA "R 125 750,50" or en-US "R 125,750.50"
+    expect(screen.getByText(/R[\s\u00a0]125[\s\u00a0,]750[,.]50/)).toBeInTheDocument();
+    // Deposits: locale-agnostic "R 200 000,00" or "R 200,000.00"
+    expect(screen.getByText(/R[\s\u00a0]200[\s\u00a0,]000[,.]00/)).toBeInTheDocument();
+    // Payments: locale-agnostic "R 70 000,00" or "R 70,000.00"
+    expect(screen.getByText(/R[\s\u00a0]70[\s\u00a0,]000[,.]00/)).toBeInTheDocument();
     // Last transaction date should be rendered
     expect(screen.getByText(/Last transaction/)).toBeInTheDocument();
   });

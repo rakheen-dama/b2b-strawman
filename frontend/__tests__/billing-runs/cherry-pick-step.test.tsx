@@ -205,13 +205,15 @@ describe("CherryPickStep", () => {
     });
 
     // Initially subtotal should include both time entries (500 + 300 = 800)
-    expect(screen.getByText("Subtotal: R 800.00")).toBeInTheDocument();
+    // locale-agnostic: accepts en-ZA "R 800,00" or en-US "R 800.00"
+    expect(screen.getByText(/Subtotal:\s*R[\s\u00a0]800[,.]00/)).toBeInTheDocument();
 
     // Uncheck first time entry
     await user.click(screen.getByLabelText("Include time entry Development work"));
 
     // Subtotal should now be 300 only
-    expect(screen.getByText("Subtotal: R 300.00")).toBeInTheDocument();
+    // locale-agnostic: accepts en-ZA "R 300,00" or en-US "R 300.00"
+    expect(screen.getByText(/Subtotal:\s*R[\s\u00a0]300[,.]00/)).toBeInTheDocument();
   });
 
   it("exclude customer button updates status", async () => {

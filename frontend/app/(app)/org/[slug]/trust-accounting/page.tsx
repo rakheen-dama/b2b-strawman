@@ -119,17 +119,27 @@ export default async function TrustAccountingPage({
   let dashboardData: TrustDashboardData | null = null;
   let accountName = "Trust Account";
   let fetchError = false;
+  let hasTrustAccounts = false;
 
   try {
     const accounts = await fetchTrustAccounts();
+    hasTrustAccounts = accounts.length > 0;
     const primary = accounts.find((a) => a.isPrimary) ?? accounts[0];
 
     if (primary) {
       accountName = primary.accountName;
-      dashboardData = await fetchDashboardData(primary.id);
+      try {
+        dashboardData = await fetchDashboardData(primary.id);
+      } catch (dashboardErr) {
+        // Dashboard payload fetch failed, but the account list loaded. We still want the
+        // header CTAs visible so users can reach Client Ledgers / Record Transaction,
+        // which have their own data-fetching and may be usable independently.
+        console.error("Failed to fetch trust dashboard data:", dashboardErr);
+        fetchError = true;
+      }
     }
   } catch (error) {
-    console.error("Failed to fetch trust dashboard data:", error);
+    console.error("Failed to fetch trust accounts:", error);
     fetchError = true;
   }
 
@@ -145,7 +155,10 @@ export default async function TrustAccountingPage({
             LSSA-compliant trust account management for client funds
           </p>
         </div>
-        {dashboardData && (
+        {hasTrustAccounts && (
+          // Show nav CTAs whenever at least one trust account exists, even if the
+          // dashboard payload fetch failed. The Client Ledgers and Transactions pages
+          // do their own data loading and remain usable independently. PR #1004 review.
           <div className="flex items-center gap-2">
             <Button asChild variant="outline">
               <Link href={`/org/${slug}/trust-accounting/client-ledgers`}>

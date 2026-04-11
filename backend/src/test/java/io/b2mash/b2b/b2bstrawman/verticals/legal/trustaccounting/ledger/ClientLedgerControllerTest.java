@@ -15,6 +15,7 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -181,6 +182,22 @@ class ClientLedgerControllerTest {
         .andExpect(jsonPath("$.lastTransactionDate").value(nullValue()))
         .andExpect(jsonPath("$.createdAt").value(nullValue()))
         .andExpect(jsonPath("$.updatedAt").value(nullValue()));
+  }
+
+  // GAP-S4-06 follow-up (PR #1004 review): an unknown customer id must still 404 — the
+  // zero-balance synthetic fallback is reserved for real customers who simply have no ledger
+  // card yet. Otherwise arbitrary customer UUIDs look indistinguishable from valid new ones.
+  @Test
+  void getByCustomer_returns404WhenCustomerDoesNotExist() throws Exception {
+    var ownerJwt = TestJwtFactory.ownerJwt(ORG_ID, "user_ledger_ctrl_owner");
+    UUID unknownCustomerId = UUID.randomUUID();
+
+    mockMvc
+        .perform(
+            get("/api/trust-accounts/" + trustAccountId + "/client-ledgers/" + unknownCustomerId)
+                .with(ownerJwt))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.title").value("Customer not found"));
   }
 
   @Test

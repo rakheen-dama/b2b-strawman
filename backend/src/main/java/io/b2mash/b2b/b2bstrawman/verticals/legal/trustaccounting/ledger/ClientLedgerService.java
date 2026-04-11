@@ -1,7 +1,9 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger;
 
+import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
@@ -89,7 +91,19 @@ public class ClientLedgerService {
     return ledgerCardRepository
         .findByTrustAccountIdAndCustomerId(trustAccountId, customerId)
         .map(this::toResponse)
-        .orElseGet(() -> emptyLedgerCardResponse(customerId, trustAccountId));
+        .orElseGet(
+            () -> {
+              // No ledger card yet is a valid state — card is lazily created on the first
+              // deposit/payment via TrustTransactionService.applyTransaction. But an unknown
+              // customer ID is a genuine 404. Resolve the customer first so we can distinguish
+              // "no card yet" (valid customer, synthetic empty response) from "customer not found"
+              // (throw). See GAP-S4-06 + PR #1004 review finding.
+              Customer customer =
+                  customerRepository
+                      .findById(customerId)
+                      .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
+              return emptyLedgerCardResponse(customer, trustAccountId);
+            });
   }
 
   /**
@@ -97,17 +111,14 @@ public class ClientLedgerService {
    * transactions have been recorded). The ledger card is lazily created on the first
    * deposit/payment via {@code TrustTransactionService.applyTransaction}. Returning a synthetic
    * empty response here lets the "Trust" tab on every new matter render a clean R0.00 state instead
-   * of a 404 error. See GAP-S4-06.
+   * of a 404 error. Caller must ensure the customer exists — see {@link #getClientLedger}.
    */
-  private ClientLedgerCardResponse emptyLedgerCardResponse(UUID customerId, UUID trustAccountId) {
-    // Best-effort customer name lookup — tolerate missing customers gracefully.
-    String customerName =
-        customerRepository.findById(customerId).map(c -> c.getName()).orElse(null);
+  private ClientLedgerCardResponse emptyLedgerCardResponse(Customer customer, UUID trustAccountId) {
     return new ClientLedgerCardResponse(
         null, // no persistent card id yet
         trustAccountId,
-        customerId,
-        customerName,
+        customer.getId(),
+        customer.getName(),
         BigDecimal.ZERO,
         BigDecimal.ZERO,
         BigDecimal.ZERO,

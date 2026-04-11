@@ -10,19 +10,15 @@ public class ModuleNotEnabledException extends ErrorResponseException {
   }
 
   private static org.springframework.http.ProblemDetail createProblem(String moduleId) {
-    String humanName;
-    if (moduleId == null || moduleId.isEmpty()) {
-      humanName = "Unknown";
-    } else {
-      humanName = moduleId.replace("_", " ");
-      humanName = Character.toUpperCase(humanName.charAt(0)) + humanName.substring(1);
+    var problem =
+        ProblemDetailFactory.create(
+            HttpStatus.FORBIDDEN,
+            "Module not enabled",
+            "This feature is not enabled for your organization. "
+                + "An admin can enable it in Settings → Features.");
+    if (moduleId != null && !moduleId.isEmpty()) {
+      problem.setProperty("moduleId", moduleId);
     }
-    return ProblemDetailFactory.create(
-        HttpStatus.FORBIDDEN,
-        "Module not enabled",
-        "This feature requires the "
-            + humanName
-            + " module. "
-            + "Contact your administrator to enable it.");
+    return problem;
   }
 }

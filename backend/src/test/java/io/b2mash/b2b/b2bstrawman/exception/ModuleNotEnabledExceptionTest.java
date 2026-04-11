@@ -6,6 +6,10 @@ import org.junit.jupiter.api.Test;
 
 class ModuleNotEnabledExceptionTest {
 
+  private static final String EXPECTED_DETAIL =
+      "This feature is not enabled for your organization. "
+          + "An admin can enable it in Settings → Features.";
+
   @Test
   void exception_hasCorrect403Status() {
     var ex = new ModuleNotEnabledException("trust_accounting");
@@ -14,13 +18,13 @@ class ModuleNotEnabledExceptionTest {
   }
 
   @Test
-  void exception_humanizesModuleNameInDetail() {
+  void exception_usesStaticSettingsFeaturesDetailMessage() {
     var ex = new ModuleNotEnabledException("trust_accounting");
     var problem = ex.getBody();
 
     assertThat(problem.getTitle()).isEqualTo("Module not enabled");
-    assertThat(problem.getDetail()).contains("Trust accounting");
-    assertThat(problem.getDetail()).contains("Contact your administrator");
+    assertThat(problem.getDetail()).isEqualTo(EXPECTED_DETAIL);
+    assertThat(problem.getProperties()).containsEntry("moduleId", "trust_accounting");
   }
 
   @Test
@@ -29,8 +33,9 @@ class ModuleNotEnabledExceptionTest {
     var problem = ex.getBody();
 
     assertThat(problem.getTitle()).isEqualTo("Module not enabled");
-    assertThat(problem.getDetail()).contains("Unknown");
-    assertThat(problem.getDetail()).contains("Contact your administrator");
+    assertThat(problem.getDetail()).isEqualTo(EXPECTED_DETAIL);
+    assertThat(problem.getProperties() == null || !problem.getProperties().containsKey("moduleId"))
+        .isTrue();
   }
 
   @Test
@@ -39,7 +44,8 @@ class ModuleNotEnabledExceptionTest {
     var problem = ex.getBody();
 
     assertThat(problem.getTitle()).isEqualTo("Module not enabled");
-    assertThat(problem.getDetail()).contains("Unknown");
-    assertThat(problem.getDetail()).contains("Contact your administrator");
+    assertThat(problem.getDetail()).isEqualTo(EXPECTED_DETAIL);
+    assertThat(problem.getProperties() == null || !problem.getProperties().containsKey("moduleId"))
+        .isTrue();
   }
 }

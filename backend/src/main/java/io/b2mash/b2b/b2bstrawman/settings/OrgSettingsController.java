@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.settings;
 
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
+import io.b2mash.b2b.b2bstrawman.settings.dto.SettingsResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -11,8 +12,6 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -153,44 +152,6 @@ public class OrgSettingsController {
   }
 
   // --- DTOs ---
-
-  public record SettingsResponse(
-      String defaultCurrency,
-      String logoUrl,
-      String brandColor,
-      String documentFooterText,
-      Integer dormancyThresholdDays,
-      Integer dataRequestDeadlineDays,
-      List<Map<String, Object>> compliancePackStatus,
-      boolean accountingEnabled,
-      boolean aiEnabled,
-      boolean documentSigningEnabled,
-      String taxRegistrationNumber,
-      String taxRegistrationLabel,
-      String taxLabel,
-      boolean taxInclusive,
-      Integer acceptanceExpiryDays,
-      Integer defaultRequestReminderDays,
-      boolean timeReminderEnabled,
-      String timeReminderDays,
-      String timeReminderTime,
-      Double timeReminderMinHours,
-      BigDecimal defaultExpenseMarkupPercent,
-      BigDecimal defaultWeeklyCapacityHours,
-      Integer billingBatchAsyncThreshold,
-      Integer billingEmailRateLimit,
-      String defaultBillingRunCurrency,
-      String projectNamingPattern,
-      String verticalProfile,
-      List<String> enabledModules,
-      String terminologyNamespace,
-      // Phase 50: Data protection fields
-      String dataProtectionJurisdiction,
-      Boolean retentionPolicyEnabled,
-      Integer defaultRetentionMonths,
-      Integer financialRetentionMonths,
-      String informationOfficerName,
-      String informationOfficerEmail) {}
 
   public record UpdateSettingsRequest(
       @NotBlank(message = "defaultCurrency is required")

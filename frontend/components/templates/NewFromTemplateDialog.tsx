@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,6 +31,19 @@ interface NewFromTemplateDialogProps {
   orgMembers: OrgMember[];
   customers: Customer[];
   children: React.ReactNode;
+  /**
+   * When true, the dialog opens on mount. Used by deep-links like
+   * `/projects/new?customerId=...` (GAP-S3-05) where the route redirects
+   * to `/projects?new=1&customerId=...` and expects the dialog to open
+   * automatically.
+   */
+  autoOpen?: boolean;
+  /**
+   * When supplied alongside `autoOpen`, pre-selects this customer on the
+   * step-2 form (after the user picks a template). Ignored if the id does
+   * not match any customer the caller has access to.
+   */
+  initialCustomerId?: string;
 }
 
 export function NewFromTemplateDialog({
@@ -39,6 +52,8 @@ export function NewFromTemplateDialog({
   orgMembers,
   customers,
   children,
+  autoOpen = false,
+  initialCustomerId,
 }: NewFromTemplateDialogProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -54,6 +69,19 @@ export function NewFromTemplateDialog({
   const [description, setDescription] = useState("");
   const [customerId, setCustomerId] = useState("");
   const [projectLeadMemberId, setProjectLeadMemberId] = useState("");
+
+  // Auto-open on mount when the `?new=1` query param redirect lands us here
+  // (GAP-S3-05). We only run this once; the effect intentionally ignores
+  // `autoOpen` changes after the first open so manual toggling still works.
+  useEffect(() => {
+    if (autoOpen && templates.length > 0) {
+      setOpen(true);
+      if (initialCustomerId && customers.some((c) => c.id === initialCustomerId)) {
+        setCustomerId(initialCustomerId);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Prerequisite modal state
   const [prereqModalOpen, setPrereqModalOpen] = useState(false);

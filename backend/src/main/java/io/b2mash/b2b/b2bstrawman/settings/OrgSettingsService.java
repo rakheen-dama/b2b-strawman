@@ -17,13 +17,20 @@ import io.b2mash.b2b.b2bstrawman.seeder.RatePackSeeder;
 import io.b2mash.b2b.b2bstrawman.seeder.SchedulePackSeeder;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsController.DataProtectionSettingsRequest;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsController.SettingsResponse;
+import io.b2mash.b2b.b2bstrawman.settings.dto.ModuleSettingsResponse;
+import io.b2mash.b2b.b2bstrawman.settings.dto.ModuleSettingsResponse.ModuleStatus;
+import io.b2mash.b2b.b2bstrawman.verticals.ModuleCategory;
+import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleRegistry;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalProfileRegistry;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -52,6 +59,7 @@ public class OrgSettingsService {
   private final ProjectTemplatePackSeeder projectTemplatePackSeeder;
   private final RatePackSeeder ratePackSeeder;
   private final SchedulePackSeeder schedulePackSeeder;
+  private final VerticalModuleRegistry moduleRegistry;
 
   public OrgSettingsService(
       OrgSettingsRepository orgSettingsRepository,
@@ -63,7 +71,8 @@ public class OrgSettingsService {
       ComplianceTemplatePackSeeder complianceTemplatePackSeeder,
       ProjectTemplatePackSeeder projectTemplatePackSeeder,
       RatePackSeeder ratePackSeeder,
-      SchedulePackSeeder schedulePackSeeder) {
+      SchedulePackSeeder schedulePackSeeder,
+      VerticalModuleRegistry moduleRegistry) {
     this.orgSettingsRepository = orgSettingsRepository;
     this.auditService = auditService;
     this.storageService = storageService;
@@ -74,6 +83,7 @@ public class OrgSettingsService {
     this.projectTemplatePackSeeder = projectTemplatePackSeeder;
     this.ratePackSeeder = ratePackSeeder;
     this.schedulePackSeeder = schedulePackSeeder;
+    this.moduleRegistry = moduleRegistry;
   }
 
   /**
@@ -368,6 +378,100 @@ public class OrgSettingsService {
         .findForCurrentTenant()
         .map(OrgSettings::getEnabledModules)
         .orElse(List.of());
+  }
+
+  /**
+   * Returns all horizontal modules with their current enabled state for the current tenant. Used to
+   * render Settings → Features. Vertical modules are intentionally excluded.
+   */
+  @Transactional(readOnly = true)
+  public ModuleSettingsResponse getHorizontalModuleSettings() {
+    Set<String> enabledSet = new HashSet<>(getEnabledModulesForCurrentTenant());
+    List<ModuleStatus> statuses =
+        moduleRegistry.getHorizontalModules().stream()
+            .map(
+                m ->
+                    new ModuleStatus(
+                        m.id(), m.name(), m.description(), enabledSet.contains(m.id())))
+            .toList();
+    return new ModuleSettingsResponse(statuses);
+  }
+
+  /**
+   * Replaces the set of enabled horizontal modules for the current tenant. Vertical modules
+   * (managed by the vertical profile) are preserved. Admin-or-owner only. See ADR-239.
+   *
+   * @throws InvalidStateException if any requested ID is unknown or is a vertical module
+   * @throws io.b2mash.b2b.b2bstrawman.exception.ForbiddenException if the actor is not admin/owner
+   */
+  @Transactional
+  public SettingsResponse updateHorizontalModules(
+      List<String> requestedModuleIds, ActorContext actor) {
+    requireAdminOrOwner(actor.orgRole());
+
+    // Validate every requested ID exists in the registry and is categorised HORIZONTAL.
+    for (String id : requestedModuleIds) {
+      var module =
+          moduleRegistry
+              .getModule(id)
+              .orElseThrow(
+                  () -> new InvalidStateException("Unknown module", "Unknown module ID: " + id));
+      if (module.category() != ModuleCategory.HORIZONTAL) {
+        throw new InvalidStateException(
+            "Invalid module",
+            "Module " + id + " cannot be toggled manually (managed by vertical profile)");
+      }
+    }
+
+    var settings = getOrCreateForCurrentTenant();
+    List<String> before = List.copyOf(settings.getEnabledModules());
+
+    // Keep vertical modules as-is; replace horizontal modules with the request payload.
+    List<String> verticalIds =
+        before.stream()
+            .filter(
+                id ->
+                    moduleRegistry
+                        .getModule(id)
+                        .map(m -> m.category() == ModuleCategory.VERTICAL)
+                        .orElse(false))
+            .toList();
+    List<String> merged = new ArrayList<>(verticalIds);
+    for (String id : requestedModuleIds) {
+      if (!merged.contains(id)) {
+        merged.add(id);
+      }
+    }
+
+    settings.setEnabledModules(merged);
+    settings = orgSettingsRepository.save(settings);
+
+    List<String> added = new ArrayList<>(merged);
+    added.removeAll(before);
+    List<String> removed = new ArrayList<>(before);
+    removed.removeAll(merged);
+
+    log.info(
+        "Updated horizontal modules: before={}, after={}, added={}, removed={}",
+        before,
+        merged,
+        added,
+        removed);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("org_settings.modules_updated")
+            .entityType("org_settings")
+            .entityId(settings.getId())
+            .details(
+                Map.of(
+                    "before", before,
+                    "after", merged,
+                    "added", added,
+                    "removed", removed))
+            .build());
+
+    return toSettingsResponse(settings);
   }
 
   /** Updates compliance-related settings (dormancy threshold, data request deadline). */
@@ -687,15 +791,34 @@ public class OrgSettingsService {
                   return orgSettingsRepository.save(newSettings);
                 });
 
+    // Preserve horizontal modules across profile changes (ADR-239). Vertical modules from the new
+    // profile fully replace the previous vertical set; horizontal modules are independent of the
+    // profile and must survive profile switches (including clearing to null).
+    List<String> currentHorizontal =
+        settings.getEnabledModules().stream()
+            .filter(
+                id ->
+                    moduleRegistry
+                        .getModule(id)
+                        .map(m -> m.category() == ModuleCategory.HORIZONTAL)
+                        .orElse(false))
+            .toList();
+    List<String> mergedModules = new ArrayList<>(enabledModules);
+    for (String id : currentHorizontal) {
+      if (!mergedModules.contains(id)) {
+        mergedModules.add(id);
+      }
+    }
+
     String oldProfile = settings.getVerticalProfile();
-    settings.updateVerticalProfile(verticalProfile, enabledModules, terminologyNamespace);
+    settings.updateVerticalProfile(verticalProfile, mergedModules, terminologyNamespace);
     settings = orgSettingsRepository.save(settings);
 
     log.info(
         "Updated vertical profile: {} -> {}, enabledModules={}",
         oldProfile,
         verticalProfile,
-        enabledModules);
+        mergedModules);
 
     auditService.log(
         AuditEventBuilder.builder()
@@ -706,7 +829,7 @@ public class OrgSettingsService {
                 Map.of(
                     "old_profile", oldProfile != null ? oldProfile : "",
                     "new_profile", verticalProfile != null ? verticalProfile : "",
-                    "enabled_modules", enabledModules))
+                    "enabled_modules", mergedModules))
             .build());
 
     // Trigger rate and schedule pack seeding for the new profile (idempotent).

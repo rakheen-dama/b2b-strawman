@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.verticals;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -15,10 +16,10 @@ class VerticalModuleRegistryTest {
   }
 
   @Test
-  void getAllModules_returnsFiveModulesWithCorrectIds() {
+  void getAllModules_returnsEightModulesWithCorrectIds() {
     var modules = registry.getAllModules();
 
-    assertThat(modules).hasSize(5);
+    assertThat(modules).hasSize(8);
     assertThat(modules)
         .extracting(VerticalModuleRegistry.ModuleDefinition::id)
         .containsExactlyInAnyOrder(
@@ -26,7 +27,10 @@ class VerticalModuleRegistryTest {
             "court_calendar",
             "conflict_check",
             "regulatory_deadlines",
-            "lssa_tariff");
+            "lssa_tariff",
+            "resource_planning",
+            "bulk_billing",
+            "automation_builder");
   }
 
   @Test
@@ -81,5 +85,95 @@ class VerticalModuleRegistryTest {
     assertThat(module.get().navItems().getFirst().path()).isEqualTo("/legal/tariffs");
     assertThat(module.get().navItems().getFirst().label()).isEqualTo("Tariffs");
     assertThat(module.get().navItems().getFirst().zone()).isEqualTo("finance");
+  }
+
+  @Test
+  void getHorizontalModules_returnsThreeHorizontalModules() {
+    var horizontal = registry.getHorizontalModules();
+
+    assertThat(horizontal).hasSize(3);
+    assertThat(horizontal)
+        .extracting(VerticalModuleRegistry.ModuleDefinition::id)
+        .containsExactlyInAnyOrder("resource_planning", "bulk_billing", "automation_builder");
+    assertThat(horizontal)
+        .allSatisfy(m -> assertThat(m.category()).isEqualTo(ModuleCategory.HORIZONTAL));
+  }
+
+  @Test
+  void getModule_resourcePlanningIsHorizontalWithCorrectNavItems() {
+    var module = registry.getModule("resource_planning");
+
+    assertThat(module).isPresent();
+    assertThat(module.get().name()).isEqualTo("Resource Planning");
+    assertThat(module.get().category()).isEqualTo(ModuleCategory.HORIZONTAL);
+    assertThat(module.get().defaultEnabledFor()).isEmpty();
+    assertThat(module.get().navItems()).hasSize(2);
+    assertThat(module.get().navItems().get(0).path()).isEqualTo("/resources");
+    assertThat(module.get().navItems().get(0).label()).isEqualTo("Resources");
+    assertThat(module.get().navItems().get(0).zone()).isEqualTo("work");
+    assertThat(module.get().navItems().get(1).path()).isEqualTo("/resources/utilization");
+    assertThat(module.get().navItems().get(1).label()).isEqualTo("Utilization");
+    assertThat(module.get().navItems().get(1).zone()).isEqualTo("work");
+  }
+
+  @Test
+  void getModule_bulkBillingIsHorizontalWithCorrectNavItem() {
+    var module = registry.getModule("bulk_billing");
+
+    assertThat(module).isPresent();
+    assertThat(module.get().name()).isEqualTo("Bulk Billing Runs");
+    assertThat(module.get().category()).isEqualTo(ModuleCategory.HORIZONTAL);
+    assertThat(module.get().defaultEnabledFor()).isEmpty();
+    assertThat(module.get().navItems()).hasSize(1);
+    assertThat(module.get().navItems().getFirst().path()).isEqualTo("/invoices/billing-runs");
+    assertThat(module.get().navItems().getFirst().label()).isEqualTo("Billing Runs");
+    assertThat(module.get().navItems().getFirst().zone()).isEqualTo("finance");
+  }
+
+  @Test
+  void getModule_automationBuilderIsHorizontalWithCorrectNavItem() {
+    var module = registry.getModule("automation_builder");
+
+    assertThat(module).isPresent();
+    assertThat(module.get().name()).isEqualTo("Automation Rule Builder");
+    assertThat(module.get().category()).isEqualTo(ModuleCategory.HORIZONTAL);
+    assertThat(module.get().defaultEnabledFor()).isEmpty();
+    assertThat(module.get().navItems()).hasSize(1);
+    assertThat(module.get().navItems().getFirst().path()).isEqualTo("/settings/automations");
+    assertThat(module.get().navItems().getFirst().label()).isEqualTo("Automations");
+    assertThat(module.get().navItems().getFirst().zone()).isEqualTo("work");
+  }
+
+  @Test
+  void getModule_allExistingModulesAreVertical() {
+    var verticalIds =
+        List.of(
+            "trust_accounting",
+            "court_calendar",
+            "conflict_check",
+            "regulatory_deadlines",
+            "lssa_tariff");
+    for (String id : verticalIds) {
+      var module = registry.getModule(id);
+      assertThat(module).as("module %s should be present", id).isPresent();
+      assertThat(module.get().category())
+          .as("module %s should be VERTICAL", id)
+          .isEqualTo(ModuleCategory.VERTICAL);
+    }
+  }
+
+  @Test
+  void getModulesByCategory_returnsFiveVerticalModules() {
+    var vertical = registry.getModulesByCategory(ModuleCategory.VERTICAL);
+
+    assertThat(vertical).hasSize(5);
+    assertThat(vertical)
+        .extracting(VerticalModuleRegistry.ModuleDefinition::id)
+        .containsExactlyInAnyOrder(
+            "trust_accounting",
+            "court_calendar",
+            "conflict_check",
+            "regulatory_deadlines",
+            "lssa_tariff");
   }
 }

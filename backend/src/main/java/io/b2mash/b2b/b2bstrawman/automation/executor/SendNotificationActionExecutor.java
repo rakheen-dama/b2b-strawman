@@ -112,7 +112,9 @@ public class SendNotificationActionExecutor implements ActionExecutor {
             .map(m -> m.getMemberId())
             .toList();
       }
-      case "ALL_ADMINS" -> {
+      case "ALL_ADMINS", "ORG_ADMINS" -> {
+        // ORG_ADMINS is an alias used by the legal-za automation seed; it resolves
+        // to the same set as ALL_ADMINS (members holding the admin or owner role).
         yield memberRepository.findByRoleSlugsIn(List.of("admin", "owner")).stream()
             .map(m -> m.getId())
             .toList();

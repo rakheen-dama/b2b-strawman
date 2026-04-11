@@ -92,6 +92,48 @@ describe("CreateTaskDialog", () => {
     expect(screen.queryByText("Assign to")).not.toBeInTheDocument();
   });
 
+  it("renders estimatedHours number input with min=0 and step=0.25", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <CreateTaskDialog slug="acme" projectId="p1" members={[]} canManage={false}>
+        <button>Open Create Task Dialog Estimated Hours</button>
+      </CreateTaskDialog>,
+    );
+
+    await user.click(screen.getByText("Open Create Task Dialog Estimated Hours"));
+
+    const input = (await screen.findByLabelText(
+      /estimated hours/i,
+    )) as HTMLInputElement;
+    expect(input).toBeInTheDocument();
+    expect(input.type).toBe("number");
+    expect(input.min).toBe("0");
+    expect(input.step).toBe("0.25");
+  });
+
+  it("includes estimatedHours in FormData when user enters a value", async () => {
+    mockCreateTask.mockResolvedValue({ success: true });
+    const user = userEvent.setup();
+
+    render(
+      <CreateTaskDialog slug="acme" projectId="p1" members={[]} canManage={false}>
+        <button>Open Create Task Dialog Estimated Hours Submit</button>
+      </CreateTaskDialog>,
+    );
+
+    await user.click(screen.getByText("Open Create Task Dialog Estimated Hours Submit"));
+    await user.type(screen.getByLabelText("Title"), "Task with estimate");
+    await user.type(screen.getByLabelText(/estimated hours/i), "2.5");
+    await user.click(screen.getByRole("button", { name: "Create Task" }));
+
+    await waitFor(() => {
+      expect(mockCreateTask).toHaveBeenCalled();
+    });
+    const fd = mockCreateTask.mock.calls[mockCreateTask.mock.calls.length - 1][2] as FormData;
+    expect(fd.get("estimatedHours")).toBe("2.5");
+  });
+
   it("shows AssigneeSelector when canManage is true and members provided", async () => {
     const user = userEvent.setup();
 

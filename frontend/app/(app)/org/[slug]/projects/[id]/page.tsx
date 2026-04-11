@@ -51,6 +51,10 @@ import { TerminologyText } from "@/components/terminology-text";
 import { getProjectStaffing, type ProjectStaffingResponse } from "@/lib/api/capacity";
 import { getCurrentMonday, formatDate as formatDateUtil, addWeeks } from "@/lib/date-utils";
 import { createSavedViewAction } from "./view-actions";
+import {
+  PROMOTED_PROJECT_SLUGS,
+  PROMOTED_TASK_SLUGS,
+} from "@/lib/constants/promoted-field-slugs";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, AlertTriangle, Calendar, LayoutTemplate, Pencil, Receipt, Trash2 } from "lucide-react";
 import Link from "next/link";
@@ -314,7 +318,7 @@ export default async function ProjectDetailPage({
       getFieldDefinitions("PROJECT"),
       getFieldGroups("PROJECT"),
     ]);
-    projectFieldDefs = defs;
+    projectFieldDefs = defs.filter((d) => !PROMOTED_PROJECT_SLUGS.has(d.slug));
     projectFieldGroups = groups;
 
     // Fetch members for each applied group
@@ -342,7 +346,7 @@ export default async function ProjectDetailPage({
       getFieldDefinitions("TASK"),
       getFieldGroups("TASK"),
     ]);
-    taskFieldDefs = defs;
+    taskFieldDefs = defs.filter((d) => !PROMOTED_TASK_SLUGS.has(d.slug));
     taskFieldGroups = groups;
 
     // Pre-fetch members for all active TASK field groups
@@ -472,6 +476,51 @@ export default async function ProjectDetailPage({
             <p className="mt-2 text-sm text-slate-400 dark:text-slate-600" data-testid="project-internal-label">
               Internal Project
             </p>
+          )}
+          {/* Promoted fields (Epic 464 / Phase 63) */}
+          {(project.referenceNumber || project.priority || project.workType) && (
+            <div
+              className="mt-3 flex flex-wrap items-center gap-3 text-sm text-slate-600 dark:text-slate-400"
+              data-testid="project-promoted-fields"
+            >
+              {project.referenceNumber && (
+                <span
+                  className="inline-flex items-center gap-1"
+                  data-testid="project-reference-number"
+                >
+                  <span className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-500">
+                    Ref
+                  </span>
+                  <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                    {project.referenceNumber}
+                  </code>
+                </span>
+              )}
+              {project.priority && (
+                <Badge
+                  variant={
+                    project.priority === "HIGH"
+                      ? "warning"
+                      : project.priority === "MEDIUM"
+                        ? "neutral"
+                        : "success"
+                  }
+                  data-testid="project-priority-badge"
+                >
+                  {project.priority.charAt(0) + project.priority.slice(1).toLowerCase()} Priority
+                </Badge>
+              )}
+              {project.workType && (
+                <span data-testid="project-work-type">
+                  <span className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-500">
+                    Type
+                  </span>{" "}
+                  <span className="text-slate-700 dark:text-slate-300">
+                    {project.workType}
+                  </span>
+                </span>
+              )}
+            </div>
           )}
           <p className="mt-3 text-sm text-slate-400 dark:text-slate-600">
             Created {formatDate(project.createdAt)} &middot; {documents.length}{" "}

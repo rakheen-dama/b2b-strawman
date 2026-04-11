@@ -19,6 +19,7 @@ export interface Task {
   createdBy: string;
   createdByName: string | null;
   dueDate: string | null;
+  estimatedHours: number | null;
   version: number;
   createdAt: string;
   updatedAt: string;
@@ -45,6 +46,7 @@ export interface CreateTaskRequest {
   priority?: TaskPriority;
   type?: string;
   dueDate?: string;
+  estimatedHours?: number;
   assigneeId?: string;
   recurrenceRule?: string;
   recurrenceEndDate?: string;
@@ -57,6 +59,7 @@ export interface UpdateTaskRequest {
   status: TaskStatus;
   type?: string;
   dueDate?: string;
+  estimatedHours?: number;
   assigneeId?: string;
   recurrenceRule?: string;
   recurrenceEndDate?: string;

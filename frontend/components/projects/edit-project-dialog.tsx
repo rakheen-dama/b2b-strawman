@@ -29,6 +29,7 @@ import {
   editProjectSchema,
   type EditProjectFormData,
 } from "@/lib/schemas/project";
+import { nativeSelectClassName } from "@/lib/styles/native-select";
 
 interface EditProjectDialogProps {
   project: Project;
@@ -49,6 +50,9 @@ export function EditProjectDialog({ project, slug, children }: EditProjectDialog
       description: project.description ?? "",
       dueDate: project.dueDate ?? "",
       customerId: project.customerId ?? "",
+      referenceNumber: project.referenceNumber ?? "",
+      priority: project.priority ?? "",
+      workType: project.workType ?? "",
     },
   });
 
@@ -71,6 +75,9 @@ export function EditProjectDialog({ project, slug, children }: EditProjectDialog
       formData.set("description", values.description ?? "");
       formData.set("dueDate", values.dueDate ?? "");
       formData.set("customerId", values.customerId ?? "");
+      formData.set("referenceNumber", values.referenceNumber ?? "");
+      formData.set("priority", values.priority ?? "");
+      formData.set("workType", values.workType ?? "");
 
       const result = await updateProject(slug, project.id, formData);
       if (result.success) {
@@ -93,6 +100,9 @@ export function EditProjectDialog({ project, slug, children }: EditProjectDialog
         description: project.description ?? "",
         dueDate: project.dueDate ?? "",
         customerId: project.customerId ?? "",
+        referenceNumber: project.referenceNumber ?? "",
+        priority: project.priority ?? "",
+        workType: project.workType ?? "",
       });
     }
     setOpen(newOpen);
@@ -172,6 +182,71 @@ export function EditProjectDialog({ project, slug, children }: EditProjectDialog
                         </option>
                       ))}
                     </select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="referenceNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Reference Number{" "}
+                    <span className="font-normal text-muted-foreground">(optional)</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="e.g. PRJ-2026-001"
+                      maxLength={100}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="priority"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Priority{" "}
+                    <span className="font-normal text-muted-foreground">(optional)</span>
+                  </FormLabel>
+                  <FormControl>
+                    <select
+                      value={field.value ?? ""}
+                      onChange={field.onChange}
+                      className={nativeSelectClassName}
+                    >
+                      <option value="">Select priority…</option>
+                      <option value="LOW">Low</option>
+                      <option value="MEDIUM">Medium</option>
+                      <option value="HIGH">High</option>
+                    </select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="workType"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Work Type{" "}
+                    <span className="font-normal text-muted-foreground">(optional)</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="e.g. Consulting, Litigation"
+                      maxLength={50}
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

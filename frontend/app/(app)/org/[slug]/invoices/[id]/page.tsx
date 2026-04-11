@@ -22,6 +22,7 @@ import { GenerateDocumentDropdown } from "@/components/templates/GenerateDocumen
 import { GeneratedDocumentsList } from "@/components/templates/GeneratedDocumentsList";
 import { CustomFieldSection } from "@/components/field-definitions/CustomFieldSection";
 import { FieldGroupSelector } from "@/components/field-definitions/FieldGroupSelector";
+import { PROMOTED_INVOICE_SLUGS } from "@/lib/constants/promoted-field-slugs";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
@@ -80,7 +81,7 @@ export default async function InvoiceDetailPage({
       getFieldDefinitions("INVOICE"),
       getFieldGroups("INVOICE"),
     ]);
-    invoiceFieldDefs = defs;
+    invoiceFieldDefs = defs.filter((d) => !PROMOTED_INVOICE_SLUGS.has(d.slug));
     invoiceFieldGroups = groups;
 
     // Fetch members for each applied group

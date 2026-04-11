@@ -149,11 +149,27 @@ export function CreateTaskDialog({
               />
             </div>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="task-due-date">
-              Due Date <span className="font-normal text-muted-foreground">(optional)</span>
-            </Label>
-            <Input id="task-due-date" name="dueDate" type="date" />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="task-due-date">
+                Due Date <span className="font-normal text-muted-foreground">(optional)</span>
+              </Label>
+              <Input id="task-due-date" name="dueDate" type="date" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="task-estimated-hours">
+                Estimated Hours{" "}
+                <span className="font-normal text-muted-foreground">(optional)</span>
+              </Label>
+              <Input
+                id="task-estimated-hours"
+                name="estimatedHours"
+                type="number"
+                min={0}
+                step="0.25"
+                placeholder="e.g. 2.5"
+              />
+            </div>
           </div>
           {/* Recurrence section */}
           <div className="space-y-2">

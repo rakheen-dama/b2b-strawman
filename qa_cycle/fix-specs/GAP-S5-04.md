@@ -1,53 +1,104 @@
-# Fix Spec: GAP-S5-04 — "Link Adverse Party" dialog Customer select is blank
+# Fix Spec: GAP-S5-04 (REOPENED) — "Link Adverse Party" dialog Customer select is empty
 
 ## Priority
-MEDIUM — primarily a cascade from GAP-S5-03, but also a design smell: the dialog asks for a
-Customer at all. The matter already has a customer; the adverse-party→matter link should not
-need one.
+HIGH (reopened) — unblocks RAF plaintiff workflow end-to-end in Session 5. This was originally
+triaged as a cascade from GAP-S5-03; QA Cycle 5 re-verification proved it is a separate
+pre-existing frontend response-shape bug.
 
 ## Problem
-The "Link Adverse Party" dialog on the matter's Adverse Parties tab has a Customer select that
-reads from `project.customer_id`. Since that column is NULL for template-created matters, the
-select shows only "-- Select customer --" with no options. Submit button is disabled.
+On the Moroka Estate matter → "Adverse Parties" tab → "Link Adverse Party" dialog, the Customer
+select dropdown contains only the placeholder `-- Select customer --` even after GAP-S5-03 was
+fixed and `project.customer_id` is now populated. Submit is blocked: no way to link the Road
+Accident Fund to the Lerato or Moroka matter via the UI.
 
-## Root Cause (confirmed via grep + QA evidence)
-Files:
-- Frontend: the dialog component under `frontend/components/adverse-parties/` or similar
-  (inferred from QA evidence — dialog has three selects: Adverse Party, Customer, Relationship).
-  Located under `frontend/app/(app)/org/[slug]/projects/[id]/` since the dialog opens from the
-  matter's Adverse Parties tab.
-- The Customer select likely reads from `project.customerId` via a prop or server action.
+QA confirmed (Cycle 5 turn 1, day-05-cycle5.md):
+```
+count: 1
+opts: [{ "value": "", "text": "-- Select customer --" }]
+```
 
-Grep-confirmed cascade: GAP-S5-03 root cause in `ProjectTemplateService.instantiateTemplate()` at
-line 520 creates Project without setting `customerId`.
+## Root Cause
+File: `frontend/app/(app)/org/[slug]/legal/adverse-parties/actions.ts`
 
-## Fix Steps
-Choose ONE of two approaches, depending on whether GAP-S5-03 is fixed in the same turn:
+The helper that feeds the dialog is (line 140-144):
 
-**Option A (preferred, after GAP-S5-03 fix):** No code change required — the existing select
-will populate from `project.customerId` once that column is backfilled.
+```ts
+export async function fetchCustomers(): Promise<{ id: string; name: string }[]> {
+  const result =
+    await api.get<PaginatedResponse<{ id: string; name: string }>>("/api/customers?size=200");
+  return result.content;
+}
+```
 
-**Option B (defensive, if we want matter-level linking to be robust):**
-1. In the Link Adverse Party dialog, remove the Customer select entirely. The customer is
-   implicit in the matter (derived from `customer_projects` join). Adverse-party→matter link
-   does not need a customer discriminator.
-2. In the server action that creates the `ProjectAdverseParty` link row, derive the customer
-   from `customerProjectRepository.findByProjectId(projectId)` — take the first one (or omit
-   the customer entirely from the link record if the schema allows).
-3. Update the backend `AdversePartyService.linkToMatter` (or equivalent) to accept only
-   `projectId` + `adversePartyId` + `relationship`, and look up the customer internally.
+This assumes a Spring paginated envelope `{ content: [...], page: {...} }`. But the backend
+endpoint `GET /api/customers` returns a **flat array** `ResponseEntity<List<CustomerResponse>>`
+(confirmed via `backend/src/main/java/io/b2mash/b2b/b2bstrawman/customer/CustomerController.java`
+line 88):
+
+```java
+@GetMapping
+public ResponseEntity<List<CustomerResponse>> listCustomers(
+    @RequestParam(required = false) LifecycleStatus lifecycleStatus) {
+  ...
+}
+```
+
+Result: `result.content` is `undefined` at runtime. The TypeScript cast hides this; the returned
+value from `fetchCustomers()` is `undefined`, which the dialog treats as an empty array.
+
+The same file uses the correct pattern for `fetchProjects()` (line 134-138) because
+`/api/projects` DOES return a paginated envelope — that's why only the Customer select is broken,
+not the Project select. The `proposals/actions.ts::fetchCustomersAction` correctly handles both
+shapes with `Array.isArray(result) ? result : result.content ?? []`.
+
+## Fix
+Single-function edit. Mirror the defensive handling from `proposals/actions.ts`.
+
+File: `frontend/app/(app)/org/[slug]/legal/adverse-parties/actions.ts`
+
+**Before** (line 140-144):
+```ts
+export async function fetchCustomers(): Promise<{ id: string; name: string }[]> {
+  const result =
+    await api.get<PaginatedResponse<{ id: string; name: string }>>("/api/customers?size=200");
+  return result.content;
+}
+```
+
+**After**:
+```ts
+export async function fetchCustomers(): Promise<{ id: string; name: string }[]> {
+  const result = await api.get<
+    { id: string; name: string }[] | PaginatedResponse<{ id: string; name: string }>
+  >("/api/customers?size=200");
+  // /api/customers returns a flat List<CustomerResponse> (not a paginated envelope).
+  // Handle both shapes defensively in case the backend is ever paginated.
+  return Array.isArray(result) ? result : (result.content ?? []);
+}
+```
+
+No other changes needed. The Customer select in the Link Adverse Party dialog will now populate
+from the full customer list (matching the pattern already used in `proposals/actions.ts` and
+elsewhere).
 
 ## Scope
-- Option A: no code change, verification only
-- Option B: Frontend + Backend (small)
-- Migration needed: no
+**Frontend only.**
+
+Files to modify:
+- `frontend/app/(app)/org/[slug]/legal/adverse-parties/actions.ts` (single function, 2-line logical change)
+
+Files to create: none
+Migration needed: no
 
 ## Verification
-After GAP-S5-03 fix:
-1. Re-run Session 5 step 5.30 (Link adverse party to matter). Dialog opens, Customer select
-   pre-populates with Lerato Mthembu. Fill Relationship = Opposing Party. Click Link Party.
-2. Verify in DB: `SELECT * FROM project_adverse_parties;` should show the link row.
-3. Matter detail "Adverse Parties" tab should now show Road Accident Fund listed.
+1. Restart is not needed — HMR picks up the server action change.
+2. QA re-opens the "Link Adverse Party" dialog on the Moroka Estate matter. The Customer select
+   should now list all customers in the tenant (Moroka Family Trust, Sipho Dlamini, Lerato
+   Mthembu, Ndlovu Family Trust).
+3. Select Moroka Family Trust + Road Accident Fund + Relationship=Opposing Party → Link Party.
+4. Verify: matter detail "Adverse Parties" tab now shows the linked row.
+5. DB check: `SELECT * FROM tenant_*.project_adverse_parties WHERE project_id = '095529c5-...'`
+   returns the new link.
 
 ## Estimated Effort
-S (< 15 min) — verification only if GAP-S5-03 is fixed first
+**S** (< 15 min). Literally one function body to replace + manual re-verification.

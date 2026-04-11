@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   Scale,
@@ -14,6 +15,7 @@ import {
 import { getOrgSettings } from "@/lib/api/settings";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { AddTrustAccountButton } from "@/components/trust/AddTrustAccountButton";
 import { fetchTrustAccounts, fetchDashboardData } from "./actions";
 import type {
@@ -134,13 +136,31 @@ export default async function TrustAccountingPage({
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          Trust Accounting
-        </h1>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          LSSA-compliant trust account management for client funds
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
+            Trust Accounting
+          </h1>
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+            LSSA-compliant trust account management for client funds
+          </p>
+        </div>
+        {dashboardData && (
+          <div className="flex items-center gap-2">
+            <Button asChild variant="outline">
+              <Link href={`/org/${slug}/trust-accounting/client-ledgers`}>
+                <Users className="mr-2 size-4" />
+                Client Ledgers
+              </Link>
+            </Button>
+            <Button asChild>
+              <Link href={`/org/${slug}/trust-accounting/transactions`}>
+                <ArrowUpRight className="mr-2 size-4" />
+                Record Transaction
+              </Link>
+            </Button>
+          </div>
+        )}
       </div>
 
       {fetchError && (
@@ -300,9 +320,19 @@ export default async function TrustAccountingPage({
 
           {/* Recent Transactions Table */}
           <Card>
-            <CardHeader>
-              <CardTitle>Recent Transactions</CardTitle>
-              <CardDescription>Last 10 transactions across all client ledgers</CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0">
+              <div>
+                <CardTitle>Recent Transactions</CardTitle>
+                <CardDescription>
+                  Last 10 transactions across all client ledgers
+                </CardDescription>
+              </div>
+              <Button asChild variant="ghost" size="sm">
+                <Link href={`/org/${slug}/trust-accounting/transactions`}>
+                  View all
+                  <ArrowUpRight className="ml-1 size-3" />
+                </Link>
+              </Button>
             </CardHeader>
             <CardContent>
               {dashboardData.recentTransactions.length === 0 ? (

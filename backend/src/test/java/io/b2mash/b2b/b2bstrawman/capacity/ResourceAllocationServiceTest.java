@@ -23,6 +23,7 @@ import io.b2mash.b2b.b2bstrawman.project.ProjectService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestModuleHelper;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -82,6 +83,7 @@ class ResourceAllocationServiceTest {
         TestMemberHelper.syncMember(
             mockMvc, ORG_ID, "user_alloc_member", "alloc_member@test.com", "Member", "member");
     memberIdMember = UUID.fromString(memberIdMemberStr);
+    TestModuleHelper.enableModules(mockMvc, ORG_ID, "user_alloc_owner", "resource_planning");
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
 

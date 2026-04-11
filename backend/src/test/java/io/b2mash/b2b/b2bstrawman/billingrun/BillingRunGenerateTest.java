@@ -22,6 +22,7 @@ import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestModuleHelper;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.math.BigDecimal;
@@ -89,6 +90,8 @@ class BillingRunGenerateTest {
     memberIdMember =
         TestMemberHelper.syncMember(
             mockMvc, ORG_ID, "user_gen_member", "gen_member@test.com", "Gen Member", "member");
+
+    TestModuleHelper.enableModules(mockMvc, ORG_ID, "user_gen_owner", "bulk_billing");
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();

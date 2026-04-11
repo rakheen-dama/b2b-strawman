@@ -16,6 +16,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.project.ProjectStatus;
+import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -34,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class ResourceAllocationService {
 
+  private static final String MODULE_ID = "resource_planning";
   private static final BigDecimal MAX_WEEKLY_HOURS = new BigDecimal("168");
 
   private final ResourceAllocationRepository allocationRepository;
@@ -44,6 +46,7 @@ public class ResourceAllocationService {
   private final NotificationService notificationService;
   private final AuditService auditService;
   private final MemberRepository memberRepository;
+  private final VerticalModuleGuard moduleGuard;
 
   public ResourceAllocationService(
       ResourceAllocationRepository allocationRepository,
@@ -53,7 +56,8 @@ public class ResourceAllocationService {
       ApplicationEventPublisher eventPublisher,
       NotificationService notificationService,
       AuditService auditService,
-      MemberRepository memberRepository) {
+      MemberRepository memberRepository,
+      VerticalModuleGuard moduleGuard) {
     this.allocationRepository = allocationRepository;
     this.projectRepository = projectRepository;
     this.projectMemberService = projectMemberService;
@@ -62,12 +66,15 @@ public class ResourceAllocationService {
     this.notificationService = notificationService;
     this.auditService = auditService;
     this.memberRepository = memberRepository;
+    this.moduleGuard = moduleGuard;
   }
 
   /** Lists allocations with optional filters: memberId, projectId, weekStart, weekEnd. */
   @Transactional(readOnly = true)
   public List<AllocationResponse> listAllocations(
       UUID memberId, UUID projectId, LocalDate weekStart, LocalDate weekEnd) {
+    moduleGuard.requireModule(MODULE_ID);
+
     List<ResourceAllocation> allocations;
 
     if (memberId != null && weekStart != null && weekEnd != null) {
@@ -91,6 +98,8 @@ public class ResourceAllocationService {
   /** Creates a new resource allocation with validation, auto-add, and over-allocation check. */
   @Transactional
   public AllocationResponse createAllocation(CreateAllocationRequest request, UUID createdBy) {
+    moduleGuard.requireModule(MODULE_ID);
+
     validateWeekStart(request.weekStart());
     validateProjectNotArchivedOrCompleted(request.projectId());
     validateAllocatedHours(request.allocatedHours());
@@ -141,6 +150,8 @@ public class ResourceAllocationService {
   /** Updates an existing allocation's hours and note, then re-checks over-allocation. */
   @Transactional
   public AllocationResponse updateAllocation(UUID id, UpdateAllocationRequest request) {
+    moduleGuard.requireModule(MODULE_ID);
+
     validateAllocatedHours(request.allocatedHours());
 
     var allocation =
@@ -188,6 +199,8 @@ public class ResourceAllocationService {
   /** Deletes an allocation by ID. */
   @Transactional
   public void deleteAllocation(UUID id) {
+    moduleGuard.requireModule(MODULE_ID);
+
     var allocation =
         allocationRepository
             .findById(id)
@@ -217,6 +230,8 @@ public class ResourceAllocationService {
   @Transactional
   public BulkAllocationResponse bulkUpsertAllocations(
       List<CreateAllocationRequest> requests, UUID createdBy) {
+    moduleGuard.requireModule(MODULE_ID);
+
     List<AllocationResultItem> results = new ArrayList<>();
     Set<MemberWeekKey> memberWeekKeys = new LinkedHashSet<>();
 

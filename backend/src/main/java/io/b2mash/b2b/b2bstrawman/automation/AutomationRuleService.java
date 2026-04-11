@@ -13,6 +13,7 @@ import io.b2mash.b2b.b2bstrawman.automation.dto.AutomationDtos.UpdateRuleRequest
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import jakarta.persistence.EntityManager;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,6 +32,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class AutomationRuleService {
 
+  private static final String MODULE_ID = "automation_builder";
+
   private final AutomationRuleRepository ruleRepository;
   private final AutomationActionRepository actionRepository;
   private final AutomationExecutionRepository executionRepository;
@@ -38,6 +41,7 @@ public class AutomationRuleService {
   private final ConditionEvaluator conditionEvaluator;
   private final AuditService auditService;
   private final EntityManager entityManager;
+  private final VerticalModuleGuard moduleGuard;
 
   public AutomationRuleService(
       AutomationRuleRepository ruleRepository,
@@ -46,7 +50,8 @@ public class AutomationRuleService {
       ActionExecutionRepository actionExecutionRepository,
       ConditionEvaluator conditionEvaluator,
       AuditService auditService,
-      EntityManager entityManager) {
+      EntityManager entityManager,
+      VerticalModuleGuard moduleGuard) {
     this.ruleRepository = ruleRepository;
     this.actionRepository = actionRepository;
     this.executionRepository = executionRepository;
@@ -54,9 +59,12 @@ public class AutomationRuleService {
     this.conditionEvaluator = conditionEvaluator;
     this.auditService = auditService;
     this.entityManager = entityManager;
+    this.moduleGuard = moduleGuard;
   }
 
   public AutomationRuleResponse createRule(CreateRuleRequest request) {
+    moduleGuard.requireModule(MODULE_ID);
+
     UUID memberId = RequestScopes.requireMemberId();
     var rule =
         new AutomationRule(
@@ -102,6 +110,8 @@ public class AutomationRuleService {
 
   @Transactional(readOnly = true)
   public AutomationRuleResponse getRule(UUID id) {
+    moduleGuard.requireModule(MODULE_ID);
+
     var rule =
         ruleRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Rule", id));
     var actions = actionRepository.findByRuleIdOrderBySortOrder(id);
@@ -110,6 +120,8 @@ public class AutomationRuleService {
 
   @Transactional(readOnly = true)
   public List<AutomationRuleResponse> listRules(Boolean enabled, TriggerType triggerType) {
+    moduleGuard.requireModule(MODULE_ID);
+
     List<AutomationRule> rules;
     if (enabled != null && triggerType != null) {
       rules = ruleRepository.findByEnabledAndTriggerType(enabled, triggerType);
@@ -129,6 +141,8 @@ public class AutomationRuleService {
   }
 
   public AutomationRuleResponse updateRule(UUID id, UpdateRuleRequest request) {
+    moduleGuard.requireModule(MODULE_ID);
+
     var rule =
         ruleRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Rule", id));
     rule.update(
@@ -173,6 +187,8 @@ public class AutomationRuleService {
   }
 
   public void deleteRule(UUID id) {
+    moduleGuard.requireModule(MODULE_ID);
+
     var rule =
         ruleRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Rule", id));
 
@@ -206,6 +222,8 @@ public class AutomationRuleService {
   }
 
   public AutomationRuleResponse toggleRule(UUID id) {
+    moduleGuard.requireModule(MODULE_ID);
+
     var rule =
         ruleRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Rule", id));
     rule.toggle();
@@ -227,6 +245,8 @@ public class AutomationRuleService {
   }
 
   public AutomationRuleResponse duplicateRule(UUID id) {
+    moduleGuard.requireModule(MODULE_ID);
+
     UUID memberId = RequestScopes.requireMemberId();
     var original =
         ruleRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Rule", id));
@@ -273,6 +293,8 @@ public class AutomationRuleService {
 
   @Transactional(readOnly = true)
   public TestRuleResponse testRule(UUID id, Map<String, Object> sampleEventData) {
+    moduleGuard.requireModule(MODULE_ID);
+
     var rule =
         ruleRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Rule", id));
 
@@ -319,6 +341,8 @@ public class AutomationRuleService {
   // --- Action CRUD ---
 
   public AutomationActionResponse addAction(UUID ruleId, CreateActionRequest request) {
+    moduleGuard.requireModule(MODULE_ID);
+
     ruleRepository
         .findById(ruleId)
         .orElseThrow(() -> new ResourceNotFoundException("Rule", ruleId));
@@ -336,6 +360,8 @@ public class AutomationRuleService {
 
   public AutomationActionResponse updateAction(
       UUID ruleId, UUID actionId, UpdateActionRequest request) {
+    moduleGuard.requireModule(MODULE_ID);
+
     ruleRepository
         .findById(ruleId)
         .orElseThrow(() -> new ResourceNotFoundException("Rule", ruleId));
@@ -357,6 +383,8 @@ public class AutomationRuleService {
   }
 
   public void removeAction(UUID ruleId, UUID actionId) {
+    moduleGuard.requireModule(MODULE_ID);
+
     ruleRepository
         .findById(ruleId)
         .orElseThrow(() -> new ResourceNotFoundException("Rule", ruleId));
@@ -371,6 +399,8 @@ public class AutomationRuleService {
   }
 
   public List<AutomationActionResponse> reorderActions(UUID ruleId, List<UUID> actionIds) {
+    moduleGuard.requireModule(MODULE_ID);
+
     ruleRepository
         .findById(ruleId)
         .orElseThrow(() -> new ResourceNotFoundException("Rule", ruleId));
@@ -412,6 +442,8 @@ public class AutomationRuleService {
   @Transactional(readOnly = true)
   public Page<AutomationExecutionResponse> listExecutions(
       UUID ruleId, ExecutionStatus status, Pageable pageable) {
+    moduleGuard.requireModule(MODULE_ID);
+
     Page<AutomationExecution> executions;
     if (ruleId != null && status != null) {
       executions = executionRepository.findByRuleIdAndStatus(ruleId, status, pageable);
@@ -427,6 +459,8 @@ public class AutomationRuleService {
 
   @Transactional(readOnly = true)
   public AutomationExecutionResponse getExecution(UUID id) {
+    moduleGuard.requireModule(MODULE_ID);
+
     var execution =
         executionRepository
             .findById(id)
@@ -436,6 +470,8 @@ public class AutomationRuleService {
 
   @Transactional(readOnly = true)
   public Page<AutomationExecutionResponse> listExecutionsForRule(UUID ruleId, Pageable pageable) {
+    moduleGuard.requireModule(MODULE_ID);
+
     ruleRepository
         .findById(ruleId)
         .orElseThrow(() -> new ResourceNotFoundException("Rule", ruleId));

@@ -43,7 +43,7 @@ export function MobileSidebar({ slug, groups = [], userName, userEmail }: Mobile
       >
         {/* Header */}
         <div className="flex h-14 items-center px-4">
-          <SheetTitle className="text-base font-semibold text-white">DocTeams</SheetTitle>
+          <SheetTitle className="text-base font-semibold text-white">Kazi</SheetTitle>
           <SheetDescription className="sr-only">Main navigation menu</SheetDescription>
         </div>
         <div className="mx-4 border-t border-white/10" />

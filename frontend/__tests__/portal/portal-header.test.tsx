@@ -32,11 +32,11 @@ describe("PortalHeader", () => {
     vi.clearAllMocks();
   });
 
-  it("renders DocTeams Portal branding and navigation", () => {
+  it("renders Kazi Portal branding and navigation", () => {
     mockGetPortalCustomerName.mockReturnValue("Acme Corp");
     render(<PortalHeader />);
 
-    expect(screen.getByText("DocTeams Portal")).toBeInTheDocument();
+    expect(screen.getByText("Kazi Portal")).toBeInTheDocument();
     expect(screen.getByText("Projects")).toBeInTheDocument();
     expect(screen.getByText("Documents")).toBeInTheDocument();
     expect(screen.getByText("Acme Corp")).toBeInTheDocument();
@@ -48,7 +48,7 @@ describe("PortalHeader", () => {
 
     // Should not have any external auth elements
     expect(screen.queryByText("Sign in")).not.toBeInTheDocument();
-    expect(screen.getByText("DocTeams Portal")).toBeInTheDocument();
+    expect(screen.getByText("Kazi Portal")).toBeInTheDocument();
   });
 
   it("clears auth and redirects on sign out click", async () => {

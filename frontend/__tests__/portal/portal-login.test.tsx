@@ -52,7 +52,7 @@ describe("PortalLoginPage", () => {
   it("renders the login form with email and organization fields", () => {
     render(<PortalLoginPage />);
 
-    expect(screen.getByText("DocTeams Portal")).toBeInTheDocument();
+    expect(screen.getByText("Kazi Portal")).toBeInTheDocument();
     expect(screen.getByLabelText("Email address")).toBeInTheDocument();
     expect(screen.getByLabelText("Organization")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Send Magic Link/i })).toBeInTheDocument();

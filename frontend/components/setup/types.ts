@@ -1,4 +1,5 @@
 import type { LucideIcon } from "lucide-react";
+import type { ReactNode } from "react";
 
 // ---- SetupProgressCard ----
 
@@ -10,7 +11,7 @@ export interface SetupStep {
 }
 
 export interface SetupProgressCardProps {
-  title: string;
+  title: ReactNode;
   completionPercentage: number;
   overallComplete: boolean;
   steps: SetupStep[];

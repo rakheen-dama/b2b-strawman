@@ -1,5 +1,6 @@
 import { FileText, Clock, CheckCircle, TrendingUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TerminologyText } from "@/components/terminology-text";
 import { cn } from "@/lib/utils";
 import type { ProposalSummaryDto } from "@/lib/types/proposal";
 
@@ -18,7 +19,7 @@ export function ProposalSummaryCards({ summary }: ProposalSummaryCardsProps) {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-slate-600 dark:text-slate-400">
-            Total Proposals
+            <TerminologyText template="Total {Proposals}" />
           </CardTitle>
           <FileText className="size-4 text-slate-400 dark:text-slate-600" />
         </CardHeader>

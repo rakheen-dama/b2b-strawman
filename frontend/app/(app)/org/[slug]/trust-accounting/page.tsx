@@ -323,9 +323,7 @@ export default async function TrustAccountingPage({
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
               <div>
                 <CardTitle>Recent Transactions</CardTitle>
-                <CardDescription>
-                  Last 10 transactions across all client ledgers
-                </CardDescription>
+                <CardDescription>Last 10 transactions across all client ledgers</CardDescription>
               </div>
               <Button asChild variant="ghost" size="sm">
                 <Link href={`/org/${slug}/trust-accounting/transactions`}>

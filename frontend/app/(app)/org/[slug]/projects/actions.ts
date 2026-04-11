@@ -32,6 +32,9 @@ export async function createProject(slug: string, formData: FormData): Promise<A
   const referenceNumber = formData.get("referenceNumber")?.toString().trim() || undefined;
   const priorityRaw = formData.get("priority")?.toString().trim() || undefined;
   const priority = parseProjectPriority(priorityRaw);
+  if (priorityRaw !== undefined && priority === undefined) {
+    return { success: false, error: "Invalid project priority." };
+  }
   const workType = formData.get("workType")?.toString().trim() || undefined;
 
   if (!name) {
@@ -79,10 +82,16 @@ export async function updateProject(
   const referenceNumber =
     referenceNumberRaw === "" ? null : referenceNumberRaw ?? undefined;
   const priorityRaw = formData.get("priority")?.toString().trim();
-  const priority =
-    priorityRaw === "" || priorityRaw === undefined
-      ? null
-      : (parseProjectPriority(priorityRaw) ?? null);
+  let priority: UpdateProjectRequest["priority"];
+  if (priorityRaw === "" || priorityRaw === undefined) {
+    priority = null;
+  } else {
+    const parsedPriority = parseProjectPriority(priorityRaw);
+    if (!parsedPriority) {
+      return { success: false, error: "Invalid project priority." };
+    }
+    priority = parsedPriority;
+  }
   const workTypeRaw = formData.get("workType")?.toString().trim();
   const workType = workTypeRaw === "" ? null : workTypeRaw ?? undefined;
 

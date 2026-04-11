@@ -280,6 +280,7 @@ class EngagementPrerequisiteTest {
         null, // entityTagRepository
         null, // nameTokenResolver
         fieldDefinitionRepository,
+        null, // fieldGroupService — not exercised by this test
         null, // prerequisiteService
         null, // informationRequestService
         null, // portalContactRepository

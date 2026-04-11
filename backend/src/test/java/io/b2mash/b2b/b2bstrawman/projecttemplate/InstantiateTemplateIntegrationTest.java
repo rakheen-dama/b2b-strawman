@@ -9,6 +9,14 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroup;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupMember;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupMemberRepository;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldGroupRepository;
+import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldType;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -56,6 +64,9 @@ class InstantiateTemplateIntegrationTest {
   @Autowired private TaskRepository taskRepository;
   @Autowired private ProjectMemberRepository projectMemberRepository;
   @Autowired private EntityTagRepository entityTagRepository;
+  @Autowired private FieldGroupRepository fieldGroupRepository;
+  @Autowired private FieldGroupMemberRepository fieldGroupMemberRepository;
+  @Autowired private FieldDefinitionRepository fieldDefinitionRepository;
 
   private String tenantSchema;
   private UUID memberId;
@@ -380,6 +391,66 @@ class InstantiateTemplateIntegrationTest {
                   assertThat(tasks).hasSize(1);
                   assertThat(tasks.get(0).getAssigneeId()).isNull();
                 }));
+  }
+
+  /**
+   * GAP-S3-04: verifies that template-created projects pick up the same PROJECT-scoped auto-apply
+   * field groups that ProjectService.createProject resolves. Previously the template instantiation
+   * path bypassed FieldGroupService entirely, leaving vertical packs like "SA Legal — Matter
+   * Details" unlinked on matters created via the Litigation / Deceased Estate / RAF templates.
+   */
+  @Test
+  void instantiate_attachesAutoApplyFieldGroups() {
+    runInTenant(
+        () -> {
+          // Create an auto-apply PROJECT field group via direct repo access (mirrors the
+          // seeder path used by FieldPackSeeder for legal-za-project.json).
+          var groupId =
+              transactionTemplate.execute(
+                  tx -> {
+                    var fd =
+                        new FieldDefinition(
+                            EntityType.PROJECT,
+                            "Case Number",
+                            "case_number_autoapply_test",
+                            FieldType.TEXT);
+                    var saved = fieldDefinitionRepository.save(fd);
+
+                    var group =
+                        new FieldGroup(
+                            EntityType.PROJECT,
+                            "Auto-Apply Project Group",
+                            "auto_apply_project_group");
+                    group.setAutoApply(true);
+                    group.setSortOrder(1);
+                    var savedGroup = fieldGroupRepository.save(group);
+
+                    fieldGroupMemberRepository.save(
+                        new FieldGroupMember(savedGroup.getId(), saved.getId(), 1));
+                    return savedGroup.getId();
+                  });
+
+          var template =
+              transactionTemplate.execute(
+                  tx ->
+                      templateRepository.saveAndFlush(
+                          new ProjectTemplate(
+                              "Auto-Apply Template",
+                              "{customer}",
+                              null,
+                              true,
+                              "MANUAL",
+                              null,
+                              memberId)));
+
+          var request = new InstantiateTemplateRequest("Auto-Apply Project", null, null, null);
+          var project = templateService.instantiateTemplate(template.getId(), request, memberId);
+
+          var reloaded = projectRepository.findById(project.getId()).orElseThrow();
+          assertThat(reloaded.getAppliedFieldGroups())
+              .as("auto-apply PROJECT field group must be attached to template-created projects")
+              .contains(groupId);
+        });
   }
 
   @Test

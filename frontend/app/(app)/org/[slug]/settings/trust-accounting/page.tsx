@@ -6,7 +6,6 @@ import {
   Shield,
   Landmark,
   Bell,
-  Plus,
 } from "lucide-react";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { getOrgSettings } from "@/lib/api/settings";
@@ -21,6 +20,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Section866Advisory } from "@/components/trust/Section866Advisory";
+import { AddTrustAccountButton } from "@/components/trust/AddTrustAccountButton";
 import type { TrustAccount, LpffRate } from "@/lib/types/trust";
 
 export default async function TrustAccountingSettingsPage({
@@ -119,13 +119,8 @@ export default async function TrustAccountingSettingsPage({
                 </CardDescription>
               </div>
             </div>
-            <Link
-              href={`/org/${slug}/trust-accounting`}
-              className="inline-flex items-center gap-1.5 rounded-md bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-800 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200"
-            >
-              <Plus className="size-3.5" />
-              Add Account
-            </Link>
+            <AddTrustAccountButton />
+
           </div>
         </CardHeader>
         <CardContent>

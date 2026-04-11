@@ -28,6 +28,38 @@ export async function fetchTrustAccounts(): Promise<TrustAccount[]> {
   return api.get<TrustAccount[]>("/api/trust-accounts");
 }
 
+export interface CreateTrustAccountInput {
+  accountName: string;
+  bankName: string;
+  branchCode: string;
+  accountNumber: string;
+  accountType?: "GENERAL" | "INVESTMENT";
+  isPrimary?: boolean;
+  requireDualApproval?: boolean;
+  paymentApprovalThreshold?: number | null;
+  openedDate?: string;
+  notes?: string;
+}
+
+export async function createTrustAccount(
+  input: CreateTrustAccountInput,
+): Promise<
+  | { success: true; account: TrustAccount }
+  | { success: false; error: string }
+> {
+  try {
+    const account = await api.post<TrustAccount>(
+      "/api/trust-accounts",
+      input,
+    );
+    return { success: true, account };
+  } catch (err) {
+    const message =
+      err instanceof Error ? err.message : "Failed to create trust account";
+    return { success: false, error: message };
+  }
+}
+
 // ── Transaction actions ────────────────────────────────────────────
 
 export async function fetchRecentTransactions(

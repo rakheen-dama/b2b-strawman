@@ -20,6 +20,7 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { AddTrustAccountButton } from "@/components/trust/AddTrustAccountButton";
 import { fetchTrustAccounts, fetchDashboardData } from "./actions";
 import type {
   TrustDashboardData,
@@ -174,6 +175,9 @@ export default async function TrustAccountingPage({
               No trust accounts have been set up yet. Create your first trust
               account to get started.
             </p>
+            <div className="mt-4 flex justify-center">
+              <AddTrustAccountButton />
+            </div>
           </CardContent>
         </Card>
       )}

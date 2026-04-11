@@ -1,12 +1,14 @@
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { listBillingRuns } from "@/lib/api/billing-runs";
 import type { BillingRun } from "@/lib/api/billing-runs";
+import { isModuleEnabledServer } from "@/lib/api/settings";
 import { BillingRunStatusBadge } from "@/components/billing-runs/billing-run-status-badge";
 import { EmptyState } from "@/components/empty-state";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
 import { Layers, Plus, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { ModuleDisabledFallback } from "@/components/module-disabled-fallback";
 
 export default async function BillingRunsPage({
   params,
@@ -14,8 +16,13 @@ export default async function BillingRunsPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const caps = await fetchMyCapabilities();
 
+  // Server-side module gate — short-circuit BEFORE invoking backend data fetches.
+  if (!(await isModuleEnabledServer("bulk_billing"))) {
+    return <ModuleDisabledFallback moduleName="Bulk Billing Runs" slug={slug} />;
+  }
+
+  const caps = await fetchMyCapabilities();
   const isAdmin = caps.isAdmin || caps.isOwner;
 
   if (!isAdmin) {

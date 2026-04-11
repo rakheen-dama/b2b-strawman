@@ -1,3 +1,4 @@
+import React from "react";
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { TeamWorkloadWidget } from "@/components/dashboard/team-workload-widget";
@@ -7,6 +8,26 @@ import { MetricsStrip } from "@/components/dashboard/metrics-strip";
 import { AdminStatsColumn } from "@/components/dashboard/admin-stats-column";
 import { MyWeekColumn } from "@/components/dashboard/my-week-column";
 import { GettingStartedCard } from "@/components/dashboard/getting-started-card";
+import { OrgProfileProvider } from "@/lib/org-profile";
+
+function withOrgProfile(
+  children: React.ReactNode,
+  enabledModules: string[] = [
+    "resource_planning",
+    "automation_builder",
+    "bulk_billing",
+  ],
+) {
+  return (
+    <OrgProfileProvider
+      verticalProfile={null}
+      enabledModules={enabledModules}
+      terminologyNamespace={null}
+    >
+      {children}
+    </OrgProfileProvider>
+  );
+}
 import type {
   TeamWorkloadEntry,
   CrossProjectActivityItem,
@@ -280,11 +301,13 @@ describe("Dashboard Layout Components", () => {
 
   it("MetricsStrip renders in dashboard (not KpiCardRow)", () => {
     render(
-      <MetricsStrip
-        kpis={mockKpis}
-        capacityData={mockCapacityData}
-        projectHealth={mockProjectHealth}
-      />,
+      withOrgProfile(
+        <MetricsStrip
+          kpis={mockKpis}
+          capacityData={mockCapacityData}
+          projectHealth={mockProjectHealth}
+        />,
+      ),
     );
     expect(screen.getByTestId("metrics-strip")).toBeInTheDocument();
     expect(screen.getByTestId("metric-active-projects")).toBeInTheDocument();
@@ -303,29 +326,31 @@ describe("Dashboard Layout Components", () => {
 
   it("admin role shows AdminStatsColumn", () => {
     render(
-      <AdminStatsColumn
-        aggregatedCompleteness={{
-          topMissingFields: [],
-          incompleteCount: 3,
-          totalCount: 10,
-        }}
-        requestSummary={{
-          totalRequests: 5,
-          draftCount: 0,
-          sentCount: 2,
-          inProgressCount: 1,
-          completedCount: 2,
-          cancelledCount: 0,
-          itemsPendingReview: 3,
-        }}
-        automationSummary={{
-          activeRulesCount: 2,
-          todayTotal: 7,
-          todaySucceeded: 6,
-          todayFailed: 1,
-        }}
-        orgSlug="acme"
-      />,
+      withOrgProfile(
+        <AdminStatsColumn
+          aggregatedCompleteness={{
+            topMissingFields: [],
+            incompleteCount: 3,
+            totalCount: 10,
+          }}
+          requestSummary={{
+            totalRequests: 5,
+            draftCount: 0,
+            sentCount: 2,
+            inProgressCount: 1,
+            completedCount: 2,
+            cancelledCount: 0,
+            itemsPendingReview: 3,
+          }}
+          automationSummary={{
+            activeRulesCount: 2,
+            todayTotal: 7,
+            todaySucceeded: 6,
+            todayFailed: 1,
+          }}
+          orgSlug="acme"
+        />,
+      ),
     );
     expect(screen.getByTestId("admin-stats-column")).toBeInTheDocument();
     expect(screen.getByText("Incomplete profiles")).toBeInTheDocument();

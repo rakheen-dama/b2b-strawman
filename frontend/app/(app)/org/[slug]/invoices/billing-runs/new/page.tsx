@@ -1,5 +1,7 @@
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
+import { isModuleEnabledServer } from "@/lib/api/settings";
 import { BillingRunWizard } from "@/components/billing-runs/billing-run-wizard";
+import { ModuleDisabledFallback } from "@/components/module-disabled-fallback";
 
 export default async function NewBillingRunPage({
   params,
@@ -10,8 +12,13 @@ export default async function NewBillingRunPage({
 }) {
   const { slug } = await params;
   const search = await searchParams;
-  const caps = await fetchMyCapabilities();
 
+  // Server-side module gate — short-circuit before any further work.
+  if (!(await isModuleEnabledServer("bulk_billing"))) {
+    return <ModuleDisabledFallback moduleName="Bulk Billing Runs" slug={slug} />;
+  }
+
+  const caps = await fetchMyCapabilities();
   const isAdmin = caps.isAdmin || caps.isOwner;
 
   if (!isAdmin) {

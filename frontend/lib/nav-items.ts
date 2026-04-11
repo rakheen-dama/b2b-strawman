@@ -23,6 +23,7 @@ import {
   Landmark,
   PiggyBank,
   FileBarChart,
+  Layers,
   type LucideIcon,
 } from "lucide-react";
 import type { CAPABILITIES } from "@/lib/capabilities";
@@ -184,6 +185,13 @@ export const NAV_GROUPS: NavGroup[] = [
         requiredCapability: "INVOICING",
       },
       {
+        label: "Billing Runs",
+        href: (slug) => `/org/${slug}/invoices/billing-runs`,
+        icon: Layers,
+        requiredCapability: "INVOICING",
+        requiredModule: "bulk_billing",
+      },
+      {
         label: "Profitability",
         href: (slug) => `/org/${slug}/profitability`,
         icon: TrendingUp,
@@ -279,6 +287,15 @@ export const NAV_GROUPS: NavGroup[] = [
         icon: Users,
         exact: true,
         requiredCapability: "RESOURCE_PLANNING",
+        requiredModule: "resource_planning",
+      },
+      {
+        label: "Utilization",
+        href: (slug) => `/org/${slug}/resources/utilization`,
+        icon: TrendingUp,
+        exact: true,
+        requiredCapability: "RESOURCE_PLANNING",
+        requiredModule: "resource_planning",
       },
     ],
   },
@@ -404,6 +421,7 @@ export const SETTINGS_ITEMS: SettingsItem[] = [
       "Configure async thresholds, email rate limits, and default billing currency",
     href: (slug) => `/org/${slug}/settings/batch-billing`,
     adminOnly: true,
+    requiredModule: "bulk_billing",
   },
   {
     title: "Capacity",
@@ -422,6 +440,7 @@ export const SETTINGS_ITEMS: SettingsItem[] = [
       "Create rules to automate tasks, notifications, and workflows",
     href: (slug) => `/org/${slug}/settings/automations`,
     adminOnly: true,
+    requiredModule: "automation_builder",
   },
   {
     title: "Roles & Permissions",
@@ -451,6 +470,12 @@ export const SETTINGS_ITEMS: SettingsItem[] = [
     href: (slug) => `/org/${slug}/settings/trust-accounting`,
     adminOnly: true,
     requiredModule: "trust_accounting",
+  },
+  {
+    title: "Features",
+    description: "Enable additional features for your organization",
+    href: (slug) => `/org/${slug}/settings/features`,
+    adminOnly: true,
   },
 ];
 

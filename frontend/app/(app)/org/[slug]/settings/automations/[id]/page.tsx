@@ -8,7 +8,9 @@ import type {
   AutomationExecutionResponse,
   PaginatedResponse,
 } from "@/lib/api/automations";
+import { isModuleEnabledServer } from "@/lib/api/settings";
 import { RuleDetailClient } from "./rule-detail-client";
+import { ModuleDisabledFallback } from "@/components/module-disabled-fallback";
 
 export default async function AutomationDetailPage({
   params,
@@ -16,8 +18,18 @@ export default async function AutomationDetailPage({
   params: Promise<{ slug: string; id: string }>;
 }) {
   const { slug, id } = await params;
-  const caps = await fetchMyCapabilities();
 
+  // Server-side module gate — short-circuit BEFORE invoking backend data fetches.
+  if (!(await isModuleEnabledServer("automation_builder"))) {
+    return (
+      <ModuleDisabledFallback
+        moduleName="Automation Rule Builder"
+        slug={slug}
+      />
+    );
+  }
+
+  const caps = await fetchMyCapabilities();
   const isAdmin = caps.isAdmin || caps.isOwner;
 
   if (!isAdmin) {
@@ -77,7 +89,11 @@ export default async function AutomationDetailPage({
         Automations
       </Link>
 
-      <RuleDetailClient slug={slug} rule={rule} initialExecutions={executions} />
+      <RuleDetailClient
+        slug={slug}
+        rule={rule}
+        initialExecutions={executions}
+      />
     </div>
   );
 }

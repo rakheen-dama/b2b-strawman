@@ -1,7 +1,9 @@
+import React from "react";
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { MetricsStrip } from "@/components/dashboard/metrics-strip";
 import { TerminologyProvider } from "@/lib/terminology";
+import { OrgProfileProvider } from "@/lib/org-profile";
 import type { KpiResponse, ProjectHealth } from "@/lib/dashboard-types";
 import type { TeamCapacityGrid } from "@/lib/api/capacity";
 
@@ -92,9 +94,18 @@ const mockProjectHealth: ProjectHealth[] = [
   },
 ];
 
-function renderWithProvider(ui: React.ReactElement) {
+function renderWithProvider(
+  ui: React.ReactElement,
+  enabledModules: string[] = ["resource_planning"],
+) {
   return render(
-    <TerminologyProvider verticalProfile={null}>{ui}</TerminologyProvider>,
+    <OrgProfileProvider
+      verticalProfile={null}
+      enabledModules={enabledModules}
+      terminologyNamespace={null}
+    >
+      <TerminologyProvider verticalProfile={null}>{ui}</TerminologyProvider>
+    </OrgProfileProvider>,
   );
 }
 
@@ -190,5 +201,28 @@ describe("MetricsStrip", () => {
     expect(screen.getByTestId("metric-team-utilization")).toHaveTextContent(
       "75%",
     );
+  });
+
+  it("hides team utilization metric when resource_planning module is disabled", () => {
+    renderWithProvider(
+      <MetricsStrip
+        kpis={mockKpis}
+        capacityData={mockCapacityData}
+        projectHealth={mockProjectHealth}
+      />,
+      [], // empty enabledModules — resource_planning is OFF
+    );
+
+    expect(screen.getByTestId("metrics-strip")).toBeInTheDocument();
+    // The other 5 cells still render
+    expect(screen.getByTestId("metric-active-projects")).toBeInTheDocument();
+    expect(screen.getByTestId("metric-hours-month")).toBeInTheDocument();
+    expect(screen.getByTestId("metric-revenue")).toBeInTheDocument();
+    expect(screen.getByTestId("metric-overdue-tasks")).toBeInTheDocument();
+    expect(screen.getByTestId("metric-budget-health")).toBeInTheDocument();
+    // The gated cell is HIDDEN
+    expect(
+      screen.queryByTestId("metric-team-utilization"),
+    ).not.toBeInTheDocument();
   });
 });

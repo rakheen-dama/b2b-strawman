@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { useOrgProfile } from "@/lib/org-profile";
 import { SETTINGS_NAV_GROUPS } from "./settings-nav-groups";
 
 interface SettingsSidebarProps {
@@ -13,10 +14,16 @@ interface SettingsSidebarProps {
 
 export function SettingsSidebar({ slug, isAdmin }: SettingsSidebarProps) {
   const pathname = usePathname();
+  const { isModuleEnabled } = useOrgProfile();
 
   // Flatten all visible items for mobile tab row (exclude comingSoon)
   const allVisibleItems = SETTINGS_NAV_GROUPS.flatMap((group) =>
-    group.items.filter((item) => (!item.adminOnly || isAdmin) && !item.comingSoon),
+    group.items.filter(
+      (item) =>
+        (!item.adminOnly || isAdmin) &&
+        !item.comingSoon &&
+        (!item.requiredModule || isModuleEnabled(item.requiredModule)),
+    ),
   );
 
   return (
@@ -51,7 +58,9 @@ export function SettingsSidebar({ slug, isAdmin }: SettingsSidebarProps) {
       >
         {SETTINGS_NAV_GROUPS.map((group, index) => {
           const visibleItems = group.items.filter(
-            (item) => !item.adminOnly || isAdmin,
+            (item) =>
+              (!item.adminOnly || isAdmin) &&
+              (!item.requiredModule || isModuleEnabled(item.requiredModule)),
           );
           if (visibleItems.length === 0) return null;
 

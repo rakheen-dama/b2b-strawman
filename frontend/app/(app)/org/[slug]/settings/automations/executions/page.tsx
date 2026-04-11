@@ -8,7 +8,9 @@ import type {
   PaginatedResponse,
   ExecutionStatus,
 } from "@/lib/api/automations";
+import { isModuleEnabledServer } from "@/lib/api/settings";
 import { ExecutionLog } from "@/components/automations/execution-log";
+import { ModuleDisabledFallback } from "@/components/module-disabled-fallback";
 
 export default async function ExecutionLogPage({
   params,
@@ -19,6 +21,17 @@ export default async function ExecutionLogPage({
 }) {
   const { slug } = await params;
   const resolvedSearchParams = await searchParams;
+
+  // Server-side module gate — short-circuit BEFORE invoking backend data fetches.
+  if (!(await isModuleEnabledServer("automation_builder"))) {
+    return (
+      <ModuleDisabledFallback
+        moduleName="Automation Rule Builder"
+        slug={slug}
+      />
+    );
+  }
+
   const caps = await fetchMyCapabilities();
   const isAdmin = caps.isAdmin || caps.isOwner;
 
@@ -68,10 +81,7 @@ export default async function ExecutionLogPage({
         </p>
       </div>
 
-      <ExecutionLog
-        initialExecutions={executions}
-        rules={rules}
-      />
+      <ExecutionLog initialExecutions={executions} rules={rules} />
     </div>
   );
 }

@@ -89,7 +89,11 @@ describe("Sidebar capability gating", () => {
   it("shows all nav items for admin users", async () => {
     const user = userEvent.setup();
     render(
-      <OrgProfileProvider verticalProfile={null} enabledModules={[]} terminologyNamespace={null}>
+      <OrgProfileProvider
+        verticalProfile={null}
+        enabledModules={["resource_planning", "bulk_billing", "automation_builder"]}
+        terminologyNamespace={null}
+      >
         <TerminologyProvider verticalProfile={null}>
           <CapabilityProvider
             capabilities={[]}

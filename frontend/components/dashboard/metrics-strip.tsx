@@ -5,6 +5,7 @@ import { Sparkline } from "@/components/dashboard/sparkline";
 import { MicroStackedBar } from "@/components/dashboard/micro-stacked-bar";
 import { RadialGauge } from "@/components/dashboard/radial-gauge";
 import { useTerminology } from "@/lib/terminology";
+import { useOrgProfile } from "@/lib/org-profile";
 import type { KpiResponse, ProjectHealth } from "@/lib/dashboard-types";
 import type { TeamCapacityGrid } from "@/lib/api/capacity";
 
@@ -37,6 +38,8 @@ export function MetricsStrip({
   projectHealth,
 }: MetricsStripProps) {
   const { t } = useTerminology();
+  const { isModuleEnabled } = useOrgProfile();
+  const resourcePlanningEnabled = isModuleEnabled("resource_planning");
   const trendValues = kpis?.trend?.map((t) => t.value) ?? [];
   const billableHours = kpis
     ? (kpis.totalHoursLogged * (kpis.billablePercent ?? 0)) / 100
@@ -166,21 +169,23 @@ export function MetricsStrip({
         </div>
       </div>
 
-      {/* Team Utilization */}
-      <div
-        data-testid="metric-team-utilization"
-        className="rounded-lg border border-slate-200/60 bg-card p-3"
-      >
-        <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500">
-          Team Utilization
-        </p>
-        <div className="mt-1 flex items-center justify-between">
-          <span className="font-mono text-xl font-bold tabular-nums">
-            {Math.round(utilization)}%
-          </span>
-          <RadialGauge value={utilization} size={36} strokeWidth={4} />
+      {/* Team Utilization (gated by resource_planning module) */}
+      {resourcePlanningEnabled && (
+        <div
+          data-testid="metric-team-utilization"
+          className="rounded-lg border border-slate-200/60 bg-card p-3"
+        >
+          <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500">
+            Team Utilization
+          </p>
+          <div className="mt-1 flex items-center justify-between">
+            <span className="font-mono text-xl font-bold tabular-nums">
+              {Math.round(utilization)}%
+            </span>
+            <RadialGauge value={utilization} size={36} strokeWidth={4} />
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Budget Health */}
       <div

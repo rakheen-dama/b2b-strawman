@@ -1,5 +1,7 @@
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { BillingRunWizard } from "@/components/billing-runs/billing-run-wizard";
+import { ModuleGate } from "@/components/module-gate";
+import { ModuleDisabledFallback } from "@/components/module-disabled-fallback";
 
 export default async function NewBillingRunPage({
   params,
@@ -16,27 +18,41 @@ export default async function NewBillingRunPage({
 
   if (!isAdmin) {
     return (
-      <div className="space-y-8">
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          New Billing Run
-        </h1>
-        <p className="text-slate-600 dark:text-slate-400">
-          You do not have permission to create billing runs. Only admins and
-          owners can access this page.
-        </p>
-      </div>
+      <ModuleGate
+        module="bulk_billing"
+        fallback={
+          <ModuleDisabledFallback moduleName="Bulk Billing Runs" slug={slug} />
+        }
+      >
+        <div className="space-y-8">
+          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
+            New Billing Run
+          </h1>
+          <p className="text-slate-600 dark:text-slate-400">
+            You do not have permission to create billing runs. Only admins and
+            owners can access this page.
+          </p>
+        </div>
+      </ModuleGate>
     );
   }
 
   return (
-    <div className="space-y-8">
-      <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-        New Billing Run
-      </h1>
-      <BillingRunWizard
-        slug={slug}
-        billingRunId={search.billingRunId}
-      />
-    </div>
+    <ModuleGate
+      module="bulk_billing"
+      fallback={
+        <ModuleDisabledFallback moduleName="Bulk Billing Runs" slug={slug} />
+      }
+    >
+      <div className="space-y-8">
+        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
+          New Billing Run
+        </h1>
+        <BillingRunWizard
+          slug={slug}
+          billingRunId={search.billingRunId}
+        />
+      </div>
+    </ModuleGate>
   );
 }

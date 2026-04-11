@@ -3,6 +3,8 @@ export interface SettingsNavItem {
   href: string;
   adminOnly?: boolean;
   comingSoon?: boolean;
+  /** If set, settings item only shows when the org has this module enabled */
+  requiredModule?: string;
 }
 
 export interface SettingsNavGroup {
@@ -30,7 +32,12 @@ export const SETTINGS_NAV_GROUPS: SettingsNavGroup[] = [
       { label: "Time Tracking", href: "time-tracking" },
       { label: "Project Templates", href: "project-templates" },
       { label: "Project Naming", href: "project-naming" },
-      { label: "Automations", href: "automations", adminOnly: true },
+      {
+        label: "Automations",
+        href: "automations",
+        adminOnly: true,
+        requiredModule: "automation_builder",
+      },
     ],
   },
   {
@@ -49,7 +56,12 @@ export const SETTINGS_NAV_GROUPS: SettingsNavGroup[] = [
     items: [
       { label: "Rates & Currency", href: "rates" },
       { label: "Tax", href: "tax" },
-      { label: "Batch Billing", href: "batch-billing", adminOnly: true },
+      {
+        label: "Batch Billing",
+        href: "batch-billing",
+        adminOnly: true,
+        requiredModule: "bulk_billing",
+      },
       { label: "Capacity", href: "capacity" },
     ],
   },
@@ -64,6 +76,11 @@ export const SETTINGS_NAV_GROUPS: SettingsNavGroup[] = [
       { label: "Compliance", href: "compliance" },
       { label: "Data Protection", href: "data-protection", adminOnly: true },
     ],
+  },
+  {
+    id: "features",
+    label: "Features",
+    items: [{ label: "Features", href: "features" }],
   },
   {
     id: "access",

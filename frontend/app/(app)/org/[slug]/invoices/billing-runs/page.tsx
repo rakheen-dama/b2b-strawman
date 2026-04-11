@@ -7,6 +7,8 @@ import { formatCurrency, formatLocalDate } from "@/lib/format";
 import { Layers, Plus, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { ModuleGate } from "@/components/module-gate";
+import { ModuleDisabledFallback } from "@/components/module-disabled-fallback";
 
 export default async function BillingRunsPage({
   params,
@@ -20,15 +22,22 @@ export default async function BillingRunsPage({
 
   if (!isAdmin) {
     return (
-      <div className="space-y-8">
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          Billing Runs
-        </h1>
-        <p className="text-slate-600 dark:text-slate-400">
-          You do not have permission to view billing runs. Only admins and
-          owners can access this page.
-        </p>
-      </div>
+      <ModuleGate
+        module="bulk_billing"
+        fallback={
+          <ModuleDisabledFallback moduleName="Bulk Billing Runs" slug={slug} />
+        }
+      >
+        <div className="space-y-8">
+          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
+            Billing Runs
+          </h1>
+          <p className="text-slate-600 dark:text-slate-400">
+            You do not have permission to view billing runs. Only admins and
+            owners can access this page.
+          </p>
+        </div>
+      </ModuleGate>
     );
   }
 
@@ -48,6 +57,12 @@ export default async function BillingRunsPage({
   );
 
   return (
+    <ModuleGate
+      module="bulk_billing"
+      fallback={
+        <ModuleDisabledFallback moduleName="Bulk Billing Runs" slug={slug} />
+      }
+    >
     <div className="space-y-8">
       {/* Page Header */}
       <div className="flex items-center justify-between">
@@ -180,5 +195,6 @@ export default async function BillingRunsPage({
         </div>
       )}
     </div>
+    </ModuleGate>
   );
 }

@@ -9,6 +9,8 @@ import type {
   PaginatedResponse,
 } from "@/lib/api/automations";
 import { RuleDetailClient } from "./rule-detail-client";
+import { ModuleGate } from "@/components/module-gate";
+import { ModuleDisabledFallback } from "@/components/module-disabled-fallback";
 
 export default async function AutomationDetailPage({
   params,
@@ -52,6 +54,41 @@ export default async function AutomationDetailPage({
 
   if (notFound || !rule) {
     return (
+      <ModuleGate
+        module="automation_builder"
+        fallback={
+          <ModuleDisabledFallback
+            moduleName="Automation Rule Builder"
+            slug={slug}
+          />
+        }
+      >
+        <div className="space-y-8">
+          <Link
+            href={`/org/${slug}/settings/automations`}
+            className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+          >
+            <ChevronLeft className="size-4" />
+            Automations
+          </Link>
+          <p className="text-slate-600 dark:text-slate-400">
+            Rule not found. It may have been deleted.
+          </p>
+        </div>
+      </ModuleGate>
+    );
+  }
+
+  return (
+    <ModuleGate
+      module="automation_builder"
+      fallback={
+        <ModuleDisabledFallback
+          moduleName="Automation Rule Builder"
+          slug={slug}
+        />
+      }
+    >
       <div className="space-y-8">
         <Link
           href={`/org/${slug}/settings/automations`}
@@ -60,24 +97,13 @@ export default async function AutomationDetailPage({
           <ChevronLeft className="size-4" />
           Automations
         </Link>
-        <p className="text-slate-600 dark:text-slate-400">
-          Rule not found. It may have been deleted.
-        </p>
+
+        <RuleDetailClient
+          slug={slug}
+          rule={rule}
+          initialExecutions={executions}
+        />
       </div>
-    );
-  }
-
-  return (
-    <div className="space-y-8">
-      <Link
-        href={`/org/${slug}/settings/automations`}
-        className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
-      >
-        <ChevronLeft className="size-4" />
-        Automations
-      </Link>
-
-      <RuleDetailClient slug={slug} rule={rule} initialExecutions={executions} />
-    </div>
+    </ModuleGate>
   );
 }

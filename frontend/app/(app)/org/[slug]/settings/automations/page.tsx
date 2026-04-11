@@ -8,6 +8,8 @@ import type {
   AutomationRuleResponse,
   TemplateDefinitionResponse,
 } from "@/lib/api/automations";
+import { ModuleGate } from "@/components/module-gate";
+import { ModuleDisabledFallback } from "@/components/module-disabled-fallback";
 
 export default async function AutomationsSettingsPage({
   params,
@@ -33,38 +35,48 @@ export default async function AutomationsSettingsPage({
   }
 
   return (
-    <div className="space-y-8">
-      <Link
-        href={`/org/${slug}/settings`}
-        className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
-      >
-        <ChevronLeft className="size-4" />
-        Settings
-      </Link>
+    <ModuleGate
+      module="automation_builder"
+      fallback={
+        <ModuleDisabledFallback
+          moduleName="Automation Rule Builder"
+          slug={slug}
+        />
+      }
+    >
+      <div className="space-y-8">
+        <Link
+          href={`/org/${slug}/settings`}
+          className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+        >
+          <ChevronLeft className="size-4" />
+          Settings
+        </Link>
 
-      <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          Automations
-        </h1>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Create rules to automate tasks, notifications, and workflows.
-        </p>
-        {isAdmin && (
-          <Link
-            href={`/org/${slug}/settings/automations/executions`}
-            className="mt-2 inline-flex items-center gap-1 text-sm text-teal-600 underline-offset-4 hover:text-teal-700 hover:underline dark:text-teal-400 dark:hover:text-teal-300"
-          >
-            View Execution Log &rarr;
-          </Link>
-        )}
+        <div>
+          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
+            Automations
+          </h1>
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+            Create rules to automate tasks, notifications, and workflows.
+          </p>
+          {isAdmin && (
+            <Link
+              href={`/org/${slug}/settings/automations/executions`}
+              className="mt-2 inline-flex items-center gap-1 text-sm text-teal-600 underline-offset-4 hover:text-teal-700 hover:underline dark:text-teal-400 dark:hover:text-teal-300"
+            >
+              View Execution Log &rarr;
+            </Link>
+          )}
+        </div>
+
+        <RuleList
+          slug={slug}
+          rules={rules}
+          templates={templates}
+          canManage={isAdmin}
+        />
       </div>
-
-      <RuleList
-        slug={slug}
-        rules={rules}
-        templates={templates}
-        canManage={isAdmin}
-      />
-    </div>
+    </ModuleGate>
   );
 }

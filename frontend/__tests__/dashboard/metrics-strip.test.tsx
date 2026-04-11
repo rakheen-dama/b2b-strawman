@@ -1,7 +1,9 @@
+import React from "react";
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { MetricsStrip } from "@/components/dashboard/metrics-strip";
 import { TerminologyProvider } from "@/lib/terminology";
+import { OrgProfileProvider } from "@/lib/org-profile";
 import type { KpiResponse, ProjectHealth } from "@/lib/dashboard-types";
 import type { TeamCapacityGrid } from "@/lib/api/capacity";
 
@@ -92,9 +94,18 @@ const mockProjectHealth: ProjectHealth[] = [
   },
 ];
 
-function renderWithProvider(ui: React.ReactElement) {
+function renderWithProvider(
+  ui: React.ReactElement,
+  enabledModules: string[] = ["resource_planning"],
+) {
   return render(
-    <TerminologyProvider verticalProfile={null}>{ui}</TerminologyProvider>,
+    <OrgProfileProvider
+      verticalProfile={null}
+      enabledModules={enabledModules}
+      terminologyNamespace={null}
+    >
+      <TerminologyProvider verticalProfile={null}>{ui}</TerminologyProvider>
+    </OrgProfileProvider>,
   );
 }
 

@@ -11,6 +11,7 @@ import io.b2mash.b2b.b2bstrawman.automation.template.AutomationTemplateDefinitio
 import io.b2mash.b2b.b2bstrawman.automation.template.AutomationTemplateDefinition.TemplateDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -29,26 +30,32 @@ import tools.jackson.databind.ObjectMapper;
 public class AutomationTemplateService {
 
   private static final Logger log = LoggerFactory.getLogger(AutomationTemplateService.class);
+  private static final String MODULE_ID = "automation_builder";
   private static final String PACK_LOCATION = "classpath:automation-templates/*.json";
 
   private final ResourcePatternResolver resourceResolver;
   private final ObjectMapper objectMapper;
   private final AutomationRuleRepository ruleRepository;
   private final AutomationActionRepository actionRepository;
+  private final VerticalModuleGuard moduleGuard;
 
   public AutomationTemplateService(
       ResourcePatternResolver resourceResolver,
       ObjectMapper objectMapper,
       AutomationRuleRepository ruleRepository,
-      AutomationActionRepository actionRepository) {
+      AutomationActionRepository actionRepository,
+      VerticalModuleGuard moduleGuard) {
     this.resourceResolver = resourceResolver;
     this.objectMapper = objectMapper;
     this.ruleRepository = ruleRepository;
     this.actionRepository = actionRepository;
+    this.moduleGuard = moduleGuard;
   }
 
   @Transactional(readOnly = true)
   public List<TemplateDefinitionResponse> listTemplates() {
+    moduleGuard.requireModule(MODULE_ID);
+
     List<AutomationTemplateDefinition> allTemplates = loadAllTemplateDefinitions();
     return allTemplates.stream()
         .map(
@@ -65,6 +72,8 @@ public class AutomationTemplateService {
   }
 
   public AutomationRuleResponse activateTemplate(String slug) {
+    moduleGuard.requireModule(MODULE_ID);
+
     UUID memberId = RequestScopes.requireMemberId();
     var template =
         loadAllTemplateDefinitions().stream()

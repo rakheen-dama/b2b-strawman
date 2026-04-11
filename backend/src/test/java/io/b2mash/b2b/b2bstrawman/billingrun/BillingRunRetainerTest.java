@@ -26,6 +26,7 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestModuleHelper;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -84,6 +85,8 @@ class BillingRunRetainerTest {
         UUID.fromString(
             TestMemberHelper.syncMember(
                 mockMvc, ORG_ID, "user_ret_owner", "ret_owner@test.com", "Ret Owner", "owner"));
+
+    TestModuleHelper.enableModules(mockMvc, ORG_ID, "user_ret_owner", "bulk_billing");
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();

@@ -27,12 +27,14 @@ public class AutomationExecutionController {
       @RequestParam(required = false) UUID ruleId,
       @RequestParam(required = false) ExecutionStatus status,
       @PageableDefault(size = 20) Pageable pageable) {
+    // Module guard enforced by AutomationRuleService.listExecutions
     return ResponseEntity.ok(automationRuleService.listExecutions(ruleId, status, pageable));
   }
 
   @GetMapping("/api/automation-executions/{id}")
   @RequiresCapability("AUTOMATIONS")
   public ResponseEntity<AutomationExecutionResponse> get(@PathVariable UUID id) {
+    // Module guard enforced by AutomationRuleService.getExecution
     return ResponseEntity.ok(automationRuleService.getExecution(id));
   }
 
@@ -40,6 +42,7 @@ public class AutomationExecutionController {
   @RequiresCapability("AUTOMATIONS")
   public ResponseEntity<Page<AutomationExecutionResponse>> listForRule(
       @PathVariable UUID ruleId, @PageableDefault(size = 20) Pageable pageable) {
+    // Module guard enforced by AutomationRuleService.listExecutionsForRule
     return ResponseEntity.ok(automationRuleService.listExecutionsForRule(ruleId, pageable));
   }
 }

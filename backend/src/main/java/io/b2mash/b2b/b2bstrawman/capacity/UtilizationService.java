@@ -11,6 +11,7 @@ import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.timeentry.TeamWeeklyActualHoursProjection;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import io.b2mash.b2b.b2bstrawman.timeentry.WeeklyActualHoursProjection;
+import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -25,20 +26,25 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class UtilizationService {
 
+  private static final String MODULE_ID = "resource_planning";
+
   private final ResourceAllocationRepository allocationRepository;
   private final TimeEntryRepository timeEntryRepository;
   private final CapacityService capacityService;
   private final MemberRepository memberRepository;
+  private final VerticalModuleGuard moduleGuard;
 
   public UtilizationService(
       ResourceAllocationRepository allocationRepository,
       TimeEntryRepository timeEntryRepository,
       CapacityService capacityService,
-      MemberRepository memberRepository) {
+      MemberRepository memberRepository,
+      VerticalModuleGuard moduleGuard) {
     this.allocationRepository = allocationRepository;
     this.timeEntryRepository = timeEntryRepository;
     this.capacityService = capacityService;
     this.memberRepository = memberRepository;
+    this.moduleGuard = moduleGuard;
   }
 
   /**
@@ -49,6 +55,7 @@ public class UtilizationService {
   @Transactional(readOnly = true)
   public List<WeekUtilization> getMemberUtilization(
       UUID memberId, LocalDate weekStart, LocalDate weekEnd) {
+    moduleGuard.requireModule(MODULE_ID);
 
     // Build lookup maps for planned and actual hours by week
     List<ResourceAllocation> allocations =
@@ -98,6 +105,8 @@ public class UtilizationService {
    */
   @Transactional(readOnly = true)
   public TeamUtilizationResponse getTeamUtilization(LocalDate weekStart, LocalDate weekEnd) {
+    moduleGuard.requireModule(MODULE_ID);
+
     List<Member> members = memberRepository.findAll();
 
     // Batch-query team actual hours

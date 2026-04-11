@@ -16,8 +16,11 @@ import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestModuleHelper;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.LinkedHashMap;
@@ -66,6 +69,8 @@ class AutomationEndToEndTest {
   @Autowired private NotificationRepository notificationRepository;
   @Autowired private ApplicationEventPublisher eventPublisher;
   @Autowired private ConditionEvaluator conditionEvaluator;
+  @Autowired private OrgSettingsService orgSettingsService;
+  @Autowired private OrgSettingsRepository orgSettingsRepository;
 
   private String schemaName;
   private UUID actorMemberId;
@@ -102,6 +107,9 @@ class AutomationEndToEndTest {
 
               var pm = new ProjectMember(projectId, actorMemberId, "LEAD", actorMemberId);
               projectMemberRepository.save(pm);
+
+              TestModuleHelper.enableModulesInTenant(
+                  orgSettingsService, orgSettingsRepository, "automation_builder");
             });
   }
 

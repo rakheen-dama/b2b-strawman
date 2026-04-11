@@ -15,6 +15,7 @@ import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestModuleHelper;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
@@ -62,6 +63,7 @@ class AutomationRuleControllerTest {
             mockMvc, ORG_ID, "user_auto_owner", "auto_owner@test.com", "Auto Owner", "owner");
     TestMemberHelper.syncMember(
         mockMvc, ORG_ID, "user_auto_member", "auto_member@test.com", "Auto Member", "member");
+    TestModuleHelper.enableModules(mockMvc, ORG_ID, "user_auto_owner", "automation_builder");
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
 

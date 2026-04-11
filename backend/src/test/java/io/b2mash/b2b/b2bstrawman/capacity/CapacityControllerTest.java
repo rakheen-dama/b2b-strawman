@@ -16,6 +16,7 @@ import io.b2mash.b2b.b2bstrawman.project.ProjectService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestModuleHelper;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Set;
@@ -68,6 +69,7 @@ class CapacityControllerTest {
             "Cap Owner",
             "owner");
     memberIdOwner = UUID.fromString(memberIdOwnerStr);
+    TestModuleHelper.enableModules(mockMvc, ORG_ID, "user_cap_ctrl_owner", "resource_planning");
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
 

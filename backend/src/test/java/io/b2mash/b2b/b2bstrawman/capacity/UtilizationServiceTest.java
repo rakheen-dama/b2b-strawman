@@ -17,6 +17,7 @@ import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestModuleHelper;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.math.BigDecimal;
@@ -72,6 +73,7 @@ class UtilizationServiceTest {
         TestMemberHelper.syncMember(
             mockMvc, ORG_ID, "user_util_member", "util_member@test.com", "Util Member", "member");
     memberIdMember = UUID.fromString(memberStr);
+    TestModuleHelper.enableModules(mockMvc, ORG_ID, "user_util_owner", "resource_planning");
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
 

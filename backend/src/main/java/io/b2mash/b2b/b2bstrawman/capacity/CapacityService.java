@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.capacity.dto.CapacityDtos.UpdateCapacityRequest
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
+import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.DayOfWeek;
@@ -28,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class CapacityService {
 
+  private static final String MODULE_ID = "resource_planning";
   private static final BigDecimal HARD_DEFAULT_WEEKLY_HOURS = new BigDecimal("40.00");
   static final int WORKING_DAYS_PER_WEEK = 5;
 
@@ -35,16 +37,19 @@ public class CapacityService {
   private final LeaveBlockRepository leaveBlockRepository;
   private final OrgSettingsService orgSettingsService;
   private final AuditService auditService;
+  private final VerticalModuleGuard moduleGuard;
 
   public CapacityService(
       MemberCapacityRepository memberCapacityRepository,
       LeaveBlockRepository leaveBlockRepository,
       OrgSettingsService orgSettingsService,
-      AuditService auditService) {
+      AuditService auditService,
+      VerticalModuleGuard moduleGuard) {
     this.memberCapacityRepository = memberCapacityRepository;
     this.leaveBlockRepository = leaveBlockRepository;
     this.orgSettingsService = orgSettingsService;
     this.auditService = auditService;
+    this.moduleGuard = moduleGuard;
   }
 
   /**
@@ -54,6 +59,8 @@ public class CapacityService {
    */
   @Transactional(readOnly = true)
   public BigDecimal getMemberCapacity(UUID memberId, LocalDate weekStart) {
+    moduleGuard.requireModule(MODULE_ID);
+
     List<MemberCapacity> records =
         memberCapacityRepository.findEffectiveCapacity(memberId, weekStart);
     if (!records.isEmpty()) {
@@ -68,6 +75,8 @@ public class CapacityService {
    */
   @Transactional(readOnly = true)
   public BigDecimal getMemberEffectiveCapacity(UUID memberId, LocalDate weekStart) {
+    moduleGuard.requireModule(MODULE_ID);
+
     BigDecimal baseCapacity = getMemberCapacity(memberId, weekStart);
     int leaveDays = countLeaveDaysInWeek(memberId, weekStart);
     int workingDays = WORKING_DAYS_PER_WEEK - leaveDays;
@@ -88,6 +97,8 @@ public class CapacityService {
   /** Lists all capacity records for a member, ordered by effectiveFrom DESC. */
   @Transactional(readOnly = true)
   public List<MemberCapacityResponse> listCapacityRecords(UUID memberId) {
+    moduleGuard.requireModule(MODULE_ID);
+
     return memberCapacityRepository.findByMemberIdOrderByEffectiveFromDesc(memberId).stream()
         .map(this::toResponse)
         .toList();
@@ -97,6 +108,8 @@ public class CapacityService {
   @Transactional
   public MemberCapacityResponse createCapacityRecord(
       UUID memberId, CreateCapacityRequest request, UUID createdBy) {
+    moduleGuard.requireModule(MODULE_ID);
+
     validateEffectiveFrom(request.effectiveFrom());
     if (request.effectiveTo() != null && request.effectiveTo().isBefore(request.effectiveFrom())) {
       throw new InvalidStateException(
@@ -136,6 +149,8 @@ public class CapacityService {
   @Transactional
   public MemberCapacityResponse updateCapacityRecord(
       UUID memberId, UUID id, UpdateCapacityRequest request) {
+    moduleGuard.requireModule(MODULE_ID);
+
     var record =
         memberCapacityRepository
             .findById(id)
@@ -173,6 +188,8 @@ public class CapacityService {
   /** Deletes a capacity record by ID. Validates that the record belongs to the given member. */
   @Transactional
   public void deleteCapacityRecord(UUID memberId, UUID id) {
+    moduleGuard.requireModule(MODULE_ID);
+
     var record =
         memberCapacityRepository
             .findById(id)

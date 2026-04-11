@@ -16,6 +16,7 @@ import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestModuleHelper;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -63,6 +64,7 @@ class CapacityNotificationTest {
         TestMemberHelper.syncMember(
             mockMvc, ORG_ID, "user_cn_member", "cn_member@test.com", "CN Member", "member");
     memberIdMember = UUID.fromString(memberIdStr);
+    TestModuleHelper.enableModules(mockMvc, ORG_ID, "user_cn_owner", "resource_planning");
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
 

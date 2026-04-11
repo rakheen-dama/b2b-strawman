@@ -13,6 +13,7 @@ import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestModuleHelper;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -63,6 +64,8 @@ class BillingRunControllerTest {
     memberIdMember =
         TestMemberHelper.syncMember(
             mockMvc, ORG_ID, "user_br_member", "brmember@test.com", "Member", "member");
+
+    TestModuleHelper.enableModules(mockMvc, ORG_ID, "user_br_owner", "bulk_billing");
 
     var tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();

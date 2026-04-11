@@ -16,6 +16,7 @@ import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.task.TaskService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestModuleHelper;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryService;
 import java.math.BigDecimal;
 import java.time.DayOfWeek;
@@ -88,6 +89,8 @@ class ProfitabilityProjectionTest {
                 "profproj_member@test.com",
                 "ProfProj Member",
                 "member"));
+
+    TestModuleHelper.enableModules(mockMvc, ORG_ID, "user_profproj_owner", "resource_planning");
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();

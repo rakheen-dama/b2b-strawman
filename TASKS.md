@@ -524,7 +524,7 @@
 | 461 | Service Layer Updates: Conflict Check, Deadline, Prerequisite | Backend | 459, 460 | M | 461A, 461B | **Done** (PR #986) |
 | 462 | Template Context Builders + Variable Metadata + Pack JSON Cleanup | Backend | 459, 460 | M | 462A, 462B | **Done** (PR #987) |
 | 463 | Frontend: Customer Form Restructuring + Detail Page | Frontend | 459B, 461 | M | 463A, 463B | **Done** (PR #988) |
-| 464 | Frontend: Project/Task/Invoice Form + Detail Updates | Frontend | 460, 461 | M | 464A, 464B | |
+| 464 | Frontend: Project/Task/Invoice Form + Detail Updates | Frontend | 460, 461 | M | 464A, 464B | **Done** (PR #989) |
 | **Phase 64 — Legal Vertical QA: Terminology, Matter Templates & 90-Day Lifecycle** | | | | | | See [tasks/phase64-legal-vertical-qa.md](tasks/phase64-legal-vertical-qa.md) |
 | 465 | Legal Terminology Map Fix & Extension | Frontend | -- | S | 465A | **Done** (PR #964) |
 | 466 | Matter-Type Project Template Seeder | Backend | -- | M | 466A, 466B | **Done** (PR #965) |

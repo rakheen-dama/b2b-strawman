@@ -28,7 +28,7 @@ Phase 63 promotes approximately 21 custom fields across Customer, Project, Task,
 | 461 | Service Layer Updates: Conflict Check, Deadline, Prerequisite | Backend | 459, 460 | M | 461A, 461B | **Done** (PR #986) |
 | 462 | Template Context Builders + Variable Metadata + Pack JSON Cleanup | Backend | 459, 460 | M | 462A, 462B | **Done** (PR #987) |
 | 463 | Frontend: Customer Form Restructuring + Detail Page | Frontend | 459B, 461 | M | 463A, 463B | **Done** (PR #988) |
-| 464 | Frontend: Project/Task/Invoice Form + Detail Updates | Frontend | 460, 461 | M | 464A, 464B | |
+| 464 | Frontend: Project/Task/Invoice Form + Detail Updates | Frontend | 460, 461 | M | 464A, 464B | **Done** (PR #989) |
 
 ---
 
@@ -133,14 +133,14 @@ PHASE 12 (Templates) — all complete
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 4a (parallel) | 463 | 463A | Customer create/edit form restructuring: Address section, Contact section, Business Details section. TypeScript types + Zod schema updates. Server actions. Frontend tests (~6). Frontend only. | **Done** (PR #988) |
-| 4b (parallel) | 464 | 464A | Project form (referenceNumber, priority, workType). Task form (estimatedHours). Invoice form (poNumber, taxType, billingPeriodStart, billingPeriodEnd). Types + schemas + actions. Frontend tests (~6). Frontend only. | |
+| 4b (parallel) | 464 | 464A | Project form (referenceNumber, priority, workType). Task form (estimatedHours). Invoice form (poNumber, taxType, billingPeriodStart, billingPeriodEnd). Types + schemas + actions. Frontend tests (~6). Frontend only. | **Done** (PR #989) |
 
 ### Stage 5: Frontend Detail Pages (parallel tracks)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 5a (parallel) | 463 | 463B | Customer detail page: formatted address block, contact card, business details section. CustomFieldSection scope reduction for customer. Frontend tests (~4). Frontend only. | **Done** (PR #988) |
-| 5b (parallel) | 464 | 464B | Project detail page + invoice detail page updates for promoted fields. CustomFieldSection scope reduction across all entities. Frontend tests (~4). Frontend only. | |
+| 5b (parallel) | 464 | 464B | Project detail page + invoice detail page updates for promoted fields. CustomFieldSection scope reduction across all entities. Frontend tests (~4). Frontend only. | **Done** (PR #989) |
 
 ### Timeline
 
@@ -501,8 +501,8 @@ Stage 5:  [463B]  //  [464B]                                    <- customer deta
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **464A** | 464.1--464.7 | Project form: referenceNumber, priority select, workType select. Task form: estimatedHours number input. Invoice form: poNumber, taxType select, billingPeriodStart/End date pickers. TypeScript types + Zod schemas. Server actions. Frontend tests (~6). Frontend only. | |
-| **464B** | 464.8--464.12 | Project detail page: display referenceNumber, priority badge, workType. Invoice detail page: display poNumber, taxType, billing period. CustomFieldSection promoted slug exclusion across project, task, and invoice. Frontend tests (~4). Frontend only. | |
+| **464A** | 464.1--464.7 | Project form: referenceNumber, priority select, workType select. Task form: estimatedHours number input. Invoice form: poNumber, taxType select, billingPeriodStart/End date pickers. TypeScript types + Zod schemas. Server actions. Frontend tests (~6). Frontend only. | **Done** (PR #989) |
+| **464B** | 464.8--464.12 | Project detail page: display referenceNumber, priority badge, workType. Invoice detail page: display poNumber, taxType, billing period. CustomFieldSection promoted slug exclusion across project, task, and invoice. Frontend tests (~4). Frontend only. | **Done** (PR #989) |
 
 ### Tasks
 

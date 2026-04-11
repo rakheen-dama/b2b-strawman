@@ -46,6 +46,9 @@ import {
   createCustomerSchema,
   type CreateCustomerFormData,
 } from "@/lib/schemas/customer";
+import { COUNTRIES } from "@/lib/constants/countries";
+import { ENTITY_TYPES } from "@/lib/constants/entity-types";
+import { nativeSelectClassName } from "@/lib/styles/native-select";
 
 const CUSTOMER_TYPES: { value: CustomerType; label: string }[] = [
   { value: "INDIVIDUAL", label: "Individual" },
@@ -74,6 +77,19 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
       idNumber: "",
       notes: "",
       customerType: "INDIVIDUAL",
+      addressLine1: "",
+      addressLine2: "",
+      city: "",
+      stateProvince: "",
+      postalCode: "",
+      country: "",
+      taxNumber: "",
+      contactName: "",
+      contactEmail: "",
+      contactPhone: "",
+      registrationNumber: "",
+      entityType: "",
+      financialYearEnd: "",
     },
   });
 
@@ -116,8 +132,30 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
   async function handleNext() {
     setError(null);
 
-    // Validate only step 1 fields
-    const isValid = await form.trigger(["name", "email"]);
+    // Validate step 1 fields (including optional promoted fields — ensures
+    // bad email / bad country code / bad date shows an inline error before
+    // advancing to step 2)
+    const isValid = await form.trigger([
+      "name",
+      "email",
+      "phone",
+      "idNumber",
+      "notes",
+      "customerType",
+      "addressLine1",
+      "addressLine2",
+      "city",
+      "stateProvince",
+      "postalCode",
+      "country",
+      "taxNumber",
+      "contactName",
+      "contactEmail",
+      "contactPhone",
+      "registrationNumber",
+      "entityType",
+      "financialYearEnd",
+    ]);
     if (!isValid) {
       scrollToFirstError();
       return;
@@ -158,6 +196,19 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
         idNumber: values.idNumber?.trim() || undefined,
         notes: values.notes?.trim() || undefined,
         customerType: values.customerType || undefined,
+        addressLine1: values.addressLine1?.trim() || undefined,
+        addressLine2: values.addressLine2?.trim() || undefined,
+        city: values.city?.trim() || undefined,
+        stateProvince: values.stateProvince?.trim() || undefined,
+        postalCode: values.postalCode?.trim() || undefined,
+        country: values.country?.trim() || undefined,
+        taxNumber: values.taxNumber?.trim() || undefined,
+        contactName: values.contactName?.trim() || undefined,
+        contactEmail: values.contactEmail?.trim() || undefined,
+        contactPhone: values.contactPhone?.trim() || undefined,
+        registrationNumber: values.registrationNumber?.trim() || undefined,
+        entityType: values.entityType || undefined,
+        financialYearEnd: values.financialYearEnd || undefined,
         customFields,
       });
 
@@ -249,7 +300,7 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
                         <select
                           value={field.value}
                           onChange={field.onChange}
-                          className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 dark:border-slate-800"
+                          className={nativeSelectClassName}
                         >
                           {CUSTOMER_TYPES.map((ct) => (
                             <option key={ct.value} value={ct.value}>
@@ -342,6 +393,234 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
                     </FormItem>
                   )}
                 />
+
+                {/* Address Section */}
+                <div className="border-t pt-4">
+                  <h3 className="mb-3 text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                    Address
+                  </h3>
+                  <div className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="addressLine1"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            Address Line 1{" "}
+                            <span className="font-normal text-muted-foreground">(optional)</span>
+                          </FormLabel>
+                          <FormControl>
+                            <Input maxLength={255} {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="addressLine2"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            Address Line 2{" "}
+                            <span className="font-normal text-muted-foreground">(optional)</span>
+                          </FormLabel>
+                          <FormControl>
+                            <Input maxLength={255} {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <FormField
+                        control={form.control}
+                        name="city"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>City</FormLabel>
+                            <FormControl>
+                              <Input maxLength={100} {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="stateProvince"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>State / Province</FormLabel>
+                            <FormControl>
+                              <Input maxLength={100} {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <FormField
+                        control={form.control}
+                        name="postalCode"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Postal Code</FormLabel>
+                            <FormControl>
+                              <Input maxLength={20} {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="country"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Country</FormLabel>
+                            <FormControl>
+                              <select
+                                value={field.value ?? ""}
+                                onChange={field.onChange}
+                                className={nativeSelectClassName}
+                              >
+                                <option value="">Select country…</option>
+                                {COUNTRIES.map((c) => (
+                                  <option key={c.code} value={c.code}>
+                                    {c.name} ({c.code})
+                                  </option>
+                                ))}
+                              </select>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Contact Section */}
+                <div className="border-t pt-4">
+                  <h3 className="mb-3 text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                    Contact
+                  </h3>
+                  <div className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="contactName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Contact Name</FormLabel>
+                          <FormControl>
+                            <Input maxLength={255} {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="contactEmail"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Contact Email</FormLabel>
+                          <FormControl>
+                            <Input type="email" maxLength={255} {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="contactPhone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Contact Phone</FormLabel>
+                          <FormControl>
+                            <Input type="tel" maxLength={50} {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+
+                {/* Business Details Section */}
+                <div className="border-t pt-4">
+                  <h3 className="mb-3 text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                    Business Details
+                  </h3>
+                  <div className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="registrationNumber"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Registration Number</FormLabel>
+                          <FormControl>
+                            <Input maxLength={100} {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="taxNumber"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Tax Number</FormLabel>
+                          <FormControl>
+                            <Input maxLength={100} {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="entityType"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Entity Type</FormLabel>
+                          <FormControl>
+                            <select
+                              value={field.value ?? ""}
+                              onChange={field.onChange}
+                              className={nativeSelectClassName}
+                            >
+                              <option value="">Select entity type…</option>
+                              {ENTITY_TYPES.map((et) => (
+                                <option key={et.value} value={et.value}>
+                                  {et.label}
+                                </option>
+                              ))}
+                            </select>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="financialYearEnd"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Financial Year End</FormLabel>
+                          <FormControl>
+                            <Input type="date" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
               </div>
             </Form>
           )}

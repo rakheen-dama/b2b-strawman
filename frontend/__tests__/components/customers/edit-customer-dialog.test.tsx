@@ -65,7 +65,54 @@ describe("EditCustomerDialog", () => {
     await user.click(screen.getByText("Save Changes"));
 
     await waitFor(() => {
-      expect(mockUpdateCustomer).toHaveBeenCalledWith("acme", "c1", expect.any(FormData));
+      expect(mockUpdateCustomer).toHaveBeenCalledWith(
+        "acme",
+        "c1",
+        expect.objectContaining({ name: "Acme Inc", email: "contact@acme.com" }),
+      );
+    });
+  });
+
+  it("submits with all promoted fields populated", async () => {
+    mockUpdateCustomer.mockResolvedValue({ success: true });
+    const user = userEvent.setup();
+
+    const customerWithPromoted: Customer = {
+      ...mockCustomer,
+      addressLine1: "100 Main St",
+      city: "Cape Town",
+      country: "ZA",
+      contactEmail: "jane@acme.com",
+      entityType: "PTY_LTD",
+    };
+
+    render(
+      <EditCustomerDialog customer={customerWithPromoted} slug="acme">
+        <button>Edit Customer</button>
+      </EditCustomerDialog>,
+    );
+
+    await user.click(screen.getByText("Edit Customer"));
+
+    // Verify promoted fields are pre-populated
+    expect(screen.getByLabelText(/address line 1/i)).toHaveValue("100 Main St");
+    expect(screen.getByLabelText(/^city$/i)).toHaveValue("Cape Town");
+    expect(screen.getByLabelText(/country/i)).toHaveValue("ZA");
+
+    await user.click(screen.getByText("Save Changes"));
+
+    await waitFor(() => {
+      expect(mockUpdateCustomer).toHaveBeenCalledWith(
+        "acme",
+        "c1",
+        expect.objectContaining({
+          addressLine1: "100 Main St",
+          city: "Cape Town",
+          country: "ZA",
+          contactEmail: "jane@acme.com",
+          entityType: "PTY_LTD",
+        }),
+      );
     });
   });
 

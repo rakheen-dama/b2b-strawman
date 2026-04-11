@@ -3,7 +3,7 @@
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api, ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
-import type { Customer, CustomerType, UpdateCustomerRequest } from "@/lib/types";
+import type { Customer, UpdateCustomerRequest } from "@/lib/types";
 import { classifyError } from "@/lib/error-handler";
 import { createMessages } from "@/lib/messages";
 
@@ -20,6 +20,42 @@ interface CreateCustomerData {
   notes?: string;
   customerType?: string;
   customFields?: Record<string, unknown>;
+  // Promoted customer fields (Epic 463)
+  addressLine1?: string;
+  addressLine2?: string;
+  city?: string;
+  stateProvince?: string;
+  postalCode?: string;
+  country?: string;
+  taxNumber?: string;
+  contactName?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  registrationNumber?: string;
+  entityType?: string;
+  financialYearEnd?: string;
+}
+
+export interface UpdateCustomerData {
+  name: string;
+  email: string;
+  phone?: string;
+  idNumber?: string;
+  notes?: string;
+  // Promoted customer fields (Epic 463)
+  addressLine1?: string;
+  addressLine2?: string;
+  city?: string;
+  stateProvince?: string;
+  postalCode?: string;
+  country?: string;
+  taxNumber?: string;
+  contactName?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  registrationNumber?: string;
+  entityType?: string;
+  financialYearEnd?: string;
 }
 
 export async function createCustomer(slug: string, data: CreateCustomerData): Promise<ActionResult> {
@@ -28,7 +64,28 @@ export async function createCustomer(slug: string, data: CreateCustomerData): Pr
     return { success: false, error: "Only admins and owners can manage customers." };
   }
 
-  const { name, email, phone, idNumber, notes, customerType, customFields } = data;
+  const {
+    name,
+    email,
+    phone,
+    idNumber,
+    notes,
+    customerType,
+    customFields,
+    addressLine1,
+    addressLine2,
+    city,
+    stateProvince,
+    postalCode,
+    country,
+    taxNumber,
+    contactName,
+    contactEmail,
+    contactPhone,
+    registrationNumber,
+    entityType,
+    financialYearEnd,
+  } = data;
 
   if (!name?.trim()) {
     return { success: false, error: "Customer name is required." };
@@ -44,6 +101,19 @@ export async function createCustomer(slug: string, data: CreateCustomerData): Pr
     idNumber,
     notes,
     customerType,
+    addressLine1,
+    addressLine2,
+    city,
+    stateProvince,
+    postalCode,
+    country,
+    taxNumber,
+    contactName,
+    contactEmail,
+    contactPhone,
+    registrationNumber,
+    entityType,
+    financialYearEnd,
     customFields: customFields ?? {},
   };
 
@@ -66,19 +136,15 @@ export async function createCustomer(slug: string, data: CreateCustomerData): Pr
 export async function updateCustomer(
   slug: string,
   id: string,
-  formData: FormData
+  data: UpdateCustomerData
 ): Promise<ActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Only admins and owners can manage customers." };
   }
 
-  const name = formData.get("name")?.toString().trim() ?? "";
-  const email = formData.get("email")?.toString().trim() ?? "";
-  const phone = formData.get("phone")?.toString().trim() || undefined;
-  const idNumber = formData.get("idNumber")?.toString().trim() || undefined;
-  const notes = formData.get("notes")?.toString().trim() || undefined;
-  const customerType = (formData.get("customerType")?.toString() as CustomerType) || undefined;
+  const name = data.name?.trim() ?? "";
+  const email = data.email?.trim() ?? "";
 
   if (!name) {
     return { success: false, error: "Customer name is required." };
@@ -87,7 +153,26 @@ export async function updateCustomer(
     return { success: false, error: "Customer email is required." };
   }
 
-  const body: UpdateCustomerRequest = { name, email, phone, idNumber, notes, customerType };
+  const body: UpdateCustomerRequest = {
+    name,
+    email,
+    phone: data.phone?.trim() || undefined,
+    idNumber: data.idNumber?.trim() || undefined,
+    notes: data.notes?.trim() || undefined,
+    addressLine1: data.addressLine1?.trim() || undefined,
+    addressLine2: data.addressLine2?.trim() || undefined,
+    city: data.city?.trim() || undefined,
+    stateProvince: data.stateProvince?.trim() || undefined,
+    postalCode: data.postalCode?.trim() || undefined,
+    country: data.country?.trim() || undefined,
+    taxNumber: data.taxNumber?.trim() || undefined,
+    contactName: data.contactName?.trim() || undefined,
+    contactEmail: data.contactEmail?.trim() || undefined,
+    contactPhone: data.contactPhone?.trim() || undefined,
+    registrationNumber: data.registrationNumber?.trim() || undefined,
+    entityType: data.entityType || undefined,
+    financialYearEnd: data.financialYearEnd || undefined,
+  };
 
   try {
     await api.put<Customer>(`/api/customers/${id}`, body);

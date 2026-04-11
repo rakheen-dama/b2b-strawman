@@ -112,6 +112,7 @@ describe("SETTINGS_ITEMS", () => {
       "Automations",
       "Batch Billing",
       "Email",
+      "Features",
       "Roles & Permissions",
       "Trust Accounting",
     ]);

@@ -202,4 +202,27 @@ describe("MetricsStrip", () => {
       "75%",
     );
   });
+
+  it("hides team utilization metric when resource_planning module is disabled", () => {
+    renderWithProvider(
+      <MetricsStrip
+        kpis={mockKpis}
+        capacityData={mockCapacityData}
+        projectHealth={mockProjectHealth}
+      />,
+      [], // empty enabledModules — resource_planning is OFF
+    );
+
+    expect(screen.getByTestId("metrics-strip")).toBeInTheDocument();
+    // The other 5 cells still render
+    expect(screen.getByTestId("metric-active-projects")).toBeInTheDocument();
+    expect(screen.getByTestId("metric-hours-month")).toBeInTheDocument();
+    expect(screen.getByTestId("metric-revenue")).toBeInTheDocument();
+    expect(screen.getByTestId("metric-overdue-tasks")).toBeInTheDocument();
+    expect(screen.getByTestId("metric-budget-health")).toBeInTheDocument();
+    // The gated cell is HIDDEN
+    expect(
+      screen.queryByTestId("metric-team-utilization"),
+    ).not.toBeInTheDocument();
+  });
 });

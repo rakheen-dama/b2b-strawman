@@ -80,7 +80,7 @@ export const SETTINGS_NAV_GROUPS: SettingsNavGroup[] = [
   {
     id: "features",
     label: "Features",
-    items: [{ label: "Features", href: "features" }],
+    items: [{ label: "Features", href: "features", adminOnly: true }],
   },
   {
     id: "access",

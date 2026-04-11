@@ -188,7 +188,6 @@ export const NAV_GROUPS: NavGroup[] = [
         label: "Billing Runs",
         href: (slug) => `/org/${slug}/invoices/billing-runs`,
         icon: Layers,
-        exact: true,
         requiredCapability: "INVOICING",
         requiredModule: "bulk_billing",
       },
@@ -476,6 +475,7 @@ export const SETTINGS_ITEMS: SettingsItem[] = [
     title: "Features",
     description: "Enable additional features for your organization",
     href: (slug) => `/org/${slug}/settings/features`,
+    adminOnly: true,
   },
 ];
 

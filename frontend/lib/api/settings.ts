@@ -13,6 +13,29 @@ export async function getOrgSettings(): Promise<OrgSettings> {
   return api.get<OrgSettings>("/api/settings");
 }
 
+/**
+ * Server-side helper to check whether a horizontal module is enabled for the
+ * current org. Used by gated server component pages to short-circuit data
+ * fetching BEFORE invoking backend list endpoints.
+ *
+ * Falls back to `false` (treat as disabled) on any fetch error so we render
+ * the disabled fallback rather than leaking data on transient failures.
+ */
+export async function isModuleEnabledServer(
+  moduleId: string,
+): Promise<boolean> {
+  try {
+    const settings = await getOrgSettings();
+    return (settings.enabledModules ?? []).includes(moduleId);
+  } catch (error) {
+    console.error(
+      `Failed to fetch org settings for module check (${moduleId}):`,
+      error,
+    );
+    return false;
+  }
+}
+
 export async function updateOrgSettings(
   req: UpdateOrgSettingsRequest,
 ): Promise<OrgSettings> {

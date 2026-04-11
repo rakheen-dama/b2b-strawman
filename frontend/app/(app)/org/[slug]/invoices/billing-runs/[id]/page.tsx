@@ -2,6 +2,7 @@ import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { handleApiError } from "@/lib/api";
 import { getBillingRun, getItems } from "@/lib/api/billing-runs";
 import type { BillingRun, BillingRunItem } from "@/lib/api/billing-runs";
+import { isModuleEnabledServer } from "@/lib/api/settings";
 import { BillingRunStatusBadge } from "@/components/billing-runs/billing-run-status-badge";
 import { BillingRunSummaryCards } from "@/components/billing-runs/billing-run-summary-cards";
 import { BillingRunItemsTable } from "@/components/billing-runs/billing-run-items-table";
@@ -9,7 +10,6 @@ import { BillingRunDetailActions } from "@/components/billing-runs/billing-run-d
 import { formatLocalDate } from "@/lib/format";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { ModuleGate } from "@/components/module-gate";
 import { ModuleDisabledFallback } from "@/components/module-disabled-fallback";
 
 export default async function BillingRunDetailPage({
@@ -18,28 +18,26 @@ export default async function BillingRunDetailPage({
   params: Promise<{ slug: string; id: string }>;
 }) {
   const { slug, id } = await params;
-  const caps = await fetchMyCapabilities();
 
+  // Server-side module gate — short-circuit BEFORE invoking backend data fetches.
+  if (!(await isModuleEnabledServer("bulk_billing"))) {
+    return <ModuleDisabledFallback moduleName="Bulk Billing Runs" slug={slug} />;
+  }
+
+  const caps = await fetchMyCapabilities();
   const isAdmin = caps.isAdmin || caps.isOwner;
 
   if (!isAdmin) {
     return (
-      <ModuleGate
-        module="bulk_billing"
-        fallback={
-          <ModuleDisabledFallback moduleName="Bulk Billing Runs" slug={slug} />
-        }
-      >
-        <div className="space-y-8">
-          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-            Billing Run
-          </h1>
-          <p className="text-slate-600 dark:text-slate-400">
-            You do not have permission to view billing runs. Only admins and
-            owners can access this page.
-          </p>
-        </div>
-      </ModuleGate>
+      <div className="space-y-8">
+        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
+          Billing Run
+        </h1>
+        <p className="text-slate-600 dark:text-slate-400">
+          You do not have permission to view billing runs. Only admins and
+          owners can access this page.
+        </p>
+      </div>
     );
   }
 
@@ -55,12 +53,6 @@ export default async function BillingRunDetailPage({
   }
 
   return (
-    <ModuleGate
-      module="bulk_billing"
-      fallback={
-        <ModuleDisabledFallback moduleName="Bulk Billing Runs" slug={slug} />
-      }
-    >
     <div className="space-y-8">
       {/* Back link */}
       <Link
@@ -115,6 +107,5 @@ export default async function BillingRunDetailPage({
         />
       </div>
     </div>
-    </ModuleGate>
   );
 }

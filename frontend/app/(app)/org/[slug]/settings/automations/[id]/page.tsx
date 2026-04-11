@@ -8,8 +8,8 @@ import type {
   AutomationExecutionResponse,
   PaginatedResponse,
 } from "@/lib/api/automations";
+import { isModuleEnabledServer } from "@/lib/api/settings";
 import { RuleDetailClient } from "./rule-detail-client";
-import { ModuleGate } from "@/components/module-gate";
 import { ModuleDisabledFallback } from "@/components/module-disabled-fallback";
 
 export default async function AutomationDetailPage({
@@ -18,8 +18,18 @@ export default async function AutomationDetailPage({
   params: Promise<{ slug: string; id: string }>;
 }) {
   const { slug, id } = await params;
-  const caps = await fetchMyCapabilities();
 
+  // Server-side module gate — short-circuit BEFORE invoking backend data fetches.
+  if (!(await isModuleEnabledServer("automation_builder"))) {
+    return (
+      <ModuleDisabledFallback
+        moduleName="Automation Rule Builder"
+        slug={slug}
+      />
+    );
+  }
+
+  const caps = await fetchMyCapabilities();
   const isAdmin = caps.isAdmin || caps.isOwner;
 
   if (!isAdmin) {
@@ -54,41 +64,6 @@ export default async function AutomationDetailPage({
 
   if (notFound || !rule) {
     return (
-      <ModuleGate
-        module="automation_builder"
-        fallback={
-          <ModuleDisabledFallback
-            moduleName="Automation Rule Builder"
-            slug={slug}
-          />
-        }
-      >
-        <div className="space-y-8">
-          <Link
-            href={`/org/${slug}/settings/automations`}
-            className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
-          >
-            <ChevronLeft className="size-4" />
-            Automations
-          </Link>
-          <p className="text-slate-600 dark:text-slate-400">
-            Rule not found. It may have been deleted.
-          </p>
-        </div>
-      </ModuleGate>
-    );
-  }
-
-  return (
-    <ModuleGate
-      module="automation_builder"
-      fallback={
-        <ModuleDisabledFallback
-          moduleName="Automation Rule Builder"
-          slug={slug}
-        />
-      }
-    >
       <div className="space-y-8">
         <Link
           href={`/org/${slug}/settings/automations`}
@@ -97,13 +72,28 @@ export default async function AutomationDetailPage({
           <ChevronLeft className="size-4" />
           Automations
         </Link>
-
-        <RuleDetailClient
-          slug={slug}
-          rule={rule}
-          initialExecutions={executions}
-        />
+        <p className="text-slate-600 dark:text-slate-400">
+          Rule not found. It may have been deleted.
+        </p>
       </div>
-    </ModuleGate>
+    );
+  }
+
+  return (
+    <div className="space-y-8">
+      <Link
+        href={`/org/${slug}/settings/automations`}
+        className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+      >
+        <ChevronLeft className="size-4" />
+        Automations
+      </Link>
+
+      <RuleDetailClient
+        slug={slug}
+        rule={rule}
+        initialExecutions={executions}
+      />
+    </div>
   );
 }

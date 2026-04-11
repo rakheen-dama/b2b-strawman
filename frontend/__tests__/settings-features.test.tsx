@@ -122,10 +122,14 @@ describe("FeaturesSettingsForm", () => {
     await user.click(resourcePlanningSwitch);
 
     await waitFor(() => {
-      expect(updateModuleSettings).toHaveBeenCalledWith(
-        expect.arrayContaining(["resource_planning", "bulk_billing"]),
-      );
+      expect(updateModuleSettings).toHaveBeenCalledTimes(1);
     });
+    // Verify exact payload — only the toggled module joins the existing
+    // enabled list. `automation_builder` must NOT be included.
+    const callArg = vi.mocked(updateModuleSettings).mock.calls[0][0];
+    const sorted = [...callArg].sort();
+    expect(sorted).toEqual(["bulk_billing", "resource_planning"]);
+    expect(sorted).not.toContain("automation_builder");
   });
 
   it("calls router.refresh after a successful toggle", async () => {

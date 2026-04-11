@@ -22,14 +22,15 @@ export interface ActionResult<T = void> {
 /**
  * Fetch the list of horizontal modules and their enabled state.
  * Backend filters to horizontal modules only.
+ *
+ * Errors are intentionally NOT swallowed — a backend failure (or 403 for a
+ * non-admin) should bubble up to the Next.js error boundary instead of being
+ * masked as an empty list. The Settings → Features page is admin-only by
+ * navigation gating, so a 403 here would indicate either an out-of-band link
+ * or a misconfigured role.
  */
 export async function getModuleSettings(): Promise<ModuleSettingsResponse> {
-  try {
-    return await api.get<ModuleSettingsResponse>("/api/settings/modules");
-  } catch (error) {
-    console.error("Failed to fetch module settings:", error);
-    return { modules: [] };
-  }
+  return api.get<ModuleSettingsResponse>("/api/settings/modules");
 }
 
 /**

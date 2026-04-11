@@ -3,12 +3,12 @@ import { notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { listRules, listTemplates } from "@/lib/api/automations";
+import { isModuleEnabledServer } from "@/lib/api/settings";
 import { RuleList } from "@/components/automations/rule-list";
 import type {
   AutomationRuleResponse,
   TemplateDefinitionResponse,
 } from "@/lib/api/automations";
-import { ModuleGate } from "@/components/module-gate";
 import { ModuleDisabledFallback } from "@/components/module-disabled-fallback";
 
 export default async function AutomationsSettingsPage({
@@ -17,6 +17,17 @@ export default async function AutomationsSettingsPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+
+  // Server-side module gate — short-circuit BEFORE invoking backend data fetches.
+  if (!(await isModuleEnabledServer("automation_builder"))) {
+    return (
+      <ModuleDisabledFallback
+        moduleName="Automation Rule Builder"
+        slug={slug}
+      />
+    );
+  }
+
   const capData = await fetchMyCapabilities();
 
   if (!capData.isAdmin && !capData.isOwner && !capData.capabilities.includes("AUTOMATIONS")) {
@@ -35,16 +46,7 @@ export default async function AutomationsSettingsPage({
   }
 
   return (
-    <ModuleGate
-      module="automation_builder"
-      fallback={
-        <ModuleDisabledFallback
-          moduleName="Automation Rule Builder"
-          slug={slug}
-        />
-      }
-    >
-      <div className="space-y-8">
+    <div className="space-y-8">
         <Link
           href={`/org/${slug}/settings`}
           className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
@@ -70,13 +72,12 @@ export default async function AutomationsSettingsPage({
           )}
         </div>
 
-        <RuleList
-          slug={slug}
-          rules={rules}
-          templates={templates}
-          canManage={isAdmin}
-        />
-      </div>
-    </ModuleGate>
+      <RuleList
+        slug={slug}
+        rules={rules}
+        templates={templates}
+        canManage={isAdmin}
+      />
+    </div>
   );
 }

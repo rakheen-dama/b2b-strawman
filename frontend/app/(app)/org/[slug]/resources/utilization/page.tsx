@@ -1,11 +1,11 @@
 import { getAuthContext } from "@/lib/auth";
 import { getTeamUtilization } from "@/lib/api/capacity";
 import type { TeamUtilizationResponse } from "@/lib/api/capacity";
+import { isModuleEnabledServer } from "@/lib/api/settings";
 import { UtilizationTable } from "@/components/capacity/utilization-table";
 import { UtilizationChart } from "@/components/capacity/utilization-chart";
 import { WeekRangeSelector } from "@/components/capacity/week-range-selector";
 import { getCurrentMonday, formatDate, addWeeks } from "@/lib/date-utils";
-import { ModuleGate } from "@/components/module-gate";
 import { ModuleDisabledFallback } from "@/components/module-disabled-fallback";
 
 function computeWeekCount(weekStart: string, weekEnd: string): number {
@@ -25,6 +25,11 @@ export default async function UtilizationPage({
   const { slug } = await params;
   const sp = await searchParams;
   await getAuthContext();
+
+  // Server-side module gate — short-circuit BEFORE invoking backend data fetches.
+  if (!(await isModuleEnabledServer("resource_planning"))) {
+    return <ModuleDisabledFallback moduleName="Resource Planning" slug={slug} />;
+  }
 
   const defaultMonday = getCurrentMonday();
   const weekStart = sp.weekStart ?? formatDate(defaultMonday);
@@ -47,13 +52,7 @@ export default async function UtilizationPage({
   }
 
   return (
-    <ModuleGate
-      module="resource_planning"
-      fallback={
-        <ModuleDisabledFallback moduleName="Resource Planning" slug={slug} />
-      }
-    >
-      <div className="space-y-6">
+    <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
@@ -68,10 +67,9 @@ export default async function UtilizationPage({
 
         <UtilizationTable data={data} slug={slug} />
 
-        <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
-          <UtilizationChart data={data} />
-        </div>
+      <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+        <UtilizationChart data={data} />
       </div>
-    </ModuleGate>
+    </div>
   );
 }

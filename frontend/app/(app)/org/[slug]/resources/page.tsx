@@ -5,13 +5,13 @@ import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api } from "@/lib/api";
 import { getTeamCapacityGrid } from "@/lib/api/capacity";
 import type { TeamCapacityGrid } from "@/lib/api/capacity";
+import { isModuleEnabledServer } from "@/lib/api/settings";
 import type { Project } from "@/lib/types";
 import { AllocationGrid } from "@/components/capacity/allocation-grid";
 import { EmptyState } from "@/components/empty-state";
 import { docsLink } from "@/lib/docs";
 import { WeekRangeSelector } from "@/components/capacity/week-range-selector";
 import { getCurrentMonday, formatDate, addWeeks } from "@/lib/date-utils";
-import { ModuleGate } from "@/components/module-gate";
 import { ModuleDisabledFallback } from "@/components/module-disabled-fallback";
 
 function computeWeekCount(weekStart: string, weekEnd: string): number {
@@ -30,6 +30,12 @@ export default async function ResourcesPage({
 }) {
   const { slug } = await params;
   const sp = await searchParams;
+
+  // Server-side module gate — short-circuit BEFORE invoking backend data fetches.
+  if (!(await isModuleEnabledServer("resource_planning"))) {
+    return <ModuleDisabledFallback moduleName="Resource Planning" slug={slug} />;
+  }
+
   const capData = await fetchMyCapabilities();
 
   if (!capData.isAdmin && !capData.isOwner && !capData.capabilities.includes("RESOURCE_PLANNING")) {
@@ -76,13 +82,7 @@ export default async function ResourcesPage({
   }
 
   return (
-    <ModuleGate
-      module="resource_planning"
-      fallback={
-        <ModuleDisabledFallback moduleName="Resource Planning" slug={slug} />
-      }
-    >
-      <div className="space-y-6">
+    <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
@@ -108,10 +108,9 @@ export default async function ResourcesPage({
             description="Allocate team members to projects to plan capacity."
             secondaryLink={{ label: "Read the guide", href: docsLink("/features/resource-planning") }}
           />
-        ) : (
-          <AllocationGrid grid={grid} projects={projectOptions} slug={slug} />
-        )}
-      </div>
-    </ModuleGate>
+      ) : (
+        <AllocationGrid grid={grid} projects={projectOptions} slug={slug} />
+      )}
+    </div>
   );
 }
